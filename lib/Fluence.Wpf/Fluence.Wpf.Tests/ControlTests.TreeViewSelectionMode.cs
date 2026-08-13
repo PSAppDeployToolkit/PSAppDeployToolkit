@@ -26,18 +26,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using FluentTreeView = Fluence.Wpf.Controls.TreeView;
-using FluentTreeViewItem = Fluence.Wpf.Controls.TreeViewItem;
-using WpfCheckBox = System.Windows.Controls.CheckBox;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void TreeView_DefaultSelectionModeIsSingleWithLiveSelectedItems()
         {
             WpfTestSta.Invoke(static () =>
@@ -47,11 +45,11 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeView treeView = new();
+                    Controls.TreeView treeView = new();
 
-                    Assert.AreEqual(TreeViewSelectionMode.Single, treeView.SelectionMode);
-                    Assert.IsNotNull(treeView.SelectedItems, "SelectedItems should be a live collection.");
-                    Assert.AreEqual(0, treeView.SelectedItems.Count);
+                    Assert.Equal(TreeViewSelectionMode.Single, treeView.SelectionMode);
+                    Assert.NotNull(treeView.SelectedItems);
+                    Assert.Empty(treeView.SelectedItems);
                 }
                 finally
                 {
@@ -63,7 +61,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TreeView_MultipleSelectionShowsCheckboxAndSyncsSelectedItems()
         {
             WpfTestSta.Invoke(static () =>
@@ -74,9 +72,9 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem first = new() { Header = "First" };
-                    FluentTreeViewItem second = new() { Header = "Second" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem first = new() { Header = "First" };
+                    Controls.TreeViewItem second = new() { Header = "Second" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -89,27 +87,26 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfCheckBox? firstCheckBox = FindVisualChildByName<WpfCheckBox>(first, "SelectionCheckBox");
-                    Assert.IsNotNull(firstCheckBox, "Multiple-selection TreeViewItem template should expose a checkbox.");
-                    Assert.AreEqual(Visibility.Visible, firstCheckBox.Visibility,
-                        "TreeViewItem checkbox should be visible when the owning TreeView is in Multiple mode.");
-                    Assert.IsTrue(firstCheckBox.IsThreeState,
+                    System.Windows.Controls.CheckBox? firstCheckBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(first, "SelectionCheckBox");
+                    Assert.NotNull(firstCheckBox);
+                    Assert.Equal(Visibility.Visible, firstCheckBox.Visibility);
+                    Assert.True(firstCheckBox.IsThreeState,
                         "Multiple-selection TreeViewItem checkbox should support indeterminate parent state.");
 
                     first.IsSelectionChecked = true;
                     second.IsSelectionChecked = true;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(2, treeView.SelectedItems.Count);
-                    CollectionAssert.Contains(treeView.SelectedItems, first);
-                    CollectionAssert.Contains(treeView.SelectedItems, second);
+                    Assert.Equal(2, treeView.SelectedItems.Count);
+                    Assert.Contains(first, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(second, treeView.SelectedItems.Cast<object>());
 
                     first.IsSelectionChecked = false;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(1, treeView.SelectedItems.Count);
-                    CollectionAssert.DoesNotContain(treeView.SelectedItems, first);
-                    CollectionAssert.Contains(treeView.SelectedItems, second);
+                    _ = Assert.Single(treeView.SelectedItems);
+                    Assert.DoesNotContain(first, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(second, treeView.SelectedItems.Cast<object>());
                 }
                 finally
                 {
@@ -122,7 +119,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TreeView_MultipleSelectionSpaceTogglesItemCheckState()
         {
             WpfTestSta.Invoke(static () =>
@@ -133,8 +130,8 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem item = new() { Header = "Contracts" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem item = new() { Header = "Contracts" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -150,8 +147,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FluentTreeViewItem keyboardItem =
-                        treeView.ItemContainerGenerator.ContainerFromItem(item) as FluentTreeViewItem ?? item;
+                    Controls.TreeViewItem keyboardItem =
+                        treeView.ItemContainerGenerator.ContainerFromItem(item) as Controls.TreeViewItem ?? item;
 
                     _ = keyboardItem.ApplyTemplate();
                     _ = keyboardItem.Focus();
@@ -160,19 +157,17 @@ namespace Fluence.Wpf.Tests
                     keyboardItem.IsSelectionChecked = false;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.IsTrue(keyboardItem.ToggleMultipleSelectionFromKeyboard(),
+                    Assert.True(keyboardItem.ToggleMultipleSelectionFromKeyboard(),
                         "Focused TreeViewItem should accept Space in Multiple selection mode.");
 
-                    Assert.AreEqual(true, keyboardItem.IsSelectionChecked,
-                        "Space should check a focused TreeViewItem in Multiple selection mode.");
-                    CollectionAssert.Contains(treeView.SelectedItems, item);
+                    Assert.Equal(true, keyboardItem.IsSelectionChecked);
+                    Assert.Contains(item, treeView.SelectedItems.Cast<object>());
 
-                    Assert.IsTrue(keyboardItem.ToggleMultipleSelectionFromKeyboard(),
+                    Assert.True(keyboardItem.ToggleMultipleSelectionFromKeyboard(),
                         "Focused TreeViewItem should accept Space again in Multiple selection mode.");
 
-                    Assert.AreEqual(false, keyboardItem.IsSelectionChecked,
-                        "Space should uncheck a focused TreeViewItem in Multiple selection mode.");
-                    CollectionAssert.DoesNotContain(treeView.SelectedItems, item);
+                    Assert.Equal(false, keyboardItem.IsSelectionChecked);
+                    Assert.DoesNotContain(item, treeView.SelectedItems.Cast<object>());
                 }
                 finally
                 {
@@ -185,7 +180,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TreeView_NoneSelectionHidesCheckboxAndClearsSelection()
         {
             WpfTestSta.Invoke(static () =>
@@ -196,8 +191,8 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem item = new() { Header = "Leaf" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem item = new() { Header = "Leaf" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -210,20 +205,17 @@ namespace Fluence.Wpf.Tests
 
                     item.IsSelectionChecked = true;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(1, treeView.SelectedItems.Count);
+                    _ = Assert.Single(treeView.SelectedItems);
 
                     treeView.SelectionMode = TreeViewSelectionMode.None;
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfCheckBox? checkBox = FindVisualChildByName<WpfCheckBox>(item, "SelectionCheckBox");
-                    Assert.IsNotNull(checkBox, "TreeViewItem template should keep the checkbox part available.");
-                    Assert.AreEqual(Visibility.Collapsed, checkBox.Visibility,
-                        "TreeViewItem checkbox should be hidden when selection is disabled.");
-                    Assert.AreEqual(false, item.IsSelectionChecked,
-                        "TreeViewItem checked state should be cleared when SelectionMode=None.");
-                    Assert.AreEqual(0, treeView.SelectedItems.Count,
-                        "TreeView.SelectedItems should be cleared when SelectionMode=None.");
+                    System.Windows.Controls.CheckBox? checkBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(item, "SelectionCheckBox");
+                    Assert.NotNull(checkBox);
+                    Assert.Equal(Visibility.Collapsed, checkBox.Visibility);
+                    Assert.Equal(false, item.IsSelectionChecked);
+                    Assert.Empty(treeView.SelectedItems);
                 }
                 finally
                 {
@@ -236,7 +228,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TreeView_MultipleSelectionCascadesAndComputesParentState()
         {
             WpfTestSta.Invoke(static () =>
@@ -247,15 +239,15 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem parent = new() { Header = "Documents", IsExpanded = true };
-                    FluentTreeViewItem first = new() { Header = "Contracts" };
-                    FluentTreeViewItem second = new() { Header = "Invoices" };
-                    FluentTreeViewItem third = new() { Header = "Receipts" };
+                    Controls.TreeViewItem parent = new() { Header = "Documents", IsExpanded = true };
+                    Controls.TreeViewItem first = new() { Header = "Contracts" };
+                    Controls.TreeViewItem second = new() { Header = "Invoices" };
+                    Controls.TreeViewItem third = new() { Header = "Receipts" };
                     _ = parent.Items.Add(first);
                     _ = parent.Items.Add(second);
                     _ = parent.Items.Add(third);
 
-                    FluentTreeView treeView = new()
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -270,31 +262,29 @@ namespace Fluence.Wpf.Tests
                     parent.IsSelectionChecked = true;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(true, first.IsSelectionChecked);
-                    Assert.AreEqual(true, second.IsSelectionChecked);
-                    Assert.AreEqual(true, third.IsSelectionChecked);
-                    CollectionAssert.Contains(treeView.SelectedItems, parent);
-                    CollectionAssert.Contains(treeView.SelectedItems, first);
-                    CollectionAssert.Contains(treeView.SelectedItems, second);
-                    CollectionAssert.Contains(treeView.SelectedItems, third);
+                    Assert.Equal(true, first.IsSelectionChecked);
+                    Assert.Equal(true, second.IsSelectionChecked);
+                    Assert.Equal(true, third.IsSelectionChecked);
+                    Assert.Contains(parent, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(first, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(second, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(third, treeView.SelectedItems.Cast<object>());
 
                     second.IsSelectionChecked = false;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.IsNull(parent.IsSelectionChecked,
-                        "Parent should become indeterminate when fewer than all child items are checked.");
-                    CollectionAssert.DoesNotContain(treeView.SelectedItems, parent);
-                    CollectionAssert.Contains(treeView.SelectedItems, first);
-                    CollectionAssert.DoesNotContain(treeView.SelectedItems, second);
-                    CollectionAssert.Contains(treeView.SelectedItems, third);
+                    Assert.Null(parent.IsSelectionChecked);
+                    Assert.DoesNotContain(parent, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(first, treeView.SelectedItems.Cast<object>());
+                    Assert.DoesNotContain(second, treeView.SelectedItems.Cast<object>());
+                    Assert.Contains(third, treeView.SelectedItems.Cast<object>());
 
                     first.IsSelectionChecked = false;
                     third.IsSelectionChecked = false;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(false, parent.IsSelectionChecked,
-                        "Parent should be unchecked when none of its child items are checked.");
-                    Assert.AreEqual(0, treeView.SelectedItems.Count);
+                    Assert.Equal(false, parent.IsSelectionChecked);
+                    Assert.Empty(treeView.SelectedItems);
                 }
                 finally
                 {

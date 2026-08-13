@@ -121,7 +121,7 @@ namespace Fluence.Wpf.Controls
         {
             base.OnSelectedItemChanged(e);
 
-            if (SelectionMode == TreeViewSelectionMode.Single)
+            if (SelectionMode is TreeViewSelectionMode.Single)
             {
                 _selectedItems.Clear();
                 if (e.NewValue is not null)
@@ -129,7 +129,7 @@ namespace Fluence.Wpf.Controls
                     _ = _selectedItems.Add(e.NewValue);
                 }
             }
-            else if (SelectionMode == TreeViewSelectionMode.None)
+            else if (SelectionMode is TreeViewSelectionMode.None)
             {
                 _selectedItems.Clear();
             }
@@ -138,7 +138,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Space && ToggleMultipleSelectionItem(e.OriginalSource as DependencyObject))
+            if (e.Key is Key.Space && ToggleMultipleSelectionItem(e.OriginalSource as DependencyObject))
             {
                 e.Handled = true;
                 return;
@@ -154,10 +154,10 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (SelectionMode == TreeViewSelectionMode.None)
+            if (SelectionMode is TreeViewSelectionMode.None)
             {
                 _selectedItems.Clear();
-                if (item.IsSelectionChecked != false)
+                if (item.IsSelectionChecked is not false)
                 {
                     item.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, value: false);
                 }
@@ -167,10 +167,10 @@ namespace Fluence.Wpf.Controls
 
             object selectedItem = GetSelectedItemValue(item);
 
-            if (SelectionMode == TreeViewSelectionMode.Single)
+            if (SelectionMode is TreeViewSelectionMode.Single)
             {
                 _selectedItems.Clear();
-                if (isSelected == true)
+                if (isSelected is true)
                 {
                     _ = _selectedItems.Add(selectedItem);
                     item.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, value: true);
@@ -198,11 +198,11 @@ namespace Fluence.Wpf.Controls
 
         internal void ApplySelectionModeToItems()
         {
-            if (SelectionMode == TreeViewSelectionMode.None)
+            if (SelectionMode is TreeViewSelectionMode.None)
             {
                 _selectedItems.Clear();
             }
-            else if (SelectionMode == TreeViewSelectionMode.Single)
+            else if (SelectionMode is TreeViewSelectionMode.Single)
             {
                 _selectedItems.Clear();
                 if (SelectedItem is not null)
@@ -224,7 +224,7 @@ namespace Fluence.Wpf.Controls
 
         private bool ToggleMultipleSelectionItem(DependencyObject? source)
         {
-            if (SelectionMode != TreeViewSelectionMode.Multiple)
+            if (SelectionMode is not TreeViewSelectionMode.Multiple)
             {
                 return false;
             }
@@ -235,7 +235,7 @@ namespace Fluence.Wpf.Controls
                 return false;
             }
 
-            item.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, item.IsSelectionChecked != true);
+            item.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, item.IsSelectionChecked is not true);
             return true;
         }
 
@@ -275,7 +275,7 @@ namespace Fluence.Wpf.Controls
                 }
 
                 TreeView? treeView = FindOwningTreeView(container);
-                if (treeView is not null && treeView.SelectionMode != TreeViewSelectionMode.Multiple)
+                if (treeView is not null && treeView.SelectionMode is not TreeViewSelectionMode.Multiple)
                 {
                     container.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, value: false);
                 }
@@ -341,7 +341,7 @@ namespace Fluence.Wpf.Controls
                 }
 
                 childCount++;
-                if (container.IsSelectionChecked == true)
+                if (container.IsSelectionChecked is true)
                 {
                     checkedCount++;
                 }
@@ -355,7 +355,7 @@ namespace Fluence.Wpf.Controls
             {
                 0 => false,
                 _ when checkedCount == childCount => true,
-                _ when checkedCount == 0 && !hasPartialChild => false,
+                _ when checkedCount is 0 && !hasPartialChild => false,
                 _ => null,
             };
         }
@@ -378,7 +378,7 @@ namespace Fluence.Wpf.Controls
                     continue;
                 }
 
-                if (container.IsSelectionChecked == true)
+                if (container.IsSelectionChecked is true)
                 {
                     object selectedItem = GetSelectedItemValue(container);
                     if (!_selectedItems.Contains(selectedItem))

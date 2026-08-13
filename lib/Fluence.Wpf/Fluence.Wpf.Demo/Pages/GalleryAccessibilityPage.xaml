@@ -2,15 +2,14 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryAccessibilityPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:Fluence.Wpf.Demo.Pages"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
-    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock
                 Margin="0,0,0,4"
@@ -43,7 +42,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ui:Button
+                        <fluence:Button
                             Grid.Row="0"
                             Grid.Column="0"
                             Margin="0,0,12,12"
@@ -51,7 +50,7 @@
                             VerticalAlignment="Center"
                             AutomationProperties.Name="First focusable button"
                             Content="Button 1" />
-                        <ui:Button
+                        <fluence:Button
                             Grid.Row="0"
                             Grid.Column="1"
                             Margin="0,0,12,12"
@@ -59,15 +58,15 @@
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Second focusable button"
                             Content="Button 2" />
-                        <ui:TextBox
+                        <fluence:TextBox
                             Grid.Row="0"
                             Grid.Column="2"
-                            Margin="0,0,12,12"
+                            Margin="0,8,12,12"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Focusable text input"
                             PlaceholderText="TextBox" />
-                        <ui:ComboBox
+                        <fluence:ComboBox
                             Grid.Row="0"
                             Grid.Column="3"
                             Margin="0,0,0,12"
@@ -76,8 +75,8 @@
                             AutomationProperties.Name="Focusable combo box">
                             <ComboBoxItem Content="Option A" IsSelected="True" />
                             <ComboBoxItem Content="Option B" />
-                        </ui:ComboBox>
-                        <ui:CheckBox
+                        </fluence:ComboBox>
+                        <fluence:CheckBox
                             Grid.Row="1"
                             Grid.Column="0"
                             Margin="0,0,12,0"
@@ -85,14 +84,14 @@
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Focusable checkbox"
                             Content="CheckBox" />
-                        <ui:ToggleSwitch
+                        <fluence:ToggleSwitch
                             Grid.Row="1"
                             Grid.Column="1"
                             Margin="0,0,12,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Focusable toggle" />
-                        <ui:Slider
+                        <fluence:Slider
                             Grid.Row="1"
                             Grid.Column="2"
                             Margin="0,0,12,0"
@@ -102,7 +101,7 @@
                             Maximum="100"
                             Minimum="0"
                             Value="40" />
-                        <ui:HyperlinkButton
+                        <fluence:HyperlinkButton
                             Grid.Row="1"
                             Grid.Column="3"
                             HorizontalAlignment="Stretch"
@@ -125,21 +124,21 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <ui:Button
+                        <fluence:Button
                             x:Name="ExplicitTabOrderThirdButton"
                             Grid.Column="0"
                             Margin="0,0,12,0"
                             HorizontalAlignment="Stretch"
                             Content="Tab order: 3"
                             TabIndex="3" />
-                        <ui:Button
+                        <fluence:Button
                             x:Name="ExplicitTabOrderSecondButton"
                             Grid.Column="1"
                             Margin="0,0,12,0"
                             HorizontalAlignment="Stretch"
                             Content="Tab order: 2"
                             TabIndex="2" />
-                        <ui:Button
+                        <fluence:Button
                             x:Name="ExplicitTabOrderFirstButton"
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
@@ -239,13 +238,13 @@
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
                 <StackPanel>
                     <TextBlock
-                        Margin="0,0,0,8"
+                        Margin="0,0,0,16"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource BodyTextBlockStyle}"
                         Text="These icon-only buttons all have AutomationProperties.Name so Narrator announces their purpose:"
                         TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal">
-                        <ui:Button
+                    <fluence:StackPanel Orientation="Horizontal" Spacing="16">
+                        <fluence:Button
                             x:Name="AutomationNewDocumentButton"
                             Width="36"
                             Height="36"
@@ -253,9 +252,9 @@
                             Margin="0,0,8,0"
                             Padding="0"
                             AutomationProperties.Name="New document">
-                            <ui:FontIcon Glyph="&#xE8A5;" IconFontSize="18" />
-                        </ui:Button>
-                        <ui:Button
+                            <fluence:FontIcon Glyph="&#xE8A5;" IconFontSize="18" />
+                        </fluence:Button>
+                        <fluence:Button
                             x:Name="AutomationOpenFileButton"
                             Width="36"
                             Height="36"
@@ -263,9 +262,9 @@
                             Margin="0,0,8,0"
                             Padding="0"
                             AutomationProperties.Name="Open file">
-                            <ui:FontIcon Glyph="&#xE8E5;" IconFontSize="18" />
-                        </ui:Button>
-                        <ui:Button
+                            <fluence:FontIcon Glyph="&#xE8E5;" IconFontSize="18" />
+                        </fluence:Button>
+                        <fluence:Button
                             x:Name="AutomationSaveButton"
                             Width="36"
                             Height="36"
@@ -273,9 +272,9 @@
                             Margin="0,0,8,0"
                             Padding="0"
                             AutomationProperties.Name="Save">
-                            <ui:FontIcon Glyph="&#xE74E;" IconFontSize="18" />
-                        </ui:Button>
-                        <ui:Button
+                            <fluence:FontIcon Glyph="&#xE74E;" IconFontSize="18" />
+                        </fluence:Button>
+                        <fluence:Button
                             x:Name="AutomationDeleteButton"
                             Width="36"
                             Height="36"
@@ -283,18 +282,18 @@
                             Margin="0,0,8,0"
                             Padding="0"
                             AutomationProperties.Name="Delete">
-                            <ui:FontIcon Glyph="&#xE74D;" IconFontSize="18" />
-                        </ui:Button>
-                        <ui:Button
+                            <fluence:FontIcon Glyph="&#xE74D;" IconFontSize="18" />
+                        </fluence:Button>
+                        <fluence:Button
                             x:Name="AutomationShareButton"
                             Width="36"
                             Height="36"
                             MinWidth="36"
                             Padding="0"
                             AutomationProperties.Name="Share">
-                            <ui:FontIcon Glyph="&#xE72D;" IconFontSize="18" />
-                        </ui:Button>
-                    </StackPanel>
+                            <fluence:FontIcon Glyph="&#xE72D;" IconFontSize="18" />
+                        </fluence:Button>
+                    </fluence:StackPanel>
                     <TextBlock
                         Margin="0,12,0,0"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
@@ -315,18 +314,18 @@
                 Text="Toggle FlowDirection=RightToLeft on a card to verify Fluence controls mirror correctly for Arabic, Hebrew, and Farsi locales." />
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <StackPanel>
-                    <ui:ToggleSwitch
+                    <fluence:ToggleSwitch
                         x:Name="RtlToggle"
                         Margin="0,0,0,12"
                         Checked="RtlToggle_Changed"
                         Content="Enable RTL on demo card"
                         IsChecked="True"
                         Unchecked="RtlToggle_Changed" />
-                    <ui:Card
+                    <fluence:Card
                         x:Name="RtlDemoCard"
                         Padding="16"
                         FlowDirection="RightToLeft"
-                        Variant="{x:Static uicore:CardVariant.Outlined}">
+                        Variant="Outlined">
                         <StackPanel>
                             <TextBlock
                                 Margin="0,0,0,8"
@@ -334,17 +333,115 @@
                                 Style="{StaticResource BodyStrongTextBlockStyle}"
                                 Text="نموذج عنصر تحكم" />
                             <StackPanel Orientation="Horizontal">
-                                <ui:Button
+                                <fluence:Button
                                     Margin="0,0,8,0"
                                     Appearance="Accent"
                                     Content="زر رئيسي" />
-                                <ui:Button Content="إلغاء" />
+                                <fluence:Button Content="إلغاء" />
                             </StackPanel>
                         </StackPanel>
-                    </ui:Card>
+                    </fluence:Card>
                 </StackPanel>
             </ContentControl>
             <pages:DemoSampleControl SampleDescription="Right-to-left layout mirrors Fluence controls for RTL locales." />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="Live region announcements" />
+            <TextBlock
+                Margin="0,0,0,8"
+                Style="{StaticResource SectionDescriptionStyle}"
+                Text="Fluence uses AutomationProperties.LiveSetting and LiveRegionChanged to announce status changes to screen readers on both net472 and net10. Trigger an InfoBar or a validation error below and listen with Narrator to hear the announcement." />
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <fluence:StackPanel
+                        Margin="0,0,0,12"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <fluence:Button
+                            x:Name="LiveRegionInfoButton"
+                            Margin="0,0,8,0"
+                            Appearance="Accent"
+                            AutomationProperties.Name="Show informational announcement"
+                            Click="LiveRegionInfoButton_Click"
+                            Content="Show InfoBar" />
+                        <fluence:Button
+                            x:Name="LiveRegionDismissButton"
+                            AutomationProperties.Name="Dismiss announcement"
+                            Click="LiveRegionDismissButton_Click"
+                            Content="Dismiss" />
+                    </fluence:StackPanel>
+                    <fluence:InfoBar
+                        x:Name="LiveRegionInfoBar"
+                        Title="Live region demo"
+                        IsClosable="True"
+                        IsOpen="False"
+                        Message="This message was announced by a live region when the InfoBar opened."
+                        Severity="{x:Static fluence:InfoBarSeverity.Informational}" />
+                    <TextBlock
+                        Margin="0,8,0,16"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="Validation error live region:"
+                        TextWrapping="Wrap" />
+                    <StackPanel Margin="0,0,0,0" Orientation="Horizontal">
+                        <fluence:TextBox
+                            x:Name="LiveRegionValidationTextBox"
+                            Width="200"
+                            Margin="0,0,8,0"
+                            AutomationProperties.Name="Email"
+                            PlaceholderText="Enter an email address"
+                            TextChanged="LiveRegionValidation_TextChanged" />
+                        <TextBlock
+                            x:Name="LiveRegionValidationStatus"
+                            VerticalAlignment="Bottom"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="" />
+                    </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Tip: run Windows Narrator (Win+Ctrl+Enter) and interact with these controls to hear live region announcements."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
+            <pages:DemoSampleControl SampleDescription="InfoBar and TextBox validation use LiveRegionChanged to announce status changes without interrupting the user." />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="RatingControl keyboard operability" />
+            <TextBlock
+                Margin="0,0,0,8"
+                Style="{StaticResource SectionDescriptionStyle}"
+                Text="RatingControl is fully keyboard-operable: Tab to focus it, then use Left/Right arrow keys to change the value, Home to clear to zero, and End to set the maximum. The automation peer exposes the RangeValue pattern so Narrator reports the current rating." />
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <fluence:RatingControl
+                        x:Name="A11yRatingControl"
+                        Margin="0,0,0,8"
+                        AutomationProperties.Name="Keyboard rating demo"
+                        Caption="Use arrow keys to change the rating"
+                        MaxRating="5"
+                        Value="3" />
+                    <TextBlock
+                        x:Name="A11yRatingStatusText"
+                        Margin="0,4,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Current rating: 3 of 5" />
+                    <TextBlock
+                        Margin="0,12,0,0"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Tip: Narrator announces the rating change as you press the arrow keys because the peer exposes the RangeValue pattern."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
+            <pages:DemoSampleControl SampleDescription="RatingControl supports full keyboard navigation and exposes the RangeValue automation pattern." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

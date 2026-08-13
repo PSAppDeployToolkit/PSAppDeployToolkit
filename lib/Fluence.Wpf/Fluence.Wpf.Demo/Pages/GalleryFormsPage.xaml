@@ -2,23 +2,22 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryFormsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
-    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Forms" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Forms group related inputs, labels, validation feedback, and actions into a single task flow." />
 
 
             <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:TimePicker
+                <fluence:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <fluence:TimePicker
                         x:Name="DemoTimePicker"
                         Header="Reminder time"
                         MinuteIncrement="5"
@@ -29,14 +28,14 @@
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="No time selected" />
-                </ui:StackPanel>
+                </fluence:StackPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use TimePicker for choosing a time from hour, minute, and AM/PM columns in a flyout." />
 
 
             <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:DatePicker
+                <fluence:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <fluence:DatePicker
                         x:Name="DemoDatePicker"
                         Header="Due date"
                         PlaceholderText="Pick a date"
@@ -46,67 +45,115 @@
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="No date selected" />
-                </ui:StackPanel>
+                </fluence:StackPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use DatePicker for choosing a date from day, month, and year columns in a flyout." />
 
 
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:ColorPicker
+                <fluence:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <fluence:ColorPicker
                         x:Name="DemoColorPicker"
                         ColorChanged="DemoColorPicker_ColorChanged"
-                        IsAlphaEnabled="True" />
+                        IsAlphaEnabled="{Binding IsChecked, Source={x:Reference AlphaEnabledCheckBox}}"
+                        IsAlphaSliderVisible="{Binding IsChecked, Source={x:Reference AlphaSliderVisibleCheckBox}}"
+                        IsAlphaTextInputVisible="{Binding IsChecked, Source={x:Reference AlphaTextInputVisibleCheckBox}}"
+                        IsColorChannelTextInputVisible="{Binding IsChecked, Source={x:Reference ChannelInputVisibleCheckBox}}"
+                        IsColorPreviewVisible="{Binding IsChecked, Source={x:Reference PreviewVisibleCheckBox}}"
+                        IsColorSliderVisible="{Binding IsChecked, Source={x:Reference ColorSliderVisibleCheckBox}}"
+                        IsColorSpectrumVisible="{Binding IsChecked, Source={x:Reference SpectrumVisibleCheckBox}}"
+                        IsHexInputVisible="{Binding IsChecked, Source={x:Reference HexInputVisibleCheckBox}}"
+                        IsMoreButtonVisible="{Binding IsChecked, Source={x:Reference MoreButtonVisibleCheckBox}}" />
                     <TextBlock
                         x:Name="ColorPickerResultLabel"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="Color: #FFFF0000" />
-                </ui:StackPanel>
+                </fluence:StackPanel>
             </ContentControl>
-            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with hue, alpha, and hex input." />
+            <ContentControl x:Name="DemoSampleSlot03RightRailContentHost" Visibility="Collapsed">
+                <fluence:StackPanel Spacing="8">
+                    <fluence:CheckBox
+                        x:Name="SpectrumVisibleCheckBox"
+                        Content="Color spectrum"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="PreviewVisibleCheckBox"
+                        Content="Color preview"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="ColorSliderVisibleCheckBox"
+                        Content="Color slider"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="AlphaEnabledCheckBox"
+                        Content="Alpha enabled"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="AlphaSliderVisibleCheckBox"
+                        Content="Alpha slider"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="ChannelInputVisibleCheckBox"
+                        Content="Channel text input"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="AlphaTextInputVisibleCheckBox"
+                        Content="Alpha text input"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="HexInputVisibleCheckBox"
+                        Content="Hex input"
+                        IsChecked="True" />
+                    <fluence:CheckBox
+                        x:Name="MoreButtonVisibleCheckBox"
+                        Content="More button"
+                        IsChecked="False" />
+                </fluence:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with a hue slider, alpha, RGB/HSV channel text input, and hex input." />
 
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="480" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Email" />
-                    <ui:TextBox
+                    <fluence:TextBox
                         x:Name="SignInEmailBox"
                         Margin="{DynamicResource DemoControlBottomGapMargin}"
                         PlaceholderText="name@example.com"
                         TextChanged="SignInField_Changed" />
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Password" />
-                    <ui:PasswordBox
+                    <fluence:PasswordBox
                         x:Name="SignInPasswordBox"
                         Margin="{DynamicResource DemoControlBottomGapMargin}"
                         PlaceholderText="Password"
                         RevealButtonEnabled="True"
                         ShowCapsLockIndicator="True"
                         ShowPasswordStrength="True" />
-                    <ui:CheckBox
+                    <fluence:CheckBox
                         x:Name="RememberMeCheckBox"
                         Margin="{DynamicResource DemoSampleBlockMargin}"
                         Content="Remember me" />
                     <StackPanel Orientation="Horizontal">
-                        <ui:Button
+                        <fluence:Button
                             x:Name="SignInButton"
                             Margin="{DynamicResource DemoInlineControlTrailingGapMargin}"
                             Appearance="Accent"
                             Click="SignInButton_Click"
                             Content="Sign in"
                             IsEnabled="False" />
-                        <ui:Button Content="Create account" />
+                        <fluence:Button Content="Create account" />
                     </StackPanel>
                 </StackPanel>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot04OutputContentHost" Visibility="Collapsed">
-                <ui:InfoBar
+                <fluence:InfoBar
                     x:Name="SignInStatusBar"
                     Title="Ready"
                     IsClosable="True"
                     IsOpen="False"
                     Message="Signed in for this demo session."
-                    Severity="{x:Static uicore:InfoBarSeverity.Success}" />
+                    Severity="{x:Static fluence:InfoBarSeverity.Success}" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use a compact form for account access, with clear labels and a primary action." />
 
@@ -114,20 +161,20 @@
             <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="560" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Contact email" />
-                    <ui:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" PlaceholderText="name@example.com" />
+                    <fluence:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" PlaceholderText="name@example.com" />
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Shipping speed" />
-                    <ui:ComboBox Margin="{DynamicResource DemoControlBottomGapMargin}" SelectedIndex="1">
+                    <fluence:ComboBox Margin="{DynamicResource DemoControlBottomGapMargin}" SelectedIndex="1">
                         <ComboBoxItem Content="Standard" />
                         <ComboBoxItem Content="Priority" />
                         <ComboBoxItem Content="Overnight" />
-                    </ui:ComboBox>
+                    </fluence:ComboBox>
                     <Grid x:Name="CheckoutFieldsGrid" Margin="{DynamicResource DemoSampleBlockMargin}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="180" />
                             <ColumnDefinition Width="16" />
                             <ColumnDefinition Width="280" />
                         </Grid.ColumnDefinitions>
-                        <ui:NumberBox
+                        <fluence:NumberBox
                             x:Name="QuantityNumberBox"
                             Grid.Column="0"
                             Width="180"
@@ -136,24 +183,24 @@
                             Minimum="1"
                             SpinButtonPlacementMode="Compact"
                             Value="2" />
-                        <ui:TextBox
+                        <fluence:TextBox
                             x:Name="OptionalTextBox"
                             Grid.Column="2"
                             Width="280"
                             VerticalAlignment="Bottom"
                             PlaceholderText="Optional" />
                     </Grid>
-                    <ui:CheckBox
+                    <fluence:CheckBox
                         x:Name="GiftCheckBox"
                         Margin="{DynamicResource DemoSampleBlockMargin}"
                         Content="This is a gift"
                         Description="Hide prices on the packing slip." />
                     <StackPanel x:Name="CheckoutButtonsPanel" Orientation="Horizontal">
-                        <ui:Button
+                        <fluence:Button
                             Margin="{DynamicResource DemoInlineControlTrailingGapMargin}"
                             Appearance="Accent"
                             Content="Place order" />
-                        <ui:Button Content="Save for later" />
+                        <fluence:Button Content="Save for later" />
                     </StackPanel>
                 </StackPanel>
             </ContentControl>
@@ -163,21 +210,21 @@
             <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="560" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Display name" />
-                    <ui:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" Text="Avery Stone" />
+                    <fluence:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" Text="Avery Stone" />
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Theme" />
-                    <ui:ComboBox Margin="{DynamicResource DemoControlBottomGapMargin}" SelectedIndex="0">
+                    <fluence:ComboBox Margin="{DynamicResource DemoControlBottomGapMargin}" SelectedIndex="0">
                         <ComboBoxItem Content="Use system setting" />
                         <ComboBoxItem Content="Light" />
                         <ComboBoxItem Content="Dark" />
-                    </ui:ComboBox>
-                    <ui:ToggleSwitch
+                    </fluence:ComboBox>
+                    <fluence:ToggleSwitch
                         x:Name="EmailUpdatesToggle"
                         Margin="{DynamicResource DemoSampleBlockMargin}"
                         Content="Email updates"
                         IsChecked="True"
                         OffContent="Off"
                         OnContent="On" />
-                    <ui:Button
+                    <fluence:Button
                         HorizontalAlignment="Left"
                         Appearance="Accent"
                         Click="SaveSettingsButton_Click"
@@ -185,15 +232,15 @@
                 </StackPanel>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot06OutputContentHost" Visibility="Collapsed">
-                <ui:InfoBar
+                <fluence:InfoBar
                     x:Name="SettingsSavedBar"
                     Title="Saved"
                     IsClosable="True"
                     IsOpen="False"
                     Message="Your preferences were saved."
-                    Severity="{x:Static uicore:InfoBarSeverity.Success}" />
+                    Severity="{x:Static fluence:InfoBarSeverity.Success}" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use form controls to edit a small set of preferences and show confirmation after saving." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

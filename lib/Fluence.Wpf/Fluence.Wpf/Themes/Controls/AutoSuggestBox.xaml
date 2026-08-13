@@ -111,8 +111,10 @@
                                 <controls:TextBox.Icon>
                                     <Button
                                         x:Name="PART_QueryButton"
+                                        AutomationProperties.Name="Search"
                                         Content="{Binding QueryIcon, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Style="{StaticResource AutoSuggestBoxQueryButtonStyle}" />
+                                        Style="{StaticResource AutoSuggestBoxQueryButtonStyle}"
+                                        ToolTip="Search" />
                                 </controls:TextBox.Icon>
                             </controls:TextBox>
                         </Grid>

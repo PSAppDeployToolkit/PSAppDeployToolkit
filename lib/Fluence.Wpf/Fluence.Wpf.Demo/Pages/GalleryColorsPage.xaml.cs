@@ -30,11 +30,6 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using FluenceBorder = Fluence.Wpf.Controls.Border;
-using FluenceButton = Fluence.Wpf.Controls.Button;
-using FluenceFontIcon = Fluence.Wpf.Controls.FontIcon;
-using FluenceStackPanel = Fluence.Wpf.Controls.StackPanel;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -42,6 +37,32 @@ namespace Fluence.Wpf.Demo.Pages
     {
         private const string SampleMarkup = "<TextBlock Foreground=\"{DynamicResource TextFillColorPrimaryBrush}\" />";
         private const int TokensPerRow = 4;
+
+        private const string ThemeDictionaryXamlSource =
+            "<StackPanel>\n" +
+            "    <StackPanel.Resources>\n" +
+            "        <fluence:ThemeDictionary>\n" +
+            "            <fluence:ThemeDictionary.ThemeDictionaries>\n" +
+            "                <fluence:ThemeResourceDictionary ThemeKey=\"Default\">\n" +
+            "                    <SolidColorBrush x:Key=\"SampleBackgroundBrush\" Color=\"#EEEEEE\" />\n" +
+            "                    <SolidColorBrush x:Key=\"SampleTextBrush\" Color=\"#333333\" />\n" +
+            "                    <sys:String x:Key=\"SampleThemeString\">Light theme</sys:String>\n" +
+            "                </fluence:ThemeResourceDictionary>\n" +
+            "                <fluence:ThemeResourceDictionary ThemeKey=\"Dark\">\n" +
+            "                    <SolidColorBrush x:Key=\"SampleBackgroundBrush\" Color=\"#333333\" />\n" +
+            "                    <SolidColorBrush x:Key=\"SampleTextBrush\" Color=\"#EEEEEE\" />\n" +
+            "                    <sys:String x:Key=\"SampleThemeString\">Dark theme</sys:String>\n" +
+            "                </fluence:ThemeResourceDictionary>\n" +
+            "            </fluence:ThemeDictionary.ThemeDictionaries>\n" +
+            "        </fluence:ThemeDictionary>\n" +
+            "    </StackPanel.Resources>\n" +
+            "    <fluence:Border Background=\"{DynamicResource SampleBackgroundBrush}\">\n" +
+            "        <TextBlock Foreground=\"{DynamicResource SampleTextBrush}\" Text=\"{DynamicResource SampleThemeString}\" />\n" +
+            "    </fluence:Border>\n" +
+            "    <TextBlock\n" +
+            "        Foreground=\"{fluence:ThemeResource TextFillColorSecondaryBrush}\"\n" +
+            "        Text=\"ThemeResource re-resolves canonical tokens on every theme change.\" />\n" +
+            "</StackPanel>\n";
 
         private static readonly ColorSection[] Sections =
         [
@@ -202,6 +223,7 @@ namespace Fluence.Wpf.Demo.Pages
         {
             InitializeComponent();
             CopyCodeSampleButton.Tag = SampleMarkup;
+            ThemeDictionarySampleText.Text = ThemeDictionaryXamlSource;
             BuildSectionTabs();
         }
 
@@ -223,7 +245,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateSection(ColorSection section)
         {
-            FluenceStackPanel sectionPanel = new()
+            Controls.StackPanel sectionPanel = new()
             {
                 Margin = new Thickness(0, 20, 0, 0),
                 Orientation = Orientation.Vertical,
@@ -242,7 +264,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateTextExamples()
         {
-            FluenceStackPanel examples = new()
+            Controls.StackPanel examples = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 20,
@@ -299,7 +321,7 @@ namespace Fluence.Wpf.Demo.Pages
                 new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush"),
             ];
 
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
@@ -308,7 +330,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 12,
@@ -327,7 +349,7 @@ namespace Fluence.Wpf.Demo.Pages
             string exampleBorderKey,
             ColorToken[] tokens)
         {
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
@@ -336,7 +358,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 12,
@@ -357,7 +379,7 @@ namespace Fluence.Wpf.Demo.Pages
             string backgroundKey,
             string borderKey)
         {
-            FluenceBorder preview = new()
+            Controls.Border preview = new()
             {
                 MinHeight = 104,
                 Padding = new Thickness(18),
@@ -382,7 +404,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateExamplePanel(ColorSection section)
         {
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Margin = new Thickness(0, 36, 0, 8),
                 Padding = new Thickness(12),
@@ -392,7 +414,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 8,
@@ -406,7 +428,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static UIElement CreatePreviewSurface(ColorSection section)
         {
-            FluenceBorder preview = new()
+            Controls.Border preview = new()
             {
                 MinHeight = 92,
                 Padding = new Thickness(16),
@@ -431,7 +453,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateTokenRows(ColorToken[] tokens)
         {
-            FluenceStackPanel rows = new()
+            Controls.StackPanel rows = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 4,
@@ -451,7 +473,7 @@ namespace Fluence.Wpf.Demo.Pages
                     _ = rowGrid.Children.Add(CreateTokenTile(tokens[start + offset], offset, count));
                 }
 
-                FluenceBorder rowBorder = new()
+                Controls.Border rowBorder = new()
                 {
                     CornerRadius = new CornerRadius(8),
                     Child = rowGrid,
@@ -466,7 +488,7 @@ namespace Fluence.Wpf.Demo.Pages
         private UIElement CreateTokenTile(ColorToken token, int index, int count)
         {
             CornerRadius cornerRadius = GetGroupedTileCornerRadius(index, count);
-            FluenceBorder tile = new()
+            Controls.Border tile = new()
             {
                 MinHeight = 166,
                 Margin = new Thickness(2),
@@ -477,7 +499,7 @@ namespace Fluence.Wpf.Demo.Pages
             tile.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             tile.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel content = new()
+            Controls.StackPanel content = new()
             {
                 Margin = new Thickness(10),
                 Orientation = Orientation.Vertical,
@@ -527,10 +549,10 @@ namespace Fluence.Wpf.Demo.Pages
             Grid.SetColumn(title, 0);
             _ = header.Children.Add(title);
 
-            FluenceButton copyButton = new()
+            Controls.Button copyButton = new()
             {
                 Appearance = ControlAppearance.Subtle,
-                Icon = new FluenceFontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
+                Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
                 MinHeight = 28,
                 MinWidth = 28,
                 Padding = new Thickness(6, 3, 6, 3),
@@ -547,7 +569,7 @@ namespace Fluence.Wpf.Demo.Pages
         private UIElement CreateResourceKeyRow(string resourceKey)
         {
             TextBlock resourceText = CreateText(resourceKey, styleKey: null, "TextFillColorTertiaryBrush", 12);
-            resourceText.FontFamily = new FontFamily("Cascadia Mono, Consolas");
+            resourceText.SetResourceReference(TextBlock.FontFamilyProperty, "DemoMonospaceFontFamily");
             resourceText.TextWrapping = TextWrapping.Wrap;
             return resourceText;
         }
@@ -579,9 +601,14 @@ namespace Fluence.Wpf.Demo.Pages
             Clipboard.SetText(SampleMarkup);
         }
 
+        private void CopyThemeDictionarySampleButton_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(ThemeDictionaryXamlSource);
+        }
+
         private static void CopyTokenButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FluenceButton { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
+            if (sender is Controls.Button { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
             {
                 Clipboard.SetText(resourceKey);
             }

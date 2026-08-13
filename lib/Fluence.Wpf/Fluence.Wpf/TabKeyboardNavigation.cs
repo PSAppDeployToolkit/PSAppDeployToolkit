@@ -50,13 +50,13 @@ namespace Fluence.Wpf
 
         private static void OnTabItemPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key != System.Windows.Input.Key.Tab)
+            if (e.Key is not System.Windows.Input.Key.Tab)
             {
                 return;
             }
 
             System.Windows.Input.ModifierKeys modifiers = System.Windows.Input.Keyboard.Modifiers;
-            if ((modifiers & ~System.Windows.Input.ModifierKeys.Shift) != System.Windows.Input.ModifierKeys.None)
+            if ((modifiers & ~System.Windows.Input.ModifierKeys.Shift) is not System.Windows.Input.ModifierKeys.None)
             {
                 return;
             }

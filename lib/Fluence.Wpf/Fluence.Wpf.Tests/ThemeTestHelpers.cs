@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     /// <summary>
-    /// Shared theme assertions and sequences for MSTest (run on <see cref="WpfTestSta"/>).
+    /// Shared theme assertions and sequences for the xUnit suite (run on <see cref="WpfTestSta"/>).
     /// </summary>
     internal static class ThemeTestHelpers
     {
@@ -53,12 +53,9 @@ namespace Fluence.Wpf.Tests
 
         internal static void AssertKeyThemeBrushesResolve(Application? application)
         {
-            Assert.IsNotNull(application?.TryFindResource("ApplicationBackgroundBrush"),
-                "ApplicationBackgroundBrush should resolve.");
-            Assert.IsNotNull(application?.TryFindResource("TextFillColorPrimaryBrush"),
-                "TextFillColorPrimaryBrush should resolve.");
-            Assert.IsNotNull(application?.TryFindResource("AccentFillColorDefaultBrush"),
-                "AccentFillColorDefaultBrush should resolve.");
+            Assert.NotNull(application?.TryFindResource("ApplicationBackgroundBrush"));
+            Assert.NotNull(application?.TryFindResource("TextFillColorPrimaryBrush"));
+            Assert.NotNull(application?.TryFindResource("AccentFillColorDefaultBrush"));
         }
     }
 }

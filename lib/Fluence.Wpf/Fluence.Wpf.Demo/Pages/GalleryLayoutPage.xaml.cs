@@ -33,25 +33,25 @@ namespace Fluence.Wpf.Demo.Pages
     public partial class GalleryLayoutPage : UserControl
     {
         private const string BorderStackPanelXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
-                                                          "<ui:Border\n" +
+                                                          "<fluence:Border\n" +
                                                           "    Padding=\"14\"\n" +
                                                           "    Background=\"{DynamicResource CardBackgroundFillColorSecondaryBrush}\"\n" +
                                                           "    BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
                                                           "    BorderThickness=\"1\"\n" +
                                                           "    CornerRadius=\"8\">\n" +
-                                                          "    <ui:StackPanel Spacing=\"10\">\n" +
+                                                          "    <fluence:StackPanel Spacing=\"10\">\n" +
                                                           "        <TextBlock Style=\"{StaticResource BodyStrongTextBlockStyle}\"\n" +
                                                           "                   Text=\"Settings group\" />\n" +
                                                           "        <TextBlock Text=\"StackPanel spacing keeps rows readable while Border frames the group.\"\n" +
                                                           "                   TextWrapping=\"Wrap\" />\n" +
-                                                          "        <ui:Separator />\n" +
+                                                          "        <fluence:Separator />\n" +
                                                           "        <TextBlock Text=\"Separator divides related rows.\" />\n" +
-                                                          "    </ui:StackPanel>\n" +
-                                                          "</ui:Border>";
+                                                          "    </fluence:StackPanel>\n" +
+                                                          "</fluence:Border>";
 
         private const string DockPanelXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
                                                    "<DockPanel LastChildFill=\"True\">\n" +
-                                                   "    <ui:Button DockPanel.Dock=\"Right\"\n" +
+                                                   "    <fluence:Button DockPanel.Dock=\"Right\"\n" +
                                                    "               Appearance=\"Accent\"\n" +
                                                    "               Content=\"Apply\" />\n" +
                                                    "    <TextBlock VerticalAlignment=\"Center\"\n" +
@@ -59,33 +59,33 @@ namespace Fluence.Wpf.Demo.Pages
                                                    "</DockPanel>";
 
         private const string ExpanderXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
-                                                  "<ui:Expander\n" +
+                                                  "<fluence:Expander\n" +
                                                   "    x:Name=\"AdvancedOptionsExpander\"\n" +
                                                   "    Header=\"Advanced options\">\n" +
                                                   "    <TextBlock Text=\"Expander shows secondary settings only when useful.\"\n" +
                                                   "               Margin=\"{DynamicResource DemoLargeTopGapMargin}\"\n" +
                                                   "               TextWrapping=\"Wrap\" />\n" +
-                                                  "</ui:Expander>";
+                                                  "</fluence:Expander>";
 
         private const string DockPanelExpanderXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
-                                                           "<ui:Expander x:Name=\"DockPanelOptionsExpander\">\n" +
-                                                           "    <ui:Expander.Header>\n" +
+                                                           "<fluence:Expander x:Name=\"DockPanelOptionsExpander\">\n" +
+                                                           "    <fluence:Expander.Header>\n" +
                                                            "        <DockPanel LastChildFill=\"True\">\n" +
-                                                           "            <ui:Button DockPanel.Dock=\"Right\"\n" +
+                                                           "            <fluence:Button DockPanel.Dock=\"Right\"\n" +
                                                            "                       Content=\"Edit\" />\n" +
                                                            "            <TextBlock VerticalAlignment=\"Center\"\n" +
                                                            "                       Text=\"Delivery options\" />\n" +
                                                            "        </DockPanel>\n" +
-                                                           "    </ui:Expander.Header>\n" +
+                                                           "    </fluence:Expander.Header>\n" +
                                                            "    <DockPanel LastChildFill=\"True\">\n" +
-                                                           "        <ui:ToggleSwitch DockPanel.Dock=\"Right\"\n" +
+                                                           "        <fluence:ToggleSwitch DockPanel.Dock=\"Right\"\n" +
                                                            "                         OffContent=\"Off\"\n" +
                                                            "                         OnContent=\"On\" />\n" +
                                                            "        <TextBlock VerticalAlignment=\"Center\"\n" +
                                                            "                   Text=\"Notify me when the package ships.\"\n" +
                                                            "                   TextWrapping=\"Wrap\" />\n" +
                                                            "    </DockPanel>\n" +
-                                                           "</ui:Expander>";
+                                                           "</fluence:Expander>";
 
         public GalleryLayoutPage()
         {

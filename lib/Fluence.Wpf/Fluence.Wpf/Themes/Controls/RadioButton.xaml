@@ -217,16 +217,17 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  ControlFastAnimationDuration (167 ms) inner-dot grow  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.150"
+                                                KeyTime="0:0:0.167"
                                                 Value="8" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.150"
+                                                KeyTime="0:0:0.167"
                                                 Value="8" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>

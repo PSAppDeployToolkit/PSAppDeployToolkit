@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Automation;
 using System;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Controls
 {
@@ -44,8 +44,8 @@ namespace Fluence.Wpf.Controls
     /// Brush states: <c>AccentFillColorDefaultBrush</c> (filled),
     /// <c>TextFillColorSecondaryBrush</c> (unset), <c>TextFillColorDisabledBrush</c> (disabled).
     /// </summary>
-    [TemplatePart(Name = PART_StarsPanel, Type = typeof(WpfStackPanel))]
-    [TemplatePart(Name = PART_Caption, Type = typeof(WpfTextBlock))]
+    [TemplatePart(Name = PART_StarsPanel, Type = typeof(System.Windows.Controls.StackPanel))]
+    [TemplatePart(Name = PART_Caption, Type = typeof(System.Windows.Controls.TextBlock))]
     public class RatingControl : Control
     {
         // Template part names.
@@ -64,6 +64,8 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(RatingControl),
                 new FrameworkPropertyMetadata(typeof(RatingControl)));
+            FocusableProperty.OverrideMetadata(typeof(RatingControl), new FrameworkPropertyMetadata(defaultValue: true));
+            IsTabStopProperty.OverrideMetadata(typeof(RatingControl), new FrameworkPropertyMetadata(defaultValue: true));
         }
 
         /// <summary>
@@ -151,17 +153,60 @@ namespace Fluence.Wpf.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            _starsPanel = GetTemplateChild(PART_StarsPanel) as WpfStackPanel;
-            _captionText = GetTemplateChild(PART_Caption) as WpfTextBlock;
+            _starsPanel = GetTemplateChild(PART_StarsPanel) as System.Windows.Controls.StackPanel;
+            _captionText = GetTemplateChild(PART_Caption) as System.Windows.Controls.TextBlock;
             IsEnabledChanged -= OnIsEnabledChanged;
             IsEnabledChanged += OnIsEnabledChanged;
             BuildAndRefreshStars();
             UpdateCaption();
         }
 
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new RatingControlAutomationPeer(this);
+        }
+
+        /// <inheritdoc />
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Handled || IsReadOnly || !IsEnabled)
+            {
+                return;
+            }
+
+            const double step = 1d;
+            if (e.Key is Key.Right or Key.Up)
+            {
+                SetCurrentValue(ValueProperty, Math.Min(MaxRating, Value + step));
+                e.Handled = true;
+            }
+            else if (e.Key is Key.Left or Key.Down)
+            {
+                SetCurrentValue(ValueProperty, Math.Max(0d, Value - step));
+                e.Handled = true;
+            }
+            else if (e.Key is Key.Home)
+            {
+                SetCurrentValue(ValueProperty, 0d);
+                e.Handled = true;
+            }
+            else if (e.Key is Key.End)
+            {
+                SetCurrentValue(ValueProperty, (double)MaxRating);
+                e.Handled = true;
+            }
+        }
+
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((RatingControl)d).RefreshStars();
+            RatingControl ctrl = (RatingControl)d;
+            ctrl.RefreshStars();
+            if (UIElementAutomationPeer.FromElement(ctrl) is RatingControlAutomationPeer peer)
+            {
+                peer.RaiseValueChanged((double)e.OldValue, (double)e.NewValue);
+            }
         }
 
         private static object CoerceValue(DependencyObject d, object baseValue)
@@ -204,7 +249,7 @@ namespace Fluence.Wpf.Controls
             int count = Math.Max(1, MaxRating);
             for (int i = 1; i <= count; i++)
             {
-                WpfTextBlock star = new()
+                System.Windows.Controls.TextBlock star = new()
                 {
                     FontFamily = new FontFamily("Segoe Fluent Icons"),
                     FontSize = 20.0,
@@ -262,7 +307,7 @@ namespace Fluence.Wpf.Controls
             int displayCount = _hoverIndex > 0 ? _hoverIndex : (int)Math.Round(Value, MidpointRounding.ToEven);
             for (int i = 0; i < _starsPanel.Children.Count; i++)
             {
-                if (_starsPanel.Children[i] is not WpfTextBlock star)
+                if (_starsPanel.Children[i] is not System.Windows.Controls.TextBlock star)
                 {
                     continue;
                 }
@@ -271,15 +316,15 @@ namespace Fluence.Wpf.Controls
                 star.Text = filled ? "\uE735" : "\uE734"; // StarFilled / StarEmpty
                 if (!IsEnabled)
                 {
-                    star.SetResourceReference(WpfTextBlock.ForegroundProperty, "TextFillColorDisabledBrush");
+                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "TextFillColorDisabledBrush");
                 }
                 else if (filled)
                 {
-                    star.SetResourceReference(WpfTextBlock.ForegroundProperty, "AccentFillColorDefaultBrush");
+                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "AccentFillColorDefaultBrush");
                 }
                 else
                 {
-                    star.SetResourceReference(WpfTextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
+                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
                 }
                 star.Cursor = (IsReadOnly || !IsEnabled) ? null : Cursors.Hand;
             }
@@ -299,12 +344,12 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Represents the panel that displays the star rating elements in the WPF user interface.
         /// </summary>
-        private WpfStackPanel? _starsPanel;
+        private System.Windows.Controls.StackPanel? _starsPanel;
 
         /// <summary>
         /// Represents the text block used to display the caption in the WPF user interface.
         /// </summary>
-        private WpfTextBlock? _captionText;
+        private System.Windows.Controls.TextBlock? _captionText;
 
         /// <summary>
         /// Represents the index of the currently hovered item. A value of -1 indicates that no item is hovered.

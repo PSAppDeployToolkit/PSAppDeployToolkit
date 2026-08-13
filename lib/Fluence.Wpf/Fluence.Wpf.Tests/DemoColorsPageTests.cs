@@ -26,13 +26,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Fluence.Wpf.Demo;
-using Fluence.Wpf.Demo.Pages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -41,10 +36,13 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
+using Fluence.Wpf.Demo;
+using Fluence.Wpf.Demo.Pages;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public sealed class DemoColorsPageTests
     {
         private static readonly string[] SectionNames =
@@ -57,7 +55,7 @@ namespace Fluence.Wpf.Tests
             "High Contrast",
         ];
 
-        [TestMethod]
+        [Fact]
         public void GalleryColorsPage_NavigationRoute_LoadsConcretePage()
         {
             WpfTestSta.Invoke(static delegate
@@ -72,9 +70,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
 
                     NavigationView? navigationView = FindByName<NavigationView>(window, "DemoNav");
-                    Assert.IsNotNull(navigationView, "DemoNav should exist.");
-                    Assert.IsInstanceOfType(navigationView.Content, typeof(GalleryColorsPage),
-                        "The colors route should load the concrete Colors page.");
+                    Assert.NotNull(navigationView);
+                    _ = Assert.IsAssignableFrom<GalleryColorsPage>(navigationView.Content);
                 }
                 finally
                 {
@@ -83,7 +80,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryColorsPage_UsesWinUiGalleryColorStructure()
         {
             WpfTestSta.Invoke(static delegate
@@ -94,32 +91,25 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     SmoothScrollViewer? scrollViewer = FindVisualChild<SmoothScrollViewer>(page);
-                    Assert.IsNotNull(scrollViewer, "Colors page should use the shared gallery SmoothScrollViewer.");
+                    Assert.NotNull(scrollViewer);
 
                     TabControl? colorTabs = FindByName<TabControl>(page, "ColorSectionTabs");
-                    Assert.IsNotNull(colorTabs, "Colors page should use a TabControl for the color sections.");
-                    Assert.AreEqual(SectionNames.Length, colorTabs.Items.Count,
-                        "Colors page should expose the six WinUI Gallery color sections as tabs.");
+                    Assert.NotNull(colorTabs);
+                    Assert.Equal(SectionNames.Length, colorTabs.Items.Count);
 
                     for (int i = 0; i < SectionNames.Length; i++)
                     {
                         TabItem tabItem = (TabItem)colorTabs.Items[i];
-                        Assert.AreEqual(SectionNames[i], tabItem.Header as string,
-                            "Unexpected Colors page section at index " + i.ToString(CultureInfo.InvariantCulture) + ".");
+                        Assert.Equal(SectionNames[i], tabItem.Header as string, StringComparer.Ordinal);
                     }
 
                     List<string> exampleTitles = [.. FindVisualChildren<System.Windows.Controls.TextBlock>(page)
                         .Where(static text => string.Equals(text.Tag as string, "ColorExampleTitle", StringComparison.Ordinal))
                         .Select(static text => text.Text)];
-                    CollectionAssert.AreEqual(
-                        new[] { "Text", "Accent Text", "Text On Accent" },
-                        exampleTitles,
-                        "The Text tab should lead with the primary WPF Gallery color examples.");
+                    Assert.Equal(["Text", "Accent Text", "Text On Accent"], exampleTitles, StringComparer.Ordinal);
 
-                    Assert.AreEqual(0, FindVisualChildren<WrapPanel>(page).Count(),
-                        "Colors page tile sections should not use WrapPanel layout.");
-                    Assert.AreEqual(0, FindVisualChildren<DemoSampleControl>(page).Count(),
-                        "Colors page should be a native guidance page, not a DemoSampleControl wrapper.");
+                    Assert.Empty(FindVisualChildren<WrapPanel>(page));
+                    Assert.Empty(FindVisualChildren<DemoSampleControl>(page));
 
                     int totalTiles = 0;
                     bool sawSystemColorAlias = false;
@@ -130,19 +120,18 @@ namespace Fluence.Wpf.Tests
 
                         List<UniformGrid> rows = [.. FindVisualChildren<UniformGrid>(page)
                             .Where(static row => string.Equals((row.Parent as FrameworkElement)?.Tag as string, "ColorTokenRow", StringComparison.Ordinal))];
-                        Assert.IsTrue(rows.Count > 0, "Selected Colors page section should contain token rows.");
+                        Assert.True(rows.Count > 0, "Selected Colors page section should contain token rows.");
 
                         foreach (UniformGrid row in rows)
                         {
-                            Assert.AreEqual(row.Children.Count, row.Columns,
-                                "Each token row should declare one equal-width column per tile.");
-                            Assert.IsTrue(row.Columns <= 4, "Token rows should stay compact at four columns or fewer.");
+                            Assert.Equal(row.Children.Count, row.Columns);
+                            Assert.True(row.Columns <= 4, "Token rows should stay compact at four columns or fewer.");
 
                             foreach (UIElement child in row.Children)
                             {
                                 FrameworkElement tile = (FrameworkElement)child;
                                 string resourceKey = tile.Tag as string ?? string.Empty;
-                                Assert.IsFalse(string.IsNullOrWhiteSpace(resourceKey), "Each token tile should expose its resource key.");
+                                Assert.False(string.IsNullOrWhiteSpace(resourceKey), "Each token tile should expose its resource key.");
                                 totalTiles++;
                                 sawSystemColorAlias |= string.Equals(resourceKey, "SystemColorWindowTextColorBrush", StringComparison.Ordinal);
                                 sawAccentFill |= string.Equals(resourceKey, "AccentFillColorDefaultBrush", StringComparison.Ordinal);
@@ -150,9 +139,9 @@ namespace Fluence.Wpf.Tests
                         }
                     }
 
-                    Assert.IsTrue(totalTiles >= 90, "Colors page should expose the WinUI-style brush catalogue through token tiles.");
-                    Assert.IsTrue(sawSystemColorAlias, "High Contrast section should use SystemColor alias resources.");
-                    Assert.IsTrue(sawAccentFill, "Fill section should include accent fill resources.");
+                    Assert.True(totalTiles >= 90, "Colors page should expose the WinUI-style brush catalogue through token tiles.");
+                    Assert.True(sawSystemColorAlias, "High Contrast section should use SystemColor alias resources.");
+                    Assert.True(sawAccentFill, "Fill section should include accent fill resources.");
                 }
                 finally
                 {
@@ -161,7 +150,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryColorsPage_DynamicResourceKeys_ResolveAcrossThemes()
         {
             WpfTestSta.Invoke(static delegate
@@ -172,7 +161,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     SortedSet<string> resourceKeys = CollectColorTokenResourceKeys(page, window.Dispatcher);
-                    Assert.IsTrue(resourceKeys.Count >= 90, "Colors page should expose enough token keys to cover the Fluent color families.");
+                    Assert.True(resourceKeys.Count >= 90, "Colors page should expose enough token keys to cover the Fluent color families.");
 
                     ApplicationTheme[] themes =
                     [
@@ -196,9 +185,7 @@ namespace Fluence.Wpf.Tests
                         }
                     }
 
-                    Assert.AreEqual(0, unresolved.Count,
-                        "Colors page should only reference resource keys that resolve: " +
-                        string.Join("; ", unresolved));
+                    Assert.Empty(unresolved);
                 }
                 finally
                 {
@@ -207,7 +194,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryColorsPage_SourceAvoidsLegacyControlsAndLiteralForegrounds()
         {
             string pageXaml = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryColorsPage.xaml");
@@ -229,22 +216,20 @@ namespace Fluence.Wpf.Tests
             List<string> violations = [];
             foreach (string value in forbidden)
             {
-                if (source.IndexOf(value, StringComparison.Ordinal) >= 0)
+                if (source.Contains(value, StringComparison.Ordinal))
                 {
                     violations.Add(value);
                 }
             }
 
-            Assert.AreEqual(0, violations.Count,
-                "Colors page should avoid legacy color controls and literal foregrounds: " +
-                string.Join("; ", violations));
+            Assert.Empty(violations);
         }
 
         private static SortedSet<string> CollectColorTokenResourceKeys(GalleryColorsPage page, Dispatcher dispatcher)
         {
-            SortedSet<string> resourceKeys = [];
+            SortedSet<string> resourceKeys = new(StringComparer.OrdinalIgnoreCase);
             TabControl? colorTabs = FindByName<TabControl>(page, "ColorSectionTabs");
-            Assert.IsNotNull(colorTabs, "Colors page should expose color section tabs.");
+            Assert.NotNull(colorTabs);
 
             for (int index = 0; index < colorTabs.Items.Count; index++)
             {
@@ -430,7 +415,7 @@ namespace Fluence.Wpf.Tests
         private static string ReadRepositoryFile(params string[] relativeSegments)
         {
             string path = GetRepositoryFilePath(relativeSegments);
-            Assert.IsTrue(File.Exists(path), "Repository file must be readable at: " + path);
+            Assert.True(File.Exists(path), "Repository file must be readable at: " + path);
             return File.ReadAllText(path);
         }
     }

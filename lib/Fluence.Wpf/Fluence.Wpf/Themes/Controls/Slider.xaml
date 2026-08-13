@@ -319,11 +319,12 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  ControlFastAnimationDuration (167 ms) thumb reveal  -->
                                         <DoubleAnimation
                                             Storyboard.TargetName="Thumb"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
-                                            Duration="0:0:0.15" />
+                                            Duration="0:0:0.167" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>

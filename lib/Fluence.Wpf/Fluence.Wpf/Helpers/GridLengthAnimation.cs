@@ -120,7 +120,12 @@ namespace Fluence.Wpf.Helpers
         /// <param name="defaultDestinationValue">Default destination (unused; <see cref="To"/> wins).</param>
         /// <param name="animationClock">Clock providing the normalised progress.</param>
         /// <returns>The interpolated current <see cref="GridLength"/>.</returns>
-        /// <exception cref="InvalidOperationException">If <see cref="From"/> or <see cref="To"/> is not in pixels.</exception>
+        /// <remarks>
+        /// Does not validate <see cref="From"/> or <see cref="To"/>: a <see cref="GridUnitType.Star"/>
+        /// or <see cref="GridUnitType.Auto"/> value is interpolated using its raw
+        /// <see cref="GridLength.Value"/> as if it were pixels, so animating a Star/Auto
+        /// <see cref="To"/> silently produces a pixel result rather than throwing.
+        /// </remarks>
         /// <exception cref="ArgumentNullException">If <paramref name="animationClock"/> is <see langword="null"/>.</exception>
         public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, AnimationClock animationClock)
         {
@@ -133,7 +138,7 @@ namespace Fluence.Wpf.Helpers
                 throw new ArgumentNullException(nameof(animationClock));
             }
             GridLength fromLength = From; double fromValue;
-            if (fromLength.GridUnitType == GridUnitType.Auto)
+            if (fromLength.GridUnitType is GridUnitType.Auto)
             {
                 GridLength originLength = defaultOriginValue is not GridLength origin
                     ? new GridLength(0d, GridUnitType.Pixel)

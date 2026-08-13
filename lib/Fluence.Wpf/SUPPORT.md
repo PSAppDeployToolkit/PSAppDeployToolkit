@@ -24,7 +24,7 @@ Most "how do I do X" questions are answered fastest by the demos:
 
 ## Ask a question or report a problem
 
-- **Bug reports**: open a GitHub issue using the Bug report template. Include the target framework (`net472` or `net10.0-windows10.0.26100.0`), Windows build, the theme / accent / backdrop in effect, a minimal reproduction, and whether it also reproduces in the gallery demo. Attach screenshots for visual bugs (Light, Dark, or High Contrast as relevant).
+- **Bug reports**: open a GitHub issue using the Bug report template. Include the target framework (`net472`, `net8.0-windows10.0.26100.0`, or `net10.0-windows10.0.26100.0`), Windows build, the theme / accent / backdrop in effect, a minimal reproduction, and whether it also reproduces in the gallery demo. Attach screenshots for visual bugs (Light, Dark, or High Contrast as relevant).
 - **Feature requests**: open a GitHub issue using the Feature request template. Describe the WinUI 3 control or behavior you want and cite WinUI CommonStyles, .NET WPF theme sources, or in-tree precedent where possible.
 - **Security reports**: do not open a public issue. Follow [SECURITY.md](SECURITY.md).
 

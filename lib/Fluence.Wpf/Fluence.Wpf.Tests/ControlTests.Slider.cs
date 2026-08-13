@@ -26,12 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -45,7 +45,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 B11  Slider thumb scale
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void Slider_StyleApplies_PartTrackFound()
         {
             WpfTestSta.Invoke(static () =>
@@ -59,12 +59,12 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 Track? track = FindVisualChildByName<Track>(slider, "PART_Track");
-                Assert.IsNotNull(track, "PART_Track must exist in Slider visual tree after template applied.");
+                Assert.NotNull(track);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Slider_DefaultState_ThumbScaleIsOne()
         {
             WpfTestSta.Invoke(static () =>
@@ -79,22 +79,20 @@ namespace Fluence.Wpf.Tests
 
                 // Thumb's template root Grid has a ScaleTransform named ThumbScale.
                 Thumb? thumb = FindVisualChild<Thumb>(slider);
-                Assert.IsNotNull(thumb, "Thumb must exist in Slider visual tree.");
+                Assert.NotNull(thumb);
 
                 System.Windows.Controls.Grid? grid = FindVisualChild<System.Windows.Controls.Grid>(thumb);
-                Assert.IsNotNull(grid, "Thumb template root Grid must exist.");
+                Assert.NotNull(grid);
 
                 ScaleTransform? scale = grid.RenderTransform as ScaleTransform;
-                Assert.IsNotNull(scale, "Thumb root Grid RenderTransform must be a ScaleTransform.");
-                Assert.AreEqual(1.0, scale.ScaleX, 0.001,
-                    "Default ScaleX must be 1.0 (WinUI Slider_themeresources.xaml: thumb starts unscaled).");
-                Assert.AreEqual(1.0, scale.ScaleY, 0.001,
-                    "Default ScaleY must be 1.0.");
+                Assert.NotNull(scale);
+                Assert.Equal(1.0, scale.ScaleX, 0.001);
+                Assert.Equal(1.0, scale.ScaleY, 0.001);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Slider_ThumbTemplate_HasEllipseAndInnerDot()
         {
             WpfTestSta.Invoke(static () =>
@@ -110,8 +108,8 @@ namespace Fluence.Wpf.Tests
                 Ellipse? thumbEllipse = FindVisualChildByName<Ellipse>(slider, "ThumbEllipse");
                 Ellipse? innerDot = FindVisualChildByName<Ellipse>(slider, "ThumbInnerDot");
 
-                Assert.IsNotNull(thumbEllipse, "ThumbEllipse element must exist in Slider template.");
-                Assert.IsNotNull(innerDot, "ThumbInnerDot element must exist in Slider template.");
+                Assert.NotNull(thumbEllipse);
+                Assert.NotNull(innerDot);
                 w.Close();
             });
         }

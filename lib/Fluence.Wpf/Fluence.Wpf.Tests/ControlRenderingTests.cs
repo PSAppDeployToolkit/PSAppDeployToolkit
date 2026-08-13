@@ -26,15 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Runtime.ExceptionServices;
 using System.Windows;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class ControlRenderingTests
     {
         private static void RunOnFreshStaThread(Action action)
@@ -78,10 +77,10 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertCrispRenderingSetters(FrameworkElement element)
         {
-            Assert.IsTrue(element.UseLayoutRounding, "UseLayoutRounding should be true from default style.");
+            Assert.True(element.UseLayoutRounding, "UseLayoutRounding should be true from default style.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemedButton_HasCrispLayoutRoundingSetters()
         {
             RunOnFreshStaThread(static delegate
@@ -95,7 +94,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemedTextBox_HasCrispLayoutRoundingSetters()
         {
             RunOnFreshStaThread(static delegate
@@ -109,7 +108,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CrispRendering_PreservedAcrossThemeSwitches()
         {
             RunOnFreshStaThread(static delegate

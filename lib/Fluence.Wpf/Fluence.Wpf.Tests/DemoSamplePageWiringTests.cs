@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Demo.Pages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,21 +34,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
-using FluenceExpander = Fluence.Wpf.Controls.Expander;
-using WpfButton = System.Windows.Controls.Button;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
+using Fluence.Wpf.Demo.Pages;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public sealed class DemoSamplePageWiringTests
     {
         private const string IntentionalPartialSnippetMarker = "Intentionally partial layout snippet";
         private static readonly XNamespace XamlNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
+        // GalleryIconsPage is a design reference page (WinUI Gallery Iconography catalog)
+        // and renders directly instead of through DemoSampleControl, like Typography.
         private static readonly Func<UIElement>[] SamplePageFactories =
         [
-            static () => new GalleryIconsPage(),
             static () => new GalleryAccessibilityPage(),
             static () => new GalleryButtonsPage(),
             static () => new GallerySelectionPage(),
@@ -66,14 +63,14 @@ namespace Fluence.Wpf.Tests
             static () => new GalleryStatusPage(),
         ];
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_MovesSlotContentAndAppliesTypedSources()
         {
             DemoTestHost.RunOnSta(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
-                WpfTextBlock demoContent = new() { Text = "Demo" };
-                WpfTextBlock outputContent = new() { Text = "Output" };
+                TextBlock demoContent = new() { Text = "Demo" };
+                TextBlock outputContent = new() { Text = "Output" };
                 CheckBox rightRailContent = new() { Content = "Option" };
                 ContentControl demoSlot = CreateSlot("DemoSampleSlot01DemoContentHost", demoContent);
                 ContentControl outputSlot = CreateSlot("DemoSampleSlot01OutputContentHost", outputContent);
@@ -87,18 +84,18 @@ namespace Fluence.Wpf.Tests
 
                 DemoSamplePageWiring.Apply(root, new DemoSampleSource(1, "<Grid />", "public void Demo() { }"));
 
-                Assert.AreSame(demoContent, sample.DemoContent, "Demo slot content should move into the sample.");
-                Assert.AreSame(outputContent, sample.OutputContent, "Output slot content should move into the sample.");
-                Assert.AreSame(rightRailContent, sample.RightRailContent, "Right rail slot content should move into the sample.");
-                Assert.IsNull(demoSlot.Content, "Demo slot content should be cleared after transfer.");
-                Assert.IsNull(outputSlot.Content, "Output slot content should be cleared after transfer.");
-                Assert.IsNull(rightRailSlot.Content, "Right rail slot content should be cleared after transfer.");
-                Assert.AreEqual("<Grid />", sample.XamlSource);
-                Assert.AreEqual("public void Demo() { }", sample.CSharpSource);
+                Assert.Same(demoContent, sample.DemoContent);
+                Assert.Same(outputContent, sample.OutputContent);
+                Assert.Same(rightRailContent, sample.RightRailContent);
+                Assert.Null(demoSlot.Content);
+                Assert.Null(outputSlot.Content);
+                Assert.Null(rightRailSlot.Content);
+                Assert.Equal("<Grid />", sample.XamlSource, StringComparer.Ordinal);
+                Assert.Equal("public void Demo() { }", sample.CSharpSource, StringComparer.Ordinal);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_RejectsSourceCountMismatch()
         {
             DemoTestHost.RunOnSta(delegate
@@ -113,7 +110,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_RejectsDuplicateSourceSlots()
         {
             DemoTestHost.RunOnSta(delegate
@@ -130,14 +127,14 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_RejectsUnusedContentSlots()
         {
             DemoTestHost.RunOnSta(delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot02DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot02DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -145,14 +142,14 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_RejectsZeroContentSlot()
         {
             DemoTestHost.RunOnSta(delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot00DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot00DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -160,15 +157,15 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSamplePageWiring_RejectsDuplicateContentSlots()
         {
             DemoTestHost.RunOnSta(delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new WpfTextBlock()));
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new TextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -176,7 +173,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSampleControl_ReloadsExpandedSourceTabsWhenSourceChanges()
         {
             DemoTestHost.RunOnSta(static delegate
@@ -184,14 +181,14 @@ namespace Fluence.Wpf.Tests
                 _ = DemoTestHost.EnsureDemoTheme();
                 DemoSampleControl sample = new()
                 {
-                    DemoContent = new WpfTextBlock { Text = "Body" },
+                    DemoContent = new TextBlock { Text = "Body" },
                     XamlSource = "<Grid />",
                 };
                 Window window = DemoTestHost.CreateHostWindow(sample);
                 try
                 {
-                    FluenceExpander? expander = DemoTestHost.FindByName<FluenceExpander>(sample, "SourceExpander");
-                    Assert.IsNotNull(expander, "Source expander should exist.");
+                    Controls.Expander? expander = DemoTestHost.FindByName<Controls.Expander>(sample, "SourceExpander");
+                    Assert.NotNull(expander);
                     expander.IsExpanded = true;
                     DemoTestHost.Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -210,7 +207,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GallerySamplePages_AllVisibleDemoSamplesExposeSource()
         {
             DemoTestHost.RunOnSta(static delegate
@@ -223,10 +220,10 @@ namespace Fluence.Wpf.Tests
                     try
                     {
                         List<DemoSampleControl> samples = [.. DemoTestHost.FindVisualChildren<DemoSampleControl>(page)];
-                        Assert.IsTrue(samples.Count > 0, "Page should expose DemoSampleControl samples: " + page.GetType().Name);
-                        foreach (DemoSampleControl sample in samples.Where(static sample => sample.Visibility == Visibility.Visible))
+                        Assert.True(samples.Count > 0, "Page should expose DemoSampleControl samples: " + page.GetType().Name);
+                        foreach (DemoSampleControl sample in samples.Where(static sample => sample.Visibility is Visibility.Visible))
                         {
-                            Assert.IsFalse(string.IsNullOrWhiteSpace(sample.XamlSource),
+                            Assert.False(string.IsNullOrWhiteSpace(sample.XamlSource),
                                 "Visible DemoSampleControl should expose XAML source: " + page.GetType().Name);
                         }
                     }
@@ -238,7 +235,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GallerySamplePages_SourceContractsMatchDisplayedClasses()
         {
             DemoTestHost.RunOnSta(static delegate
@@ -249,35 +246,33 @@ namespace Fluence.Wpf.Tests
                     string csharpSource = sample.CSharpSource.Trim();
                     if (IsIntentionalPartialSnippet(xamlSource))
                     {
-                        Assert.IsTrue(
+                        Assert.True(
                             string.IsNullOrWhiteSpace(csharpSource),
                             "Intentional partial snippets should not display a code-behind class.");
                         continue;
                     }
 
                     XDocument document = ParseXamlSource(xamlSource, sample.SampleDescription);
-                    Assert.AreEqual(
+                    Assert.Equal(
                         "UserControl",
-                        document.Root?.Name.LocalName,
-                        "Self-contained displayed XAML should use a UserControl root: " + sample.SampleDescription);
+                        document.Root?.Name.LocalName, StringComparer.Ordinal);
 
                     string xamlClass = document.Root?.Attribute(XamlNamespace + "Class")?.Value
-                        ?? throw new AssertFailedException("Displayed UserControl XAML must declare x:Class: " + sample.SampleDescription);
-                    Assert.IsFalse(
+                        ?? throw new Xunit.Sdk.XunitException("Displayed UserControl XAML must declare x:Class: " + sample.SampleDescription);
+                    Assert.False(
                         string.IsNullOrWhiteSpace(csharpSource),
                         "Displayed UserControl XAML should include matching C# source: " + sample.SampleDescription);
-                    Assert.IsTrue(
+                    Assert.True(
                         csharpSource.Contains("InitializeComponent();", StringComparison.Ordinal),
                         "Displayed C# source should use the UserControl InitializeComponent pattern: " + sample.SampleDescription);
-                    Assert.AreEqual(
+                    Assert.Equal(
                         xamlClass,
-                        GetDeclaredPartialClassName(csharpSource),
-                        "Displayed XAML x:Class must match the C# namespace and partial class: " + sample.SampleDescription);
+                        GetDeclaredPartialClassName(csharpSource), StringComparer.Ordinal);
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GallerySamplePages_CSharpSourcesUseReleaseReadySnippetStyle()
         {
             DemoTestHost.RunOnSta(static delegate
@@ -309,12 +304,12 @@ namespace Fluence.Wpf.Tests
         private static void AssertSourceCopyTag(DemoSampleControl sample, string expectedSource)
         {
             TabControl? tabs = DemoTestHost.FindByName<TabControl>(sample, "SourceTabControl");
-            Assert.IsNotNull(tabs, "Source tabs should exist.");
-            Assert.AreEqual(1, tabs.Items.Count, "XAML-only sample should expose one source tab.");
+            Assert.NotNull(tabs);
+            _ = Assert.Single(tabs.Items);
             TabItem tab = (TabItem)tabs.Items[0];
-            WpfButton? copy = DemoTestHost.FindByName<WpfButton>(tab.Content as DependencyObject, "CopySourceButton");
-            Assert.IsNotNull(copy, "Source tab should expose the copy button.");
-            Assert.AreEqual(expectedSource, copy.Tag as string);
+            Button? copy = DemoTestHost.FindByName<Button>(tab.Content as DependencyObject, "CopySourceButton");
+            Assert.NotNull(copy);
+            Assert.Equal(expectedSource, copy.Tag as string, StringComparer.Ordinal);
         }
 
         private static List<DemoSampleControl> CreateVisibleSamples()
@@ -328,7 +323,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     samples.AddRange(DemoTestHost.FindVisualChildren<DemoSampleControl>(page)
-                        .Where(static sample => sample.Visibility == Visibility.Visible));
+                        .Where(static sample => sample.Visibility is Visibility.Visible));
                 }
                 finally
                 {
@@ -353,7 +348,7 @@ namespace Fluence.Wpf.Tests
             }
             catch (XmlException exception)
             {
-                throw new AssertFailedException("Displayed XAML source must be well formed: " + sampleDescription, exception);
+                throw new Xunit.Sdk.XunitException("Displayed XAML source must be well formed: " + sampleDescription, exception);
             }
         }
 
@@ -375,7 +370,7 @@ namespace Fluence.Wpf.Tests
                 return namespaceName + "." + className;
             }
 
-            throw new AssertFailedException("Displayed C# source must declare a public partial class.");
+            throw new Xunit.Sdk.XunitException("Displayed C# source must declare a public partial class.");
         }
 
         private static string GetNamespaceName(string csharpSource)
@@ -390,7 +385,7 @@ namespace Fluence.Wpf.Tests
                 }
             }
 
-            throw new AssertFailedException("Displayed C# source must declare a namespace.");
+            throw new Xunit.Sdk.XunitException("Displayed C# source must declare a namespace.");
         }
 
         private static void AssertDoesNotContainVar(string csharpSource, string sampleDescription)
@@ -436,7 +431,7 @@ namespace Fluence.Wpf.Tests
             int index = text.IndexOf(word, StringComparison.Ordinal);
             while (index >= 0)
             {
-                bool startsOnBoundary = index == 0 || !IsWordCharacter(text[index - 1]);
+                bool startsOnBoundary = index is 0 || !IsWordCharacter(text[index - 1]);
                 int end = index + word.Length;
                 bool endsOnBoundary = end == text.Length || !IsWordCharacter(text[end]);
                 if (startsOnBoundary && endsOnBoundary)

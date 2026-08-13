@@ -26,15 +26,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Fluence.Wpf.Helpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
+using Fluence.Wpf.Helpers;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -42,7 +42,6 @@ namespace Fluence.Wpf.Tests
     /// WI-2 hardening tests for FluenceWindow: backdrop swap, full HC theme cycle,
     /// close-button DynamicResource fix (Finding B).
     /// </summary>
-    [TestClass]
     public class FluenceWindowHardenTests
     {
         private static void RunOnStaThread(Action action)
@@ -77,7 +76,7 @@ namespace Fluence.Wpf.Tests
         private static string ReadRepositoryFile(params string[] relativeSegments)
         {
             string path = GetRepositoryFilePath(relativeSegments);
-            Assert.IsTrue(File.Exists(path), "Repository file must be readable at: " + path);
+            Assert.True(File.Exists(path), "Repository file must be readable at: " + path);
             return File.ReadAllText(path);
         }
 
@@ -94,7 +93,7 @@ namespace Fluence.Wpf.Tests
         // 1. SystemBackdropType DP defaults and round-trip
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void SystemBackdropType_Default_IsAuto()
         {
             RunOnStaThread(static () =>
@@ -104,14 +103,13 @@ namespace Fluence.Wpf.Tests
                 FluenceWindow w = new();
                 try
                 {
-                    Assert.AreEqual(BackdropType.Auto, w.SystemBackdropType,
-                        "SystemBackdropType must default to BackdropType.Auto.");
+                    Assert.Equal(BackdropType.Auto, w.SystemBackdropType);
                 }
                 finally { w.Close(); }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SystemBackdropType_CanSetAllValues()
         {
             // Verifies that the DP accepts all four BackdropType values without throwing.
@@ -125,8 +123,7 @@ namespace Fluence.Wpf.Tests
                     foreach (BackdropType bd in new[] { BackdropType.None, BackdropType.Mica, BackdropType.Acrylic, BackdropType.Tabbed, BackdropType.Auto })
                     {
                         w.SystemBackdropType = bd;
-                        Assert.AreEqual(bd, w.SystemBackdropType,
-                            "SystemBackdropType DP must accept and reflect: " + bd);
+                        Assert.Equal(bd, w.SystemBackdropType);
                     }
                 }
                 finally { w.Close(); }
@@ -137,7 +134,7 @@ namespace Fluence.Wpf.Tests
         // 2. Full theme cycle Light → Dark → HighContrast → Light; key brushes resolve
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ThemeCycle_LightDarkHcLight_KeyBrushesResolveAfterEachStep()
         {
             RunOnStaThread(static () =>
@@ -163,14 +160,13 @@ namespace Fluence.Wpf.Tests
                     foreach (string? key in keys)
                     {
                         object? resource = app?.TryFindResource(key);
-                        Assert.IsNotNull(resource,
-                            "Resource '" + key + "' must resolve after switching to " + theme);
+                        Assert.NotNull(resource);
                     }
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeCycle_HighContrast_SystemFillColorCriticalBrush_Resolves()
         {
             // HC theme maps SystemFillColorCriticalBrush to WindowTextColorKey (white on black).
@@ -183,8 +179,7 @@ namespace Fluence.Wpf.Tests
 
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
                 object? brush = app?.TryFindResource("SystemFillColorCriticalBrush");
-                Assert.IsNotNull(brush,
-                    "SystemFillColorCriticalBrush must resolve in HighContrast theme.");
+                Assert.NotNull(brush);
             });
         }
 
@@ -192,28 +187,28 @@ namespace Fluence.Wpf.Tests
         // 4. Close button resource-token and template-part regression guards.
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindowXaml_CloseButtonHover_UsesCanonicalCloseButtonBrushTokens()
         {
             string xaml = ReadRepositoryFile("Fluence.Wpf", "Themes", "Controls", "FluenceWindow.xaml");
 
-            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPointerOverBrush", StringComparison.Ordinal);
-            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPressedBrush", StringComparison.Ordinal);
-            StringAssert.Contains(xaml, "WindowCloseButtonForegroundPointerOverBrush", StringComparison.Ordinal);
+            Assert.Contains("WindowCloseButtonBackgroundPointerOverBrush", xaml, StringComparison.Ordinal);
+            Assert.Contains("WindowCloseButtonBackgroundPressedBrush", xaml, StringComparison.Ordinal);
+            Assert.Contains("WindowCloseButtonForegroundPointerOverBrush", xaml, StringComparison.Ordinal);
 
-            Assert.IsFalse(xaml.Contains("WindowCloseFillColorHoverBrush", StringComparison.Ordinal),
+            Assert.False(xaml.Contains("WindowCloseFillColorHoverBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button background token.");
-            Assert.IsFalse(xaml.Contains("WindowCloseFillColorPressedBrush", StringComparison.Ordinal),
+            Assert.False(xaml.Contains("WindowCloseFillColorPressedBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button pressed token.");
-            Assert.IsFalse(xaml.Contains("WindowCloseForegroundHoverBrush", StringComparison.Ordinal),
+            Assert.False(xaml.Contains("WindowCloseForegroundHoverBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button foreground token.");
-            Assert.IsFalse(xaml.Contains("SystemFillColorCriticalBrush", StringComparison.Ordinal),
+            Assert.False(xaml.Contains("SystemFillColorCriticalBrush", StringComparison.Ordinal),
                 "Caption close-button hover must not use the general critical brush.");
-            Assert.IsFalse(xaml.Contains("#C42B1C", StringComparison.Ordinal) || xaml.Contains("#B4271C", StringComparison.Ordinal) || xaml.Contains("#FFFFFF", StringComparison.Ordinal),
+            Assert.False(xaml.Contains("#C42B1C", StringComparison.Ordinal) || xaml.Contains("#B4271C", StringComparison.Ordinal) || xaml.Contains("#FFFFFF", StringComparison.Ordinal),
                 "Production control templates must not inline close-button hex colors.");
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindowCloseButtonThemeTokens_AreThemeIndependentAndResolve()
         {
             // The three Windows close-button Color tokens are theme-independent - the Windows shell
@@ -233,11 +228,11 @@ namespace Fluence.Wpf.Tests
         private static void AssertCloseButtonBrush(Application? app, string key, Color expected)
         {
             object? resource = app?.TryFindResource(key);
-            Assert.IsInstanceOfType(resource, typeof(SolidColorBrush), "Resource '" + key + "' must resolve to a SolidColorBrush.");
-            Assert.AreEqual(expected, ((SolidColorBrush)resource).Color, "Brush '" + key + "' must carry its canonical close-button color.");
+            SolidColorBrush brush = Assert.IsAssignableFrom<SolidColorBrush>(resource);
+            Assert.Equal(expected, brush.Color);
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_DeclaresCaptionButtonTemplateParts()
         {
             object[] attributes = typeof(FluenceWindow).GetCustomAttributes(typeof(TemplatePartAttribute), inherit: false);
@@ -265,7 +260,7 @@ namespace Fluence.Wpf.Tests
         // 5. WindowPolicy.BuildBackdropPlan - None backdrop returns non-transparent bg
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void BuildBackdropPlan_None_ReturnsOpaqueBackground()
         {
             // Capability with no backdrop support at all.
@@ -279,13 +274,12 @@ namespace Fluence.Wpf.Tests
             Color light = Color.FromRgb(0xFA, 0xFA, 0xFA);
             BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.None, ApplicationTheme.Light, caps, light);
 
-            Assert.IsFalse(plan.UseTransparentBackground,
+            Assert.False(plan.UseTransparentBackground,
                 "BackdropType.None must NOT use transparent background.");
-            Assert.AreNotEqual(Colors.Transparent, plan.BackgroundColor,
-                "BackdropType.None must return a fallback opaque background color.");
+            Assert.NotEqual(Colors.Transparent, plan.BackgroundColor);
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildBackdropPlan_Mica_SupportedOs_ReturnsTransparent()
         {
             WindowCapabilities caps = new(
@@ -298,13 +292,12 @@ namespace Fluence.Wpf.Tests
             Color fallback = Color.FromRgb(0xFA, 0xFA, 0xFA);
             BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Mica, ApplicationTheme.Light, caps, fallback);
 
-            Assert.IsTrue(plan.UseTransparentBackground,
+            Assert.True(plan.UseTransparentBackground,
                 "Mica backdrop on a capable OS must use transparent background.");
-            Assert.AreEqual(Colors.Transparent, plan.BackgroundColor,
-                "Mica backdrop on a capable OS must set Colors.Transparent as the background color.");
+            Assert.Equal(Colors.Transparent, plan.BackgroundColor);
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildBackdropPlan_Acrylic_FallsBackToMica_WhenMicaEffectButNoSystemBackdrop()
         {
             // Windows 10 21H2: supports DwmSetWindowAttribute(DWMWA_MICA_EFFECT) but NOT
@@ -319,10 +312,9 @@ namespace Fluence.Wpf.Tests
             BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Acrylic, ApplicationTheme.Dark, caps, fallback);
 
             // Should fall back to Mica (legacy) and use transparent background.
-            Assert.IsTrue(plan.UseTransparentBackground,
+            Assert.True(plan.UseTransparentBackground,
                 "Acrylic→Mica fallback must still use transparent background.");
-            Assert.AreEqual(BackdropType.Mica, plan.EffectiveBackdrop,
-                "Acrylic request on Win10 MicaEffect-only OS must downgrade to Mica.");
+            Assert.Equal(BackdropType.Mica, plan.EffectiveBackdrop);
         }
 
         // ---------------------------------------------------------------------------
@@ -343,8 +335,7 @@ namespace Fluence.Wpf.Tests
         private static int GetEventSubscriberCount(Type declaringType, string eventName)
         {
             FieldInfo? field = declaringType.GetField(eventName, BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.IsNotNull(field,
-                "Expected a compiler-emitted backing field '" + eventName + "' on " + declaringType.Name + ".");
+            Assert.NotNull(field);
             Delegate? handler = field.GetValue(null) as Delegate;
             return handler?.GetInvocationList().Length ?? 0;
         }
@@ -360,10 +351,11 @@ namespace Fluence.Wpf.Tests
         {
             WpfTestSta.Dispatcher?.Invoke(
                 new Action(static () => { }),
-                DispatcherPriority.ContextIdle);
+                DispatcherPriority.ContextIdle,
+                default);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_DoesNotSubscribeToManagers()
         {
             RunOnStaThread(static () =>
@@ -376,16 +368,14 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     (int afterTheme, int afterAccent) = SnapshotManagerSubscriberCounts();
-                    Assert.AreEqual(beforeTheme, afterTheme,
-                        "Constructing a FluenceWindow without showing it must not subscribe to ApplicationThemeManager.Changed.");
-                    Assert.AreEqual(beforeAccent, afterAccent,
-                        "Constructing a FluenceWindow without showing it must not subscribe to ApplicationAccentColorManager.AccentColorChanged.");
+                    Assert.Equal(beforeTheme, afterTheme);
+                    Assert.Equal(beforeAccent, afterAccent);
                 }
                 finally { w.Close(); }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ShowThenClose_LeavesNoNetManagerSubscriptions()
         {
             RunOnStaThread(static () =>
@@ -410,10 +400,8 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher();
 
                 (int afterTheme, int afterAccent) = SnapshotManagerSubscriberCounts();
-                Assert.AreEqual(baselineTheme, afterTheme,
-                    "Show()+Close() must return ApplicationThemeManager.Changed subscriber count to the baseline.");
-                Assert.AreEqual(baselineAccent, afterAccent,
-                    "Show()+Close() must return ApplicationAccentColorManager.AccentColorChanged subscriber count to the baseline.");
+                Assert.Equal(baselineTheme, afterTheme);
+                Assert.Equal(baselineAccent, afterAccent);
             });
         }
 
@@ -431,7 +419,7 @@ namespace Fluence.Wpf.Tests
         // (a cloaked window is permanently invisible - the failure mode of the abandoned cloak).
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ShowThenDrain_NeverCloaksWindow()
         {
             RunOnStaThread(static () =>
@@ -455,8 +443,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher();
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
-                    Assert.AreEqual(0, Native.NativeMethods.GetWindowCloakedState(handle),
-                        "FluenceWindow must never DWM-cloak its window (DWMWA_CLOAKED == 0); the first-paint flash is solved by clearing the redirection surface, not by cloaking.");
+                    Assert.Equal(0, Native.NativeMethods.GetWindowCloakedState(handle));
                 }
                 finally
                 {
@@ -466,7 +453,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void RedirectionSurface_MatchesContentBackground_AcrossBackdropSwap()
         {
             RunOnStaThread(static () =>
@@ -491,23 +478,21 @@ namespace Fluence.Wpf.Tests
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
                     System.Windows.Interop.HwndSource? source = System.Windows.Interop.HwndSource.FromHwnd(handle);
-                    Assert.IsNotNull(source, "Expected a realised HwndSource after Show().");
-                    Assert.IsNotNull(source!.CompositionTarget, "Expected a CompositionTarget on the realised HwndSource.");
+                    Assert.NotNull(source);
+                    Assert.NotNull(source!.CompositionTarget);
 
                     // The fix: the HWND redirection surface (HwndTarget.BackgroundColor) must be
                     // cleared to the same color WPF paints its content background, so no opaque
                     // black surface is exposed before the DWM backdrop composites.
                     Color content = ((SolidColorBrush)w.Background).Color;
-                    Assert.AreEqual(content, source.CompositionTarget.BackgroundColor,
-                        "With an active backdrop the redirection surface must match the (transparent) content background, not the default opaque black.");
+                    Assert.Equal(content, source.CompositionTarget.BackgroundColor);
 
                     // Swapping to None re-runs ApplyBackdrop; both layers must move together to the
                     // opaque theme fallback so the invariant holds across runtime backdrop changes.
                     w.SystemBackdropType = BackdropType.None;
                     DrainDispatcher();
                     Color contentNone = ((SolidColorBrush)w.Background).Color;
-                    Assert.AreEqual(contentNone, source.CompositionTarget.BackgroundColor,
-                        "After swapping to BackdropType.None the redirection surface must track the opaque content background.");
+                    Assert.Equal(contentNone, source.CompositionTarget.BackgroundColor);
                 }
                 finally
                 {
@@ -520,11 +505,11 @@ namespace Fluence.Wpf.Tests
         private static int GetWatchedWindowCount()
         {
             FieldInfo? field = typeof(SystemThemeWatcher).GetField("_watchedWindows", BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.IsNotNull(field, "Expected the private static '_watchedWindows' registry on SystemThemeWatcher.");
+            Assert.NotNull(field);
             return field.GetValue(null) is System.Collections.IList list ? list.Count : 0;
         }
 
-        [TestMethod]
+        [Fact]
         public void ShowThenClose_ReleasesHwndSourceHookAndThemeWatcherRegistration()
         {
             RunOnStaThread(static () =>
@@ -550,17 +535,15 @@ namespace Fluence.Wpf.Tests
 
                 // The HWND itself is owned and destroyed by WPF on close; the library must release
                 // its managed references to that HWND's source so nothing is pinned past teardown.
-                Assert.AreEqual(baselineWatched, GetWatchedWindowCount(),
-                    "Show()+Close() must remove the window from SystemThemeWatcher's static registry (releasing its HwndSource and Window references).");
+                Assert.Equal(baselineWatched, GetWatchedWindowCount());
 
                 FieldInfo? sourceField = typeof(FluenceWindow).GetField("_hwndSource", BindingFlags.NonPublic | BindingFlags.Instance);
-                Assert.IsNotNull(sourceField, "Expected the private '_hwndSource' field on FluenceWindow.");
-                Assert.IsNull(sourceField.GetValue(w),
-                    "OnClosed must RemoveHook and null the HwndSource reference (a FromHwnd source is WPF-owned and must not be disposed by the control).");
+                Assert.NotNull(sourceField);
+                Assert.Null(sourceField.GetValue(w));
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SystemThemeWatcher_AutoReleasesWatchedWindow_OnClose_WithoutExplicitUnWatch()
         {
             RunOnStaThread(static () =>
@@ -580,8 +563,7 @@ namespace Fluence.Wpf.Tests
                     Top = -10000,
                 };
                 SystemThemeWatcher.Watch(w);
-                Assert.AreEqual(baselineWatched + 1, GetWatchedWindowCount(),
-                    "Watch must register the window in the static registry.");
+                Assert.Equal(baselineWatched + 1, GetWatchedWindowCount());
 
                 w.Show();
                 DrainDispatcher();
@@ -590,8 +572,7 @@ namespace Fluence.Wpf.Tests
                 w.Close();
                 DrainDispatcher();
 
-                Assert.AreEqual(baselineWatched, GetWatchedWindowCount(),
-                    "Closing a watched window must auto-UnWatch it (release its HwndSource hook and registry entry) even without an explicit UnWatch call.");
+                Assert.Equal(baselineWatched, GetWatchedWindowCount());
             });
         }
 

@@ -38,22 +38,34 @@ namespace Fluence.Wpf.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct APPBARDATA
     {
-        /// <summary>The size of the structure in bytes; set before the call.</summary>
+        /// <summary>
+        /// The size of the structure in bytes; set before the call.
+        /// </summary>
         public int cbSize;
 
-        /// <summary>The handle of the appbar window (unused for the query messages here).</summary>
+        /// <summary>
+        /// The handle of the appbar window (unused for the query messages here).
+        /// </summary>
         public IntPtr hWnd;
 
-        /// <summary>The callback-message id (unused for the query messages here).</summary>
+        /// <summary>
+        /// The callback-message id (unused for the query messages here).
+        /// </summary>
         public uint uCallbackMessage;
 
-        /// <summary>The screen edge the taskbar is docked to (one of the <c>ABE_*</c> values).</summary>
+        /// <summary>
+        /// The screen edge the taskbar is docked to (one of the <c>ABE_*</c> values).
+        /// </summary>
         public uint uEdge;
 
-        /// <summary>The bounding rectangle of the appbar.</summary>
+        /// <summary>
+        /// The bounding rectangle of the appbar.
+        /// </summary>
         public RECT rc;
 
-        /// <summary>A message-specific value.</summary>
+        /// <summary>
+        /// A message-specific value.
+        /// </summary>
         public IntPtr lParam;
     }
 }

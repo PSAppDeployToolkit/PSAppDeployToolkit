@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Runtime.ExceptionServices;
 using System.Windows;
@@ -36,10 +34,11 @@ using System.Windows.Automation.Provider;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class SplitButtonTests
     {
         private static void RunOnSta(Action action)
@@ -65,7 +64,7 @@ namespace Fluence.Wpf.Tests
 
         private static void Drain(Dispatcher dispatcher)
         {
-            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle);
+            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle, default);
         }
 
         private static void MergeGeneric(Application? application)
@@ -82,29 +81,24 @@ namespace Fluence.Wpf.Tests
 
         #region Defaults and DPs
 
-        [TestMethod]
+        [Fact]
         public void Defaults_AreWinUiCanon()
         {
             RunOnSta(static () =>
             {
                 SplitButton button = new();
 
-                Assert.AreEqual(new CornerRadius(4), button.CornerRadius,
-                    "SplitButton.CornerRadius must default to 4 (Fluent control corner).");
-                Assert.AreEqual(new CornerRadius(8), button.DropdownCornerRadius,
-                    "SplitButton.DropdownCornerRadius must default to 8 (Fluent flyout corner).");
-                Assert.IsFalse(button.IsFlyoutOpen,
+                Assert.Equal(new CornerRadius(4), button.CornerRadius);
+                Assert.Equal(new CornerRadius(8), button.DropdownCornerRadius);
+                Assert.False(button.IsFlyoutOpen,
                     "SplitButton.IsFlyoutOpen must default to false.");
-                Assert.IsNull(button.Command,
-                    "SplitButton.Command must default to null.");
-                Assert.IsNull(button.CommandParameter,
-                    "SplitButton.CommandParameter must default to null.");
-                Assert.IsNull(button.Flyout,
-                    "SplitButton.Flyout must default to null.");
+                Assert.Null(button.Command);
+                Assert.Null(button.CommandParameter);
+                Assert.Null(button.Flyout);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void IsFlyoutOpen_IsReadOnlyDp()
         {
             RunOnSta(static () =>
@@ -123,7 +117,7 @@ namespace Fluence.Wpf.Tests
                     threw = true;
                 }
 
-                Assert.IsTrue(threw,
+                Assert.True(threw,
                     "IsFlyoutOpen must be a read-only DP; external SetValue must throw.");
             });
         }
@@ -132,7 +126,7 @@ namespace Fluence.Wpf.Tests
 
         #region Template parts
 
-        [TestMethod]
+        [Fact]
         public void Template_ExposesPrimarySecondaryAndPopupParts()
         {
             RunOnSta(static () =>
@@ -158,19 +152,16 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
                         as System.Windows.Controls.Button;
-                    Assert.IsNotNull(primary,
-                        "Template must expose PART_PrimaryButton (the primary-action hit target).");
+                    Assert.NotNull(primary);
 
                     System.Windows.Controls.Primitives.ToggleButton? secondary = splitButton.Template.FindName("PART_SecondaryButton", splitButton)
                         as System.Windows.Controls.Primitives.ToggleButton;
-                    Assert.IsNotNull(secondary,
-                        "Template must expose PART_SecondaryButton (the flyout-toggle hit target).");
+                    Assert.NotNull(secondary);
 
                     Popup? popup = splitButton.Template.FindName("PART_Popup", splitButton)
                         as Popup;
-                    Assert.IsNotNull(popup,
-                        "Template must expose PART_Popup (the flyout host).");
-                    Assert.IsFalse(popup.StaysOpen,
+                    Assert.NotNull(popup);
+                    Assert.False(popup.StaysOpen,
                         "PART_Popup.StaysOpen must be false so outside-clicks close the flyout.");
                 }
                 finally
@@ -184,7 +175,7 @@ namespace Fluence.Wpf.Tests
 
         #region Primary click
 
-        [TestMethod]
+        [Fact]
         public void PrimaryButtonClick_RaisesSplitButtonClick()
         {
             RunOnSta(() =>
@@ -212,7 +203,7 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
                         as System.Windows.Controls.Button;
-                    Assert.IsNotNull(primary);
+                    Assert.NotNull(primary);
 
                     // Use UI Automation peer -> IInvokeProvider.Invoke(), the canonical
                     // equivalent of a user press-release on the button.
@@ -221,8 +212,7 @@ namespace Fluence.Wpf.Tests
                     invoke.Invoke();
                     Drain(window.Dispatcher);
 
-                    Assert.AreEqual(1, clickCount,
-                        "PART_PrimaryButton.Click must raise SplitButton.Click exactly once.");
+                    Assert.Equal(1, clickCount);
                 }
                 finally
                 {
@@ -231,7 +221,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void PrimaryButtonClick_ExecutesCommand()
         {
             RunOnSta(() =>
@@ -266,8 +256,7 @@ namespace Fluence.Wpf.Tests
                     invoke.Invoke();
                     Drain(window.Dispatcher);
 
-                    Assert.AreEqual(1, executed,
-                        "PART_PrimaryButton.Click must execute SplitButton.Command.");
+                    Assert.Equal(1, executed);
                 }
                 finally
                 {
@@ -280,7 +269,7 @@ namespace Fluence.Wpf.Tests
 
         #region Flyout open / close
 
-        [TestMethod]
+        [Fact]
         public void SecondaryButtonChecked_OpensPopupAndFlipsIsFlyoutOpen()
         {
             RunOnSta(static () =>
@@ -309,26 +298,26 @@ namespace Fluence.Wpf.Tests
                         as System.Windows.Controls.Primitives.ToggleButton;
                     Popup? popup = splitButton.Template.FindName("PART_Popup", splitButton)
                         as Popup;
-                    Assert.IsNotNull(secondary);
-                    Assert.IsNotNull(popup);
+                    Assert.NotNull(secondary);
+                    Assert.NotNull(popup);
 
-                    Assert.IsFalse(popup.IsOpen, "Popup should start closed.");
-                    Assert.IsFalse(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");
+                    Assert.False(popup.IsOpen, "Popup should start closed.");
+                    Assert.False(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");
 
                     secondary.IsChecked = true;
                     Drain(window.Dispatcher);
 
-                    Assert.IsTrue(popup.IsOpen,
+                    Assert.True(popup.IsOpen,
                         "Toggling PART_SecondaryButton on must open PART_Popup.");
-                    Assert.IsTrue(splitButton.IsFlyoutOpen,
+                    Assert.True(splitButton.IsFlyoutOpen,
                         "IsFlyoutOpen must flip true when the secondary toggle is checked.");
 
                     secondary.IsChecked = false;
                     Drain(window.Dispatcher);
 
-                    Assert.IsFalse(popup.IsOpen,
+                    Assert.False(popup.IsOpen,
                         "Toggling PART_SecondaryButton off must close PART_Popup.");
-                    Assert.IsFalse(splitButton.IsFlyoutOpen,
+                    Assert.False(splitButton.IsFlyoutOpen,
                         "IsFlyoutOpen must flip false when the secondary toggle is unchecked.");
                 }
                 finally
@@ -342,22 +331,19 @@ namespace Fluence.Wpf.Tests
 
         #region Automation
 
-        [TestMethod]
+        [Fact]
         public void AutomationPeer_IsSplitButton_WithInvokeAndExpandCollapse()
         {
             RunOnSta(static () =>
             {
                 SplitButton splitButton = new();
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(splitButton);
-                Assert.IsNotNull(peer, "SplitButton must return an AutomationPeer.");
+                Assert.NotNull(peer);
 
-                Assert.AreEqual(AutomationControlType.SplitButton,
-                    peer.GetAutomationControlType(),
-                    "AutomationControlType must be SplitButton.");
-                Assert.IsNotNull(peer.GetPattern(PatternInterface.Invoke),
-                    "SplitButton peer must expose the Invoke pattern (primary action).");
-                Assert.IsNotNull(peer.GetPattern(PatternInterface.ExpandCollapse),
-                    "SplitButton peer must expose the ExpandCollapse pattern (flyout).");
+                Assert.Equal(AutomationControlType.SplitButton,
+                    peer.GetAutomationControlType());
+                Assert.NotNull(peer.GetPattern(PatternInterface.Invoke));
+                Assert.NotNull(peer.GetPattern(PatternInterface.ExpandCollapse));
             });
         }
 

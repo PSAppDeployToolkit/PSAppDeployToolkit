@@ -228,7 +228,7 @@
                                 CornerRadius="{TemplateBinding DropdownCornerRadius}"
                                 RenderTransformOrigin="0.5,0">
                                 <Border.RenderTransform>
-                                    <ScaleTransform x:Name="DropdownScale" ScaleX="1" ScaleY="1" />
+                                    <TranslateTransform x:Name="DropdownTranslate" />
                                 </Border.RenderTransform>
                                 <!--
                                     No DropShadowEffect: WPF bitmap effects on a Border with CornerRadius
@@ -280,21 +280,15 @@
                         </VisualStateManager.VisualStateGroups>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsDropDownOpen" Value="True">
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DropdownScale" Storyboard.TargetProperty="ScaleY">
-                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                        </Trigger>
+                        <!--
+                            The dropdown open reveal (8px slide from the control edge + fade,
+                            167ms ControlFastAnimationDuration on ControlFastOutSlowInKeySpline)
+                            lives in ComboBox.BeginDropdownReveal, following the FlyoutPresenter
+                            code-reveal precedent: a XAML trigger cannot consult the
+                            reduced-motion helper, but code can, so the reveal is skipped when
+                            the OS "Show animations" setting is off. The code targets
+                            PART_DropdownBorder and its DropdownTranslate render transform.
+                        -->
                         <Trigger Property="Icon" Value="{x:Null}">
                             <Setter TargetName="LeftIcon" Property="Margin" Value="0" />
                             <Setter TargetName="LeftIcon" Property="Visibility" Value="Collapsed" />

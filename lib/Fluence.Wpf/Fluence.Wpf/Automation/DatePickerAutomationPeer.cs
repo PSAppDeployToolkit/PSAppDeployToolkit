@@ -27,7 +27,6 @@
  */
 
 using Fluence.Wpf.Controls;
-using System;
 using System.Globalization;
 using System.Windows.Automation.Peers;
 
@@ -59,15 +58,9 @@ namespace Fluence.Wpf.Automation
         protected override string GetNameCore()
         {
             string name = base.GetNameCore();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            DateTime? selectedDate = DatePicker.SelectedDate;
-            return selectedDate.HasValue
-                ? selectedDate.Value.ToString("d", CultureInfo.CurrentCulture)
-                : DatePicker.PlaceholderText;
+            return string.IsNullOrWhiteSpace(name)
+                ? DatePicker.SelectedDate?.ToString("d", CultureInfo.CurrentCulture) ?? DatePicker.PlaceholderText
+                : name;
         }
 
         /// <summary>

@@ -29,41 +29,36 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using FluencePasswordBox = Fluence.Wpf.Controls.PasswordBox;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryFormsPage : UserControl
     {
-        private const string SignInFormXamlSource = "<UserControl\n" +
-                                                    "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.SignInForm\"\n" +
-                                                    "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                    "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                    "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+        private static readonly string SignInFormXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.SignInForm",
                                                     "    <StackPanel MaxWidth=\"480\" HorizontalAlignment=\"Left\">\n" +
                                                     "        <TextBlock Margin=\"0,0,0,4\" Text=\"Email\" />\n" +
-                                                    "        <ui:TextBox\n" +
+                                                    "        <fluence:TextBox\n" +
                                                     "            Margin=\"0,0,0,12\"\n" +
                                                     "            PlaceholderText=\"name@example.com\" />\n" +
                                                     "        <TextBlock Margin=\"0,0,0,4\" Text=\"Password\" />\n" +
-                                                    "        <ui:PasswordBox\n" +
+                                                    "        <fluence:PasswordBox\n" +
                                                     "            Margin=\"0,0,0,12\"\n" +
                                                     "            PlaceholderText=\"Password\"\n" +
                                                     "            RevealButtonEnabled=\"True\"\n" +
                                                     "            ShowCapsLockIndicator=\"True\"\n" +
                                                     "            ShowPasswordStrength=\"True\" />\n" +
-                                                    "        <ui:CheckBox\n" +
+                                                    "        <fluence:CheckBox\n" +
                                                     "            Margin=\"0,0,0,24\"\n" +
                                                     "            Content=\"Remember me\" />\n" +
                                                     "        <StackPanel Orientation=\"Horizontal\">\n" +
-                                                    "            <ui:Button\n" +
+                                                    "            <fluence:Button\n" +
                                                     "                Margin=\"0,0,8,0\"\n" +
                                                     "                Appearance=\"Accent\"\n" +
                                                     "                Content=\"Sign in\" />\n" +
-                                                    "            <ui:Button Content=\"Create account\" />\n" +
+                                                    "            <fluence:Button Content=\"Create account\" />\n" +
                                                     "        </StackPanel>\n" +
-                                                    "    </StackPanel>\n" +
-                                                    "</UserControl>\n";
+                                                    "    </StackPanel>\n");
 
         private const string SignInFormCSharpSource = "using System.Windows.Controls;\n" +
                                                       "\n" +
@@ -77,31 +72,28 @@ namespace Fluence.Wpf.Demo.Pages
                                                       "        }\n" +
                                                       "    }\n" +
                                                       "}\n";
-        private const string CheckoutFormXamlSource = "<UserControl\n" +
-                                                      "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.CheckoutForm\"\n" +
-                                                      "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                      "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                      "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+        private static readonly string CheckoutFormXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.CheckoutForm",
                                                       "    <StackPanel MaxWidth=\"560\" HorizontalAlignment=\"Left\">\n" +
                                                       "        <TextBlock Margin=\"0,0,0,4\" Text=\"Contact email\" />\n" +
-                                                      "        <ui:TextBox\n" +
+                                                      "        <fluence:TextBox\n" +
                                                       "            Margin=\"0,0,0,12\"\n" +
                                                       "            PlaceholderText=\"name@example.com\" />\n" +
                                                       "        <TextBlock Margin=\"0,0,0,4\" Text=\"Shipping speed\" />\n" +
-                                                      "        <ui:ComboBox\n" +
+                                                      "        <fluence:ComboBox\n" +
                                                       "            Margin=\"0,0,0,12\"\n" +
                                                       "            SelectedIndex=\"1\">\n" +
                                                       "            <ComboBoxItem Content=\"Standard\" />\n" +
                                                       "            <ComboBoxItem Content=\"Priority\" />\n" +
                                                       "            <ComboBoxItem Content=\"Overnight\" />\n" +
-                                                      "        </ui:ComboBox>\n" +
+                                                      "        </fluence:ComboBox>\n" +
                                                       "        <Grid x:Name=\"CheckoutFieldsGrid\" Margin=\"0,0,0,24\">\n" +
                                                       "            <Grid.ColumnDefinitions>\n" +
                                                       "                <ColumnDefinition Width=\"180\" />\n" +
                                                       "                <ColumnDefinition Width=\"16\" />\n" +
                                                       "                <ColumnDefinition Width=\"280\" />\n" +
                                                       "            </Grid.ColumnDefinitions>\n" +
-                                                      "            <ui:NumberBox\n" +
+                                                      "            <fluence:NumberBox\n" +
                                                       "                x:Name=\"QuantityNumberBox\"\n" +
                                                       "                Grid.Column=\"0\"\n" +
                                                       "                Width=\"180\"\n" +
@@ -110,27 +102,26 @@ namespace Fluence.Wpf.Demo.Pages
                                                       "                Minimum=\"1\"\n" +
                                                       "                SpinButtonPlacementMode=\"Compact\"\n" +
                                                       "                Value=\"2\" />\n" +
-                                                      "            <ui:TextBox\n" +
+                                                      "            <fluence:TextBox\n" +
                                                       "                x:Name=\"OptionalTextBox\"\n" +
                                                       "                Grid.Column=\"2\"\n" +
                                                       "                Width=\"280\"\n" +
                                                       "                VerticalAlignment=\"Bottom\"\n" +
                                                       "                PlaceholderText=\"Optional\" />\n" +
                                                       "        </Grid>\n" +
-                                                      "        <ui:CheckBox\n" +
+                                                      "        <fluence:CheckBox\n" +
                                                       "            x:Name=\"GiftCheckBox\"\n" +
                                                       "            Margin=\"0,0,0,24\"\n" +
                                                       "            Content=\"This is a gift\"\n" +
                                                       "            Description=\"Hide prices on the packing slip.\" />\n" +
                                                       "        <StackPanel x:Name=\"CheckoutButtonsPanel\" Orientation=\"Horizontal\">\n" +
-                                                      "            <ui:Button\n" +
+                                                      "            <fluence:Button\n" +
                                                       "                Margin=\"0,0,8,0\"\n" +
                                                       "                Appearance=\"Accent\"\n" +
                                                       "                Content=\"Place order\" />\n" +
-                                                      "            <ui:Button Content=\"Save for later\" />\n" +
+                                                      "            <fluence:Button Content=\"Save for later\" />\n" +
                                                       "        </StackPanel>\n" +
-                                                      "    </StackPanel>\n" +
-                                                      "</UserControl>\n";
+                                                      "    </StackPanel>\n");
 
         private const string CheckoutFormCSharpSource = "using System.Windows.Controls;\n" +
                                                         "\n" +
@@ -144,36 +135,32 @@ namespace Fluence.Wpf.Demo.Pages
                                                         "        }\n" +
                                                         "    }\n" +
                                                         "}\n";
-        private const string SettingsFormXamlSource = "<UserControl\n" +
-                                                      "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.SettingsForm\"\n" +
-                                                      "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                      "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                      "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+        private static readonly string SettingsFormXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.SettingsForm",
                                                       "    <StackPanel MaxWidth=\"560\" HorizontalAlignment=\"Left\">\n" +
                                                       "        <TextBlock Margin=\"0,0,0,4\" Text=\"Display name\" />\n" +
-                                                      "        <ui:TextBox\n" +
+                                                      "        <fluence:TextBox\n" +
                                                       "            Margin=\"0,0,0,12\"\n" +
                                                       "            Text=\"Avery Stone\" />\n" +
                                                       "        <TextBlock Margin=\"0,0,0,4\" Text=\"Theme\" />\n" +
-                                                      "        <ui:ComboBox\n" +
+                                                      "        <fluence:ComboBox\n" +
                                                       "            Margin=\"0,0,0,12\"\n" +
                                                       "            SelectedIndex=\"0\">\n" +
                                                       "            <ComboBoxItem Content=\"Use system setting\" />\n" +
                                                       "            <ComboBoxItem Content=\"Light\" />\n" +
                                                       "            <ComboBoxItem Content=\"Dark\" />\n" +
-                                                      "        </ui:ComboBox>\n" +
-                                                      "        <ui:ToggleSwitch\n" +
+                                                      "        </fluence:ComboBox>\n" +
+                                                      "        <fluence:ToggleSwitch\n" +
                                                       "            Margin=\"0,0,0,24\"\n" +
                                                       "            Content=\"Email updates\"\n" +
                                                       "            IsChecked=\"True\"\n" +
                                                       "            OffContent=\"Off\"\n" +
                                                       "            OnContent=\"On\" />\n" +
-                                                      "        <ui:Button\n" +
+                                                      "        <fluence:Button\n" +
                                                       "            HorizontalAlignment=\"Left\"\n" +
                                                       "            Appearance=\"Accent\"\n" +
                                                       "            Content=\"Save settings\" />\n" +
-                                                      "    </StackPanel>\n" +
-                                                      "</UserControl>\n";
+                                                      "    </StackPanel>\n");
 
         private const string SettingsFormCSharpSource = "using System.Windows.Controls;\n" +
                                                         "\n" +
@@ -188,17 +175,13 @@ namespace Fluence.Wpf.Demo.Pages
                                                         "    }\n" +
                                                         "}\n";
 
-        private const string DatePickerXamlSource = "<UserControl\n" +
-                                                    "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.DueDateForm\"\n" +
-                                                    "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                    "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                    "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
-                                                    "    <ui:DatePicker\n" +
+        private static readonly string DatePickerXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.DueDateForm",
+                                                    "    <fluence:DatePicker\n" +
                                                     "        x:Name=\"DueDatePicker\"\n" +
                                                     "        Header=\"Due date\"\n" +
                                                     "        PlaceholderText=\"Pick a date\"\n" +
-                                                    "        SelectedDateChanged=\"DueDatePicker_SelectedDateChanged\" />\n" +
-                                                    "</UserControl>\n";
+                                                    "        SelectedDateChanged=\"DueDatePicker_SelectedDateChanged\" />\n");
 
         private const string DatePickerCSharpSource = "using System.Windows.Controls;\n" +
                                                       "using Fluence.Wpf;\n" +
@@ -235,18 +218,14 @@ namespace Fluence.Wpf.Demo.Pages
             Loaded += GalleryFormsPage_Loaded;
         }
 
-        private const string TimePickerXamlSource = "<UserControl\n" +
-                                                    "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.ReminderTimeForm\"\n" +
-                                                    "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                    "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                    "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
-                                                    "    <ui:TimePicker\n" +
+        private static readonly string TimePickerXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.ReminderTimeForm",
+                                                    "    <fluence:TimePicker\n" +
                                                     "        x:Name=\"ReminderTimePicker\"\n" +
                                                     "        Header=\"Reminder time\"\n" +
                                                     "        MinuteIncrement=\"5\"\n" +
                                                     "        PlaceholderText=\"Pick a time\"\n" +
-                                                    "        SelectedTimeChanged=\"ReminderTimePicker_SelectedTimeChanged\" />\n" +
-                                                    "</UserControl>\n";
+                                                    "        SelectedTimeChanged=\"ReminderTimePicker_SelectedTimeChanged\" />\n");
 
         private const string TimePickerCSharpSource = "using System.Windows.Controls;\n" +
                                                       "using Fluence.Wpf;\n" +
@@ -267,16 +246,18 @@ namespace Fluence.Wpf.Demo.Pages
                                                       "    }\n" +
                                                       "}\n";
 
-        private const string ColorPickerXamlSource = "<UserControl\n" +
-                                                     "    x:Class=\"Fluence.Wpf.Demo.Pages.Forms.AccentColorForm\"\n" +
-                                                     "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                     "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                     "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
-                                                     "    <ui:ColorPicker\n" +
+        private static readonly string ColorPickerXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Forms.AccentColorForm",
+                                                     "    <!--\n" +
+                                                     "        The text-entry area shows an RGB/HSV selector, per-channel inputs, an alpha\n" +
+                                                     "        percentage input, and a hex input. Set IsMoreButtonVisible=\"True\" to collapse\n" +
+                                                     "        it behind a More/Less toggle; the Is*Visible properties hide individual parts.\n" +
+                                                     "    -->\n" +
+                                                     "    <fluence:ColorPicker\n" +
                                                      "        x:Name=\"AccentColorPicker\"\n" +
                                                      "        ColorChanged=\"AccentColorPicker_ColorChanged\"\n" +
-                                                     "        IsAlphaEnabled=\"True\" />\n" +
-                                                     "</UserControl>\n";
+                                                     "        IsAlphaEnabled=\"True\"\n" +
+                                                     "        IsMoreButtonVisible=\"False\" />\n");
 
         private const string ColorPickerCSharpSource = "using System.Windows.Controls;\n" +
                                                        "using Fluence.Wpf;\n" +
@@ -320,7 +301,7 @@ namespace Fluence.Wpf.Demo.Pages
         {
             Loaded -= GalleryFormsPage_Loaded;
             DependencyPropertyDescriptor
-                .FromProperty(FluencePasswordBox.PasswordProperty, typeof(FluencePasswordBox))
+                .FromProperty(Controls.PasswordBox.PasswordProperty, typeof(Controls.PasswordBox))
                 .AddValueChanged(SignInPasswordBox, SignInPassword_Changed);
         }
 

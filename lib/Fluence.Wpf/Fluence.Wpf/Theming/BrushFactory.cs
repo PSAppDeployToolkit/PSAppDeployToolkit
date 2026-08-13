@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -42,7 +43,7 @@ namespace Fluence.Wpf.Theming
         // -> ApplicationBackgroundBrush, not ApplicationBackgroundColorBrush). BrushFactory skips the
         // auto-twin for these keys; SpecialBrushes.Add emits the correctly-named brush instead.
         private static readonly HashSet<string> NoAutoTwinKeys =
-            new(System.StringComparer.Ordinal) { "ApplicationBackgroundColor" };
+            new(StringComparer.Ordinal) { "ApplicationBackgroundColor" };
 
         /// <summary>
         /// Returns a <see cref="ResourceDictionary"/> containing every Color token and its

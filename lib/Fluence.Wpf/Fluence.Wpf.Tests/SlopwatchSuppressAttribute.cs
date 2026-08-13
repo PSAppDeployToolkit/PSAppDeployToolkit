@@ -41,10 +41,14 @@ namespace Fluence.Wpf.Tests
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
     internal sealed class SlopwatchSuppressAttribute(string ruleId, string justification) : Attribute
     {
-        /// <summary>Gets the suppressed Slopwatch rule id.</summary>
+        /// <summary>
+        /// Gets the suppressed Slopwatch rule id.
+        /// </summary>
         public string RuleId { get; } = ruleId;
 
-        /// <summary>Gets the written justification for the suppression.</summary>
+        /// <summary>
+        /// Gets the written justification for the suppression.
+        /// </summary>
         public string Justification { get; } = justification;
     }
 }

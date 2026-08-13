@@ -2,10 +2,10 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryDataBindingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
@@ -17,21 +17,21 @@
         DemoSamplePageWiring.Apply(...) to move them into the cards and attach source.
         See Fluence.Wpf.Demo/README.md and Pages/DemoSamplePageWiring.cs.
     -->
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Data Binding" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="These examples keep the demo in code-behind while showing common WPF binding patterns used by Fluence.Wpf controls." />
 
 
             <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
-                <ui:ListView
+                <fluence:ListView
                     x:Name="BoundListView"
                     Height="220"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     SelectionMode="Single">
-                    <ui:ListView.ItemTemplate>
+                    <fluence:ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -39,7 +39,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <ui:FontIcon
+                                <fluence:FontIcon
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
@@ -63,24 +63,24 @@
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
-                    </ui:ListView.ItemTemplate>
-                </ui:ListView>
+                    </fluence:ListView.ItemTemplate>
+                </fluence:ListView>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
                 <StackPanel MinWidth="320">
-                    <ui:TextBox
+                    <fluence:TextBox
                         x:Name="NewItemBox"
                         Width="320"
                         Margin="{DynamicResource DemoControlBottomGapMargin}"
                         KeyDown="NewItemBox_KeyDown"
                         PlaceholderText="New item name..." />
-                    <ui:Button
+                    <fluence:Button
                         Margin="{DynamicResource DemoSmallBottomGapMargin}"
                         HorizontalAlignment="Stretch"
                         Appearance="Accent"
                         Click="AddItem_Click"
                         Content="Add" />
-                    <ui:Button
+                    <fluence:Button
                         HorizontalAlignment="Stretch"
                         Click="RemoveItem_Click"
                         Content="Remove selected" />
@@ -90,7 +90,7 @@
 
 
             <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
-                <ui:ListView
+                <fluence:ListView
                     x:Name="SelectionModeListView"
                     Height="200"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -106,7 +106,7 @@
                     <ListViewItem Content="Foxtrot" />
                     <ListViewItem Content="Golf" />
                     <ListViewItem Content="Hotel" />
-                </ui:ListView>
+                </fluence:ListView>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot02OutputContentHost" Visibility="Collapsed">
                 <TextBlock
@@ -117,20 +117,20 @@
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot02RightRailContentHost" Visibility="Collapsed">
                 <StackPanel x:Name="SelectionModeRail" VerticalAlignment="Center">
-                    <ui:RadioButton
+                    <fluence:RadioButton
                         x:Name="SingleModeRadio"
                         Margin="{DynamicResource DemoSmallBottomGapMargin}"
                         Checked="SelectionMode_Changed"
                         Content="Single"
                         GroupName="SelectionModeGroup"
                         IsChecked="True" />
-                    <ui:RadioButton
+                    <fluence:RadioButton
                         x:Name="MultipleModeRadio"
                         Margin="{DynamicResource DemoSmallBottomGapMargin}"
                         Checked="SelectionMode_Changed"
                         Content="Multiple"
                         GroupName="SelectionModeGroup" />
-                    <ui:RadioButton
+                    <fluence:RadioButton
                         x:Name="ExtendedModeRadio"
                         Checked="SelectionMode_Changed"
                         Content="Extended (Shift+Click)"
@@ -141,14 +141,14 @@
 
 
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
-                <ui:ListView
+                <fluence:ListView
                     x:Name="DataTemplateListView"
                     Height="180"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     SelectionMode="Single">
-                    <ui:ListView.ItemTemplate>
+                    <fluence:ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="{DynamicResource DemoListItemMargin}">
                                 <Grid.ColumnDefinitions>
@@ -156,7 +156,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <ui:FontIcon
+                                <fluence:FontIcon
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
@@ -180,8 +180,8 @@
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
-                    </ui:ListView.ItemTemplate>
-                </ui:ListView>
+                    </fluence:ListView.ItemTemplate>
+                </fluence:ListView>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot03OutputContentHost" Visibility="Collapsed">
                 <TextBlock
@@ -191,5 +191,5 @@
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use an inline DataTemplate when every item shares the same row shape." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

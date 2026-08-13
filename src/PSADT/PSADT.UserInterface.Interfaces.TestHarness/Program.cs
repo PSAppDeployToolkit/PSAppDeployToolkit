@@ -46,7 +46,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                 throw new InvalidDataException("Error parsing strings.psd1 file.");
             }
 
-            // Read out the hashtable
+            // Read out the hashtable.
             Hashtable stringTable = GetModuleDefaultTable(stringsAst, "Strings");
             Hashtable configTable = GetModuleDefaultTable(stringsAst, "Config");
             Hashtable assetsTable = (Hashtable)configTable["Assets"]!;

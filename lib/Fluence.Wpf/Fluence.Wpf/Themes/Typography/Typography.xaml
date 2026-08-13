@@ -5,11 +5,14 @@
 
     <!--
         Windows 11 Fluent motion timing canonical values.
+        ControlPressAnimationDuration is the shared 100 ms press/exit feedback
+        value used by Button, Card, and their peers.
         WPF Storyboard Duration attributes require literal values in XAML,
         so these cannot be used directly in trigger-based animations.
         Use from code-behind: (TimeSpan)FindResource("ControlFastAnimationDuration")
     -->
     <sys:TimeSpan x:Key="ControlFasterAnimationDuration">0:0:0.083</sys:TimeSpan>
+    <sys:TimeSpan x:Key="ControlPressAnimationDuration">0:0:0.1</sys:TimeSpan>
     <sys:TimeSpan x:Key="ControlFastAnimationDuration">0:0:0.167</sys:TimeSpan>
     <sys:TimeSpan x:Key="ControlNormalAnimationDuration">0:0:0.250</sys:TimeSpan>
     <sys:TimeSpan x:Key="ControlSlowAnimationDuration">0:0:0.333</sys:TimeSpan>

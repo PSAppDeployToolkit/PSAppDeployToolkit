@@ -169,14 +169,19 @@
                                         <TranslateTransform x:Name="SwitchKnobTranslate" X="0" />
                                     </Grid.RenderTransform>
 
-                                    <!--  Thumb: 12x12 circle at rest; grows on hover/pressed/drag.  -->
+                                    <!--  Thumb: fixed 12x12 circle; hover/pressed/drag growth runs on the render-thread scale below.  -->
                                     <Ellipse
                                         x:Name="SwitchThumb"
                                         Width="12"
                                         Height="12"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Fill="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <Ellipse.RenderTransform>
+                                            <ScaleTransform x:Name="SwitchThumbScale" ScaleX="1" ScaleY="1" />
+                                        </Ellipse.RenderTransform>
+                                    </Ellipse>
                                 </Grid>
 
                                 <Thumb
@@ -223,17 +228,17 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="Width">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="14" />
+                                                Value="1.1667" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="Height">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="14" />
+                                                Value="1.1667" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -241,22 +246,51 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="Width">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="12" />
+                                                Value="1.0" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="Height">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="12" />
+                                                Value="1.0" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
+
+                        <!--
+                            Keyboard press (space, no pointer over): snap the thumb to the
+                            pressed 17x14 footprint via the render scale. Replaces the old
+                            steady-state Width/Height Setters; pointer presses on the track
+                            are driven from code-behind, and pointer presses over the label
+                            keep the hover storyboard value exactly as before.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsMouseOver" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard x:Name="SwitchThumbKeyPressedStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.4167" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchThumb" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.1667" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="SwitchThumbKeyPressedStoryboard" />
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
 
                         <!--  Unchecked + Hover  -->
                         <MultiTrigger>
@@ -273,9 +307,7 @@
                                 <Condition Property="IsPressed" Value="True" />
                                 <Condition Property="IsChecked" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="SwitchThumb" Property="Height" Value="14" />
                             <Setter TargetName="TrackOffPressed" Property="Opacity" Value="1" />
-                            <Setter TargetName="SwitchThumb" Property="Width" Value="17" />
                         </MultiTrigger>
 
                         <!--  Checked  -->
@@ -307,11 +339,9 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsPressed" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="SwitchThumb" Property="Height" Value="14" />
                             <Setter TargetName="TrackOn" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOnHover" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOnPressed" Property="Opacity" Value="1" />
-                            <Setter TargetName="SwitchThumb" Property="Width" Value="17" />
                         </MultiTrigger>
 
                         <!--  Off + Disabled  -->

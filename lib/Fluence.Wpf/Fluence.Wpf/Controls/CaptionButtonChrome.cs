@@ -60,7 +60,7 @@ namespace Fluence.Wpf.Controls
             out Visibility visibility,
             out bool isEnabled)
         {
-            isEnabled = resizeMode != ResizeMode.NoResize;
+            isEnabled = resizeMode is not ResizeMode.NoResize;
             visibility = isEnabled ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -122,8 +122,8 @@ namespace Fluence.Wpf.Controls
 
             if (resizeMode is not ResizeMode.NoResize and not ResizeMode.CanMinimize)
             {
-                maximizeEnabled = maximizeVisibility == Visibility.Visible;
-                restoreEnabled = restoreVisibility == Visibility.Visible;
+                maximizeEnabled = maximizeVisibility is Visibility.Visible;
+                restoreEnabled = restoreVisibility is Visibility.Visible;
             }
             else
             {
@@ -149,14 +149,14 @@ namespace Fluence.Wpf.Controls
             out Visibility maximizeVisibility,
             out Visibility restoreVisibility)
         {
-            if (resizeMode == ResizeMode.NoResize)
+            if (resizeMode is ResizeMode.NoResize)
             {
                 maximizeVisibility = Visibility.Collapsed;
                 restoreVisibility = Visibility.Collapsed;
                 return;
             }
 
-            if (windowState == WindowState.Maximized)
+            if (windowState is WindowState.Maximized)
             {
                 maximizeVisibility = Visibility.Collapsed;
                 restoreVisibility = Visibility.Visible;
