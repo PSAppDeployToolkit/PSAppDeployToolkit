@@ -345,7 +345,7 @@ function Get-ADTApplication
                         $appProperties['EstimatedSize'],
                         $systemComponent,
                         $windowsInstaller,
-                        $noRemove,
+                        $item.GetValue('NoRemove', $false),
                         $is64bitApplication
                     )
 
