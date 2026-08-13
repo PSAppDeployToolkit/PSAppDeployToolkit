@@ -34,14 +34,11 @@ function Get-ADTApplication
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
 
-    .PARAMETER IncludeNoRemoveEntries
-        Specifies that uninstall entries marked with `NoRemove=1` be included.
-
-    .PARAMETER IncludeSystemComponentEntries
-        Specifies that uninstall entries marked with `SystemComponent=1` be included.
-
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
+
+    .PARAMETER Force
+        Returns all found applications, even if marked as a system component.
 
     .INPUTS
         None
@@ -136,15 +133,12 @@ function Get-ADTApplication
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IncludeNoRemoveEntries,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IncludeSystemComponentEntries,
-
         [Parameter(Mandatory = $false, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$FilterScript
+        [System.Management.Automation.ScriptBlock]$FilterScript,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
@@ -238,11 +232,7 @@ function Get-ADTApplication
                     {
                         continue
                     }
-                    if (($systemComponent = $item.GetValue('SystemComponent', $false)) -and !$IncludeSystemComponentEntries)
-                    {
-                        continue
-                    }
-                    if (($noRemove = $item.GetValue('NoRemove', $false)) -and !$IncludeNoRemoveEntries)
+                    if (($systemComponent = $item.GetValue('SystemComponent', $false)) -and !$Force)
                     {
                         continue
                     }

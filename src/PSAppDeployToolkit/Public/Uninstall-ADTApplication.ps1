@@ -41,12 +41,6 @@ function Uninstall-ADTApplication
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
 
-    .PARAMETER IncludeNoRemoveEntries
-        Specifies that uninstall entries marked with `NoRemove=1` be included.
-
-    .PARAMETER IncludeSystemComponentEntries
-        Specifies that uninstall entries marked with `SystemComponent=1` be included.
-
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
@@ -90,6 +84,9 @@ function Uninstall-ADTApplication
 
     .PARAMETER PassThru
         Returns an object with ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
+
+    .PARAMETER Force
+        Allows the retrieval and/or removal of uninstall entries flagged as NoRemove or SystemComponent.
 
     .INPUTS
         PSADT.AppManagement.InstalledApplication
@@ -180,12 +177,6 @@ function Uninstall-ADTApplication
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
-        [System.Management.Automation.SwitchParameter]$IncludeNoRemoveEntries,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
-        [System.Management.Automation.SwitchParameter]$IncludeSystemComponentEntries,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
@@ -238,8 +229,10 @@ function Uninstall-ADTApplication
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SwitchParameter]$PassThru
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
@@ -305,6 +298,19 @@ function Uninstall-ADTApplication
 
         foreach ($removeApplication in $InstalledApplication)
         {
+            if (!$Force)
+            {
+                if ($removeApplication.NoRemove)
+                {
+                    Write-ADTLogEntry -Message "Skipping uninstallation of application [$($removeApplication.DisplayName)] as it's flagged as [NoRemove] and [-Force] has not been specified." -Severity Warning
+                    continue
+                }
+                if ($removeApplication.SystemComponent)
+                {
+                    Write-ADTLogEntry -Message "Skipping uninstallation of application [$($removeApplication.DisplayName)] as it's flagged as [SystemComponent] and [-Force] has not been specified." -Severity Warning
+                    continue
+                }
+            }
             try
             {
                 if ($removeApplication.WindowsInstaller)
