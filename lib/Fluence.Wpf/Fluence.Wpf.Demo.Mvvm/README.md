@@ -8,7 +8,6 @@ A small MVVM Task Manager demo for anyone who wants to see Fluence.Wpf controls 
 - `MainWindow.xaml` - a `FluenceWindow` with task filtering, list content, task input, and progress/status controls.
 - `ViewModels/` - `MainViewModel` and `TaskItemViewModel` using `[ObservableProperty]` and `[RelayCommand]`.
 - `Converters/EnumToBoolConverter.cs` - radio-button binding support for the `FilterMode` enum.
-- `Resources/fluence-wpf-appicon-256.ico` - application icon resource.
 
 ## Run
 

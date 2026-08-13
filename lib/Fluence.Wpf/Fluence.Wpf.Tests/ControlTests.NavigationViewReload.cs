@@ -26,16 +26,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void NavigationView_AfterUnloadReload_SelectionIndicatorStillUpdates()
         {
             RunOnStaThread(() =>
@@ -79,7 +79,7 @@ namespace Fluence.Wpf.Tests
                     WaitForAnimationAndDrain(window.Dispatcher, 400);
 
                     FrameworkElement? indicator = nav.GetSelectionIndicatorForTesting();
-                    Assert.IsNotNull(indicator, "Indicator part should be resolved after reload.");
+                    Assert.NotNull(indicator);
                     double homeY = GetSelectionIndicatorTranslate(indicator).Y;
 
                     nav.InvokeItem(files);
@@ -89,12 +89,10 @@ namespace Fluence.Wpf.Tests
                     // animating), so the sampled filesY is the final settled offset.
                     _ = WaitUntil(window.Dispatcher, 2000, () => !GetSelectionIndicatorTranslate(indicator).HasAnimatedProperties);
 
-                    Assert.AreSame(files, nav.SelectedItem, "Invoking the second item should change the selection after reload.");
+                    Assert.Same(files, nav.SelectedItem);
                     double filesY = GetSelectionIndicatorTranslate(indicator).Y;
-                    Assert.AreNotEqual(homeY, filesY, 0.5,
-                        "After unload/reload, the selection indicator must still move to the newly selected item.");
-                    Assert.AreEqual(1.0, indicator.Opacity, 0.01,
-                        "The selection indicator must be visible at the new selection after reload.");
+                    Assert.NotEqual(homeY, filesY, 0.5);
+                    Assert.Equal(1.0, indicator.Opacity, 0.01);
                 }
                 finally
                 {

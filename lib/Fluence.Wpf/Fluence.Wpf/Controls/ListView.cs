@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Collections;
 using System.Windows;
@@ -40,9 +41,10 @@ namespace Fluence.Wpf.Controls
     /// </summary>
     public class ListView : System.Windows.Controls.ListView
     {
-        // Animation durations for item insertions and removals.
+        // Animation durations for item insertions and removals:
+        // ControlNormalAnimationDuration (250 ms) and ControlFastAnimationDuration (167 ms).
         private static readonly Duration InsertDuration = new(TimeSpan.FromMilliseconds(250));
-        private static readonly Duration RemoveDuration = new(TimeSpan.FromMilliseconds(200));
+        private static readonly Duration RemoveDuration = new(TimeSpan.FromMilliseconds(167));
 
         /// <summary>
         /// Initializes static members of the ListView class and overrides the default style metadata.
@@ -218,7 +220,7 @@ namespace Fluence.Wpf.Controls
         /// <param name="onCompleted">An optional callback invoked after removal completes.</param>
         public void AnimateRemove(object item, Action? onCompleted)
         {
-            if (!ItemAnimationsEnabled)
+            if (!ItemAnimationsEnabled || !MotionHelper.IsMotionEnabled)
             {
                 RemoveItem(item);
                 onCompleted?.Invoke();
@@ -237,11 +239,11 @@ namespace Fluence.Wpf.Controls
             }
             DoubleAnimation opacityAnim = new(container.Opacity, 0, RemoveDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
             };
             DoubleAnimation slideAnim = new(0, -12, RemoveDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
             };
             opacityAnim.Completed += (s, e) =>
             {
@@ -292,8 +294,9 @@ namespace Fluence.Wpf.Controls
             {
                 ui.Focusable = IsItemSelectable;
             }
-            if (!ItemAnimationsEnabled || !IsLoaded)
+            if (!ItemAnimationsEnabled || !IsLoaded || !MotionHelper.IsMotionEnabled)
             {
+                // No insert tween: the container stays at its rest position and full opacity.
                 return;
             }
             if (element is not UIElement container)

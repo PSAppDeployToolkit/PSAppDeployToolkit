@@ -139,7 +139,7 @@ namespace Fluence.Wpf.Demo
             ListView list = FindVisualChildByName<ListView>(root, "IconCatalogList") ?? throw new InvalidOperationException("The Icons page did not create IconCatalogList.");
             _ = list.ApplyTemplate();
             list.UpdateLayout();
-            if (list.Items.Count == 0)
+            if (list.Items.Count is 0)
             {
                 throw new InvalidOperationException("The Icons page did not load any icon rows.");
             }

@@ -26,16 +26,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using System.Windows;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class ComboBoxTests
     {
         private static void RunOnFreshStaThread(Action action)
@@ -85,27 +84,23 @@ namespace Fluence.Wpf.Tests
 
         #region Dropdown placement
 
-        [TestMethod]
+        [Fact]
         public void IsDropDownOpenedUpward_DefaultIsFalse()
         {
             RunWithComboBox(static cb =>
             {
-                Assert.IsFalse(cb.IsDropDownOpenedUpward,
+                Assert.False(cb.IsDropDownOpenedUpward,
                     "IsDropDownOpenedUpward should default to false.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DropdownCornerRadius_DefaultIs8()
         {
-            RunWithComboBox(static cb =>
-            {
-                Assert.AreEqual(new CornerRadius(8), cb.DropdownCornerRadius,
-                    "DropdownCornerRadius should default to 8.");
-            });
+            RunWithComboBox(static cb => Assert.Equal(new CornerRadius(8), cb.DropdownCornerRadius));
         }
 
-        [TestMethod]
+        [Fact]
         public void IsDropDownOpenedUpward_FalseWhenDropDownNotOpen()
         {
             RunWithComboBox(static cb =>
@@ -113,9 +108,9 @@ namespace Fluence.Wpf.Tests
                 _ = cb.Items.Add("A");
                 _ = cb.Items.Add("B");
 
-                Assert.IsFalse(cb.IsDropDownOpen,
+                Assert.False(cb.IsDropDownOpen,
                     "IsDropDownOpen should be false by default.");
-                Assert.IsFalse(cb.IsDropDownOpenedUpward,
+                Assert.False(cb.IsDropDownOpenedUpward,
                     "IsDropDownOpenedUpward must be false when dropdown is not open.");
             });
         }
@@ -124,7 +119,7 @@ namespace Fluence.Wpf.Tests
 
         #region Hover state (brush verification)
 
-        [TestMethod]
+        [Fact]
         public void ComboBoxXaml_HoverUsesSubtleFillBrush()
         {
             string xamlPath = System.IO.Path.Combine(
@@ -135,11 +130,11 @@ namespace Fluence.Wpf.Tests
             {
                 string xaml = System.IO.File.ReadAllText(xamlPath);
 
-                Assert.IsTrue(
+                Assert.True(
                     xaml.Contains("SubtleFillColorSecondaryBrush", StringComparison.Ordinal),
                     "ComboBoxItem hover trigger must use SubtleFillColorSecondaryBrush.");
 
-                Assert.IsFalse(
+                Assert.False(
                     xaml.Contains("IsHighlighted", StringComparison.Ordinal) &&
                     xaml.Contains("ControlFillColorSecondaryBrush", StringComparison.Ordinal) &&
                     !xaml.Contains("SubtleFillColorSecondaryBrush", StringComparison.Ordinal),
@@ -159,7 +154,7 @@ namespace Fluence.Wpf.Tests
         // rounded". The fix names the inner Border "NoiseOverlay" and extends the
         // IsDropDownOpenedUpward trigger to flip NoiseOverlay.CornerRadius in lockstep.
 
-        [TestMethod]
+        [Fact]
         public void ComboBoxXaml_NoiseOverlay_IsNamed()
         {
             string xamlPath = System.IO.Path.Combine(
@@ -173,14 +168,14 @@ namespace Fluence.Wpf.Tests
 
             string xaml = System.IO.File.ReadAllText(xamlPath);
 
-            Assert.IsTrue(
+            Assert.True(
                 xaml.Contains("x:Name=\"NoiseOverlay\"", StringComparison.Ordinal),
                 "The acrylic-noise Border inside PART_DropdownBorder must be named " +
                 "\"NoiseOverlay\" so the IsDropDownOpenedUpward trigger can retarget " +
                 "its CornerRadius to match the outer border's flat-bottom shape.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ComboBoxXaml_UpwardTrigger_SetsNoiseOverlayCornerRadius()
         {
             string xamlPath = System.IO.Path.Combine(
@@ -201,13 +196,13 @@ namespace Fluence.Wpf.Tests
             const string expectedSetter =
                 "<Setter TargetName=\"NoiseOverlay\" Property=\"CornerRadius\" Value=\"8,8,0,0\" />";
 
-            Assert.IsTrue(
+            Assert.True(
                 xaml.Contains(expectedSetter, StringComparison.Ordinal),
                 "IsDropDownOpenedUpward trigger must set NoiseOverlay.CornerRadius=\"8,8,0,0\" " +
                 "so the inner noise tracks the outer flat-bottom shape when the popup opens upward.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ComboBox_Template_ExposesDropdownBorderAndNoiseOverlay()
         {
             RunOnFreshStaThread(static () =>
@@ -226,28 +221,22 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    WpfTestSta.Dispatcher?.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Background);
+                    WpfTestSta.Dispatcher?.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Background, default);
                     window.UpdateLayout();
                     _ = comboBox.ApplyTemplate();
 
                     System.Windows.Controls.Border? dropdownBorder = comboBox.Template.FindName("PART_DropdownBorder", comboBox)
                         as System.Windows.Controls.Border;
-                    Assert.IsNotNull(dropdownBorder,
-                        "Template must expose PART_DropdownBorder so the popup backdrop is locatable.");
+                    Assert.NotNull(dropdownBorder);
 
                     System.Windows.Controls.Border? noiseOverlay = comboBox.Template.FindName("NoiseOverlay", comboBox)
                         as System.Windows.Controls.Border;
-                    Assert.IsNotNull(noiseOverlay,
-                        "Template must expose NoiseOverlay (the inner acrylic-noise Border) so the " +
-                        "IsDropDownOpenedUpward trigger can track the outer border's CornerRadius.");
+                    Assert.NotNull(noiseOverlay);
 
                     // Default (downward-opening) state: both borders share the same radius,
                     // inherited from DropdownCornerRadius (default CornerRadius(8)).
-                    Assert.AreEqual(new CornerRadius(8), dropdownBorder.CornerRadius,
-                        "PART_DropdownBorder.CornerRadius must default to DropdownCornerRadius (8).");
-                    Assert.AreEqual(new CornerRadius(8), noiseOverlay.CornerRadius,
-                        "NoiseOverlay.CornerRadius must default to DropdownCornerRadius (8) so the " +
-                        "noise paints the same rounded shape as the outer border.");
+                    Assert.Equal(new CornerRadius(8), dropdownBorder.CornerRadius);
+                    Assert.Equal(new CornerRadius(8), noiseOverlay.CornerRadius);
                 }
                 finally
                 {
@@ -260,7 +249,7 @@ namespace Fluence.Wpf.Tests
 
         #region Auto-select first item
 
-        [TestMethod]
+        [Fact]
         public void FirstItem_AutoSelectedWhenNoSelectionProvided()
         {
             RunWithComboBox(static cb =>
@@ -271,12 +260,11 @@ namespace Fluence.Wpf.Tests
                 _ = cb.Items.Add("Delta");
                 _ = cb.Items.Add("Epsilon");
 
-                Assert.AreEqual(0, cb.SelectedIndex,
-                    "First item must be auto-selected when no SelectedIndex is provided.");
+                Assert.Equal(0, cb.SelectedIndex);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ExplicitSelectedIndex_MinusOne_IsRespected()
         {
             RunWithComboBox(static cb =>
@@ -287,29 +275,26 @@ namespace Fluence.Wpf.Tests
                 _ = cb.Items.Add("Beta");
                 _ = cb.Items.Add("Gamma");
 
-                Assert.AreEqual(-1, cb.SelectedIndex,
-                    "Explicit SelectedIndex=-1 must be respected; auto-select must not override it.");
+                Assert.Equal(-1, cb.SelectedIndex);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AutoSelect_WorksAfterDynamicItemAdd()
         {
             RunWithComboBox(static cb =>
             {
-                Assert.AreEqual(-1, cb.SelectedIndex,
-                    "SelectedIndex must be -1 when no items exist.");
+                Assert.Equal(-1, cb.SelectedIndex);
 
                 _ = cb.Items.Add("First");
                 _ = cb.Items.Add("Second");
                 _ = cb.Items.Add("Third");
 
-                Assert.AreEqual(0, cb.SelectedIndex,
-                    "SelectedIndex must be 0 after dynamically adding items.");
+                Assert.Equal(0, cb.SelectedIndex);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AutoSelect_DoesNotOverrideExplicitSelection()
         {
             RunWithComboBox(static cb =>
@@ -322,8 +307,7 @@ namespace Fluence.Wpf.Tests
 
                 _ = cb.Items.Add("Delta");
 
-                Assert.AreEqual(2, cb.SelectedIndex,
-                    "Auto-select must not change an existing explicit selection.");
+                Assert.Equal(2, cb.SelectedIndex);
             });
         }
 

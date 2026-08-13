@@ -26,11 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media.Effects;
-using WpfBorder = System.Windows.Controls.Border;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -45,7 +45,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 C21  Card elevation shadow
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void Card_DefaultVariant_HasElevationShadowOnOuterBorder()
         {
             WpfTestSta.Invoke(static () =>
@@ -58,18 +58,16 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
-                Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
+                Assert.NotNull(outerBorder);
 
-                Assert.IsNotNull(outerBorder.Effect,
-                    "Card Default variant: OuterBorder.Effect must be non-null (elevation shadow) per WI-3 C21.");
-                Assert.IsInstanceOfType(outerBorder.Effect, typeof(DropShadowEffect),
-                    "Card Default variant: OuterBorder.Effect must be DropShadowEffect.");
+                Assert.NotNull(outerBorder.Effect);
+                _ = Assert.IsAssignableFrom<DropShadowEffect>(outerBorder.Effect);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_SubtleVariant_NoElevationShadow()
         {
             WpfTestSta.Invoke(static () =>
@@ -82,16 +80,15 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
-                Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
+                Assert.NotNull(outerBorder);
 
-                Assert.IsNull(outerBorder.Effect,
-                    "Card Subtle variant: OuterBorder.Effect must be null (no shadow) per WI-3 C21.");
+                Assert.Null(outerBorder.Effect);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_OutlinedVariant_NoElevationShadow()
         {
             WpfTestSta.Invoke(static () =>
@@ -104,16 +101,15 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
-                Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
+                Assert.NotNull(outerBorder);
 
-                Assert.IsNull(outerBorder.Effect,
-                    "Card Outlined variant: OuterBorder.Effect must be null per WI-3 C21.");
+                Assert.Null(outerBorder.Effect);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_FilledVariant_NoElevationShadow()
         {
             WpfTestSta.Invoke(static () =>
@@ -126,16 +122,15 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
-                Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
+                Assert.NotNull(outerBorder);
 
-                Assert.IsNull(outerBorder.Effect,
-                    "Card Filled variant: OuterBorder.Effect must be null per WI-3 C21.");
+                Assert.Null(outerBorder.Effect);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_DefaultVariant_ShadowHasCorrectProfile()
         {
             WpfTestSta.Invoke(static () =>
@@ -148,16 +143,16 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
-                Assert.IsNotNull(outerBorder, "OuterBorder must exist.");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
+                Assert.NotNull(outerBorder);
                 DropShadowEffect? shadow = outerBorder.Effect as DropShadowEffect;
-                Assert.IsNotNull(shadow, "Effect must be DropShadowEffect.");
+                Assert.NotNull(shadow);
 
                 // WI-3 C21: subtle elevation - soft blur, low opacity, downward direction
-                Assert.IsTrue(shadow.BlurRadius is >= 4 and <= 16,
-                    $"BlurRadius {shadow.BlurRadius} outside expected range [4,16].");
-                Assert.IsTrue(shadow.Opacity is > 0 and <= 0.2,
-                    $"Opacity {shadow.Opacity} outside expected range (0, 0.2].");
+                Assert.True(shadow.BlurRadius is >= 4 and <= 16,
+                    $"BlurRadius {shadow.BlurRadius.ToString(CultureInfo.InvariantCulture)} outside expected range [4,16].");
+                Assert.True(shadow.Opacity is > 0 and <= 0.2,
+                    $"Opacity {shadow.Opacity.ToString(CultureInfo.InvariantCulture)} outside expected range (0, 0.2].");
                 w.Close();
             });
         }

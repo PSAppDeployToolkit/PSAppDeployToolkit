@@ -36,4 +36,5 @@ using System.Windows.Markup;
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 [assembly: XmlnsDefinition("http://schemas.fluencewpf.com", "Fluence.Wpf")]
 [assembly: XmlnsDefinition("http://schemas.fluencewpf.com", "Fluence.Wpf.Controls")]
+[assembly: XmlnsDefinition("http://schemas.fluencewpf.com", "Fluence.Wpf.Markup")]
 [assembly: XmlnsPrefix("http://schemas.fluencewpf.com", "fluence")]

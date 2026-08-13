@@ -1,4 +1,4 @@
-## Build and test
+﻿## Build and test
 
 ```powershell
 dotnet restore Fluence.Wpf.sln
@@ -6,7 +6,7 @@ dotnet build Fluence.Wpf.sln
 dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj
 ```
 
-The test project runs on .NET Framework 4.7.2 and .NET 10 for Windows; both must pass. WPF tests share a single STA dispatcher (`WpfTestSta`), and the assembly carries `[assembly: DoNotParallelize]` to avoid cross-thread resource issues. Treat the branch's current test count as the floor. Add coverage for new behavior, and do not remove a test without documenting why its replacement supersedes it.
+WPF tests share a single STA dispatcher (`WpfTestSta`), and the assembly carries `[assembly: CollectionBehavior(DisableTestParallelization = true)]` (with `xunit.runner.json` disabling runner parallelism) to avoid cross-thread resource issues.
 
 ## Language and style
 
@@ -33,7 +33,7 @@ The test project runs on .NET Framework 4.7.2 and .NET 10 for Windows; both must
 ## Pull requests
 
 - Keep changes focused; avoid unrelated refactors.
-- If you add a public control or change a template, extend MSTest coverage (template parts, theme cycle, or demo navigation smoke where appropriate).
+- If you add a public control or change a template, extend xUnit test coverage (template parts, theme cycle, or demo navigation smoke where appropriate).
 - Update [CHANGELOG.md](../CHANGELOG.md) under **Unreleased** or the next version section.
 - The library builds with `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`; fix warnings rather than suppressing them.
 

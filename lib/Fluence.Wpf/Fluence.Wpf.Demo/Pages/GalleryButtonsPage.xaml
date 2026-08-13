@@ -2,10 +2,10 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryButtonsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
@@ -17,7 +17,7 @@
         DemoSamplePageWiring.Apply(...) to move them into the cards and attach source.
         See Fluence.Wpf.Demo/README.md and Pages/DemoSamplePageWiring.cs.
     -->
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Buttons" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Buttons initiate actions, open menus, navigate as links, or hold a checked state." />
@@ -25,16 +25,16 @@
 
             <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:Button
+                    <fluence:Button
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Standard"
                         IsEnabled="{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}" />
-                    <ui:Button
+                    <fluence:Button
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Appearance="Accent"
                         Content="Accent"
                         IsEnabled="{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}" />
-                    <ui:Button
+                    <fluence:Button
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Appearance="Subtle"
                         Content="Subtle"
@@ -42,7 +42,7 @@
                 </WrapPanel>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
-                <ui:CheckBox
+                <fluence:CheckBox
                     x:Name="ButtonEnableCheckBox"
                     Content="Enable buttons"
                     IsChecked="True" />
@@ -52,27 +52,27 @@
 
             <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:Button Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Icon Left">
-                        <ui:Button.Icon>
-                            <ui:FontIcon Glyph="&#xE774;" IconFontSize="14" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button
+                    <fluence:Button Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Icon Left">
+                        <fluence:Button.Icon>
+                            <fluence:FontIcon Glyph="&#xE774;" IconFontSize="14" />
+                        </fluence:Button.Icon>
+                    </fluence:Button>
+                    <fluence:Button
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Icon Right"
                         IconPlacement="Right">
-                        <ui:Button.Icon>
-                            <ui:FontIcon Glyph="&#xE8D6;" IconFontSize="14" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button
+                        <fluence:Button.Icon>
+                            <fluence:FontIcon Glyph="&#xE8D6;" IconFontSize="14" />
+                        </fluence:Button.Icon>
+                    </fluence:Button>
+                    <fluence:Button
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Appearance="Subtle"
                         Content="Refresh">
-                        <ui:Button.Icon>
-                            <ui:FontIcon Glyph="&#xE72C;" IconFontSize="14" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                        <fluence:Button.Icon>
+                            <fluence:FontIcon Glyph="&#xE72C;" IconFontSize="14" />
+                        </fluence:Button.Icon>
+                    </fluence:Button>
                 </WrapPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Place icons before or after text when the symbol helps the action scan faster." />
@@ -80,23 +80,23 @@
 
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:HyperlinkButton
+                    <fluence:HyperlinkButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Documentation"
                         NavigateUri="https://github.com/sintaxasn/Fluence.Wpf" />
-                    <ui:HyperlinkButton
+                    <fluence:HyperlinkButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Release notes"
                         NavigateUri="https://github.com/sintaxasn/Fluence.Wpf/releases" />
-                    <ui:HyperlinkButton
+                    <fluence:HyperlinkButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="With icon"
                         NavigateUri="https://github.com/sintaxasn/Fluence.Wpf">
-                        <ui:HyperlinkButton.Icon>
-                            <ui:FontIcon Glyph="&#xE71B;" IconFontSize="14" />
-                        </ui:HyperlinkButton.Icon>
-                    </ui:HyperlinkButton>
-                    <ui:HyperlinkButton
+                        <fluence:HyperlinkButton.Icon>
+                            <fluence:FontIcon Glyph="&#xE71B;" IconFontSize="14" />
+                        </fluence:HyperlinkButton.Icon>
+                    </fluence:HyperlinkButton>
+                    <fluence:HyperlinkButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Disabled"
                         IsEnabled="False" />
@@ -107,29 +107,29 @@
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="New">
-                        <ui:DropDownButton.Flyout>
+                    <fluence:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="New">
+                        <fluence:DropDownButton.Flyout>
                             <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Document" />
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Spreadsheet" />
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Folder" />
                             </StackPanel>
-                        </ui:DropDownButton.Flyout>
-                    </ui:DropDownButton>
-                    <ui:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Details">
-                        <ui:DropDownButton.Flyout>
+                        </fluence:DropDownButton.Flyout>
+                    </fluence:DropDownButton>
+                    <fluence:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Details">
+                        <fluence:DropDownButton.Flyout>
                             <StackPanel MaxWidth="260" Margin="{DynamicResource DemoSampleInnerCardPadding}">
                                 <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="Project status" />
                                 <TextBlock
@@ -138,16 +138,16 @@
                                     Text="Flyout content can be any WPF content."
                                     TextWrapping="Wrap" />
                             </StackPanel>
-                        </ui:DropDownButton.Flyout>
-                    </ui:DropDownButton>
-                    <ui:DropDownButton
+                        </fluence:DropDownButton.Flyout>
+                    </fluence:DropDownButton>
+                    <fluence:DropDownButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Disabled"
                         IsEnabled="False">
-                        <ui:DropDownButton.Flyout>
+                        <fluence:DropDownButton.Flyout>
                             <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
-                        </ui:DropDownButton.Flyout>
-                    </ui:DropDownButton>
+                        </fluence:DropDownButton.Flyout>
+                    </fluence:DropDownButton>
                 </WrapPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use DropDownButton when all available actions live in the flyout." />
@@ -155,54 +155,54 @@
 
             <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:SplitButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Save">
-                        <ui:SplitButton.Flyout>
+                    <fluence:SplitButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Save">
+                        <fluence:SplitButton.Flyout>
                             <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Save as" />
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Save a copy" />
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Export" />
                             </StackPanel>
-                        </ui:SplitButton.Flyout>
-                    </ui:SplitButton>
-                    <ui:SplitButton
+                        </fluence:SplitButton.Flyout>
+                    </fluence:SplitButton>
+                    <fluence:SplitButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Appearance="Accent"
                         Content="Publish">
-                        <ui:SplitButton.Flyout>
+                        <fluence:SplitButton.Flyout>
                             <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Publish draft" />
-                                <ui:Button
+                                <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
                                     Content="Schedule publish" />
                             </StackPanel>
-                        </ui:SplitButton.Flyout>
-                    </ui:SplitButton>
-                    <ui:SplitButton
+                        </fluence:SplitButton.Flyout>
+                    </fluence:SplitButton>
+                    <fluence:SplitButton
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Content="Disabled"
                         IsEnabled="False">
-                        <ui:SplitButton.Flyout>
+                        <fluence:SplitButton.Flyout>
                             <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
-                        </ui:SplitButton.Flyout>
-                    </ui:SplitButton>
+                        </fluence:SplitButton.Flyout>
+                    </fluence:SplitButton>
                 </WrapPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use SplitButton when there is one default action plus alternate actions in the flyout." />
@@ -210,7 +210,7 @@
 
             <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <ui:RepeatButton
+                    <fluence:RepeatButton
                         x:Name="RepeatCounterButton"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Click="RepeatCounterButton_Click"
@@ -224,6 +224,85 @@
                     Text="Clicks: 0" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use RepeatButton when holding the pointer should raise Click repeatedly." />
+
+
+            <ContentControl x:Name="DemoSampleSlot07DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <fluence:ToggleButton
+                        x:Name="WrapToggleButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Checked="WrapToggleButton_CheckedChanged"
+                        Content="Wrap text"
+                        Unchecked="WrapToggleButton_CheckedChanged" />
+                    <fluence:ToggleButton
+                        x:Name="ThreeStateToggleButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Three-state"
+                        IsThreeState="True" />
+                    <fluence:ToggleButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled checked"
+                        IsChecked="True"
+                        IsEnabled="False" />
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot07OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="ToggleButtonStateText"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="Wrap text: Off" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ToggleButton when a command switches a state on or off and should look pressed while active." />
+
+
+            <ContentControl x:Name="DemoSampleSlot08DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <fluence:ToggleSplitButton
+                        x:Name="ListToggleSplitButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Bulleted list"
+                        IsCheckedChanged="ListToggleSplitButton_IsCheckedChanged">
+                        <fluence:ToggleSplitButton.Flyout>
+                            <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <fluence:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Bulleted list" />
+                                <fluence:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Numbered list" />
+                                <fluence:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Checklist" />
+                            </StackPanel>
+                        </fluence:ToggleSplitButton.Flyout>
+                    </fluence:ToggleSplitButton>
+                    <fluence:ToggleSplitButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled"
+                        IsChecked="True"
+                        IsEnabled="False">
+                        <fluence:ToggleSplitButton.Flyout>
+                            <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
+                        </fluence:ToggleSplitButton.Flyout>
+                    </fluence:ToggleSplitButton>
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot08OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="ToggleSplitButtonStateText"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="List formatting: Off" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ToggleSplitButton when the primary half toggles a state and the flyout chooses which variant of that state to apply." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

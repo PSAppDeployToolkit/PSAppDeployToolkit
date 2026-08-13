@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if ((e.Key == Key.Enter || e.Key == Key.Space) && IsEnabled && NavigationView.FromItemContainer(this) is NavigationView nav)
+            if ((e.Key is Key.Enter or Key.Space) && IsEnabled && NavigationView.FromItemContainer(this) is NavigationView nav)
             {
                 nav.InvokeItem(this);
                 e.Handled = true;
@@ -180,7 +180,7 @@ namespace Fluence.Wpf.Controls
         /// </remarks>
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (!IsEnabled || e.ClickCount != 1)
+            if (!IsEnabled || e.ClickCount is not 1)
             {
                 base.OnPreviewMouseLeftButtonDown(e);
                 return;

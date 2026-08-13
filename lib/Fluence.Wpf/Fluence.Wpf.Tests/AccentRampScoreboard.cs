@@ -26,11 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Globalization;
 using System.Windows.Media;
+using Fluence.Wpf.Helpers;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -41,10 +41,10 @@ namespace Fluence.Wpf.Tests
     /// color, the color the OS actually applied (some inputs get OS-corrected for contrast),
     /// and the 6 ramp stops captured from HKCU AccentPalette.
     /// </summary>
-    [TestClass]
-    public class AccentRampScoreboard
+    /// <param name="output">The xUnit test output sink for diagnostic logging.</param>
+    public class AccentRampScoreboard(ITestOutputHelper output)
     {
-        public TestContext? TestContext { get; set; }
+        private readonly ITestOutputHelper _output = output;
 
         private sealed class Fixture(string name, Color requested, Color actual, Color l3, Color l2, Color l1, Color d1, Color d2, Color d3)
         {
@@ -150,13 +150,13 @@ namespace Fluence.Wpf.Tests
                 FromHex(0x00, 0x66, 0x40), FromHex(0x00, 0x4C, 0x30), FromHex(0x00, 0x28, 0x19)),
         ];
 
-        [TestMethod]
+        [Fact]
         public void Score_AllAlgorithms_AgainstCapturedFixtures()
         {
             int totalCurrent = 0, totalF = 0, totalG = 0, totalH = 0;
 
-            TestContext?.WriteLine("Fixture                    | Current | F     | G     | H");
-            TestContext?.WriteLine("---------------------------+---------+-------+-------+-------");
+            _output.WriteLine("Fixture                    | Current | F     | G     | H");
+            _output.WriteLine("---------------------------+---------+-------+-------+-------");
 
             foreach (Fixture fix in Fixtures)
             {
@@ -170,16 +170,16 @@ namespace Fluence.Wpf.Tests
                 totalG += dG;
                 totalH += dH;
 
-                TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", fix.Name, dCurrent, dF, dG, dH));
+                _output.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", fix.Name, dCurrent, dF, dG, dH));
             }
 
-            TestContext?.WriteLine("---------------------------+---------+-------+-------+-------");
-            TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", "TOTAL (lower = better)", totalCurrent, totalF, totalG, totalH));
-            TestContext?.WriteLine("");
+            _output.WriteLine("---------------------------+---------+-------+-------+-------");
+            _output.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", "TOTAL (lower = better)", totalCurrent, totalF, totalG, totalH));
+            _output.WriteLine("");
             int stops = Fixtures.Length * 6;
-            TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "Mean per stop ({0} stops):  | {1,7:F1} | {2,5:F1} | {3,5:F1} | {4,5:F1}", stops, totalCurrent / (double)stops, totalF / (double)stops, totalG / (double)stops, totalH / (double)stops));
+            _output.WriteLine(string.Format(CultureInfo.InvariantCulture, "Mean per stop ({0} stops):  | {1,7:F1} | {2,5:F1} | {3,5:F1} | {4,5:F1}", stops, totalCurrent / (double)stops, totalF / (double)stops, totalG / (double)stops, totalH / (double)stops));
 
-            Assert.IsTrue(Fixtures.Length > 0);
+            Assert.True(Fixtures.Length > 0);
         }
 
         private static int Score(Fixture fix, Func<Color, (Color, Color, Color, Color, Color, Color)> algo)

@@ -142,6 +142,12 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <inheritdoc />
+        protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
+        {
+            return new Automation.TextBlockAutomationPeer(this);
+        }
+
+        /// <inheritdoc />
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();

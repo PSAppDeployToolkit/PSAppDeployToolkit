@@ -195,7 +195,9 @@
                                             Grid.Column="0"
                                             MinWidth="0"
                                             Margin="0,0,2,0"
-                                            HorizontalAlignment="Stretch">
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.Name="Accept"
+                                            ToolTip="Accept">
                                             <controls:FontIcon Glyph="&#xE73E;" IconFontSize="12" />
                                         </controls:Button>
                                         <controls:Button
@@ -203,7 +205,9 @@
                                             Grid.Column="1"
                                             MinWidth="0"
                                             Margin="2,0,0,0"
-                                            HorizontalAlignment="Stretch">
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.Name="Cancel"
+                                            ToolTip="Cancel">
                                             <controls:FontIcon Glyph="&#xE711;" IconFontSize="12" />
                                         </controls:Button>
                                     </Grid>

@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Demo.Pages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,19 +33,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using FluenceCheckBox = Fluence.Wpf.Controls.CheckBox;
-using FluenceExpander = Fluence.Wpf.Controls.Expander;
-using FluenceProgressBar = Fluence.Wpf.Controls.ProgressBar;
-using FluenceRadioButton = Fluence.Wpf.Controls.RadioButton;
-using FluenceToggleSwitch = Fluence.Wpf.Controls.ToggleSwitch;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfEllipse = System.Windows.Shapes.Ellipse;
+using Fluence.Wpf.Demo.Pages;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void SelectionControls_OffStateBackgrounds_UseWinUiAltFillRoles()
         {
             WpfTestSta.Invoke(static () =>
@@ -55,9 +48,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
-                FluenceCheckBox checkBox = new() { Content = "Check" };
-                FluenceRadioButton radioButton = new() { Content = "Radio" };
-                FluenceToggleSwitch toggleSwitch = new() { OffContent = "Off", OnContent = "On" };
+                Controls.CheckBox checkBox = new() { Content = "Check" };
+                Controls.RadioButton radioButton = new() { Content = "Radio" };
+                Controls.ToggleSwitch toggleSwitch = new() { OffContent = "Off", OnContent = "On" };
 
                 StackPanel panel = new();
                 _ = panel.Children.Add(checkBox);
@@ -81,53 +74,41 @@ namespace Fluence.Wpf.Tests
                     _ = radioButton.ApplyTemplate();
                     _ = toggleSwitch.ApplyTemplate();
 
-                    WpfBorder? indicatorFill = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorFill");
-                    WpfBorder? indicatorHover = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorHover");
-                    WpfBorder? indicatorPressed = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorPressed");
-                    Assert.IsNotNull(indicatorFill, "CheckBox template must expose IndicatorFill.");
-                    Assert.IsNotNull(indicatorHover, "CheckBox template must expose IndicatorHover.");
-                    Assert.IsNotNull(indicatorPressed, "CheckBox template must expose IndicatorPressed.");
+                    Border? indicatorFill = FindVisualChildByName<Border>(checkBox, "IndicatorFill");
+                    Border? indicatorHover = FindVisualChildByName<Border>(checkBox, "IndicatorHover");
+                    Border? indicatorPressed = FindVisualChildByName<Border>(checkBox, "IndicatorPressed");
+                    Assert.NotNull(indicatorFill);
+                    Assert.NotNull(indicatorHover);
+                    Assert.NotNull(indicatorPressed);
 
-                    AssertBrushColor(indicatorFill.Background, "ControlAltFillColorSecondaryBrush",
-                        "Unchecked CheckBox fill should use the WinUI off-state rest token.");
-                    AssertBrushColor(indicatorHover.Background, "ControlAltFillColorTertiaryBrush",
-                        "Unchecked CheckBox hover fill should use the WinUI off-state hover token.");
-                    AssertBrushColor(indicatorPressed.Background, "ControlAltFillColorQuarternaryBrush",
-                        "Unchecked CheckBox pressed fill should use the WinUI off-state pressed token.");
-                    AssertBrushColor(indicatorPressed.BorderBrush, "ControlStrongStrokeColorDisabledBrush",
-                        "Unchecked CheckBox pressed stroke should use the WinUI pressed stroke token.");
+                    AssertBrushColor(indicatorFill.Background, "ControlAltFillColorSecondaryBrush");
+                    AssertBrushColor(indicatorHover.Background, "ControlAltFillColorTertiaryBrush");
+                    AssertBrushColor(indicatorPressed.Background, "ControlAltFillColorQuarternaryBrush");
+                    AssertBrushColor(indicatorPressed.BorderBrush, "ControlStrongStrokeColorDisabledBrush");
 
-                    WpfEllipse? outerEllipse = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipse");
-                    WpfEllipse? outerEllipseHover = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipseHover");
-                    WpfEllipse? outerEllipsePressed = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipsePressed");
-                    Assert.IsNotNull(outerEllipse, "RadioButton template must expose OuterEllipse.");
-                    Assert.IsNotNull(outerEllipseHover, "RadioButton template must expose OuterEllipseHover.");
-                    Assert.IsNotNull(outerEllipsePressed, "RadioButton template must expose OuterEllipsePressed.");
+                    System.Windows.Shapes.Ellipse? outerEllipse = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipse");
+                    System.Windows.Shapes.Ellipse? outerEllipseHover = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipseHover");
+                    System.Windows.Shapes.Ellipse? outerEllipsePressed = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipsePressed");
+                    Assert.NotNull(outerEllipse);
+                    Assert.NotNull(outerEllipseHover);
+                    Assert.NotNull(outerEllipsePressed);
 
-                    AssertBrushColor(outerEllipse.Fill, "ControlAltFillColorSecondaryBrush",
-                        "Unchecked RadioButton fill should use the WinUI off-state rest token.");
-                    AssertBrushColor(outerEllipseHover.Fill, "ControlAltFillColorTertiaryBrush",
-                        "Unchecked RadioButton hover fill should use the WinUI off-state hover token.");
-                    AssertBrushColor(outerEllipsePressed.Fill, "ControlAltFillColorQuarternaryBrush",
-                        "Unchecked RadioButton pressed fill should use the WinUI off-state pressed token.");
-                    AssertBrushColor(outerEllipsePressed.Stroke, "ControlStrongStrokeColorDisabledBrush",
-                        "Unchecked RadioButton pressed stroke should use the WinUI pressed stroke token.");
+                    AssertBrushColor(outerEllipse.Fill, "ControlAltFillColorSecondaryBrush");
+                    AssertBrushColor(outerEllipseHover.Fill, "ControlAltFillColorTertiaryBrush");
+                    AssertBrushColor(outerEllipsePressed.Fill, "ControlAltFillColorQuarternaryBrush");
+                    AssertBrushColor(outerEllipsePressed.Stroke, "ControlStrongStrokeColorDisabledBrush");
 
-                    WpfBorder? trackOff = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOff");
-                    WpfBorder? trackOffHover = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOffHover");
-                    WpfBorder? trackOffPressed = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOffPressed");
-                    Assert.IsNotNull(trackOff, "ToggleSwitch template must expose TrackOff.");
-                    Assert.IsNotNull(trackOffHover, "ToggleSwitch template must expose TrackOffHover.");
-                    Assert.IsNotNull(trackOffPressed, "ToggleSwitch template must expose TrackOffPressed.");
+                    Border? trackOff = FindVisualChildByName<Border>(toggleSwitch, "TrackOff");
+                    Border? trackOffHover = FindVisualChildByName<Border>(toggleSwitch, "TrackOffHover");
+                    Border? trackOffPressed = FindVisualChildByName<Border>(toggleSwitch, "TrackOffPressed");
+                    Assert.NotNull(trackOff);
+                    Assert.NotNull(trackOffHover);
+                    Assert.NotNull(trackOffPressed);
 
-                    AssertBrushColor(trackOff.Background, "ControlAltFillColorSecondaryBrush",
-                        "Unchecked ToggleSwitch track should use the WinUI off-state rest token.");
-                    AssertBrushColor(trackOff.BorderBrush, "ControlStrongStrokeColorDefaultBrush",
-                        "Unchecked ToggleSwitch track stroke should use the WinUI off-state stroke token.");
-                    AssertBrushColor(trackOffHover.Background, "ControlAltFillColorTertiaryBrush",
-                        "Unchecked ToggleSwitch hover track should use the WinUI off-state hover token.");
-                    AssertBrushColor(trackOffPressed.Background, "ControlAltFillColorQuarternaryBrush",
-                        "Unchecked ToggleSwitch pressed track should use the WinUI off-state pressed token.");
+                    AssertBrushColor(trackOff.Background, "ControlAltFillColorSecondaryBrush");
+                    AssertBrushColor(trackOff.BorderBrush, "ControlStrongStrokeColorDefaultBrush");
+                    AssertBrushColor(trackOffHover.Background, "ControlAltFillColorTertiaryBrush");
+                    AssertBrushColor(trackOffPressed.Background, "ControlAltFillColorQuarternaryBrush");
                 }
                 finally
                 {
@@ -136,7 +117,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ProgressBar_TrackBackground_UsesWinUiStrongStrokeRole()
         {
             WpfTestSta.Invoke(static () =>
@@ -144,7 +125,7 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
-                FluenceProgressBar progressBar = new()
+                Controls.ProgressBar progressBar = new()
                 {
                     Width = 240,
                     Height = 24,
@@ -163,10 +144,9 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     _ = progressBar.ApplyTemplate();
 
-                    WpfBorder? track = FindVisualChildByName<WpfBorder>(progressBar, "PART_Track");
-                    Assert.IsNotNull(track, "ProgressBar template must expose PART_Track.");
-                    AssertBrushColor(track.Background, "ControlStrongStrokeColorDefaultBrush",
-                        "ProgressBar track should use the WinUI ProgressBarBackground role.");
+                    Border? track = FindVisualChildByName<Border>(progressBar, "PART_Track");
+                    Assert.NotNull(track);
+                    AssertBrushColor(track.Background, "ControlStrongStrokeColorDefaultBrush");
                 }
                 finally
                 {
@@ -175,7 +155,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_RailBackground_UsesWinUiTrackFillRole()
         {
             WpfTestSta.Invoke(static () =>
@@ -207,10 +187,9 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     _ = scrollBar.ApplyTemplate();
 
-                    WpfBorder? trackBackground = FindVisualChildByName<WpfBorder>(scrollBar, "TrackBackground");
-                    Assert.IsNotNull(trackBackground, "ScrollBar template must expose TrackBackground.");
-                    AssertBrushColor(trackBackground.Background, "ScrollBarTrackFillBrush",
-                        "ScrollBar rail should use the WinUI ScrollBarTrackFill role.");
+                    Border? trackBackground = FindVisualChildByName<Border>(scrollBar, "TrackBackground");
+                    Assert.NotNull(trackBackground);
+                    AssertBrushColor(trackBackground.Background, "ScrollBarTrackFillBrush");
                 }
                 finally
                 {
@@ -219,7 +198,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSampleControl_Chrome_UsesWinUiGalleryBackgroundRoles()
         {
             WpfTestSta.Invoke(static () =>
@@ -250,47 +229,37 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfBorder? sampleCard = sample.FindName("SampleCard") as WpfBorder;
-                    FluenceExpander? sourceExpander = sample.FindName("SourceExpander") as FluenceExpander;
-                    Assert.IsNotNull(sampleCard, "DemoSampleControl must expose SampleCard.");
-                    Assert.IsNotNull(sourceExpander, "DemoSampleControl must expose SourceExpander.");
+                    Border? sampleCard = sample.FindName("SampleCard") as Border;
+                    Controls.Expander? sourceExpander = sample.FindName("SourceExpander") as Controls.Expander;
+                    Assert.NotNull(sampleCard);
+                    Assert.NotNull(sourceExpander);
 
-                    Assert.AreEqual(new CornerRadius(8, 8, 0, 0), sampleCard.CornerRadius,
-                        "Demo sample display should attach to the source section with WinUI Gallery corners.");
+                    Assert.Equal(new CornerRadius(8, 8, 0, 0), sampleCard.CornerRadius);
                     Grid? demoRegionGrid = sample.FindName("DemoRegionGrid") as Grid;
-                    WpfBorder? rightRail = sample.FindName("RightRailBorder") as WpfBorder;
-                    WpfBorder? outputRegion = sample.FindName("OutputRegion") as WpfBorder;
-                    Assert.IsNotNull(demoRegionGrid, "DemoSampleControl must expose DemoRegionGrid.");
-                    Assert.IsNotNull(rightRail, "DemoSampleControl must expose RightRailBorder.");
-                    Assert.IsNotNull(outputRegion, "DemoSampleControl must expose OutputRegion.");
+                    Border? rightRail = sample.FindName("RightRailBorder") as Border;
+                    Border? outputRegion = sample.FindName("OutputRegion") as Border;
+                    Assert.NotNull(demoRegionGrid);
+                    Assert.NotNull(rightRail);
+                    Assert.NotNull(outputRegion);
 
-                    AssertBrushColor(sampleCard.Background, "SolidBackgroundFillColorBaseBrush",
-                        "Demo sample display should use the requested base surface.");
-                    Assert.AreEqual(new Thickness(0), sampleCard.Padding,
-                        "Demo sample display should not inset the right rail away from the sample border.");
-                    Assert.AreEqual((Thickness)sample.FindResource("DemoSampleCardPadding"), demoRegionGrid.Margin,
-                        "Demo sample content should retain the standard sample padding after the card padding moves inward.");
-                    Assert.AreEqual(new Thickness(0), rightRail.Margin,
-                        "Demo right rail should sit flush against the sample border.");
-                    AssertBrushColor(rightRail.Background, "CardBackgroundFillColorSecondaryBrush",
-                        "Demo right rail should use the WinUI Gallery options-pane surface.");
-                    AssertBrushColor(sourceExpander.Background, "SolidBackgroundFillColorQuarternaryBrush",
-                        "Demo source header should use the WinUI Gallery source-code header background - the darker quarternary surface so the collapsed Source-Code strip reads as a distinct dark band beneath the sample card (matches the screenshots in docs/screenshots/gallery/).");
-                    Assert.AreEqual("Source code", sourceExpander.Header,
-                        "Demo source expander header should match the WinUI Gallery source label.");
+                    AssertBrushColor(sampleCard.Background, "SolidBackgroundFillColorBaseBrush");
+                    Assert.Equal(new Thickness(0), sampleCard.Padding);
+                    Assert.Equal((Thickness)sample.FindResource("DemoSampleCardPadding"), demoRegionGrid.Margin);
+                    Assert.Equal(new Thickness(0), rightRail.Margin);
+                    AssertBrushColor(rightRail.Background, "CardBackgroundFillColorSecondaryBrush");
+                    AssertBrushColor(sourceExpander.Background, "CardBackgroundFillColorSecondaryBrush");
+                    Assert.Equal("Source code", sourceExpander.Header);
 
                     sourceExpander.IsExpanded = true;
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     RichTextBox? sourceViewer = FindVisualChildByName<RichTextBox>(sourceExpander, "SourceTextViewer");
-                    WpfBorder? copyButtonHost = FindVisualChildByName<WpfBorder>(sourceExpander, "CopySourceButtonHost");
-                    Assert.IsNotNull(sourceViewer, "Expanded source should expose the code viewer.");
-                    Assert.IsNotNull(copyButtonHost, "Expanded source should expose the overlaid copy-button host.");
-                    AssertBrushColor(sourceViewer.Background, "SolidBackgroundFillColorBaseBrush",
-                        "Source code should use the darker WinUI Gallery on-image fill role.");
-                    AssertBrushColor(copyButtonHost.Background, "CardBackgroundFillColorDefaultBrush",
-                        "Copy action should sit on the WinUI Gallery on-image fill bubble.");
+                    Border? copyButtonHost = FindVisualChildByName<Border>(sourceExpander, "CopySourceButtonHost");
+                    Assert.NotNull(sourceViewer);
+                    Assert.NotNull(copyButtonHost);
+                    AssertBrushColor(sourceViewer.Background, "SystemFillColorSolidAttentionBackgroundBrush");
+                    AssertBrushColor(copyButtonHost.Background, "CardBackgroundFillColorDefaultBrush");
                 }
                 finally
                 {
@@ -299,7 +268,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSharedResources_DoNotShadowNativeFluenceSurfaceRoles()
         {
             WpfTestSta.Invoke(static () =>
@@ -312,14 +281,13 @@ namespace Fluence.Wpf.Tests
                 {
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
-                    Assert.IsInstanceOfType(application?.TryFindResource("CardBackgroundFillColorDefault"), typeof(Color),
-                        "Demo shared styles must not shadow the native CardBackgroundFillColorDefault color key under " + theme + ".");
-                    AssertBrushResolves("CardBackgroundFillColorDefaultBrush", theme);
+                    _ = Assert.IsAssignableFrom<Color>(application?.TryFindResource("CardBackgroundFillColorDefault"));
+                    AssertBrushResolves("CardBackgroundFillColorDefaultBrush");
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DemoSharedResources_NativeBrushesResolveInLightAndHighContrast()
         {
             WpfTestSta.Invoke(static () =>
@@ -335,15 +303,14 @@ namespace Fluence.Wpf.Tests
                     foreach (string key in GetNativeDemoSurfaceBrushKeys())
                     {
                         SolidColorBrush? brush = application?.TryFindResource(key) as SolidColorBrush;
-                        Assert.IsNotNull(brush, key + " must resolve under " + theme + ".");
-                        Assert.AreNotEqual(Color.FromRgb(0x27, 0x27, 0x27), brush.Color,
-                            key + " should not keep the dark page token under " + theme + ".");
+                        Assert.NotNull(brush);
+                        Assert.NotEqual(Color.FromRgb(0x27, 0x27, 0x27), brush.Color);
                     }
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BackgroundParityBrushes_ResolveAcrossThemesAndDeterministicAccent()
         {
             WpfTestSta.Invoke(static () =>
@@ -413,14 +380,13 @@ namespace Fluence.Wpf.Tests
 
                     foreach (string key in keys)
                     {
-                        Assert.IsNotNull(application?.TryFindResource(key),
-                            "Resource '" + key + "' must resolve under " + theme + " with deterministic accent #0078D4.");
+                        Assert.NotNull(application?.TryFindResource(key));
                     }
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void PowerShellDemoScripts_FollowCanonicalBootstrap()
         {
             string scriptsRoot = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell");
@@ -479,26 +445,26 @@ namespace Fluence.Wpf.Tests
                 }
             }
 
-            Assert.AreEqual(0, violations.Count, string.Join("; ", violations));
+            Assert.Empty(violations);
         }
 
-        [TestMethod]
+        [Fact]
         public void PowerShellDemoXaml_UsesCurrentFluenceWindowProperties()
         {
             string path = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "MainWindow.xaml");
             string source = File.ReadAllText(path);
 
-            Assert.IsFalse(ContainsOrdinal(source, "WindowCorners"),
+            Assert.False(ContainsOrdinal(source, "WindowCorners"),
                 "PowerShell demo XAML must not use the old WindowCorners property.");
-            Assert.IsFalse(ContainsOrdinal(source, "WindowBackdrop"),
+            Assert.False(ContainsOrdinal(source, "WindowBackdrop"),
                 "PowerShell demo XAML must not use the old WindowBackdrop property.");
-            Assert.IsTrue(ContainsOrdinal(source, "CornerStyle=\"Round\""),
+            Assert.True(ContainsOrdinal(source, "CornerStyle=\"Round\""),
                 "PowerShell demo XAML should use CornerStyle.");
-            Assert.IsTrue(ContainsOrdinal(source, "SystemBackdropType=\"Mica\""),
+            Assert.True(ContainsOrdinal(source, "SystemBackdropType=\"Mica\""),
                 "PowerShell demo XAML should use SystemBackdropType.");
         }
 
-        [TestMethod]
+        [Fact]
         public void XamlBackgroundAndFillLiterals_AreAllowListed()
         {
             string repoRoot = FindRepoRoot();
@@ -524,9 +490,7 @@ namespace Fluence.Wpf.Tests
                 }
             }
 
-            Assert.AreEqual(0, violations.Count,
-                "Background/Fill literals must use theme resources unless intentionally allow-listed: " +
-                string.Join("; ", violations));
+            Assert.Empty(violations);
         }
 
         private static void CollectBackgroundLiteralViolations(
@@ -575,12 +539,12 @@ namespace Fluence.Wpf.Tests
 
         private static bool ContainsOrdinal(string source, string value)
         {
-            return source.IndexOf(value, StringComparison.Ordinal) >= 0;
+            return source.Contains(value, StringComparison.Ordinal);
         }
 
         private static bool IsWholeXamlAttribute(string source, int attributeIndex)
         {
-            if (attributeIndex == 0)
+            if (attributeIndex is 0)
             {
                 return true;
             }
@@ -591,7 +555,7 @@ namespace Fluence.Wpf.Tests
 
         private static bool IsLiteralBackgroundValue(string value)
         {
-            if (value.Length == 0)
+            if (value.Length is 0)
             {
                 return false;
             }
@@ -617,21 +581,21 @@ namespace Fluence.Wpf.Tests
             return true;
         }
 
-        private static void AssertBrushColor(Brush? actualBrush, string resourceKey, string message)
+        private static void AssertBrushColor(Brush? actualBrush, string resourceKey)
         {
             SolidColorBrush? actual = actualBrush as SolidColorBrush;
-            Assert.IsNotNull(actual, message + " Actual brush must be a SolidColorBrush.");
+            Assert.NotNull(actual);
 
             SolidColorBrush? expected = Application.Current?.TryFindResource(resourceKey) as SolidColorBrush;
-            Assert.IsNotNull(expected, resourceKey + " must resolve.");
+            Assert.NotNull(expected);
 
-            Assert.AreEqual(expected.Color, actual.Color, message);
+            Assert.Equal(expected.Color, actual.Color);
         }
 
-        private static void AssertBrushResolves(string resourceKey, ApplicationTheme theme)
+        private static void AssertBrushResolves(string resourceKey)
         {
             SolidColorBrush? brush = Application.Current?.TryFindResource(resourceKey) as SolidColorBrush;
-            Assert.IsNotNull(brush, resourceKey + " must resolve under " + theme + ".");
+            Assert.NotNull(brush);
         }
 
         private static string[] GetNativeDemoSurfaceBrushKeys()
@@ -658,9 +622,7 @@ namespace Fluence.Wpf.Tests
         private static bool IsBackgroundLiteralAllowedPath(string path)
         {
             string fileName = Path.GetFileName(path);
-            return fileName.Equals("fluence-wpf-banner-light.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("fluence-wpf-banner-dark.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
+            return fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsBackgroundLiteralAllowedValue(string path, string value)

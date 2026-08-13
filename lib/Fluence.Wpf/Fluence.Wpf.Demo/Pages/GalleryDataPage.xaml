@@ -2,15 +2,14 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryDataPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
-    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Data" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Data controls present lists, empty states, and related content groups for scanning and selection." />
@@ -24,7 +23,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Border x:Name="SimpleListViewBackground" CornerRadius="{DynamicResource ControlCornerRadius}">
-                        <ui:ListView
+                        <fluence:ListView
                             x:Name="SimpleListView"
                             Height="230"
                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -35,13 +34,13 @@
                             <ListViewItem Content="Oscar Ward" />
                             <ListViewItem Content="Madison Butler" />
                             <ListViewItem Content="Graham Barnes" />
-                        </ui:ListView>
+                        </fluence:ListView>
                     </Border>
                     <Border
                         x:Name="RichListViewBackground"
                         Grid.Column="2"
                         CornerRadius="{DynamicResource ControlCornerRadius}">
-                        <ui:ListView
+                        <fluence:ListView
                             x:Name="RichListView"
                             Height="230"
                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -53,7 +52,7 @@
                                         <ColumnDefinition Width="36" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <ui:FontIcon
+                                    <fluence:FontIcon
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                         Glyph="&#xE77B;"
@@ -73,7 +72,7 @@
                                         <ColumnDefinition Width="36" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <ui:FontIcon
+                                    <fluence:FontIcon
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                         Glyph="&#xE77B;"
@@ -93,7 +92,7 @@
                                         <ColumnDefinition Width="36" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <ui:FontIcon
+                                    <fluence:FontIcon
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                         Glyph="&#xE77B;"
@@ -107,7 +106,7 @@
                                     </StackPanel>
                                 </Grid>
                             </ListViewItem>
-                        </ui:ListView>
+                        </fluence:ListView>
                     </Border>
                 </Grid>
             </ContentControl>
@@ -115,32 +114,32 @@
 
 
             <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
-                <ui:ListView
+                <fluence:ListView
                     x:Name="EmptyStateListView"
                     Height="180"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1">
-                    <ui:ListView.EmptyContent>
+                    <fluence:ListView.EmptyContent>
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Text="No items. Add one to begin." />
-                    </ui:ListView.EmptyContent>
-                </ui:ListView>
+                    </fluence:ListView.EmptyContent>
+                </fluence:ListView>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot02RightRailContentHost" Visibility="Collapsed">
                 <StackPanel
                     x:Name="EmptyStateActionsPanel"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
-                    <ui:Button
+                    <fluence:Button
                         MinWidth="140"
                         Appearance="Accent"
                         Click="AddListItem_Click"
                         Content="Add item" />
-                    <ui:Button
+                    <fluence:Button
                         MinWidth="140"
                         Margin="{DynamicResource DemoTextTopGapMargin}"
                         Click="RemoveListItem_Click"
@@ -157,19 +156,19 @@
                         <ColumnDefinition Width="20" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <ui:ListBox
+                    <fluence:ListBox
                         x:Name="SingleSelectListBox"
                         Height="180"
                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1">
-                        <ui:ListBoxItem Content="Documents" IsSelected="True" />
-                        <ui:ListBoxItem Content="Pictures" />
-                        <ui:ListBoxItem Content="Music" />
-                        <ui:ListBoxItem Content="Videos" />
-                        <ui:ListBoxItem Content="Downloads" />
-                    </ui:ListBox>
-                    <ui:ListBox
+                        <fluence:ListBoxItem Content="Documents" IsSelected="True" />
+                        <fluence:ListBoxItem Content="Pictures" />
+                        <fluence:ListBoxItem Content="Music" />
+                        <fluence:ListBoxItem Content="Videos" />
+                        <fluence:ListBoxItem Content="Downloads" />
+                    </fluence:ListBox>
+                    <fluence:ListBox
                         x:Name="MultiSelectListBox"
                         Grid.Column="2"
                         Height="180"
@@ -177,12 +176,12 @@
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         SelectionMode="Extended">
-                        <ui:ListBoxItem Content="Critical" IsSelected="True" />
-                        <ui:ListBoxItem Content="Error" IsSelected="True" />
-                        <ui:ListBoxItem Content="Warning" />
-                        <ui:ListBoxItem Content="Information" />
-                        <ui:ListBoxItem Content="Verbose" />
-                    </ui:ListBox>
+                        <fluence:ListBoxItem Content="Critical" IsSelected="True" />
+                        <fluence:ListBoxItem Content="Error" IsSelected="True" />
+                        <fluence:ListBoxItem Content="Warning" />
+                        <fluence:ListBoxItem Content="Information" />
+                        <fluence:ListBoxItem Content="Verbose" />
+                    </fluence:ListBox>
                 </Grid>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use ListBox for compact selection lists; set SelectionMode to Extended to allow selecting multiple items." />
@@ -190,32 +189,32 @@
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ui:PersonPicture
+                    <fluence:PersonPicture
                         Width="56"
                         Height="56"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         DisplayName="Ana Bowman"
                         ProfilePicture="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureAnaBowman.png" />
-                    <ui:PersonPicture
+                    <fluence:PersonPicture
                         Width="56"
                         Height="56"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         BadgeNumber="3"
                         DisplayName="Shawn Hughes"
                         ProfilePicture="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureShawnHughes.png" />
-                    <ui:PersonPicture
+                    <fluence:PersonPicture
                         Width="56"
                         Height="56"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         DisplayName="Priya Kapoor"
                         ProfilePicture="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPicturePriyaKapoor.png" />
-                    <ui:PersonPicture
+                    <fluence:PersonPicture
                         Width="56"
                         Height="56"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         DisplayName="Mateo Rivera"
                         ProfilePicture="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureMateoRivera.png" />
-                    <ui:PersonPicture
+                    <fluence:PersonPicture
                         Width="56"
                         Height="56"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
@@ -228,41 +227,67 @@
 
             <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <UniformGrid Columns="2">
-                    <ui:Card
+                    <fluence:Card
                         MinHeight="110"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Padding="{DynamicResource DemoSampleInnerCardPadding}"
                         Header="Default"
-                        Variant="{x:Static uicore:CardVariant.Default}">
+                        Variant="Default">
                         <TextBlock Text="Standard surface for grouped content." TextWrapping="Wrap" />
-                    </ui:Card>
-                    <ui:Card
+                    </fluence:Card>
+                    <fluence:Card
                         MinHeight="110"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Padding="{DynamicResource DemoSampleInnerCardPadding}"
                         Header="Outlined"
-                        Variant="{x:Static uicore:CardVariant.Outlined}">
+                        Variant="Outlined">
                         <TextBlock Text="Emphasizes the boundary over fill." TextWrapping="Wrap" />
-                    </ui:Card>
-                    <ui:Card
+                    </fluence:Card>
+                    <fluence:Card
                         MinHeight="110"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Padding="{DynamicResource DemoSampleInnerCardPadding}"
                         Header="Filled"
-                        Variant="{x:Static uicore:CardVariant.Filled}">
+                        Variant="Filled">
                         <TextBlock Text="Adds stronger container presence." TextWrapping="Wrap" />
-                    </ui:Card>
-                    <ui:Card
+                    </fluence:Card>
+                    <fluence:Card
                         MinHeight="110"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Padding="{DynamicResource DemoSampleInnerCardPadding}"
                         Header="Subtle"
-                        Variant="{x:Static uicore:CardVariant.Subtle}">
+                        Variant="Subtle">
                         <TextBlock Text="Keeps low-emphasis supporting content grouped." TextWrapping="Wrap" />
-                    </ui:Card>
+                    </fluence:Card>
                 </UniformGrid>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use Card variants to group related data with different levels of visual emphasis." />
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <fluence:Image
+                        Width="96"
+                        Height="96"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        CornerRadius="0"
+                        Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureAnaBowman.png"
+                        Stretch="UniformToFill" />
+                    <fluence:Image
+                        Width="96"
+                        Height="96"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        CornerRadius="8"
+                        Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureShawnHughes.png"
+                        Stretch="UniformToFill" />
+                    <fluence:Image
+                        Width="96"
+                        Height="96"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        CornerRadius="48"
+                        Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPicturePriyaKapoor.png"
+                        Stretch="UniformToFill" />
+                </WrapPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use Image to present pictures with a theme-aware stroke; CornerRadius drives the rounded clip from square to circular." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

@@ -26,15 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class ThemeTestHelpersTests
     {
-        [TestMethod]
+        [Fact]
         public void StandardThemeCycle_ResolvesKeyBrushes()
         {
             WpfTestSta.Invoke(static () =>
@@ -52,7 +51,7 @@ namespace Fluence.Wpf.Tests
         }
 
 #if NET10_0_OR_GREATER
-        [TestMethod]
+        [Fact]
         public void VisualTreeHelper_GetDpi_ReturnsPositiveScale()
         {
             WpfTestSta.Invoke(static () =>
@@ -69,9 +68,9 @@ namespace Fluence.Wpf.Tests
                     Controls.Border panel = new() { Width = 10, Height = 10 };
                     window.Content = panel;
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded, default);
                     DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(panel);
-                    Assert.IsTrue(dpi.PixelsPerDip > 0, "DpiScale.PixelsPerDip should be positive.");
+                    Assert.True(dpi.PixelsPerDip > 0, "DpiScale.PixelsPerDip should be positive.");
                 }
                 finally
                 {

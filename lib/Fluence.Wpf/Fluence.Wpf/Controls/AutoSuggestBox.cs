@@ -349,22 +349,22 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (e.Key == Key.Down && IsSuggestionListOpen)
+            if (e.Key is Key.Down && IsSuggestionListOpen)
             {
                 MoveSuggestionSelection(1);
                 e.Handled = true;
             }
-            else if (e.Key == Key.Up && IsSuggestionListOpen)
+            else if (e.Key is Key.Up && IsSuggestionListOpen)
             {
                 MoveSuggestionSelection(-1);
                 e.Handled = true;
             }
-            else if (e.Key == Key.Enter)
+            else if (e.Key is Key.Enter)
             {
                 OnEnterKeyPressed();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Escape && IsSuggestionListOpen)
+            else if (e.Key is Key.Escape && IsSuggestionListOpen)
             {
                 SetCurrentValue(IsSuggestionListOpenProperty, value: false);
                 e.Handled = true;
@@ -653,7 +653,7 @@ namespace Fluence.Wpf.Controls
             }
 
             int count = _suggestionsList.Items.Count;
-            if (count == 0)
+            if (count is 0)
             {
                 return;
             }

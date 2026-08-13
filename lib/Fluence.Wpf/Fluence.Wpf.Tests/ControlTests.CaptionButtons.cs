@@ -26,12 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Threading;
-using WpfButton = System.Windows.Controls.Button;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -64,15 +63,14 @@ namespace Fluence.Wpf.Tests
             return window;
         }
 
-        private static WpfButton GetCaptionButton(FluenceWindow window, string name)
+        private static System.Windows.Controls.Button GetCaptionButton(FluenceWindow window, string name)
         {
-            WpfButton? button = FindVisualChildByName<WpfButton>(window, name);
-            Assert.IsNotNull(button,
-                string.Format("Caption template part '{0}' must exist on FluenceWindow.", name));
+            System.Windows.Controls.Button? button = FindVisualChildByName<System.Windows.Controls.Button>(window, name);
+            Assert.NotNull(button);
             return button;
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_CaptionButtons_AllFourBindToCanonicalSystemCommands()
         {
             RunOnStaThread(static delegate
@@ -85,19 +83,15 @@ namespace Fluence.Wpf.Tests
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
 
-                    WpfButton minimize = GetCaptionButton(window, "PART_MinimizeButton");
-                    WpfButton maximize = GetCaptionButton(window, "PART_MaximizeButton");
-                    WpfButton restore = GetCaptionButton(window, "PART_RestoreButton");
-                    WpfButton close = GetCaptionButton(window, "PART_CloseButton");
+                    System.Windows.Controls.Button minimize = GetCaptionButton(window, "PART_MinimizeButton");
+                    System.Windows.Controls.Button maximize = GetCaptionButton(window, "PART_MaximizeButton");
+                    System.Windows.Controls.Button restore = GetCaptionButton(window, "PART_RestoreButton");
+                    System.Windows.Controls.Button close = GetCaptionButton(window, "PART_CloseButton");
 
-                    Assert.AreSame(SystemCommands.MinimizeWindowCommand, minimize.Command,
-                        "PART_MinimizeButton must bind to SystemCommands.MinimizeWindowCommand.");
-                    Assert.AreSame(SystemCommands.MaximizeWindowCommand, maximize.Command,
-                        "PART_MaximizeButton must bind to SystemCommands.MaximizeWindowCommand.");
-                    Assert.AreSame(SystemCommands.RestoreWindowCommand, restore.Command,
-                        "PART_RestoreButton must bind to SystemCommands.RestoreWindowCommand.");
-                    Assert.AreSame(SystemCommands.CloseWindowCommand, close.Command,
-                        "PART_CloseButton must bind to SystemCommands.CloseWindowCommand.");
+                    Assert.Same(SystemCommands.MinimizeWindowCommand, minimize.Command);
+                    Assert.Same(SystemCommands.MaximizeWindowCommand, maximize.Command);
+                    Assert.Same(SystemCommands.RestoreWindowCommand, restore.Command);
+                    Assert.Same(SystemCommands.CloseWindowCommand, close.Command);
                 }
                 finally
                 {
@@ -106,7 +100,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_CaptionButtons_ReflowIntoRightAlignedSlots()
         {
             RunOnStaThread(static delegate
@@ -119,38 +113,32 @@ namespace Fluence.Wpf.Tests
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
 
-                    WpfButton minimize = GetCaptionButton(window, "PART_MinimizeButton");
-                    WpfButton maximize = GetCaptionButton(window, "PART_MaximizeButton");
-                    WpfButton restore = GetCaptionButton(window, "PART_RestoreButton");
-                    WpfButton close = GetCaptionButton(window, "PART_CloseButton");
+                    System.Windows.Controls.Button minimize = GetCaptionButton(window, "PART_MinimizeButton");
+                    System.Windows.Controls.Button maximize = GetCaptionButton(window, "PART_MaximizeButton");
+                    System.Windows.Controls.Button restore = GetCaptionButton(window, "PART_RestoreButton");
+                    System.Windows.Controls.Button close = GetCaptionButton(window, "PART_CloseButton");
 
-                    Assert.AreEqual(0, System.Windows.Controls.Grid.GetColumn(minimize));
-                    Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(maximize));
-                    Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(restore));
-                    Assert.AreEqual(2, System.Windows.Controls.Grid.GetColumn(close));
+                    Assert.Equal(0, System.Windows.Controls.Grid.GetColumn(minimize));
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(maximize));
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(restore));
+                    Assert.Equal(2, System.Windows.Controls.Grid.GetColumn(close));
 
                     window.IsCloseButtonVisible = Visibility.Collapsed;
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(minimize),
-                        "When close is collapsed, minimize should shift right to keep the visible group right-aligned.");
-                    Assert.AreEqual(2, System.Windows.Controls.Grid.GetColumn(maximize),
-                        "When close is collapsed, maximize should shift into the rightmost caption slot.");
-                    Assert.AreEqual(2, System.Windows.Controls.Grid.GetColumn(restore),
-                        "Restore shares maximize's right-aligned slot.");
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(minimize));
+                    Assert.Equal(2, System.Windows.Controls.Grid.GetColumn(maximize));
+                    Assert.Equal(2, System.Windows.Controls.Grid.GetColumn(restore));
 
                     window.IsCloseButtonVisible = Visibility.Visible;
                     window.IsMinimizeButtonVisible = Visibility.Collapsed;
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(maximize),
-                        "When minimize is collapsed, maximize should keep its normal slot.");
-                    Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(restore),
-                        "Restore should keep maximize's normal slot when minimize is collapsed.");
-                    Assert.AreEqual(2, System.Windows.Controls.Grid.GetColumn(close),
-                        "Close should remain in the rightmost caption slot when minimize is collapsed.");
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(maximize));
+                    Assert.Equal(1, System.Windows.Controls.Grid.GetColumn(restore));
+                    Assert.Equal(2, System.Windows.Controls.Grid.GetColumn(close));
                 }
                 finally
                 {
@@ -159,7 +147,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_MinimizeCommand_TransitionsToMinimized()
         {
             RunOnStaThread(static delegate
@@ -171,14 +159,12 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
-                    Assert.AreEqual(WindowState.Normal, window.WindowState,
-                        "Baseline: FluenceWindow should start in WindowState.Normal.");
+                    Assert.Equal(WindowState.Normal, window.WindowState);
 
                     SystemCommands.MinimizeWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(WindowState.Minimized, window.WindowState,
-                        "MinimizeWindowCommand must drive WindowState to Minimized via OnMinimizeWindow.");
+                    Assert.Equal(WindowState.Minimized, window.WindowState);
                 }
                 finally
                 {
@@ -192,7 +178,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_MaximizeCommand_TransitionsToMaximized()
         {
             RunOnStaThread(static delegate
@@ -204,14 +190,12 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
-                    Assert.AreEqual(WindowState.Normal, window.WindowState,
-                        "Baseline: FluenceWindow should start in WindowState.Normal.");
+                    Assert.Equal(WindowState.Normal, window.WindowState);
 
                     SystemCommands.MaximizeWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(WindowState.Maximized, window.WindowState,
-                        "MaximizeWindowCommand must drive WindowState to Maximized via OnMaximizeWindow.");
+                    Assert.Equal(WindowState.Maximized, window.WindowState);
                 }
                 finally
                 {
@@ -220,7 +204,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_RestoreCommand_TransitionsMaximizedToNormal()
         {
             RunOnStaThread(static delegate
@@ -234,14 +218,12 @@ namespace Fluence.Wpf.Tests
                     window = CreateAndShowOffScreenFluenceWindow();
                     window.WindowState = WindowState.Maximized;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(WindowState.Maximized, window.WindowState,
-                        "Baseline: window should be Maximized before Restore is exercised.");
+                    Assert.Equal(WindowState.Maximized, window.WindowState);
 
                     SystemCommands.RestoreWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(WindowState.Normal, window.WindowState,
-                        "RestoreWindowCommand must drive WindowState back to Normal via OnRestoreWindow.");
+                    Assert.Equal(WindowState.Normal, window.WindowState);
                 }
                 finally
                 {
@@ -250,7 +232,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindow_CloseCommand_FiresClosingEvent()
         {
             RunOnStaThread(delegate
@@ -272,7 +254,7 @@ namespace Fluence.Wpf.Tests
                     // flow runs before we assert.
                     _ = window.Dispatcher.Invoke(DispatcherPriority.Background, new Action(delegate { }));
 
-                    Assert.IsTrue(closingFired,
+                    Assert.True(closingFired,
                         "CloseWindowCommand must raise Window.Closing via SystemCommands.CloseWindow -> WM_SYSCOMMAND/SC_CLOSE.");
 
                     // Window is now closed; defeat the finally Close() so we do not double-dispose.

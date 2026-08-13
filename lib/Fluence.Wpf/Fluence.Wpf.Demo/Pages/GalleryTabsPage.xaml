@@ -2,14 +2,14 @@
     x:Class="Fluence.Wpf.Demo.Pages.GalleryTabsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="900"
     mc:Ignorable="d">
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Tabs" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Tabs organize related panels while keeping one view active at a time." />
@@ -80,19 +80,19 @@
 
 
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
-                <ui:TabView
+                <fluence:TabView
                     x:Name="DemoTabView"
                     Height="260"
                     AddTabButtonClick="DemoTabView_AddTabButtonClick"
                     CloseButtonOverlayMode="Auto"
                     TabCloseRequested="DemoTabView_TabCloseRequested">
-                    <ui:TabViewItem Header="Document 1" IsSelected="True">
-                        <ui:TabViewItem.Icon>
-                            <ui:FontIcon
+                    <fluence:TabViewItem Header="Document 1" IsSelected="True">
+                        <fluence:TabViewItem.Icon>
+                            <fluence:FontIcon
                                 Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE8A5;"
                                 IconFontSize="16" />
-                        </ui:TabViewItem.Icon>
+                        </fluence:TabViewItem.Icon>
                         <Border Background="{DynamicResource LayerFillColorDefaultBrush}">
                             <StackPanel Margin="{DynamicResource DemoTabContentMargin}">
                                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Document 1" />
@@ -103,14 +103,14 @@
                                     TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                    </ui:TabViewItem>
-                    <ui:TabViewItem Header="Document 2">
-                        <ui:TabViewItem.Icon>
-                            <ui:FontIcon
+                    </fluence:TabViewItem>
+                    <fluence:TabViewItem Header="Document 2">
+                        <fluence:TabViewItem.Icon>
+                            <fluence:FontIcon
                                 Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE8A5;"
                                 IconFontSize="16" />
-                        </ui:TabViewItem.Icon>
+                        </fluence:TabViewItem.Icon>
                         <Border Background="{DynamicResource LayerFillColorDefaultBrush}">
                             <StackPanel Margin="{DynamicResource DemoTabContentMargin}">
                                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Document 2" />
@@ -121,14 +121,14 @@
                                     TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                    </ui:TabViewItem>
-                    <ui:TabViewItem Header="Pinned" IsClosable="False">
-                        <ui:TabViewItem.Icon>
-                            <ui:FontIcon
+                    </fluence:TabViewItem>
+                    <fluence:TabViewItem Header="Pinned" IsClosable="False">
+                        <fluence:TabViewItem.Icon>
+                            <fluence:FontIcon
                                 Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE718;"
                                 IconFontSize="16" />
-                        </ui:TabViewItem.Icon>
+                        </fluence:TabViewItem.Icon>
                         <Border Background="{DynamicResource LayerFillColorDefaultBrush}">
                             <StackPanel Margin="{DynamicResource DemoTabContentMargin}">
                                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Pinned" />
@@ -139,8 +139,8 @@
                                     TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                    </ui:TabViewItem>
-                </ui:TabView>
+                    </fluence:TabViewItem>
+                </fluence:TabView>
             </ContentControl>
             <ContentControl x:Name="DemoSampleSlot03OutputContentHost" Visibility="Collapsed">
                 <TextBlock
@@ -150,5 +150,5 @@
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use TabView for document-style tabs with add and close affordances." />
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

@@ -67,14 +67,14 @@ namespace Fluence.Wpf.Demo
 
         internal void SetPaneDisplayMode(NavigationViewPaneDisplayMode mode)
         {
-            if (mode == NavigationViewPaneDisplayMode.Top)
+            if (mode is NavigationViewPaneDisplayMode.Top)
             {
                 SetPaneState(NavigationViewPaneDisplayMode.Top, isPaneOpen: true);
                 RaiseChanged();
                 return;
             }
 
-            if (mode == NavigationViewPaneDisplayMode.Left)
+            if (mode is NavigationViewPaneDisplayMode.Left)
             {
                 SetPaneState(NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
             }
@@ -88,12 +88,12 @@ namespace Fluence.Wpf.Demo
 
         internal void ToggleLeftPane()
         {
-            if (_navigationView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+            if (_navigationView.PaneDisplayMode is NavigationViewPaneDisplayMode.Top)
             {
                 return;
             }
 
-            if (_navigationView.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+            if (_navigationView.PaneDisplayMode is NavigationViewPaneDisplayMode.Left)
             {
                 _navigationView.IsPaneOpen = !_navigationView.IsPaneOpen;
                 RaiseChanged();
@@ -110,7 +110,7 @@ namespace Fluence.Wpf.Demo
                 return;
             }
 
-            if (_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+            if (_navigationView.PaneDisplayMode is not NavigationViewPaneDisplayMode.Top)
             {
                 if (extendsContentIntoTitleBar)
                 {
@@ -170,7 +170,7 @@ namespace Fluence.Wpf.Demo
                 _titleBar.IsPaneToggleButtonVisible =
                     extendsContentIntoTitleBar &&
                     UserPaneToggleButtonVisible &&
-                    _navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top;
+                    _navigationView.PaneDisplayMode is not NavigationViewPaneDisplayMode.Top;
             }
 
             _lastAppliedExtendedTitleBar = extendsContentIntoTitleBar;
@@ -178,7 +178,7 @@ namespace Fluence.Wpf.Demo
 
         private void SetPaneState(NavigationViewPaneDisplayMode mode, bool isPaneOpen)
         {
-            if (mode == NavigationViewPaneDisplayMode.Left)
+            if (mode is NavigationViewPaneDisplayMode.Left)
             {
                 _navigationView.IsPaneOpen = isPaneOpen;
                 _navigationView.PaneDisplayMode = mode;

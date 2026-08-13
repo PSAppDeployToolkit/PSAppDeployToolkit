@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Automation;
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using Fluence.Wpf.Automation;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Tests
             return nav;
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_FooterItem_ResolvesOwningNavigationView()
         {
             RunOnStaThread(static () =>
@@ -76,8 +76,7 @@ namespace Fluence.Wpf.Tests
 
                     // The fix that lets footer-hosted items invoke: an item resolves its owning
                     // NavigationView by ancestor walk, not via ItemsControlFromItemContainer.
-                    Assert.AreSame(nav, NavigationView.FromItemContainer(footer),
-                        "A FooterMenuItems entry must resolve its owning NavigationView via the visual tree.");
+                    Assert.Same(nav, NavigationView.FromItemContainer(footer));
                 }
                 finally
                 {
@@ -90,7 +89,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_FooterItem_Invoke_SelectsAndClearsMainSelection()
         {
             RunOnStaThread(() =>
@@ -113,11 +112,11 @@ namespace Fluence.Wpf.Tests
                     nav.SelectFooterMenuItem(footer);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreSame(footer, nav.SelectedFooterItem, "Invoking a footer item makes it the active footer selection.");
-                    Assert.IsTrue(footer.IsSelected, "The invoked footer item should be marked selected.");
-                    Assert.IsNull(nav.SelectedItem, "Footer selection must clear the main-menu SelectedItem.");
-                    Assert.AreEqual(1, invoked.Count, "Invoking a footer item should raise ItemInvoked exactly once.");
-                    Assert.AreSame(footer, invoked[0], "ItemInvoked should report the footer container.");
+                    Assert.Same(footer, nav.SelectedFooterItem);
+                    Assert.True(footer.IsSelected, "The invoked footer item should be marked selected.");
+                    Assert.Null(nav.SelectedItem);
+                    _ = Assert.Single(invoked);
+                    Assert.Same(footer, invoked[0]);
                 }
                 finally
                 {
@@ -130,7 +129,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_MainSelection_ClearsFooterSelection()
         {
             RunOnStaThread(static () =>
@@ -148,13 +147,13 @@ namespace Fluence.Wpf.Tests
 
                     nav.SelectFooterMenuItem(footer);
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreSame(footer, nav.SelectedFooterItem, "Footer should be selected before selecting a main item.");
+                    Assert.Same(footer, nav.SelectedFooterItem);
 
                     nav.SelectedIndex = 1;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.IsNull(nav.SelectedFooterItem, "Selecting a main item must clear the footer selection.");
-                    Assert.IsFalse(footer.IsSelected, "The footer item should be deselected when a main item is selected.");
+                    Assert.Null(nav.SelectedFooterItem);
+                    Assert.False(footer.IsSelected, "The footer item should be deselected when a main item is selected.");
                 }
                 finally
                 {
@@ -167,7 +166,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_FooterSelectionIndicator_BecomesVisibleOnFooterSelection()
         {
             RunOnStaThread(static () =>
@@ -184,16 +183,15 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     FrameworkElement? footerIndicator = nav.GetFooterSelectionIndicatorForTesting();
-                    Assert.IsNotNull(footerIndicator, "PART_FooterSelectionIndicator should exist in the Left pane template.");
-                    Assert.AreEqual(0.0, footerIndicator!.Opacity, 0.01, "Footer indicator should be hidden before any footer selection.");
+                    Assert.NotNull(footerIndicator);
+                    Assert.Equal(0.0, footerIndicator!.Opacity, 0.01);
 
                     nav.SelectFooterMenuItem(footer);
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.IsGreaterThanOrEqualTo(0.9, footerIndicator.Opacity,
-                        "Selecting a footer item should reveal the footer selection indicator.");
+                    Assert.True(footerIndicator.Opacity >= 0.9, "Selecting a footer item should reveal the footer selection indicator.");
                 }
                 finally
                 {
@@ -206,7 +204,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_FooterItem_StretchesToPaneWidth_InLeftOpen()
         {
             RunOnStaThread(() =>
@@ -225,8 +223,7 @@ namespace Fluence.Wpf.Tests
 
                     // The footer item lives in a stretching StackPanel, so its hover/selection surface
                     // spans the pane width rather than the "Settings" text width (the original bug).
-                    Assert.IsGreaterThan(200.0, footer.ActualWidth,
-                        "An open Left pane footer item should stretch to the pane width, not the content width. Measured: " + footer.ActualWidth.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    Assert.True(footer.ActualWidth > 200.0, "An open Left pane footer item should stretch to the pane width, not the content width. Measured: " + footer.ActualWidth.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 }
                 finally
                 {
@@ -239,7 +236,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_FooterItem_IconCentered_InLeftCompactClosed()
         {
             RunOnStaThread(static () =>
@@ -256,12 +253,10 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ContentPresenter? iconPresenter = FindVisualChildByName<ContentPresenter>(footer, "IconPresenter");
-                    Assert.IsNotNull(iconPresenter, "Footer item template should expose the icon presenter.");
+                    Assert.NotNull(iconPresenter);
                     Point iconOffset = iconPresenter!.TransformToAncestor(footer).Transform(new Point(0, 0));
-                    Assert.IsGreaterThanOrEqualTo(4.0 - 0.5, iconOffset.X,
-                        "Closed LeftCompact footer icon should not be clipped on the left edge.");
-                    Assert.IsLessThanOrEqualTo(44.0 + 0.5, iconOffset.X + iconPresenter.ActualWidth,
-                        "Closed LeftCompact footer icon should stay inside the 40px icon slot, aligned with the main items.");
+                    Assert.True(iconOffset.X >= 4.0 - 0.5, "Closed LeftCompact footer icon should not be clipped on the left edge.");
+                    Assert.True(iconOffset.X + iconPresenter.ActualWidth <= 44.0 + 0.5, "Closed LeftCompact footer icon should stay inside the 40px icon slot, aligned with the main items.");
                 }
                 finally
                 {
@@ -274,7 +269,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_Automation_GetSelection_ReportsFooterSelection()
         {
             RunOnStaThread(static () =>
@@ -291,14 +286,12 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ISelectionProvider selectionProvider = (NavigationViewAutomationPeer)new(nav);
-                    Assert.AreEqual(0, selectionProvider.GetSelection().Length,
-                        "With nothing selected, the automation peer should report an empty selection.");
+                    Assert.Empty(selectionProvider.GetSelection());
 
                     nav.SelectFooterMenuItem(footer);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(1, selectionProvider.GetSelection().Length,
-                        "When a footer item is selected, the automation peer should report it as the single selection.");
+                    _ = Assert.Single(selectionProvider.GetSelection());
                 }
                 finally
                 {

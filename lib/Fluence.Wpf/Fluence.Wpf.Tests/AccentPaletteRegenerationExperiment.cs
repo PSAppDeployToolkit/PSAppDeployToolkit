@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Native;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Win32;
 using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows.Media;
+using Microsoft.Win32;
+using Fluence.Wpf.Native;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -51,10 +51,10 @@ namespace Fluence.Wpf.Tests
     /// <c>[Ignore]</c>'d by default; remove the attribute to run.
     /// </para>
     /// </summary>
-    [TestClass]
-    public class AccentPaletteRegenerationExperiment
+    /// <param name="output">The xUnit test output sink for diagnostic logging.</param>
+    public class AccentPaletteRegenerationExperiment(ITestOutputHelper output)
     {
-        public TestContext? TestContext { get; set; }
+        private readonly ITestOutputHelper _output = output;
 
         private const string DwmKey = NativeConstants.DwmRegistryPath;
         private const string AccentKey = NativeConstants.AccentRegistryPath;
@@ -69,8 +69,7 @@ namespace Fluence.Wpf.Tests
         /// Probe 1: write only to <c>DWM\AccentColor</c> (the simplest signal) and check whether
         /// AccentPalette regenerates after a 1s wait.
         /// </summary>
-        [Ignore("Modifies user's system accent. Remove [Ignore] to run manually.")]
-        [TestMethod]
+        [Fact(Explicit = true)] // Modifies user's system accent; run explicitly and manually only.
         public void Experiment_WriteDwmAccentColor_DoesAccentPaletteRegenerate()
         {
             // Mango - clearly distinguishable from any Windows default the user might be on.
@@ -82,8 +81,7 @@ namespace Fluence.Wpf.Tests
         /// <summary>
         /// Probe 2: write to all four user-facing accent values (DWM + Explorer\Accent) and check.
         /// </summary>
-        [Ignore("Modifies user's system accent. Remove [Ignore] to run manually.")]
-        [TestMethod]
+        [Fact(Explicit = true)] // Modifies user's system accent; run explicitly and manually only.
         public void Experiment_WriteAllAccentValues_DoesAccentPaletteRegenerate()
         {
             Color experimentalAccent = Color.FromRgb(0xCA, 0x50, 0x10);
@@ -98,18 +96,17 @@ namespace Fluence.Wpf.Tests
         /// computes <c>AccentPalette</c> from a private themecpl/themeui code path only
         /// when the user picks an accent in Settings; registry writes are ignored.
         /// </summary>
-        [Ignore("Modifies user's system accent. Result confirmed 2026-05-23: palette does NOT regenerate.")]
-        [TestMethod]
+        [Fact(Explicit = true)] // Modifies user's system accent. Result confirmed 2026-05-23: palette does NOT regenerate.
         public void Experiment_WriteAllAndBroadcast_DoesAccentPaletteRegenerate()
         {
             Color experimentalAccent = Color.FromRgb(0xCA, 0x50, 0x10);
 
             RunExperiment(experimentalAccent, writeMode: WriteMode.AllAccentValuesAndBroadcast, waitMs: 1500);
 
-            // Observational probe - the actual outcome is logged via TestContext.WriteLine
+            // Observational probe - the actual outcome is logged via ITestOutputHelper.WriteLine
             // inside RunExperiment. Confirms the restore step left the palette readable.
             object? restored = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue);
-            Assert.IsNotNull(restored, "AccentPalette must be readable after restore");
+            Assert.NotNull(restored);
         }
 
         private enum WriteMode
@@ -129,9 +126,9 @@ namespace Fluence.Wpf.Tests
             object? originalStartColorMenu = ReadRaw(Registry.CurrentUser, AccentKey, StartColorMenuValue);
             byte[]? originalPalette = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue) as byte[];
 
-            TestContext?.WriteLine($"=== Experiment: {writeMode} ===");
-            TestContext?.WriteLine($"Original DWM AccentColor: {FormatDwordValue(originalDwmAccent)}");
-            TestContext?.WriteLine($"Original AccentPalette base (offset 12): {FormatPaletteBase(originalPalette)}");
+            _output.WriteLine($"=== Experiment: {writeMode} ===");
+            _output.WriteLine($"Original DWM AccentColor: {FormatDwordValue(originalDwmAccent)}");
+            _output.WriteLine($"Original AccentPalette base (offset 12): {FormatPaletteBase(originalPalette)}");
 
             try
             {
@@ -140,7 +137,7 @@ namespace Fluence.Wpf.Tests
 
                 WriteDword(Registry.CurrentUser, DwmKey, DwmAccentColorValue, dwmEncoded);
 
-                if (writeMode != WriteMode.DwmAccentColorOnly)
+                if (writeMode is not WriteMode.DwmAccentColorOnly)
                 {
                     WriteDword(Registry.CurrentUser, DwmKey, DwmAccentColorInactiveValue, dwmEncoded);
                     WriteDword(Registry.CurrentUser, AccentKey, NativeConstants.AccentColor, explorerEncoded);
@@ -148,7 +145,7 @@ namespace Fluence.Wpf.Tests
                     WriteDword(Registry.CurrentUser, AccentKey, StartColorMenuValue, explorerEncoded);
                 }
 
-                if (writeMode == WriteMode.AllAccentValuesAndBroadcast)
+                if (writeMode is WriteMode.AllAccentValuesAndBroadcast)
                 {
                     _ = NativeMethods.SendMessageTimeout(new IntPtr(NativeMethods.HWND_BROADCAST),
                         NativeConstants.WM_SETTINGCHANGE, IntPtr.Zero, "ImmersiveColorSet",
@@ -158,7 +155,7 @@ namespace Fluence.Wpf.Tests
                 Thread.Sleep(waitMs);
 
                 byte[]? newPalette = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue) as byte[];
-                TestContext?.WriteLine($"After AccentPalette base (offset 12): {FormatPaletteBase(newPalette)}");
+                _output.WriteLine($"After AccentPalette base (offset 12): {FormatPaletteBase(newPalette)}");
 
                 bool paletteChanged = !PaletteEquals(originalPalette, newPalette);
                 bool baseMatchesExperimental = newPalette?.Length >= 16
@@ -166,20 +163,20 @@ namespace Fluence.Wpf.Tests
                     && newPalette[13] == experimentalAccent.G
                     && newPalette[14] == experimentalAccent.B;
 
-                TestContext?.WriteLine($"Palette bytes changed: {paletteChanged}");
-                TestContext?.WriteLine($"Palette base matches experimental color: {baseMatchesExperimental}");
+                _output.WriteLine($"Palette bytes changed: {paletteChanged}");
+                _output.WriteLine($"Palette base matches experimental color: {baseMatchesExperimental}");
 
                 if (baseMatchesExperimental && newPalette is not null)
                 {
-                    TestContext?.WriteLine("=== OS regenerated the palette - Option A viable ===");
+                    _output.WriteLine("=== OS regenerated the palette - Option A viable ===");
                     for (int i = 0; i < 7; i++)
                     {
-                        TestContext?.WriteLine($"  palette[{i.ToString(CultureInfo.InvariantCulture)}] = #{newPalette[i * 4]:X2}{newPalette[(i * 4) + 1]:X2}{newPalette[(i * 4) + 2]:X2}");
+                        _output.WriteLine($"  palette[{i.ToString(CultureInfo.InvariantCulture)}] = #{newPalette[i * 4]:X2}{newPalette[(i * 4) + 1]:X2}{newPalette[(i * 4) + 2]:X2}");
                     }
                 }
                 else
                 {
-                    TestContext?.WriteLine("=== Palette did NOT regenerate to match experimental color - Option A NOT viable in this mode ===");
+                    _output.WriteLine("=== Palette did NOT regenerate to match experimental color - Option A NOT viable in this mode ===");
                 }
             }
             finally

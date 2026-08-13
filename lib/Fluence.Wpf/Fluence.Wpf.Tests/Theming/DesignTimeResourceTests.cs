@@ -26,9 +26,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -41,7 +40,6 @@ namespace Fluence.Wpf.Tests.Theming
     /// engine, and verifies they are valid loadable XAML. The snapshot is produced by
     /// <see cref="DesignTimeResourceWriter"/> from <c>FluenceThemeEngine.BuildStandalone</c>.
     /// </summary>
-    [TestClass]
     public class DesignTimeResourceTests
     {
         /// <summary>
@@ -49,7 +47,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// file (newline-normalized). Any new or changed Color/brush key in the engine fails this
         /// until the files are regenerated via <see cref="RegenerateDesignTimeResources"/>.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DesignTimeResources_AreCurrent()
         {
             WpfTestSta.Invoke(static () =>
@@ -63,15 +61,12 @@ namespace Fluence.Wpf.Tests.Theming
         private static void AssertCurrent(ApplicationTheme theme)
         {
             string path = DesignTimeResourceWriter.PathFor(theme);
-            Assert.IsTrue(File.Exists(path), string.Format("Committed design-time file is missing: {0}", path));
+            Assert.True(File.Exists(path), string.Format("Committed design-time file is missing: {0}", path));
 
             string expected = Normalize(DesignTimeResourceWriter.Generate(theme));
             string actual = Normalize(File.ReadAllText(path));
 
-            Assert.AreEqual(expected, actual, string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} is out of date with the theme engine. Run the RegenerateDesignTimeResources test and re-commit.",
-                Path.GetFileName(path)));
+            Assert.Equal(expected, actual, StringComparer.Ordinal);
         }
 
         private static string Normalize(string text)
@@ -85,7 +80,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// representative set of keys resolve. Verifies the files are valid loadable XAML, not just
         /// string-equal to the generator.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DesignTimeResources_Load_RepresentativeKeysResolve()
         {
             WpfTestSta.Invoke(static () =>
@@ -101,23 +96,16 @@ namespace Fluence.Wpf.Tests.Theming
             Uri uri = new("pack://application:,,,/Fluence.Wpf;component/Properties/" + fileName, UriKind.Absolute);
             ResourceDictionary dict = new() { Source = uri };
 
-            _ = Assert.IsInstanceOfType<SolidColorBrush>(dict["TextFillColorPrimaryBrush"],
-                fileName + ": TextFillColorPrimaryBrush must be a SolidColorBrush.");
-            _ = Assert.IsInstanceOfType<SolidColorBrush>(dict["AccentFillColorDefaultBrush"],
-                fileName + ": AccentFillColorDefaultBrush must be a SolidColorBrush.");
-            _ = Assert.IsInstanceOfType<SolidColorBrush>(dict["CardBackgroundFillColorDefaultBrush"],
-                fileName + ": CardBackgroundFillColorDefaultBrush must be a SolidColorBrush.");
-            _ = Assert.IsInstanceOfType<SolidColorBrush>(dict["SystemAccentColorBrush"],
-                fileName + ": SystemAccentColorBrush must be a SolidColorBrush.");
-            _ = Assert.IsInstanceOfType<LinearGradientBrush>(dict["ControlElevationBorderBrush"],
-                fileName + ": ControlElevationBorderBrush must be a LinearGradientBrush.");
-            _ = Assert.IsInstanceOfType<CornerRadius>(dict["ControlCornerRadius"],
-                fileName + ": ControlCornerRadius must be a CornerRadius.");
+            _ = Assert.IsType<SolidColorBrush>(dict["TextFillColorPrimaryBrush"]);
+            _ = Assert.IsType<SolidColorBrush>(dict["AccentFillColorDefaultBrush"]);
+            _ = Assert.IsType<SolidColorBrush>(dict["CardBackgroundFillColorDefaultBrush"]);
+            _ = Assert.IsType<SolidColorBrush>(dict["SystemAccentColorBrush"]);
+            _ = Assert.IsType<LinearGradientBrush>(dict["ControlElevationBorderBrush"]);
+            _ = Assert.IsType<CornerRadius>(dict["ControlCornerRadius"]);
 
             // Default accent #0078D4 must be the snapshot's accent.
             Color accent = (Color)dict["SystemAccentColor"];
-            Assert.AreEqual(Color.FromRgb(0x00, 0x78, 0xD4), accent,
-                fileName + ": SystemAccentColor must equal the default accent #0078D4.");
+            Assert.Equal(Color.FromRgb(0x00, 0x78, 0xD4), accent);
         }
 
         /// <summary>
@@ -126,8 +114,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// updated <c>DesignTime.{Light,Dark}.xaml</c> files.
         /// </summary>
         [SlopwatchSuppress("SW001", "Maintainer-only file generator that rewrites committed DesignTime.{Light,Dark}.xaml; must not run in CI. DesignTimeResources_AreCurrent is the CI guard.")]
-        [TestMethod]
-        [Ignore("Maintainer-only: writes the committed DesignTime.{Light,Dark}.xaml files. Run manually after an intentional engine change.")]
+        [Fact(Explicit = true)] // Maintainer-only: writes the committed DesignTime.{Light,Dark}.xaml files. Run manually after an intentional engine change.
         public void RegenerateDesignTimeResources()
         {
             WpfTestSta.Invoke(static () =>
@@ -136,9 +123,9 @@ namespace Fluence.Wpf.Tests.Theming
                 DesignTimeResourceWriter.WriteToDisk(ApplicationTheme.Light);
                 DesignTimeResourceWriter.WriteToDisk(ApplicationTheme.Dark);
 
-                Assert.IsTrue(File.Exists(DesignTimeResourceWriter.PathFor(ApplicationTheme.Light)),
+                Assert.True(File.Exists(DesignTimeResourceWriter.PathFor(ApplicationTheme.Light)),
                     "DesignTime.Light.xaml should exist after regeneration.");
-                Assert.IsTrue(File.Exists(DesignTimeResourceWriter.PathFor(ApplicationTheme.Dark)),
+                Assert.True(File.Exists(DesignTimeResourceWriter.PathFor(ApplicationTheme.Dark)),
                     "DesignTime.Dark.xaml should exist after regeneration.");
             });
         }

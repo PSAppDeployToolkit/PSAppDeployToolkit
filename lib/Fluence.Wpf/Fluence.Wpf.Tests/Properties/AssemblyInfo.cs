@@ -26,6 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
-[assembly: DoNotParallelize]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
