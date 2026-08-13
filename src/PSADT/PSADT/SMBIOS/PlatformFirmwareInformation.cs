@@ -209,7 +209,7 @@ namespace PSADT.SMBIOS
             Vendor = !string.IsNullOrWhiteSpace(vendor) ? vendor : null;
             Version = !string.IsNullOrWhiteSpace(version) ? version : null;
             StartingAddressSegment = startingAddressSegment;
-            ReleaseDate = DateTime.TryParseExact(releaseDate?.TrimEnd('Z') + 'Z', ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : throw new ArgumentOutOfRangeException(nameof(releaseDate), $"The system's release date of [{releaseDate}] was unable to be parsed.");
+            ReleaseDate = DateTime.TryParseExact($"{releaseDate?.TrimEnd('Z')}Z", ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : throw new ArgumentOutOfRangeException(nameof(releaseDate), $"The system's release date of [{releaseDate}] was unable to be parsed.");
             RomSizeBytes = romSizeBytes;
             Characteristics = characteristics;
             CharacteristicsExt1 = characteristicsExt1;
