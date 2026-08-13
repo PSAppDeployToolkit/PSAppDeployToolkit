@@ -69,6 +69,7 @@ function Get-ADTApplication
         - SystemComponent
         - WindowsInstaller
         - NoRemove
+        - Is64BitApplication
 
     .EXAMPLE
         Get-ADTApplication
@@ -329,6 +330,12 @@ function Get-ADTApplication
                         $appProperties.Add('EstimatedSize', $value)
                     }
 
+                    # Determine if this is a 64-bit app. This can be null for per-user app installs as we just can't tell.
+                    $is64bitApplication = if (!$item.PSPath.StartsWith('Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER'))
+                    {
+                        [System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch 'Wow6432Node')
+                    }
+
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                     $app = [PSADT.AppManagement.InstalledApplication]::new(
                         $item.PSPath,
@@ -348,7 +355,8 @@ function Get-ADTApplication
                         $appProperties['EstimatedSize'],
                         $systemComponent,
                         $windowsInstaller,
-                        $noRemove
+                        $noRemove,
+                        $is64bitApplication
                     )
 
                     # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
