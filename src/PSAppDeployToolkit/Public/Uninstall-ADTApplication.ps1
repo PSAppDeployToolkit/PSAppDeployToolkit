@@ -317,7 +317,7 @@ function Uninstall-ADTApplication
                 {
                     if (!$removeApplication.ProductCode)
                     {
-                        Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal." -Severity Warning
                         continue
                     }
                     Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })] with ProductCode [$($removeApplication.ProductCode.ToString('B'))]."
@@ -351,7 +351,7 @@ function Uninstall-ADTApplication
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]. Skipping removal."
+                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]. Skipping removal." -Severity Warning
                         continue
                     }
                     $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
