@@ -176,7 +176,7 @@ namespace PSAppDeployToolkit.Logging
                 {
                     // Write the host output to PowerShell's VerboseStream.
                     string[] verboseMessages = [.. logEntries.Select(static e => e.Message)];
-                    ModuleDatabase.InvokeScript(WriteVerboseDelegate, verboseMessages);
+                    ModuleDatabase.InvokeScript(severity >= LogSeverity.Warning ? WriteWarningDelegate : WriteVerboseDelegate, verboseMessages);
                 }
             }
             return logEntries;
@@ -215,6 +215,11 @@ namespace PSAppDeployToolkit.Logging
         /// Gets the Write-Host delegate script block.
         /// </summary>
         private static readonly ScriptBlock WriteHostDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-Host' @colours");
+
+        /// <summary>
+        /// Gets the Write-Warning delegate script block.
+        /// </summary>
+        private static readonly ScriptBlock WriteWarningDelegate = ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Write-Warning'");
 
         /// <summary>
         /// Gets the Write-Verbose delegate script block.
