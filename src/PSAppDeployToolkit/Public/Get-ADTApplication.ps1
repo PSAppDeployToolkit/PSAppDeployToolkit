@@ -34,6 +34,12 @@ function Get-ADTApplication
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
 
+    .PARAMETER IncludeNoRemoveEntries
+        Specifies that uninstall entries marked with `NoRemove=1` be included.
+
+    .PARAMETER IncludeSystemComponentEntries
+        Specifies that uninstall entries marked with `SystemComponent=1` be included.
+
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
@@ -62,6 +68,7 @@ function Get-ADTApplication
         - EstimatedSize
         - SystemComponent
         - WindowsInstaller
+        - NoRemove
         - Is64BitApplication
 
     .EXAMPLE
@@ -128,6 +135,12 @@ function Get-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeNoRemoveEntries,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeSystemComponentEntries,
 
         [Parameter(Mandatory = $false, Position = 0)]
         [ValidateNotNullOrEmpty()]
@@ -220,26 +233,24 @@ function Get-ADTApplication
                     $installDate = [System.DateTime]::MinValue
                     $defaultGuid = [System.Guid]::Empty
 
-                    # Exclude anything without any properties.
-                    if (!$item.GetValueNames())
-                    {
-                        continue
-                    }
-
-                    # Exclude anything without a DisplayName field.
+                    # Exclude anything that doesn't match a valid or requested uninstall entry.
                     if (!($appDisplayName = $item.GetValue('DisplayName', $null)) -or [System.String]::IsNullOrWhiteSpace($appDisplayName))
                     {
                         continue
                     }
-
-                    # Bypass any updates or hotfixes.
+                    if (($systemComponent = $item.GetValue('SystemComponent', $false)) -and !$IncludeSystemComponentEntries)
+                    {
+                        continue
+                    }
+                    if (($noRemove = $item.GetValue('NoRemove', $false)) -and !$IncludeNoRemoveEntries)
+                    {
+                        continue
+                    }
                     if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).Count)
                     {
                         $updatesSkippedCounter++
                         continue
                     }
-
-                    # Apply name filter if specified.
                     if ($nameFilterScript -and !(& $nameFilterScript))
                     {
                         continue
@@ -342,8 +353,9 @@ function Get-ADTApplication
                         $appProperties['Publisher'],
                         $appProperties['HelpLink'],
                         $appProperties['EstimatedSize'],
-                        $item.GetValue('SystemComponent', $false),
+                        $systemComponent,
                         $windowsInstaller,
+                        $noRemove,
                         $is64bitApplication
                     )
 
