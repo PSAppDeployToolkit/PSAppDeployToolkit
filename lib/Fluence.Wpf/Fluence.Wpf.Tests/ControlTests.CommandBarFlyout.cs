@@ -51,7 +51,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.AppBarButton)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.AppBarButton)));
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.FontIcon icon = new() { Glyph = "\uE8C8" };
@@ -353,7 +353,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => deleteButton.IsVisible).ConfigureAwait(true),
                         "Expanding the overflow must materialize the secondary command.");
 
-                    Style secondaryStyle = Assert.IsType<Style>(app?.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"));
+                    Style secondaryStyle = Assert.IsType<Style>(app.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"));
                     Assert.NotNull(deleteButton.Style);
                     Assert.Same(secondaryStyle, deleteButton.Style.BasedOn);
 
@@ -393,7 +393,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

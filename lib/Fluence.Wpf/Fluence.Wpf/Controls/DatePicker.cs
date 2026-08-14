@@ -577,14 +577,9 @@ defaultValue: null,
             }
 
             int index = Math.Max(column.SelectedIndex, 0);
-            if (column.ItemContainerGenerator.ContainerFromIndex(index) is IInputElement container)
-            {
-                _ = Keyboard.Focus(container);
-            }
-            else
-            {
-                _ = column.Focus();
-            }
+            _ = column.ItemContainerGenerator.ContainerFromIndex(index) is IInputElement container
+                ? Keyboard.Focus(container) is not null
+                : column.Focus();
         }
 
         /// <summary>
@@ -593,16 +588,7 @@ defaultValue: null,
         /// </summary>
         private Selector? GetFirstVisibleSelectorColumn()
         {
-            foreach (DateField field in GetOrderedVisibleFields())
-            {
-                Selector? column = GetSelector(field);
-                if (column?.Visibility is Visibility.Visible)
-                {
-                    return column;
-                }
-            }
-
-            return null;
+            return GetOrderedVisibleFields().Select(GetSelector).FirstOrDefault(column => column?.Visibility is Visibility.Visible);
         }
 
         private void OnMonthOrYearSelectionChanged(object sender, SelectionChangedEventArgs e)

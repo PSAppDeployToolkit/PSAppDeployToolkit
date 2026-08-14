@@ -64,7 +64,7 @@ namespace Fluence.Wpf.Tests
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
@@ -89,7 +89,7 @@ namespace Fluence.Wpf.Tests
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(pb, "PlaceholderTextBlock"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
@@ -150,7 +150,7 @@ namespace Fluence.Wpf.Tests
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(1.0, validationLine.Opacity, 0.001);
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCriticalBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCriticalBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(validationLine.Background);
                 Assert.Equal(expected.Color, actual.Color);
 

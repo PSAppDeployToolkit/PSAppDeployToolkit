@@ -80,8 +80,6 @@ The former `IDE0056` / `IDE0057` (index/range operators) and `CA1307` / `CA1310`
 
 - `SYSLIB1045` - regex source generator (not available on `net472`)
 - `S1244` - floating-point equality (necessary for pixel math)
-- `VSTHRD001` - task/thread analyzer (WPF dispatcher pattern conflict)
-- `RCS1255` (net8.0-windows / net10.0-windows lanes only) - suggests `ArgumentNullException.ThrowIfNull`, which sources shared with `net472` cannot use
 
 Prefer `EventArgs.Empty`, `nameof(...)`, explicit `readonly`, and immutable helpers. **Never** use inline `#pragma warning disable` except in exceptional third-party interop cases.
 

@@ -497,14 +497,9 @@ defaultValue: null,
             }
 
             int index = Math.Max(column.SelectedIndex, 0);
-            if (column.ItemContainerGenerator.ContainerFromIndex(index) is IInputElement container)
-            {
-                _ = Keyboard.Focus(container);
-            }
-            else
-            {
-                _ = column.Focus();
-            }
+            _ = column.ItemContainerGenerator.ContainerFromIndex(index) is IInputElement container
+                ? Keyboard.Focus(container) is not null
+                : column.Focus();
         }
 
         /// <summary>

@@ -124,7 +124,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
-                        object resource = Assert.IsAssignableFrom<object>(app?.TryFindResource(key));
+                        object resource = Assert.IsAssignableFrom<object>(app.TryFindResource(key));
                     }
                 }
             });
@@ -190,7 +190,7 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertCloseButtonBrush(Application app, string key, Color expected)
         {
-            object? resource = app?.TryFindResource(key);
+            object? resource = app.TryFindResource(key);
             SolidColorBrush brush = Assert.IsAssignableFrom<SolidColorBrush>(resource);
             Assert.Equal(expected, brush.Color);
         }

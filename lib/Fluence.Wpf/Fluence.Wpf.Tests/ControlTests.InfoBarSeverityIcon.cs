@@ -53,13 +53,12 @@ namespace Fluence.Wpf.Tests
             {
                 _ = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
-                foreach (InfoBarSeverity severity in new[]
+                foreach (string key in new[]
                 {
-                    InfoBarSeverity.Informational, InfoBarSeverity.Success,
-                    InfoBarSeverity.Warning, InfoBarSeverity.Error,
+                    InfoBar.GetSeverityBrushKey(InfoBarSeverity.Informational), InfoBar.GetSeverityBrushKey(InfoBarSeverity.Success),
+                    InfoBar.GetSeverityBrushKey(InfoBarSeverity.Warning), InfoBar.GetSeverityBrushKey(InfoBarSeverity.Error),
                 })
                 {
-                    string key = InfoBar.GetSeverityBrushKey(severity);
                     _ = Assert.IsAssignableFrom<Brush>(Application.Current.TryFindResource(key));
                 }
             });

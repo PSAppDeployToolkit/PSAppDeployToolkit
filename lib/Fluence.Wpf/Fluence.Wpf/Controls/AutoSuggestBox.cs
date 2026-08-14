@@ -613,8 +613,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private bool HasSuggestions()
         {
-            IEnumerable? itemsSource = ItemsSource;
-            if (itemsSource is null)
+            if (ItemsSource is not IEnumerable itemsSource)
             {
                 return false;
             }
@@ -625,14 +624,14 @@ namespace Fluence.Wpf.Controls
             }
 
             IEnumerator enumerator = itemsSource.GetEnumerator();
-            try
+            if (enumerator is IDisposable disposable)
             {
-                return enumerator.MoveNext();
+                using (disposable)
+                {
+                    return enumerator.MoveNext();
+                }
             }
-            finally
-            {
-                (enumerator as IDisposable)?.Dispose();
-            }
+            return enumerator.MoveNext();
         }
 
         /// <summary>

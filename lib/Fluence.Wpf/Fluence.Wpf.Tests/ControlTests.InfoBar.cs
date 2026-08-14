@@ -115,14 +115,14 @@ namespace Fluence.Wpf.Tests
                     // owned by the button's own template, not the OS default chrome.
                     System.Windows.Controls.Border plate =
                         Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(close, "ButtonPlate"));
-                    CornerRadius expectedRadius = (CornerRadius)(app?.FindResource("ControlCornerRadius")
+                    CornerRadius expectedRadius = (CornerRadius)(app.FindResource("ControlCornerRadius")
                         ?? throw new Xunit.Sdk.XunitException("ControlCornerRadius must resolve."));
                     Assert.Equal(expectedRadius, plate.CornerRadius);
                     SolidColorBrush restFill = Assert.IsType<SolidColorBrush>(plate.Background);
                     Assert.Equal(0, restFill.Color.A);
 
                     // Foreground contract: TextFillColorPrimary at rest, flowing into the glyph.
-                    SolidColorBrush primary = (SolidColorBrush)(app?.FindResource("TextFillColorPrimaryBrush")
+                    SolidColorBrush primary = (SolidColorBrush)(app.FindResource("TextFillColorPrimaryBrush")
                         ?? throw new Xunit.Sdk.XunitException("TextFillColorPrimaryBrush must resolve."));
                     SolidColorBrush buttonForeground = Assert.IsType<SolidColorBrush>(close.Foreground);
                     Assert.Equal(primary.Color, buttonForeground.Color);
@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Tests
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0xC3, 0x00, 0x52));
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorAttentionBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorAttentionBrush"));
                 SolidColorBrush indicatorBrush = Assert.IsType<SolidColorBrush>(indicator.Background);
                 SolidColorBrush iconBrush = Assert.IsType<SolidColorBrush>(defaultIcon.Foreground);
                 Assert.Equal(expected.Color, indicatorBrush.Color);

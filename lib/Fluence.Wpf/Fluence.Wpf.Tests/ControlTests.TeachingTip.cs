@@ -90,7 +90,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(new Thickness(16, 15, 16, 17), tip.Padding);
 
                     Border surface = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(tip, "TipSurface"));
-                    CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
+                    CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
                     Assert.Equal(overlayRadius, surface.CornerRadius);
                     Assert.Equal(new Thickness(1), surface.BorderThickness);
 
@@ -893,7 +893,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

@@ -41,9 +41,9 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            app?.Resources.MergedDictionaries.Clear();
+            app.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            app?.Resources.MergedDictionaries.Add(new ResourceDictionary
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
                 Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             });

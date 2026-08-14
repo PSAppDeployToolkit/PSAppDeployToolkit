@@ -8,7 +8,7 @@
     <AssemblyName>Fluence.Wpf.Demo</AssemblyName>
     <ApplicationIcon>..\assets\Fluence_Icon_Light.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <NoWarn>$(NoWarn);CS1591;VSTHRD001;MA0045</NoWarn>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,13 +34,10 @@
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
       $(MeziantouPolyfill_IncludedPolyfills)
+      M:System.IO.TextReader.ReadLineAsync(System.Threading.CancellationToken)|
       M:System.Linq.Enumerable.Order|
       M:System.String.Replace|
     </MeziantouPolyfill_IncludedPolyfills>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
-    <NoWarn>$(NoWarn);RCS1255</NoWarn>
   </PropertyGroup>
 
 </Project>

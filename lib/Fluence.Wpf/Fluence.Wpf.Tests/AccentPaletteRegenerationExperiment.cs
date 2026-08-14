@@ -165,12 +165,12 @@ namespace Fluence.Wpf.Tests
                 _output.WriteLine($"Palette bytes changed: {paletteChanged}");
                 _output.WriteLine($"Palette base matches experimental color: {baseMatchesExperimental}");
 
-                if (baseMatchesExperimental && newPalette is not null)
+                if (baseMatchesExperimental)
                 {
                     _output.WriteLine("=== OS regenerated the palette - Option A viable ===");
                     for (int i = 0; i < 7; i++)
                     {
-                        _output.WriteLine($"  palette[{i.ToString(CultureInfo.InvariantCulture)}] = #{newPalette[i * 4]:X2}{newPalette[(i * 4) + 1]:X2}{newPalette[(i * 4) + 2]:X2}");
+                        _output.WriteLine($"  palette[{i.ToString(CultureInfo.InvariantCulture)}] = #{newPalette![i * 4]:X2}{newPalette[(i * 4) + 1]:X2}{newPalette[(i * 4) + 2]:X2}");
                     }
                 }
                 else

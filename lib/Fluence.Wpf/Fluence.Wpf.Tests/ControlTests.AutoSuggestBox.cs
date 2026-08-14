@@ -52,7 +52,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.AutoSuggestBox)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.AutoSuggestBox)));
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.AutoSuggestBox box = new() { PlaceholderText = "Search" };
@@ -462,11 +462,11 @@ namespace Fluence.Wpf.Tests
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
 
-                Assert.NotNull(app?.TryFindResource("ControlFillColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("TextControlElevationBorderBrush"));
-                Assert.NotNull(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
-                Assert.NotNull(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
-                Assert.NotNull(app?.TryFindResource("OverlayCornerRadius"));
+                Assert.NotNull(app.TryFindResource("ControlFillColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("TextControlElevationBorderBrush"));
+                Assert.NotNull(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                Assert.NotNull(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                Assert.NotNull(app.TryFindResource("OverlayCornerRadius"));
             });
         }
 

@@ -172,7 +172,7 @@ namespace Fluence.Wpf.Helpers
         internal static bool TryGetColorizationBalance(out Color colorizationColor, out int balance)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
-            if (key?.GetValue(NativeConstants.ColorizationColor) is int colorInt && key?.GetValue(NativeConstants.ColorizationColorBalance) is int balanceInt)
+            if (key?.GetValue(NativeConstants.ColorizationColor) is int colorInt && key.GetValue(NativeConstants.ColorizationColorBalance) is int balanceInt)
             {
                 uint raw = unchecked((uint)colorInt);
                 byte a = (byte)((raw >> 24) & 0xFF);

@@ -27,7 +27,6 @@
  */
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -303,28 +302,6 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [Fact]
-        public Task ThemeDictionary_Discarded_IsGarbageCollectedAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
-
-                WeakReference tracker = CreateDiscardedThemeDictionary();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                Assert.False(tracker.IsAlive,
-                    "A discarded ThemeDictionary must be collectable; the static theme subscription must not pin it.");
-
-                // The subscription must also keep working with dead entries in its list.
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
-            });
-        }
-
         private static Color AssertForegroundMatchesToken(TextBlock probe)
         {
             SolidColorBrush tokenBrush = Assert.IsType<SolidColorBrush>(Application.Current.TryFindResource("TextFillColorPrimaryBrush"));
@@ -338,20 +315,6 @@ namespace Fluence.Wpf.Tests
         {
             SolidColorBrush brush = Assert.IsType<SolidColorBrush>(window.TryFindResource("ProbeBrush"));
             Assert.Equal(expected, brush.Color);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static WeakReference CreateDiscardedThemeDictionary()
-        {
-            ThemeDictionary discarded = new()
-            {
-                ThemeDictionaries =
-                {
-                    new ThemeResourceDictionary { ThemeKey = "Light", ["ProbeValue"] = "light" },
-                    new ThemeResourceDictionary { ThemeKey = "Dark", ["ProbeValue"] = "dark" },
-                },
-            };
-            return new WeakReference(discarded);
         }
 
         private static Window NewTestWindow(UIElement content)

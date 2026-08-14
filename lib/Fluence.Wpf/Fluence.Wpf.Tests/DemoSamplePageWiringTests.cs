@@ -352,38 +352,24 @@ namespace Fluence.Wpf.Tests
 
         private static string GetDeclaredPartialClassName(string csharpSource)
         {
+            const string classPrefix = "public partial class ";
             string namespaceName = GetNamespaceName(csharpSource);
-            foreach (string line in SplitLines(csharpSource))
+            if (SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(line => line.StartsWith(classPrefix, StringComparison.Ordinal)) is not string line)
             {
-                string trimmed = line.Trim();
-                const string classPrefix = "public partial class ";
-                if (!trimmed.StartsWith(classPrefix, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                string classRemainder = trimmed[classPrefix.Length..];
-                int classNameEnd = classRemainder.IndexOfAny([' ', ':']);
-                string className = classNameEnd < 0 ? classRemainder : classRemainder[..classNameEnd];
-                return namespaceName + "." + className;
+                throw new Xunit.Sdk.XunitException("Displayed C# source must declare a public partial class.");
             }
-
-            throw new Xunit.Sdk.XunitException("Displayed C# source must declare a public partial class.");
+            string classRemainder = line[classPrefix.Length..];
+            int classNameEnd = classRemainder.IndexOfAny([' ', ':']);
+            string className = classNameEnd < 0 ? classRemainder : classRemainder[..classNameEnd];
+            return namespaceName + "." + className;
         }
 
         private static string GetNamespaceName(string csharpSource)
         {
-            foreach (string line in SplitLines(csharpSource))
-            {
-                string trimmed = line.Trim();
-                const string namespacePrefix = "namespace ";
-                if (trimmed.StartsWith(namespacePrefix, StringComparison.Ordinal))
-                {
-                    return trimmed[namespacePrefix.Length..].Trim();
-                }
-            }
-
-            throw new Xunit.Sdk.XunitException("Displayed C# source must declare a namespace.");
+            const string namespacePrefix = "namespace ";
+            return SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(line => line.StartsWith(namespacePrefix, StringComparison.Ordinal)) is not string line
+                ? throw new Xunit.Sdk.XunitException("Displayed C# source must declare a namespace.")
+                : line[namespacePrefix.Length..].Trim();
         }
 
         private static void AssertDoesNotContainVar(string csharpSource, string sampleDescription)

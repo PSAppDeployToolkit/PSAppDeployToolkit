@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(VerticalAlignment.Center, indicator.VerticalAlignment);
                 _ = Assert.IsAssignableFrom<TranslateTransform>(indicator.RenderTransform);
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(indicator.Background);
                 Assert.Equal(expected.Color, actual.Color);
                 w.Close();

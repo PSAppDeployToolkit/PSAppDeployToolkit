@@ -197,9 +197,7 @@ namespace Fluence.Wpf.Tests
                     int raised = 0;
                     tabs.AddTabButtonClick += (s, e) => raised++;
                     ButtonAutomationPeer peer = new(addButton as System.Windows.Controls.Button);
-                    IInvokeProvider? invoke = peer.GetPattern(PatternInterface.Invoke)
-                        as IInvokeProvider;
-                    Assert.NotNull(invoke);
+                    IInvokeProvider invoke = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
                     invoke.Invoke();
 
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -248,9 +246,7 @@ namespace Fluence.Wpf.Tests
                     tabs.TabCloseRequested += (s, e) => viewArgs = e as TabViewTabCloseRequestedEventArgs;
 
                     ButtonAutomationPeer peer = new(closeButton as System.Windows.Controls.Button);
-                    IInvokeProvider? invoke = peer.GetPattern(PatternInterface.Invoke)
-                        as IInvokeProvider;
-                    Assert.NotNull(invoke);
+                    IInvokeProvider invoke = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
                     invoke.Invoke();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 

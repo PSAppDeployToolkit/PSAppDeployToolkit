@@ -432,8 +432,8 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(300.0, search.MinWidth, 0.01);
                     Assert.Equal(475.0, search.MaxWidth, 0.01);
                     Assert.Equal(300.0, search.ActualWidth, 0.5);
-                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window) ?? double.MaxValue, 1.0);
-                    Assert.Equal((GetVisualCenterY(shellTitleBar, window) ?? double.MinValue) + 4.0, GetVisualCenterY(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window), 1.0);
+                    Assert.Equal(GetVisualCenterY(shellTitleBar, window) + 4.0, GetVisualCenterY(search, window), 1.0);
 
                     Assert.True(search.Focus(), "Search should accept keyboard focus.");
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -441,7 +441,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal(300.0, search.ActualWidth, 0.5);
-                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window), 1.0);
                 }
                 finally
                 {
@@ -482,13 +482,12 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Controls.Button titleBarBack = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindByName<System.Windows.Controls.Button>(shellTitleBar, "PART_BackButton"));
                     Assert.Equal(Visibility.Visible, titleBarBack.Visibility);
-                    Assert.True((GetVisualX(titleBarBack, window) ?? double.MaxValue) < (GetVisualX(titleBarToggle, window) ?? double.MaxValue), "Back should occupy the first title-bar navigation slot.");
+                    Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(titleBarToggle, window), "Back should occupy the first title-bar navigation slot.");
                     System.Windows.Controls.TextBlock titleBarBackGlyph = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChild<System.Windows.Controls.TextBlock>(titleBarBack));
 
-                    NavigationViewItem? firstItem = nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null;
-                    Assert.NotNull(firstItem);
+                    NavigationViewItem firstItem = Assert.IsType<NavigationViewItem>(nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null);
                     FontIcon itemGlyph = Assert.IsAssignableFrom<FontIcon>(FindVisualChild<FontIcon>(firstItem));
-                    Assert.Equal(GetVisualCenterX(itemGlyph, window) ?? double.MaxValue, GetVisualCenterX(titleBarBackGlyph, window) ?? double.MaxValue, 2.5);
+                    Assert.Equal(GetVisualCenterX(itemGlyph, window), GetVisualCenterX(titleBarBackGlyph, window), 2.5);
 
                     ContentPresenter titleIcon = Assert.IsAssignableFrom<ContentPresenter>(FindByName<ContentPresenter>(shellTitleBar, "PART_IconPresenter"));
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
@@ -534,12 +533,12 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.Button titleBarToggle = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindByName<System.Windows.Controls.Button>(shellTitleBar, "PART_PaneToggleButton"));
                     Assert.Equal(Visibility.Visible, titleBarBack.Visibility);
                     Assert.Equal(Visibility.Visible, titleBarToggle.Visibility);
-                    Assert.True((GetVisualX(titleBarBack, window) ?? double.MaxValue) < (GetVisualX(titleBarToggle, window) ?? double.MaxValue), "Back should occupy the first title-bar navigation slot.");
-                    Assert.Equal(GetVisualCenterY(titleBarBack, window) ?? double.MaxValue, GetVisualCenterY(titleBarToggle, window) ?? double.MaxValue, 1.0);
+                    Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(titleBarToggle, window), "Back should occupy the first title-bar navigation slot.");
+                    Assert.Equal(GetVisualCenterY(titleBarBack, window), GetVisualCenterY(titleBarToggle, window), 1.0);
 
                     ContentPresenter titleIcon = Assert.IsAssignableFrom<ContentPresenter>(FindByName<ContentPresenter>(shellTitleBar, "PART_IconPresenter"));
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
-                    double? titleIconWithBackX = GetVisualX(titleIcon, window);
+                    double titleIconWithBackX = GetVisualX(titleIcon, window);
 
                     nav.IsBackEnabled = false;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -547,7 +546,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal(Visibility.Collapsed, titleBarBack.Visibility);
-                    Assert.Equal((titleIconWithBackX ?? double.MaxValue) - 42.0, GetVisualX(titleIcon, window) ?? double.MaxValue, 1.5);
+                    Assert.Equal(titleIconWithBackX - 42.0, GetVisualX(titleIcon, window), 1.5);
                 }
                 finally
                 {
@@ -631,8 +630,8 @@ namespace Fluence.Wpf.Tests
                     ContentPresenter titleIcon = Assert.IsAssignableFrom<ContentPresenter>(FindByName<ContentPresenter>(shellTitleBar, "PART_IconPresenter"));
                     Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
-                    Assert.True((GetVisualX(titleBarBack, window) ?? double.MaxValue) < (GetVisualX(titleIcon, window) ?? double.MaxValue), "Top mode back should be the first visible title-bar item.");
-                    Assert.True((GetVisualX(titleBarBack, window) ?? double.MaxValue) < (GetVisualX(search, window) ?? double.MaxValue), "Top mode back should appear before centered title-bar content.");
+                    Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(titleIcon, window), "Top mode back should be the first visible title-bar item.");
+                    Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(search, window), "Top mode back should appear before centered title-bar content.");
 
                     _ = nav.ApplyTemplate();
                     System.Windows.Controls.Button internalBack = Assert.IsType<System.Windows.Controls.Button>(nav.Template.FindName(NavigationView.PartBackButton, nav));
@@ -831,26 +830,15 @@ namespace Fluence.Wpf.Tests
                     Assert.True(visibleNavigationItems > 1,
                         "Top pane should show every navigation item that fits before the overflow button would overlap the Top toggle status.");
                     NavigationViewItem settings = Assert.IsAssignableFrom<NavigationViewItem>(FindByName<NavigationViewItem>(window, "SettingsNavigationItem"));
-                    double overflowRight = (GetVisualX(overflowButton, nav) ?? double.MaxValue) + overflowButton.ActualWidth;
-                    double settingsLeft = GetVisualX(settings, nav) ?? double.MinValue;
+                    double overflowRight = GetVisualX(overflowButton, nav) + overflowButton.ActualWidth;
+                    double settingsLeft = GetVisualX(settings, nav);
                     Assert.True(overflowRight <= settingsLeft - 4.0 + 1.5, "The three-dot overflow entry should stop before it overlaps the Settings item.");
 
-                    NavigationViewItem? trees = null;
-                    foreach (object item in nav.Items)
-                    {
-                        if (item is NavigationViewItem navItem
-                            && string.Equals(navItem.Content as string, "Trees", StringComparison.Ordinal))
-                        {
-                            trees = navItem;
-                            break;
-                        }
-                    }
-
-                    Assert.NotNull(trees);
+                    NavigationViewItem trees = Assert.IsType<NavigationViewItem>(nav.Items.OfType<NavigationViewItem>().FirstOrDefault(navItem => string.Equals(navItem.Content as string, "Trees", StringComparison.Ordinal)));
                     if (trees.Visibility is Visibility.Visible)
                     {
-                        double treesRight = (GetVisualX(trees, nav) ?? double.MinValue) + trees.ActualWidth;
-                        double overflowLeft = GetVisualX(overflowButton, nav) ?? double.MaxValue;
+                        double treesRight = GetVisualX(trees, nav) + trees.ActualWidth;
+                        double overflowLeft = GetVisualX(overflowButton, nav);
                         Assert.True(treesRight <= overflowLeft - 4.0 + 1.5, "Trees must not overlap the three-dot overflow entry.");
                     }
                 }
@@ -1051,8 +1039,8 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.TextBlock titleText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
                     Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, titleText.Visibility);
-                    double titleRight = (GetVisualX(titleText, window) ?? double.MinValue) + titleText.ActualWidth;
-                    double searchLeft = GetVisualX(search, window) ?? double.MaxValue;
+                    double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
+                    double searchLeft = GetVisualX(search, window);
                     double titleClearanceRight = searchLeft - 12.0;
                     Assert.True(titleRight <= titleClearanceRight, "The title text should not cross the 12px search clearance.");
                     Assert.Equal(titleClearanceRight, titleRight, 10.0);
@@ -1096,8 +1084,8 @@ namespace Fluence.Wpf.Tests
                     if (titleText.Visibility is Visibility.Visible)
                     {
                         Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
-                        double titleRight = (GetVisualX(titleText, window) ?? double.MinValue) + titleText.ActualWidth;
-                        double searchLeft = GetVisualX(search, window) ?? double.MaxValue;
+                        double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
+                        double searchLeft = GetVisualX(search, window);
                         Assert.True(titleRight <= searchLeft - 12.0, "Visible title text must keep a 12px clearance before the search box.");
                     }
                 }
@@ -1135,13 +1123,13 @@ namespace Fluence.Wpf.Tests
 
                     TitleBar shellTitleBar = Assert.IsAssignableFrom<TitleBar>(FindByName<TitleBar>(window, "ShellTitleBar"));
                     Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
-                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window), 1.0);
 
                     System.Windows.Controls.TextBlock titleText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
                     if (titleText.Visibility is Visibility.Visible)
                     {
-                        double titleRight = (GetVisualX(titleText, window) ?? double.MinValue) + titleText.ActualWidth;
-                        double searchLeft = GetVisualX(search, window) ?? double.MaxValue;
+                        double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
+                        double searchLeft = GetVisualX(search, window);
                         Assert.True(titleRight <= searchLeft - 12.0, "Visible title text must keep a 12px clearance before the centered search box.");
                     }
                 }
@@ -1182,8 +1170,8 @@ namespace Fluence.Wpf.Tests
                     if (titleText.Visibility is Visibility.Visible)
                     {
                         Controls.TextBox setupSearch = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
-                        double titleRight = (GetVisualX(titleText, window) ?? double.MinValue) + titleText.ActualWidth;
-                        double searchLeft = GetVisualX(setupSearch, window) ?? double.MaxValue;
+                        double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
+                        double searchLeft = GetVisualX(setupSearch, window);
                         Assert.True(titleRight <= searchLeft - 12.0, "Setup should hide or trim title text before it crosses the 12px search clearance.");
                     }
 
@@ -1223,19 +1211,19 @@ namespace Fluence.Wpf.Tests
                     window.SetUserShowIcon(show: false, window.Icon);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window), 1.0);
 
                     window.SetUserShowTitle(show: false, window.Title);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window), 1.0);
 
                     window.IsMinimizeButtonVisible = Visibility.Collapsed;
                     window.IsMaximizeButtonVisible = Visibility.Collapsed;
                     window.IsCloseButtonVisible = Visibility.Collapsed;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window) ?? double.MaxValue, 1.0);
+                    Assert.Equal(initialX ?? double.MaxValue, GetVisualX(search, window), 1.0);
                 }
                 finally
                 {
@@ -1277,7 +1265,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(new CornerRadius(8, 8, 0, 0), sampleCard.CornerRadius);
                     Assert.Equal(new CornerRadius(0, 0, 8, 8), expander.CornerRadius);
                     Assert.Equal(new Thickness(1, 0, 1, 1), expander.BorderThickness);
-                    Assert.Equal((GetVisualY(sampleCard, window) ?? double.MinValue) + sampleCard.ActualHeight, GetVisualY(expander, window) ?? double.MinValue, 0.5);
+                    Assert.Equal(GetVisualY(sampleCard, window) + sampleCard.ActualHeight, GetVisualY(expander, window), 0.5);
                 }
                 finally
                 {
@@ -1690,12 +1678,12 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(appThemeCard.ActualWidth, backdropCard.ActualWidth, 1.0);
                     Assert.Equal(backdropCard.ActualWidth, colorsCard.ActualWidth, 1.0);
                     Assert.Equal(7, accentRow.Children.Count);
-                    Assert.Equal(GetVisualY(accentRow.Children[0] as FrameworkElement, window) ?? double.MaxValue, GetVisualY(accentRow.Children[6] as FrameworkElement, window) ?? double.MaxValue, 1.0);
-                    Assert.True((GetVisualX(backdrop, window) ?? double.MinValue) > (GetVisualX(appThemeCard, window) ?? double.MinValue) + 500.0,
+                    Assert.Equal(GetVisualY((FrameworkElement)accentRow.Children[0], window), GetVisualY((FrameworkElement)accentRow.Children[6], window), 1.0);
+                    Assert.True(GetVisualX(backdrop, window) > GetVisualX(appThemeCard, window) + 500.0,
                         "The Backdrop combo box should stay docked to the right side of its settings card.");
-                    Assert.True((GetVisualY(maximize, window) ?? double.MinValue) > (GetVisualY(minimize, window) ?? double.MinValue),
+                    Assert.True(GetVisualY(maximize, window) > GetVisualY(minimize, window),
                         "Caption button customization should use separate settings rows.");
-                    Assert.True((GetVisualY(close, window) ?? double.MinValue) > (GetVisualY(maximize, window) ?? double.MinValue),
+                    Assert.True(GetVisualY(close, window) > GetVisualY(maximize, window),
                         "Close button customization should appear below Maximize.");
                 }
                 finally
@@ -2056,22 +2044,22 @@ namespace Fluence.Wpf.Tests
             WpfTestSta.DrainDispatcher(settingsItem.Dispatcher);
         }
 
-        private static double? GetVisualX(FrameworkElement? element, Visual ancestor)
+        private static double GetVisualX(FrameworkElement element, Visual ancestor)
         {
-            return element?.TransformToAncestor(ancestor).Transform(new Point(0, 0)).X;
+            return element.TransformToAncestor(ancestor).Transform(new Point(0, 0)).X;
         }
 
-        private static double? GetVisualY(FrameworkElement? element, Visual ancestor)
+        private static double GetVisualY(FrameworkElement element, Visual ancestor)
         {
-            return element?.TransformToAncestor(ancestor).Transform(new Point(0, 0)).Y;
+            return element.TransformToAncestor(ancestor).Transform(new Point(0, 0)).Y;
         }
 
-        private static double? GetVisualCenterX(FrameworkElement element, Visual ancestor)
+        private static double GetVisualCenterX(FrameworkElement element, Visual ancestor)
         {
             return GetVisualX(element, ancestor) + (element.ActualWidth / 2.0);
         }
 
-        private static double? GetVisualCenterY(FrameworkElement element, Visual ancestor)
+        private static double GetVisualCenterY(FrameworkElement element, Visual ancestor)
         {
             return GetVisualY(element, ancestor) + (element.ActualHeight / 2.0);
         }

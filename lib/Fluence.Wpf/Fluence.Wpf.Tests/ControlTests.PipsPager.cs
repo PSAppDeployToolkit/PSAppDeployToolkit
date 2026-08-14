@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.PipsPager)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.PipsPager)));
 
                 Window window = new() { Width = 500, Height = 200 };
                 Controls.PipsPager pager = new();
@@ -498,7 +498,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });
@@ -529,7 +529,7 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
 
-                    object strongFill = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlStrongFillColorDefaultBrush"));
+                    object strongFill = Assert.IsAssignableFrom<object>(app.TryFindResource("ControlStrongFillColorDefaultBrush"));
 
                     // WinUI maps PipsPagerNavigationButtonForeground at rest to
                     // ControlStrongFillColorDefaultBrush; the chevron buttons must share the same
@@ -544,7 +544,7 @@ namespace Fluence.Wpf.Tests
                     // ControlStrongFillColorDisabledBrush (not the text disabled fill). The
                     // previous button is disabled at page 0, so its Foreground must reflect that
                     // disabled setter.
-                    object strongFillDisabled = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlStrongFillColorDisabledBrush"));
+                    object strongFillDisabled = Assert.IsAssignableFrom<object>(app.TryFindResource("ControlStrongFillColorDisabledBrush"));
                     System.Windows.Controls.Button previousButton = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"));
                     Assert.False(previousButton.IsEnabled, "The previous button must be disabled at the first page.");
                     Assert.Same(strongFillDisabled, previousButton.Foreground);
@@ -571,7 +571,7 @@ namespace Fluence.Wpf.Tests
 
                     pager.IsEnabled = false;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Same(app?.TryFindResource("ControlStrongFillColorDisabledBrush"), restDot.Fill);
+                    Assert.Same(app.TryFindResource("ControlStrongFillColorDisabledBrush"), restDot.Fill);
                 }
                 finally
                 {

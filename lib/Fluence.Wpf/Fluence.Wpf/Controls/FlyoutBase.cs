@@ -163,11 +163,7 @@ namespace Fluence.Wpf.Controls
         /// <exception cref="ArgumentNullException"><paramref name="element"/> is <see langword="null"/>.</exception>
         public static void SetAttachedFlyout(FrameworkElement element, FlyoutBase? value)
         {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
+            ArgumentNullException.ThrowIfNull(element);
             element.SetValue(AttachedFlyoutProperty, value);
         }
 
@@ -180,11 +176,7 @@ namespace Fluence.Wpf.Controls
         /// <exception cref="ArgumentNullException"><paramref name="flyoutOwner"/> is <see langword="null"/>.</exception>
         public static void ShowAttachedFlyout(FrameworkElement flyoutOwner)
         {
-            if (flyoutOwner is null)
-            {
-                throw new ArgumentNullException(nameof(flyoutOwner));
-            }
-
+            ArgumentNullException.ThrowIfNull(flyoutOwner);
             GetAttachedFlyout(flyoutOwner)?.ShowAt(flyoutOwner);
         }
 
@@ -199,11 +191,7 @@ namespace Fluence.Wpf.Controls
         /// <exception cref="ArgumentNullException"><paramref name="placementTarget"/> is <see langword="null"/>.</exception>
         public void ShowAt(FrameworkElement placementTarget)
         {
-            if (placementTarget is null)
-            {
-                throw new ArgumentNullException(nameof(placementTarget));
-            }
-
+            ArgumentNullException.ThrowIfNull(placementTarget);
             Popup popup = EnsurePopup();
             popup.PlacementTarget = placementTarget;
 

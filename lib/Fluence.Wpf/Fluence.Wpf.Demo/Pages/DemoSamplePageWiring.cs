@@ -87,15 +87,9 @@ namespace Fluence.Wpf.Demo.Pages
         /// <exception cref="InvalidOperationException">Thrown if the number of <see cref="DemoSampleSource"/> entries does not match the number of <c>DemoSampleControl</c> instances on the page.</exception>
         internal static void Apply(DependencyObject root, params DemoSampleSource[] sources)
         {
-            if (root is null)
-            {
-                throw new ArgumentNullException(nameof(root));
-            }
+            ArgumentNullException.ThrowIfNull(root);
 
-            if (sources is null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
+            ArgumentNullException.ThrowIfNull(sources);
 
             List<DemoSampleControl> samples = [];
             CollectDemoSampleControls(root, samples);

@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.DatePicker)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.DatePicker)));
 
                 Window window = new() { Width = 500, Height = 400 };
                 Controls.DatePicker picker = new();
@@ -566,14 +566,14 @@ namespace Fluence.Wpf.Tests
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
 
-                Assert.NotNull(app?.TryFindResource("ControlFillColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("ControlElevationBorderBrush"));
-                Assert.NotNull(app?.TryFindResource("ControlStrokeColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("DividerStrokeColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("TextFillColorSecondaryBrush"));
-                Assert.NotNull(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
-                Assert.NotNull(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
-                Assert.NotNull(app?.TryFindResource("OverlayCornerRadius"));
+                Assert.NotNull(app.TryFindResource("ControlFillColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("ControlElevationBorderBrush"));
+                Assert.NotNull(app.TryFindResource("ControlStrokeColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("DividerStrokeColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("TextFillColorSecondaryBrush"));
+                Assert.NotNull(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                Assert.NotNull(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                Assert.NotNull(app.TryFindResource("OverlayCornerRadius"));
             });
         }
 

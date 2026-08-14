@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.ColorPicker)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.ColorPicker)));
 
                 Window window = new() { Width = 500, Height = 640 };
                 Controls.ColorPicker picker = new();
@@ -480,10 +480,10 @@ namespace Fluence.Wpf.Tests
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
 
-                Assert.NotNull(app?.TryFindResource("ControlStrokeColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("TextFillColorPrimaryBrush"));
-                Assert.NotNull(app?.TryFindResource("AccentFillColorDefaultBrush"));
-                Assert.NotNull(app?.TryFindResource("ControlFillColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("ControlStrokeColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("TextFillColorPrimaryBrush"));
+                Assert.NotNull(app.TryFindResource("AccentFillColorDefaultBrush"));
+                Assert.NotNull(app.TryFindResource("ControlFillColorDefaultBrush"));
             });
         }
 

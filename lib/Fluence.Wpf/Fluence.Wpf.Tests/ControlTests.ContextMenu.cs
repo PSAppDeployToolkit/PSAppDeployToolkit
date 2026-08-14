@@ -51,7 +51,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ContextMenu)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(ContextMenu)));
             });
         }
 
@@ -63,8 +63,8 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Assert.NotNull(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
-                Assert.NotNull(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                Assert.NotNull(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                Assert.NotNull(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
             });
         }
 
@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ContextMenu)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(ContextMenu)));
 
                 // HasDropShadow only activates when the Popup opens; verify the
                 // Setter is present and declared True rather than applying the style
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(MenuItem)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(MenuItem)));
             });
         }
 
@@ -110,8 +110,8 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Assert.NotNull(app?.TryFindResource("SubtleFillColorSecondaryBrush"));
-                Assert.NotNull(app?.TryFindResource("SubtleFillColorTertiaryBrush"));
+                Assert.NotNull(app.TryFindResource("SubtleFillColorSecondaryBrush"));
+                Assert.NotNull(app.TryFindResource("SubtleFillColorTertiaryBrush"));
             });
         }
 
@@ -126,7 +126,7 @@ namespace Fluence.Wpf.Tests
                 MenuItem mi = new()
                 {
                     Header = "Test",
-                    Style = Assert.IsType<Style>(app?.TryFindResource(typeof(MenuItem))),
+                    Style = Assert.IsType<Style>(app.TryFindResource(typeof(MenuItem))),
                 };
                 Assert.Equal(14.0, mi.FontSize, 0.01);
             });
@@ -158,7 +158,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

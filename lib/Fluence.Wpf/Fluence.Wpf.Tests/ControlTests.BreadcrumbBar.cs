@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.BreadcrumbBar)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.BreadcrumbBar)));
 
                 Window window = new() { Width = 500, Height = 200 };
                 Controls.BreadcrumbBar bar = new();
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    SolidColorBrush primaryBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorPrimaryBrush"));
+                    SolidColorBrush primaryBrush = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorPrimaryBrush"));
 
                     for (int index = 0; index < crumbs.Length - 1; index++)
                     {
@@ -359,7 +359,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

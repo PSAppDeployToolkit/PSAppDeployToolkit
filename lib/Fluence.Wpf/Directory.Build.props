@@ -96,11 +96,14 @@
   -->
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
+      M:System.ArgumentNullException.ThrowIfNull|
       M:System.String.Contains(System.String,System.StringComparison)|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
       T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
       T:System.Index|
       T:System.Range|
+      T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
       T:System.Threading.Lock|
     </MeziantouPolyfill_IncludedPolyfills>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
