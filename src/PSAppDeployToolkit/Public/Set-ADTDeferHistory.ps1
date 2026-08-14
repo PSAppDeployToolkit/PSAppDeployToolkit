@@ -40,7 +40,7 @@ function Set-ADTDeferHistory
         This function does not return any objects.
 
     .EXAMPLE
-        Set-DeferHistory
+        Set-ADTDeferHistory
 
     .NOTES
         An active ADT session is required to use this function.
