@@ -28,6 +28,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -43,11 +44,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void AppBarButton_DefaultStyle_AppliesCompactChromeAndLabelTooltip()
+        public Task AppBarButton_DefaultStyle_AppliesCompactChromeAndLabelTooltipAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.AppBarButton)));
@@ -64,7 +65,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = panel;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Same(icon, labeled.Icon);
@@ -84,11 +85,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyout_ShowAt_PresentsPrimaryCommands()
+        public Task CommandBarFlyout_ShowAt_PresentsPrimaryCommandsAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -105,11 +106,11 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
 
                     Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
@@ -117,11 +118,11 @@ namespace Fluence.Wpf.Tests
 
                     Controls.CommandBarFlyoutPresenter presenter = Assert.IsType<Controls.CommandBarFlyoutPresenter>(popup.Child);
 
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ItemsControl primaryItems = Assert.IsAssignableFrom<ItemsControl>(presenter.Template.FindName("PART_PrimaryItemsControl", presenter));
                     Assert.Same(flyout.PrimaryCommands, primaryItems.ItemsSource);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => copyButton.IsVisible).ConfigureAwait(true),
                         "Primary AppBarButtons must materialize in the opened bar.");
                 }
                 finally
@@ -133,11 +134,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyout_MoreButton_TracksSecondaryCommands()
+        public Task CommandBarFlyout_MoreButton_TracksSecondaryCommandsAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -153,16 +154,16 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter presenter = Assert.IsType<Controls.CommandBarFlyoutPresenter>(flyout.HostPopup?.Child);
 
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
                     Assert.Equal(Visibility.Collapsed, moreButton.Visibility);
@@ -172,7 +173,7 @@ namespace Fluence.Wpf.Tests
                         Icon = new Controls.FontIcon { Glyph = "\uE74D" },
                         Label = "Delete",
                     });
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => moreButton.Visibility is Visibility.Visible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => moreButton.Visibility is Visibility.Visible).ConfigureAwait(true),
                         "The more button must become visible once SecondaryCommands is non-empty.");
                 }
                 finally
@@ -184,11 +185,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyout_MoreButton_TogglesSecondaryOverflow()
+        public Task CommandBarFlyout_MoreButton_TogglesSecondaryOverflowAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -209,16 +210,16 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter presenter = Assert.IsType<Controls.CommandBarFlyoutPresenter>(flyout.HostPopup?.Child);
 
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
                     FrameworkElement secondaryHost = Assert.IsAssignableFrom<FrameworkElement>(presenter.Template.FindName("PART_SecondaryHost", presenter));
@@ -231,27 +232,27 @@ namespace Fluence.Wpf.Tests
                         Assert.IsType<System.Windows.Media.RotateTransform>(presenter.Template.FindName("MoreButtonIconRotation", presenter));
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.IsExpanded),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => presenter.IsExpanded).ConfigureAwait(true),
                         "Clicking the more button must expand the presenter.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => secondaryHost.IsVisible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => secondaryHost.IsVisible).ConfigureAwait(true),
                         "Expanding must make the secondary host visible.");
                     Assert.True(flyout.IsOpen, "The more button must toggle the overflow without dismissing the flyout.");
 
                     // The 167ms expand storyboard must settle the host scale at 1 and rotate
                     // the more-button glyph to 180.
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY >= 1.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => hostScale.ScaleY >= 1.0).ConfigureAwait(true),
                         "Expanding must animate the secondary host ScaleY up to 1.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle >= 180.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => chevronRotation.Angle >= 180.0).ConfigureAwait(true),
                         "Expanding must rotate the more-button glyph to 180 degrees.");
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !presenter.IsExpanded),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !presenter.IsExpanded).ConfigureAwait(true),
                         "Clicking the more button again must collapse the presenter.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !secondaryHost.IsVisible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !secondaryHost.IsVisible).ConfigureAwait(true),
                         "Collapsing must hide the secondary host (the exit storyboard collapses it at the end).");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY <= 0.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => hostScale.ScaleY <= 0.0).ConfigureAwait(true),
                         "Collapsing must animate the secondary host ScaleY back to 0.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle <= 0.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => chevronRotation.Angle <= 0.0).ConfigureAwait(true),
                         "Collapsing must rotate the more-button glyph back to 0 degrees.");
                 }
                 finally
@@ -263,11 +264,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyout_PrimaryCommandClick_RaisesClickAndHidesFlyout()
+        public Task CommandBarFlyout_PrimaryCommandClick_RaisesClickAndHidesFlyoutAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -286,18 +287,18 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => copyButton.IsVisible).ConfigureAwait(true),
                         "The primary command must materialize before it is clicked.");
 
                     copyButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                     Assert.True(clickRaised, "The command's own Click handlers must run.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                         "Invoking a command must dismiss the flyout, per WinUI.");
                 }
                 finally
@@ -309,11 +310,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyout_SecondaryCommands_UseOverflowStyleAndRenderLabels()
+        public Task CommandBarFlyout_SecondaryCommands_UseOverflowStyleAndRenderLabelsAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -335,21 +336,21 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter presenter = Assert.IsType<Controls.CommandBarFlyoutPresenter>(flyout.HostPopup?.Child);
 
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => deleteButton.IsVisible),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => deleteButton.IsVisible).ConfigureAwait(true),
                         "Expanding the overflow must materialize the secondary command.");
 
                     Style secondaryStyle = Assert.IsType<Style>(app?.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"));
@@ -369,11 +370,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CommandBarFlyoutPresenter_ThemeCycle_SurfaceBrushesResolve()
+        public Task CommandBarFlyoutPresenter_ThemeCycle_SurfaceBrushesResolveAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 string[] brushKeys =
@@ -399,11 +400,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AppBarButton_Pressed_AnimatesBackplatePressScale()
+        public Task AppBarButton_Pressed_AnimatesBackplatePressScaleAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -421,7 +422,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = button;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     System.Windows.Media.ScaleTransform pressScale =
@@ -430,14 +431,14 @@ namespace Fluence.Wpf.Tests
 
                     // Press: the Button.xaml press-scale storyboard settles at 0.98.
                     button.SetPressed(pressed: true);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000,
-                            () => pressScale.ScaleX <= 0.98 && pressScale.ScaleY <= 0.98),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
+                            () => pressScale.ScaleX <= 0.98 && pressScale.ScaleY <= 0.98).ConfigureAwait(true),
                         "Pressing must animate the backplate down to the 0.98 press scale.");
 
                     // Release: the release storyboard restores 1.0.
                     button.SetPressed(pressed: false);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000,
-                            () => pressScale.ScaleX >= 1.0 && pressScale.ScaleY >= 1.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
+                            () => pressScale.ScaleX >= 1.0 && pressScale.ScaleY >= 1.0).ConfigureAwait(true),
                         "Releasing must animate the backplate back to 1.0 scale.");
                 }
                 finally

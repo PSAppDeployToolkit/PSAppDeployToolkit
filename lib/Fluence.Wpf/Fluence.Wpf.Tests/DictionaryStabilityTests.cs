@@ -28,29 +28,36 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    public class DictionaryStabilityTests
+    public class DictionaryStabilityTests : IAsyncLifetime
     {
-        public DictionaryStabilityTests()
+        public ValueTask InitializeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return new ValueTask(WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 Application.Current.Resources.MergedDictionaries.Clear();
-            });
+            }));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            GC.SuppressFinalize(this);
+            return default;
         }
 
         [Fact]
-        public void RepeatedThemeSwitches_NoDictionaryAccumulation()
+        public Task RepeatedThemeSwitches_NoDictionaryAccumulationAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -68,9 +75,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ThemeSlotIsReused()
+        public Task ThemeSlotIsReusedAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -84,9 +91,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AllThemeVariants_SameSlotCount()
+        public Task AllThemeVariants_SameSlotCountAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -104,9 +111,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FirstApply_LoadsThreeDictionaries()
+        public Task FirstApply_LoadsThreeDictionariesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -116,9 +123,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Apply_UsesThreeSlots_ReplacesComputedSlotOnChange()
+        public Task Apply_UsesThreeSlots_ReplacesComputedSlotOnChangeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
@@ -138,9 +145,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AccentUpdate_DoesNotChangeDictionaryCount()
+        public Task AccentUpdate_DoesNotChangeDictionaryCountAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
@@ -154,9 +161,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AllBrushKeys_Resolve_AfterLightDarkHcCycle()
+        public Task AllBrushKeys_Resolve_AfterLightDarkHcCycleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
@@ -180,9 +187,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void InitialApply_SlotsAreComputedTypographyGeneric_InOrder()
+        public Task InitialApply_SlotsAreComputedTypographyGeneric_InOrderAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);

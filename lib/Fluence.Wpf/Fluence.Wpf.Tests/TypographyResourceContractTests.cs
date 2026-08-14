@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using Fluence.Wpf.Controls;
 using Xunit;
@@ -35,11 +36,11 @@ namespace Fluence.Wpf.Tests
     public class TypographyResourceContractTests
     {
         [Fact]
-        public void TextBlockExtensions_Typography_UsesNamedTextBlockStyleResource()
+        public Task TextBlockExtensions_Typography_UsesNamedTextBlockStyleResourceAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = WpfTestSta.EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 application?.Resources.Clear();

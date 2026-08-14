@@ -609,7 +609,7 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Raises a UI Automation <see cref="System.Windows.Automation.RangeValuePatternIdentifiers.ValueProperty"/> change
+        /// Raises a UI Automation <see cref="RangeValuePatternIdentifiers.ValueProperty"/> change
         /// event so clients (e.g. Narrator) can read the current progress value on demand.
         /// Only raised in determinate mode; <see cref="ProgressRingAutomationPeer.GetPattern"/>
         /// already suppresses <see cref="PatternInterface.RangeValue"/> when indeterminate.

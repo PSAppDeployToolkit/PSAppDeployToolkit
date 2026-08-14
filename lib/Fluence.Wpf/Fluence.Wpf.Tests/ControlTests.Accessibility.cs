@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -38,16 +39,16 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void GlyphButtons_InPickersAndSpinners_HaveAutomationNames()
+        public Task GlyphButtons_InPickersAndSpinners_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.NumberBox numberBox = new()
                 {
-                    SpinButtonPlacementMode = Fluence.Wpf.SpinButtonPlacementMode.Inline,
+                    SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
                     Width = 160,
                 };
                 Window window = new() { Content = numberBox, Width = 240, Height = 80 };
@@ -56,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Show();
                     _ = numberBox.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -67,7 +68,7 @@ namespace Fluence.Wpf.Tests
                         FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(numberBox, part));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
-                            string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                            string.Equals(expectedName, actualName, StringComparison.Ordinal),
                             $"{part} must expose accessible name for Narrator. Expected: '{expectedName}', actual: '{actualName}'.");
                     }
                 }
@@ -80,11 +81,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FluenceWindow_CaptionButtons_HaveAutomationNames()
+        public Task FluenceWindow_CaptionButtons_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.FluenceWindow window = new();
@@ -93,7 +94,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Show();
                     _ = window.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -104,7 +105,7 @@ namespace Fluence.Wpf.Tests
                         FrameworkElement button = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(window, part));
                         string actualName = AutomationProperties.GetName(button);
                         Assert.True(
-                            string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                            string.Equals(expectedName, actualName, StringComparison.Ordinal),
                             $"{part} must expose an accessible name for Narrator. Expected: '{expectedName}', actual: '{actualName}'.");
                     }
                 }
@@ -117,11 +118,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_QueryButton_HasAutomationName()
+        public Task AutoSuggestBox_QueryButton_HasAutomationNameAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 // QueryIcon must be non-null so the template trigger does not clear the icon
@@ -129,7 +130,7 @@ namespace Fluence.Wpf.Tests
                 Controls.AutoSuggestBox autoSuggestBox = new()
                 {
                     Width = 200,
-                    QueryIcon = new Controls.FontIcon { Glyph = "" },
+                    QueryIcon = new Controls.FontIcon { Glyph = "\uE721" },
                 };
                 Window window = new() { Content = autoSuggestBox, Width = 300, Height = 80 };
 
@@ -137,13 +138,13 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Show();
                     _ = autoSuggestBox.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(autoSuggestBox.Template);
                     FrameworkElement queryButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_QueryButton", autoSuggestBox));
                     string actualName = AutomationProperties.GetName(queryButton);
                     Assert.True(
-                        string.Equals("Search", actualName, System.StringComparison.Ordinal),
+                        string.Equals("Search", actualName, StringComparison.Ordinal),
                         $"PART_QueryButton must expose accessible name 'Search' for Narrator. Actual: '{actualName}'.");
                 }
                 finally
@@ -155,11 +156,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DatePicker_AcceptCancelButtons_HaveAutomationNames()
+        public Task DatePicker_AcceptCancelButtons_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.DatePicker picker = new() { Width = 220 };
@@ -168,7 +169,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
@@ -182,7 +183,7 @@ namespace Fluence.Wpf.Tests
                         FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
-                            string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                            string.Equals(expectedName, actualName, StringComparison.Ordinal),
                             $"{part} must expose accessible name '{expectedName}' for Narrator. Actual: '{actualName}'.");
                     }
                 }
@@ -195,11 +196,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TimePicker_AcceptCancelButtons_HaveAutomationNames()
+        public Task TimePicker_AcceptCancelButtons_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.TimePicker picker = new() { Width = 220 };
@@ -208,7 +209,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
@@ -222,7 +223,7 @@ namespace Fluence.Wpf.Tests
                         FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
-                            string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                            string.Equals(expectedName, actualName, StringComparison.Ordinal),
                             $"{part} must expose accessible name '{expectedName}' for Narrator. Actual: '{actualName}'.");
                     }
                 }
@@ -235,11 +236,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void InfoBarAndPipsPager_GlyphButtons_HaveAutomationNames()
+        public Task InfoBarAndPipsPager_GlyphButtons_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
@@ -252,13 +253,13 @@ namespace Fluence.Wpf.Tests
                     {
                         infoBarWindow.Show();
                         _ = infoBar.ApplyTemplate();
-                        DrainDispatcher(infoBarWindow.Dispatcher);
+                        WpfTestSta.DrainDispatcher(infoBarWindow.Dispatcher);
 
                         ControlTemplate infoBarTemplate = Assert.IsAssignableFrom<ControlTemplate>(infoBar.Template);
                         FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(infoBarTemplate.FindName("PART_CloseButton", infoBar));
                         string closeActualName = AutomationProperties.GetName(closeButton);
                         Assert.True(
-                            string.Equals("Close", closeActualName, System.StringComparison.Ordinal),
+                            string.Equals("Close", closeActualName, StringComparison.Ordinal),
                             $"InfoBar PART_CloseButton must expose accessible name 'Close' for Narrator. Actual: '{closeActualName}'.");
                     }
                     finally
@@ -270,8 +271,8 @@ namespace Fluence.Wpf.Tests
                     Controls.PipsPager pipsPager = new()
                     {
                         NumberOfPages = 5,
-                        PreviousButtonVisibility = Fluence.Wpf.PipsPagerButtonVisibility.Visible,
-                        NextButtonVisibility = Fluence.Wpf.PipsPagerButtonVisibility.Visible,
+                        PreviousButtonVisibility = PipsPagerButtonVisibility.Visible,
+                        NextButtonVisibility = PipsPagerButtonVisibility.Visible,
                         Width = 200,
                     };
                     Window pipsWindow = new() { Content = pipsPager, Width = 300, Height = 80 };
@@ -280,7 +281,7 @@ namespace Fluence.Wpf.Tests
                     {
                         pipsWindow.Show();
                         _ = pipsPager.ApplyTemplate();
-                        DrainDispatcher(pipsWindow.Dispatcher);
+                        WpfTestSta.DrainDispatcher(pipsWindow.Dispatcher);
 
                         ControlTemplate pipsTemplate = Assert.IsAssignableFrom<ControlTemplate>(pipsPager.Template);
 
@@ -293,7 +294,7 @@ namespace Fluence.Wpf.Tests
                             FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(pipsTemplate.FindName(part, pipsPager));
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
-                                string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                                string.Equals(expectedName, actualName, StringComparison.Ordinal),
                                 $"{part} must expose accessible name '{expectedName}' for Narrator. Actual: '{actualName}'.");
                         }
                     }
@@ -310,11 +311,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TabViewItem_CloseButton_HasAutomationName()
+        public Task TabViewItem_CloseButton_HasAutomationNameAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 // TabViewItem is a ContentControl subclass; it can be templated standalone
@@ -333,13 +334,13 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Show();
                     _ = item.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(item.Template);
                     FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_CloseButton", item));
                     string actualName = AutomationProperties.GetName(closeButton);
                     Assert.True(
-                        string.Equals("Close tab", actualName, System.StringComparison.Ordinal),
+                        string.Equals("Close tab", actualName, StringComparison.Ordinal),
                         $"PART_CloseButton must expose accessible name 'Close tab' for Narrator. Actual: '{actualName}'.");
                 }
                 finally
@@ -351,11 +352,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_PaneToggleAndBackButtons_HaveAutomationNames()
+        public Task NavigationView_PaneToggleAndBackButtons_HaveAutomationNamesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
@@ -368,7 +369,7 @@ namespace Fluence.Wpf.Tests
                     {
                         navWindow.Show();
                         _ = nav.ApplyTemplate();
-                        DrainDispatcher(navWindow.Dispatcher);
+                        WpfTestSta.DrainDispatcher(navWindow.Dispatcher);
 
                         ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
 
@@ -381,7 +382,7 @@ namespace Fluence.Wpf.Tests
                             FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName(part, nav));
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
-                                string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
+                                string.Equals(expectedName, actualName, StringComparison.Ordinal),
                                 $"{part} must expose accessible name '{expectedName}' for Narrator. Actual: '{actualName}'.");
                         }
                     }
@@ -398,18 +399,18 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_TopPane_BackButton_HasAutomationName()
+        public Task NavigationView_TopPane_BackButton_HasAutomationNameAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
                 {
                     Controls.NavigationView nav = new()
                     {
-                        PaneDisplayMode = Fluence.Wpf.NavigationViewPaneDisplayMode.Top,
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                         Width = 640,
                         Height = 240,
                     };
@@ -419,14 +420,14 @@ namespace Fluence.Wpf.Tests
                     {
                         navWindow.Show();
                         _ = nav.ApplyTemplate();
-                        DrainDispatcher(navWindow.Dispatcher);
+                        WpfTestSta.DrainDispatcher(navWindow.Dispatcher);
 
                         ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
 
                         FrameworkElement backButton = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName("PART_BackButton", nav));
                         string actualName = AutomationProperties.GetName(backButton);
                         Assert.True(
-                            string.Equals("Back", actualName, System.StringComparison.Ordinal),
+                            string.Equals("Back", actualName, StringComparison.Ordinal),
                             $"PART_BackButton must expose accessible name 'Back' for Narrator in Top mode. Actual: '{actualName}'.");
                     }
                     finally
@@ -442,18 +443,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FontIcon_AutomationPeer_IsExcludedFromControlTree()
+        public Task FontIcon_AutomationPeer_IsExcludedFromControlTreeAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
                 {
                     Controls.FontIcon icon = new() { Glyph = "" };
-                    System.Windows.Automation.Peers.AutomationPeer peer =
-                        System.Windows.Automation.Peers.UIElementAutomationPeer.CreatePeerForElement(icon);
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(icon);
 
                     Assert.NotNull(peer);
                     _ = Assert.IsAssignableFrom<Automation.FontIconAutomationPeer>(peer);
@@ -480,11 +480,11 @@ namespace Fluence.Wpf.Tests
         // report (TeachingTip.xaml line 209, AutomationProperties.Name="Close").
 
         [Fact]
-        public void AppBarButton_Label_BecomesAccessibleName()
+        public Task AppBarButton_Label_BecomesAccessibleNameAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
 
@@ -496,7 +496,7 @@ namespace Fluence.Wpf.Tests
                     window.Height = 80;
                     window.Show();
                     _ = button.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
                     Assert.True(

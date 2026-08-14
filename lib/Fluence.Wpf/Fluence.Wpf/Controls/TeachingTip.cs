@@ -619,7 +619,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private static UIElement? ResolveFallbackPlacementTarget()
         {
-            Application? application = Application.Current;
+            Application application = Application.Current;
             if (application is null)
             {
                 return null;

@@ -27,6 +27,7 @@
  */
 
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -43,11 +44,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void Button_FontIconIcon_MatchesTextForeground_AcrossStatesAndThemes()
+        public Task Button_FontIconIcon_MatchesTextForeground_AcrossStatesAndThemesAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
@@ -61,13 +62,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertIconMatchesText(button, "MainContentPresenter");
 
                     button.Appearance = ControlAppearance.Accent;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     AssertIconMatchesText(button, "MainContentPresenter");
                     Assert.Equal(
@@ -75,7 +76,7 @@ namespace Fluence.Wpf.Tests
                         GetIconForegroundColor(button));
 
                     button.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(button, "MainContentPresenter");
                     ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(button, "IconPresenter"));
                     Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
@@ -83,7 +84,7 @@ namespace Fluence.Wpf.Tests
                     button.IsEnabled = true;
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Assert.True(
-                        WaitUntil(window.Dispatcher, 2000, () => IconMatchesText(button, "MainContentPresenter")),
+                        await WaitUntilAsync(window.Dispatcher, 2000, () => IconMatchesText(button, "MainContentPresenter")).ConfigureAwait(true),
                         "Button icon must keep matching the text foreground after a Light to Dark theme switch.");
                 }
                 finally
@@ -96,11 +97,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_ExplicitIconForeground_LocalValueStillWins()
+        public Task Button_ExplicitIconForeground_LocalValueStillWinsAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.Button button = new()
@@ -114,13 +115,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Equal(Colors.Red, GetIconForegroundColor(button));
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(Colors.Red, GetIconForegroundColor(button));
                 }
                 finally
@@ -133,11 +134,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HyperlinkButton_FontIconIcon_MatchesTextForeground_AtRestAndDisabled()
+        public Task HyperlinkButton_FontIconIcon_MatchesTextForeground_AtRestAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.HyperlinkButton link = new()
@@ -150,7 +151,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertIconMatchesText(link, "MainContentPresenter");
@@ -159,7 +160,7 @@ namespace Fluence.Wpf.Tests
                         GetIconForegroundColor(link));
 
                     link.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(link, "MainContentPresenter");
                     ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(link, "IconPresenter"));
                     Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
@@ -173,11 +174,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationViewItem_FontIconIcon_MatchesTextForeground_RestSelectedAndDisabled()
+        public Task NavigationViewItem_FontIconIcon_MatchesTextForeground_RestSelectedAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.NavigationViewItem item = new()
@@ -195,17 +196,17 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertIconMatchesText(item, "ContentPresenter");
 
                     item.IsSelected = true;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(item, "ContentPresenter");
 
                     item.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(item, "ContentPresenter");
                     Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
@@ -220,11 +221,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TabViewItem_FontIconIcon_MatchesTextForeground_UnselectedAndSelected()
+        public Task TabViewItem_FontIconIcon_MatchesTextForeground_UnselectedAndSelectedAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.TabViewItem iconTab = new()
@@ -246,7 +247,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertIconMatchesText(iconTab, "HeaderHost");
@@ -255,7 +256,7 @@ namespace Fluence.Wpf.Tests
                         GetIconForegroundColor(iconTab));
 
                     iconTab.IsSelected = true;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(iconTab, "HeaderHost");
                     Assert.Equal(
                         GetResourceColor("TextFillColorPrimaryBrush"),
@@ -270,11 +271,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void MenuItem_CustomFontIconIcon_MatchesTextForeground_RestAndDisabled()
+        public Task MenuItem_CustomFontIconIcon_MatchesTextForeground_RestAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.MenuItem menuItem = new()
@@ -292,13 +293,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Equal(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem));
 
                     menuItem.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem));
                     Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
@@ -313,11 +314,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void InfoBar_CustomFontIconIcon_FollowsTextForeground_NotSeverityColor()
+        public Task InfoBar_CustomFontIconIcon_FollowsTextForeground_NotSeverityColorAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.InfoBar custom = new()
@@ -348,7 +349,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     TextBlock title = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(custom, "TitleTextBlock"));
@@ -357,7 +358,7 @@ namespace Fluence.Wpf.Tests
                     Assert.NotEqual(GetResourceColor("SystemFillColorCriticalBrush"), GetIconForegroundColor(custom));
 
                     custom.Foreground = Brushes.DarkOrchid;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(Colors.DarkOrchid, GetIconForegroundColor(custom));
 
                     TextBlock defaultIcon = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(standard, "DefaultIcon"));
@@ -373,11 +374,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Card_FontIconIcon_MatchesHeaderForeground_RestAndDisabled()
+        public Task Card_FontIconIcon_MatchesHeaderForeground_RestAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.Card card = new()
@@ -396,13 +397,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertIconMatchesText(card, "HeaderPresenter");
 
                     card.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(card, "HeaderPresenter");
                     Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
@@ -417,11 +418,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ComboBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
+        public Task ComboBox_FontIconIcon_MatchesTextForeground_RestAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.ComboBox combo = new()
@@ -440,13 +441,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Equal(GetControlForegroundColor(combo), GetIconForegroundColor(combo));
 
                     combo.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(GetControlForegroundColor(combo), GetIconForegroundColor(combo));
                     ContentPresenter leftIcon = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(combo, "LeftIcon"));
                     Assert.Equal(1.0, leftIcon.Opacity, 0.001);
@@ -460,11 +461,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
+        public Task TextBox_FontIconIcon_MatchesTextForeground_RestAndDisabledAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Controls.TextBox textBox = new()
@@ -483,13 +484,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Equal(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox));
 
                     textBox.IsEnabled = false;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox));
                     Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
@@ -504,11 +505,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AppBarButton_FontIconIcon_MatchesTextForeground_SecondaryAndCompact()
+        public Task AppBarButton_FontIconIcon_MatchesTextForeground_SecondaryAndCompactAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
@@ -529,7 +530,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     secondaryWindow.Show();
-                    DrainDispatcher(secondaryWindow.Dispatcher);
+                    WpfTestSta.DrainDispatcher(secondaryWindow.Dispatcher);
                     secondaryWindow.UpdateLayout();
 
                     // At rest: icon Foreground must match the control Foreground (both bound via TemplateBinding Foreground).
@@ -539,7 +540,7 @@ namespace Fluence.Wpf.Tests
 
                     // Disabled: icon tracks disabled foreground; icon opacity stays 1.0 (no double-dim).
                     secondary.IsEnabled = false;
-                    DrainDispatcher(secondaryWindow.Dispatcher);
+                    WpfTestSta.DrainDispatcher(secondaryWindow.Dispatcher);
                     Assert.Equal(
                         GetControlForegroundColor(secondary),
                         GetIconForegroundColor(secondary));
@@ -570,7 +571,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     compactWindow.Show();
-                    DrainDispatcher(compactWindow.Dispatcher);
+                    WpfTestSta.DrainDispatcher(compactWindow.Dispatcher);
                     compactWindow.UpdateLayout();
 
                     Assert.Equal(
@@ -580,8 +581,8 @@ namespace Fluence.Wpf.Tests
                     // Switch to Dark theme; icon must re-resolve to the new Foreground brush value.
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Assert.True(
-                        WaitUntil(compactWindow.Dispatcher, 2000, () =>
-                            GetControlForegroundColor(compact) == GetIconForegroundColor(compact)),
+                        await WaitUntilAsync(compactWindow.Dispatcher, 2000, () =>
+                            GetControlForegroundColor(compact) == GetIconForegroundColor(compact)).ConfigureAwait(true),
                         "Compact AppBarButton icon must keep matching the control Foreground after a Light to Dark theme switch.");
                 }
                 finally

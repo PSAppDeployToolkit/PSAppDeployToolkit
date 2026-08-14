@@ -28,6 +28,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,11 +39,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokens()
+        public Task Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokensAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
@@ -61,11 +62,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokens()
+        public Task Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokensAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
@@ -84,11 +85,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_ExplicitToolTip_IsNotClearedByTruncationFallback()
+        public Task Button_ExplicitToolTip_IsNotClearedByTruncationFallbackAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 Controls.ToolTip toolTip = new() { Content = "Save changes" };
@@ -103,7 +104,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = button;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Same(toolTip, button.ToolTip);
@@ -117,25 +118,25 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_IconOnly_CentersGlyphAndRestoresGapWithContent()
+        public Task Button_IconOnly_CentersGlyphAndRestoresGapWithContentAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 Controls.Button button = new()
                 {
                     MinWidth = 32,
                     Padding = new Thickness(8, 4, 8, 4),
-                    Icon = new Controls.FontIcon { Glyph = "", IconFontSize = 14 },
+                    Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
                 };
 
                 try
                 {
                     window.Content = button;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ContentPresenter iconPresenter = FindVisualChildByName<ContentPresenter>(button, "IconPresenter")
@@ -147,7 +148,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(button.ActualWidth / 2.0, iconCenter.X, 1.0);
 
                     button.Content = "Copy";
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     Assert.Equal(new Thickness(0, 0, 8, 0), iconPresenter.Margin);
                 }
@@ -160,11 +161,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_Appearances_ApplyWinUiRestBrushesAndBorders()
+        public Task Button_Appearances_ApplyWinUiRestBrushesAndBordersAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
@@ -185,7 +186,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AssertButtonChromeMatchesResources(
@@ -213,9 +214,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Button_Template_UsesWinUiStateResourceMappings()
+        public async Task Button_Template_UsesWinUiStateResourceMappingsAsync()
         {
-            string xaml = File.ReadAllText(GetRepositoryFilePath("Fluence.Wpf", "Themes", "Controls", "Button.xaml"));
+            string xaml = await File.ReadAllTextAsync(DemoTestHost.GetRepositoryFilePath("Fluence.Wpf", "Themes", "Controls", "Button.xaml"), TestContext.Current.CancellationToken).ConfigureAwait(true);
             string[] requiredStateResources =
             [
                 "ControlFillColorSecondaryBrush",
@@ -265,7 +266,7 @@ namespace Fluence.Wpf.Tests
             {
                 window.Content = button;
                 window.Show();
-                DrainDispatcher(window.Dispatcher);
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
                 window.UpdateLayout();
 
                 Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
@@ -315,15 +316,6 @@ namespace Fluence.Wpf.Tests
             }
 
             Assert.Same(expected, actual);
-        }
-
-        private static string GetRepositoryFilePath(params string[] relativeSegments)
-        {
-            string root = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\.."));
-            string[] pathParts = new string[relativeSegments.Length + 1];
-            pathParts[0] = root;
-            Array.Copy(relativeSegments, 0, pathParts, 1, relativeSegments.Length);
-            return Path.Combine(pathParts);
         }
 
         private static string GetTriggerBlock(string xaml, string firstCondition, string secondCondition)

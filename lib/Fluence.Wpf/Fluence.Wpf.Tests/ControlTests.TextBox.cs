@@ -28,6 +28,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -49,17 +50,17 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void TextBox_PlaceholderTextBlock_UsesTertiaryBrush()
+        public Task TextBox_PlaceholderTextBlock_UsesTertiaryBrushAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new() { PlaceholderText = "Search…", PlaceholderEnabled = true };
                 Window w = new() { Content = tb, Width = 300, Height = 60 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
@@ -74,17 +75,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void PasswordBox_PlaceholderTextBlock_UsesTertiaryBrush()
+        public Task PasswordBox_PlaceholderTextBlock_UsesTertiaryBrushAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.PasswordBox pb = new() { PlaceholderText = "Password" };
                 Window w = new() { Content = pb, Width = 300, Height = 60 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(pb, "PlaceholderTextBlock"));
 
@@ -99,17 +100,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void PasswordBox_Unloaded_StopsCapsLockPollingTimer()
+        public Task PasswordBox_Unloaded_StopsCapsLockPollingTimerAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.PasswordBox pb = new() { PlaceholderText = "Password" };
                 Window w = new() { Content = pb, Width = 300, Height = 60 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 MethodInfo? startCapsPoll = typeof(Controls.PasswordBox).GetMethod(
                     "StartCapsPoll",
@@ -124,7 +125,7 @@ namespace Fluence.Wpf.Tests
                 Assert.NotNull(capsPollTimer.GetValue(pb));
 
                 pb.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent, pb));
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Null(capsPollTimer.GetValue(pb));
                 w.Close();
@@ -132,20 +133,20 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_PlaceholderTextBlock_ThemeCycle_StillTertiaryBrush()
+        public Task TextBox_PlaceholderTextBlock_ThemeCycle_StillTertiaryBrushAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new() { PlaceholderText = "Hint", PlaceholderEnabled = true };
                 Window w = new() { Content = tb, Width = 300, Height = 60 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
@@ -160,11 +161,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_ValidationLine_IsHiddenUntilFocused()
+        public Task TextBox_ValidationLine_IsHiddenUntilFocusedAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -175,14 +176,14 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Border validationLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(tb, "PART_ValidationLine"));
                 Assert.Equal(0.0, validationLine.Opacity, 0.001);
 
                 FocusManager.SetFocusedElement(w, tb);
                 _ = Keyboard.Focus(tb);
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(1.0, validationLine.Opacity, 0.001);
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCriticalBrush"));
@@ -194,11 +195,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_HelperAndValidationText_UsesNinePixelTopMarginAndCenteredContent()
+        public Task TextBox_HelperAndValidationText_UsesNinePixelTopMarginAndCenteredContentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -209,7 +210,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TextBlock helper = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_HelperText"));
                 TextBlock icon = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_ValidationIcon"));
@@ -228,11 +229,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void TextBox_ValidationError_SetsHelpText()
+        public Task TextBox_ValidationError_SetsHelpTextAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -243,7 +244,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 string helpText = AutomationProperties.GetHelpText(tb);
                 Assert.Equal(
@@ -255,11 +256,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_ValidationNone_ClearsHelpText()
+        public Task TextBox_ValidationNone_ClearsHelpTextAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -270,11 +271,11 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Transition back to None.
                 tb.ValidationState = ValidationState.None;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 string helpText = AutomationProperties.GetHelpText(tb);
                 Assert.Equal(
@@ -286,11 +287,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_ValidationWarning_SetsHelpText()
+        public Task TextBox_ValidationWarning_SetsHelpTextAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -301,7 +302,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 string helpText = AutomationProperties.GetHelpText(tb);
                 Assert.Equal(
@@ -313,11 +314,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TextBox_ValidationSuccess_ClearsHelpText()
+        public Task TextBox_ValidationSuccess_ClearsHelpTextAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -328,7 +329,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Error state must have set HelpText first (precondition).
                 Assert.Equal(
@@ -337,7 +338,7 @@ namespace Fluence.Wpf.Tests
 
                 // Transition to Success -- HelpText must be cleared.
                 tb.ValidationState = ValidationState.Success;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(
                     string.Empty,
@@ -363,11 +364,11 @@ namespace Fluence.Wpf.Tests
         /// state invariants rather than raw event counts.
         /// </summary>
         [Fact]
-        public void TextBox_ValidationError_HelpText_StableAfterAdditionalKeystrokes()
+        public Task TextBox_ValidationError_HelpText_StableAfterAdditionalKeystrokesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TextBox tb = new()
@@ -378,7 +379,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Precondition: HelpText is set after the initial Error transition.
                 Assert.Equal(
@@ -389,11 +390,11 @@ namespace Fluence.Wpf.Tests
                 // Each Text assignment triggers OnTextChanged -> UpdateHelperText without
                 // changing ValidationState or ValidationMessage.
                 tb.Text = "a";
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
                 tb.Text = "ab";
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
                 tb.Text = "abc";
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // HelpText must remain stable -- UpdateHelperText is idempotent for SetHelpText.
                 Assert.Equal(
@@ -402,14 +403,14 @@ namespace Fluence.Wpf.Tests
 
                 // Transition to None resets tracked state, then re-entering Error fires fresh.
                 tb.ValidationState = ValidationState.None;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(
                     string.Empty,
                     AutomationProperties.GetHelpText(tb), StringComparer.Ordinal);
 
                 tb.ValidationState = ValidationState.Error;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(
                     "Value is required",

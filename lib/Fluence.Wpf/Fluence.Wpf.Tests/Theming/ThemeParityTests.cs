@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Theming;
@@ -51,7 +52,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// keys carry semantic WinUI names rather than a "SystemColor" prefix, so the prefix filter
         /// in <c>CaptureResolved</c> does not exclude them. They are kept out of the
         /// machine-independent golden snapshot and verified hermetically against the live highlight
-        /// by <c>HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlight</c>.
+        /// by <c>HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlightAsync</c>.
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightDerivedBrushKeys = new(StringComparer.Ordinal)
         {
@@ -75,7 +76,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// reason as <see cref="HighContrastHighlightDerivedBrushKeys"/>. Kept in a separate set
         /// because <c>HighlightTextColor</c> is not the same ambient color as
         /// <c>HighlightColor</c>, so it needs its own hermetic comparison in
-        /// <c>HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightText</c>.
+        /// <c>HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightTextAsync</c>.
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightTextDerivedBrushKeys = new(StringComparer.Ordinal)
         {
@@ -88,9 +89,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// </summary>
         /// <param name="theme">The theme to apply.</param>
         /// <returns>A dictionary mapping string keys to their resolved Color and Brush values.</returns>
-        internal static IReadOnlyDictionary<string, (Color color, Color brush)> CaptureResolved(ApplicationTheme theme)
+        internal static async Task<IReadOnlyDictionary<string, (Color color, Color brush)>> CaptureResolvedAsync(ApplicationTheme theme)
         {
-            WpfTestSta.Dispatcher.Invoke(() =>
+            await WpfTestSta.RunOnStaAsync(() =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 app.Resources.MergedDictionaries.Clear();
@@ -108,10 +109,10 @@ namespace Fluence.Wpf.Tests.Theming
                 FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
-            });
+            }).ConfigureAwait(true);
 
             Dictionary<string, (Color, Color)> map = new(StringComparer.Ordinal);
-            WpfTestSta.Dispatcher.Invoke(() =>
+            await WpfTestSta.RunOnStaAsync(() =>
             {
                 ResourceDictionary res = Application.Current.Resources;
                 foreach (object key in CollectKeys(res))
@@ -144,7 +145,7 @@ namespace Fluence.Wpf.Tests.Theming
                     if (val is Color c) { map[ks] = (c, default); }
                     else if (val is SolidColorBrush b) { map[ks] = (default, b.Color); }
                 }
-            });
+            }).ConfigureAwait(true);
             return map;
         }
 
@@ -165,17 +166,17 @@ namespace Fluence.Wpf.Tests.Theming
         /// Run once to produce the baseline; subsequent runs verify parity.
         /// </summary>
         [Fact]
-        public void Golden_WriteCurrentResolvedValues()
+        public async Task Golden_WriteCurrentResolvedValuesAsync()
         {
             foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
             {
-                IReadOnlyDictionary<string, (Color color, Color brush)> map = CaptureResolved(theme);
-                string dir = Path.Combine(FindRepoRoot(), "data", "theme-golden");
+                IReadOnlyDictionary<string, (Color color, Color brush)> map = await CaptureResolvedAsync(theme).ConfigureAwait(true);
+                string dir = Path.Join(FindRepoRoot(), "data", "theme-golden");
                 _ = Directory.CreateDirectory(dir);
                 List<string> lines = [.. map.Keys.Order(StringComparer.Ordinal)
                     .Select(k => string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}",
                         k, Hex(map[k].color), Hex(map[k].brush)))];
-                File.WriteAllLines(Path.Combine(dir, theme + ".txt"), lines);
+                await File.WriteAllLinesAsync(Path.Join(dir, theme + ".txt"), lines, TestContext.Current.CancellationToken).ConfigureAwait(true);
                 Assert.True(map.Count > 50, "Expected many resolved theme keys for " + theme);
             }
         }
@@ -204,13 +205,13 @@ namespace Fluence.Wpf.Tests.Theming
         /// (accent pinned to #0078D4) for Light, Dark, and HighContrast with zero drift.
         /// </summary>
         [Fact]
-        public void Rebuilt_MatchesGoldenResolvedValues()
+        public async Task Rebuilt_MatchesGoldenResolvedValuesAsync()
         {
             foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
             {
-                IReadOnlyDictionary<string, (Color color, Color brush)> actual = CaptureResolved(theme);
-                string goldenPath = Path.Combine(AppContext.BaseDirectory, "Theming", "golden", theme + ".txt");
-                Dictionary<string, (string, string)> golden = File.ReadAllLines(goldenPath)
+                IReadOnlyDictionary<string, (Color color, Color brush)> actual = await CaptureResolvedAsync(theme).ConfigureAwait(true);
+                string goldenPath = Path.Join(AppContext.BaseDirectory, "Theming", "golden", theme + ".txt");
+                Dictionary<string, (string, string)> golden = (await File.ReadAllLinesAsync(goldenPath, TestContext.Current.CancellationToken).ConfigureAwait(true))
                     .Select(static l => l.Split('|'))
                     .ToDictionary(static a => a[0], static a => (a[1], a[2]), StringComparer.Ordinal);
 
@@ -241,9 +242,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// live highlight color, which holds on any machine.
         /// </summary>
         [Fact]
-        public void HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlight()
+        public Task HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlightAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 app.Resources.MergedDictionaries.Clear();
@@ -271,9 +272,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// against the live highlight text color, which holds on any machine.
         /// </summary>
         [Fact]
-        public void HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightText()
+        public Task HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightTextAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 app.Resources.MergedDictionaries.Clear();
@@ -299,9 +300,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// resolve the OS accent palette, not a stale or default value.
         /// </summary>
         [Fact]
-        public void ApplyTheme_Alone_UsesSystemAccentPalette()
+        public Task ApplyTheme_Alone_UsesSystemAccentPaletteAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Application.Current.Resources.MergedDictionaries.Clear();
@@ -324,10 +325,10 @@ namespace Fluence.Wpf.Tests.Theming
         /// <see cref="ApplicationAccentColorManager.EnsureInitialized"/> before the engine publishes.
         /// </summary>
         [Fact]
-        public void FirstApply_RaisesAccentColorChanged_BeforeAnyOtherThemeAccess()
+        public async Task FirstApply_RaisesAccentColorChanged_BeforeAnyOtherThemeAccessAsync()
         {
             int raised = 0;
-            WpfTestSta.Dispatcher.Invoke(() =>
+            await WpfTestSta.RunOnStaAsync(() =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Application.Current.Resources.MergedDictionaries.Clear();
@@ -346,7 +347,7 @@ namespace Fluence.Wpf.Tests.Theming
                 {
                     ApplicationAccentColorManager.AccentColorChanged -= OnChanged;
                 }
-            });
+            }).ConfigureAwait(true);
 
             Assert.True(raised > 0, "AccentColorChanged must fire on the first Apply.");
 
@@ -368,7 +369,7 @@ namespace Fluence.Wpf.Tests.Theming
         internal static string FindRepoRoot()
         {
             DirectoryInfo? d = new(AppContext.BaseDirectory);
-            while (d is not null && !File.Exists(Path.Combine(d.FullName, "Fluence.Wpf.sln"))) { d = d.Parent; }
+            while (d is not null && !File.Exists(Path.Join(d.FullName, "Fluence.Wpf.sln"))) { d = d.Parent; }
             return d?.FullName ?? AppContext.BaseDirectory;
         }
     }

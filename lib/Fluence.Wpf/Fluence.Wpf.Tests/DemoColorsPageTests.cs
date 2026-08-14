@@ -28,8 +28,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -56,18 +56,18 @@ namespace Fluence.Wpf.Tests
         ];
 
         [Fact]
-        public void GalleryColorsPage_NavigationRoute_LoadsConcretePage()
+        public Task GalleryColorsPage_NavigationRoute_LoadsConcretePageAsync()
         {
-            WpfTestSta.Invoke(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = EnsureDemoTheme();
                 MainWindow window = CreateShownMainWindow();
                 try
                 {
                     window.NavigateTo("colors");
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     NavigationView navigationView = Assert.IsAssignableFrom<NavigationView>(FindByName<NavigationView>(window, "DemoNav"));
                     _ = Assert.IsAssignableFrom<GalleryColorsPage>(navigationView.Content);
@@ -80,9 +80,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void GalleryColorsPage_UsesWinUiGalleryColorStructure()
+        public Task GalleryColorsPage_UsesWinUiGalleryColorStructureAsync()
         {
-            WpfTestSta.Invoke(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = EnsureDemoTheme();
                 GalleryColorsPage page = new();
@@ -148,9 +148,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void GalleryColorsPage_DynamicResourceKeys_ResolveAcrossThemes()
+        public Task GalleryColorsPage_DynamicResourceKeys_ResolveAcrossThemesAsync()
         {
-            WpfTestSta.Invoke(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 Application application = EnsureDemoTheme();
                 GalleryColorsPage page = new();
@@ -173,12 +173,9 @@ namespace Fluence.Wpf.Tests
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                         ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
-                        foreach (string resourceKey in resourceKeys)
+                        foreach (string resourceKey in resourceKeys.Where(resourceKey => application.TryFindResource(resourceKey) is null))
                         {
-                            if (application.TryFindResource(resourceKey) is null)
-                            {
-                                unresolved.Add(theme + ": " + resourceKey);
-                            }
+                            unresolved.Add(theme + ": " + resourceKey);
                         }
                     }
 
@@ -192,10 +189,10 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void GalleryColorsPage_SourceAvoidsLegacyControlsAndLiteralForegrounds()
+        public async Task GalleryColorsPage_SourceAvoidsLegacyControlsAndLiteralForegroundsAsync()
         {
-            string pageXaml = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryColorsPage.xaml");
-            string pageCode = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryColorsPage.xaml.cs");
+            string pageXaml = await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf.Demo", "Pages", "GalleryColorsPage.xaml").ConfigureAwait(true);
+            string pageCode = await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf.Demo", "Pages", "GalleryColorsPage.xaml.cs").ConfigureAwait(true);
             string source = pageXaml + Environment.NewLine + pageCode;
 
             string[] forbidden =
@@ -210,16 +207,7 @@ namespace Fluence.Wpf.Tests
                 "FluenceToggleButton",
             ];
 
-            List<string> violations = [];
-            foreach (string value in forbidden)
-            {
-                if (source.Contains(value, StringComparison.Ordinal))
-                {
-                    violations.Add(value);
-                }
-            }
-
-            Assert.Empty(violations);
+            Assert.DoesNotContain(forbidden, value => source.Contains(value, StringComparison.Ordinal));
         }
 
         private static SortedSet<string> CollectColorTokenResourceKeys(GalleryColorsPage page, Dispatcher dispatcher)
@@ -250,9 +238,9 @@ namespace Fluence.Wpf.Tests
         private static void SelectTab(TabControl colorTabs, int index, Dispatcher dispatcher)
         {
             colorTabs.SelectedIndex = index;
-            Drain(dispatcher);
+            WpfTestSta.DrainDispatcher(dispatcher);
             colorTabs.UpdateLayout();
-            Drain(dispatcher);
+            WpfTestSta.DrainDispatcher(dispatcher);
         }
 
         private static Application EnsureDemoTheme()
@@ -290,9 +278,9 @@ namespace Fluence.Wpf.Tests
                 ShowInTaskbar = false,
             };
             window.Show();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             window.UpdateLayout();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             return window;
         }
 
@@ -309,9 +297,9 @@ namespace Fluence.Wpf.Tests
                 Content = content,
             };
             window.Show();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             window.UpdateLayout();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             return window;
         }
 
@@ -319,26 +307,13 @@ namespace Fluence.Wpf.Tests
         {
             window.Content = null;
             window.Close();
-            Drain(window.Dispatcher);
-        }
-
-        private static void Drain(Dispatcher dispatcher)
-        {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
         }
 
         private static T? FindByName<T>(DependencyObject? root, string name)
             where T : FrameworkElement
         {
-            foreach (T item in FindVisualChildren<T>(root))
-            {
-                if (string.Equals(item.Name, name, StringComparison.Ordinal))
-                {
-                    return item;
-                }
-            }
-
-            return null;
+            return FindVisualChildren<T>(root).FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.Ordinal));
         }
 
         private static T? FindVisualChild<T>(DependencyObject root)
@@ -397,22 +372,6 @@ namespace Fluence.Wpf.Tests
                     }
                 }
             }
-        }
-
-        private static string GetRepositoryFilePath(params string[] relativeSegments)
-        {
-            string root = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\.."));
-            string[] pathParts = new string[relativeSegments.Length + 1];
-            pathParts[0] = root;
-            Array.Copy(relativeSegments, 0, pathParts, 1, relativeSegments.Length);
-            return Path.Combine(pathParts);
-        }
-
-        private static string ReadRepositoryFile(params string[] relativeSegments)
-        {
-            string path = GetRepositoryFilePath(relativeSegments);
-            Assert.True(File.Exists(path), "Repository file must be readable at: " + path);
-            return File.ReadAllText(path);
         }
     }
 }

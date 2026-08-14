@@ -278,19 +278,19 @@ namespace Fluence.Wpf.Demo.Pages
                                                        "    }\n" +
                                                        "}\n";
 
-        private void DemoColorPicker_ColorChanged(object sender, Fluence.Wpf.ColorPickerColorChangedEventArgs e)
+        private void DemoColorPicker_ColorChanged(object sender, ColorPickerColorChangedEventArgs e)
         {
             ColorPickerResultLabel.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, "Color: {0}", e.NewColor);
         }
 
-        private void DemoTimePicker_SelectedTimeChanged(object sender, Fluence.Wpf.TimePickerSelectedValueChangedEventArgs e)
+        private void DemoTimePicker_SelectedTimeChanged(object sender, TimePickerSelectedValueChangedEventArgs e)
         {
             TimePickerResultLabel.Text = e.NewTime is System.TimeSpan newTime
                 ? string.Format(System.Globalization.CultureInfo.CurrentCulture, "Selected: {0:t}", System.DateTime.Today.Add(newTime))
                 : "No time selected";
         }
 
-        private void DemoDatePicker_SelectedDateChanged(object sender, Fluence.Wpf.DatePickerSelectedValueChangedEventArgs e)
+        private void DemoDatePicker_SelectedDateChanged(object sender, DatePickerSelectedValueChangedEventArgs e)
         {
             DatePickerResultLabel.Text = e.NewDate is System.DateTime newDate
                 ? string.Format(System.Globalization.CultureInfo.CurrentCulture, "Selected: {0:d}", newDate)

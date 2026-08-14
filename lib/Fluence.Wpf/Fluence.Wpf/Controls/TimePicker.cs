@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -512,15 +513,7 @@ defaultValue: null,
         /// </summary>
         private Selector? GetFirstVisibleSelectorColumn()
         {
-            foreach (Selector? column in (Selector?[])[_hourList, _minuteList, _periodList])
-            {
-                if (column?.Visibility is Visibility.Visible)
-                {
-                    return column;
-                }
-            }
-
-            return null;
+            return new[] { _hourList, _minuteList, _periodList }.FirstOrDefault(static column => column?.Visibility is Visibility.Visible);
         }
 
         /// <summary>

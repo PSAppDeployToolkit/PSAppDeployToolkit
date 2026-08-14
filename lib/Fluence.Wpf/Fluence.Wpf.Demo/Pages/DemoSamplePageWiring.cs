@@ -38,6 +38,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -192,14 +193,9 @@ namespace Fluence.Wpf.Demo.Pages
             IDictionary<int, ContentControl> slots,
             string suffix)
         {
-            foreach (int slot in slots.Keys)
+            if (slots.Keys.Cast<int?>().FirstOrDefault(slot => slot > sampleCount) is int slot)
             {
-                if (slot > sampleCount)
-                {
-                    throw new InvalidOperationException(
-                        "DemoSampleSlot" + slot.ToString("00", CultureInfo.InvariantCulture) +
-                        suffix + " does not match a DemoSampleControl.");
-                }
+                throw new InvalidOperationException("DemoSampleSlot" + slot.ToString("00", CultureInfo.InvariantCulture) + suffix + " does not match a DemoSampleControl.");
             }
         }
 

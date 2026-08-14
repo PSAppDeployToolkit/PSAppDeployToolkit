@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Fluence.Wpf.Controls;
@@ -36,11 +37,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void NavigationView_TopFooterIndicator_CentersUnderFooterItem()
+        public Task NavigationView_TopFooterIndicator_CentersUnderFooterItemAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -48,11 +49,11 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Top, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     nav.SelectFooterMenuItem(footer);
-                    _ = WaitUntil(window.Dispatcher, 600, () => (nav.GetFooterSelectionIndicatorForTesting()?.Opacity ?? 0.0) >= 0.9);
+                    _ = await WaitUntilAsync(window.Dispatcher, 600, () => (nav.GetFooterSelectionIndicatorForTesting()?.Opacity ?? 0.0) >= 0.9).ConfigureAwait(true);
                     window.UpdateLayout();
 
                     FrameworkElement footerIndicator = nav.GetFooterSelectionIndicatorForTesting()
@@ -84,18 +85,18 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_TopFooterItem_RendersIconOnly()
+        public Task NavigationView_TopFooterItem_RendersIconOnlyAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
                     window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Top, isPaneOpen: true);
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ContentPresenter label = FindVisualChildByName<ContentPresenter>(footer, "ContentPresenter")
@@ -120,18 +121,18 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_TopFooterItem_KeepsLabel_InLeft()
+        public Task NavigationView_TopFooterItem_KeepsLabel_InLeftAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
                     window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ContentPresenter label = FindVisualChildByName<ContentPresenter>(footer, "ContentPresenter")
@@ -152,11 +153,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_TopMainItem_KeepsLabel()
+        public Task NavigationView_TopMainItem_KeepsLabelAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -164,7 +165,7 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out _, NavigationViewPaneDisplayMode.Top, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     NavigationViewItem mainItem = (NavigationViewItem)nav.Items[0]!;
@@ -186,11 +187,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_TopFooterIndicator_AnimatesOnSelection()
+        public Task NavigationView_TopFooterIndicator_AnimatesOnSelectionAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -199,7 +200,7 @@ namespace Fluence.Wpf.Tests
                     nav.SelectedIndex = 0;
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     FrameworkElement footerIndicator = nav.GetFooterSelectionIndicatorForTesting()
@@ -207,20 +208,20 @@ namespace Fluence.Wpf.Tests
 
                     // Selecting the footer item should fade/scale the indicator in (animate), not snap.
                     nav.SelectFooterMenuItem(footer);
-                    DrainDispatcher(window.Dispatcher); // runs the queued RefreshIndicators that starts the animation
+                    WpfTestSta.DrainDispatcher(window.Dispatcher); // runs the queued RefreshIndicators that starts the animation
                     Assert.True(footerIndicator.HasAnimatedProperties,
                         "Selecting a footer item in Top mode should animate the indicator in, not snap it to full opacity.");
 
-                    bool shown = WaitUntil(window.Dispatcher, 600, () => footerIndicator.Opacity >= 0.9);
+                    bool shown = await WaitUntilAsync(window.Dispatcher, 600, () => footerIndicator.Opacity >= 0.9).ConfigureAwait(true);
                     Assert.True(shown, "The footer indicator should reach full opacity after the fade-in completes.");
 
                     // Navigating away (exiting Settings) should animate the indicator back out.
                     nav.SelectedIndex = 1;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.True(footerIndicator.HasAnimatedProperties,
                         "Leaving the footer item should animate the indicator out, not hide it instantly.");
 
-                    bool hidden = WaitUntil(window.Dispatcher, 600, () => footerIndicator.Opacity <= 0.1);
+                    bool hidden = await WaitUntilAsync(window.Dispatcher, 600, () => footerIndicator.Opacity <= 0.1).ConfigureAwait(true);
                     Assert.True(hidden, "The footer indicator should fade to hidden after the footer item is deselected.");
                 }
                 finally

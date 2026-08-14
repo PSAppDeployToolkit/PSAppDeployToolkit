@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -415,14 +416,11 @@ defaultValue: null,
                 return format;
             }
 
-            foreach (System.Globalization.Calendar optionalCalendar in culture.OptionalCalendars)
+            if (culture.OptionalCalendars.OfType<GregorianCalendar>().FirstOrDefault() is GregorianCalendar gregorian)
             {
-                if (optionalCalendar is GregorianCalendar gregorian)
-                {
-                    DateTimeFormatInfo pinned = (DateTimeFormatInfo)format.Clone();
-                    pinned.Calendar = gregorian;
-                    return pinned;
-                }
+                DateTimeFormatInfo pinned = (DateTimeFormatInfo)format.Clone();
+                pinned.Calendar = gregorian;
+                return pinned;
             }
 
             return DateTimeFormatInfo.InvariantInfo;

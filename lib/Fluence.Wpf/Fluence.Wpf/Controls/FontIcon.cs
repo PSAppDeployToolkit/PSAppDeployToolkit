@@ -220,7 +220,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new Fluence.Wpf.Automation.FontIconAutomationPeer(this);
+            return new Automation.FontIconAutomationPeer(this);
         }
 
         /// <inheritdoc />

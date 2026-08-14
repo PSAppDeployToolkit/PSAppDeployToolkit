@@ -28,9 +28,9 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
@@ -52,32 +52,7 @@ namespace Fluence.Wpf.Tests
         /// </summary>
         private const double FillTolerance = 1.0;
 
-        private static void RunOnStaThread(Action action)
-        {
-            Exception? captured = null;
-            WpfTestSta.Dispatcher?.Invoke(new Action(delegate
-            {
-                try { action(); }
-                catch (Exception ex) { captured = ex; }
-            }));
-
-            if (captured is not null)
-            {
-                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(captured).Throw();
-            }
-        }
-
-        private static void DrainDispatcher()
-        {
-            // ApplicationIdle is below layout/render priority, so a drain at this level lets all
-            // queued measure/arrange/render and SizeToContent-driven resize callbacks complete before
-            // the caller samples the border - the same level WpfTestSta.DrainDispatcher uses.
-            _ = WpfTestSta.Dispatcher?.Invoke(
-                DispatcherPriority.ApplicationIdle,
-                new Action(static () => { }));
-        }
-
-        private static void ResetAndApply(Application? app)
+        private static void ResetAndApply(Application app)
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
@@ -112,11 +87,11 @@ namespace Fluence.Wpf.Tests
         /// accent border floating inside the DWM border. This assertion fails on the pre-fix code.
         /// </summary>
         [Fact]
-        public void SizeToContentWindow_TemplateBorder_FillsClientArea()
+        public Task SizeToContentWindow_TemplateBorder_FillsClientAreaAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = WpfTestSta.EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(app);
 
                 Controls.FluenceWindow window = new()
@@ -133,7 +108,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Border border = FindWindowBorder(window);
 
@@ -149,7 +124,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                 }
             });
         }
@@ -161,11 +136,11 @@ namespace Fluence.Wpf.Tests
         /// single-bordered after growing).
         /// </summary>
         [Fact]
-        public void SizeToContentWindow_StillGrowsAndStaysFilled_WhenContentGrows()
+        public Task SizeToContentWindow_StillGrowsAndStaysFilled_WhenContentGrowsAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = WpfTestSta.EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(app);
 
                 StackPanel panel = BuildContent();
@@ -183,7 +158,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     double heightBeforeGrow = window.ActualHeight;
 
@@ -192,7 +167,7 @@ namespace Fluence.Wpf.Tests
                     // itself force the fill, masking whether the fix is what keeps the border flush
                     // after a SizeToContent-driven grow.
                     _ = panel.Children.Add(new Border { Height = 120, Margin = new Thickness(0, 12, 0, 0) });
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Assert.True(window.ActualHeight > heightBeforeGrow,
                         "SizeToContent must remain active so the window grows when its content grows.");
@@ -204,7 +179,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                 }
             });
         }
@@ -215,11 +190,11 @@ namespace Fluence.Wpf.Tests
         /// fix). This pins that the fix does not regress fixed-size windows.
         /// </summary>
         [Fact]
-        public void FixedSizeWindow_TemplateBorder_FillsClientArea()
+        public Task FixedSizeWindow_TemplateBorder_FillsClientAreaAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = WpfTestSta.EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(app);
 
                 Controls.FluenceWindow window = new()
@@ -237,7 +212,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Border border = FindWindowBorder(window);
                     Assert.Equal(window.ActualWidth, border.ActualWidth, FillTolerance);
@@ -246,7 +221,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    DrainDispatcher();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                 }
             });
         }

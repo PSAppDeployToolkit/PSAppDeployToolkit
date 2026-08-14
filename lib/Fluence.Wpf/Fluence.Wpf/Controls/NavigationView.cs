@@ -34,6 +34,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -497,12 +498,9 @@ defaultValue: null,
             FrameworkElement? footerItemsHost = GetTemplateChild(PartFooterItemsHost) as FrameworkElement;
             _footerIndicatorHost = (footerItemsHost is not null ? VisualTreeHelper.GetParent(footerItemsHost) as FrameworkElement : null)
                 ?? (_footerSelectionIndicator is not null ? VisualTreeHelper.GetParent(_footerSelectionIndicator) as FrameworkElement : null);
-            foreach (object entry in FooterMenuItems)
+            foreach (NavigationViewItem entry in FooterMenuItems.OfType<NavigationViewItem>())
             {
-                if (entry is NavigationViewItem footerItem)
-                {
-                    HookFooterItem(footerItem);
-                }
+                HookFooterItem(entry);
             }
             _indicatorPositioned = false;
             StopAnimation();
@@ -708,12 +706,9 @@ defaultValue: null,
                 return;
             }
 
-            foreach (object entry in FooterMenuItems)
+            foreach (NavigationViewItem footerItem in FooterMenuItems.OfType<NavigationViewItem>().Where(footerItem => !ReferenceEquals(footerItem, item)))
             {
-                if (entry is NavigationViewItem footerItem && !ReferenceEquals(footerItem, item))
-                {
-                    footerItem.IsSelected = false;
-                }
+                footerItem.IsSelected = false;
             }
 
             SelectedFooterItem = item;
@@ -1848,13 +1843,10 @@ defaultValue: null,
             try
             {
                 List<NavigationViewItem> navItems = GetTopNavigationItems();
-                foreach (NavigationViewItem navItem in navItems)
+                foreach (NavigationViewItem navItem in navItems.Where(navItem => (bool)navItem.GetValue(IsTopOverflowCollapsedProperty)))
                 {
-                    if ((bool)navItem.GetValue(IsTopOverflowCollapsedProperty))
-                    {
-                        navItem.Visibility = Visibility.Visible;
-                        navItem.ClearValue(IsTopOverflowCollapsedProperty);
-                    }
+                    navItem.Visibility = Visibility.Visible;
+                    navItem.ClearValue(IsTopOverflowCollapsedProperty);
                 }
 
                 if (PaneDisplayMode is not NavigationViewPaneDisplayMode.Top || _topOverflowButton is null || _topItemsHost is null)
@@ -1881,12 +1873,9 @@ defaultValue: null,
                 }
 
                 double totalItemWidth = 0.0;
-                foreach (NavigationViewItem navItem in navItems)
+                foreach (NavigationViewItem navItem in navItems.Where(navItem => navItem.Visibility is Visibility.Visible))
                 {
-                    if (navItem.Visibility is Visibility.Visible)
-                    {
-                        totalItemWidth += GetElementWidth(navItem);
-                    }
+                    totalItemWidth += GetElementWidth(navItem);
                 }
 
                 _topOverflowButton.Visibility = Visibility.Visible;

@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -45,11 +46,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void SplitButton_AppearanceProperty_DefaultIsStandard()
+        public Task SplitButton_AppearanceProperty_DefaultIsStandardAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 SplitButton btn = new();
@@ -60,17 +61,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void SplitButton_AppearanceProperty_CanBeSetToAccent()
+        public Task SplitButton_AppearanceProperty_CanBeSetToAccentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 SplitButton btn = new() { Appearance = ControlAppearance.Accent, Content = "Go" };
                 Window w = new() { Content = btn, Width = 300, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(
                     ControlAppearance.Accent,
@@ -80,17 +81,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void SplitButton_DividerRectangle_PresentInTemplate()
+        public Task SplitButton_DividerRectangle_PresentInTemplateAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 SplitButton btn = new() { Content = "Test" };
                 Window w = new() { Content = btn, Width = 300, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Rectangle divider = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btn, "Divider"));
                 Assert.NotNull(divider.Fill);
@@ -99,16 +100,16 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void SplitButton_FocusVisuals_UseKeyboardOnlyFocusVisualStyle()
+        public async Task SplitButton_FocusVisuals_UseKeyboardOnlyFocusVisualStyleAsync()
         {
             // The per-half focus rings previously lived in the template behind
             // IsKeyboardFocused triggers, which mouse clicks also satisfy, so the rings
             // rendered on click. Each half now carries the DefaultControlFocusVisualStyle
             // adorner instead, which WPF shows only for keyboard navigation (Tab),
             // matching DropDownButton.
-            WpfTestSta.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 SplitButton button = new()
@@ -121,7 +122,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     _ = button.ApplyTemplate();
@@ -139,22 +140,22 @@ namespace Fluence.Wpf.Tests
                     Keyboard.ClearFocus();
                     window.Close();
                 }
-            });
+            }).ConfigureAwait(true);
         }
 
         [Fact]
-        public void SplitButton_Accent_DividerFillDiffersFromStandard()
+        public Task SplitButton_Accent_DividerFillDiffersFromStandardAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 // Standard appearance - get divider color
                 SplitButton btnStd = new() { Appearance = ControlAppearance.Standard, Content = "Std" };
                 Window wStd = new() { Content = btnStd, Width = 300, Height = 100 };
                 wStd.Show();
-                DrainDispatcher(wStd.Dispatcher);
+                WpfTestSta.DrainDispatcher(wStd.Dispatcher);
 
                 Rectangle dividerStd = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btnStd, "Divider"));
                 SolidColorBrush stdBrush = Assert.IsType<SolidColorBrush>(dividerStd.Fill);
@@ -164,7 +165,7 @@ namespace Fluence.Wpf.Tests
                 SplitButton btnAcc = new() { Appearance = ControlAppearance.Accent, Content = "Acc" };
                 Window wAcc = new() { Content = btnAcc, Width = 300, Height = 100 };
                 wAcc.Show();
-                DrainDispatcher(wAcc.Dispatcher);
+                WpfTestSta.DrainDispatcher(wAcc.Dispatcher);
 
                 Rectangle dividerAcc = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btnAcc, "Divider"));
                 SolidColorBrush accBrush = Assert.IsType<SolidColorBrush>(dividerAcc.Fill);

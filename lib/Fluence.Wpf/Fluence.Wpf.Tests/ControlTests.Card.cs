@@ -27,6 +27,7 @@
  */
 
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Effects;
 using Fluence.Wpf.Controls;
@@ -46,17 +47,17 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void Card_DefaultVariant_HasElevationShadowOnOuterBorder()
+        public Task Card_DefaultVariant_HasElevationShadowOnOuterBorderAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Card card = new() { Variant = CardVariant.Default, Width = 200, Height = 100 };
                 Window w = new() { Content = card, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
@@ -67,17 +68,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Card_SubtleVariant_NoElevationShadow()
+        public Task Card_SubtleVariant_NoElevationShadowAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Card card = new() { Variant = CardVariant.Subtle, Width = 200, Height = 100 };
                 Window w = new() { Content = card, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
@@ -87,17 +88,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Card_OutlinedVariant_NoElevationShadow()
+        public Task Card_OutlinedVariant_NoElevationShadowAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Card card = new() { Variant = CardVariant.Outlined, Width = 200, Height = 100 };
                 Window w = new() { Content = card, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
@@ -107,17 +108,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Card_FilledVariant_NoElevationShadow()
+        public Task Card_FilledVariant_NoElevationShadowAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Card card = new() { Variant = CardVariant.Filled, Width = 200, Height = 100 };
                 Window w = new() { Content = card, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
@@ -127,17 +128,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Card_DefaultVariant_ShadowHasCorrectProfile()
+        public Task Card_DefaultVariant_ShadowHasCorrectProfileAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Card card = new() { Variant = CardVariant.Default, Width = 200, Height = 100 };
                 Window w = new() { Content = card, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
                 DropShadowEffect shadow = Assert.IsType<DropShadowEffect>(outerBorder.Effect);

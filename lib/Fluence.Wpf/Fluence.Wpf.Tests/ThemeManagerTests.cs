@@ -26,31 +26,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    public class ThemeManagerTests
+    public class ThemeManagerTests : IAsyncLifetime
     {
-        public ThemeManagerTests()
+        public ValueTask InitializeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return new ValueTask(WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 Application.Current.Resources.MergedDictionaries.Clear();
-            });
+            }));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            GC.SuppressFinalize(this);
+            return default;
         }
 
         [Theory]
         [InlineData(ApplicationTheme.Light, 0xE4, 0x00, 0x00, 0x00)]
         [InlineData(ApplicationTheme.Dark, 0xFF, 0xFF, 0xFF, 0xFF)]
-        public void Apply_Theme_TextFillColorPrimaryMatches(ApplicationTheme theme, byte a, byte r, byte g, byte b)
+        public Task Apply_Theme_TextFillColorPrimaryMatchesAsync(ApplicationTheme theme, byte a, byte r, byte g, byte b)
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
@@ -65,9 +73,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Apply_HighContrast_UsesSystemColors()
+        public Task Apply_HighContrast_UsesSystemColorsAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
@@ -77,9 +85,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Apply_HighContrast_CloseButtonUsesSystemHighlight_NotBrandRed()
+        public Task Apply_HighContrast_CloseButtonUsesSystemHighlight_NotBrandRedAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
@@ -96,9 +104,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Apply_FiresChangedExactlyOnce()
+        public Task Apply_FiresChangedExactlyOnceAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 int eventCount = 0;
                 void handler(object? sender, ThemeChangedEventArgs e) { eventCount++; }
@@ -117,9 +125,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TwoRapidApplies_FiresExactlyTwoEvents()
+        public Task TwoRapidApplies_FiresExactlyTwoEventsAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 int eventCount = 0;
                 void handler(object? sender, ThemeChangedEventArgs e) { eventCount++; }
@@ -139,9 +147,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FiveSwitches_DictionaryCountStable()
+        public Task FiveSwitches_DictionaryCountStableAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -178,9 +186,9 @@ namespace Fluence.Wpf.Tests
         [InlineData(ApplicationTheme.Light)]
         [InlineData(ApplicationTheme.Dark)]
         [InlineData(ApplicationTheme.HighContrast)]
-        public void Apply_ExplicitTheme_ResolvedThemeMatches(ApplicationTheme theme)
+        public Task Apply_ExplicitTheme_ResolvedThemeMatchesAsync(ApplicationTheme theme)
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
                 Assert.Equal(theme, ApplicationThemeManager.ResolvedTheme);
@@ -190,9 +198,9 @@ namespace Fluence.Wpf.Tests
         [Theory]
         [InlineData(ApplicationTheme.Light)]
         [InlineData(ApplicationTheme.Auto)]
-        public void Apply_ResolvedThemeNeverReturnsAuto(ApplicationTheme theme)
+        public Task Apply_ResolvedThemeNeverReturnsAutoAsync(ApplicationTheme theme)
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
                 Assert.NotEqual(ApplicationTheme.Auto, ApplicationThemeManager.ResolvedTheme);
@@ -200,9 +208,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ResolvedTheme_TracksLastAppliedTheme()
+        public Task ResolvedTheme_TracksLastAppliedThemeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 Assert.Equal(ApplicationTheme.Light, ApplicationThemeManager.ResolvedTheme);
@@ -216,9 +224,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ResolvedTheme_RemainsConsistentAfterAccentChange()
+        public Task ResolvedTheme_RemainsConsistentAfterAccentChangeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
                 ApplicationTheme themeBeforeAccent = ApplicationThemeManager.ResolvedTheme;
@@ -231,9 +239,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ResolvedTheme_DefaultsToLight_BeforeFirstApply()
+        public Task ResolvedTheme_DefaultsToLight_BeforeFirstApplyAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
                 Assert.Equal(ApplicationTheme.Light, ApplicationThemeManager.ResolvedTheme));
         }
 

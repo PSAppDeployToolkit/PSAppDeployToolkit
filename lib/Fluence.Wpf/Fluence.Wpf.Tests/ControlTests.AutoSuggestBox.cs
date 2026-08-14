@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -44,11 +45,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void AutoSuggestBox_DefaultStyle_AppliesTemplateParts()
+        public Task AutoSuggestBox_DefaultStyle_AppliesTemplatePartsAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.AutoSuggestBox)));
@@ -60,7 +61,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(box.Template);
@@ -83,11 +84,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_ProgrammaticTextChange_RaisesTextChangedWithProgrammaticReason()
+        public Task AutoSuggestBox_ProgrammaticTextChange_RaisesTextChangedWithProgrammaticReasonAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -97,14 +98,14 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     AutoSuggestBoxTextChangedEventArgs? captured = null;
                     box.TextChanged += (_, args) => captured = args;
 
                     box.Text = "fluent";
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.NotNull(captured);
                     Assert.Equal(AutoSuggestionBoxTextChangeReason.ProgrammaticChange, captured.Reason);
@@ -122,11 +123,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_UserEditInTextBox_RaisesTextChangedWithUserInputReason()
+        public Task AutoSuggestBox_UserEditInTextBox_RaisesTextChangedWithUserInputReasonAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -136,7 +137,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -147,7 +148,7 @@ namespace Fluence.Wpf.Tests
                     // Editing the inner text box raises TextBox.TextChanged, which is the
                     // same path real keyboard input takes through the control wiring.
                     textBox.Text = "ap";
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.NotNull(captured);
                     Assert.Equal(AutoSuggestionBoxTextChangeReason.UserInput, captured.Reason);
@@ -161,11 +162,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_IsSuggestionListOpen_ShowsPopupWithItems()
+        public Task AutoSuggestBox_IsSuggestionListOpen_ShowsPopupWithItemsAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -175,7 +176,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
@@ -184,7 +185,7 @@ namespace Fluence.Wpf.Tests
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
 
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "Setting IsSuggestionListOpen=true must open the suggestion popup.");
                     Assert.Equal(3, list.Items.Count);
                 }
@@ -196,11 +197,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_ChooseSuggestionViaKeyboard_RaisesSuggestionChosenAndQuerySubmitted()
+        public Task AutoSuggestBox_ChooseSuggestionViaKeyboard_RaisesSuggestionChosenAndQuerySubmittedAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -210,7 +211,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -219,7 +220,7 @@ namespace Fluence.Wpf.Tests
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The suggestion popup must open before the keyboard scenario.");
 
                     List<AutoSuggestionBoxTextChangeReason> reasons = [];
@@ -230,11 +231,11 @@ namespace Fluence.Wpf.Tests
                     box.QuerySubmitted += (_, args) => submitted = args;
 
                     RaisePreviewKeyDown(textBox, window, Key.Down);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(0, list.SelectedIndex);
 
                     RaisePreviewKeyDown(textBox, window, Key.Enter);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal("Apple", chosen);
                     Assert.NotNull(submitted);
@@ -243,7 +244,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal("Apple", box.Text, StringComparer.Ordinal);
                     Assert.True(reasons.Contains(AutoSuggestionBoxTextChangeReason.SuggestionChosen),
                         "Choosing a suggestion must raise TextChanged with Reason=SuggestionChosen.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true),
                         "Submitting a query must close the suggestion popup.");
                 }
                 finally
@@ -254,11 +255,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_EnterWithoutSelection_RaisesQuerySubmittedWithCurrentText()
+        public Task AutoSuggestBox_EnterWithoutSelection_RaisesQuerySubmittedWithCurrentTextAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -268,7 +269,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -278,7 +279,7 @@ namespace Fluence.Wpf.Tests
                     box.QuerySubmitted += (_, args) => submitted = args;
 
                     RaisePreviewKeyDown(textBox, window, Key.Enter);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.NotNull(submitted);
                     Assert.Equal("search term", submitted.QueryText, StringComparer.Ordinal);
@@ -292,11 +293,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_Escape_ClosesSuggestionList()
+        public Task AutoSuggestBox_Escape_ClosesSuggestionListAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -306,7 +307,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -314,12 +315,12 @@ namespace Fluence.Wpf.Tests
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The suggestion popup must open before the Escape scenario.");
 
                     RaisePreviewKeyDown(textBox, window, Key.Escape);
 
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true),
                         "Escape must close the suggestion popup.");
                     Assert.False(box.IsSuggestionListOpen, "Escape must reset IsSuggestionListOpen.");
                 }
@@ -331,11 +332,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_ArrowKeys_PreviewHighlightedSuggestionAndRestoreTypedText()
+        public Task AutoSuggestBox_ArrowKeys_PreviewHighlightedSuggestionAndRestoreTypedTextAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -345,7 +346,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -354,10 +355,10 @@ namespace Fluence.Wpf.Tests
 
                     // Type "ap" (UserInput baseline), then open the list.
                     textBox.Text = "ap";
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The suggestion popup must open before the navigation scenario.");
 
                     List<AutoSuggestionBoxTextChangeReason> reasons = [];
@@ -367,22 +368,22 @@ namespace Fluence.Wpf.Tests
 
                     // Moving the highlight previews each suggestion into the box.
                     RaisePreviewKeyDown(textBox, window, Key.Down);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(0, list.SelectedIndex);
                     Assert.Equal("Apple", box.Text, StringComparer.Ordinal);
                     Assert.Equal("Apple", textBox.Text, StringComparer.Ordinal);
 
                     RaisePreviewKeyDown(textBox, window, Key.Down);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal("Banana", box.Text, StringComparer.Ordinal);
 
                     RaisePreviewKeyDown(textBox, window, Key.Down);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal("Cherry", box.Text, StringComparer.Ordinal);
 
                     // Cycling past the end returns to no selection and restores the typed text.
                     RaisePreviewKeyDown(textBox, window, Key.Down);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(-1, list.SelectedIndex);
                     Assert.Equal("ap", box.Text, StringComparer.Ordinal);
 
@@ -403,17 +404,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_QueryIconButton_SubmitsQueryAndHidesWhenIconNull()
+        public Task AutoSuggestBox_QueryIconButton_SubmitsQueryAndHidesWhenIconNullAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.AutoSuggestBox box = new()
                 {
-                    QueryIcon = new Controls.FontIcon { Glyph = "" },
+                    QueryIcon = new Controls.FontIcon { Glyph = "\uE721" },
                     Text = "search term",
                 };
 
@@ -421,7 +422,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = box;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
@@ -433,7 +434,7 @@ namespace Fluence.Wpf.Tests
                     box.QuerySubmitted += (_, args) => submitted = args;
 
                     queryButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.NotNull(submitted);
                     Assert.Equal("search term", submitted.QueryText, StringComparer.Ordinal);
@@ -441,7 +442,7 @@ namespace Fluence.Wpf.Tests
 
                     // Clearing QueryIcon removes the button from the icon slot entirely.
                     box.QueryIcon = null;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Null(textBox.Icon);
                 }
                 finally
@@ -452,11 +453,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_SurfaceBrushes_ResolveAfterThemeCycle()
+        public Task AutoSuggestBox_SurfaceBrushes_ResolveAfterThemeCycleAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
@@ -482,11 +483,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSuggestBox_Header_BecomesAccessibleName()
+        public Task AutoSuggestBox_Header_BecomesAccessibleNameAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
 
@@ -498,7 +499,7 @@ namespace Fluence.Wpf.Tests
                     window.Height = 120;
                     window.Show();
                     _ = box.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(box);
                     Assert.True(

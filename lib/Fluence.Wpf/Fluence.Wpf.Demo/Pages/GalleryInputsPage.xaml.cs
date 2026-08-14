@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Linq;
 using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
@@ -324,28 +325,18 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(6, SliderInputXamlSource, SliderInputCSharpSource));
         }
 
-        private void DemoAutoSuggestBox_TextChanged(object sender, Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs e)
+        private void DemoAutoSuggestBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
         {
-            if (e.Reason is not Fluence.Wpf.AutoSuggestionBoxTextChangeReason.UserInput)
+            if (e.Reason is not AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 return;
             }
 
             string query = DemoAutoSuggestBox.Text;
-            System.Collections.Generic.List<string> matches = [];
-            foreach (string fruit in AutoSuggestFruits)
-            {
-                if (string.IsNullOrWhiteSpace(query)
-                    || fruit.StartsWith(query, System.StringComparison.OrdinalIgnoreCase))
-                {
-                    matches.Add(fruit);
-                }
-            }
-
-            DemoAutoSuggestBox.ItemsSource = matches;
+            DemoAutoSuggestBox.ItemsSource = AutoSuggestFruits.Where(fruit => string.IsNullOrWhiteSpace(query) || fruit.StartsWith(query, System.StringComparison.OrdinalIgnoreCase));
         }
 
-        private void DemoAutoSuggestBox_QuerySubmitted(object sender, Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs e)
+        private void DemoAutoSuggestBox_QuerySubmitted(object sender, AutoSuggestBoxQuerySubmittedEventArgs e)
         {
             string submitted = e.ChosenSuggestion as string ?? e.QueryText;
             AutoSuggestResultLabel.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, "Submitted: {0}", submitted);

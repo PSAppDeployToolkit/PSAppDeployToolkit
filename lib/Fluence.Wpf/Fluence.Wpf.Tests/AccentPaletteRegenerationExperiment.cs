@@ -28,7 +28,7 @@
 
 using System;
 using System.Globalization;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.Win32;
 using Fluence.Wpf.Native;
@@ -70,23 +70,23 @@ namespace Fluence.Wpf.Tests
         /// AccentPalette regenerates after a 1s wait.
         /// </summary>
         [Fact(Explicit = true)] // Modifies user's system accent; run explicitly and manually only.
-        public void Experiment_WriteDwmAccentColor_DoesAccentPaletteRegenerate()
+        public async Task Experiment_WriteDwmAccentColor_DoesAccentPaletteRegenerateAsync()
         {
             // Mango - clearly distinguishable from any Windows default the user might be on.
             Color experimentalAccent = Color.FromRgb(0xCA, 0x50, 0x10);
 
-            RunExperiment(experimentalAccent, writeMode: WriteMode.DwmAccentColorOnly, waitMs: 1000);
+            await RunExperimentAsync(experimentalAccent, writeMode: WriteMode.DwmAccentColorOnly, waitMs: 1000).ConfigureAwait(true);
         }
 
         /// <summary>
         /// Probe 2: write to all four user-facing accent values (DWM + Explorer\Accent) and check.
         /// </summary>
         [Fact(Explicit = true)] // Modifies user's system accent; run explicitly and manually only.
-        public void Experiment_WriteAllAccentValues_DoesAccentPaletteRegenerate()
+        public async Task Experiment_WriteAllAccentValues_DoesAccentPaletteRegenerateAsync()
         {
             Color experimentalAccent = Color.FromRgb(0xCA, 0x50, 0x10);
 
-            RunExperiment(experimentalAccent, writeMode: WriteMode.AllAccentValues, waitMs: 1000);
+            await RunExperimentAsync(experimentalAccent, writeMode: WriteMode.AllAccentValues, waitMs: 1000).ConfigureAwait(true);
         }
 
         /// <summary>
@@ -97,11 +97,11 @@ namespace Fluence.Wpf.Tests
         /// when the user picks an accent in Settings; registry writes are ignored.
         /// </summary>
         [Fact(Explicit = true)] // Modifies user's system accent. Result confirmed 2026-05-23: palette does NOT regenerate.
-        public void Experiment_WriteAllAndBroadcast_DoesAccentPaletteRegenerate()
+        public async Task Experiment_WriteAllAndBroadcast_DoesAccentPaletteRegenerateAsync()
         {
             Color experimentalAccent = Color.FromRgb(0xCA, 0x50, 0x10);
 
-            RunExperiment(experimentalAccent, writeMode: WriteMode.AllAccentValuesAndBroadcast, waitMs: 1500);
+            await RunExperimentAsync(experimentalAccent, writeMode: WriteMode.AllAccentValuesAndBroadcast, waitMs: 1500).ConfigureAwait(true);
 
             // Observational probe - the actual outcome is logged via ITestOutputHelper.WriteLine
             // inside RunExperiment. Confirms the restore step left the palette readable.
@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Tests
             AllAccentValuesAndBroadcast = 2,
         }
 
-        private void RunExperiment(Color experimentalAccent, WriteMode writeMode, int waitMs)
+        private async Task RunExperimentAsync(Color experimentalAccent, WriteMode writeMode, int waitMs)
         {
             // Save originals.
             object? originalDwmAccent = ReadRaw(Registry.CurrentUser, DwmKey, DwmAccentColorValue);
@@ -151,7 +151,7 @@ namespace Fluence.Wpf.Tests
                         NativeMethods.SMTO_ABORTIFHUNG, 1000, out IntPtr _);
                 }
 
-                Thread.Sleep(waitMs);
+                await Task.Delay(waitMs, TestContext.Current.CancellationToken).ConfigureAwait(true);
 
                 byte[]? newPalette = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue) as byte[];
                 _output.WriteLine($"After AccentPalette base (offset 12): {FormatPaletteBase(newPalette)}");

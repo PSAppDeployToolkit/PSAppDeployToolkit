@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using Xunit;
 
@@ -34,14 +35,14 @@ namespace Fluence.Wpf.Tests
     public class ThemeTestHelpersTests
     {
         [Fact]
-        public void StandardThemeCycle_ResolvesKeyBrushes()
+        public Task StandardThemeCycle_ResolvesKeyBrushesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = WpfTestSta.EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
-                app?.Resources.MergedDictionaries.Clear();
+                app.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplySystemAccent();
 
@@ -52,9 +53,9 @@ namespace Fluence.Wpf.Tests
 
 #if NET10_0_OR_GREATER
         [Fact]
-        public void VisualTreeHelper_GetDpi_ReturnsPositiveScale()
+        public Task VisualTreeHelper_GetDpi_ReturnsPositiveScaleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
@@ -68,7 +69,7 @@ namespace Fluence.Wpf.Tests
                     Controls.Border panel = new() { Width = 10, Height = 10 };
                     window.Content = panel;
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: System.Windows.Threading.DispatcherPriority.Loaded, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
                     DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(panel);
                     Assert.True(dpi.PixelsPerDip > 0, "DpiScale.PixelsPerDip should be positive.");
                 }

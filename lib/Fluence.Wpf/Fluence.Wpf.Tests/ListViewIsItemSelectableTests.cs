@@ -28,42 +28,15 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public class ListViewIsItemSelectableTests
     {
-        private static void RunOnFreshStaThread(Action action)
-        {
-            Exception? capturedException = null;
-            WpfTestSta.Dispatcher?.Invoke(new Action(delegate
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    capturedException = exception;
-                }
-            }));
-
-            if (capturedException is not null)
-            {
-                ExceptionDispatchInfo.Capture(capturedException).Throw();
-            }
-        }
-
-        private static Application? EnsureApplication()
-        {
-            return WpfTestSta.EnsureApplication();
-        }
-
-        private static ResourceDictionary? MergeGenericDictionary(Application? application)
+        private static ResourceDictionary? MergeGenericDictionary(Application application)
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
@@ -81,15 +54,10 @@ namespace Fluence.Wpf.Tests
             return genericDictionary;
         }
 
-        private static void DrainDispatcher(Dispatcher dispatcher)
-        {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
-        }
-
         [Fact]
-        public void IsItemSelectable_DefaultIsTrue()
+        public Task IsItemSelectable_DefaultIsTrueAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Controls.ListView lv = new();
                 Assert.True(lv.IsItemSelectable);
@@ -97,11 +65,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsItemSelectable_False_ClearsSelectionWhenSet()
+        public Task IsItemSelectable_False_ClearsSelectionWhenSetAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
@@ -113,7 +81,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = lv;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     lv.SelectedIndex = 0;
@@ -134,11 +102,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsItemSelectable_False_SelectedIndexStaysMinusOne_AfterDirectSet()
+        public Task IsItemSelectable_False_SelectedIndexStaysMinusOne_AfterDirectSetAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
@@ -154,7 +122,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = lv;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     lv.SelectedIndex = 0;
@@ -172,11 +140,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsItemSelectable_False_ContainerIsNotFocusable()
+        public Task IsItemSelectable_False_ContainerIsNotFocusableAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
@@ -192,7 +160,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = lv;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     System.Windows.Controls.ListViewItem container = Assert.IsType<System.Windows.Controls.ListViewItem>(lv.ItemContainerGenerator.ContainerFromIndex(0));
@@ -211,11 +179,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsItemSelectable_True_ContainerIsFocusable()
+        public Task IsItemSelectable_True_ContainerIsFocusableAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
@@ -231,7 +199,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = lv;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     System.Windows.Controls.ListViewItem container = Assert.IsType<System.Windows.Controls.ListViewItem>(lv.ItemContainerGenerator.ContainerFromIndex(0));
@@ -250,9 +218,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ItemAnimationsEnabled_IndependentOfIsItemSelectable()
+        public Task ItemAnimationsEnabled_IndependentOfIsItemSelectableAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Controls.ListView lv = new() { IsItemSelectable = false, ItemAnimationsEnabled = true };
                 Assert.False(lv.IsItemSelectable);

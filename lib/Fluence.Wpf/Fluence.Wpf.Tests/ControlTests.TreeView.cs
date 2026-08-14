@@ -27,6 +27,8 @@
  */
 
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -46,11 +48,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void TreeView_DefaultStyle_Applies()
+        public Task TreeView_DefaultStyle_AppliesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeView tv = new();
@@ -58,7 +60,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(new Controls.TreeViewItem { Header = "Node 2" });
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Template applied → ScrollViewer present
                 ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
@@ -69,11 +71,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_TemplateParts_Present()
+        public Task TreeViewItem_TemplateParts_PresentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Node A" };
@@ -82,7 +84,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ContentPresenter cp = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "PART_Header"));
 
@@ -93,11 +95,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_Expander_VisibleWhenHasChildren()
+        public Task TreeViewItem_Expander_VisibleWhenHasChildrenAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Node A" };
@@ -106,7 +108,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // The ToggleButton expander must be Visible when HasItems is true
                 ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
@@ -117,11 +119,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_Expander_CollapsedWhenNoChildren()
+        public Task TreeViewItem_Expander_CollapsedWhenNoChildrenAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Leaf" };
@@ -129,7 +131,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
                 Assert.Equal(Visibility.Collapsed, expander.Visibility);
@@ -139,11 +141,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_IsExpanded_MakesChildrenVisible()
+        public Task TreeViewItem_IsExpanded_MakesChildrenVisibleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Node A" };
@@ -152,7 +154,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Initially collapsed
                 ItemsPresenter itemsHost = Assert.IsAssignableFrom<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"));
@@ -160,7 +162,7 @@ namespace Fluence.Wpf.Tests
 
                 // Expand
                 item.IsExpanded = true;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(Visibility.Visible, itemsHost.Visibility);
 
@@ -169,11 +171,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_SelectedState_ChangesBackground()
+        public Task TreeViewItem_SelectedState_ChangesBackgroundAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Node A" };
@@ -181,7 +183,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Border itemBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "ItemBorder"));
 
@@ -190,7 +192,7 @@ namespace Fluence.Wpf.Tests
 
                 // Select the item
                 item.IsSelected = true;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush selectedBg = Assert.IsType<SolidColorBrush>(itemBorder.Background);
                 SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SubtleFillColorSecondaryBrush"));
@@ -201,11 +203,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_HoverTriggers_AreScopedToHeaderBorder()
+        public Task TreeViewItem_HoverTriggers_AreScopedToHeaderBorderAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Parent" };
@@ -214,7 +216,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.NotNull(item.Template);
                 bool hasHeaderHoverTrigger = false;
@@ -236,18 +238,15 @@ namespace Fluence.Wpf.Tests
 
                     if (triggerBase is MultiTrigger multiTrigger)
                     {
-                        foreach (Condition condition in multiTrigger.Conditions)
+                        foreach (Condition condition in multiTrigger.Conditions.Where(condition => condition.Property == UIElement.IsMouseOverProperty))
                         {
-                            if (condition.Property == UIElement.IsMouseOverProperty)
+                            if (condition.SourceName.Equals("ItemBorder", StringComparison.Ordinal))
                             {
-                                if (condition.SourceName.Equals("ItemBorder", StringComparison.Ordinal))
-                                {
-                                    hasHeaderHoverTrigger = true;
-                                }
-                                else
-                                {
-                                    hasAncestorHoverTrigger = true;
-                                }
+                                hasHeaderHoverTrigger = true;
+                            }
+                            else
+                            {
+                                hasAncestorHoverTrigger = true;
                             }
                         }
                     }
@@ -263,21 +262,21 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeView_ThemeCycle_StyleRemainsApplied()
+        public Task TreeView_ThemeCycle_StyleRemainsAppliedAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeView tv = new();
                 _ = tv.Items.Add(new Controls.TreeViewItem { Header = "Node 1" });
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
                 _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
@@ -287,11 +286,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void TreeViewItem_ChevronGlyph_PresentInExpander()
+        public Task TreeViewItem_ChevronGlyph_PresentInExpanderAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.TreeViewItem item = new() { Header = "Node A" };
@@ -300,7 +299,7 @@ namespace Fluence.Wpf.Tests
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
                 TextBlock chevron = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(expander, "ChevronGlyph"));

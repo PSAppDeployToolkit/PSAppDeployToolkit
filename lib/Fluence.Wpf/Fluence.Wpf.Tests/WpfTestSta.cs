@@ -28,8 +28,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -51,67 +51,51 @@ namespace Fluence.Wpf.Tests
 
         internal static Application EnsureApplication()
         {
-            return Invoke(static () =>
+            // Callers are already executing on the STA dispatcher thread (inside a
+            // RunOnSta body), so the setup runs directly without marshaling.
+            // Headless CI runners report SystemParameters.ClientAreaAnimation as
+            // false, which legitimately gates every code-driven animation off and
+            // fails the tests that assert in-flight motion. Force motion on here,
+            // in the setup call every test makes first, so the suite is
+            // deterministic regardless of the host's accessibility state. The
+            // reduced-motion tests override this to false for their own scope and
+            // reset to null in their finally blocks; the next test's setup call
+            // restores this deterministic default.
+            MotionHelper.OverrideIsMotionEnabled = true;
+
+            if (Application.Current is null)
             {
-                // Headless CI runners report SystemParameters.ClientAreaAnimation as
-                // false, which legitimately gates every code-driven animation off and
-                // fails the tests that assert in-flight motion. Force motion on here,
-                // in the setup call every test makes first, so the suite is
-                // deterministic regardless of the host's accessibility state. The
-                // reduced-motion tests override this to false for their own scope and
-                // reset to null in their finally blocks; the next test's setup call
-                // restores this deterministic default.
-                MotionHelper.OverrideIsMotionEnabled = true;
-
-                if (Application.Current is null)
+                _ = new Application
                 {
-                    Application app = new()
-                    {
-                        ShutdownMode = ShutdownMode.OnExplicitShutdown,
-                    };
-                }
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown,
+                };
+            }
 
-                return Application.Current!;
-            });
-        }
-
-        internal static void Invoke(Action action)
-        {
-            EnsureDispatcher().Invoke(action);
-        }
-
-        internal static T Invoke<T>(Func<T> func)
-        {
-            return EnsureDispatcher().Invoke(func);
+            return Application.Current!;
         }
 
         /// <summary>
-        /// Runs <paramref name="action"/> on the shared STA dispatcher, capturing any exception it
-        /// throws and rethrowing it on the calling thread with its original stack trace preserved
-        /// (via <see cref="ExceptionDispatchInfo"/>) so test assertions surface where the caller
-        /// expects them. This is the single canonical implementation; per-fixture wrappers forward
-        /// here.
+        /// Runs <paramref name="action"/> on the shared STA dispatcher and returns a task that
+        /// completes when the action has run. Exceptions thrown by the action propagate through
+        /// the returned task with their original stack traces, so test assertions surface where
+        /// the caller expects them. This is the single canonical implementation.
         /// </summary>
         /// <param name="action">The action to run on the STA dispatcher.</param>
-        internal static void RunOnSta(Action action)
+        internal static Task RunOnStaAsync(Action action)
         {
-            Exception? captured = null;
-            EnsureDispatcher().Invoke(new Action(delegate
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    captured = exception;
-                }
-            }));
+            return EnsureDispatcher().InvokeAsync(action).Task;
+        }
 
-            if (captured is not null)
-            {
-                ExceptionDispatchInfo.Capture(captured).Throw();
-            }
+        /// <summary>
+        /// Runs the asynchronous <paramref name="body"/> on the shared STA dispatcher and returns
+        /// a task that completes when the body (including all of its awaits) has finished. Awaits
+        /// inside the body resume on the dispatcher thread via its synchronization context, so UI
+        /// state stays single-threaded while the dispatcher keeps pumping between continuations.
+        /// </summary>
+        /// <param name="body">The asynchronous body to run on the STA dispatcher.</param>
+        internal static Task RunOnStaAsync(Func<Task> body)
+        {
+            return EnsureDispatcher().InvokeAsync(body).Task.Unwrap();
         }
 
         /// <summary>
@@ -119,7 +103,7 @@ namespace Fluence.Wpf.Tests
         /// any queued layout, render, and idle callbacks complete before the caller samples state.
         /// </summary>
         /// <param name="dispatcher">The dispatcher to drain.</param>
-        internal static void DrainDispatcher(Dispatcher? dispatcher)
+        internal static void DrainDispatcher(Dispatcher dispatcher)
         {
             _ = dispatcher?.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
         }

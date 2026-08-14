@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -42,11 +43,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void FlyoutPresenter_DefaultStyle_AppliesFluentSurface()
+        public Task FlyoutPresenter_DefaultStyle_AppliesFluentSurfaceAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.FlyoutPresenter)));
@@ -58,7 +59,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = presenter;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
@@ -78,11 +79,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_ShowAt_OpensLightDismissPopupAndPresentsContent()
+        public Task Flyout_ShowAt_OpensLightDismissPopupAndPresentsContentAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -93,7 +94,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     bool openingRaised = false;
@@ -102,7 +103,7 @@ namespace Fluence.Wpf.Tests
                     flyout.Opened += (_, _) => openedRaised = true;
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup.");
                     Assert.True(openingRaised, "ShowAt should raise Opening before the popup opens.");
                     Assert.True(openedRaised, "ShowAt should raise Opened after the popup opens.");
@@ -119,13 +120,13 @@ namespace Fluence.Wpf.Tests
                     // The open reveal (a placement-aware slide with a fade, run by
                     // FlyoutPresenter.OnLoaded) must target the named template parts and
                     // settle at rest once the 167ms reveal completes.
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.IsLoaded),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => presenter.IsLoaded).ConfigureAwait(true),
                         "The presenter must load inside the open popup.");
                     System.Windows.Media.TranslateTransform translate =
                         Assert.IsType<System.Windows.Media.TranslateTransform>(presenter.Template.FindName("PresenterTranslate", presenter));
                     Border surface = Assert.IsType<Border>(presenter.Template.FindName("PresenterSurface", presenter));
-                    Assert.True(WaitUntil(window.Dispatcher, 2000,
-                            () => Math.Abs(translate.Y) < 0.001 && surface.Opacity >= 1.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
+                            () => Math.Abs(translate.Y) < 0.001 && surface.Opacity >= 1.0).ConfigureAwait(true),
                         "The open reveal must settle at Y=0 and full opacity.");
                 }
                 finally
@@ -137,11 +138,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_Hide_ClosesPopupAndRaisesClosingThenClosed()
+        public Task Flyout_Hide_ClosesPopupAndRaisesClosingThenClosedAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -152,11 +153,11 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before Hide is exercised.");
 
                     bool closingRaised = false;
@@ -165,13 +166,13 @@ namespace Fluence.Wpf.Tests
                     flyout.Closed += (_, _) => closedRaised = true;
 
                     flyout.Hide();
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                         "Hide should close the flyout popup.");
                     Assert.True(closingRaised, "Hide should raise Closing before the popup closes.");
 
                     // Popup.Closed is raised asynchronously once the fade-out completes, so
                     // sample the flag instead of asserting immediately after Hide returns.
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => closedRaised),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => closedRaised).ConfigureAwait(true),
                         "Hide should raise Closed after the popup closes.");
                 }
                 finally
@@ -183,11 +184,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_ClosingCancel_KeepsFlyoutOpen()
+        public Task Flyout_ClosingCancel_KeepsFlyoutOpenAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -200,20 +201,20 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before the cancel scenario.");
 
                     flyout.Hide();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.True(flyout.IsOpen, "Canceling Closing must keep the flyout open.");
 
                     cancelClose = false;
                     flyout.Hide();
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                         "Hide should close the flyout once Closing is no longer canceled.");
                 }
                 finally
@@ -226,11 +227,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_ContentChange_FlowsToPresenter()
+        public Task Flyout_ContentChange_FlowsToPresenterAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -241,18 +242,18 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before content is swapped.");
 
                     Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
                     Assert.Equal("First", presenter.Content);
 
                     flyout.Content = "Second";
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal("Second", presenter.Content);
                 }
                 finally
@@ -264,11 +265,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FlyoutBase_ShowAttachedFlyout_OpensAttachedFlyout()
+        public Task FlyoutBase_ShowAttachedFlyout_OpensAttachedFlyoutAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -279,14 +280,14 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = owner;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.FlyoutBase.SetAttachedFlyout(owner, flyout);
                     Assert.Same(flyout, Controls.FlyoutBase.GetAttachedFlyout(owner));
 
                     Controls.FlyoutBase.ShowAttachedFlyout(owner);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAttachedFlyout should open the attached flyout.");
                     Assert.Same(owner, flyout.HostPopup?.PlacementTarget);
                 }
@@ -299,11 +300,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_PlacementModes_MapToPopupPlacement()
+        public Task Flyout_PlacementModes_MapToPopupPlacementAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -314,7 +315,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Assert.Equal(FlyoutPlacementMode.Top, flyout.Placement);
@@ -322,7 +323,7 @@ namespace Fluence.Wpf.Tests
                         "ShouldConstrainToRootBounds must default to true.");
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before placement mapping is verified.");
 
                     Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
@@ -357,11 +358,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_ShowAt_StampsRevealPlacementWithMappedSide()
+        public Task Flyout_ShowAt_StampsRevealPlacementWithMappedSideAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -372,7 +373,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Controls.FlyoutPresenter unstamped = new();
@@ -388,7 +389,7 @@ namespace Fluence.Wpf.Tests
                     {
                         flyout.Placement = mode;
                         flyout.ShowAt(target);
-                        Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                        Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                             string.Format("ShowAt should open the flyout popup for placement {0}.", mode));
 
                         Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
@@ -396,7 +397,7 @@ namespace Fluence.Wpf.Tests
                         Assert.Equal(expectedSide, presenter.RevealPlacement);
 
                         flyout.Hide();
-                        Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                        Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                             string.Format("Hide should close the flyout popup for placement {0}.", mode));
                     }
                 }
@@ -440,11 +441,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_Escape_HidesFlyoutThroughClosingPipeline()
+        public Task Flyout_Escape_HidesFlyoutThroughClosingPipelineAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -455,11 +456,11 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before Escape is simulated.");
 
                     bool closingRaised = false;
@@ -475,7 +476,7 @@ namespace Fluence.Wpf.Tests
                         RoutedEvent = UIElement.PreviewKeyDownEvent,
                     });
 
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                         "Escape inside the flyout must dismiss it.");
                     Assert.True(closingRaised, "The Escape dismissal must run through the cancelable Closing event.");
                 }
@@ -488,11 +489,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Flyout_ShowAt_FlowsTargetDataContextIntoPresenter()
+        public Task Flyout_ShowAt_FlowsTargetDataContextIntoPresenterAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 400, Height = 300 };
@@ -504,22 +505,22 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before the DataContext is verified.");
 
                     Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
                     Assert.Same(viewModel, presenter.DataContext);
 
                     flyout.Hide();
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !flyout.IsOpen).ConfigureAwait(true),
                         "Hide should close the flyout popup before the cleanup is verified.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.DataContext is null),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => presenter.DataContext is null).ConfigureAwait(true),
                         "Closing must clear the DataContext flowed onto the presenter.");
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.HostPopup?.PlacementTarget is null),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.HostPopup?.PlacementTarget is null).ConfigureAwait(true),
                         "Closing must release the popup's placement target so the flyout does not pin the anchor.");
                 }
                 finally
@@ -531,11 +532,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FlyoutPresenter_ThemeCycle_SurfaceBrushesResolve()
+        public Task FlyoutPresenter_ThemeCycle_SurfaceBrushesResolveAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 string[] brushKeys = ["SolidBackgroundFillColorTertiaryBrush", "SurfaceStrokeColorFlyoutBrush", "TextFillColorPrimaryBrush"];

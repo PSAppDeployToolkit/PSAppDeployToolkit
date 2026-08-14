@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using Fluence.Wpf.Automation;
@@ -36,11 +37,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void HyperlinkButton_Peer_IsHyperlinkButtonAutomationPeer()
+        public Task HyperlinkButton_Peer_IsHyperlinkButtonAutomationPeerAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
 
@@ -52,7 +53,7 @@ namespace Fluence.Wpf.Tests
                     window.Height = 120;
                     window.Show();
                     _ = button.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
                     _ = Assert.IsAssignableFrom<HyperlinkButtonAutomationPeer>(peer);
@@ -69,11 +70,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HyperlinkButton_Peer_ReportsHyperlinkControlType()
+        public Task HyperlinkButton_Peer_ReportsHyperlinkControlTypeAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
 
@@ -85,7 +86,7 @@ namespace Fluence.Wpf.Tests
                     window.Height = 120;
                     window.Show();
                     _ = button.ApplyTemplate();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
                     Assert.Equal(
