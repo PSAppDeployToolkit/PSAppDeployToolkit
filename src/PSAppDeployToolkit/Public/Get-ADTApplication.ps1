@@ -184,7 +184,7 @@ function Get-ADTApplication
         }
 
         # Define compiled regex for use throughout main loop.
-        $updatesAndHotFixesRegex = [System.Text.RegularExpressions.Regex]::new('((?i)kb\d+|(Cumulative|Security) Update|Hotfix)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Compiled)
+        $updatesAndHotFixesRegex = [System.Text.RegularExpressions.Regex]::new('(kb\d+|(Cumulative|Security) Update|Hotfix)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Compiled)
         $msiUpgradeCodeLookupTable = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\* -ErrorAction Ignore | Get-ItemProperty | & {
             begin
             {
