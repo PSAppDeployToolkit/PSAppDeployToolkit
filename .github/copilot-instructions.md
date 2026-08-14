@@ -52,6 +52,8 @@ Framework 4.7.2 and .NET 10. Four projects: `Fluence.Wpf` (library),
 10. **Discard return values:** `_ = method()` for non-void returns you are not
     using. Ignored returns are build errors (CA1806).
 
+11. **Analyzer rule severity:** Centralize analyzer rule severity overrides (e.g., VSTHRD001) in `.editorconfig` rather than per-project NoWarn entries in `.csproj` files. Inline `#pragma` suppressions are only permitted in the documented "exceptional third-party interop" carve-out (NativeMethods.cs).
+
 ---
 
 ## Theme architecture (3-slot layout -- do not break)
@@ -126,6 +128,7 @@ through `WpfTestSta.Invoke`.
 
 - In `Fluence.Wpf.Tests`, prefer direct calls to the canonical `WpfTestSta` helpers (e.g., `RunOnSta`, `EnsureApplication`, `DrainDispatcher`, etc.) instead of per-class wrapper/forwarder methods. Remove any duplicated wrapper logic when encountered.
 - Prefer eliding async/await for methods whose entire body is a single awaited Task-returning call: return the Task directly instead of async/await (e.g., `public Task X() { return WpfTestSta.RunOnStaAsync(...); }`). This applies even though Roslynator RCS1174 only covers Task<T>. Keep `new ValueTask(task)` wrapping only where required by interfaces like xUnit v3 IAsyncLifetime.
+- When an analyzer flags synchronous disposal in async methods (e.g., RCS1261), do not remove the using block or suppress with comments. Instead, use `await using` with ConfigureAwait, guarded by `#if NET..._OR_GREATER` / `#else using` conditionals for TFMs where IAsyncDisposable isn't available (net472). Pattern: `MemoryStream buffer = new(); await using (buffer.ConfigureAwait(true))` with `#else using (MemoryStream buffer = new())`.
 
 ---
 

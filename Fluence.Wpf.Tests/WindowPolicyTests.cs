@@ -32,7 +32,8 @@ using System.Windows.Media;
 using System.Windows.Shell;
 using Fluence.Wpf.Controls;
 using Fluence.Wpf.Helpers;
-using Fluence.Wpf.Native;
+using Windows.Win32;
+using Windows.Win32.Graphics.Dwm;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
@@ -210,10 +211,10 @@ namespace Fluence.Wpf.Tests
             Assert.False(plan.UseTransparentBackground,
                 "None must paint a solid background - transparency would reveal the glass frame.");
             Assert.Equal(fallback, plan.BackgroundColor);
-            Assert.Equal(NativeConstants.DWMWA_COLOR_DEFAULT, plan.CaptionColor);
+            Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.CaptionColor);
             Assert.True(plan.SystemBackdropType is not null,
                 "On 22H2 DWM exposes DWMWA_SYSTEMBACKDROP_TYPE - None must emit DWMSBT_NONE to explicitly clear Mica/Acrylic.");
-            Assert.Equal(NativeConstants.DWMSBT_NONE, plan.SystemBackdropType.Value);
+            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE, plan.SystemBackdropType.Value);
             Assert.False(plan.UseLegacyMicaEffect);
         }
 
@@ -247,7 +248,7 @@ namespace Fluence.Wpf.Tests
             Assert.True(plan.UseTransparentBackground,
                 "Mica requires a transparent window client so DWM can composite the backdrop.");
             Assert.Equal(Colors.Transparent, plan.BackgroundColor);
-            Assert.Equal(NativeConstants.DWMWA_COLOR_NONE, plan.CaptionColor);
+            Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.CaptionColor);
             Assert.False(plan.SystemBackdropType is not null,
                 "Pre-22H2 must not emit DWMWA_SYSTEMBACKDROP_TYPE - only DWMWA_MICA_EFFECT is legal there.");
             Assert.True(plan.UseLegacyMicaEffect,
@@ -266,7 +267,7 @@ namespace Fluence.Wpf.Tests
             Assert.Equal(BackdropType.Mica, plan.EffectiveBackdrop);
             Assert.True(plan.UseTransparentBackground);
             Assert.True(plan.SystemBackdropType is not null);
-            Assert.Equal(NativeConstants.DWMSBT_MAINWINDOW, plan.SystemBackdropType.Value);
+            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW, plan.SystemBackdropType.Value);
             Assert.False(plan.UseLegacyMicaEffect,
                 "22H2 must use the canonical DWMWA_SYSTEMBACKDROP_TYPE path, not the legacy Mica attribute.");
         }
@@ -285,7 +286,7 @@ namespace Fluence.Wpf.Tests
                 Colors.White);
 
             Assert.Equal(BackdropType.Acrylic, plan.EffectiveBackdrop);
-            Assert.Equal(NativeConstants.DWMSBT_TRANSIENTWINDOW, plan.SystemBackdropType);
+            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TRANSIENTWINDOW, plan.SystemBackdropType);
         }
 
         [Fact]
@@ -298,7 +299,7 @@ namespace Fluence.Wpf.Tests
                 Colors.White);
 
             Assert.Equal(BackdropType.Tabbed, plan.EffectiveBackdrop);
-            Assert.Equal(NativeConstants.DWMSBT_TABBEDWINDOW, plan.SystemBackdropType);
+            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW, plan.SystemBackdropType);
         }
 
         #endregion BuildBackdropPlan - Acrylic + Tabbed (SystemBackdropType mapping)
@@ -337,7 +338,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void GetCornerPreference_Round_MapsToDwmwcpRound()
         {
-            Assert.Equal(NativeConstants.DWMWCP_ROUND,
+            Assert.Equal(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
                 WindowPolicy.GetCornerPreference(CornerPreference.Round));
         }
 
@@ -346,21 +347,21 @@ namespace Fluence.Wpf.Tests
         {
             // FluenceWindow exposes CornerPreference.Default as "library default" - which in a
             // Fluent library means rounded on Win11. The policy normalises Default to Round.
-            Assert.Equal(NativeConstants.DWMWCP_ROUND,
+            Assert.Equal(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
                 WindowPolicy.GetCornerPreference(CornerPreference.Default));
         }
 
         [Fact]
         public void GetCornerPreference_DoNotRound_MapsToDwmwcpDoNotRound()
         {
-            Assert.Equal(NativeConstants.DWMWCP_DONOTROUND,
+            Assert.Equal(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND,
                 WindowPolicy.GetCornerPreference(CornerPreference.DoNotRound));
         }
 
         [Fact]
         public void GetCornerPreference_RoundSmall_MapsToDwmwcpRoundSmall()
         {
-            Assert.Equal(NativeConstants.DWMWCP_ROUNDSMALL,
+            Assert.Equal(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUNDSMALL,
                 WindowPolicy.GetCornerPreference(CornerPreference.RoundSmall));
         }
 
@@ -466,7 +467,7 @@ namespace Fluence.Wpf.Tests
 
             Assert.Equal(new Thickness(2), plan.TemplateBorderThickness);
             Assert.Equal("SystemAccentColorBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
-            Assert.NotEqual(NativeConstants.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
+            Assert.NotEqual(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
         }
 
         [Fact]
@@ -505,7 +506,7 @@ namespace Fluence.Wpf.Tests
                 capabilities: Caps(),
                 accentColor: Colors.Red);
 
-            Assert.Equal(NativeConstants.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
+            Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
         }
 
         #endregion BuildFramePlan - accent border selection

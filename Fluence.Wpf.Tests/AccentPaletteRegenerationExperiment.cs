@@ -26,12 +26,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.Win32;
 using Fluence.Wpf.Native;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
@@ -56,11 +59,11 @@ namespace Fluence.Wpf.Tests
     {
         private readonly ITestOutputHelper _output = output;
 
-        private const string DwmKey = NativeConstants.DwmRegistryPath;
-        private const string AccentKey = NativeConstants.AccentRegistryPath;
-        private const string DwmAccentColorValue = NativeConstants.AccentColor;
-        private const string DwmAccentColorInactiveValue = NativeConstants.AccentColorInactive;
-        private const string AccentPaletteValue = NativeConstants.AccentPalette;
+        private const string DwmKey = RegistryConstants.DwmRegistryPath;
+        private const string AccentKey = RegistryConstants.AccentRegistryPath;
+        private const string DwmAccentColorValue = RegistryConstants.AccentColor;
+        private const string DwmAccentColorInactiveValue = RegistryConstants.AccentColorInactive;
+        private const string AccentPaletteValue = RegistryConstants.AccentPalette;
         private const string AccentColorMenuValue = "AccentColorMenu";
         private const string StartColorMenuValue = "StartColorMenu";
 
@@ -120,7 +123,7 @@ namespace Fluence.Wpf.Tests
             // Save originals.
             object? originalDwmAccent = ReadRaw(Registry.CurrentUser, DwmKey, DwmAccentColorValue);
             object? originalDwmAccentInactive = ReadRaw(Registry.CurrentUser, DwmKey, DwmAccentColorInactiveValue);
-            object? originalAccentColor = ReadRaw(Registry.CurrentUser, AccentKey, NativeConstants.AccentColor);
+            object? originalAccentColor = ReadRaw(Registry.CurrentUser, AccentKey, RegistryConstants.AccentColor);
             object? originalAccentColorMenu = ReadRaw(Registry.CurrentUser, AccentKey, AccentColorMenuValue);
             object? originalStartColorMenu = ReadRaw(Registry.CurrentUser, AccentKey, StartColorMenuValue);
             byte[]? originalPalette = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue) as byte[];
@@ -139,16 +142,24 @@ namespace Fluence.Wpf.Tests
                 if (writeMode is not WriteMode.DwmAccentColorOnly)
                 {
                     WriteDword(Registry.CurrentUser, DwmKey, DwmAccentColorInactiveValue, dwmEncoded);
-                    WriteDword(Registry.CurrentUser, AccentKey, NativeConstants.AccentColor, explorerEncoded);
+                    WriteDword(Registry.CurrentUser, AccentKey, RegistryConstants.AccentColor, explorerEncoded);
                     WriteDword(Registry.CurrentUser, AccentKey, AccentColorMenuValue, explorerEncoded);
                     WriteDword(Registry.CurrentUser, AccentKey, StartColorMenuValue, explorerEncoded);
                 }
 
                 if (writeMode is WriteMode.AllAccentValuesAndBroadcast)
                 {
-                    _ = NativeMethods.SendMessageTimeout(new IntPtr(NativeMethods.HWND_BROADCAST),
-                        NativeConstants.WM_SETTINGCHANGE, IntPtr.Zero, "ImmersiveColorSet",
-                        NativeMethods.SMTO_ABORTIFHUNG, 1000, out IntPtr _);
+                    nint lParam = Marshal.StringToHGlobalUni("ImmersiveColorSet");
+                    try
+                    {
+                        _ = PInvoke.SendMessageTimeout(HWND.HWND_BROADCAST,
+                            PInvoke.WM_SETTINGCHANGE, default, lParam,
+                            SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 1000, out nuint _);
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(lParam);
+                    }
                 }
 
                 await Task.Delay(waitMs, TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -183,7 +194,7 @@ namespace Fluence.Wpf.Tests
                 // Restore originals.
                 RestoreRaw(Registry.CurrentUser, DwmKey, DwmAccentColorValue, originalDwmAccent);
                 RestoreRaw(Registry.CurrentUser, DwmKey, DwmAccentColorInactiveValue, originalDwmAccentInactive);
-                RestoreRaw(Registry.CurrentUser, AccentKey, NativeConstants.AccentColor, originalAccentColor);
+                RestoreRaw(Registry.CurrentUser, AccentKey, RegistryConstants.AccentColor, originalAccentColor);
                 RestoreRaw(Registry.CurrentUser, AccentKey, AccentColorMenuValue, originalAccentColorMenu);
                 RestoreRaw(Registry.CurrentUser, AccentKey, StartColorMenuValue, originalStartColorMenu);
                 if (originalPalette is not null)
@@ -192,9 +203,17 @@ namespace Fluence.Wpf.Tests
                     key.SetValue(AccentPaletteValue, originalPalette, RegistryValueKind.Binary);
                 }
                 // Broadcast restore.
-                _ = NativeMethods.SendMessageTimeout(new IntPtr(NativeMethods.HWND_BROADCAST),
-                    NativeConstants.WM_SETTINGCHANGE, IntPtr.Zero, "ImmersiveColorSet",
-                    NativeMethods.SMTO_ABORTIFHUNG, 1000, out IntPtr _);
+                nint lParam = Marshal.StringToHGlobalUni("ImmersiveColorSet");
+                try
+                {
+                    _ = PInvoke.SendMessageTimeout(HWND.HWND_BROADCAST,
+                        PInvoke.WM_SETTINGCHANGE, default, lParam,
+                        SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 1000, out nuint _);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(lParam);
+                }
             }
         }
 

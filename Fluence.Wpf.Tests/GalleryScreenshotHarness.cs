@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Tests
 
             byte[] pngBytes;
 #if NET10_0_OR_GREATER
-            MemoryStream buffer = new(); await using (buffer.ConfigureAwait(continueOnCapturedContext: true))
+            MemoryStream buffer = new(); await using (buffer.ConfigureAwait(true))
 #else
             using (MemoryStream buffer = new())
 #endif

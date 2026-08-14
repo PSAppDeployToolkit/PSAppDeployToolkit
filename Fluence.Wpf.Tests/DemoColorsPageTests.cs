@@ -124,9 +124,8 @@ namespace Fluence.Wpf.Tests
                             Assert.Equal(row.Children.Count, row.Columns);
                             Assert.True(row.Columns <= 4, "Token rows should stay compact at four columns or fewer.");
 
-                            foreach (FrameworkElement tile in row.Children.Cast<FrameworkElement>())
+                            foreach (string resourceKey in row.Children.Cast<FrameworkElement>().Select(static tile => tile.Tag as string ?? string.Empty))
                             {
-                                string resourceKey = tile.Tag as string ?? string.Empty;
                                 Assert.False(string.IsNullOrWhiteSpace(resourceKey), "Each token tile should expose its resource key.");
                                 totalTiles++;
                                 sawSystemColorAlias |= string.Equals(resourceKey, "SystemColorWindowTextColorBrush", StringComparison.Ordinal);

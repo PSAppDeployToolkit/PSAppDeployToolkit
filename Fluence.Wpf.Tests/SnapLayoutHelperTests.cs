@@ -39,8 +39,8 @@ namespace Fluence.Wpf.Tests
         // We save the live user value, exercise each fixture path, then restore. Cleanup is in the finally
         // block of each test so a thrown assertion still restores the user's prior state.
 
-        private const string KeyPath = NativeConstants.ExplorerAdvancedRegistryPath;
-        private const string ValueName = NativeConstants.EnableSnapAssistFlyout;
+        private const string KeyPath = RegistryConstants.ExplorerAdvancedRegistryPath;
+        private const string ValueName = RegistryConstants.EnableSnapAssistFlyout;
 
         [Fact]
         public void IsSnapLayoutEnabled_RegistryAbsent_ReturnsTrue()
