@@ -29,6 +29,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Input;
@@ -43,47 +44,21 @@ namespace Fluence.Wpf.Tests
 {
     public class FluenceWindowTitleBarTests
     {
-        private static void RunOnFreshStaThread(Action action)
-        {
-            Exception? capturedException = null;
-            WpfTestSta.Dispatcher?.Invoke(new Action(delegate
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    capturedException = exception;
-                }
-            }));
-
-            if (capturedException is not null)
-            {
-                ExceptionDispatchInfo.Capture(capturedException).Throw();
-            }
-        }
-
-        private static Application? EnsureApplication()
-        {
-            return WpfTestSta.EnsureApplication();
-        }
-
-        private static ResourceDictionary? MergeTheme(Application? application)
+        private static ResourceDictionary? MergeTheme(Application application)
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
+            application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
-            return dictionaries?.Count > 0 ? dictionaries[^1] : null;
+            Collection<ResourceDictionary> dictionaries = application.Resources.MergedDictionaries;
+            return dictionaries.Count > 0 ? dictionaries[^1] : null;
         }
 
-        private static void RunWithWindow(Action<FluenceWindow> testBody)
+        private static Task RunWithWindowAsync(Action<FluenceWindow> testBody)
         {
-            RunOnFreshStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
 
@@ -108,11 +83,20 @@ namespace Fluence.Wpf.Tests
         /// Shows a FluenceWindow off-screen so template parts (caption buttons) exist for hit-testing.
         /// </summary>
         /// <param name="testBody">The action to run with the shown window.</param>
-        private static void RunWithShownWindow(Action<FluenceWindow> testBody)
+        private static Task RunWithShownWindowAsync(Action<FluenceWindow> testBody)
         {
-            RunOnFreshStaThread(() =>
+            return RunWithShownWindowAsync(window =>
             {
-                Application? app = EnsureApplication();
+                testBody(window);
+                return Task.CompletedTask;
+            });
+        }
+
+        private static Task RunWithShownWindowAsync(Func<FluenceWindow, Task> testBody)
+        {
+            return WpfTestSta.RunOnStaAsync(async () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
 
@@ -129,8 +113,8 @@ namespace Fluence.Wpf.Tests
                         ShowInTaskbar = false,
                     };
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
-                    testBody(window);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Loaded, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
+                    await testBody(window).ConfigureAwait(true);
                 }
                 finally
                 {
@@ -188,9 +172,9 @@ namespace Fluence.Wpf.Tests
         #region 1. ExtendsContentIntoTitleBar default
 
         [Fact]
-        public void ExtendsContentIntoTitleBar_DefaultIsFalse()
+        public Task ExtendsContentIntoTitleBar_DefaultIsFalseAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 Assert.False(w.ExtendsContentIntoTitleBar,
                     "ExtendsContentIntoTitleBar should default to false.");
@@ -202,15 +186,15 @@ namespace Fluence.Wpf.Tests
         #region 2. FluenceWindow sizing defaults
 
         [Fact]
-        public void TitleBarHeight_DefaultIs48()
+        public Task TitleBarHeight_DefaultIs48Async()
         {
-            RunWithWindow(static w => Assert.Equal(48d, w.TitleBarHeight));
+            return RunWithWindowAsync(static w => Assert.Equal(48d, w.TitleBarHeight));
         }
 
         [Fact]
-        public void MinWidth_DefaultRemainsUnset()
+        public Task MinWidth_DefaultRemainsUnsetAsync()
         {
-            RunWithWindow(static w => Assert.Equal(0d, w.MinWidth));
+            return RunWithWindowAsync(static w => Assert.Equal(0d, w.MinWidth));
         }
 
         #endregion 2. FluenceWindow sizing defaults
@@ -218,15 +202,15 @@ namespace Fluence.Wpf.Tests
         #region 3. ShowIcon and ShowTitle defaults
 
         [Fact]
-        public void ShowIcon_DefaultIsTrue()
+        public Task ShowIcon_DefaultIsTrueAsync()
         {
-            RunWithWindow(static w => Assert.True(w.ShowIcon, "ShowIcon should default to true."));
+            return RunWithWindowAsync(static w => Assert.True(w.ShowIcon, "ShowIcon should default to true."));
         }
 
         [Fact]
-        public void ShowTitle_DefaultIsTrue()
+        public Task ShowTitle_DefaultIsTrueAsync()
         {
-            RunWithWindow(static w => Assert.True(w.ShowTitle, "ShowTitle should default to true."));
+            return RunWithWindowAsync(static w => Assert.True(w.ShowTitle, "ShowTitle should default to true."));
         }
 
         #endregion 3. ShowIcon and ShowTitle defaults
@@ -234,9 +218,9 @@ namespace Fluence.Wpf.Tests
         #region 4. Caption button visibility defaults
 
         [Fact]
-        public void CaptionButtonVisibility_DefaultsAreVisible()
+        public Task CaptionButtonVisibility_DefaultsAreVisibleAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 Assert.Equal(Visibility.Visible, w.IsMinimizeButtonVisible);
                 Assert.Equal(Visibility.Visible, w.IsMaximizeButtonVisible);
@@ -245,9 +229,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CaptionButtonEnabled_DefaultsAreTrue()
+        public Task CaptionButtonEnabled_DefaultsAreTrueAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 Assert.True(w.IsMinimizable);
                 Assert.True(w.IsMaximizable);
@@ -260,15 +244,15 @@ namespace Fluence.Wpf.Tests
         #region 5. HasShadow and WindowBorder defaults
 
         [Fact]
-        public void HasShadow_DefaultIsTrue()
+        public Task HasShadow_DefaultIsTrueAsync()
         {
-            RunWithWindow(static w => Assert.True(w.HasShadow, "HasShadow should default to true."));
+            return RunWithWindowAsync(static w => Assert.True(w.HasShadow, "HasShadow should default to true."));
         }
 
         [Fact]
-        public void BorderThickness_DefaultIsOne()
+        public Task BorderThickness_DefaultIsOneAsync()
         {
-            RunWithWindow(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
         }
 
         #endregion 5. HasShadow and WindowBorder defaults
@@ -276,9 +260,9 @@ namespace Fluence.Wpf.Tests
         #region 6. SetTitleBar method
 
         [Fact]
-        public void SetTitleBar_SetsTitleBarProperty()
+        public Task SetTitleBar_SetsTitleBarPropertyAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 System.Windows.Controls.TextBlock customElement = new() { Text = "Custom Title" };
                 w.SetTitleBar(customElement);
@@ -287,9 +271,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void SetTitleBar_NullReverts()
+        public Task SetTitleBar_NullRevertsAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 System.Windows.Controls.TextBlock customElement = new() { Text = "Custom Title" };
                 w.SetTitleBar(customElement);
@@ -304,9 +288,9 @@ namespace Fluence.Wpf.Tests
         #region 7. WindowChrome updates
 
         [Fact]
-        public void CaptionHeight_AlwaysZero_RegardlessOfExtendsContentIntoTitleBar()
+        public Task CaptionHeight_AlwaysZero_RegardlessOfExtendsContentIntoTitleBarAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
                 Assert.NotNull(chrome);
@@ -319,9 +303,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HasShadow_False_SetsGlassFrameToNearZero()
+        public Task HasShadow_False_SetsGlassFrameToNearZeroAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
                 Assert.Equal(new Thickness(-1), chrome.GlassFrameThickness);
@@ -342,9 +326,9 @@ namespace Fluence.Wpf.Tests
         #region Bug Fix Tests - Title Bar Flash and Theme Switching
 
         [Fact]
-        public void CaptionHeight_IsZero_EvenBeforeExtendsContentIntoTitleBar()
+        public Task CaptionHeight_IsZero_EvenBeforeExtendsContentIntoTitleBarAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
                 Assert.NotNull(chrome);
@@ -353,9 +337,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void WindowChrome_AppliedInConstructor()
+        public Task WindowChrome_AppliedInConstructorAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
                 Assert.NotNull(chrome);
@@ -363,17 +347,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DefaultBorderThickness_IsOne()
+        public Task DefaultBorderThickness_IsOneAsync()
         {
-            RunWithWindow(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
         }
 
         [Fact]
-        public void ThemeSwitch_UpdatesWindowBackground()
+        public Task ThemeSwitch_UpdatesWindowBackgroundAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
 
@@ -402,11 +386,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ThemeChanged_FiresOnApply()
+        public Task ThemeChanged_FiresOnApplyAsync()
         {
-            RunOnFreshStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 int fireCount = 0;
                 void handler(object? s, ThemeChangedEventArgs e)
@@ -436,7 +420,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void FluenceWindowXaml_NoStaticResourceForThemeBrushes()
         {
-            string xamlPath = System.IO.Path.Combine(
+            string xamlPath = System.IO.Path.Join(
                 AppDomain.CurrentDomain.BaseDirectory,
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\FluenceWindow.xaml");
 
@@ -464,11 +448,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void FullThemeCycle_KeyBrushesResolve()
+        public Task FullThemeCycle_KeyBrushesResolveAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
 
                 try
@@ -493,11 +477,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void MergedDictionaries_CountStableAfterMultipleSwitches()
+        public Task MergedDictionaries_CountStableAfterMultipleSwitchesAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
 
                 try
@@ -531,7 +515,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void FluenceWindowXaml_CaptionButtonsUseSystemCommands()
         {
-            string xamlPath = System.IO.Path.Combine(
+            string xamlPath = System.IO.Path.Join(
                 AppDomain.CurrentDomain.BaseDirectory,
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\FluenceWindow.xaml");
             xamlPath = System.IO.Path.GetFullPath(xamlPath);
@@ -552,9 +536,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_MinimizeButton_ReturnsZero_NotHtMinButton()
+        public Task HitTestTitleBar_MinimizeButton_ReturnsZero_NotHtMinButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Visible, btn.Visibility);
@@ -567,9 +551,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_CloseButton_ReturnsZero_NotHtClose()
+        public Task HitTestTitleBar_CloseButton_ReturnsZero_NotHtCloseAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"));
 
@@ -581,9 +565,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_MaximizeButton_ReturnsHtMaxButton()
+        public Task HitTestTitleBar_MaximizeButton_ReturnsHtMaxButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
@@ -596,12 +580,12 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_MaximizeButtonHidden_DoesNotReturnHtMaxButton()
+        public Task HitTestTitleBar_MaximizeButtonHidden_DoesNotReturnHtMaxButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Hidden, btn.Visibility);
@@ -613,12 +597,12 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_MaximizeButtonDisabled_DoesNotReturnHtMaxButton()
+        public Task HitTestTitleBar_MaximizeButtonDisabled_DoesNotReturnHtMaxButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.IsMaximizable = false;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Visible, btn.Visibility);
@@ -631,9 +615,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_TitleBarDragArea_ReturnsHtCaption()
+        public Task HitTestTitleBar_TitleBarDragArea_ReturnsHtCaptionAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 w.UpdateLayout();
                 Point clientMidTitle = new(Math.Max(40, w.ActualWidth / 2), Math.Max(1, w.TitleBarHeight / 2));
@@ -644,9 +628,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_TopResizeBand_ReturnsHtTopBeforeCaption()
+        public Task HitTestTitleBar_TopResizeBand_ReturnsHtTopBeforeCaptionAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 w.UpdateLayout();
                 Point screen = w.PointToScreen(new Point(w.ActualWidth / 2.0, 1.0));
@@ -656,9 +640,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_UpperCorners_ReturnResizeCornersBeforeCaption()
+        public Task HitTestTitleBar_UpperCorners_ReturnResizeCornersBeforeCaptionAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 w.UpdateLayout();
 
@@ -673,9 +657,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void HitTestTitleBar_IsMoveableFalse_TitleBarDragAreaReturnsZero()
+        public Task HitTestTitleBar_IsMoveableFalse_TitleBarDragAreaReturnsZeroAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(static w =>
             {
                 w.IsMoveable = false;
                 w.UpdateLayout();
@@ -688,9 +672,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void WndProc_IsMoveableFalse_SuppressesSystemMove()
+        public Task WndProc_IsMoveableFalse_SuppressesSystemMoveAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 w.IsMoveable = false;
                 _ = InvokeWndProc(w, NativeConstants.WM_SYSCOMMAND, new IntPtr(NativeConstants.SC_MOVE), IntPtr.Zero, out bool handled);
@@ -703,9 +687,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void WndProc_NcLeftButtonUpHtMaxButton_UsesDirectMaximizeAndRefreshesCaptionButtons()
+        public Task WndProc_NcLeftButtonUpHtMaxButton_UsesDirectMaximizeAndRefreshesCaptionButtonsAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 System.Windows.Controls.Button restore = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"));
@@ -718,7 +702,7 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out bool handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.True(handled,
                     "WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
@@ -732,7 +716,7 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.True(handled,
                     "Second WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
@@ -743,7 +727,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void SetSnapHover_UsesSubtleFillTokens_MatchingTemplatePointerOver()
+        public async Task SetSnapHover_UsesSubtleFillTokens_MatchingTemplatePointerOverAsync()
         {
             // The Windows 11 snap-layout flyout hover over the maximize/restore button is driven by
             // SetSnapHover, because the WM_NCHITTEST/HTMAXBUTTON path bypasses the XAML IsMouseOver
@@ -754,7 +738,7 @@ namespace Fluence.Wpf.Tests
             // paths cannot silently drift apart again. SetSnapHover is invoked directly (rather than
             // through WndProc) so the assertion does not depend on the machine's snap-layout setting,
             // OS build, or IsMaximizable gate that WM_NCHITTEST applies before reaching it.
-            RunWithShownWindow(static w =>
+            await RunWithShownWindowAsync(async static w =>
             {
                 System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.True(max.IsEnabled,
@@ -773,7 +757,7 @@ namespace Fluence.Wpf.Tests
                     BindingFlags.Instance | BindingFlags.NonPublic);
                 Assert.NotNull(setSnapHover);
                 _ = setSnapHover.Invoke(w, [max]);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Same(expectedBackground, max.Background);
                 Assert.Same(expectedForeground, max.Foreground);
@@ -786,11 +770,11 @@ namespace Fluence.Wpf.Tests
                     BindingFlags.Instance | BindingFlags.NonPublic);
                 Assert.NotNull(clearSnapHover);
                 _ = clearSnapHover.Invoke(w, parameters: null);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty));
                 Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.ForegroundProperty));
-            });
+            }).ConfigureAwait(true);
         }
 
         #endregion Caption button hit-test (WM_NCHITTEST vs WPF commands)
@@ -798,23 +782,23 @@ namespace Fluence.Wpf.Tests
         #region Caption button DP overrides (authoritative when explicitly set)
 
         [Fact]
-        public void IsMinimizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesButton()
+        public Task IsMinimizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 // XAML sets IsMinimizeButtonVisible=Collapsed
                 // on the FluentDialog template, then code-behind flips it back to Visible when
                 // DialogAllowMinimize is honoured (IsMinimizeButtonVisible=Visibility.Visible).
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Collapsed, btn.Visibility);
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
                 w.IsMinimizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(Visibility.Visible, btn.Visibility);
                 Assert.True(btn.IsEnabled,
@@ -823,13 +807,13 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsMinimizeButtonVisible_ExplicitCollapsed_UnderCanResize_HidesButton()
+        public Task IsMinimizeButtonVisible_ExplicitCollapsed_UnderCanResize_HidesButtonAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.ResizeMode = ResizeMode.CanResize;
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Collapsed, btn?.Visibility);
@@ -839,20 +823,20 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsMaximizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesMaximize()
+        public Task IsMaximizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesMaximizeAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Collapsed, max.Visibility);
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
                 w.IsMaximizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(Visibility.Visible, max.Visibility);
                 Assert.Equal(WindowState.Normal, w.WindowState);
@@ -862,12 +846,12 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsMaximizeButtonVisible_Hidden_ReservesOnlyTheActiveButtonSlot()
+        public Task IsMaximizeButtonVisible_Hidden_ReservesOnlyTheActiveButtonSlotAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
@@ -877,7 +861,7 @@ namespace Fluence.Wpf.Tests
                 Assert.False(restore?.IsEnabled ?? false);
 
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(Visibility.Collapsed, max?.Visibility);
                 Assert.Equal(Visibility.Hidden, restore?.Visibility);
@@ -887,9 +871,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CaptionButtonVisibleProperties_SetTheVisibilityDps()
+        public Task CaptionButtonVisibleProperties_SetTheVisibilityDpsAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 foreach (Visibility value in (Visibility[])[Visibility.Visible, Visibility.Hidden, Visibility.Collapsed])
                 {
@@ -905,9 +889,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void CaptionButtonVisibilityProperties_ApplyVisibleHiddenCollapsedToTemplateButtons()
+        public Task CaptionButtonVisibilityProperties_ApplyVisibleHiddenCollapsedToTemplateButtonsAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 System.Windows.Controls.Button minimize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 System.Windows.Controls.Button maximize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
@@ -919,7 +903,7 @@ namespace Fluence.Wpf.Tests
                     w.IsMinimizeButtonVisible = value;
                     w.IsMaximizeButtonVisible = value;
                     w.IsCloseButtonVisible = value;
-                    w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                    await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                     Assert.Equal(value, minimize.Visibility);
                     Assert.Equal(value, close.Visibility);
@@ -977,9 +961,9 @@ modifiers: null);
         }
 
         [Fact]
-        public void CanMinimizeWindow_RespectsExplicitDp_UnderNoResize()
+        public Task CanMinimizeWindow_RespectsExplicitDp_UnderNoResizeAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 w.ResizeMode = ResizeMode.NoResize;
 
@@ -998,9 +982,9 @@ modifiers: null);
         }
 
         [Fact]
-        public void CanMaximizeWindow_RespectsExplicitDp_UnderNoResize()
+        public Task CanMaximizeWindow_RespectsExplicitDp_UnderNoResizeAsync()
         {
-            RunWithWindow(static w =>
+            return RunWithWindowAsync(static w =>
             {
                 w.ResizeMode = ResizeMode.NoResize;
 
@@ -1015,9 +999,9 @@ modifiers: null);
         }
 
         [Fact]
-        public void CaptionButtons_DefaultBehaviorUnchanged_WhenDpsNotTouched()
+        public Task CaptionButtons_DefaultBehaviorUnchanged_WhenDpsNotTouchedAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 Assert.Equal(ResizeMode.CanResize, w.ResizeMode);
 
@@ -1030,7 +1014,7 @@ modifiers: null);
                 Assert.Equal(Visibility.Visible, closeBtn?.Visibility);
 
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(Visibility.Collapsed, minBtn?.Visibility);
                 Assert.Equal(Visibility.Collapsed, maxBtn?.Visibility);
@@ -1038,7 +1022,7 @@ modifiers: null);
         }
 
         [Fact]
-        public void OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStripped()
+        public async Task OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStrippedAsync()
         {
             // RunWithShownWindow triggers OnSourceInitialized → ApplyWindowShell →
             // HideNativeCaptionButtons → NativeMethods.HideAllWindowButtons, which strips
@@ -1048,7 +1032,7 @@ modifiers: null);
             // symptom that made the AllowMinimize caption button look clickable but
             // refuse to actually minimize. The Executed handler must bypass the sysmenu gate
             // by assigning WindowState directly so the transition always lands.
-            RunWithShownWindow(static w =>
+            await RunWithShownWindowAsync(async static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
 
@@ -1057,16 +1041,16 @@ modifiers: null);
                     "OnMinimizeWindow",
                     CreateExecutedArgs(SystemCommands.MinimizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(WindowState.Minimized, w.WindowState);
-            });
+            }).ConfigureAwait(true);
         }
 
         [Fact]
-        public void OnMaximizeWindow_DrivesWindowStateMaximized_EvenAfterSysMenuStripped()
+        public Task OnMaximizeWindow_DrivesWindowStateMaximized_EvenAfterSysMenuStrippedAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
 
@@ -1075,19 +1059,19 @@ modifiers: null);
                     "OnMaximizeWindow",
                     CreateExecutedArgs(SystemCommands.MaximizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(WindowState.Maximized, w.WindowState);
             });
         }
 
         [Fact]
-        public void OnRestoreWindow_DrivesWindowStateNormal_FromMaximized()
+        public Task OnRestoreWindow_DrivesWindowStateNormal_FromMaximizedAsync()
         {
-            RunWithShownWindow(static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
                 Assert.Equal(WindowState.Maximized, w.WindowState);
 
                 InvokeExecutedHandler(
@@ -1095,14 +1079,14 @@ modifiers: null);
                     "OnRestoreWindow",
                     CreateExecutedArgs(SystemCommands.RestoreWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(WindowState.Normal, w.WindowState);
             });
         }
 
         [Fact]
-        public void MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfig()
+        public async Task MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfigAsync()
         {
             // Reproduces the exact PSADT FluentDialog topology: Topmost=True + ResizeMode=NoResize
             // + ExtendsContentIntoTitleBar=True + IsMinimizeButtonVisible flipped from
@@ -1112,9 +1096,9 @@ modifiers: null);
             // OnMinimizeWindow) and asserts the caption is clickable AND the state lands on
             // Minimized. If this ever regresses to "visible but inert" we'll catch it here
             // instead of only in manual QA.
-            RunOnFreshStaThread(static () =>
+            await WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
 
@@ -1137,14 +1121,14 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Loaded, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Loaded, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                     // Flip visibility after Show() to mirror PSADT's IsMinimizeButtonVisible=Visibility.Visible.
                     window.IsMinimizeButtonVisible = Visibility.Visible;
                     window.IsMinimizable = true;
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
                     CommandManager.InvalidateRequerySuggested();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.ApplicationIdle, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                     System.Windows.Controls.Button minBtn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(window, "_minimizeButton"));
                     Assert.Equal(Visibility.Visible, minBtn.Visibility);
@@ -1161,8 +1145,8 @@ modifiers: null);
                     // on its own DataContext (the button is the command target, the window is
                     // the CommandBinding host via routed-command bubbling).
                     SystemCommands.MinimizeWindowCommand.Execute(parameter: null, minBtn);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.ApplicationIdle, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                     Assert.Equal(WindowState.Minimized, window.WindowState);
                 }
@@ -1175,11 +1159,11 @@ modifiers: null);
                         _ = app?.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
-            });
+            }).ConfigureAwait(true);
         }
 
         [Fact]
-        public void MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfig()
+        public async Task MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfigAsync()
         {
             // Same topology as the Show() variant above, but uses ShowDialog() which is what
             // PSADT's DialogManager actually invokes (see DialogManager.ShowModalDialog -> dialog.ShowDialog()).
@@ -1187,9 +1171,9 @@ modifiers: null);
             // PSADT case are also Topmost - a combination that can mask bugs a Show() test misses.
             // We schedule the click via Dispatcher.BeginInvoke(ApplicationIdle) from Loaded so
             // the command fires after the modal frame is pumping, then verify WindowState.
-            RunOnFreshStaThread(() =>
+            await WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
                 WindowState observedStateAfterMinimize = WindowState.Normal;
@@ -1244,14 +1228,14 @@ modifiers: null);
                                             capturedWindow.Close();
                                         }, DispatcherPriority.ApplicationIdle);
                                     }
-                                    catch (Exception exInner)
+                                    catch (Exception exInner) when (exInner.Message is not null)
                                     {
                                         scenarioExceptionInfo = ExceptionDispatchInfo.Capture(exInner);
                                         capturedWindow.Close();
                                     }
                                 }, DispatcherPriority.ApplicationIdle);
                             }
-                            catch (Exception exOuter)
+                            catch (Exception exOuter) when (exOuter.Message is not null)
                             {
                                 scenarioExceptionInfo = ExceptionDispatchInfo.Capture(exOuter);
                                 capturedWindow.Close();
@@ -1282,7 +1266,7 @@ modifiers: null);
                         _ = app?.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
-            });
+            }).ConfigureAwait(true);
         }
 
         #endregion Caption button DP overrides (authoritative when explicitly set)
@@ -1290,11 +1274,11 @@ modifiers: null);
         #region 8. PasswordBox.SelectAll
 
         [Fact]
-        public void PasswordBox_SelectAll_DoesNotThrowWithoutTemplate()
+        public Task PasswordBox_SelectAll_DoesNotThrowWithoutTemplateAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
 
                 try
@@ -1325,7 +1309,7 @@ modifiers: null);
         public void MinMaxInfo_StructLayout_HasCorrectSize()
         {
             // MINMAXINFO must be 5 POINTs = 5 * 8 bytes = 40 bytes.
-            int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MINMAXINFO));
+            int size = System.Runtime.InteropServices.Marshal.SizeOf<MINMAXINFO>();
             Assert.Equal(40, size);
         }
 
@@ -1334,7 +1318,7 @@ modifiers: null);
         {
             // MONITORINFO = int + 3 RECTs (16 bytes each) + uint = 4 + 16 + 16 + 16 + 4 = 40 bytes.
             // Actually: cbSize(4) + rcMonitor(16) + rcWork(16) + dwFlags(4) = 40 bytes.
-            int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MONITORINFO));
+            int size = System.Runtime.InteropServices.Marshal.SizeOf<MONITORINFO>();
             Assert.Equal(40, size);
         }
 
@@ -1349,21 +1333,21 @@ modifiers: null);
                 ptMinTrackSize = new POINT { X = 200, Y = 150 },
             };
 
-            int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MINMAXINFO));
+            int size = System.Runtime.InteropServices.Marshal.SizeOf<MINMAXINFO>();
             nint ptr = System.Runtime.InteropServices.Marshal.AllocHGlobal(size);
             try
             {
                 System.Runtime.InteropServices.Marshal.StructureToPtr(mmi, ptr, fDeleteOld: false);
-                MINMAXINFO? result = (MINMAXINFO?)System.Runtime.InteropServices.Marshal.PtrToStructure(ptr, typeof(MINMAXINFO));
+                MINMAXINFO result = System.Runtime.InteropServices.Marshal.PtrToStructure<MINMAXINFO>(ptr);
 
-                Assert.Equal(10, result?.ptMaxPosition.X);
-                Assert.Equal(20, result?.ptMaxPosition.Y);
-                Assert.Equal(1920, result?.ptMaxSize.X);
-                Assert.Equal(1040, result?.ptMaxSize.Y);
-                Assert.Equal(3840, result?.ptMaxTrackSize.X);
-                Assert.Equal(2160, result?.ptMaxTrackSize.Y);
-                Assert.Equal(200, result?.ptMinTrackSize.X);
-                Assert.Equal(150, result?.ptMinTrackSize.Y);
+                Assert.Equal(10, result.ptMaxPosition.X);
+                Assert.Equal(20, result.ptMaxPosition.Y);
+                Assert.Equal(1920, result.ptMaxSize.X);
+                Assert.Equal(1040, result.ptMaxSize.Y);
+                Assert.Equal(3840, result.ptMaxTrackSize.X);
+                Assert.Equal(2160, result.ptMaxTrackSize.Y);
+                Assert.Equal(200, result.ptMinTrackSize.X);
+                Assert.Equal(150, result.ptMinTrackSize.Y);
             }
             finally
             {
@@ -1393,11 +1377,11 @@ modifiers: null);
         // grid is correctly on top, a hit-test at a caption-button center hits the button or one
         // of its Path children - not the Border.
         [Fact]
-        public void CaptionButtons_AboveContent_WhenExtendsContentIntoTitleBar()
+        public Task CaptionButtons_AboveContent_WhenExtendsContentIntoTitleBarAsync()
         {
-            RunOnFreshStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
                 FluenceWindow? window = null;
 
@@ -1422,9 +1406,9 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Loaded, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
                     window.UpdateLayout();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Render, default);
+                    await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                     foreach (string? fieldName in new[] { "_minimizeButton", "_maximizeButton", "_closeButton" })
                     {

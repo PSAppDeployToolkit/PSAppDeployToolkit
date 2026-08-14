@@ -489,7 +489,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void ListStyleButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Fluence.Wpf.Controls.Button button && button.Content is string listStyle)
+            if (sender is Controls.Button button && button.Content is string listStyle)
             {
                 ListToggleSplitButton.Content = listStyle;
                 ListToggleSplitButton.IsChecked = true;

@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using Fluence.Wpf.Controls;
 using Xunit;
@@ -43,11 +44,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void ComboBox_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
+        public Task ComboBox_DropdownCornerRadius_DefaultEqualsOverlayCornerRadiusAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
@@ -55,7 +56,7 @@ namespace Fluence.Wpf.Tests
                 ComboBox cb = new();
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(overlayRadius, cb.DropdownCornerRadius);
                 w.Close();
@@ -63,17 +64,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ComboBox_DropdownCornerRadius_ValueIs8()
+        public Task ComboBox_DropdownCornerRadius_ValueIs8Async()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 ComboBox cb = new();
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(new CornerRadius(8), cb.DropdownCornerRadius);
                 w.Close();
@@ -85,11 +86,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void DropDownButton_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
+        public Task DropDownButton_DropdownCornerRadius_DefaultEqualsOverlayCornerRadiusAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
@@ -97,7 +98,7 @@ namespace Fluence.Wpf.Tests
                 DropDownButton ddb = new();
                 Window w = new() { Content = ddb, Width = 200, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(overlayRadius, ddb.DropdownCornerRadius);
                 w.Close();
@@ -105,17 +106,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DropDownButton_DropdownCornerRadius_ValueIs8()
+        public Task DropDownButton_DropdownCornerRadius_ValueIs8Async()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 DropDownButton ddb = new();
                 Window w = new() { Content = ddb, Width = 200, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(new CornerRadius(8), ddb.DropdownCornerRadius);
                 w.Close();

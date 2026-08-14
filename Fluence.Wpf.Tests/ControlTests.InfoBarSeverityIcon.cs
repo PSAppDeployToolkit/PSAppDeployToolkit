@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Controls;
@@ -39,18 +40,18 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void InfoBar_GetSeverityGlyph_MatchesTemplateGlyphs()
         {
-            Assert.Equal("", InfoBar.GetSeverityGlyph(InfoBarSeverity.Informational), StringComparer.Ordinal);
-            Assert.Equal("", InfoBar.GetSeverityGlyph(InfoBarSeverity.Success), StringComparer.Ordinal);
-            Assert.Equal("", InfoBar.GetSeverityGlyph(InfoBarSeverity.Warning), StringComparer.Ordinal);
-            Assert.Equal("", InfoBar.GetSeverityGlyph(InfoBarSeverity.Error), StringComparer.Ordinal);
+            Assert.Equal("\uE946", InfoBar.GetSeverityGlyph(InfoBarSeverity.Informational), StringComparer.Ordinal);
+            Assert.Equal("\uE73E", InfoBar.GetSeverityGlyph(InfoBarSeverity.Success), StringComparer.Ordinal);
+            Assert.Equal("\uE7BA", InfoBar.GetSeverityGlyph(InfoBarSeverity.Warning), StringComparer.Ordinal);
+            Assert.Equal("\uEA39", InfoBar.GetSeverityGlyph(InfoBarSeverity.Error), StringComparer.Ordinal);
         }
 
         [Fact]
-        public void InfoBar_GetSeverityBrushKey_ResolvesToThemeBrush()
+        public Task InfoBar_GetSeverityBrushKey_ResolvesToThemeBrushAsync()
         {
-            RunOnStaThread(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
-                _ = EnsureApplication();
+                _ = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
                 foreach (InfoBarSeverity severity in new[]
                 {

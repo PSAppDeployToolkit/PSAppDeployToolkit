@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Media;
@@ -37,17 +38,17 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void ProgressBar_PausedMode_UsesCautionBrush()
+        public Task ProgressBar_PausedMode_UsesCautionBrushAsync()
         {
-            AssertProgressBarModeBrush(ProgressBarMode.Paused, "SystemFillColorCautionBrush");
+            return AssertProgressBarModeBrushAsync(ProgressBarMode.Paused, "SystemFillColorCautionBrush");
         }
 
         [Fact]
-        public void ProgressBar_PausedMode_TracksCautionBrushAcrossThemeChange()
+        public Task ProgressBar_PausedMode_TracksCautionBrushAcrossThemeChangeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
@@ -60,7 +61,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
                 SolidColorBrush initial = Assert.IsType<SolidColorBrush>(fill.Background);
@@ -70,7 +71,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(initialExpected.Color, initialColor);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCautionBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
@@ -82,17 +83,17 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_ErrorMode_UsesCriticalBrush()
+        public Task ProgressBar_ErrorMode_UsesCriticalBrushAsync()
         {
-            AssertProgressBarModeBrush(ProgressBarMode.Error, "SystemFillColorCriticalBrush");
+            return AssertProgressBarModeBrushAsync(ProgressBarMode.Error, "SystemFillColorCriticalBrush");
         }
 
         [Fact]
-        public void ProgressBar_DefaultStyle_UsesWinUiThinTrackMetrics()
+        public Task ProgressBar_DefaultStyle_UsesWinUiThinTrackMetricsAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -103,7 +104,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
 
@@ -117,11 +118,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_ReturningToStandardMode_RestoresAccentBrush()
+        public Task ProgressBar_ReturningToStandardMode_RestoresAccentBrushAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -133,12 +134,12 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
 
                 progressBar.ProgressMode = ProgressBarMode.Standard;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
@@ -149,11 +150,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_IndicatorHost_IsClippedToRoundedGeometry()
+        public Task ProgressBar_IndicatorHost_IsClippedToRoundedGeometryAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -164,7 +165,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Grid host = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(progressBar, "ProgressBarIndicatorHost"));
 
@@ -182,11 +183,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_IndeterminateBars_UseWinUiWidthRatios()
+        public Task ProgressBar_IndeterminateBars_UseWinUiWidthRatiosAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -197,7 +198,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
                 System.Windows.Controls.Border bar1 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar"));
@@ -213,11 +214,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_IsIndeterminate_ShowsIndeterminateBars()
+        public Task ProgressBar_IsIndeterminate_ShowsIndeterminateBarsAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -228,7 +229,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
@@ -236,7 +237,7 @@ namespace Fluence.Wpf.Tests
                 System.Windows.Controls.Border bar2 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar2"));
 
                 progressBar.IsIndeterminate = true;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(Visibility.Visible, bar1.Visibility);
                 Assert.Equal(Visibility.Visible, bar2.Visibility);
@@ -244,7 +245,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(0.0, track.Opacity, 0.001);
 
                 progressBar.IsIndeterminate = false;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(Visibility.Collapsed, bar1.Visibility);
                 Assert.Equal(Visibility.Visible, fill.Visibility);
@@ -255,23 +256,23 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_ShowError_UsesCriticalBrush()
+        public Task ProgressBar_ShowError_UsesCriticalBrushAsync()
         {
-            AssertProgressBarStatePrimitiveBrush(static bar => bar.ShowError = true, "SystemFillColorCriticalBrush");
+            return AssertProgressBarStatePrimitiveBrushAsync(static bar => bar.ShowError = true, "SystemFillColorCriticalBrush");
         }
 
         [Fact]
-        public void ProgressBar_ShowPaused_UsesCautionBrush()
+        public Task ProgressBar_ShowPaused_UsesCautionBrushAsync()
         {
-            AssertProgressBarStatePrimitiveBrush(static bar => bar.ShowPaused = true, "SystemFillColorCautionBrush");
+            return AssertProgressBarStatePrimitiveBrushAsync(static bar => bar.ShowPaused = true, "SystemFillColorCautionBrush");
         }
 
         [Fact]
-        public void ProgressBar_Indeterminate_StopsAnimationOnUnloadAndRestartsOnReload()
+        public Task ProgressBar_Indeterminate_StopsAnimationOnUnloadAndRestartsOnReloadAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -283,17 +284,17 @@ namespace Fluence.Wpf.Tests
                 System.Windows.Controls.ContentControl host = new() { Content = progressBar };
                 Window w = new() { Content = host, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TranslateTransform translate =
                     Assert.IsType<TranslateTransform>(progressBar.Template.FindName("PART_IndeterminateTranslate", progressBar));
                 TranslateTransform translate2 =
                     Assert.IsType<TranslateTransform>(progressBar.Template.FindName("PART_IndeterminateTranslate2", progressBar));
-                Assert.True(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => translate.HasAnimatedProperties).ConfigureAwait(true),
                     "The indeterminate animation must run while the bar is loaded.");
 
                 host.Content = null;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.False(translate.HasAnimatedProperties,
                     "Unloading must stop the repeat-forever animation on the primary translate transform.");
@@ -301,13 +302,13 @@ namespace Fluence.Wpf.Tests
                     "Unloading must stop the repeat-forever animation on the secondary translate transform.");
 
                 host.Content = progressBar;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Assert.True(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => translate.HasAnimatedProperties).ConfigureAwait(true),
                     "Reloading must restart the indeterminate animation.");
 
                 w.Close();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.False(translate.HasAnimatedProperties,
                     "Closing the hosting window must leave no active animation clocks on the translate transforms.");
@@ -317,11 +318,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_Indeterminate_StopsAnimationWhenCollapsedAndRestartsWhenVisible()
+        public Task ProgressBar_Indeterminate_StopsAnimationWhenCollapsedAndRestartsWhenVisibleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -332,17 +333,17 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 TranslateTransform translate =
                     Assert.IsType<TranslateTransform>(progressBar.Template.FindName("PART_IndeterminateTranslate", progressBar));
                 TranslateTransform translate2 =
                     Assert.IsType<TranslateTransform>(progressBar.Template.FindName("PART_IndeterminateTranslate2", progressBar));
-                Assert.True(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => translate.HasAnimatedProperties).ConfigureAwait(true),
                     "The indeterminate animation must run while the bar is loaded and visible.");
 
                 progressBar.Visibility = Visibility.Collapsed;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.False(translate.HasAnimatedProperties,
                     "Collapsing the bar must stop the repeat-forever animation on the primary translate transform.");
@@ -350,22 +351,22 @@ namespace Fluence.Wpf.Tests
                     "Collapsing the bar must stop the repeat-forever animation on the secondary translate transform.");
 
                 progressBar.Visibility = Visibility.Visible;
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Assert.True(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => translate.HasAnimatedProperties).ConfigureAwait(true),
                     "Restoring visibility must restart the indeterminate animation.");
 
                 w.Close();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
             });
         }
 
         [Fact]
-        public void ProgressBar_IndeterminateMode_SetsIsIndeterminate()
+        public Task ProgressBar_IndeterminateMode_SetsIsIndeterminateAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -382,11 +383,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_DeterminateFill_AnimatesScaleXAndKeepsFullLayoutWidth()
+        public Task ProgressBar_DeterminateFill_AnimatesScaleXAndKeepsFullLayoutWidthAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -399,14 +400,14 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(progressBar.Template.FindName("PART_FillScale", progressBar));
 
                 progressBar.Value = 60;
-                Assert.True(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.6) < 0.01),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.6) < 0.01).ConfigureAwait(true),
                     "The determinate fill scale must settle at Value / (Maximum - Minimum) after the 367 ms reposition animation.");
                 Assert.Equal(track.ActualWidth, fill.Width, 0.5);
 
@@ -415,11 +416,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_DeterminateFill_RapidValueChangesSettleAtSecondRatio()
+        public Task ProgressBar_DeterminateFill_RapidValueChangesSettleAtSecondRatioAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -432,13 +433,13 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(progressBar.Template.FindName("PART_FillScale", progressBar));
 
                 progressBar.Value = 30;
                 progressBar.Value = 75;
-                Assert.True(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.75) < 0.01),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.75) < 0.01).ConfigureAwait(true),
                     "Interrupting a running fill animation must hand off and settle at the second value's ratio.");
 
                 w.Close();
@@ -446,11 +447,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_StepMode_PositionsFillScaleAtStepRatio()
+        public Task ProgressBar_StepMode_PositionsFillScaleAtStepRatioAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -463,14 +464,14 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(progressBar.Template.FindName("PART_FillScale", progressBar));
 
                 progressBar.CurrentStep = 2;
-                Assert.True(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.5) < 0.01),
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.5) < 0.01).ConfigureAwait(true),
                     "Step mode must position the fill scale at CurrentStep / Steps.");
                 Assert.Equal(track.ActualWidth, fill.Width, 0.5);
 
@@ -478,11 +479,11 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        private static void AssertProgressBarStatePrimitiveBrush(Action<Controls.ProgressBar> applyState, string brushKey)
+        private static Task AssertProgressBarStatePrimitiveBrushAsync(Action<Controls.ProgressBar> applyState, string brushKey)
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -493,10 +494,10 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 applyState(progressBar);
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
 
@@ -510,29 +511,29 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_DeclaresPoliteLiveSetting()
+        public Task ProgressBar_DeclaresPoliteLiveSettingAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new() { Value = 50, Width = 240, Height = 24 };
                 Window window = new() { Content = progressBar };
                 window.Show();
                 _ = progressBar.ApplyTemplate();
-                DrainDispatcher(window.Dispatcher);
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                 Assert.Equal(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(progressBar));
                 window.Close();
             });
         }
 
-        private static void AssertProgressBarModeBrush(ProgressBarMode mode, string brushKey)
+        private static Task AssertProgressBarModeBrushAsync(ProgressBarMode mode, string brushKey)
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Controls.ProgressBar progressBar = new()
@@ -544,7 +545,7 @@ namespace Fluence.Wpf.Tests
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
 

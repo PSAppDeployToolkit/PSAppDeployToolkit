@@ -11,7 +11,7 @@
     <TestTfmsInParallel>false</TestTfmsInParallel>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <NoWarn>$(NoWarn);CS1591;CA1031;CA1707;CA2263;VSTHRD001;MA0045</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CA1707;VSTHRD001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,9 +49,15 @@
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
       $(MeziantouPolyfill_IncludedPolyfills)
+      M:System.IO.Path.Join|
       M:System.Linq.Enumerable.Order|
       M:System.String.Join|
       M:System.String.Replace|
+      M:System.IO.File.ReadAllTextAsync|
+      M:System.IO.File.ReadAllLinesAsync|
+      M:System.IO.File.WriteAllTextAsync|
+      M:System.IO.File.WriteAllBytesAsync|
+      M:System.IO.File.WriteAllLinesAsync|
     </MeziantouPolyfill_IncludedPolyfills>
   </PropertyGroup>
 

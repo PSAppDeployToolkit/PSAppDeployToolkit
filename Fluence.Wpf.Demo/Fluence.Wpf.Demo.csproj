@@ -34,6 +34,7 @@
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
       $(MeziantouPolyfill_IncludedPolyfills)
+      M:System.Linq.Enumerable.Order|
       M:System.String.Replace|
     </MeziantouPolyfill_IncludedPolyfills>
   </PropertyGroup>

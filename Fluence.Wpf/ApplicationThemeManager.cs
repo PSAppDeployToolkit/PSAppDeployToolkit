@@ -58,7 +58,7 @@ namespace Fluence.Wpf
         /// <see cref="ApplicationAccentColorManager"/> apply method
         /// (<see cref="ApplicationAccentColorManager.ApplySystemAccent"/>,
         /// <see cref="ApplicationAccentColorManager.ApplyApplicationAccent"/>, or
-        /// <see cref="ApplicationAccentColorManager.ApplyCustomAccent(System.Windows.Media.Color)"/>), whichever ran last. When
+        /// <see cref="ApplicationAccentColorManager.ApplyCustomAccent(Color)"/>), whichever ran last. When
         /// <see cref="CurrentTheme"/> is <see cref="ApplicationTheme.Auto"/>, this reflects the OS theme
         /// at the time of that last pipeline run; it does not update automatically when the OS theme
         /// changes without a subsequent pipeline run. Before the first pipeline run, this property returns

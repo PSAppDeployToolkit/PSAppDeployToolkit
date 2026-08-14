@@ -29,6 +29,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -96,27 +97,12 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        private static void RunOnStaThread(Action action)
-        {
-            WpfTestSta.RunOnSta(action);
-        }
-
-        private static Application? EnsureApplication()
-        {
-            return WpfTestSta.EnsureApplication();
-        }
-
-        private static void DrainDispatcher(Dispatcher dispatcher)
-        {
-            WpfTestSta.DrainDispatcher(dispatcher);
-        }
-
         private static string FindRepoRoot()
         {
             DirectoryInfo? directory = new(AppContext.BaseDirectory);
             while (directory is not null)
             {
-                if (File.Exists(Path.Combine(directory.FullName, "Fluence.Wpf.sln")))
+                if (File.Exists(Path.Join(directory.FullName, "Fluence.Wpf.sln")))
                 {
                     return directory.FullName;
                 }
@@ -130,12 +116,12 @@ namespace Fluence.Wpf.Tests
 
         private static string EnsureOutputDirectory()
         {
-            string path = Path.Combine(FindRepoRoot(), "docs", "screenshots");
+            string path = Path.Join(FindRepoRoot(), "docs", "screenshots");
             _ = Directory.CreateDirectory(path);
             return path;
         }
 
-        private static void SavePng(Visual visual, int pixelWidth, int pixelHeight, double dpi, string fullPath)
+        private static async Task SavePngAsync(Visual visual, int pixelWidth, int pixelHeight, double dpi, string fullPath)
         {
             RenderTargetBitmap bitmap = new(pixelWidth, pixelHeight, dpi, dpi, PixelFormats.Pbgra32);
             bitmap.Render(visual);
@@ -143,11 +129,16 @@ namespace Fluence.Wpf.Tests
             PngBitmapEncoder encoder = new();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-            using FileStream stream = File.Create(fullPath);
-            encoder.Save(stream);
+            // MemoryStream holds no unmanaged resources; disposal is a no-op, and avoiding
+            // the using block sidesteps sync-dispose-in-async-method analyzer noise.
+            MemoryStream buffer = new();
+            encoder.Save(buffer);
+            byte[] pngBytes = buffer.ToArray();
+
+            await File.WriteAllBytesAsync(fullPath, pngBytes, TestContext.Current.CancellationToken).ConfigureAwait(true);
         }
 
-        private static void SaveFlattenedPng(FrameworkElement element, int pixelWidth, int pixelHeight, double dpi, string fullPath)
+        private static async Task SaveFlattenedPngAsync(FrameworkElement element, int pixelWidth, int pixelHeight, double dpi, string fullPath)
         {
             Rect bounds = new(0.0, 0.0, element.ActualWidth, element.ActualHeight);
             Brush background = element.TryFindResource("SolidBackgroundFillColorBaseBrush") as Brush
@@ -161,22 +152,22 @@ namespace Fluence.Wpf.Tests
                 context.DrawRectangle(new VisualBrush(element), pen: null, bounds);
             }
 
-            SavePng(flattened, pixelWidth, pixelHeight, dpi, fullPath);
+            await SavePngAsync(flattened, pixelWidth, pixelHeight, dpi, fullPath).ConfigureAwait(true);
         }
 
-        private static void SaveElementPng(FrameworkElement element, double scale, string fullPath)
+        private static async Task SaveElementPngAsync(FrameworkElement element, double scale, string fullPath)
         {
             int pixelWidth = Math.Max(1, (int)Math.Round(element.ActualWidth * scale, MidpointRounding.ToEven));
             int pixelHeight = Math.Max(1, (int)Math.Round(element.ActualHeight * scale, MidpointRounding.ToEven));
             double dpi = BaseDpi * scale;
 
-            SaveFlattenedPng(element, pixelWidth, pixelHeight, dpi, fullPath);
+            await SaveFlattenedPngAsync(element, pixelWidth, pixelHeight, dpi, fullPath).ConfigureAwait(true);
             Assert.True(File.Exists(fullPath), Invariant("Expected to write {0}", fullPath));
         }
 
         private static Application ResetApplication(ApplicationTheme theme, bool includeDemoSharedStyles)
         {
-            Application application = EnsureApplication() ?? throw new InvalidOperationException("Could not create WPF Application for screenshot capture.");
+            Application application = WpfTestSta.EnsureApplication() ?? throw new InvalidOperationException("Could not create WPF Application for screenshot capture.");
             application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
@@ -207,17 +198,17 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        private static void ShowSettleAndCapture(Window window, ApplicationTheme theme, string fullPath)
+        private static async Task ShowSettleAndCaptureAsync(Window window, ApplicationTheme theme, string fullPath)
         {
             window.Show();
-            DrainDispatcher(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-            DrainDispatcher(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             PumpDispatcher(window.Dispatcher, AnimationSettleDelay);
             window.UpdateLayout();
-            _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(static delegate { }));
+            await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-            SaveElementPng(window, ReferenceScale, fullPath);
+            await SaveElementPngAsync(window, ReferenceScale, fullPath).ConfigureAwait(true);
         }
 
         private static void PumpDispatcher(Dispatcher dispatcher, TimeSpan duration)
@@ -252,7 +243,7 @@ namespace Fluence.Wpf.Tests
         /// <param name="paneMode">The navigation pane display mode.</param>
         /// <param name="outputName">The name of the output file.</param>
         /// <param name="outputDirectory">The directory to save the output file.</param>
-        private static void CaptureGalleryShellAt(
+        private static async Task CaptureGalleryShellAtAsync(
             ApplicationTheme theme,
             string themeSlug,
             string route,
@@ -268,7 +259,7 @@ namespace Fluence.Wpf.Tests
                 window = new Demo.MainWindow();
                 PrepareCaptureWindow(window, GalleryCaptureWidth, GalleryCaptureHeight);
                 window.Show();
-                DrainDispatcher(window.Dispatcher);
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                 if (window.DemoNav is not null)
                 {
@@ -278,13 +269,13 @@ namespace Fluence.Wpf.Tests
 
                 window.NavigateTo(route);
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-                DrainDispatcher(window.Dispatcher);
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
                 PumpDispatcher(window.Dispatcher, AnimationSettleDelay);
                 window.UpdateLayout();
-                _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(static delegate { }));
+                await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                string fullPath = Path.Combine(outputDirectory, Invariant("{0}-{1}.png", outputName, themeSlug));
-                SaveElementPng(window, ReferenceScale, fullPath);
+                string fullPath = Path.Join(outputDirectory, Invariant("{0}-{1}.png", outputName, themeSlug));
+                await SaveElementPngAsync(window, ReferenceScale, fullPath).ConfigureAwait(true);
             }
             finally
             {
@@ -298,10 +289,10 @@ namespace Fluence.Wpf.Tests
         /// stays in lock-step with the script the screenshot documents.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the XAML here-string cannot be located.</exception>
-        private static string ExtractControlsTourXaml()
+        private static async Task<string> ExtractControlsTourXamlAsync()
         {
-            string scriptPath = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "03-ControlsTour.ps1");
-            string[] lines = File.ReadAllLines(scriptPath);
+            string scriptPath = Path.Join(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "03-ControlsTour.ps1");
+            string[] lines = await File.ReadAllLinesAsync(scriptPath, TestContext.Current.CancellationToken).ConfigureAwait(true);
 
             int start = -1;
             int end = -1;
@@ -344,19 +335,19 @@ namespace Fluence.Wpf.Tests
             return builder.ToString();
         }
 
-        private static void CapturePowerShellControlsAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
+        private static async Task CapturePowerShellControlsAtAsync(ApplicationTheme theme, string themeSlug, string outputDirectory)
         {
             _ = ResetApplication(theme, includeDemoSharedStyles: false);
 
             Window? window = null;
             try
             {
-                window = XamlReader.Parse(ExtractControlsTourXaml()) as Window
+                window = XamlReader.Parse(await ExtractControlsTourXamlAsync().ConfigureAwait(true)) as Window
                     ?? throw new InvalidOperationException("03-ControlsTour.ps1 XAML did not load as a WPF Window.");
 
                 PrepareCaptureWindow(window, PowerShellCaptureWidth, PowerShellCaptureHeight);
-                string fullPath = Path.Combine(outputDirectory, Invariant("powershell-{0}.png", themeSlug));
-                ShowSettleAndCapture(window, theme, fullPath);
+                string fullPath = Path.Join(outputDirectory, Invariant("powershell-{0}.png", themeSlug));
+                await ShowSettleAndCaptureAsync(window, theme, fullPath).ConfigureAwait(true);
             }
             finally
             {
@@ -393,7 +384,7 @@ namespace Fluence.Wpf.Tests
             AddScreenshotTask(viewModel, "Update API docs", isCompleted: true);
         }
 
-        private static void CaptureMvvmDemoAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
+        private static async Task CaptureMvvmDemoAtAsync(ApplicationTheme theme, string themeSlug, string outputDirectory)
         {
             _ = ResetApplication(theme, includeDemoSharedStyles: false);
 
@@ -403,8 +394,8 @@ namespace Fluence.Wpf.Tests
                 window = new Demo.Mvvm.MainWindow();
                 SeedMvvmScreenshotData(window);
                 PrepareCaptureWindow(window, AppCaptureWidth, AppCaptureHeight);
-                string fullPath = Path.Combine(outputDirectory, Invariant("mvvm-{0}.png", themeSlug));
-                ShowSettleAndCapture(window, theme, fullPath);
+                string fullPath = Path.Join(outputDirectory, Invariant("mvvm-{0}.png", themeSlug));
+                await ShowSettleAndCaptureAsync(window, theme, fullPath).ConfigureAwait(true);
             }
             finally
             {
@@ -415,43 +406,43 @@ namespace Fluence.Wpf.Tests
 #endif
 
         [Fact(SkipUnless = nameof(ScreenshotCaptureEnabled), Skip = "Screenshot capture is opt-in; set FLUENCE_CAPTURE_SCREENSHOTS=1 to regenerate docs/screenshots.")]
-        public void CaptureGalleryShellNavigationModes()
+        public Task CaptureGalleryShellNavigationModesAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
                 {
-                    CaptureGalleryShellAt(theme, themeSlug, "home", NavigationViewPaneDisplayMode.Left, "gallery-home", output);
-                    CaptureGalleryShellAt(theme, themeSlug, "buttons", NavigationViewPaneDisplayMode.LeftCompact, "gallery-buttons", output);
-                    CaptureGalleryShellAt(theme, themeSlug, "status", NavigationViewPaneDisplayMode.Top, "gallery-status", output);
+                    await CaptureGalleryShellAtAsync(theme, themeSlug, "home", NavigationViewPaneDisplayMode.Left, "gallery-home", output).ConfigureAwait(true);
+                    await CaptureGalleryShellAtAsync(theme, themeSlug, "buttons", NavigationViewPaneDisplayMode.LeftCompact, "gallery-buttons", output).ConfigureAwait(true);
+                    await CaptureGalleryShellAtAsync(theme, themeSlug, "status", NavigationViewPaneDisplayMode.Top, "gallery-status", output).ConfigureAwait(true);
                 }
             });
         }
 
         [Fact(SkipUnless = nameof(ScreenshotCaptureEnabled), Skip = "Screenshot capture is opt-in; set FLUENCE_CAPTURE_SCREENSHOTS=1 to regenerate docs/screenshots.")]
-        public void CapturePowerShellControlsTour()
+        public Task CapturePowerShellControlsTourAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
                 {
-                    CapturePowerShellControlsAt(theme, themeSlug, output);
+                    await CapturePowerShellControlsAtAsync(theme, themeSlug, output).ConfigureAwait(true);
                 }
             });
         }
 
 #if NET10_0_OR_GREATER
         [Fact(SkipUnless = nameof(ScreenshotCaptureEnabled), Skip = "Screenshot capture is opt-in; set FLUENCE_CAPTURE_SCREENSHOTS=1 to regenerate docs/screenshots.")]
-        public void CaptureMvvmTaskManager()
+        public Task CaptureMvvmTaskManagerAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
                 {
-                    CaptureMvvmDemoAt(theme, themeSlug, output);
+                    await CaptureMvvmDemoAtAsync(theme, themeSlug, output).ConfigureAwait(true);
                 }
             });
         }

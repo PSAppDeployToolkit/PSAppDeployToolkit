@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using Fluence.Wpf.Controls;
 using Xunit;
@@ -42,11 +43,11 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void ToolTip_DefaultStyle_BackgroundBrushResolves()
+        public Task ToolTip_DefaultStyle_BackgroundBrushResolvesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
@@ -54,11 +55,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ToolTip_DefaultStyle_BorderBrushResolves()
+        public Task ToolTip_DefaultStyle_BorderBrushResolvesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
@@ -66,11 +67,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ToolTip_DefaultStyle_StyleRegisteredWithCorrectProperties()
+        public Task ToolTip_DefaultStyle_StyleRegisteredWithCorrectPropertiesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 // Default style is keyed to the Fluence ToolTip type.
@@ -91,11 +92,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ToolTip_OpenFade_SettlesAtFullOpacity()
+        public Task ToolTip_OpenFade_SettlesAtFullOpacityAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 300, Height = 200 };
@@ -107,13 +108,13 @@ namespace Fluence.Wpf.Tests
                 {
                     window.Content = target;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     tip.PlacementTarget = target;
                     tip.IsOpen = true;
-                    Assert.True(WaitUntil(window.Dispatcher, 2000,
-                            () => tip.Template?.FindName("ToolTipSurface", tip) is System.Windows.Controls.Border),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
+                            () => tip.Template?.FindName("ToolTipSurface", tip) is System.Windows.Controls.Border).ConfigureAwait(true),
                         "The tooltip template must apply once the tooltip opens.");
 
                     System.Windows.Controls.Border surface =
@@ -123,7 +124,7 @@ namespace Fluence.Wpf.Tests
                     // full opacity. The trigger-begun HoldEnd clock keeps
                     // HasAnimatedProperties true forever (see plan 011), so only the settled
                     // value is asserted.
-                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => surface.Opacity >= 1.0),
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => surface.Opacity >= 1.0).ConfigureAwait(true),
                         "The open fade must settle at full opacity.");
                 }
                 finally
@@ -135,11 +136,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ToolTip_SystemPopupFade_IsSuppressedByThemeResource()
+        public Task ToolTip_SystemPopupFade_IsSuppressedByThemeResourceAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 // The WPF tooltip pipeline resolves its host popup animation through this
@@ -151,11 +152,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ToolTip_ThemeCycle_BrushesResolveAfterEachSwitch()
+        public Task ToolTip_ThemeCycle_BrushesResolveAfterEachSwitchAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 string[] brushKeys = ["SolidBackgroundFillColorTertiaryBrush", "SurfaceStrokeColorFlyoutBrush", "TextFillColorPrimaryBrush"];

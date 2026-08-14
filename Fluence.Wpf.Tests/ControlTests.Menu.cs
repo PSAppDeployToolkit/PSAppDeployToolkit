@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Controls;
@@ -43,18 +44,18 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public void Menu_StyleApplies_BackgroundIsTransparent()
+        public Task Menu_StyleApplies_BackgroundIsTransparentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Menu menu = new();
                 _ = menu.Items.Add(new MenuItem { Header = "File" });
                 Window w = new() { Content = menu, Width = 400, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Background must be Transparent (from style setter)
                 SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
@@ -66,18 +67,18 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Menu_StyleApplies_BorderThicknessIsZero()
+        public Task Menu_StyleApplies_BorderThicknessIsZeroAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Menu menu = new();
                 _ = menu.Items.Add(new MenuItem { Header = "Edit" });
                 Window w = new() { Content = menu, Width = 400, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(
                     new Thickness(0),
@@ -87,11 +88,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Menu_AcceptsMenuItemItems()
+        public Task Menu_AcceptsMenuItemItemsAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Menu menu = new();
@@ -101,7 +102,7 @@ namespace Fluence.Wpf.Tests
                 _ = menu.Items.Add(item2);
                 Window w = new() { Content = menu, Width = 400, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(2, menu.Items.Count);
                 _ = Assert.IsAssignableFrom<MenuItem>(menu.Items[0]);
@@ -111,21 +112,21 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void Menu_ThemeCycle_BackgroundRemainsTransparent()
+        public Task Menu_ThemeCycle_BackgroundRemainsTransparentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? app = EnsureApplication();
+                Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Menu menu = new();
                 _ = menu.Items.Add(new MenuItem { Header = "View" });
                 Window w = new() { Content = menu, Width = 400, Height = 100 };
                 w.Show();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
-                DrainDispatcher(w.Dispatcher);
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
                 Assert.Equal(

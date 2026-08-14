@@ -30,8 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -41,9 +43,9 @@ namespace Fluence.Wpf.Tests
             "/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml",
             UriKind.Relative);
 
-        internal static void RunOnSta(Action action)
+        internal static Task RunOnStaAsync(Action action)
         {
-            WpfTestSta.RunOnSta(action);
+            return WpfTestSta.RunOnStaAsync(action);
         }
 
         internal static Application EnsureDemoTheme(BackdropType backdrop = BackdropType.None)
@@ -74,9 +76,9 @@ namespace Fluence.Wpf.Tests
                 Content = content,
             };
             window.Show();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             window.UpdateLayout();
-            Drain(window.Dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
             return window;
         }
 
@@ -84,26 +86,13 @@ namespace Fluence.Wpf.Tests
         {
             window.Content = null;
             window.Close();
-            Drain(window.Dispatcher);
-        }
-
-        internal static void Drain(Dispatcher? dispatcher)
-        {
-            WpfTestSta.DrainDispatcher(dispatcher);
+            WpfTestSta.DrainDispatcher(window.Dispatcher);
         }
 
         internal static T? FindByName<T>(DependencyObject? root, string name)
             where T : FrameworkElement
         {
-            foreach (T item in FindVisualChildren<T>(root))
-            {
-                if (string.Equals(item.Name, name, StringComparison.Ordinal))
-                {
-                    return item;
-                }
-            }
-
-            return null;
+            return FindVisualChildren<T>(root).FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.Ordinal));
         }
 
         // Logical+visual descendant search with cycle guarding. Forwards to the canonical
@@ -117,17 +106,17 @@ namespace Fluence.Wpf.Tests
 
         internal static string GetRepositoryFilePath(params string[] relativeSegments)
         {
-            string root = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\.."));
+            string root = Path.GetFullPath(Path.Join(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\.."));
             string[] pathParts = new string[relativeSegments.Length + 1];
             pathParts[0] = root;
             Array.Copy(relativeSegments, 0, pathParts, 1, relativeSegments.Length);
-            return Path.Combine(pathParts);
+            return Path.Join(pathParts);
         }
 
-        internal static string ReadRepositoryFile(params string[] relativeSegments)
+        internal static Task<string> ReadRepositoryFileAsync(params string[] relativeSegments)
         {
             string path = GetRepositoryFilePath(relativeSegments);
-            return File.ReadAllText(path);
+            return File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
         }
 
         private static void ResetApplication(Application application)
@@ -138,7 +127,7 @@ namespace Fluence.Wpf.Tests
                 window.Close();
             }
 
-            Drain(Dispatcher.CurrentDispatcher);
+            WpfTestSta.DrainDispatcher(Dispatcher.CurrentDispatcher);
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             application.Resources.MergedDictionaries.Clear();

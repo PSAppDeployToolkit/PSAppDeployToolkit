@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -41,11 +43,11 @@ namespace Fluence.Wpf.Tests
     public partial class ControlTests
     {
         [Fact]
-        public void SelectionControls_OffStateBackgrounds_UseWinUiAltFillRoles()
+        public Task SelectionControls_OffStateBackgrounds_UseWinUiAltFillRolesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
                 Controls.CheckBox checkBox = new() { Content = "Check" };
@@ -67,7 +69,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
@@ -109,11 +111,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ProgressBar_TrackBackground_UsesWinUiStrongStrokeRole()
+        public Task ProgressBar_TrackBackground_UsesWinUiStrongStrokeRoleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
                 Controls.ProgressBar progressBar = new()
@@ -132,7 +134,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = progressBar.ApplyTemplate();
 
                     Border track = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(progressBar, "PART_Track"));
@@ -146,11 +148,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ScrollBar_RailBackground_UsesWinUiTrackFillRole()
+        public Task ScrollBar_RailBackground_UsesWinUiTrackFillRoleAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
                 ScrollBar scrollBar = new()
@@ -174,7 +176,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = scrollBar.ApplyTemplate();
 
                     Border trackBackground = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(scrollBar, "TrackBackground"));
@@ -188,11 +190,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DemoSampleControl_Chrome_UsesWinUiGalleryBackgroundRoles()
+        public Task DemoSampleControl_Chrome_UsesWinUiGalleryBackgroundRolesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
                 MergeDemoSharedStyles(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
@@ -215,7 +217,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     Border sampleCard = Assert.IsType<Border>(sample.FindName("SampleCard"));
@@ -235,7 +237,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal("Source code", sourceExpander.Header);
 
                     sourceExpander.IsExpanded = true;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     RichTextBox sourceViewer = Assert.IsAssignableFrom<RichTextBox>(FindVisualChildByName<RichTextBox>(sourceExpander, "SourceTextViewer"));
@@ -251,11 +253,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DemoSharedResources_DoNotShadowNativeFluenceSurfaceRoles()
+        public Task DemoSharedResources_DoNotShadowNativeFluenceSurfaceRolesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
                 MergeDemoSharedStyles(application);
 
@@ -270,11 +272,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DemoSharedResources_NativeBrushesResolveInLightAndHighContrast()
+        public Task DemoSharedResources_NativeBrushesResolveInLightAndHighContrastAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
                 MergeDemoSharedStyles(application);
 
@@ -292,11 +294,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void BackgroundParityBrushes_ResolveAcrossThemesAndDeterministicAccent()
+        public Task BackgroundParityBrushes_ResolveAcrossThemesAndDeterministicAccentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
                 MergeDemoSharedStyles(application);
 
@@ -370,7 +372,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void PowerShellDemoScripts_FollowCanonicalBootstrap()
         {
-            string scriptsRoot = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell");
+            string scriptsRoot = Path.Join(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell");
             string[] scriptNames =
             [
                 "01-HelloWorld.ps1",
@@ -388,7 +390,7 @@ namespace Fluence.Wpf.Tests
 
             foreach (string scriptName in scriptNames)
             {
-                string path = Path.Combine(scriptsRoot, scriptName);
+                string path = Path.Join(scriptsRoot, scriptName);
                 if (!File.Exists(path))
                 {
                     violations.Add(scriptName + " is missing.");
@@ -418,12 +420,9 @@ namespace Fluence.Wpf.Tests
             }
 
             // The retired scripts must be gone, and no new script should reference their names.
-            foreach (string retired in retiredScriptNames)
+            foreach (string retired in retiredScriptNames.Where(retired => File.Exists(Path.Join(scriptsRoot, retired))))
             {
-                if (File.Exists(Path.Combine(scriptsRoot, retired)))
-                {
-                    violations.Add(retired + " should have been removed.");
-                }
+                violations.Add(retired + " should have been removed.");
             }
 
             Assert.Empty(violations);
@@ -432,7 +431,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void PowerShellDemoXaml_UsesCurrentFluenceWindowProperties()
         {
-            string path = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "MainWindow.xaml");
+            string path = Path.Join(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "MainWindow.xaml");
             string source = File.ReadAllText(path);
 
             Assert.False(ContainsOrdinal(source, "WindowCorners"),
@@ -451,8 +450,8 @@ namespace Fluence.Wpf.Tests
             string repoRoot = FindRepoRoot();
             string[] roots =
             [
-                Path.Combine(repoRoot, "Fluence.Wpf", "Themes", "Controls"),
-                Path.Combine(repoRoot, "Fluence.Wpf.Demo"),
+                Path.Join(repoRoot, "Fluence.Wpf", "Themes", "Controls"),
+                Path.Join(repoRoot, "Fluence.Wpf.Demo"),
             ];
             List<string> violations = [];
 
@@ -536,30 +535,7 @@ namespace Fluence.Wpf.Tests
 
         private static bool IsLiteralBackgroundValue(string value)
         {
-            if (value.Length is 0)
-            {
-                return false;
-            }
-
-            if (value[0] == '#')
-            {
-                return true;
-            }
-
-            if (value[0] == '{')
-            {
-                return false;
-            }
-
-            foreach (char character in value)
-            {
-                if (!char.IsLetter(character))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return value.Length is not 0 && (value[0] == '#' || (value[0] != '{' && value.All(char.IsLetter)));
         }
 
         private static void AssertBrushColor(Brush? actualBrush, string resourceKey)
@@ -588,7 +564,7 @@ namespace Fluence.Wpf.Tests
             ];
         }
 
-        private static void MergeDemoSharedStyles(Application? application)
+        private static void MergeDemoSharedStyles(Application application)
         {
             ResourceDictionary demoShared = new()
             {
@@ -622,15 +598,7 @@ namespace Fluence.Wpf.Tests
                 "#FF00E8",
             ];
 
-            foreach (string accentSwatch in accentSwatches)
-            {
-                if (string.Equals(accentSwatch, value, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return accentSwatches.Any(accentSwitch => string.Equals(accentSwitch, value, StringComparison.Ordinal));
         }
 
         private static string GetRepoRelativePath(string path)
@@ -653,7 +621,7 @@ namespace Fluence.Wpf.Tests
             DirectoryInfo? directory = new(AppContext.BaseDirectory);
             while (directory is not null)
             {
-                if (File.Exists(Path.Combine(directory.FullName, "Fluence.Wpf.sln")))
+                if (File.Exists(Path.Join(directory.FullName, "Fluence.Wpf.sln")))
                 {
                     return directory.FullName;
                 }

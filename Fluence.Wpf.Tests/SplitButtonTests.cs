@@ -27,13 +27,12 @@
  */
 
 using System;
-using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Fluence.Wpf.Controls;
 using Xunit;
 
@@ -41,33 +40,7 @@ namespace Fluence.Wpf.Tests
 {
     public class SplitButtonTests
     {
-        private static void RunOnSta(Action action)
-        {
-            Exception? capturedException = null;
-            WpfTestSta.Dispatcher?.Invoke(new Action(delegate
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    capturedException = exception;
-                }
-            }));
-
-            if (capturedException is not null)
-            {
-                ExceptionDispatchInfo.Capture(capturedException).Throw();
-            }
-        }
-
-        private static void Drain(Dispatcher dispatcher)
-        {
-            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle, default);
-        }
-
-        private static void MergeGeneric(Application? application)
+        private static void MergeGeneric(Application application)
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
@@ -82,9 +55,9 @@ namespace Fluence.Wpf.Tests
         #region Defaults and DPs
 
         [Fact]
-        public void Defaults_AreWinUiCanon()
+        public Task Defaults_AreWinUiCanonAsync()
         {
-            RunOnSta(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 SplitButton button = new();
 
@@ -99,9 +72,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void IsFlyoutOpen_IsReadOnlyDp()
+        public Task IsFlyoutOpen_IsReadOnlyDpAsync()
         {
-            RunOnSta(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 // Direct SetValue on the public IsFlyoutOpenProperty must fail: only the
                 // internal PropertyKey may mutate it. Guard against accidental promotion
@@ -127,11 +100,11 @@ namespace Fluence.Wpf.Tests
         #region Template parts
 
         [Fact]
-        public void Template_ExposesPrimarySecondaryAndPopupParts()
+        public Task Template_ExposesPrimarySecondaryAndPopupPartsAsync()
         {
-            RunOnSta(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = WpfTestSta.EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
 
                 Window window = new();
@@ -147,7 +120,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
                     System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
@@ -176,11 +149,11 @@ namespace Fluence.Wpf.Tests
         #region Primary click
 
         [Fact]
-        public void PrimaryButtonClick_RaisesSplitButtonClick()
+        public Task PrimaryButtonClick_RaisesSplitButtonClickAsync()
         {
-            RunOnSta(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? application = WpfTestSta.EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
 
                 Window window = new();
@@ -198,7 +171,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
                     System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
@@ -210,7 +183,7 @@ namespace Fluence.Wpf.Tests
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(primary);
                     IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
                     invoke.Invoke();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal(1, clickCount);
                 }
@@ -222,11 +195,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void PrimaryButtonClick_ExecutesCommand()
+        public Task PrimaryButtonClick_ExecutesCommandAsync()
         {
-            RunOnSta(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? application = WpfTestSta.EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
 
                 Window window = new();
@@ -246,7 +219,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
                     System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
@@ -254,7 +227,7 @@ namespace Fluence.Wpf.Tests
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(primary);
                     IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
                     invoke.Invoke();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal(1, executed);
                 }
@@ -270,11 +243,11 @@ namespace Fluence.Wpf.Tests
         #region Flyout open / close
 
         [Fact]
-        public void SecondaryButtonChecked_OpensPopupAndFlipsIsFlyoutOpen()
+        public Task SecondaryButtonChecked_OpensPopupAndFlipsIsFlyoutOpenAsync()
         {
-            RunOnSta(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = WpfTestSta.EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
 
                 Window window = new();
@@ -291,7 +264,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
                     System.Windows.Controls.Primitives.ToggleButton? secondary = splitButton.Template.FindName("PART_SecondaryButton", splitButton)
@@ -305,7 +278,7 @@ namespace Fluence.Wpf.Tests
                     Assert.False(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");
 
                     secondary.IsChecked = true;
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.True(popup.IsOpen,
                         "Toggling PART_SecondaryButton on must open PART_Popup.");
@@ -313,7 +286,7 @@ namespace Fluence.Wpf.Tests
                         "IsFlyoutOpen must flip true when the secondary toggle is checked.");
 
                     secondary.IsChecked = false;
-                    Drain(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.False(popup.IsOpen,
                         "Toggling PART_SecondaryButton off must close PART_Popup.");
@@ -332,9 +305,9 @@ namespace Fluence.Wpf.Tests
         #region Automation
 
         [Fact]
-        public void AutomationPeer_IsSplitButton_WithInvokeAndExpandCollapse()
+        public Task AutomationPeer_IsSplitButton_WithInvokeAndExpandCollapseAsync()
         {
-            RunOnSta(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 SplitButton splitButton = new();
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(splitButton);

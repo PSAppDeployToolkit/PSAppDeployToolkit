@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 namespace Fluence.Wpf.Markup
@@ -201,15 +202,7 @@ namespace Fluence.Wpf.Markup
         /// <param name="themeKey">The theme name to look up.</param>
         private ResourceDictionary? FindTable(string themeKey)
         {
-            foreach (ThemeResourceDictionary table in ThemeDictionaries)
-            {
-                if (string.Equals(table.ThemeKey, themeKey, StringComparison.Ordinal))
-                {
-                    return table;
-                }
-            }
-
-            return null;
+            return ThemeDictionaries.FirstOrDefault(table => string.Equals(table.ThemeKey, themeKey, StringComparison.Ordinal));
         }
 
         /// <summary>

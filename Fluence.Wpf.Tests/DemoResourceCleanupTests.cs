@@ -29,6 +29,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using Xunit;
 
@@ -37,9 +38,9 @@ namespace Fluence.Wpf.Tests
     public sealed class DemoResourceCleanupTests
     {
         [Fact]
-        public void DesignTimeResourceDictionaries_Load()
+        public Task DesignTimeResourceDictionaries_LoadAsync()
         {
-            DemoTestHost.RunOnSta(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 ResourceDictionary library = new()
                 {
@@ -58,9 +59,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DemoThemeStartup_AppendsDemoStylesAfterFluenceDictionaries()
+        public Task DemoThemeStartup_AppendsDemoStylesAfterFluenceDictionariesAsync()
         {
-            DemoTestHost.RunOnSta(static delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 Application application = WpfTestSta.EnsureApplication() ?? throw new InvalidOperationException("WPF application was not created.");
                 try

@@ -27,29 +27,36 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    public class AccentColorManagerTests
+    public class AccentColorManagerTests : IAsyncLifetime
     {
-        public AccentColorManagerTests()
+        public ValueTask InitializeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return new ValueTask(WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 Application.Current.Resources.MergedDictionaries.Clear();
-            });
+            }));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            GC.SuppressFinalize(this);
+            return default;
         }
 
         [Fact]
-        public void ApplySystemAccent_PopulatesRamp()
+        public Task ApplySystemAccent_PopulatesRampAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
@@ -69,9 +76,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ApplyCustomAccent_SetsCorrectBase()
+        public Task ApplyCustomAccent_SetsCorrectBaseAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -89,9 +96,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ApplyApplicationAccent_RaisesAccentColorChangedOnce()
+        public Task ApplyApplicationAccent_RaisesAccentColorChangedOnceAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -116,9 +123,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ApplyCustomAccent_RaisesAccentColorChangedOnce()
+        public Task ApplyCustomAccent_RaisesAccentColorChangedOnceAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -143,9 +150,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ApplyCustomAccent_PerThemeSeeds_FollowResolvedTheme()
+        public Task ApplyCustomAccent_PerThemeSeeds_FollowResolvedThemeAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Color lightSeed = Color.FromRgb(0x0F, 0x6C, 0xBD);
                 Color darkSeed = Color.FromRgb(0x47, 0x9E, 0xF5);
@@ -166,9 +173,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ApplyCustomAccent_PerThemeSeeds_RaisesAccentColorChangedOnce()
+        public Task ApplyCustomAccent_PerThemeSeeds_RaisesAccentColorChangedOnceAsync()
         {
-            WpfTestSta.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -194,9 +201,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ThemeChange_UpdatesAdaptiveAccents()
+        public Task ThemeChange_UpdatesAdaptiveAccentsAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Color customColor = Color.FromRgb(0x00, 0x78, 0xD4);
                 ApplicationAccentColorManager.ApplyCustomAccent(customColor);

@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Theming;
@@ -60,9 +61,9 @@ namespace Fluence.Wpf.Tests.Theming
         [Theory]
         [InlineData(ApplicationTheme.Light)]
         [InlineData(ApplicationTheme.Dark)]
-        public void ColorMap_Build_ContainsAccentFillColorDefault(ApplicationTheme theme)
+        public Task ColorMap_Build_ContainsAccentFillColorDefaultAsync(ApplicationTheme theme)
         {
-            WpfTestSta.Dispatcher.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -76,9 +77,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// ColorMap.Build must emit the SystemAccentColor raw-ramp keys.
         /// </summary>
         [Fact]
-        public void ColorMap_Build_Light_ContainsRawRampKeys()
+        public Task ColorMap_Build_Light_ContainsRawRampKeysAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -94,9 +95,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// ColorMap.Build must emit TitleBarActiveColor.
         /// </summary>
         [Fact]
-        public void ColorMap_Build_Light_ContainsTitleBarActiveColor()
+        public Task ColorMap_Build_Light_ContainsTitleBarActiveColorAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -111,9 +112,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// The test verifies the HC build produces a result and contains SystemAccentColor.
         /// </summary>
         [Fact]
-        public void ColorMap_Build_HighContrast_ContainsSystemAccentColor()
+        public Task ColorMap_Build_HighContrast_ContainsSystemAccentColorAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -132,9 +133,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// BrushFactory.Build must produce a frozen SolidColorBrush for each color key.
         /// </summary>
         [Fact]
-        public void BrushFactory_Build_ProducesFrozenBrushForColorKey()
+        public Task BrushFactory_Build_ProducesFrozenBrushForColorKeyAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Dictionary<string, Color> colors = new(StringComparer.Ordinal)
@@ -156,9 +157,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// BrushFactory.Build must emit both the Color token and the Brush twin for semi-transparent colors.
         /// </summary>
         [Fact]
-        public void BrushFactory_Build_PreservesAlphaChannel()
+        public Task BrushFactory_Build_PreservesAlphaChannelAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Color semiTransparent = Color.FromArgb(0x80, 0xFF, 0x00, 0x00);
@@ -184,9 +185,9 @@ namespace Fluence.Wpf.Tests.Theming
         [InlineData(ApplicationTheme.Light, 10)]
         [InlineData(ApplicationTheme.Dark, 10)]
         [InlineData(ApplicationTheme.HighContrast, 5)]
-        public void BaseColorTables_Load_ReturnsColors(ApplicationTheme theme, int minimumCount)
+        public Task BaseColorTables_Load_ReturnsColorsAsync(ApplicationTheme theme, int minimumCount)
         {
-            WpfTestSta.Dispatcher.Invoke(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Dictionary<string, Color> m = BaseColorTables.Load(theme);
@@ -206,9 +207,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// to avoid leaking into other fixtures.
         /// </summary>
         [Fact]
-        public void FluenceThemeEngine_Apply_PublishesResourcesAndSetsState()
+        public async Task FluenceThemeEngine_Apply_PublishesResourcesAndSetsStateAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 app.Resources.MergedDictionaries.Clear();
@@ -225,26 +226,26 @@ namespace Fluence.Wpf.Tests.Theming
 
                 // Verify at least one color key is present in the published dictionary
                 object accentFill = Assert.IsAssignableFrom<object>(app.Resources.MergedDictionaries[0]["AccentFillColorDefault"]);
-            });
+            }).ConfigureAwait(true);
 
             // Tear down after the smoke test so other fixtures see a clean state
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application.Current.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 FluenceThemeEngine.ResetForTesting();
                 Helpers.AcrylicNoiseHelper.ResetForTesting();
-            });
+            }).ConfigureAwait(true);
         }
 
         /// <summary>
         /// FluenceThemeEngine.Apply called twice must replace slot [0] rather than inserting a second entry.
         /// </summary>
         [Fact]
-        public void FluenceThemeEngine_Apply_ReplacesComputedSlotOnSecondCall()
+        public async Task FluenceThemeEngine_Apply_ReplacesComputedSlotOnSecondCallAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 app.Resources.MergedDictionaries.Clear();
@@ -264,17 +265,17 @@ namespace Fluence.Wpf.Tests.Theming
                 Assert.Equal(countAfterFirst, countAfterSecond);
                 Assert.NotSame(slotZeroFirst, slotZeroSecond);
                 Assert.Equal(ApplicationTheme.Dark, FluenceThemeEngine.ResolvedTheme);
-            });
+            }).ConfigureAwait(true);
 
             // Tear down
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application.Current.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 FluenceThemeEngine.ResetForTesting();
                 Helpers.AcrylicNoiseHelper.ResetForTesting();
-            });
+            }).ConfigureAwait(true);
         }
 
         /// <summary>
@@ -288,9 +289,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// the Apply call and restored immediately afterward, leaving the shared instance untouched.
         /// </summary>
         [Fact]
-        public void FluenceThemeEngine_Apply_DoesNotRaisePublished_WhenApplicationIsNull()
+        public async Task FluenceThemeEngine_Apply_DoesNotRaisePublished_WhenApplicationIsNullAsync()
         {
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 FieldInfo appInstanceField = typeof(Application).GetField("_appInstance", BindingFlags.Static | BindingFlags.NonPublic)
@@ -318,15 +319,15 @@ namespace Fluence.Wpf.Tests.Theming
                 Assert.Equal(0, raised);
                 Assert.NotNull(Application.Current);
                 Assert.Same(app, Application.Current);
-            });
+            }).ConfigureAwait(true);
 
             // Tear down
-            WpfTestSta.Dispatcher.Invoke(static () =>
+            await WpfTestSta.RunOnStaAsync(static () =>
             {
                 FluenceThemeEngine.ResetForTesting();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
-            });
+            }).ConfigureAwait(true);
         }
     }
 }

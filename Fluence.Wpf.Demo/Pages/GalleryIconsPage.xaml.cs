@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -222,49 +223,17 @@ namespace Fluence.Wpf.Demo.Pages
             }
 
             string[] terms = searchText.Split(SearchTermSeparators, StringSplitOptions.RemoveEmptyEntries);
-            List<IconCatalogItem> matches = [];
-            foreach (IconCatalogItem icon in icons)
-            {
-                if (MatchesAllTerms(icon, terms))
-                {
-                    matches.Add(icon);
-                }
-            }
-
-            return matches;
+            return [.. icons.Where(icon => MatchesAllTerms(icon, terms))];
         }
 
         private static bool MatchesAllTerms(IconCatalogItem icon, string[] terms)
         {
-            foreach (string term in terms)
-            {
-                if (!MatchesTerm(icon, term))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return terms.All(term => MatchesTerm(icon, term));
         }
 
         private static bool MatchesTerm(IconCatalogItem icon, string term)
         {
-            if (ContainsIgnoreCase(icon.Name, term)
-                || ContainsIgnoreCase(icon.Code, term)
-                || ContainsIgnoreCase(icon.DisplayCode, term))
-            {
-                return true;
-            }
-
-            foreach (string tag in icon.Tags)
-            {
-                if (ContainsIgnoreCase(tag, term))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ContainsIgnoreCase(icon.Name, term) || ContainsIgnoreCase(icon.Code, term) || ContainsIgnoreCase(icon.DisplayCode, term) || icon.Tags.Any(tag => ContainsIgnoreCase(tag, term));
         }
 
         private static bool ContainsIgnoreCase(string text, string term)
@@ -312,20 +281,9 @@ namespace Fluence.Wpf.Demo.Pages
                 throw new InvalidOperationException("Segoe Fluent Icons is required to render the icons catalog.");
             }
 
-            List<int> codes = [];
-            foreach (int character in glyphTypeface.CharacterToGlyphMap.Keys)
-            {
-                if (character is >= 0xE000 and <= 0xF8FF)
-                {
-                    codes.Add(character);
-                }
-            }
-
-            codes.Sort();
-
             List<IconCatalogItem> namedIcons = new(knownNames.Count);
             List<IconCatalogItem> unnamedIcons = [];
-            foreach (int code in codes)
+            foreach (int code in glyphTypeface.CharacterToGlyphMap.Keys.Where(character => character is >= 0xE000 and <= 0xF8FF).Order())
             {
                 string codeText = code.ToString("X4", CultureInfo.InvariantCulture);
                 string glyph = char.ConvertFromUtf32(code);

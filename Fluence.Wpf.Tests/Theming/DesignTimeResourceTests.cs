@@ -29,6 +29,7 @@
 using Xunit;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -45,26 +46,26 @@ namespace Fluence.Wpf.Tests.Theming
         /// <summary>
         /// Drift guard. Regenerates each snapshot in memory and asserts it matches the committed
         /// file (newline-normalized). Any new or changed Color/brush key in the engine fails this
-        /// until the files are regenerated via <see cref="RegenerateDesignTimeResources"/>.
+        /// until the files are regenerated via <see cref="RegenerateDesignTimeResourcesAsync"/>.
         /// </summary>
         [Fact]
-        public void DesignTimeResources_AreCurrent()
+        public Task DesignTimeResources_AreCurrentAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 _ = WpfTestSta.EnsureApplication();
-                AssertCurrent(ApplicationTheme.Light);
-                AssertCurrent(ApplicationTheme.Dark);
+                await AssertCurrentAsync(ApplicationTheme.Light).ConfigureAwait(true);
+                await AssertCurrentAsync(ApplicationTheme.Dark).ConfigureAwait(true);
             });
         }
 
-        private static void AssertCurrent(ApplicationTheme theme)
+        private static async Task AssertCurrentAsync(ApplicationTheme theme)
         {
             string path = DesignTimeResourceWriter.PathFor(theme);
             Assert.True(File.Exists(path), string.Format("Committed design-time file is missing: {0}", path));
 
             string expected = Normalize(DesignTimeResourceWriter.Generate(theme));
-            string actual = Normalize(File.ReadAllText(path));
+            string actual = Normalize(await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken).ConfigureAwait(true));
 
             Assert.Equal(expected, actual, StringComparer.Ordinal);
         }
@@ -81,9 +82,9 @@ namespace Fluence.Wpf.Tests.Theming
         /// string-equal to the generator.
         /// </summary>
         [Fact]
-        public void DesignTimeResources_Load_RepresentativeKeysResolve()
+        public Task DesignTimeResources_Load_RepresentativeKeysResolveAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AssertLoads("DesignTime.Light.xaml");
@@ -115,13 +116,13 @@ namespace Fluence.Wpf.Tests.Theming
         /// </summary>
         [SlopwatchSuppress("SW001", "Maintainer-only file generator that rewrites committed DesignTime.{Light,Dark}.xaml; must not run in CI. DesignTimeResources_AreCurrent is the CI guard.")]
         [Fact(Explicit = true)] // Maintainer-only: writes the committed DesignTime.{Light,Dark}.xaml files. Run manually after an intentional engine change.
-        public void RegenerateDesignTimeResources()
+        public Task RegenerateDesignTimeResourcesAsync()
         {
-            WpfTestSta.Invoke(static () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 _ = WpfTestSta.EnsureApplication();
-                DesignTimeResourceWriter.WriteToDisk(ApplicationTheme.Light);
-                DesignTimeResourceWriter.WriteToDisk(ApplicationTheme.Dark);
+                await DesignTimeResourceWriter.WriteToDiskAsync(ApplicationTheme.Light).ConfigureAwait(true);
+                await DesignTimeResourceWriter.WriteToDiskAsync(ApplicationTheme.Dark).ConfigureAwait(true);
 
                 Assert.True(File.Exists(DesignTimeResourceWriter.PathFor(ApplicationTheme.Light)),
                     "DesignTime.Light.xaml should exist after regeneration.");

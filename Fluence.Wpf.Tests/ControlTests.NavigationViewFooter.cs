@@ -27,6 +27,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
@@ -43,7 +44,7 @@ namespace Fluence.Wpf.Tests
             footer = new NavigationViewItem
             {
                 Content = "Settings",
-                Icon = new FontIcon { Glyph = "", IconFontSize = 16 },
+                Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 16 },
             };
             NavigationView nav = new()
             {
@@ -52,18 +53,18 @@ namespace Fluence.Wpf.Tests
                 PaneDisplayMode = mode,
                 IsPaneOpen = isPaneOpen,
             };
-            _ = nav.Items.Add(new NavigationViewItem { Content = "Home", Icon = new FontIcon { Glyph = "" } });
-            _ = nav.Items.Add(new NavigationViewItem { Content = "Docs", Icon = new FontIcon { Glyph = "" } });
+            _ = nav.Items.Add(new NavigationViewItem { Content = "Home", Icon = new FontIcon { Glyph = "\uE80F" } });
+            _ = nav.Items.Add(new NavigationViewItem { Content = "Docs", Icon = new FontIcon { Glyph = "\uE8A5" } });
             nav.FooterMenuItems.Add(footer);
             return nav;
         }
 
         [Fact]
-        public void NavigationView_FooterItem_ResolvesOwningNavigationView()
+        public Task NavigationView_FooterItem_ResolvesOwningNavigationViewAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -71,7 +72,7 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     // The fix that lets footer-hosted items invoke: an item resolves its owning
@@ -90,11 +91,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_FooterItem_Invoke_SelectsAndClearsMainSelection()
+        public Task NavigationView_FooterItem_Invoke_SelectsAndClearsMainSelectionAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -103,14 +104,14 @@ namespace Fluence.Wpf.Tests
                     nav.SelectedIndex = 0;
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     List<NavigationViewItem> invoked = [];
                     nav.ItemInvoked += (_, e) => invoked.Add(e.InvokedItemContainer);
 
                     nav.SelectFooterMenuItem(footer);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Same(footer, nav.SelectedFooterItem);
                     Assert.True(footer.IsSelected, "The invoked footer item should be marked selected.");
@@ -130,11 +131,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_MainSelection_ClearsFooterSelection()
+        public Task NavigationView_MainSelection_ClearsFooterSelectionAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -142,15 +143,15 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     nav.SelectFooterMenuItem(footer);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Same(footer, nav.SelectedFooterItem);
 
                     nav.SelectedIndex = 1;
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Null(nav.SelectedFooterItem);
                     Assert.False(footer.IsSelected, "The footer item should be deselected when a main item is selected.");
@@ -167,11 +168,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_FooterSelectionIndicator_BecomesVisibleOnFooterSelection()
+        public Task NavigationView_FooterSelectionIndicator_BecomesVisibleOnFooterSelectionAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -179,16 +180,16 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     FrameworkElement footerIndicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetFooterSelectionIndicatorForTesting());
                     Assert.Equal(0.0, footerIndicator!.Opacity, 0.01);
 
                     nav.SelectFooterMenuItem(footer);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.True(footerIndicator.Opacity >= 0.9, "Selecting a footer item should reveal the footer selection indicator.");
                 }
@@ -204,20 +205,20 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_FooterItem_StretchesToPaneWidth_InLeftOpen()
+        public Task NavigationView_FooterItem_StretchesToPaneWidth_InLeftOpenAsync()
         {
-            RunOnStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
                     window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     // Settle until the footer item has stretched to the asserted pane width.
-                    _ = WaitUntil(window.Dispatcher, 2000, () => { window.UpdateLayout(); return footer.ActualWidth > 200.0; });
+                    _ = await WaitUntilAsync(window.Dispatcher, 2000, () => { window.UpdateLayout(); return footer.ActualWidth > 200.0; }).ConfigureAwait(true);
                     window.UpdateLayout();
 
                     // The footer item lives in a stretching StackPanel, so its hover/selection surface
@@ -236,19 +237,19 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_FooterItem_IconCentered_InLeftCompactClosed()
+        public Task NavigationView_FooterItem_IconCentered_InLeftCompactClosedAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
                     window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.LeftCompact, isPaneOpen: false);
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
-                    WaitForAnimationAndDrain(window.Dispatcher, 300);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    await WaitForAnimationAndDrainAsync(window.Dispatcher, 300).ConfigureAwait(true);
                     window.UpdateLayout();
 
                     ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer, "IconPresenter"));
@@ -268,11 +269,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void NavigationView_Automation_GetSelection_ReportsFooterSelection()
+        public Task NavigationView_Automation_GetSelection_ReportsFooterSelectionAsync()
         {
-            RunOnStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
@@ -280,14 +281,14 @@ namespace Fluence.Wpf.Tests
                     NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
                     ISelectionProvider selectionProvider = (NavigationViewAutomationPeer)new(nav);
                     Assert.Empty(selectionProvider.GetSelection());
 
                     nav.SelectFooterMenuItem(footer);
-                    DrainDispatcher(window.Dispatcher);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     _ = Assert.Single(selectionProvider.GetSelection());
                 }

@@ -28,7 +28,7 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
 using Fluence.Wpf.Controls;
 using Xunit;
@@ -37,45 +37,19 @@ namespace Fluence.Wpf.Tests
 {
     public class ComboBoxTests
     {
-        private static void RunOnFreshStaThread(Action action)
-        {
-            Exception? capturedException = null;
-            WpfTestSta.Dispatcher?.Invoke(new Action(delegate
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    capturedException = exception;
-                }
-            }));
-
-            if (capturedException is not null)
-            {
-                ExceptionDispatchInfo.Capture(capturedException).Throw();
-            }
-        }
-
-        private static Application? EnsureApplication()
-        {
-            return WpfTestSta.EnsureApplication();
-        }
-
-        private static ResourceDictionary? MergeTheme(Application? application)
+        private static ResourceDictionary? MergeTheme(Application application)
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
+            application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
-            return dictionaries?.Count > 0 ? dictionaries[^1] : null;
+            Collection<ResourceDictionary>? dictionaries = application.Resources.MergedDictionaries;
+            return dictionaries.Count > 0 ? dictionaries[^1] : null;
         }
 
-        private static void RunWithComboBox(Action<ComboBox> testBody)
+        private static Task RunWithComboBoxAsync(Action<ComboBox> testBody)
         {
-            RunOnFreshStaThread(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 ComboBox comboBox = new();
                 testBody(comboBox);
@@ -85,9 +59,9 @@ namespace Fluence.Wpf.Tests
         #region Dropdown placement
 
         [Fact]
-        public void IsDropDownOpenedUpward_DefaultIsFalse()
+        public Task IsDropDownOpenedUpward_DefaultIsFalseAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 Assert.False(cb.IsDropDownOpenedUpward,
                     "IsDropDownOpenedUpward should default to false.");
@@ -95,15 +69,15 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void DropdownCornerRadius_DefaultIs8()
+        public Task DropdownCornerRadius_DefaultIs8Async()
         {
-            RunWithComboBox(static cb => Assert.Equal(new CornerRadius(8), cb.DropdownCornerRadius));
+            return RunWithComboBoxAsync(static cb => Assert.Equal(new CornerRadius(8), cb.DropdownCornerRadius));
         }
 
         [Fact]
-        public void IsDropDownOpenedUpward_FalseWhenDropDownNotOpen()
+        public Task IsDropDownOpenedUpward_FalseWhenDropDownNotOpenAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 _ = cb.Items.Add("A");
                 _ = cb.Items.Add("B");
@@ -122,7 +96,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void ComboBoxXaml_HoverUsesSubtleFillBrush()
         {
-            string xamlPath = System.IO.Path.Combine(
+            string xamlPath = System.IO.Path.Join(
                 AppDomain.CurrentDomain.BaseDirectory,
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\ComboBox.xaml");
 
@@ -157,7 +131,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void ComboBoxXaml_NoiseOverlay_IsNamed()
         {
-            string xamlPath = System.IO.Path.Combine(
+            string xamlPath = System.IO.Path.Join(
                 AppDomain.CurrentDomain.BaseDirectory,
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\ComboBox.xaml");
 
@@ -178,7 +152,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void ComboBoxXaml_UpwardTrigger_SetsNoiseOverlayCornerRadius()
         {
-            string xamlPath = System.IO.Path.Combine(
+            string xamlPath = System.IO.Path.Join(
                 AppDomain.CurrentDomain.BaseDirectory,
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\ComboBox.xaml");
 
@@ -203,11 +177,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ComboBox_Template_ExposesDropdownBorderAndNoiseOverlay()
+        public Task ComboBox_Template_ExposesDropdownBorderAndNoiseOverlayAsync()
         {
-            RunOnFreshStaThread(static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
-                Application? application = EnsureApplication();
+                Application application = WpfTestSta.EnsureApplication();
                 _ = MergeTheme(application);
 
                 Window window = new();
@@ -221,7 +195,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    WpfTestSta.Dispatcher?.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Background, default);
+                    await WpfTestSta.Dispatcher.InvokeAsync(static () => { }, priority: System.Windows.Threading.DispatcherPriority.Background, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
                     window.UpdateLayout();
                     _ = comboBox.ApplyTemplate();
 
@@ -250,9 +224,9 @@ namespace Fluence.Wpf.Tests
         #region Auto-select first item
 
         [Fact]
-        public void FirstItem_AutoSelectedWhenNoSelectionProvided()
+        public Task FirstItem_AutoSelectedWhenNoSelectionProvidedAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 _ = cb.Items.Add("Alpha");
                 _ = cb.Items.Add("Beta");
@@ -265,9 +239,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void ExplicitSelectedIndex_MinusOne_IsRespected()
+        public Task ExplicitSelectedIndex_MinusOne_IsRespectedAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 cb.SelectedIndex = -1;
 
@@ -280,9 +254,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSelect_WorksAfterDynamicItemAdd()
+        public Task AutoSelect_WorksAfterDynamicItemAddAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 Assert.Equal(-1, cb.SelectedIndex);
 
@@ -295,9 +269,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void AutoSelect_DoesNotOverrideExplicitSelection()
+        public Task AutoSelect_DoesNotOverrideExplicitSelectionAsync()
         {
-            RunWithComboBox(static cb =>
+            return RunWithComboBoxAsync(static cb =>
             {
                 _ = cb.Items.Add("Alpha");
                 _ = cb.Items.Add("Beta");

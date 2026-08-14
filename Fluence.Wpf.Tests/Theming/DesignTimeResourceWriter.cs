@@ -31,9 +31,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Theming;
+using Xunit;
 
 namespace Fluence.Wpf.Tests.Theming
 {
@@ -45,8 +47,8 @@ namespace Fluence.Wpf.Tests.Theming
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The on-disk generator (<c>RegenerateDesignTimeResources</c>) and the CI drift guard
-    /// (<c>DesignTimeResources_AreCurrent</c>) share this one type, so the committed file and the
+    /// The on-disk generator (<c>RegenerateDesignTimeResourcesAsync</c>) and the CI drift guard
+    /// (<c>DesignTimeResources_AreCurrentAsync</c>) share this one type, so the committed file and the
     /// in-memory comparison are produced identically.
     /// </para>
     /// <para>
@@ -149,10 +151,10 @@ namespace Fluence.Wpf.Tests.Theming
         /// Writes the canonical XAML for <paramref name="theme"/> to its source path as UTF-8 with BOM.
         /// </summary>
         /// <param name="theme">The theme to write to disk.</param>
-        internal static void WriteToDisk(ApplicationTheme theme)
+        internal static async Task WriteToDiskAsync(ApplicationTheme theme)
         {
             string content = Generate(theme);
-            File.WriteAllText(PathFor(theme), content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            await File.WriteAllTextAsync(PathFor(theme), content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), TestContext.Current.CancellationToken).ConfigureAwait(true);
         }
 
         /// <summary>
@@ -162,7 +164,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// <returns>The path of the generated XAML file for the specified theme.</returns>
         internal static string PathFor(ApplicationTheme theme)
         {
-            return Path.Combine(RepoRoot(), "Fluence.Wpf", "Properties", "DesignTime." + theme + ".xaml");
+            return Path.Join(RepoRoot(), "Fluence.Wpf", "Properties", "DesignTime." + theme + ".xaml");
         }
 
         // Live-OS SystemColors aliases: their snapshot value depends on the host machine's OS theme
@@ -232,7 +234,7 @@ namespace Fluence.Wpf.Tests.Theming
             DirectoryInfo? directory = new(AppContext.BaseDirectory);
             while (directory is not null)
             {
-                if (File.Exists(Path.Combine(directory.FullName, "Fluence.Wpf.sln")))
+                if (File.Exists(Path.Join(directory.FullName, "Fluence.Wpf.sln")))
                 {
                     return directory.FullName;
                 }
