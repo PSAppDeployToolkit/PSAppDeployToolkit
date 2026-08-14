@@ -575,8 +575,7 @@ namespace Fluence.Wpf.Tests
 
                     Assert.Equal(42.0, window.TitleBarHeight, 0.01);
 
-                    NavigationViewItem? firstItem = nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null;
-                    Assert.NotNull(firstItem);
+                    NavigationViewItem firstItem = Assert.IsType<NavigationViewItem>(nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null);
                     double? itemY = GetVisualY(firstItem, window);
                     Assert.True(itemY >= window.TitleBarHeight - 0.5,
                         "The first navigation item should be below the extended title bar. itemY=" + itemY.Value.ToString(format: null, CultureInfo.InvariantCulture) + ", titleBarHeight=" + window.TitleBarHeight.ToString(CultureInfo.InvariantCulture));

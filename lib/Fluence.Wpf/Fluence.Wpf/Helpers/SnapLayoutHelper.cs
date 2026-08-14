@@ -56,8 +56,8 @@ namespace Fluence.Wpf.Helpers
         /// </returns>
         internal static bool IsSnapLayoutEnabled()
         {
-            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.ExplorerAdvancedRegistryPath);
-            return key?.GetValue(NativeConstants.EnableSnapAssistFlyout) is not int value || value is not 0;
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryConstants.ExplorerAdvancedRegistryPath);
+            return key?.GetValue(RegistryConstants.EnableSnapAssistFlyout) is not int value || value is not 0;
         }
     }
 }

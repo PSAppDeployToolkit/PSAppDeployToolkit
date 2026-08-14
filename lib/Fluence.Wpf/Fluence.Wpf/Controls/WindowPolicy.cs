@@ -31,6 +31,8 @@ using Fluence.Wpf.Native;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
+using Windows.Win32;
+using Windows.Win32.Graphics.Dwm;
 
 namespace Fluence.Wpf.Controls
 {
@@ -167,7 +169,7 @@ namespace Fluence.Wpf.Controls
         ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with
         ///       accent borders, the COLORREF derived from <paramref name="accentColor"/> is
         ///       emitted. Otherwise
-        ///       <see cref="NativeConstants.DWMWA_COLOR_DEFAULT"/> is used, which tells DWM to
+        ///       DWMWA_COLOR_DEFAULT is used, which tells DWM to
         ///       restore its own border.
         ///     </description>
         ///   </item>
@@ -199,7 +201,7 @@ namespace Fluence.Wpf.Controls
                 ? "CardStrokeColorDefaultSolidBrush"
                 : "SystemAccentColorBrush";
 
-            int dwmBorderColor = NativeConstants.DWMWA_COLOR_DEFAULT;
+            uint dwmBorderColor = PInvoke.DWMWA_COLOR_DEFAULT;
             if (capabilities.SupportsBorderColor && isActive && isAccentBorderEnabled)
             {
                 dwmBorderColor = NativeMethods.ColorToColorRef(accentColor);
@@ -272,8 +274,8 @@ namespace Fluence.Wpf.Controls
         ///   </item>
         ///   <item>
         ///     <c>None</c> effective backdrop gets a solid fallback background and
-        ///     <see cref="NativeConstants.DWMWA_COLOR_DEFAULT"/> for the caption. On 22H2+ the plan
-        ///     emits <see cref="NativeConstants.DWMSBT_NONE"/> to explicitly clear any previous Mica
+        ///     DWMWA_COLOR_DEFAULT for the caption. On 22H2+ the plan
+        ///     emits DWMSBT_NONE to explicitly clear any previous Mica
         ///     or Acrylic; on Windows 10 no <c>DWMWA_SYSTEMBACKDROP_TYPE</c> write is attempted.
         ///   </item>
         ///   <item>
@@ -306,15 +308,15 @@ namespace Fluence.Wpf.Controls
             // None path: solid background, default caption color, explicit DWMSBT_NONE on 22H2+.
             if (effectiveBackdrop is BackdropType.None)
             {
-                int? clearedSystemBackdrop = capabilities.SupportsSystemBackdropType
-                    ? NativeConstants.DWMSBT_NONE
+                DWM_SYSTEMBACKDROP_TYPE? clearedSystemBackdrop = capabilities.SupportsSystemBackdropType
+                    ? DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE
                     : null;
 
                 return new BackdropPlan(
                     BackdropType.None,
                     useTransparentBackground: false,
                     fallbackBackgroundColor,
-                    NativeConstants.DWMWA_COLOR_DEFAULT,
+                    PInvoke.DWMWA_COLOR_DEFAULT,
                     clearedSystemBackdrop,
                     useLegacyMicaEffect: false,
                     isDark);
@@ -329,7 +331,7 @@ namespace Fluence.Wpf.Controls
                     BackdropType.Mica,
                     useTransparentBackground: true,
                     Colors.Transparent,
-                    NativeConstants.DWMWA_COLOR_NONE,
+                    PInvoke.DWMWA_COLOR_NONE,
                     systemBackdropType: null,
                     useLegacyMicaEffect: true,
                     isDark);
@@ -340,7 +342,7 @@ namespace Fluence.Wpf.Controls
                 effectiveBackdrop,
                 useTransparentBackground: true,
                 Colors.Transparent,
-                NativeConstants.DWMWA_COLOR_NONE,
+                PInvoke.DWMWA_COLOR_NONE,
                 MapSystemBackdropType(effectiveBackdrop),
                 useLegacyMicaEffect: false,
                 isDark);
@@ -352,20 +354,20 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <remarks>
         /// <see cref="CornerPreference.Default"/> and <see cref="CornerPreference.Round"/> both
-        /// map to <see cref="NativeConstants.DWMWCP_ROUND"/> because <c>Default</c> in the
+        /// map to DWMWCP_ROUND because <c>Default</c> in the
         /// Fluence library means "the library default," which is rounded on Windows 11.
         /// </remarks>
         /// <param name="preference">The requested corner style.</param>
         /// <returns>The <c>DWMWCP_*</c> constant to write via
         /// <c>DWMWA_WINDOW_CORNER_PREFERENCE</c>.</returns>
-        internal static int GetCornerPreference(CornerPreference preference)
+        internal static DWM_WINDOW_CORNER_PREFERENCE GetCornerPreference(CornerPreference preference)
         {
             return preference switch
             {
-                CornerPreference.DoNotRound => NativeConstants.DWMWCP_DONOTROUND,
-                CornerPreference.RoundSmall => NativeConstants.DWMWCP_ROUNDSMALL,
-                CornerPreference.Default or CornerPreference.Round => NativeConstants.DWMWCP_ROUND,
-                _ => NativeConstants.DWMWCP_ROUND,
+                CornerPreference.DoNotRound => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND,
+                CornerPreference.RoundSmall => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUNDSMALL,
+                CornerPreference.Default or CornerPreference.Round => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
+                _ => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
             };
         }
 
@@ -376,14 +378,14 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="backdropType">The effective backdrop type after capability resolution.</param>
         /// <returns>The <c>DWMSBT_*</c> constant for the system backdrop.</returns>
-        private static int MapSystemBackdropType(BackdropType backdropType)
+        private static DWM_SYSTEMBACKDROP_TYPE MapSystemBackdropType(BackdropType backdropType)
         {
             return backdropType switch
             {
-                BackdropType.Acrylic => NativeConstants.DWMSBT_TRANSIENTWINDOW,
-                BackdropType.Tabbed => NativeConstants.DWMSBT_TABBEDWINDOW,
+                BackdropType.Acrylic => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TRANSIENTWINDOW,
+                BackdropType.Tabbed => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW,
                 BackdropType.Mica or BackdropType.Auto or BackdropType.None or _ =>
-                    NativeConstants.DWMSBT_MAINWINDOW,
+                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW,
             };
         }
     }

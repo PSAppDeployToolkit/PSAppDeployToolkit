@@ -335,7 +335,7 @@ namespace Fluence.Wpf.Controls
             // Derive from DisplayName: take first character of up to two words.
             string[] parts = (DisplayName ?? string.Empty).Trim().Split(InitialsSeparators, StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 1
-                ? (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpperInvariant()
+                ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
                 : parts.Length is 1
                 ? parts[0][0].ToString().ToUpperInvariant()
                 : null;

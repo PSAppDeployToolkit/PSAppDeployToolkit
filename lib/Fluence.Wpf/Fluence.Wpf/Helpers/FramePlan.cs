@@ -43,7 +43,7 @@ namespace Fluence.Wpf.Helpers
     internal sealed class FramePlan(
         Thickness templateBorderThickness,
         string templateBorderBrushResourceKey,
-        int dwmBorderColor)
+        uint dwmBorderColor)
     {
         /// <summary>
         /// Gets the thickness of the WPF-template border element. <c>Thickness(2)</c> when the
@@ -62,12 +62,12 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets the COLORREF (BGR, 24-bit) value to write to <c>DWMWA_BORDER_COLOR</c>, or
-        /// <see cref="Native.NativeConstants.DWMWA_COLOR_DEFAULT"/> when the OS
+        /// DWMWA_COLOR_DEFAULT when the OS
         /// does not expose that attribute (Windows 10) or the window is inactive. A caller
         /// must check <see cref="WindowCapabilities.SupportsBorderColor"/> before writing this
         /// value to the DWM attribute; the plan records the sentinel regardless so the caller
         /// does not need a separate null check.
         /// </summary>
-        internal int DwmBorderColor { get; } = dwmBorderColor;
+        internal uint DwmBorderColor { get; } = dwmBorderColor;
     }
 }

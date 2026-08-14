@@ -27,6 +27,9 @@
  */
 
 using Fluence.Wpf.Native;
+using Windows.Win32;
+using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.UI.WindowsAndMessaging;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
@@ -40,50 +43,28 @@ namespace Fluence.Wpf.Tests
     public sealed class NativeMethodsTests
     {
         [Fact]
-        public void DwmCloakAttributeIds_MatchDwmApiContract()
-        {
-            // DWMWA_CLOAK (set) and DWMWA_CLOAKED (read-only) are fixed DWMWINDOWATTRIBUTE ordinals.
-            // A typo here silently disables the first-paint flash guard, so pin the wire values.
-            // Read via reflection so the assertion is a runtime comparison (analyzers reject
-            // comparing two compile-time constants).
-            int cloak = ReadConstant("DWMWA_CLOAK");
-            int cloaked = ReadConstant("DWMWA_CLOAKED");
-            Assert.Equal(13, cloak);
-            Assert.Equal(14, cloaked);
-        }
-
-        private static int ReadConstant(string name)
-        {
-            System.Reflection.FieldInfo? field = typeof(NativeConstants).GetField(
-                name,
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            Assert.NotNull(field);
-            object value = Assert.IsAssignableFrom<object>(field.GetValue(null));
-            return (int)value;
-        }
-
-        [Fact]
         public void GetImmersiveDarkModeAttribute_Returns20_For18362AndLater()
         {
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(18362));
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(19041));
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22000));
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22631));
+            Assert.Equal(DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(18362));
+            Assert.Equal(DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(19041));
+            Assert.Equal(DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22000));
+            Assert.Equal(DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22631));
         }
 
         [Fact]
         public void GetImmersiveDarkModeAttribute_Returns19_ForPre18362Builds()
         {
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(17763));
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18000));
-            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18361));
+            const DWMWINDOWATTRIBUTE DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = (DWMWINDOWATTRIBUTE)19;
+            Assert.Equal(DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(17763));
+            Assert.Equal(DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18000));
+            Assert.Equal(DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18361));
         }
 
         [Fact]
         public void ApplyAutoHideTaskbarShift_Left_MovesRightAndShrinksWidth()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
-            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_LEFT);
+            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, PInvoke.ABE_LEFT);
 
             Assert.Equal(102, mmi.ptMaxPosition.X);
             Assert.Equal(200, mmi.ptMaxPosition.Y);
@@ -95,7 +76,7 @@ namespace Fluence.Wpf.Tests
         public void ApplyAutoHideTaskbarShift_Top_MovesDownAndShrinksHeight()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
-            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_TOP);
+            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, PInvoke.ABE_TOP);
 
             Assert.Equal(100, mmi.ptMaxPosition.X);
             Assert.Equal(202, mmi.ptMaxPosition.Y);
@@ -107,7 +88,7 @@ namespace Fluence.Wpf.Tests
         public void ApplyAutoHideTaskbarShift_Right_ShrinksWidthOnly()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
-            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_RIGHT);
+            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, PInvoke.ABE_RIGHT);
 
             Assert.Equal(100, mmi.ptMaxPosition.X);
             Assert.Equal(200, mmi.ptMaxPosition.Y);
@@ -119,7 +100,7 @@ namespace Fluence.Wpf.Tests
         public void ApplyAutoHideTaskbarShift_Bottom_ShrinksHeightOnly()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
-            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_BOTTOM);
+            NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, PInvoke.ABE_BOTTOM);
 
             Assert.Equal(100, mmi.ptMaxPosition.X);
             Assert.Equal(200, mmi.ptMaxPosition.Y);
