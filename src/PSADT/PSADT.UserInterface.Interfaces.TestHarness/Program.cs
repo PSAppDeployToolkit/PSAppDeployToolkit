@@ -187,7 +187,6 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
 
-
                 CustomDialogOptions customDialog3Options = new(new Hashtable
                 {
                     { "DialogExpiryDuration", dialogExpiryDuration },
