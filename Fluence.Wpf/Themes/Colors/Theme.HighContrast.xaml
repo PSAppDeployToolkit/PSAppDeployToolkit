@@ -59,6 +59,8 @@
     <!--  Control Stroke Colors  -->
     <Color x:Key="ControlStrokeColorDefault">#FF808080</Color>
     <Color x:Key="ControlStrokeColorSecondary">#FF808080</Color>
+    <!--  Seam between the NavigationView pane/header and the content presenter. The brush is overridden to the system control-dark color in SpecialBrushes.AddHighContrastBrushes, matching the other control strokes.  -->
+    <Color x:Key="NavigationViewContentSeparator">#FF808080</Color>
     <Color x:Key="ControlStrokeColorTertiary">#FFFFFFFF</Color>
     <Color x:Key="ControlStrokeColorOnAccentDefault">#FF000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentSecondary">#FF000000</Color>

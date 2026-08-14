@@ -44,10 +44,13 @@ namespace Fluence.Wpf.Theming
         private static readonly Color DefaultAccent = Color.FromRgb(0x00, 0x78, 0xD4);
 
         /// <summary>
-        /// Returns an <see cref="AccentPalette"/> for the given <paramref name="intent"/>.
+        /// Returns an <see cref="AccentPalette"/> for the given <paramref name="intent"/>. A
+        /// custom intent with per-theme seeds picks the seed matching
+        /// <paramref name="resolvedTheme"/>.
         /// </summary>
         /// <param name="intent">The <see cref="AccentIntent"/> to resolve.</param>
-        internal static AccentPalette Resolve(AccentIntent intent)
+        /// <param name="resolvedTheme">The concrete theme resolved for the current apply.</param>
+        internal static AccentPalette Resolve(AccentIntent intent, ApplicationTheme resolvedTheme)
         {
             if (intent.IsSystem && RegistryHelper.TryGetAccentPalette(out Color[]? p) && p?.Length >= 7)
             {
@@ -56,7 +59,7 @@ namespace Fluence.Wpf.Theming
                 // the generated ramp rather than throwing IndexOutOfRangeException on the Apply hot path.
                 return new AccentPalette(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
             }
-            Color baseColor = intent.IsSystem ? GetDwmAccentOrDefault() : intent.Custom;
+            Color baseColor = intent.IsSystem ? GetDwmAccentOrDefault() : intent.CustomFor(resolvedTheme);
             return Generate(baseColor);
         }
 

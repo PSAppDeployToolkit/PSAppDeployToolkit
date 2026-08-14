@@ -26,11 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
-using WpfRepeatButton = System.Windows.Controls.Primitives.RepeatButton;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -43,7 +42,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 B16  TabView scroll buttons
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void TabView_PART_ScrollBackButton_ExistsInTemplate()
         {
             WpfTestSta.Invoke(static () =>
@@ -58,13 +57,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? btn = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollBackButton");
-                Assert.IsNotNull(btn, "PART_ScrollBackButton (RepeatButton) must exist in TabView template.");
+                System.Windows.Controls.Primitives.RepeatButton btn = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton"));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_PART_ScrollForwardButton_ExistsInTemplate()
         {
             WpfTestSta.Invoke(static () =>
@@ -79,13 +77,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? btn = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollForwardButton");
-                Assert.IsNotNull(btn, "PART_ScrollForwardButton (RepeatButton) must exist in TabView template.");
+                System.Windows.Controls.Primitives.RepeatButton btn = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton"));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_PART_TabContentScroller_ExistsInTemplate()
         {
             WpfTestSta.Invoke(static () =>
@@ -99,13 +96,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ScrollViewer? sv = FindVisualChildByName<ScrollViewer>(tv, "PART_TabContentScroller");
-                Assert.IsNotNull(sv, "PART_TabContentScroller (ScrollViewer) must exist in TabView template.");
+                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChildByName<ScrollViewer>(tv, "PART_TabContentScroller"));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_ScrollButtons_HiddenWhenNoTabOverflow()
         {
             WpfTestSta.Invoke(static () =>
@@ -121,17 +117,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? back = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollBackButton");
-                WpfRepeatButton? fwd = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollForwardButton");
-                Assert.IsNotNull(back, "PART_ScrollBackButton must be in template.");
-                Assert.IsNotNull(fwd, "PART_ScrollForwardButton must be in template.");
+                System.Windows.Controls.Primitives.RepeatButton back = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton"));
+                System.Windows.Controls.Primitives.RepeatButton fwd = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton"));
 
-                Assert.AreEqual(
-                    Visibility.Collapsed, back.Visibility,
-                    "ScrollBackButton must be Collapsed when tabs do not overflow.");
-                Assert.AreEqual(
-                    Visibility.Collapsed, fwd.Visibility,
-                    "ScrollForwardButton must be Collapsed when tabs do not overflow.");
+                Assert.Equal(
+                    Visibility.Collapsed, back.Visibility);
+                Assert.Equal(
+                    Visibility.Collapsed, fwd.Visibility);
                 w.Close();
             });
         }

@@ -55,10 +55,14 @@ namespace Fluence.Wpf.Theming
         // ThemeParityTests.CaptureResolved.
         private static bool _deterministicChromeForTesting;
 
-        /// <summary>Gets the most recently resolved <see cref="AccentPalette"/>.</summary>
+        /// <summary>
+        /// Gets the most recently resolved <see cref="AccentPalette"/>.
+        /// </summary>
         internal static AccentPalette CurrentPalette { get; private set; }
 
-        /// <summary>Gets the most recently resolved concrete theme (Light, Dark, or HighContrast).</summary>
+        /// <summary>
+        /// Gets the most recently resolved concrete theme (Light, Dark, or HighContrast).
+        /// </summary>
         internal static ApplicationTheme ResolvedTheme { get; private set; } = ApplicationTheme.Light;
 
         /// <summary>Gets the title-bar colors computed during the most recent <see cref="Apply"/> call.
@@ -88,13 +92,16 @@ namespace Fluence.Wpf.Theming
         internal static void Apply(ApplicationTheme request)
         {
             ApplicationTheme theme = ThemeResolver.Resolve(request);
-            AccentPalette palette = AccentResolver.Resolve(_intent);
+            AccentPalette palette = AccentResolver.Resolve(_intent, theme);
             ResolvedTheme = theme;
             CurrentPalette = palette;
 
             ResourceDictionary dict = BuildComputedDictionary(theme, palette);
-            Publish(dict);
-            Published?.Invoke(sender: null, EventArgs.Empty);
+            bool published = Publish(dict);
+            if (published)
+            {
+                Published?.Invoke(sender: null, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -124,7 +131,7 @@ namespace Fluence.Wpf.Theming
         /// <b>without</b> publishing into application resources and <b>without</b> reading
         /// <see cref="Application.Current"/>, the registry, or DWM. The default accent is forced
         /// through <see cref="AccentResolver.Resolve"/> with an
-        /// <see cref="AccentIntent.FromCustom"/> intent (the custom path runs the HSV ramp
+        /// <see cref="AccentIntent.FromCustom(Color)"/> intent (the custom path runs the HSV ramp
         /// generator directly and never touches the registry or <c>DwmGetColorizationParameters</c>),
         /// and the title-bar/window-border tokens use their machine-independent theme defaults
         /// (<c>deterministicChrome</c>). The result is therefore deterministic and headless-safe,
@@ -142,16 +149,22 @@ namespace Fluence.Wpf.Theming
         /// <param name="theme">The application theme to use.</param>
         internal static ResourceDictionary BuildStandalone(ApplicationTheme theme)
         {
-            AccentPalette palette = AccentResolver.Resolve(AccentIntent.FromCustom(Color.FromRgb(0x00, 0x78, 0xD4)));
+            AccentPalette palette = AccentResolver.Resolve(AccentIntent.FromCustom(Color.FromRgb(0x00, 0x78, 0xD4)), theme);
             Dictionary<string, Color> colors = ColorMap.Build(theme, palette, deterministicChrome: true);
             ResourceDictionary computed = BrushFactory.Build(colors);
             SpecialBrushes.Add(computed, colors, theme);
             return computed;
         }
 
-        private static void Publish(ResourceDictionary computed)
+        /// <summary>
+        /// Publishes <paramref name="computed"/> into application resources.
+        /// </summary>
+        /// <param name="computed">The computed dictionary to publish.</param>
+        /// <returns><see langword="true"/> if the dictionary was actually published; <see langword="false"/>
+        /// if <see cref="Application.Current"/> was null and the call was a no-op.</returns>
+        private static bool Publish(ResourceDictionary computed)
         {
-            if (Application.Current is null) { return; }
+            if (Application.Current is null) { return false; }
             Collection<ResourceDictionary> dicts = Application.Current.Resources.MergedDictionaries;
             if (!_initialized)
             {
@@ -170,6 +183,8 @@ namespace Fluence.Wpf.Theming
             {
                 dicts[0] = computed; // replace -> DynamicResource consumers re-resolve
             }
+
+            return true;
         }
 
         private static ResourceDictionary Load(string rel)
@@ -202,7 +217,9 @@ namespace Fluence.Wpf.Theming
             _deterministicChromeForTesting = enabled;
         }
 
-        /// <summary>Resets engine state for test isolation.</summary>
+        /// <summary>
+        /// Resets engine state for test isolation.
+        /// </summary>
         internal static void ResetForTesting()
         {
             _initialized = false;
@@ -213,7 +230,7 @@ namespace Fluence.Wpf.Theming
             // (and FluenceWindow's DWM border, which reads it on activate/deactivate) may be
             // observed between a reset and the next Apply; a default(AccentPalette) would surface
             // as #00000000, painting a transparent/black border. FromCustom avoids any registry read.
-            CurrentPalette = AccentResolver.Resolve(AccentIntent.FromCustom(Color.FromRgb(0x00, 0x78, 0xD4)));
+            CurrentPalette = AccentResolver.Resolve(AccentIntent.FromCustom(Color.FromRgb(0x00, 0x78, 0xD4)), ApplicationTheme.Light);
             CurrentTitleBarColors = default;
         }
     }

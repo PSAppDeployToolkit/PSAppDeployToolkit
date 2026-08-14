@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Controls;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 
@@ -46,6 +47,15 @@ namespace Fluence.Wpf.Automation
         }
 
         /// <inheritdoc />
+        protected override string GetNameCore()
+        {
+            string baseName = base.GetNameCore();
+            return !string.IsNullOrWhiteSpace(baseName)
+                ? baseName
+                : NumberBox.Header?.ToString() ?? string.Empty;
+        }
+
+        /// <inheritdoc />
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Spinner;
@@ -54,7 +64,7 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public override object GetPattern(PatternInterface patternInterface)
         {
-            return patternInterface != PatternInterface.RangeValue
+            return patternInterface is not PatternInterface.RangeValue
                 ? base.GetPattern(patternInterface)
                 : this;
         }
@@ -72,15 +82,36 @@ namespace Fluence.Wpf.Automation
         public virtual double SmallChange => NumberBox.SmallChange;
 
         /// <inheritdoc />
-        public virtual double LargeChange => NumberBox.SmallChange;
+        public virtual double LargeChange => NumberBox.LargeChange;
+
+        /// <summary>
+        /// Always <see langword="false"/>. <see cref="NumberBox"/> has no read-only mode;
+        /// disabled state is conveyed via <see cref="System.Windows.UIElement.IsEnabled"/>,
+        /// not <see cref="IRangeValueProvider.IsReadOnly"/>.
+        /// </summary>
+        public virtual bool IsReadOnly => false;
 
         /// <inheritdoc />
-        public virtual bool IsReadOnly => !NumberBox.IsEnabled;
-
-        /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void SetValue(double value)
         {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
+
             NumberBox.Value = value;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="RangeValuePatternIdentifiers.ValueProperty"/> property-changed event
+        /// so UI Automation clients (Narrator) observe the current value instead of a stale one.
+        /// </summary>
+        /// <param name="oldValue">The previous value.</param>
+        /// <param name="newValue">The new value.</param>
+        internal virtual void RaiseValueChanged(double oldValue, double newValue)
+        {
+            RaisePropertyChangedEvent(RangeValuePatternIdentifiers.ValueProperty, oldValue, newValue);
         }
 
         /// <summary>

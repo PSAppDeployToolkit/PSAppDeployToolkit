@@ -1,6 +1,6 @@
 ﻿---
 name: new-control
-description: Scaffold a new Fluence.Wpf custom control end to end against the AGENTS.md section 5 control authoring checklist. Use when adding a new control to the library. Produces the CLR type with dependency-property boilerplate, the Themes/Controls template wired into Generic.xaml, design-time and demo entries, an MSTest partial using the STA harness, and the docs/CHANGELOG updates.
+design-time and demo entries, an xUnit test partial using the STA harness, and the docs/CHANGELOG updates.
 disable-model-invocation: true
 ---
 

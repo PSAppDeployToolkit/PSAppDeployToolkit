@@ -26,21 +26,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class AdditionalControlsTests
     {
         private static void Drain(Dispatcher d)
         {
-            d.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+            d.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
         }
 
         private static Application? EnsureApp()
@@ -60,7 +59,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NumberBox_DefaultStyle_LoadsParts()
         {
             WpfTestSta.Invoke(static () =>
@@ -75,7 +74,7 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     Drain(window.Dispatcher);
                     _ = numberBox.ApplyTemplate();
-                    Assert.IsNotNull(numberBox.Template.FindName("PART_TextBox", numberBox));
+                    Assert.NotNull(numberBox.Template.FindName("PART_TextBox", numberBox));
                 }
                 finally
                 {
@@ -84,27 +83,27 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NumberBox_Value_Roundtrips()
         {
             WpfTestSta.Invoke(static () =>
             {
                 Controls.NumberBox box = new() { Value = 42.5 };
-                Assert.AreEqual(42.5, box.Value, 0.001);
+                Assert.Equal(42.5, box.Value, 0.001);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Expander_CornerRadius_Default()
         {
             WpfTestSta.Invoke(static () =>
             {
                 Controls.Expander ex = new();
-                Assert.AreEqual(new CornerRadius(4), ex.CornerRadius);
+                Assert.Equal(new CornerRadius(4), ex.CornerRadius);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Expander_Template_Applies()
         {
             WpfTestSta.Invoke(static () =>
@@ -119,7 +118,7 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     Drain(window.Dispatcher);
                     _ = ex.ApplyTemplate();
-                    Assert.IsNotNull(ex.Template);
+                    Assert.NotNull(ex.Template);
                 }
                 finally
                 {
@@ -128,7 +127,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DropDownButton_Template_HasFlyoutPresenterName()
         {
             WpfTestSta.Invoke(static () =>
@@ -143,7 +142,7 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     Drain(window.Dispatcher);
                     _ = btn.ApplyTemplate();
-                    Assert.IsNotNull(btn.Template.FindName("PART_Popup", btn));
+                    Assert.NotNull(btn.Template.FindName("PART_Popup", btn));
                 }
                 finally
                 {
@@ -152,7 +151,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DropDownButton_FlyoutPresenter_StretchesForLeftAlignedItems()
         {
             WpfTestSta.Invoke(static () =>
@@ -168,10 +167,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     _ = btn.ApplyTemplate();
 
-                    ContentPresenter? presenter = btn.Template.FindName("FlyoutContentPresenter", btn) as ContentPresenter;
-                    Assert.IsNotNull(presenter, "DropDownButton template must expose FlyoutContentPresenter.");
-                    Assert.AreEqual(HorizontalAlignment.Stretch, presenter.HorizontalAlignment,
-                        "Flyout presenter should stretch so left-aligned menu buttons fill the flyout width.");
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(btn.Template.FindName("FlyoutContentPresenter", btn));
+                    Assert.Equal(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
                 }
                 finally
                 {
@@ -180,7 +177,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SplitButton_FlyoutPresenter_StretchesForLeftAlignedItems()
         {
             WpfTestSta.Invoke(static () =>
@@ -196,10 +193,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     _ = btn.ApplyTemplate();
 
-                    ContentPresenter? presenter = btn.Template.FindName("FlyoutContentPresenter", btn) as ContentPresenter;
-                    Assert.IsNotNull(presenter, "SplitButton template must expose FlyoutContentPresenter.");
-                    Assert.AreEqual(HorizontalAlignment.Stretch, presenter.HorizontalAlignment,
-                        "Flyout presenter should stretch so left-aligned menu buttons fill the flyout width.");
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(btn.Template.FindName("FlyoutContentPresenter", btn));
+                    Assert.Equal(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
                 }
                 finally
                 {
@@ -208,17 +203,17 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_Value_Roundtrips()
         {
             WpfTestSta.Invoke(static () =>
             {
                 Controls.InfoBadge badge = new() { Value = 9 };
-                Assert.AreEqual(9, badge.Value);
+                Assert.Equal(9, badge.Value);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_Template_Applies()
         {
             WpfTestSta.Invoke(static () =>
@@ -233,7 +228,7 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     Drain(window.Dispatcher);
                     _ = badge.ApplyTemplate();
-                    Assert.IsNotNull(badge.Template);
+                    Assert.NotNull(badge.Template);
                 }
                 finally
                 {
@@ -242,7 +237,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ListBox_GetContainerForItemOverride_ReturnsFluentListBoxItem()
         {
             WpfTestSta.Invoke(static () =>
@@ -251,9 +246,9 @@ namespace Fluence.Wpf.Tests
                 MethodInfo? m = typeof(Controls.ListBox).GetMethod(
                     "GetContainerForItemOverride",
                     BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.IsNotNull(m);
+                Assert.NotNull(m);
                 object? container = m.Invoke(list, []);
-                Assert.IsInstanceOfType(container, typeof(Controls.ListBoxItem));
+                _ = Assert.IsAssignableFrom<Controls.ListBoxItem>(container);
             });
         }
     }

@@ -26,207 +26,229 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Demo.Pages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Fluence.Wpf.Demo.Pages;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void GalleryInputsPage_SliderSamplesIncludeHorizontalAndVerticalTicks()
         {
             RunDemoPageTest(static () => new GalleryInputsPage(), static window =>
             {
-                Controls.Slider? horizontal = FindVisualChildByName<Controls.Slider>(window, "HorizontalTickSlider");
-                Controls.Slider? vertical = FindVisualChildByName<Controls.Slider>(window, "VerticalTickSlider");
+                Controls.Slider horizontal = Assert.IsAssignableFrom<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "HorizontalTickSlider"));
+                Controls.Slider vertical = Assert.IsAssignableFrom<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "VerticalTickSlider"));
 
-                Assert.IsNotNull(horizontal, "Inputs page should include a named horizontal slider with tick marks.");
-                Assert.IsNotNull(vertical, "Inputs page should include a named vertical slider with tick marks.");
-                Assert.AreNotEqual(System.Windows.Controls.Primitives.TickPlacement.None, horizontal.TickPlacement);
-                Assert.AreNotEqual(System.Windows.Controls.Primitives.TickPlacement.None, vertical.TickPlacement);
-                Assert.IsTrue(horizontal.TickFrequency > 0);
-                Assert.IsTrue(vertical.TickFrequency > 0);
+                Assert.NotEqual(System.Windows.Controls.Primitives.TickPlacement.None, horizontal.TickPlacement);
+                Assert.NotEqual(System.Windows.Controls.Primitives.TickPlacement.None, vertical.TickPlacement);
+                Assert.True(horizontal.TickFrequency > 0);
+                Assert.True(vertical.TickFrequency > 0);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryButtonsPage_RepeatButtonIncrementsNearbyCountText()
         {
             RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.RepeatButton? button = FindVisualChildByName<Controls.RepeatButton>(window, "RepeatCounterButton");
-                TextBlock? count = FindVisualChildByName<TextBlock>(window, "RepeatButtonCountText");
+                Controls.RepeatButton button = Assert.IsAssignableFrom<Controls.RepeatButton>(FindVisualChildByName<Controls.RepeatButton>(window, "RepeatCounterButton"));
+                TextBlock count = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "RepeatButtonCountText"));
                 Controls.RepeatButton? accentRepeat = FindRepeatButtonByContent(window, "Accent repeat");
 
-                Assert.IsNotNull(button, "Buttons page should include a repeat button wired to a count label.");
-                Assert.IsNotNull(count, "Buttons page should include a nearby repeat count text block.");
-                Assert.IsNull(accentRepeat, "Buttons page should not include the extra Accent repeat sample.");
-                Assert.AreEqual("Clicks: 0", count.Text);
+                Assert.Null(accentRepeat);
+                Assert.Equal("Clicks: 0", count.Text, StringComparer.Ordinal);
 
                 button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                 button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                 DrainDispatcher(window.Dispatcher);
 
-                Assert.AreEqual("Clicks: 2", count.Text);
+                Assert.Equal("Clicks: 2", count.Text, StringComparer.Ordinal);
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void GalleryButtonsPage_ToggleButtonSampleUpdatesStateText()
+        {
+            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            {
+                Controls.ToggleButton wrapToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "WrapToggleButton"));
+                Controls.ToggleButton threeStateToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "ThreeStateToggleButton"));
+                TextBlock stateText = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleButtonStateText"));
+
+                Assert.True(threeStateToggle.IsThreeState, "The three-state sample should opt into IsThreeState.");
+                Assert.Equal("Wrap text: Off", stateText.Text, StringComparer.Ordinal);
+
+                wrapToggle.IsChecked = true;
+                DrainDispatcher(window.Dispatcher);
+                Assert.Equal("Wrap text: On", stateText.Text, StringComparer.Ordinal);
+
+                wrapToggle.IsChecked = false;
+                DrainDispatcher(window.Dispatcher);
+                Assert.Equal("Wrap text: Off", stateText.Text, StringComparer.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void GalleryButtonsPage_ToggleSplitButtonSampleTogglesStateText()
+        {
+            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            {
+                Controls.ToggleSplitButton listToggle = Assert.IsAssignableFrom<Controls.ToggleSplitButton>(FindVisualChildByName<Controls.ToggleSplitButton>(window, "ListToggleSplitButton"));
+                TextBlock stateText = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleSplitButtonStateText"));
+
+                Assert.Equal("List formatting: Off", stateText.Text, StringComparer.Ordinal);
+
+                Button primary = Assert.IsType<Button>(listToggle.Template?.FindName("PART_PrimaryButton", listToggle));
+
+                primary.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.True(listToggle.IsChecked, "Clicking the primary half should check the sample.");
+                Assert.Equal("List formatting: Bulleted list", stateText.Text, StringComparer.Ordinal);
+
+                primary.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.False(listToggle.IsChecked, "A second primary click should uncheck the sample.");
+                Assert.Equal("List formatting: Off", stateText.Text, StringComparer.Ordinal);
+            });
+        }
+
+        [Fact]
         public void GallerySelectionPage_CheckBoxSamplesMatchWinUIGalleryStates()
         {
             RunDemoPageTest(static () => new GallerySelectionPage(), static window =>
             {
-                Controls.CheckBox? twoState = FindVisualChildByName<Controls.CheckBox>(window, "TwoStateCheckBox");
-                Controls.CheckBox? threeState = FindVisualChildByName<Controls.CheckBox>(window, "ThreeStateCheckBox");
-                Controls.CheckBox? selectAll = FindVisualChildByName<Controls.CheckBox>(window, "SelectAllCheckBox");
-                Controls.CheckBox? optionOne = FindVisualChildByName<Controls.CheckBox>(window, "OptionOneCheckBox");
-                Controls.CheckBox? optionTwo = FindVisualChildByName<Controls.CheckBox>(window, "OptionTwoCheckBox");
-                Controls.CheckBox? optionThree = FindVisualChildByName<Controls.CheckBox>(window, "OptionThreeCheckBox");
+                Controls.CheckBox twoState = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "TwoStateCheckBox"));
+                Controls.CheckBox threeState = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "ThreeStateCheckBox"));
+                Controls.CheckBox selectAll = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "SelectAllCheckBox"));
+                Controls.CheckBox optionOne = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionOneCheckBox"));
+                Controls.CheckBox optionTwo = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionTwoCheckBox"));
+                Controls.CheckBox optionThree = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionThreeCheckBox"));
 
-                Assert.IsNotNull(twoState, "Selection page should include a two-state CheckBox example.");
-                Assert.IsFalse(twoState.IsThreeState);
-                Assert.IsNotNull(threeState, "Selection page should include a three-state CheckBox example.");
-                Assert.IsTrue(threeState.IsThreeState);
-                Assert.IsNotNull(selectAll, "Selection page should include a tri-state Select All CheckBox.");
-                Assert.IsNotNull(optionOne);
-                Assert.IsNotNull(optionTwo);
-                Assert.IsNotNull(optionThree);
+                Assert.False(twoState.IsThreeState);
+                Assert.True(threeState.IsThreeState);
 
                 selectAll.IsChecked = true;
                 DrainDispatcher(window.Dispatcher);
 
-                Assert.IsTrue(optionOne.IsChecked.GetValueOrDefault());
-                Assert.IsTrue(optionTwo.IsChecked.GetValueOrDefault());
-                Assert.IsTrue(optionThree.IsChecked.GetValueOrDefault());
+                Assert.True(optionOne.IsChecked.GetValueOrDefault());
+                Assert.True(optionTwo.IsChecked.GetValueOrDefault());
+                Assert.True(optionThree.IsChecked.GetValueOrDefault());
 
                 optionTwo.IsChecked = false;
                 DrainDispatcher(window.Dispatcher);
 
-                Assert.IsNull(selectAll.IsChecked,
-                    "Select All should become indeterminate when only some child options are checked.");
+                Assert.Null(selectAll.IsChecked);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GallerySelectionPage_RatingAndRequestedToggleSamplesArePresent()
         {
             RunDemoPageTest(static () => new GallerySelectionPage(), static window =>
             {
-                Controls.RatingControl? rating = FindVisualChildByName<Controls.RatingControl>(window, "RatingSample");
-                Controls.RatingControl? readOnlyRating = FindVisualChildByName<Controls.RatingControl>(window, "ReadOnlyRatingSample");
-                TextBlock? workHeader = FindVisualChildByName<TextBlock>(window, "WorkToggleHeaderText");
-                Controls.ToggleSwitch? workToggle = FindVisualChildByName<Controls.ToggleSwitch>(window, "WorkToggleSwitch");
-                TextBlock? workLabel = FindVisualChildByName<TextBlock>(window, "WorkToggleStateText");
-                Controls.ProgressRing? ring = FindVisualChildByName<Controls.ProgressRing>(window, "WorkToggleProgressRing");
+                Controls.RatingControl rating = Assert.IsAssignableFrom<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "RatingSample"));
+                Controls.RatingControl readOnlyRating = Assert.IsAssignableFrom<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "ReadOnlyRatingSample"));
+                TextBlock workHeader = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleHeaderText"));
+                Controls.ToggleSwitch workToggle = Assert.IsAssignableFrom<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "WorkToggleSwitch"));
+                TextBlock workLabel = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleStateText"));
+                Controls.ProgressRing ring = Assert.IsAssignableFrom<Controls.ProgressRing>(FindVisualChildByName<Controls.ProgressRing>(window, "WorkToggleProgressRing"));
 
-                Assert.IsNotNull(rating, "Selection page should include an editable RatingControl example.");
-                Assert.IsNotNull(readOnlyRating, "Selection page should include a read-only RatingControl example.");
-                Assert.AreEqual(1, CountVisualChildren<Controls.ToggleSwitch>(window),
-                    "Selection page ToggleSwitch section should contain only the work ToggleSwitch sample.");
-                Assert.IsNull(FindVisualChildByName<Controls.ToggleSwitch>(window, "SimpleToggleSwitch"),
-                    "Selection page should remove the first simple ToggleSwitch sample.");
-                Assert.IsNull(FindVisualChildByName<TextBlock>(window, "SimpleToggleStateText"),
-                    "Selection page should remove the first simple ToggleSwitch state label.");
-                Assert.IsNotNull(workHeader, "Selection page should include the Toggle work header text.");
-                Assert.AreEqual("Toggle work", workHeader.Text);
-                Assert.IsNotNull(workToggle, "Selection page should include the Toggle work ToggleSwitch.");
-                Assert.IsNotNull(workLabel, "Selection page should include the Toggle work state label.");
-                Assert.IsTrue(workToggle.IsChecked.GetValueOrDefault());
-                Assert.AreEqual("On", workLabel.Text);
-                Assert.IsNotNull(ring, "Selection page should include a ProgressRing bound to the Toggle work ToggleSwitch.");
-                Assert.IsTrue(ring.IsIndeterminate);
-                Assert.AreEqual(new Thickness(24, 0, 0, 0), ring.Margin);
+                Assert.Equal(1, CountVisualChildren<Controls.ToggleSwitch>(window));
+                Assert.Null(FindVisualChildByName<Controls.ToggleSwitch>(window, "SimpleToggleSwitch"));
+                Assert.Null(FindVisualChildByName<TextBlock>(window, "SimpleToggleStateText"));
+                Assert.Equal("Toggle work", workHeader.Text, StringComparer.Ordinal);
+                Assert.True(workToggle.IsChecked.GetValueOrDefault());
+                Assert.Equal("On", workLabel.Text, StringComparer.Ordinal);
+                Assert.True(ring.IsIndeterminate);
+                Assert.Equal(new Thickness(24, 0, 0, 0), ring.Margin);
 
                 workToggle.IsChecked = false;
                 DrainDispatcher(window.Dispatcher);
-                Assert.IsFalse(ring.IsActive);
+                Assert.False(ring.IsActive);
 
                 workToggle.IsChecked = true;
                 DrainDispatcher(window.Dispatcher);
-                Assert.IsTrue(ring.IsActive);
+                Assert.True(ring.IsActive);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryTreesPage_IncludesMultipleSelectionTreeView()
         {
             RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
-                Controls.TreeView? treeView = FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView");
+                Controls.TreeView treeView = Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"));
 
-                Assert.IsNotNull(treeView, "Trees page should include a TreeView with multi-select checkboxes.");
-                Assert.AreEqual(TreeViewSelectionMode.Multiple, treeView.SelectionMode);
+                Assert.Equal(TreeViewSelectionMode.Multiple, treeView.SelectionMode);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryLayoutPage_ExpanderStartsCollapsed()
         {
             RunDemoPageTest(static () => new GalleryLayoutPage(), static window =>
             {
-                Controls.Expander? expander = FindVisualChildByName<Controls.Expander>(window, "AdvancedOptionsExpander");
+                Controls.Expander expander = Assert.IsAssignableFrom<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "AdvancedOptionsExpander"));
 
-                Assert.IsNotNull(expander, "Layout page should expose the Advanced options Expander.");
-                Assert.IsFalse(expander.IsExpanded, "Layout page Expander sample should be collapsed by default.");
+                Assert.False(expander.IsExpanded, "Layout page Expander sample should be collapsed by default.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryDataPage_ListBoxSamplesExposeSelectionModes()
         {
             RunDemoPageTest(static () => new GalleryDataPage(), static window =>
             {
-                Controls.ListBox? singleSelect = FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox");
-                Controls.ListBox? multiSelect = FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox");
+                Controls.ListBox singleSelect = Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"));
+                Controls.ListBox multiSelect = Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"));
 
-                Assert.IsNotNull(singleSelect, "Data page should include a single-selection ListBox sample.");
-                Assert.IsNotNull(multiSelect, "Data page should include a multi-selection ListBox sample.");
-                Assert.AreEqual(SelectionMode.Single, singleSelect.SelectionMode,
-                    "The first ListBox sample should keep the default single selection mode.");
-                Assert.AreEqual(SelectionMode.Extended, multiSelect.SelectionMode,
-                    "The second ListBox sample should demonstrate extended multi-selection.");
-                Assert.IsTrue(singleSelect.Items.Count > 0, "Single-selection ListBox sample should contain items.");
-                Assert.IsTrue(multiSelect.SelectedItems.Count >= 2,
+                Assert.Equal(SelectionMode.Single, singleSelect.SelectionMode);
+                Assert.Equal(SelectionMode.Extended, multiSelect.SelectionMode);
+                Assert.True(singleSelect.Items.Count > 0, "Single-selection ListBox sample should contain items.");
+                Assert.True(multiSelect.SelectedItems.Count >= 2,
                     "Multi-selection ListBox sample should start with multiple items selected.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void GalleryDataAndTreeSamplesExposeThemedBorders()
         {
             RunDemoPageTest(static () => new GalleryDataPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SimpleListView"), "SimpleListView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "RichListView"), "RichListView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"), "SingleSelectListBox");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"), "MultiSelectListBox");
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SimpleListView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "RichListView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"));
             });
 
             RunDemoPageTest(static () => new GalleryDataBindingPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "BoundListView"), "BoundListView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView"), "SelectionModeListView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView"), "DataTemplateListView");
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "BoundListView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView"));
             });
 
             RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView"), "HierarchyTreeView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView"), "SelectionTreeView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"), "MultiSelectTreeView");
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView"), "ExpansionTreeView");
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"));
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView"));
             });
         }
 
-        private static void AssertControlHasThemedBorder(Control? control, string name)
+        private static void AssertControlHasThemedBorder(Control? control)
         {
-            Assert.IsNotNull(control, name + " should exist in the demo page.");
-            Assert.AreEqual(new Thickness(1), control.BorderThickness, name + " should expose a visible 1px border.");
-            Assert.IsNotNull(control.BorderBrush, name + " should use a themed BorderBrush.");
+            Assert.NotNull(control);
+            Assert.Equal(new Thickness(1), control.BorderThickness);
+            Assert.NotNull(control.BorderBrush);
         }
 
         private static int CountVisualChildren<T>(DependencyObject root) where T : DependencyObject

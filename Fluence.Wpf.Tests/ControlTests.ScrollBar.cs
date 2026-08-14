@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -54,8 +54,7 @@ namespace Fluence.Wpf.Tests
             string targetProperty,
             double expectedValue)
         {
-            Grid? root = FindVisualChildByName<Grid>(scrollBar, "Root");
-            Assert.IsNotNull(root, "Root Grid must be present in ScrollBar template.");
+            Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(scrollBar, "Root"));
 
             IList groups = VisualStateManager.GetVisualStateGroups(root);
             VisualState? state = null;
@@ -76,8 +75,8 @@ namespace Fluence.Wpf.Tests
                 }
             }
 
-            Assert.IsNotNull(state, "Visual state must exist: " + stateName);
-            Assert.IsNotNull(state.Storyboard, "Visual state must define a storyboard: " + stateName);
+            Assert.NotNull(state);
+            Assert.NotNull(state.Storyboard);
 
             foreach (Timeline timeline in state.Storyboard.Children)
             {
@@ -88,14 +87,7 @@ namespace Fluence.Wpf.Tests
                     continue;
                 }
 
-                Assert.AreEqual(expectedValue, animation.KeyFrames[0].Value, 0.01,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "State {0} must set {1}.{2} to {3}.",
-                        stateName,
-                        targetName,
-                        targetProperty,
-                        expectedValue));
+                Assert.Equal(expectedValue, animation.KeyFrames[0].Value, 0.01);
                 return;
             }
 
@@ -107,7 +99,7 @@ namespace Fluence.Wpf.Tests
                 targetProperty));
         }
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_ScrollViewerTemplate_ContainsBothScrollBarParts()
         {
             WpfTestSta.Invoke(static () =>
@@ -137,13 +129,9 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     sv.UpdateLayout();
 
-                    ScrollBar? vertBar = FindVisualChildByName<ScrollBar>(sv, "PART_VerticalScrollBar");
-                    ScrollBar? horizBar = FindVisualChildByName<ScrollBar>(sv, "PART_HorizontalScrollBar");
+                    ScrollBar vertBar = Assert.IsAssignableFrom<ScrollBar>(FindVisualChildByName<ScrollBar>(sv, "PART_VerticalScrollBar"));
+                    ScrollBar horizBar = Assert.IsAssignableFrom<ScrollBar>(FindVisualChildByName<ScrollBar>(sv, "PART_HorizontalScrollBar"));
 
-                    Assert.IsNotNull(vertBar,
-                        "PART_VerticalScrollBar must be present in the ScrollViewerStyle template.");
-                    Assert.IsNotNull(horizBar,
-                        "PART_HorizontalScrollBar must be present in the ScrollViewerStyle template.");
                 }
                 finally
                 {
@@ -156,7 +144,7 @@ namespace Fluence.Wpf.Tests
         // WI-5A.3 ScrollBar - VSM ScrollingIndicatorStates
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_VSM_MouseIndicator_ExpandsVerticalWidth()
         {
             WpfTestSta.Invoke(static () =>
@@ -188,7 +176,7 @@ namespace Fluence.Wpf.Tests
                     bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    Assert.IsTrue(stateApplied,
+                    Assert.True(stateApplied,
                         "GoToState('MouseIndicator') must return true - VSM group must be present.");
 
                     AssertScrollBarVisualStateDoubleKeyFrame(sb, "MouseIndicator", "Root", "Width", 8.0);
@@ -202,7 +190,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_VSM_NoIndicator_CollapsesVerticalWidth()
         {
             WpfTestSta.Invoke(static () =>
@@ -236,7 +224,7 @@ namespace Fluence.Wpf.Tests
                     bool stateApplied = VisualStateManager.GoToState(sb, "NoIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    Assert.IsTrue(stateApplied,
+                    Assert.True(stateApplied,
                         "GoToState('NoIndicator') must return true - VSM group must be present.");
 
                     AssertScrollBarVisualStateDoubleKeyFrame(sb, "NoIndicator", "Root", "Width", 6.0);
@@ -250,7 +238,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_VSM_MouseIndicator_ExpandsHorizontalHeight()
         {
             WpfTestSta.Invoke(static () =>
@@ -280,7 +268,7 @@ namespace Fluence.Wpf.Tests
                     bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    Assert.IsTrue(stateApplied,
+                    Assert.True(stateApplied,
                         "GoToState('MouseIndicator') on horizontal ScrollBar must return true.");
 
                     AssertScrollBarVisualStateDoubleKeyFrame(sb, "MouseIndicator", "Root", "Height", 8.0);
@@ -294,7 +282,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_DefaultLayout_ReservesExpandedSlotWithCompactIndicator()
         {
             WpfTestSta.Invoke(static () =>
@@ -320,23 +308,15 @@ namespace Fluence.Wpf.Tests
                     _ = sb.ApplyTemplate();
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    Grid? root = FindVisualChildByName<Grid>(sb, "Root");
-                    Assert.IsNotNull(root, "Root Grid must be present in ScrollBar template.");
-                    Assert.AreEqual(8.0, sb.ActualWidth, 0.5,
-                        "Vertical ScrollBar should reserve the 8px layout slot (thinned hover width).");
-                    Assert.AreEqual(6.0, root.Width, 0.5,
-                        "Vertical ScrollBar indicator should start at the compact 6px thumb width after the requested 2px reduction.");
-                    Assert.AreEqual(HorizontalAlignment.Right, root.HorizontalAlignment,
-                        "Compact vertical indicator should align to the outside edge of the reserved slot.");
+                    Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(sb, "Root"));
+                    Assert.Equal(8.0, sb.ActualWidth, 0.5);
+                    Assert.Equal(6.0, root.Width, 0.5);
+                    Assert.Equal(HorizontalAlignment.Right, root.HorizontalAlignment);
 
-                    RepeatButton? decreaseButton = FindVisualChildByName<RepeatButton>(sb, "DecreaseButton");
-                    RepeatButton? increaseButton = FindVisualChildByName<RepeatButton>(sb, "IncreaseButton");
-                    Assert.IsNotNull(decreaseButton, "Vertical ScrollBar must include the top line button for hover expansion.");
-                    Assert.IsNotNull(increaseButton, "Vertical ScrollBar must include the bottom line button for hover expansion.");
-                    Assert.AreEqual(0.0, decreaseButton.Opacity, 0.01,
-                        "Line buttons should be hidden until the ScrollBar enters the hover/MouseIndicator state.");
-                    Assert.AreEqual(0.0, increaseButton.Opacity, 0.01,
-                        "Line buttons should be hidden until the ScrollBar enters the hover/MouseIndicator state.");
+                    RepeatButton decreaseButton = Assert.IsAssignableFrom<RepeatButton>(FindVisualChildByName<RepeatButton>(sb, "DecreaseButton"));
+                    RepeatButton increaseButton = Assert.IsAssignableFrom<RepeatButton>(FindVisualChildByName<RepeatButton>(sb, "IncreaseButton"));
+                    Assert.Equal(0.0, decreaseButton.Opacity, 0.01);
+                    Assert.Equal(0.0, increaseButton.Opacity, 0.01);
                 }
                 finally
                 {
@@ -349,7 +329,7 @@ namespace Fluence.Wpf.Tests
         // WI-5A.3 ScrollBar - disabled state reduces opacity
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_Disabled_OpacityReducedOrElementDisabled()
         {
             WpfTestSta.Invoke(static () =>
@@ -380,7 +360,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
                     // IsEnabled=False trigger sets Opacity=0.45 on the ScrollBar root.
-                    Assert.IsTrue(!sb.IsEnabled || sb.Opacity < 1.0,
+                    Assert.True(!sb.IsEnabled || sb.Opacity < 1.0,
                         "Disabled ScrollBar must either be IsEnabled=false or have Opacity < 1.");
                 }
                 finally
@@ -394,7 +374,7 @@ namespace Fluence.Wpf.Tests
         // WI-5A.3 ScrollBar - theme cycle
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ScrollBar_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
             WpfTestSta.Invoke(static () =>
@@ -416,8 +396,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
-                        Assert.IsNotNull(app?.TryFindResource(key),
-                            string.Format("Resource '{0}' must resolve in ScrollBar theme cycle step: {1}", key, theme));
+                        Assert.NotNull(app?.TryFindResource(key));
                     }
                 }
             });

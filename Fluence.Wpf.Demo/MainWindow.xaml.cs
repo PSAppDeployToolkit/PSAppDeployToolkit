@@ -70,7 +70,7 @@ namespace Fluence.Wpf.Demo
         private bool _isNavigatingBack;
         private bool _isUpdatingExtendedTitleOverlap;
         private NavigationViewItem? _currentNavigationItem;
-        private Image? _titleBarIconView;
+        private System.Windows.Controls.Image? _titleBarIconView;
         private DependencyPropertyDescriptor? _extendsDpd;
         private DependencyPropertyDescriptor? _paneModeDpd;
         private DependencyPropertyDescriptor? _paneOpenDpd;
@@ -367,14 +367,14 @@ namespace Fluence.Wpf.Demo
 
         private void NavSearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Enter)
+            if (e.Key is not Key.Enter)
             {
                 return;
             }
 
             string query = (NavSearchBox?.Text) ?? string.Empty;
             query = query.Trim();
-            if (query.Length == 0)
+            if (query.Length is 0)
             {
                 return;
             }
@@ -430,11 +430,7 @@ namespace Fluence.Wpf.Demo
 
         private static bool ContainsOrdinalIgnoreCase(string value, string needle)
         {
-#if NET5_0_OR_GREATER
             return value.Contains(needle, StringComparison.OrdinalIgnoreCase);
-#else
-            return value.IndexOf(needle, StringComparison.OrdinalIgnoreCase) >= 0;
-#endif
         }
 
         private void ApplyNavSearchFilter()
@@ -445,7 +441,7 @@ namespace Fluence.Wpf.Demo
             }
 
             string query = (NavSearchBox.Text ?? string.Empty).Trim();
-            if (query.Length == 0)
+            if (query.Length is 0)
             {
                 foreach (object obj in DemoNav.Items)
                 {
@@ -491,11 +487,12 @@ namespace Fluence.Wpf.Demo
             }
 
             element.BeginAnimation(OpacityProperty, animation: null);
-            element.RenderTransform = new TranslateTransform(0.0, 20.0);
             element.Opacity = 0.0;
 
             CubicEase easing = new() { EasingMode = EasingMode.EaseOut };
-            DoubleAnimation opacityAnimation = new(0.0, 1.0, new Duration(TimeSpan.FromMilliseconds(160)))
+
+            // ControlFastAnimationDuration (167 ms) fade masking the page swap.
+            DoubleAnimation opacityAnimation = new(0.0, 1.0, new Duration(TimeSpan.FromMilliseconds(167)))
             {
                 EasingFunction = easing,
             };
@@ -505,20 +502,6 @@ namespace Fluence.Wpf.Demo
                 element.Opacity = 1.0;
             };
             element.BeginAnimation(OpacityProperty, opacityAnimation);
-
-            if (element.RenderTransform is TranslateTransform transform)
-            {
-                DoubleAnimation slideAnimation = new(20.0, 0.0, new Duration(TimeSpan.FromMilliseconds(167)))
-                {
-                    EasingFunction = easing,
-                };
-                slideAnimation.Completed += delegate
-                {
-                    transform.BeginAnimation(TranslateTransform.YProperty, animation: null);
-                    transform.Y = 0.0;
-                };
-                transform.BeginAnimation(TranslateTransform.YProperty, slideAnimation);
-            }
         }
 
         /// <summary>
@@ -645,11 +628,11 @@ namespace Fluence.Wpf.Demo
             ScheduleExtendedTitleOverlapCheck();
         }
 
-        private Image GetTitleBarIconView()
+        private System.Windows.Controls.Image GetTitleBarIconView()
         {
             if (_titleBarIconView is null)
             {
-                _titleBarIconView = new Image
+                _titleBarIconView = new System.Windows.Controls.Image
                 {
                     Width = 20,
                     Height = 20,
@@ -670,7 +653,7 @@ namespace Fluence.Wpf.Demo
 
         private void ShellTitleBar_BackRequested(object sender, EventArgs e)
         {
-            if (DemoNav is null || _navigationBackStack.Count == 0)
+            if (DemoNav is null || _navigationBackStack.Count is 0)
             {
                 UpdateBackNavigationState();
                 return;
@@ -731,8 +714,8 @@ namespace Fluence.Wpf.Demo
                 System.Windows.Controls.TextBlock? titleText = GetTitleBarTemplatePart<System.Windows.Controls.TextBlock>("PART_TitleText");
                 if (titleText is null
                     || NavSearchBox is null
-                    || titleText.Visibility != Visibility.Visible
-                    || NavSearchBox.Visibility != Visibility.Visible
+                    || titleText.Visibility is not Visibility.Visible
+                    || NavSearchBox.Visibility is not Visibility.Visible
                     || !titleText.IsVisible
                     || !NavSearchBox.IsVisible)
                 {
@@ -748,8 +731,7 @@ namespace Fluence.Wpf.Demo
                 // If the app icon itself already overlaps the search box there is no room for the
                 // title at all; clear it and bail early rather than attempting to constrain width.
                 ContentPresenter? titleIcon = GetTitleBarTemplatePart<ContentPresenter>("PART_IconPresenter");
-                if (titleIcon is not null
-                    && titleIcon.Visibility == Visibility.Visible
+                if (titleIcon?.Visibility is Visibility.Visible
                     && titleIcon.IsVisible
                     && TryGetVisualX(titleIcon, this, out double titleIconLeft)
                     && titleIconLeft + titleIcon.ActualWidth > searchLeft - 12.0)

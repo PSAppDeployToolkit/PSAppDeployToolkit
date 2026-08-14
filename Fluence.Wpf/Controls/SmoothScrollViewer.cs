@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -156,6 +157,15 @@ namespace Fluence.Wpf.Controls
 
         private void AnimateTo(DependencyProperty property, double to)
         {
+            // Motion disabled (OS "Show animations" off): release any in-flight tween and jump
+            // straight to the target offset; the DP change callback performs the actual scroll.
+            if (!MotionHelper.IsMotionEnabled)
+            {
+                BeginAnimation(property, animation: null);
+                SetCurrentValue(property, to);
+                return;
+            }
+
             DoubleAnimation animation = new()
             {
                 To = to,

@@ -26,12 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void RadioButton_OuterRing_UsesControlStrongStrokeBrush()
         {
             RunOnStaThread(static () =>
@@ -87,17 +87,13 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = radio.ApplyTemplate();
-                    Ellipse? outerEllipse = FindVisualChildByName<Ellipse>(radio, "OuterEllipse");
-                    Assert.IsNotNull(outerEllipse, "RadioButton template should contain OuterEllipse.");
+                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
 
-                    Brush? expected = radio.FindResource("ControlStrongStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expected, "ControlStrongStrokeColorDefaultBrush should be defined in the theme.");
-                    Assert.AreSame(expected, outerEllipse.Stroke,
-                        "Unchecked RadioButton ring must use ControlStrongStrokeColorDefaultBrush for WinUI 3 visibility parity.");
+                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDefaultBrush"));
+                    Assert.Same(expected, outerEllipse.Stroke);
 
                     Color strokeColor = ((SolidColorBrush)outerEllipse.Stroke).Color;
-                    Assert.AreEqual(0x72, strokeColor.A,
-                        "Light theme ControlStrongStrokeColorDefault alpha must be 0x72 (WinUI canonical value).");
+                    Assert.Equal(0x72, strokeColor.A);
                 }
                 finally
                 {
@@ -112,7 +108,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void RadioButton_OuterRing_SwitchesToDisabledStrokeWhenDisabled()
         {
             RunOnStaThread(static () =>
@@ -141,13 +137,10 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Ellipse? outerEllipse = FindVisualChildByName<Ellipse>(radio, "OuterEllipse");
-                    Assert.IsNotNull(outerEllipse);
+                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
 
-                    Brush? expected = radio.FindResource("ControlStrongStrokeColorDisabledBrush") as Brush;
-                    Assert.IsNotNull(expected, "ControlStrongStrokeColorDisabledBrush must exist in the theme.");
-                    Assert.AreSame(expected, outerEllipse.Stroke,
-                        "Disabled RadioButton ring must swap to ControlStrongStrokeColorDisabledBrush.");
+                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDisabledBrush"));
+                    Assert.Same(expected, outerEllipse.Stroke);
                 }
                 finally
                 {
@@ -162,7 +155,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CheckBox_CheckedGlyph_UsesIndeterminateDashStrokeWeight()
         {
             RunOnStaThread(static () =>
@@ -189,19 +182,17 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path? checkGlyph = FindVisualChildByName<Path>(checkBox, "CheckGlyph");
-                    Border? indeterminateDash = FindVisualChildByName<Border>(checkBox, "IndeterminateDash");
-                    Assert.IsNotNull(checkGlyph, "CheckBox template should contain CheckGlyph.");
-                    Assert.IsNotNull(indeterminateDash, "CheckBox template should contain IndeterminateDash.");
+                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
+                    Border indeterminateDash = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndeterminateDash"));
 
-                    Assert.AreEqual(1.0, checkGlyph.Opacity, 0.01,
-                        "Checked CheckBox state should show the check glyph.");
-                    Assert.AreEqual(0.0, indeterminateDash.Opacity, 0.01,
-                        "Checked CheckBox state should hide the indeterminate dash.");
-                    Assert.AreEqual(indeterminateDash.Height, checkGlyph.StrokeThickness, 0.01,
-                        "Checked CheckBox glyph stroke should be as prominent as the indeterminate dash.");
-                    Assert.AreSame(indeterminateDash.Background, checkGlyph.Stroke,
-                        "Checked CheckBox glyph should use the same on-accent brush as the indeterminate dash.");
+                    // The check-in storyboard now fades the glyph in, so sample until it
+                    // settles at the trigger setter steady state instead of asserting
+                    // immediately after the window shows.
+                    Assert.True(WaitUntil(window.Dispatcher, 3000, () => checkGlyph.Opacity >= 0.99),
+                        "Checked CheckBox state should show the check glyph once the check-in animation settles.");
+                    Assert.Equal(0.0, indeterminateDash.Opacity, 0.01);
+                    Assert.Equal(indeterminateDash.Height, checkGlyph.StrokeThickness, 0.01);
+                    Assert.Same(indeterminateDash.Background, checkGlyph.Stroke);
                 }
                 finally
                 {
@@ -216,7 +207,94 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void CheckBox_CheckIn_GlyphAnimatesInAndUncheckRevertsInstantly()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    Controls.CheckBox checkBox = new()
+                    {
+                        Content = "Animated check",
+                        IsChecked = false,
+                        IsHitTestVisible = false,
+                        Width = 200,
+                        Height = 40,
+                    };
+                    window.Content = checkBox;
+                    window.Width = 240;
+                    window.Height = 80;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    _ = checkBox.ApplyTemplate();
+                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
+                    Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
+
+                    checkBox.IsChecked = true;
+                    DrainDispatcher(window.Dispatcher);
+
+                    // The check-in storyboard uses FillBehavior="Stop", so once the clocks
+                    // finish the glyph must fall back to the setter-provided steady state:
+                    // opacity 1 from the checked trigger and 1.0/1.0 from the inline
+                    // ScaleTransform. WPF keeps the finished clocks attached (so
+                    // HasAnimatedProperties stays true); the observable contract is that
+                    // the stopped clocks hold nothing and the base values win.
+                    bool settled = WaitUntil(window.Dispatcher, 5000, () =>
+                        checkGlyph.RenderTransform is ScaleTransform liveScale
+                        && checkGlyph.Opacity >= 0.9999
+                        && liveScale.ScaleX >= 0.9999
+                        && liveScale.ScaleY >= 0.9999);
+                    Assert.True(settled,
+                        "The check-in storyboard should complete and hand the glyph back to the trigger setter steady state.");
+
+                    ScaleTransform scale = Assert.IsType<ScaleTransform>(checkGlyph.RenderTransform);
+                    Assert.Equal(1.0, checkGlyph.Opacity, 0.001);
+                    Assert.Equal(1.0, scale.ScaleX, 0.001);
+                    Assert.Equal(1.0, scale.ScaleY, 0.001);
+
+                    checkBox.IsChecked = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    // Uncheck is deliberately not animated: the trigger setters revert
+                    // instantly and the finished Stop storyboard holds nothing, so the
+                    // glyph disappears in the same dispatcher pass.
+                    Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
+                    Assert.Equal(1.0, scale.ScaleX, 0.001);
+                    Assert.Equal(1.0, scale.ScaleY, 0.001);
+
+                    // A second check-in must replay the animation and settle again
+                    // (SnapshotAndReplace hands off the finished clocks).
+                    checkBox.IsChecked = true;
+                    DrainDispatcher(window.Dispatcher);
+                    bool resettled = WaitUntil(window.Dispatcher, 5000, () =>
+                        checkGlyph.RenderTransform is ScaleTransform liveScale
+                        && checkGlyph.Opacity >= 0.9999
+                        && liveScale.ScaleX >= 0.9999
+                        && liveScale.ScaleY >= 0.9999);
+                    Assert.True(resettled,
+                        "Re-checking must replay the check-in storyboard and settle at the steady state again.");
+                }
+                finally
+                {
+                    window.Content = null;
+                    window.UpdateLayout();
+                    window.Close();
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        [Fact]
         public void Card_Click_FiresOnMouseDownThenUp_WhenIsClickable()
         {
             RunOnStaThread(() =>
@@ -246,12 +324,12 @@ namespace Fluence.Wpf.Tests
                     card.Click += handler;
 
                     card.SimulateMouseDown();
-                    Assert.IsTrue(card.IsPressed, "Card.IsPressed should flip true after a left-button press while clickable.");
+                    Assert.True(card.IsPressed, "Card.IsPressed should flip true after a left-button press while clickable.");
 
                     card.SimulateMouseUp();
-                    Assert.IsFalse(card.IsPressed, "Card.IsPressed should clear after left-button release.");
+                    Assert.False(card.IsPressed, "Card.IsPressed should clear after left-button release.");
 
-                    Assert.AreEqual(1, clicks, "Card.Click must fire exactly once on a press-then-release cycle.");
+                    Assert.Equal(1, clicks);
 
                     card.Click -= handler;
                 }
@@ -268,7 +346,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_Click_DoesNotFire_WhenNotClickable()
         {
             RunOnStaThread(() =>
@@ -298,10 +376,10 @@ namespace Fluence.Wpf.Tests
                     card.Click += handler;
 
                     card.SimulateMouseDown();
-                    Assert.IsFalse(card.IsPressed, "Card.IsPressed must stay false when IsClickable is false.");
+                    Assert.False(card.IsPressed, "Card.IsPressed must stay false when IsClickable is false.");
 
                     card.SimulateMouseUp();
-                    Assert.AreEqual(0, clicks, "Card.Click must not fire when IsClickable is false.");
+                    Assert.Equal(0, clicks);
 
                     card.Click -= handler;
                 }
@@ -318,7 +396,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_Left_ContentBorder_HasWinUiCornerRadiusAndStroke()
         {
             RunOnStaThread(static () =>
@@ -342,36 +420,26 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = nav.ApplyTemplate();
-                    ContentPresenter? contentPresenter = nav.Template.FindName("PART_ContentPresenter", nav) as ContentPresenter;
-                    Assert.IsNotNull(contentPresenter, "Left template must expose PART_ContentPresenter.");
+                    ContentPresenter contentPresenter = Assert.IsType<ContentPresenter>(nav.Template.FindName("PART_ContentPresenter", nav));
 
-                    Border? contentBorder = VisualTreeHelper.GetParent(contentPresenter) as Border;
-                    Assert.IsNotNull(contentBorder, "PART_ContentPresenter must be hosted by a Border in the Left template.");
+                    Border contentBorder = Assert.IsType<Border>(VisualTreeHelper.GetParent(contentPresenter));
 
-                    Assert.AreEqual(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius,
-                        "Left-mode content background Border must carry an 8,0,0,0 corner radius so the content presenter keeps the page corner rounding.");
+                    Assert.Equal(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius);
 
                     // The 1,1,0,0 stroke sits on a sibling decorative Border so
                     // PART_ContentPresenter lines up with the pane column edge.
                     // Wrapping the presenter in a BorderThickness=1 Border introduces
                     // layout-rounding drift at 150% DPI.
-                    Grid? contentGrid = VisualTreeHelper.GetParent(contentBorder) as Grid;
-                    Assert.IsNotNull(contentGrid, "The content Border must be hosted in a Grid that also carries the decorative stroke Border.");
-                    Assert.AreEqual(2, VisualTreeHelper.GetChildrenCount(contentGrid),
-                        "The content Grid must contain exactly two children: the background Border and the decorative stroke Border.");
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentBorder));
+                    Assert.Equal(2, VisualTreeHelper.GetChildrenCount(contentGrid));
 
-                    Border? strokeBorder = VisualTreeHelper.GetChild(contentGrid, 1) as Border;
-                    Assert.IsNotNull(strokeBorder, "The second child of the content Grid must be the decorative stroke Border.");
-                    Assert.IsFalse(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
-                    Assert.AreEqual(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius,
-                        "The decorative stroke Border must share the 8,0,0,0 corner radius of the content background Border.");
-                    Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
-                        "Left-mode content region must draw a 1,1,0,0 stroke separating it from the pane and top chrome.");
+                    Border strokeBorder = Assert.IsType<Border>(VisualTreeHelper.GetChild(contentGrid, 1));
+                    Assert.False(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
+                    Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
+                    Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
-                    Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "Left-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
+                    Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally
                 {
@@ -386,7 +454,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_LeftCompact_ContentBorder_HasWinUiCornerRadiusAndStroke()
         {
             RunOnStaThread(static () =>
@@ -410,35 +478,25 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = nav.ApplyTemplate();
-                    ContentPresenter? contentPresenter = nav.Template.FindName("PART_ContentPresenter", nav) as ContentPresenter;
-                    Assert.IsNotNull(contentPresenter, "LeftCompact template must expose PART_ContentPresenter.");
+                    ContentPresenter contentPresenter = Assert.IsType<ContentPresenter>(nav.Template.FindName("PART_ContentPresenter", nav));
 
-                    Border? contentBorder = VisualTreeHelper.GetParent(contentPresenter) as Border;
-                    Assert.IsNotNull(contentBorder, "PART_ContentPresenter must be hosted by a Border in the LeftCompact template.");
+                    Border contentBorder = Assert.IsType<Border>(VisualTreeHelper.GetParent(contentPresenter));
 
-                    Assert.AreEqual(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius,
-                        "LeftCompact-mode content background Border must carry the same 8,0,0,0 corner radius as Left mode.");
+                    Assert.Equal(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius);
 
                     // The 1,1,0,0 stroke sits on a sibling decorative Border so
                     // PART_ContentPresenter lines up with the pane column edge without
                     // layout-rounding drift.
-                    Grid? contentGrid = VisualTreeHelper.GetParent(contentBorder) as Grid;
-                    Assert.IsNotNull(contentGrid, "The content Border must be hosted in a Grid that also carries the decorative stroke Border.");
-                    Assert.AreEqual(2, VisualTreeHelper.GetChildrenCount(contentGrid),
-                        "The content Grid must contain exactly two children: the background Border and the decorative stroke Border.");
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentBorder));
+                    Assert.Equal(2, VisualTreeHelper.GetChildrenCount(contentGrid));
 
-                    Border? strokeBorder = VisualTreeHelper.GetChild(contentGrid, 1) as Border;
-                    Assert.IsNotNull(strokeBorder, "The second child of the content Grid must be the decorative stroke Border.");
-                    Assert.IsFalse(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
-                    Assert.AreEqual(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius,
-                        "The decorative stroke Border must share the 8,0,0,0 corner radius of the content background Border.");
-                    Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
-                        "LeftCompact-mode content region must draw a 1,1,0,0 stroke consistent with Left mode.");
+                    Border strokeBorder = Assert.IsType<Border>(VisualTreeHelper.GetChild(contentGrid, 1));
+                    Assert.False(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
+                    Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
+                    Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
-                    Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "LeftCompact-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
+                    Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally
                 {
@@ -453,7 +511,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationView_DefaultStyle_AppliesLeftTemplate()
         {
             RunOnStaThread(static () =>
@@ -477,14 +535,11 @@ namespace Fluence.Wpf.Tests
 
                     _ = nav.ApplyTemplate();
 
-                    Assert.AreEqual(NavigationViewPaneDisplayMode.Left, nav.PaneDisplayMode,
-                        "Default PaneDisplayMode should be Left to match WinUI 3 default presentation.");
+                    Assert.Equal(NavigationViewPaneDisplayMode.Left, nav.PaneDisplayMode);
 
-                    Button? paneToggle = nav.Template.FindName("PART_PaneToggleButton", nav) as Button;
-                    Assert.IsNotNull(paneToggle, "Default (Left) template must expose PART_PaneToggleButton.");
+                    Button paneToggle = Assert.IsType<Button>(nav.Template.FindName("PART_PaneToggleButton", nav));
 
-                    Button? backButton = nav.Template.FindName("PART_BackButton", nav) as Button;
-                    Assert.IsNotNull(backButton, "Default (Left) template must expose PART_BackButton.");
+                    Button backButton = Assert.IsType<Button>(nav.Template.FindName("PART_BackButton", nav));
                 }
                 finally
                 {

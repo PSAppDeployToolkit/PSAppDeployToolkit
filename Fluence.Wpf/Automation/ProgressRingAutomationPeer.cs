@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Controls;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 
@@ -54,7 +55,7 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public override object GetPattern(PatternInterface patternInterface)
         {
-            return patternInterface != PatternInterface.RangeValue || ProgressRing.IsIndeterminate
+            return patternInterface is not PatternInterface.RangeValue || ProgressRing.IsIndeterminate
                 ? base.GetPattern(patternInterface)
                 : this;
         }
@@ -80,6 +81,19 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public virtual void SetValue(double value)
         {
+        }
+
+        /// <summary>
+        /// Raises the <see cref="RangeValuePatternIdentifiers.ValueProperty"/> property-changed event
+        /// so UI Automation clients can read the current progress value on demand.
+        /// Only meaningful in determinate mode; <see cref="GetPattern"/> already suppresses
+        /// <see cref="PatternInterface.RangeValue"/> when the ring is indeterminate.
+        /// </summary>
+        /// <param name="oldValue">The previous value.</param>
+        /// <param name="newValue">The new value.</param>
+        internal void RaiseValuePropertyChangedEvent(double oldValue, double newValue)
+        {
+            RaisePropertyChangedEvent(RangeValuePatternIdentifiers.ValueProperty, oldValue, newValue);
         }
 
         /// <summary>

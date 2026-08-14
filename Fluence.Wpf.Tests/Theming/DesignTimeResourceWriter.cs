@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Theming;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,6 +33,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
+using Fluence.Wpf.Theming;
 
 namespace Fluence.Wpf.Tests.Theming
 {
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// <returns>The path of the generated XAML file for the specified theme.</returns>
         internal static string PathFor(ApplicationTheme theme)
         {
-            return Path.Combine(RepoRoot(), "Fluence.Wpf", "Properties", "DesignTime." + theme.ToString() + ".xaml");
+            return Path.Combine(RepoRoot(), "Fluence.Wpf", "Properties", "DesignTime." + theme + ".xaml");
         }
 
         // Live-OS SystemColors aliases: their snapshot value depends on the host machine's OS theme

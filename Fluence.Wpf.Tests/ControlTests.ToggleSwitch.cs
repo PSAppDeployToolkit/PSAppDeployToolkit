@@ -26,13 +26,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -45,7 +48,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 B12  ToggleSwitch knob easing
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_StyleApplies_SwitchThumbFound()
         {
             WpfTestSta.Invoke(static () =>
@@ -58,15 +61,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.IsNotNull(thumb, "SwitchThumb Ellipse must exist in ToggleSwitch template.");
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.IsNotNull(input, "PART_SwitchThumbInput must exist so the switch can support drag gestures.");
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_DefaultState_ThumbWidth12()
         {
             WpfTestSta.Invoke(static () =>
@@ -79,17 +80,18 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.IsNotNull(thumb, "SwitchThumb must exist.");
-                Assert.AreEqual(12.0, thumb.Width, 0.001,
-                    "Default knob Width must be 12 (WinUI ToggleSwitch_themeresources.xaml SwitchKnobOff normal state).");
-                Assert.AreEqual(12.0, thumb.Height, 0.001,
-                    "Default knob Height must be 12.");
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Assert.Equal(12.0, thumb.Width, 0.001);
+                Assert.Equal(12.0, thumb.Height, 0.001);
+
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
+                Assert.Equal(1.0, scale.ScaleX, 0.001);
+                Assert.Equal(1.0, scale.ScaleY, 0.001);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_Checked_ThumbTranslateIs20()
         {
             WpfTestSta.Invoke(static () =>
@@ -103,13 +105,12 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
-                Assert.AreEqual(20.0, tx.X, 0.5,
-                    "Knob X translate must be ~20 when IsChecked=True (WinUI ToggleSwitch_themeresources.xaml checked state).");
+                Assert.Equal(20.0, tx.X, 0.5);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_Unchecked_ThumbTranslateIsZero()
         {
             WpfTestSta.Invoke(static () =>
@@ -123,13 +124,12 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
-                Assert.AreEqual(0.0, tx.X, 0.5,
-                    "Knob X translate must be 0 when IsChecked=False.");
+                Assert.Equal(0.0, tx.X, 0.5);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_ProgrammaticToggle_AnimatesKnobToCheckedSide()
         {
             WpfTestSta.Invoke(static () =>
@@ -143,19 +143,19 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
-                Assert.AreEqual(0.0, tx.X, 0.5, "Knob starts on the unchecked side.");
+                Assert.Equal(0.0, tx.X, 0.5);
 
                 ts.IsChecked = true;
-                Assert.IsTrue(tx.X < 20.0,
+                Assert.True(tx.X < 20.0,
                     "Programmatic toggle should start an animation instead of snapping directly to the checked side.");
 
                 WaitForAnimationAndDrain(w.Dispatcher, 250);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Knob finishes on the checked side.");
+                Assert.Equal(20.0, tx.X, 0.5);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_DragInput_ExpandsThumbAndCommitsCheckedState()
         {
             WpfTestSta.Invoke(static () =>
@@ -168,11 +168,10 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.IsNotNull(thumb, "SwitchThumb must exist.");
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.IsNotNull(input, "PART_SwitchThumbInput must exist.");
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
 
                 DragStartedEventArgs started = new(0, 0)
                 {
@@ -180,32 +179,77 @@ namespace Fluence.Wpf.Tests
                 };
                 input.RaiseEvent(started);
                 WaitForAnimationAndDrain(w.Dispatcher, 120);
-                Assert.AreEqual(17.0, thumb.Width, 0.5, "Pressed/dragged thumb should widen to 17px.");
-                Assert.AreEqual(14.0, thumb.Height, 0.5, "Pressed/dragged thumb should expand to 14px high.");
+                Assert.Equal(17.0 / 12.0, scale.ScaleX, 0.05);
+                Assert.Equal(14.0 / 12.0, scale.ScaleY, 0.05);
+                Assert.Equal(12.0, thumb.Width, 0.001);
+                Assert.Equal(12.0, thumb.Height, 0.001);
 
                 DragDeltaEventArgs delta = new(20, 0)
                 {
                     RoutedEvent = Thumb.DragDeltaEvent,
                 };
                 input.RaiseEvent(delta);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Dragging to the right should move the knob to the checked side.");
+                Assert.Equal(20.0, tx.X, 0.5);
 
                 DragCompletedEventArgs completed = new(20, 0, false)
                 {
                     RoutedEvent = Thumb.DragCompletedEvent,
                 };
                 input.RaiseEvent(completed);
-                Assert.AreEqual(true, ts.IsChecked, "Completing a right-side drag should commit the checked state.");
+                Assert.Equal(true, ts.IsChecked);
                 WaitForAnimationAndDrain(w.Dispatcher, 250);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Committed drag should leave the knob on the checked side.");
-                Assert.AreEqual(12.0, thumb.Width, 0.5, "Released thumb should return to rest width.");
-                Assert.AreEqual(12.0, thumb.Height, 0.5, "Released thumb should return to rest height.");
+                Assert.Equal(20.0, tx.X, 0.5);
+                Assert.Equal(1.0, scale.ScaleX, 0.05);
+                Assert.Equal(1.0, scale.ScaleY, 0.05);
+                Assert.Equal(12.0, thumb.Width, 0.001);
 
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void ToggleSwitch_PressedCodePath_ScalesThumbWithoutLayoutSizeChange()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ToggleSwitch ts = new() { IsChecked = false };
+                Window w = new() { Content = ts, Width = 160, Height = 60 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
+                Assert.Equal(1.0, scale.ScaleX, 0.001);
+
+                MouseButtonEventArgs pressed = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
+                };
+                input.RaiseEvent(pressed);
+                WaitForAnimationAndDrain(w.Dispatcher, 120);
+
+                Assert.Equal(17.0 / 12.0, scale.ScaleX, 0.05);
+                Assert.Equal(14.0 / 12.0, scale.ScaleY, 0.05);
+                Assert.Equal(12.0, thumb.Width, 0.001);
+                Assert.Equal(12.0, thumb.Height, 0.001);
+
+                MouseEventArgs lostCapture = new(Mouse.PrimaryDevice, 0)
+                {
+                    RoutedEvent = UIElement.LostMouseCaptureEvent,
+                };
+                input.RaiseEvent(lostCapture);
+                WaitForAnimationAndDrain(w.Dispatcher, 250);
+                Assert.Equal(1.0, scale.ScaleX, 0.05);
+
+                w.Close();
+            });
+        }
+
+        [Fact]
         public void ToggleSwitch_ClickReleaseThroughCaptureLoss_CommitsCheckedState()
         {
             WpfTestSta.Invoke(static () =>
@@ -218,8 +262,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.IsNotNull(input, "PART_SwitchThumbInput must exist.");
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
 
                 MouseButtonEventArgs pressed = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
@@ -233,18 +276,17 @@ namespace Fluence.Wpf.Tests
                 };
                 input.RaiseEvent(lostCapture);
 
-                Assert.AreEqual(true, ts.IsChecked,
-                    "Releasing a click through capture loss should commit the opposite ToggleSwitch state.");
+                Assert.Equal(true, ts.IsChecked);
 
                 WaitForAnimationAndDrain(w.Dispatcher, 250);
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Clicked switch should finish on the checked side.");
+                Assert.Equal(20.0, tx.X, 0.5);
 
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToggleSwitch_DragReleaseThroughCaptureLoss_CommitsNearestState()
         {
             WpfTestSta.Invoke(static () =>
@@ -257,8 +299,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.IsNotNull(input, "PART_SwitchThumbInput must exist.");
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
 
                 DragStartedEventArgs started = new(0, 0)
@@ -272,7 +313,7 @@ namespace Fluence.Wpf.Tests
                     RoutedEvent = Thumb.DragDeltaEvent,
                 };
                 input.RaiseEvent(delta);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Dragging to the right should move the knob to the checked side.");
+                Assert.Equal(20.0, tx.X, 0.5);
 
                 MouseEventArgs lostCapture = new(Mouse.PrimaryDevice, 0)
                 {
@@ -280,23 +321,64 @@ namespace Fluence.Wpf.Tests
                 };
                 input.RaiseEvent(lostCapture);
 
-                Assert.AreEqual(true, ts.IsChecked,
-                    "Releasing a dragged thumb on the checked side through capture loss should commit the checked state.");
+                Assert.Equal(true, ts.IsChecked);
 
                 WaitForAnimationAndDrain(w.Dispatcher, 250);
-                Assert.AreEqual(20.0, tx.X, 0.5, "Committed drag should finish on the checked side.");
+                Assert.Equal(20.0, tx.X, 0.5);
 
                 w.Close();
             });
         }
 
+        [Fact]
+        public void ToggleSwitch_HeaderContent_BecomesAccessibleName()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    ToggleSwitch ts = new() { HeaderContent = "Airplane mode" };
+                    window.Content = ts;
+                    window.Width = 240;
+                    window.Height = 120;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(ts);
+                    Assert.True(
+                        string.Equals("Airplane mode", peer.GetName(), StringComparison.Ordinal),
+                        "ToggleSwitch HeaderContent must be the accessible name when no explicit AutomationProperties.Name is set.");
+
+                    ts.SetValue(AutomationProperties.NameProperty, "Explicit");
+                    Assert.True(
+                        string.Equals("Explicit", peer.GetName(), StringComparison.Ordinal),
+                        "Explicit AutomationProperties.Name must win over HeaderContent.");
+                }
+                finally
+                {
+                    window.Close();
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        private static ScaleTransform GetToggleSwitchThumbScale(ToggleSwitch toggleSwitch)
+        {
+            Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(toggleSwitch, "SwitchThumb"));
+            return Assert.IsType<ScaleTransform>(thumb.RenderTransform);
+        }
+
         private static TranslateTransform GetToggleSwitchKnobTranslate(ToggleSwitch toggleSwitch)
         {
-            FrameworkElement? knob = FindVisualChildByName<FrameworkElement>(toggleSwitch, "SwitchKnob");
-            Assert.IsNotNull(knob, "SwitchKnob must exist.");
-            TranslateTransform? tx = knob.RenderTransform as TranslateTransform;
-            Assert.IsNotNull(tx, "SwitchKnob RenderTransform must be a TranslateTransform.");
-            return tx;
+            FrameworkElement knob = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(toggleSwitch, "SwitchKnob"));
+            return Assert.IsType<TranslateTransform>(knob.RenderTransform);
         }
     }
 }

@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -42,7 +42,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 A5  ComboBox popup CornerRadius
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ComboBox_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
         {
             WpfTestSta.Invoke(static () =>
@@ -57,13 +57,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(overlayRadius, cb.DropdownCornerRadius,
-                    "ComboBox.DropdownCornerRadius must equal OverlayCornerRadius after default style applies.");
+                Assert.Equal(overlayRadius, cb.DropdownCornerRadius);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ComboBox_DropdownCornerRadius_ValueIs8()
         {
             WpfTestSta.Invoke(static () =>
@@ -76,8 +75,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(new CornerRadius(8), cb.DropdownCornerRadius,
-                    "ComboBox.DropdownCornerRadius must be 8 (OverlayCornerRadius).");
+                Assert.Equal(new CornerRadius(8), cb.DropdownCornerRadius);
                 w.Close();
             });
         }
@@ -86,7 +84,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 A6  DropDownButton popup CornerRadius
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void DropDownButton_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
         {
             WpfTestSta.Invoke(static () =>
@@ -101,13 +99,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(overlayRadius, ddb.DropdownCornerRadius,
-                    "DropDownButton.DropdownCornerRadius must equal OverlayCornerRadius after default style applies.");
+                Assert.Equal(overlayRadius, ddb.DropdownCornerRadius);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DropDownButton_DropdownCornerRadius_ValueIs8()
         {
             WpfTestSta.Invoke(static () =>
@@ -120,8 +117,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(new CornerRadius(8), ddb.DropdownCornerRadius,
-                    "DropDownButton.DropdownCornerRadius must be 8 (OverlayCornerRadius).");
+                Assert.Equal(new CornerRadius(8), ddb.DropdownCornerRadius);
                 w.Close();
             });
         }

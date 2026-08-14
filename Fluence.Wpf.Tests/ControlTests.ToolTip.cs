@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -41,7 +41,7 @@ namespace Fluence.Wpf.Tests
         // WI-5A.1 ToolTip
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void ToolTip_DefaultStyle_BackgroundBrushResolves()
         {
             WpfTestSta.Invoke(static () =>
@@ -49,13 +49,11 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object? brush = app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush");
-                Assert.IsNotNull(brush,
-                    "SolidBackgroundFillColorTertiaryBrush (ToolTip background) must resolve after theme apply.");
+                object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToolTip_DefaultStyle_BorderBrushResolves()
         {
             WpfTestSta.Invoke(static () =>
@@ -63,13 +61,11 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object? brush = app?.TryFindResource("SurfaceStrokeColorFlyoutBrush");
-                Assert.IsNotNull(brush,
-                    "SurfaceStrokeColorFlyoutBrush (ToolTip border) must resolve after theme apply.");
+                object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ToolTip_DefaultStyle_StyleRegisteredWithCorrectProperties()
         {
             WpfTestSta.Invoke(static () =>
@@ -78,8 +74,7 @@ namespace Fluence.Wpf.Tests
                 _ = MergeGenericDictionary(app);
 
                 // Default style is keyed to the Fluence ToolTip type.
-                Style? style = app?.TryFindResource(typeof(ToolTip)) as Style;
-                Assert.IsNotNull(style, "A default Style must be registered for Fluence.Wpf.Controls.ToolTip.");
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ToolTip)));
 
                 // Apply manually so property setters are evaluated.
                 ToolTip tt = new()
@@ -89,13 +84,73 @@ namespace Fluence.Wpf.Tests
                 };
 
                 // FontSize and MaxWidth are ordinary DPs - they resolve via Style.Apply.
-                Assert.AreEqual(12.0, tt.FontSize, 0.01, "ToolTip.FontSize must be 12 per Fluent style.");
-                Assert.AreEqual(320.0, tt.MaxWidth, 0.01, "ToolTip.MaxWidth must be 320 per Fluent style.");
-                Assert.AreEqual(new Thickness(9, 6, 9, 8), tt.Padding, "ToolTip.Padding must be 9,6,9,8 per Fluent style.");
+                Assert.Equal(12.0, tt.FontSize, 0.01);
+                Assert.Equal(320.0, tt.MaxWidth, 0.01);
+                Assert.Equal(new Thickness(9, 6, 9, 8), tt.Padding);
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void ToolTip_OpenFade_SettlesAtFullOpacity()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 300, Height = 200 };
+                Button target = new() { Content = "Hover me" };
+                ToolTip tip = new() { Content = "Tip body" };
+                target.ToolTip = tip;
+
+                try
+                {
+                    window.Content = target;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    tip.PlacementTarget = target;
+                    tip.IsOpen = true;
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
+                            () => tip.Template?.FindName("ToolTipSurface", tip) is System.Windows.Controls.Border),
+                        "The tooltip template must apply once the tooltip opens.");
+
+                    System.Windows.Controls.Border surface =
+                        Assert.IsType<System.Windows.Controls.Border>(tip.Template.FindName("ToolTipSurface", tip));
+
+                    // The 83 ms open fade (WinUI FadeInThemeAnimation parity) must settle at
+                    // full opacity. The trigger-begun HoldEnd clock keeps
+                    // HasAnimatedProperties true forever (see plan 011), so only the settled
+                    // value is asserted.
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => surface.Opacity >= 1.0),
+                        "The open fade must settle at full opacity.");
+                }
+                finally
+                {
+                    tip.IsOpen = false;
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public void ToolTip_SystemPopupFade_IsSuppressedByThemeResource()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                // The WPF tooltip pipeline resolves its host popup animation through this
+                // system resource key, and the theme overrides it so the template
+                // storyboard owns the single fade.
+                object? animation = app?.TryFindResource(SystemParameters.ToolTipPopupAnimationKey);
+                Assert.Equal(System.Windows.Controls.Primitives.PopupAnimation.None, animation);
+            });
+        }
+
+        [Fact]
         public void ToolTip_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
             WpfTestSta.Invoke(static () =>
@@ -110,8 +165,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.IsNotNull(app?.TryFindResource(key),
-                            string.Format("Resource '{0}' must resolve in ToolTip theme cycle step: {1}", key, theme));
+                        Assert.NotNull(app?.TryFindResource(key));
                     }
                 }
             });

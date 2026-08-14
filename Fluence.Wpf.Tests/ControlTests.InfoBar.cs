@@ -26,12 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Media;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -44,7 +45,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 B14  InfoBar SeverityLevels VSM group
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void InfoBar_StyleApplies_RootBorderFound()
         {
             WpfTestSta.Invoke(static () =>
@@ -57,13 +58,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? root = FindVisualChildByName<WpfBorder>(bar, "RootBorder");
-                Assert.IsNotNull(root, "RootBorder must exist in InfoBar template (Fluence style applied).");
+                System.Windows.Controls.Border root = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBar_SeverityLevelsVSM_AllStatesAccessible()
         {
             WpfTestSta.Invoke(static () =>
@@ -82,15 +82,63 @@ namespace Fluence.Wpf.Tests
                 bool ok3 = VisualStateManager.GoToState(bar, "Warning", useTransitions: false);
                 bool ok4 = VisualStateManager.GoToState(bar, "Error", useTransitions: false);
 
-                Assert.IsTrue(ok1, "GoToState('Informational') must succeed - SeverityLevels VSM group must exist.");
-                Assert.IsTrue(ok2, "GoToState('Success') must succeed.");
-                Assert.IsTrue(ok3, "GoToState('Warning') must succeed.");
-                Assert.IsTrue(ok4, "GoToState('Error') must succeed.");
+                Assert.True(ok1, "GoToState('Informational') must succeed - SeverityLevels VSM group must exist.");
+                Assert.True(ok2, "GoToState('Success') must succeed.");
+                Assert.True(ok3, "GoToState('Warning') must succeed.");
+                Assert.True(ok4, "GoToState('Error') must succeed.");
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void InfoBar_CloseButton_UsesFluentSubtlePlate()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                InfoBar bar = new() { IsOpen = true, Title = "Closable" };
+                Window w = new() { Content = bar, Width = 400, Height = 100 };
+                try
+                {
+                    w.Show();
+                    DrainDispatcher(w.Dispatcher);
+
+                    System.Windows.Controls.Button close =
+                        Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(bar, "PART_CloseButton"));
+                    Assert.Equal(28.0, close.Width, 0.01);
+                    Assert.Equal(28.0, close.Height, 0.01);
+
+                    // The subtle plate (TeachingTip / PipsPager pattern): a rounded Border
+                    // owned by the button's own template, not the OS default chrome.
+                    System.Windows.Controls.Border plate =
+                        Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(close, "ButtonPlate"));
+                    CornerRadius expectedRadius = (CornerRadius)(app?.FindResource("ControlCornerRadius")
+                        ?? throw new Xunit.Sdk.XunitException("ControlCornerRadius must resolve."));
+                    Assert.Equal(expectedRadius, plate.CornerRadius);
+                    SolidColorBrush restFill = Assert.IsType<SolidColorBrush>(plate.Background);
+                    Assert.Equal(0, restFill.Color.A);
+
+                    // Foreground contract: TextFillColorPrimary at rest, flowing into the glyph.
+                    SolidColorBrush primary = (SolidColorBrush)(app?.FindResource("TextFillColorPrimaryBrush")
+                        ?? throw new Xunit.Sdk.XunitException("TextFillColorPrimaryBrush must resolve."));
+                    SolidColorBrush buttonForeground = Assert.IsType<SolidColorBrush>(close.Foreground);
+                    Assert.Equal(primary.Color, buttonForeground.Color);
+
+                    FontIcon glyph = Assert.IsAssignableFrom<FontIcon>(FindVisualChildren<FontIcon>(close).FirstOrDefault());
+                    Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
+                    SolidColorBrush glyphForeground = Assert.IsType<SolidColorBrush>(glyph.Foreground);
+                    Assert.Equal(primary.Color, glyphForeground.Color);
+                }
+                finally
+                {
+                    w.Close();
+                }
+            });
+        }
+
+        [Fact]
         public void InfoBar_DefaultSeverity_IndicatorBarHasBackground()
         {
             WpfTestSta.Invoke(static () =>
@@ -103,14 +151,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
-                Assert.IsNotNull(indicator, "IndicatorBar must exist in InfoBar template.");
-                Assert.IsNotNull(indicator.Background, "IndicatorBar background must be set for Informational severity.");
+                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
+                Assert.NotNull(indicator.Background);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBar_InformationalAccentBrushes_TrackAccentColorChange()
         {
             WpfTestSta.Invoke(static () =>
@@ -123,35 +170,26 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
-                Assert.IsNotNull(indicator, "IndicatorBar must exist.");
-                WpfTextBlock? defaultIcon = FindVisualChildByName<WpfTextBlock>(bar, "DefaultIcon");
-                Assert.IsNotNull(defaultIcon, "DefaultIcon must exist.");
-                SolidColorBrush? initial = indicator.Background as SolidColorBrush;
-                Assert.IsNotNull(initial, "Informational IndicatorBar background should be a SolidColorBrush.");
+                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
+                System.Windows.Controls.TextBlock defaultIcon = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(bar, "DefaultIcon"));
+                SolidColorBrush initial = Assert.IsType<SolidColorBrush>(indicator.Background);
                 Color initialColor = initial.Color;
 
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0xC3, 0x00, 0x52));
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? expected = app?.TryFindResource("SystemFillColorAttentionBrush") as SolidColorBrush;
-                Assert.IsNotNull(expected, "SystemFillColorAttentionBrush must resolve after accent change.");
-                SolidColorBrush? indicatorBrush = indicator.Background as SolidColorBrush;
-                Assert.IsNotNull(indicatorBrush, "Informational IndicatorBar background should remain a SolidColorBrush.");
-                SolidColorBrush? iconBrush = defaultIcon.Foreground as SolidColorBrush;
-                Assert.IsNotNull(iconBrush, "Informational DefaultIcon foreground should remain a SolidColorBrush.");
-                Assert.AreEqual(expected.Color, indicatorBrush.Color,
-                    "Informational IndicatorBar should track the current attention accent brush.");
-                Assert.AreEqual(expected.Color, iconBrush.Color,
-                    "Informational DefaultIcon should track the current attention accent brush.");
-                Assert.AreNotEqual(initialColor, indicatorBrush.Color,
-                    "Informational accent brush should change when the accent changes.");
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorAttentionBrush"));
+                SolidColorBrush indicatorBrush = Assert.IsType<SolidColorBrush>(indicator.Background);
+                SolidColorBrush iconBrush = Assert.IsType<SolidColorBrush>(defaultIcon.Foreground);
+                Assert.Equal(expected.Color, indicatorBrush.Color);
+                Assert.Equal(expected.Color, iconBrush.Color);
+                Assert.NotEqual(initialColor, indicatorBrush.Color);
 
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBar_SeverityChange_IndicatorBarBackgroundUpdates()
         {
             WpfTestSta.Invoke(static () =>
@@ -164,8 +202,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
-                Assert.IsNotNull(indicator, "IndicatorBar must exist.");
+                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
                 Brush brushBefore = indicator.Background;
 
                 // Change severity - trigger + GoToState must both fire
@@ -173,12 +210,31 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Background must still be non-null after the change
-                Assert.IsNotNull(indicator.Background, "IndicatorBar background must not be null after severity change to Error.");
+                Assert.NotNull(indicator.Background);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void InfoBar_DeclaresPoliteLiveSetting()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                InfoBar bar = new() { Title = "Saved", IsOpen = true };
+                Window window = new() { Content = bar };
+                window.Show();
+                _ = bar.ApplyTemplate();
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.Equal(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(bar));
+                window.Close();
+            });
+        }
+
+        [Fact]
         public void InfoBar_ActionButton_IsNotClippedByRootBorder()
         {
             WpfTestSta.Invoke(static () =>
@@ -198,14 +254,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? root = FindVisualChildByName<WpfBorder>(bar, "RootBorder");
-                Assert.IsNotNull(root, "RootBorder must exist in InfoBar template.");
-                Assert.IsFalse(root.ClipToBounds,
+                System.Windows.Controls.Border root = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"));
+                Assert.False(root.ClipToBounds,
                     "RootBorder should not clip action-button focus visuals or shadow rendering.");
 
-                System.Windows.Controls.ContentPresenter? presenter = FindVisualChildByName<System.Windows.Controls.ContentPresenter>(bar, "ActionPresenter");
-                Assert.IsNotNull(presenter, "ActionPresenter should host the retry action.");
-                Assert.AreEqual(Visibility.Visible, presenter.Visibility);
+                System.Windows.Controls.ContentPresenter presenter = Assert.IsAssignableFrom<System.Windows.Controls.ContentPresenter>(FindVisualChildByName<System.Windows.Controls.ContentPresenter>(bar, "ActionPresenter"));
+                Assert.Equal(Visibility.Visible, presenter.Visibility);
 
                 w.Close();
             });

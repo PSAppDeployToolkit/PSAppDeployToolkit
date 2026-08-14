@@ -26,7 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
@@ -34,6 +34,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Input;
 using System.Windows.Media;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -68,7 +69,7 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_DefaultStyle_GeneratesBreadcrumbBarItemContainers()
         {
             RunOnStaThread(static () =>
@@ -76,8 +77,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(Controls.BreadcrumbBar)) as Style;
-                Assert.IsNotNull(style, "A default Style must be registered for Fluence.Wpf.Controls.BreadcrumbBar.");
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.BreadcrumbBar)));
 
                 Window window = new() { Width = 500, Height = 200 };
                 Controls.BreadcrumbBar bar = new();
@@ -91,15 +91,12 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(crumbs.Length, bar.Items.Count, "Binding ItemsSource must surface every crumb item.");
+                    Assert.Equal(crumbs.Length, bar.Items.Count);
                     for (int index = 0; index < crumbs.Length; index++)
                     {
-                        Controls.BreadcrumbBarItem? container =
-                            bar.ItemContainerGenerator.ContainerFromIndex(index) as Controls.BreadcrumbBarItem;
-                        Assert.IsNotNull(container,
-                            string.Format(CultureInfo.InvariantCulture, "The container at index {0} must be a BreadcrumbBarItem.", index));
-                        Assert.AreEqual(crumbs[index], container.Content,
-                            string.Format(CultureInfo.InvariantCulture, "The container at index {0} must carry its bound item as content.", index));
+                        Controls.BreadcrumbBarItem container =
+                            Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(index));
+                        Assert.Equal(crumbs[index], container.Content);
                     }
                 }
                 finally
@@ -109,7 +106,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_LastItem_HidesChevronAndUsesPrimaryTypography()
         {
             RunOnStaThread(static () =>
@@ -129,57 +126,38 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    SolidColorBrush? primaryBrush = app?.TryFindResource("TextFillColorPrimaryBrush") as SolidColorBrush;
-                    Assert.IsNotNull(primaryBrush, "TextFillColorPrimaryBrush must resolve.");
+                    SolidColorBrush primaryBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorPrimaryBrush"));
 
                     for (int index = 0; index < crumbs.Length - 1; index++)
                     {
-                        Controls.BreadcrumbBarItem? ancestor =
-                            bar.ItemContainerGenerator.ContainerFromIndex(index) as Controls.BreadcrumbBarItem;
-                        Assert.IsNotNull(ancestor,
-                            string.Format(CultureInfo.InvariantCulture, "The ancestor container at index {0} must be a BreadcrumbBarItem.", index));
-                        Assert.IsFalse(ancestor.IsLastItem,
+                        Controls.BreadcrumbBarItem ancestor =
+                            Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(index));
+                        Assert.False(ancestor.IsLastItem,
                             string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must not report IsLastItem.", index));
 
-                        Controls.FontIcon? chevron = FindVisualChildByName<Controls.FontIcon>(ancestor, "ChevronIcon");
-                        Assert.IsNotNull(chevron,
-                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must render its chevron separator.", index));
-                        Assert.AreEqual(Visibility.Visible, chevron.Visibility,
-                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must be visible.", index));
+                        Controls.FontIcon chevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(ancestor, "ChevronIcon"));
+                        Assert.Equal(Visibility.Visible, chevron.Visibility);
 
                         // WinUI BreadcrumbBarChevronLeftToRight is E974 painted in
                         // BreadcrumbBarNormalForegroundBrush (TextFillColorPrimaryBrush).
-                        Assert.AreEqual("", chevron.Glyph,
-                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use the WinUI E974 glyph.", index));
-                        SolidColorBrush? chevronForeground = chevron.Foreground as SolidColorBrush;
-                        Assert.IsNotNull(chevronForeground,
-                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use a solid foreground brush.", index));
-                        Assert.AreEqual(primaryBrush.Color, chevronForeground.Color,
-                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use the primary text fill.", index));
+                        Assert.Equal("", chevron.Glyph, StringComparer.Ordinal);
+                        SolidColorBrush chevronForeground = Assert.IsType<SolidColorBrush>(chevron.Foreground);
+                        Assert.Equal(primaryBrush.Color, chevronForeground.Color);
 
-                        SolidColorBrush? ancestorForeground = ancestor.Foreground as SolidColorBrush;
-                        Assert.IsNotNull(ancestorForeground,
-                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must use a solid foreground brush.", index));
-                        Assert.AreEqual(primaryBrush.Color, ancestorForeground.Color,
-                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must use the primary text fill at rest, matching WinUI.", index));
+                        SolidColorBrush ancestorForeground = Assert.IsType<SolidColorBrush>(ancestor.Foreground);
+                        Assert.Equal(primaryBrush.Color, ancestorForeground.Color);
                     }
 
-                    Controls.BreadcrumbBarItem? last =
-                        bar.ItemContainerGenerator.ContainerFromIndex(crumbs.Length - 1) as Controls.BreadcrumbBarItem;
-                    Assert.IsNotNull(last, "The last container must be a BreadcrumbBarItem.");
-                    Assert.IsTrue(last.IsLastItem, "The last crumb must report IsLastItem=true.");
-                    Assert.AreEqual(FontWeights.SemiBold, last.FontWeight,
-                        "The last crumb must switch to SemiBold typography.");
+                    Controls.BreadcrumbBarItem last =
+                        Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(crumbs.Length - 1));
+                    Assert.True(last.IsLastItem, "The last crumb must report IsLastItem=true.");
+                    Assert.Equal(FontWeights.SemiBold, last.FontWeight);
 
-                    Controls.FontIcon? lastChevron = FindVisualChildByName<Controls.FontIcon>(last, "ChevronIcon");
-                    Assert.IsNotNull(lastChevron, "The last crumb template must still contain the chevron element.");
-                    Assert.AreEqual(Visibility.Collapsed, lastChevron.Visibility,
-                        "The last crumb must collapse its trailing chevron.");
+                    Controls.FontIcon lastChevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(last, "ChevronIcon"));
+                    Assert.Equal(Visibility.Collapsed, lastChevron.Visibility);
 
-                    SolidColorBrush? lastForeground = last.Foreground as SolidColorBrush;
-                    Assert.IsNotNull(lastForeground, "The last crumb must use a solid foreground brush.");
-                    Assert.AreEqual(primaryBrush.Color, lastForeground.Color,
-                        "The last crumb must use the primary text fill.");
+                    SolidColorBrush lastForeground = Assert.IsType<SolidColorBrush>(last.Foreground);
+                    Assert.Equal(primaryBrush.Color, lastForeground.Color);
                 }
                 finally
                 {
@@ -188,7 +166,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_CrumbClick_RaisesItemClickedWithItemAndIndex()
         {
             RunOnStaThread(() =>
@@ -219,24 +197,21 @@ namespace Fluence.Wpf.Tests
                         raiseCount++;
                     };
 
-                    Controls.BreadcrumbBarItem? ancestor =
-                        bar.ItemContainerGenerator.ContainerFromIndex(1) as Controls.BreadcrumbBarItem;
-                    Assert.IsNotNull(ancestor, "The container at index 1 must be a BreadcrumbBarItem.");
+                    Controls.BreadcrumbBarItem ancestor =
+                        Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(1));
 
                     ancestor.RaiseEvent(new RoutedEventArgs(Controls.BreadcrumbBarItem.ClickEvent, ancestor));
-                    Assert.AreEqual(1, raiseCount, "Clicking an ancestor crumb must raise ItemClicked once.");
-                    Assert.AreEqual("Documents", clickedItem, "ItemClicked must carry the clicked data item.");
-                    Assert.AreEqual(1, clickedIndex, "ItemClicked must carry the clicked crumb's index.");
+                    Assert.Equal(1, raiseCount);
+                    Assert.Equal("Documents", clickedItem);
+                    Assert.Equal(1, clickedIndex);
 
-                    Controls.BreadcrumbBarItem? last =
-                        bar.ItemContainerGenerator.ContainerFromIndex(2) as Controls.BreadcrumbBarItem;
-                    Assert.IsNotNull(last, "The container at index 2 must be a BreadcrumbBarItem.");
+                    Controls.BreadcrumbBarItem last =
+                        Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(2));
 
                     last.RaiseEvent(new RoutedEventArgs(Controls.BreadcrumbBarItem.ClickEvent, last));
-                    Assert.AreEqual(2, raiseCount,
-                        "Clicking the last crumb must also raise ItemClicked, matching WinUI.");
-                    Assert.AreEqual("Design", clickedItem, "ItemClicked must carry the last crumb's data item.");
-                    Assert.AreEqual(2, clickedIndex, "ItemClicked must carry the last crumb's index.");
+                    Assert.Equal(2, raiseCount);
+                    Assert.Equal("Design", clickedItem);
+                    Assert.Equal(2, clickedIndex);
                 }
                 finally
                 {
@@ -245,7 +220,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBarItem_MouseAndKeyboard_ActivateCrumb()
         {
             RunOnStaThread(() =>
@@ -267,8 +242,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.IsFalse(first.IsLastItem, "A directly added ancestor crumb must not report IsLastItem.");
-                    Assert.IsTrue(second.IsLastItem, "The directly added final crumb must report IsLastItem.");
+                    Assert.False(first.IsLastItem, "A directly added ancestor crumb must not report IsLastItem.");
+                    Assert.True(second.IsLastItem, "The directly added final crumb must report IsLastItem.");
 
                     object? clickedItem = null;
                     int clickedIndex = -1;
@@ -281,33 +256,31 @@ namespace Fluence.Wpf.Tests
                     };
 
                     first.SimulateMouseDown();
-                    Assert.IsTrue(first.IsPressed, "IsPressed must flip true after a left-button press.");
+                    Assert.True(first.IsPressed, "IsPressed must flip true after a left-button press.");
 
                     first.SimulateMouseUp();
-                    Assert.IsFalse(first.IsPressed, "IsPressed must reset after the left-button release.");
-                    Assert.AreEqual(1, raiseCount, "A press-release pair on a crumb must raise ItemClicked once.");
-                    Assert.AreSame(first, clickedItem,
-                        "ItemClicked must carry the crumb itself when it was added directly to Items.");
-                    Assert.AreEqual(0, clickedIndex, "ItemClicked must carry the mouse-clicked crumb's index.");
+                    Assert.False(first.IsPressed, "IsPressed must reset after the left-button release.");
+                    Assert.Equal(1, raiseCount);
+                    Assert.Same(first, clickedItem);
+                    Assert.Equal(0, clickedIndex);
 
                     _ = second.Focus();
-                    PresentationSource? source = PresentationSource.FromVisual(second);
-                    Assert.IsNotNull(source, "The crumb must have a presentation source once the window is shown.");
+                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(second));
 
                     second.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
                     {
                         RoutedEvent = Keyboard.KeyDownEvent,
                     });
-                    Assert.IsTrue(second.IsPressed, "Enter key-down on a focused crumb must press it.");
+                    Assert.True(second.IsPressed, "Enter key-down on a focused crumb must press it.");
 
                     second.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
                     {
                         RoutedEvent = Keyboard.KeyUpEvent,
                     });
-                    Assert.IsFalse(second.IsPressed, "Enter key-up must release the crumb.");
-                    Assert.AreEqual(2, raiseCount, "Enter on a focused crumb must raise ItemClicked.");
-                    Assert.AreSame(second, clickedItem, "ItemClicked must carry the keyboard-activated crumb.");
-                    Assert.AreEqual(1, clickedIndex, "ItemClicked must carry the keyboard-activated crumb's index.");
+                    Assert.False(second.IsPressed, "Enter key-up must release the crumb.");
+                    Assert.Equal(2, raiseCount);
+                    Assert.Same(second, clickedItem);
+                    Assert.Equal(1, clickedIndex);
                 }
                 finally
                 {
@@ -316,7 +289,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_ItemsChanges_UpdateLastItemState()
         {
             RunOnStaThread(() =>
@@ -336,27 +309,24 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.BreadcrumbBarItem? documents =
-                        bar.ItemContainerGenerator.ContainerFromIndex(1) as Controls.BreadcrumbBarItem;
-                    Assert.IsNotNull(documents, "The container at index 1 must be a BreadcrumbBarItem.");
-                    Assert.IsTrue(documents.IsLastItem, "The final crumb must start with IsLastItem=true.");
+                    Controls.BreadcrumbBarItem documents =
+                        Assert.IsType<Controls.BreadcrumbBarItem>(bar.ItemContainerGenerator.ContainerFromIndex(1));
+                    Assert.True(documents.IsLastItem, "The final crumb must start with IsLastItem=true.");
 
                     crumbs.Add("Design");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                         () => bar.ItemContainerGenerator.ContainerFromIndex(2) is Controls.BreadcrumbBarItem { IsLastItem: true }),
                         "Adding a crumb must realize a new last container with IsLastItem=true.");
-                    Assert.IsFalse(documents.IsLastItem,
+                    Assert.False(documents.IsLastItem,
                         "The previously last crumb must lose IsLastItem after an append.");
 
-                    Controls.FontIcon? documentsChevron = FindVisualChildByName<Controls.FontIcon>(documents, "ChevronIcon");
-                    Assert.IsNotNull(documentsChevron, "The demoted crumb must render its chevron element.");
-                    Assert.AreEqual(Visibility.Visible, documentsChevron.Visibility,
-                        "The demoted crumb must show its chevron again once a crumb follows it.");
+                    Controls.FontIcon documentsChevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(documents, "ChevronIcon"));
+                    Assert.Equal(Visibility.Visible, documentsChevron.Visibility);
 
                     crumbs.RemoveAt(2);
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Assert.IsTrue(documents.IsLastItem,
+                    Assert.True(documents.IsLastItem,
                         "Removing the trailing crumb must promote the previous crumb back to IsLastItem=true.");
                 }
                 finally
@@ -366,7 +336,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_ThemeCycle_CrumbBrushesResolve()
         {
             WpfTestSta.Invoke(static () =>
@@ -388,14 +358,13 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.IsNotNull(app?.TryFindResource(key),
-                            string.Format("Resource '{0}' must resolve in BreadcrumbBar theme cycle step: {1}", key, theme));
+                        Assert.NotNull(app?.TryFindResource(key));
                     }
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBar_AutomationPeer_ReportsGroupClassNameAndName()
         {
             RunOnStaThread(static () =>
@@ -417,16 +386,11 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AutomationPeer? peer = UIElementAutomationPeer.CreatePeerForElement(bar);
-                    Assert.IsNotNull(peer, "BreadcrumbBar must create an automation peer.");
-                    _ = Assert.IsInstanceOfType<Automation.BreadcrumbBarAutomationPeer>(peer,
-                        "BreadcrumbBar must expose the BreadcrumbBarAutomationPeer.");
-                    Assert.AreEqual("BreadcrumbBar", peer.GetClassName(),
-                        "The peer must report the BreadcrumbBar class name.");
-                    Assert.AreEqual(AutomationControlType.Group, peer.GetAutomationControlType(),
-                        "The peer must report the Group control type.");
-                    Assert.AreEqual("Navigation breadcrumb", peer.GetName(),
-                        "The peer name must come from AutomationProperties.Name.");
+                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(bar));
+                    _ = Assert.IsAssignableFrom<Automation.BreadcrumbBarAutomationPeer>(peer);
+                    Assert.Equal("BreadcrumbBar", peer.GetClassName(), StringComparer.Ordinal);
+                    Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
+                    Assert.Equal("Navigation breadcrumb", peer.GetName(), StringComparer.Ordinal);
                 }
                 finally
                 {
@@ -435,7 +399,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void BreadcrumbBarItem_Pressed_AnimatesContentPlatePressScale()
         {
             RunOnStaThread(() =>
@@ -457,21 +421,20 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.IsFalse(first.IsLastItem, "The pressed crumb must be an ancestor (non-last) item.");
+                    Assert.False(first.IsLastItem, "The pressed crumb must be an ancestor (non-last) item.");
 
-                    ScaleTransform? pressScale = first.Template.FindName("PressScale", first) as ScaleTransform;
-                    Assert.IsNotNull(pressScale, "The BreadcrumbBarItem template must expose the PressScale transform.");
-                    Assert.AreEqual(1.0, pressScale.ScaleX, 0.001, "The content plate must rest at 1.0 scale.");
+                    ScaleTransform pressScale = Assert.IsType<ScaleTransform>(first.Template.FindName("PressScale", first));
+                    Assert.Equal(1.0, pressScale.ScaleX, 0.001);
 
                     // Press: the Button.xaml press-scale storyboard settles at 0.98.
                     first.SimulateMouseDown();
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX <= 0.98 && pressScale.ScaleY <= 0.98),
                         "Pressing a crumb must animate its content plate down to the 0.98 press scale.");
 
                     // Release: the release storyboard restores 1.0.
                     first.SimulateMouseUp();
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX >= 1.0 && pressScale.ScaleY >= 1.0),
                         "Releasing a crumb must animate its content plate back to 1.0 scale.");
                 }

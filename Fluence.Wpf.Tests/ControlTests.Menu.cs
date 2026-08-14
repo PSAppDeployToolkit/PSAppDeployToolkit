@@ -26,10 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Media;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -42,7 +42,7 @@ namespace Fluence.Wpf.Tests
         // WI-5B.1  Menu
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void Menu_StyleApplies_BackgroundIsTransparent()
         {
             WpfTestSta.Invoke(static () =>
@@ -57,17 +57,15 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Background must be Transparent (from style setter)
-                SolidColorBrush? bg = menu.Background as SolidColorBrush;
-                Assert.IsNotNull(bg, "Menu.Background must be a SolidColorBrush.");
-                Assert.AreEqual(
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
+                Assert.Equal(
                     Colors.Transparent,
-                    bg.Color,
-                    "Menu.Background must be Transparent per Fluent WI-5B.1 style.");
+                    bg.Color);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Menu_StyleApplies_BorderThicknessIsZero()
         {
             WpfTestSta.Invoke(static () =>
@@ -81,15 +79,14 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(
+                Assert.Equal(
                     new Thickness(0),
-                    menu.BorderThickness,
-                    "Menu.BorderThickness must be 0 per Fluent WI-5B.1 style.");
+                    menu.BorderThickness);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Menu_AcceptsMenuItemItems()
         {
             WpfTestSta.Invoke(static () =>
@@ -106,16 +103,14 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(2, menu.Items.Count, "Menu must hold the two added Fluence MenuItem items.");
-                Assert.IsInstanceOfType(menu.Items[0], typeof(MenuItem),
-                    "Items[0] must be Fluence.Wpf.Controls.MenuItem.");
-                Assert.IsInstanceOfType(menu.Items[1], typeof(MenuItem),
-                    "Items[1] must be Fluence.Wpf.Controls.MenuItem.");
+                Assert.Equal(2, menu.Items.Count);
+                _ = Assert.IsAssignableFrom<MenuItem>(menu.Items[0]);
+                _ = Assert.IsAssignableFrom<MenuItem>(menu.Items[1]);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Menu_ThemeCycle_BackgroundRemainsTransparent()
         {
             WpfTestSta.Invoke(static () =>
@@ -132,12 +127,10 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? bg = menu.Background as SolidColorBrush;
-                Assert.IsNotNull(bg, "Menu.Background must remain a SolidColorBrush after theme cycle.");
-                Assert.AreEqual(
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
+                Assert.Equal(
                     Colors.Transparent,
-                    bg.Color,
-                    "Menu.Background must remain Transparent after theme cycle.");
+                    bg.Color);
                 w.Close();
             });
         }

@@ -26,12 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -41,7 +41,7 @@ namespace Fluence.Wpf.Tests
     /// </summary>
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void FlyoutPresenter_DefaultStyle_AppliesFluentSurface()
         {
             RunOnStaThread(static () =>
@@ -49,8 +49,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(Controls.FlyoutPresenter)) as Style;
-                Assert.IsNotNull(style, "A default Style must be registered for Fluence.Wpf.Controls.FlyoutPresenter.");
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.FlyoutPresenter)));
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.FlyoutPresenter presenter = new() { Content = "Surface" };
@@ -63,17 +62,13 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
-                    Border? surface = FindVisualChild<Border>(presenter);
+                    Border surface = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(presenter));
 
-                    Assert.IsNotNull(surface, "FlyoutPresenter template should render its surface Border.");
-                    Assert.AreEqual(overlayRadius, surface.CornerRadius,
-                        "FlyoutPresenter surface must use OverlayCornerRadius like the other flyout popups.");
-                    Assert.AreEqual(new Thickness(1), surface.BorderThickness,
-                        "FlyoutPresenter surface must use the 1px flyout stroke.");
-                    Assert.AreEqual(new Thickness(16, 15, 16, 17), presenter.Padding,
-                        "FlyoutPresenter.Padding must be the WinUI FlyoutContentThemePadding.");
-                    Assert.AreEqual(96.0, presenter.MinWidth, 0.01, "FlyoutPresenter.MinWidth must be 96 per WinUI metrics.");
-                    Assert.AreEqual(456.0, presenter.MaxWidth, 0.01, "FlyoutPresenter.MaxWidth must be 456 per WinUI metrics.");
+                    Assert.Equal(overlayRadius, surface.CornerRadius);
+                    Assert.Equal(new Thickness(1), surface.BorderThickness);
+                    Assert.Equal(new Thickness(16, 15, 16, 17), presenter.Padding);
+                    Assert.Equal(96.0, presenter.MinWidth, 0.01);
+                    Assert.Equal(456.0, presenter.MaxWidth, 0.01);
                 }
                 finally
                 {
@@ -82,7 +77,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_ShowAt_OpensLightDismissPopupAndPresentsContent()
         {
             RunOnStaThread(() =>
@@ -107,33 +102,29 @@ namespace Fluence.Wpf.Tests
                     flyout.Opened += (_, _) => openedRaised = true;
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup.");
-                    Assert.IsTrue(openingRaised, "ShowAt should raise Opening before the popup opens.");
-                    Assert.IsTrue(openedRaised, "ShowAt should raise Opened after the popup opens.");
+                    Assert.True(openingRaised, "ShowAt should raise Opening before the popup opens.");
+                    Assert.True(openedRaised, "ShowAt should raise Opened after the popup opens.");
 
-                    Popup? popup = flyout.HostPopup;
-                    Assert.IsNotNull(popup, "ShowAt should lazily create the host popup.");
-                    Assert.IsFalse(popup.StaysOpen, "Flyout popups must be light-dismiss (StaysOpen=false).");
-                    Assert.IsTrue(popup.AllowsTransparency, "Flyout popups must allow transparency for the rounded surface.");
-                    Assert.AreEqual(PopupAnimation.None, popup.PopupAnimation,
-                        "Flyout popups must disable the popup fade; the presenter's Loaded storyboard owns the reveal.");
-                    Assert.AreSame(target, popup.PlacementTarget, "ShowAt must anchor the popup to the placement target.");
+                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Assert.False(popup.StaysOpen, "Flyout popups must be light-dismiss (StaysOpen=false).");
+                    Assert.True(popup.AllowsTransparency, "Flyout popups must allow transparency for the rounded surface.");
+                    Assert.Equal(PopupAnimation.None, popup.PopupAnimation);
+                    Assert.Same(target, popup.PlacementTarget);
 
-                    Controls.FlyoutPresenter? presenter = popup.Child as Controls.FlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a FlyoutPresenter.");
-                    Assert.AreEqual("Flyout body", presenter.Content, "Flyout.Content must flow to the presenter.");
+                    Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(popup.Child);
+                    Assert.Equal("Flyout body", presenter.Content);
 
-                    // The open reveal (slide from Y=-8 with a fade) must exist in the template
-                    // and settle at rest once the 167ms storyboard completes.
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => presenter.IsLoaded),
+                    // The open reveal (a placement-aware slide with a fade, run by
+                    // FlyoutPresenter.OnLoaded) must target the named template parts and
+                    // settle at rest once the 167ms reveal completes.
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.IsLoaded),
                         "The presenter must load inside the open popup.");
-                    System.Windows.Media.TranslateTransform? translate =
-                        presenter.Template.FindName("PresenterTranslate", presenter) as System.Windows.Media.TranslateTransform;
-                    Assert.IsNotNull(translate, "The presenter template must expose the PresenterTranslate reveal transform.");
-                    Border? surface = presenter.Template.FindName("PresenterSurface", presenter) as Border;
-                    Assert.IsNotNull(surface, "The presenter template must expose the PresenterSurface root.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    System.Windows.Media.TranslateTransform translate =
+                        Assert.IsType<System.Windows.Media.TranslateTransform>(presenter.Template.FindName("PresenterTranslate", presenter));
+                    Border surface = Assert.IsType<Border>(presenter.Template.FindName("PresenterSurface", presenter));
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => Math.Abs(translate.Y) < 0.001 && surface.Opacity >= 1.0),
                         "The open reveal must settle at Y=0 and full opacity.");
                 }
@@ -145,7 +136,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_Hide_ClosesPopupAndRaisesClosingThenClosed()
         {
             RunOnStaThread(() =>
@@ -165,7 +156,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before Hide is exercised.");
 
                     bool closingRaised = false;
@@ -174,13 +165,13 @@ namespace Fluence.Wpf.Tests
                     flyout.Closed += (_, _) => closedRaised = true;
 
                     flyout.Hide();
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
                         "Hide should close the flyout popup.");
-                    Assert.IsTrue(closingRaised, "Hide should raise Closing before the popup closes.");
+                    Assert.True(closingRaised, "Hide should raise Closing before the popup closes.");
 
                     // Popup.Closed is raised asynchronously once the fade-out completes, so
                     // sample the flag instead of asserting immediately after Hide returns.
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => closedRaised),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => closedRaised),
                         "Hide should raise Closed after the popup closes.");
                 }
                 finally
@@ -191,7 +182,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_ClosingCancel_KeepsFlyoutOpen()
         {
             RunOnStaThread(() =>
@@ -213,16 +204,16 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before the cancel scenario.");
 
                     flyout.Hide();
                     DrainDispatcher(window.Dispatcher);
-                    Assert.IsTrue(flyout.IsOpen, "Canceling Closing must keep the flyout open.");
+                    Assert.True(flyout.IsOpen, "Canceling Closing must keep the flyout open.");
 
                     cancelClose = false;
                     flyout.Hide();
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
                         "Hide should close the flyout once Closing is no longer canceled.");
                 }
                 finally
@@ -234,7 +225,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_ContentChange_FlowsToPresenter()
         {
             RunOnStaThread(() =>
@@ -254,16 +245,15 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before content is swapped.");
 
-                    Controls.FlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.FlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a FlyoutPresenter.");
-                    Assert.AreEqual("First", presenter.Content, "The initial Flyout.Content must reach the presenter.");
+                    Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
+                    Assert.Equal("First", presenter.Content);
 
                     flyout.Content = "Second";
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual("Second", presenter.Content, "Flyout.Content changes must flow to the presenter binding.");
+                    Assert.Equal("Second", presenter.Content);
                 }
                 finally
                 {
@@ -273,7 +263,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FlyoutBase_ShowAttachedFlyout_OpensAttachedFlyout()
         {
             RunOnStaThread(() =>
@@ -293,14 +283,12 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     Controls.FlyoutBase.SetAttachedFlyout(owner, flyout);
-                    Assert.AreSame(flyout, Controls.FlyoutBase.GetAttachedFlyout(owner),
-                        "GetAttachedFlyout must return the flyout set via SetAttachedFlyout.");
+                    Assert.Same(flyout, Controls.FlyoutBase.GetAttachedFlyout(owner));
 
                     Controls.FlyoutBase.ShowAttachedFlyout(owner);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAttachedFlyout should open the attached flyout.");
-                    Assert.AreSame(owner, flyout.HostPopup?.PlacementTarget,
-                        "ShowAttachedFlyout must anchor the flyout to the owner element.");
+                    Assert.Same(owner, flyout.HostPopup?.PlacementTarget);
                 }
                 finally
                 {
@@ -310,7 +298,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_PlacementModes_MapToPopupPlacement()
         {
             RunOnStaThread(() =>
@@ -329,48 +317,36 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(FlyoutPlacementMode.Top, flyout.Placement,
-                        "Flyout placement must default to Top per the WinUI FlyoutBase contract.");
-                    Assert.IsTrue(flyout.ShouldConstrainToRootBounds,
+                    Assert.Equal(FlyoutPlacementMode.Top, flyout.Placement);
+                    Assert.True(flyout.ShouldConstrainToRootBounds,
                         "ShouldConstrainToRootBounds must default to true.");
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before placement mapping is verified.");
 
-                    Popup? popup = flyout.HostPopup;
-                    Assert.IsNotNull(popup, "ShowAt should lazily create the host popup.");
-                    Assert.AreEqual(PlacementMode.Custom, popup.Placement,
-                        "The flyout popup must use Custom placement so it can center on the target edge like WinUI.");
-                    Assert.IsNotNull(popup.CustomPopupPlacementCallback,
-                        "The flyout popup must carry the edge-centering placement callback.");
+                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Assert.Equal(PlacementMode.Custom, popup.Placement);
+                    Assert.NotNull(popup.CustomPopupPlacementCallback);
 
                     // The popup side mapping that feeds the callback.
-                    Assert.AreEqual(PlacementMode.Top, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Top),
-                        "Top must map to the top side.");
-                    Assert.AreEqual(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Bottom),
-                        "Bottom must map to the bottom side.");
-                    Assert.AreEqual(PlacementMode.Left, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Left),
-                        "Left must map to the left side.");
-                    Assert.AreEqual(PlacementMode.Right, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Right),
-                        "Right must map to the right side.");
-                    Assert.AreEqual(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Full),
-                        "Full currently maps to the bottom side.");
-                    Assert.AreEqual(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Auto),
-                        "Auto currently maps to the bottom side.");
+                    Assert.Equal(PlacementMode.Top, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Top));
+                    Assert.Equal(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Bottom));
+                    Assert.Equal(PlacementMode.Left, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Left));
+                    Assert.Equal(PlacementMode.Right, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Right));
+                    Assert.Equal(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Full));
+                    Assert.Equal(PlacementMode.Bottom, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Auto));
 
                     // The live popup callback must follow the flyout's current Placement: the
                     // default Top placement centers the popup horizontally above the target.
                     Size popupSize = new(100, 40);
                     Size targetSize = new(60, 20);
                     CustomPopupPlacement[] topPlacements = popup.CustomPopupPlacementCallback(popupSize, targetSize, default);
-                    Assert.AreEqual(new Point(-20, -40), topPlacements[0].Point,
-                        "Top placement must center the popup horizontally on the target's top edge.");
+                    Assert.Equal(new Point(-20, -40), topPlacements[0].Point);
 
                     flyout.Placement = FlyoutPlacementMode.Bottom;
                     CustomPopupPlacement[] bottomPlacements = popup.CustomPopupPlacementCallback(popupSize, targetSize, default);
-                    Assert.AreEqual(new Point(-20, 20), bottomPlacements[0].Point,
-                        "Bottom placement must center the popup horizontally on the target's bottom edge.");
+                    Assert.Equal(new Point(-20, 20), bottomPlacements[0].Point);
                 }
                 finally
                 {
@@ -380,7 +356,59 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void Flyout_ShowAt_StampsRevealPlacementWithMappedSide()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 400, Height = 300 };
+                Button target = new() { Content = "Anchor" };
+                Controls.Flyout flyout = new() { Content = "Directional" };
+
+                try
+                {
+                    window.Content = target;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Controls.FlyoutPresenter unstamped = new();
+                    Assert.Equal(PlacementMode.Bottom, unstamped.RevealPlacement);
+
+                    foreach (FlyoutPlacementMode mode in new[]
+                    {
+                        FlyoutPlacementMode.Top,
+                        FlyoutPlacementMode.Bottom,
+                        FlyoutPlacementMode.Left,
+                        FlyoutPlacementMode.Right,
+                    })
+                    {
+                        flyout.Placement = mode;
+                        flyout.ShowAt(target);
+                        Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                            string.Format("ShowAt should open the flyout popup for placement {0}.", mode));
+
+                        Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
+                        PlacementMode expectedSide = Controls.FlyoutBase.MapPlacementSide(mode);
+                        Assert.Equal(expectedSide, presenter.RevealPlacement);
+
+                        flyout.Hide();
+                        Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                            string.Format("Hide should close the flyout popup for placement {0}.", mode));
+                    }
+                }
+                finally
+                {
+                    flyout.Hide();
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
         public void FlyoutBase_GetEdgeCenteredPlacements_CentersOnFacingEdge()
         {
             // Pure placement math: a 100x40 popup against a 60x20 target. Points are relative
@@ -390,35 +418,28 @@ namespace Fluence.Wpf.Tests
 
             CustomPopupPlacement[] top = Controls.FlyoutBase.GetEdgeCenteredPlacements(
                 PlacementMode.Top, popupSize, targetSize, default);
-            Assert.AreEqual(new Point(-20, -40), top[0].Point,
-                "Top must center horizontally ((60-100)/2 = -20) with the popup bottom on the target top.");
-            Assert.AreEqual(new Point(-20, 20), top[1].Point,
-                "Top must offer the bottom edge as the screen-edge flip fallback.");
+            Assert.Equal(new Point(-20, -40), top[0].Point);
+            Assert.Equal(new Point(-20, 20), top[1].Point);
 
             CustomPopupPlacement[] bottom = Controls.FlyoutBase.GetEdgeCenteredPlacements(
                 PlacementMode.Bottom, popupSize, targetSize, default);
-            Assert.AreEqual(new Point(-20, 20), bottom[0].Point,
-                "Bottom must center horizontally with the popup top on the target bottom.");
-            Assert.AreEqual(new Point(-20, -40), bottom[1].Point,
-                "Bottom must offer the top edge as the screen-edge flip fallback.");
+            Assert.Equal(new Point(-20, 20), bottom[0].Point);
+            Assert.Equal(new Point(-20, -40), bottom[1].Point);
 
             CustomPopupPlacement[] left = Controls.FlyoutBase.GetEdgeCenteredPlacements(
                 PlacementMode.Left, popupSize, targetSize, default);
-            Assert.AreEqual(new Point(-100, -10), left[0].Point,
-                "Left must center vertically ((20-40)/2 = -10) with the popup right on the target left.");
+            Assert.Equal(new Point(-100, -10), left[0].Point);
 
             CustomPopupPlacement[] right = Controls.FlyoutBase.GetEdgeCenteredPlacements(
                 PlacementMode.Right, popupSize, targetSize, default);
-            Assert.AreEqual(new Point(60, -10), right[0].Point,
-                "Right must center vertically with the popup left on the target right.");
+            Assert.Equal(new Point(60, -10), right[0].Point);
 
             CustomPopupPlacement[] offsetBottom = Controls.FlyoutBase.GetEdgeCenteredPlacements(
                 PlacementMode.Bottom, popupSize, targetSize, new Point(5, 7));
-            Assert.AreEqual(new Point(-15, 27), offsetBottom[0].Point,
-                "HorizontalOffset/VerticalOffset must shift the centered placement.");
+            Assert.Equal(new Point(-15, 27), offsetBottom[0].Point);
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_Escape_HidesFlyoutThroughClosingPipeline()
         {
             RunOnStaThread(() =>
@@ -438,14 +459,13 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before Escape is simulated.");
 
                     bool closingRaised = false;
                     flyout.Closing += (_, _) => closingRaised = true;
 
-                    Controls.FlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.FlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a FlyoutPresenter.");
+                    Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
                     presenter.RaiseEvent(new KeyEventArgs(
                         Keyboard.PrimaryDevice,
                         PresentationSource.FromVisual(window),
@@ -455,9 +475,9 @@ namespace Fluence.Wpf.Tests
                         RoutedEvent = UIElement.PreviewKeyDownEvent,
                     });
 
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
                         "Escape inside the flyout must dismiss it.");
-                    Assert.IsTrue(closingRaised, "The Escape dismissal must run through the cancelable Closing event.");
+                    Assert.True(closingRaised, "The Escape dismissal must run through the cancelable Closing event.");
                 }
                 finally
                 {
@@ -467,7 +487,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Flyout_ShowAt_FlowsTargetDataContextIntoPresenter()
         {
             RunOnStaThread(() =>
@@ -488,20 +508,18 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup before the DataContext is verified.");
 
-                    Controls.FlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.FlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a FlyoutPresenter.");
-                    Assert.AreSame(viewModel, presenter.DataContext,
-                        "ShowAt must flow the placement target's DataContext onto the presenter.");
+                    Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(flyout.HostPopup?.Child);
+                    Assert.Same(viewModel, presenter.DataContext);
 
                     flyout.Hide();
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
                         "Hide should close the flyout popup before the cleanup is verified.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => presenter.DataContext is null),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.DataContext is null),
                         "Closing must clear the DataContext flowed onto the presenter.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.HostPopup?.PlacementTarget is null),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.HostPopup?.PlacementTarget is null),
                         "Closing must release the popup's placement target so the flyout does not pin the anchor.");
                 }
                 finally
@@ -512,7 +530,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FlyoutPresenter_ThemeCycle_SurfaceBrushesResolve()
         {
             WpfTestSta.Invoke(static () =>
@@ -527,8 +545,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.IsNotNull(app?.TryFindResource(key),
-                            string.Format("Resource '{0}' must resolve in FlyoutPresenter theme cycle step: {1}", key, theme));
+                        Assert.NotNull(app?.TryFindResource(key));
                     }
                 }
             });

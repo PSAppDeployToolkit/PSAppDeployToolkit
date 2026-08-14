@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Helpers
         internal static bool IsSnapLayoutEnabled()
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.ExplorerAdvancedRegistryPath);
-            return key?.GetValue(NativeConstants.EnableSnapAssistFlyout) is not int value || value != 0;
+            return key?.GetValue(NativeConstants.EnableSnapAssistFlyout) is not int value || value is not 0;
         }
     }
 }

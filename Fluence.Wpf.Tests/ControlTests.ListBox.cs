@@ -26,12 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Media;
-using FluenceListBox = Fluence.Wpf.Controls.ListBox;
-using FluenceListBoxItem = Fluence.Wpf.Controls.ListBoxItem;
-using WpfBorder = System.Windows.Controls.Border;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -43,7 +40,7 @@ namespace Fluence.Wpf.Tests
     /// </summary>
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void ListBox_SelectionIndicator_CanonicalGeometryAndCentered()
         {
             WpfTestSta.Invoke(static () =>
@@ -51,41 +48,31 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceListBox lb = new();
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item A" });
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item B" });
+                Controls.ListBox lb = new();
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item A" });
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item B" });
                 Window w = new() { Content = lb, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                FluenceListBoxItem? item = FindVisualChild<FluenceListBoxItem>(lb);
-                Assert.IsNotNull(item, "ListBoxItem must exist in visual tree after Show.");
+                Controls.ListBoxItem item = Assert.IsAssignableFrom<Controls.ListBoxItem>(FindVisualChild<Controls.ListBoxItem>(lb));
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(item, "SelectionIndicator");
-                Assert.IsNotNull(indicator, "SelectionIndicator border must be present in ListBoxItem template.");
+                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(item, "SelectionIndicator"));
 
-                Assert.AreEqual(3.0, indicator.Width, 0.01,
-                    "SelectionIndicator.Width must be 3.0 (WinUI 3 canonical 3px bar).");
-                Assert.AreEqual(16.0, indicator.Height, 0.01,
-                    "SelectionIndicator.Height must be 16.0 to match the ListViewItem indicator.");
-                Assert.AreEqual(new CornerRadius(1.5), indicator.CornerRadius,
-                    "SelectionIndicator.CornerRadius must be 1.5 per WinUI 3 ListViewItemSelectionIndicatorCornerRadius.");
-                Assert.AreEqual(VerticalAlignment.Center, indicator.VerticalAlignment,
-                    "SelectionIndicator must be vertically centered in the item.");
-                _ = Assert.IsInstanceOfType<TranslateTransform>(indicator.RenderTransform,
-                    "SelectionIndicator must use the slide-in TranslateTransform; a ScaleTransform shrinks the bar and breaks vertical centering.");
+                Assert.Equal(3.0, indicator.Width, 0.01);
+                Assert.Equal(16.0, indicator.Height, 0.01);
+                Assert.Equal(new CornerRadius(1.5), indicator.CornerRadius);
+                Assert.Equal(VerticalAlignment.Center, indicator.VerticalAlignment);
+                _ = Assert.IsAssignableFrom<TranslateTransform>(indicator.RenderTransform);
 
-                SolidColorBrush? expected = app?.TryFindResource("AccentFillColorDefaultBrush") as SolidColorBrush;
-                Assert.IsNotNull(expected, "AccentFillColorDefaultBrush must resolve.");
-                SolidColorBrush? actual = indicator.Background as SolidColorBrush;
-                Assert.IsNotNull(actual, "SelectionIndicator.Background must be a SolidColorBrush.");
-                Assert.AreEqual(expected.Color, actual.Color,
-                    "SelectionIndicator.Background must be AccentFillColorDefaultBrush.");
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(indicator.Background);
+                Assert.Equal(expected.Color, actual.Color);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ListBox_SelectionIndicator_SlidesInAtFullSizeWhenSelected()
         {
             WpfTestSta.Invoke(() =>
@@ -93,31 +80,26 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceListBox lb = new();
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item A" });
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item B" });
+                Controls.ListBox lb = new();
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item A" });
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item B" });
                 Window w = new() { Content = lb, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                FluenceListBoxItem? item = FindVisualChild<FluenceListBoxItem>(lb);
-                Assert.IsNotNull(item, "ListBoxItem must exist.");
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(item, "SelectionIndicator");
-                Assert.IsNotNull(indicator, "SelectionIndicator must be present.");
-                Assert.AreEqual(0.0, indicator.Opacity, 0.01,
-                    "SelectionIndicator must be hidden while the item is unselected.");
+                Controls.ListBoxItem item = Assert.IsAssignableFrom<Controls.ListBoxItem>(FindVisualChild<Controls.ListBoxItem>(lb));
+                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(item, "SelectionIndicator"));
+                Assert.Equal(0.0, indicator.Opacity, 0.01);
 
                 lb.SelectedIndex = 0;
                 bool shown = WaitUntil(w.Dispatcher, 1000, () => indicator.Opacity >= 0.99);
-                Assert.IsTrue(shown, "SelectionIndicator must animate to full opacity when the item is selected.");
+                Assert.True(shown, "SelectionIndicator must animate to full opacity when the item is selected.");
 
-                TranslateTransform? translate = indicator.RenderTransform as TranslateTransform;
-                Assert.IsNotNull(translate, "SelectionIndicator must keep its TranslateTransform.");
+                TranslateTransform translate = Assert.IsType<TranslateTransform>(indicator.RenderTransform);
                 bool settled = WaitUntil(w.Dispatcher, 1000, () => System.Math.Abs(translate.X) < 0.01);
-                Assert.IsTrue(settled, "SelectionIndicator must slide to its resting position when selected.");
+                Assert.True(settled, "SelectionIndicator must slide to its resting position when selected.");
 
-                Assert.AreEqual(16.0, indicator.ActualHeight, 0.5,
-                    "SelectionIndicator must render at its full 16px height when selected (no residual scale).");
+                Assert.Equal(16.0, indicator.ActualHeight, 0.5);
                 w.Close();
             });
         }

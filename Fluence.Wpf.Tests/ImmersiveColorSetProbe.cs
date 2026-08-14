@@ -26,11 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Native;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Media;
+using Fluence.Wpf.Native;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -44,10 +44,10 @@ namespace Fluence.Wpf.Tests
     /// runtime instead of relying on a manually-captured <c>KnownAccentRamps</c> table.
     /// </para>
     /// </summary>
-    [TestClass]
-    public class ImmersiveColorSetProbe
+    /// <param name="output">The xUnit test output sink for diagnostic logging.</param>
+    public class ImmersiveColorSetProbe(ITestOutputHelper output)
     {
-        public TestContext? TestContext { get; set; }
+        private readonly ITestOutputHelper _output = output;
 
         // Canonical immersive color type names. The OS resolves these to type IDs that are
         // stable for the process lifetime.
@@ -69,12 +69,11 @@ namespace Fluence.Wpf.Tests
         //   * Conclusion: uxtheme color sets do NOT expose per-color ramps for arbitrary
         //     accents. Cannot be used to look up custom-accent ramps without first changing
         //     the user's system accent in Settings.
-        [Ignore("Read-only probe; result documented 2026-05-23: only the active accent is exposed.")]
-        [TestMethod]
+        [Fact(Explicit = true)] // Read-only probe; result documented 2026-05-23: only the active accent is exposed.
         public void Probe_EnumerateColorSets_DumpsAllRamps()
         {
             uint count = NativeMethods.GetImmersiveColorSetCount();
-            TestContext?.WriteLine($"Total immersive color sets reported by OS: {count}");
+            _output.WriteLine($"Total immersive color sets reported by OS: {count}");
 
             uint typeBase = NativeMethods.GetImmersiveColorTypeFromName(NameBase);
             uint typeLight1 = NativeMethods.GetImmersiveColorTypeFromName(NameLight1);
@@ -84,24 +83,24 @@ namespace Fluence.Wpf.Tests
             uint typeDark2 = NativeMethods.GetImmersiveColorTypeFromName(NameDark2);
             uint typeDark3 = NativeMethods.GetImmersiveColorTypeFromName(NameDark3);
 
-            TestContext?.WriteLine($"Type IDs: Base={typeBase} L1={typeLight1} L2={typeLight2} L3={typeLight3} D1={typeDark1} D2={typeDark2} D3={typeDark3}");
+            _output.WriteLine($"Type IDs: Base={typeBase} L1={typeLight1} L2={typeLight2} L3={typeLight3} D1={typeDark1} D2={typeDark2} D3={typeDark3}");
 
             uint activeSet = NativeMethods.GetImmersiveUserColorSetPreference(bForceCheckRegistry: false, bSkipCheckOnFail: false);
-            TestContext?.WriteLine($"Active set index (user's current): {activeSet}");
-            TestContext?.WriteLine("");
+            _output.WriteLine($"Active set index (user's current): {activeSet}");
+            _output.WriteLine("");
 
             const uint validTypeId = 0xFFFFFFFF;
             if (typeBase == validTypeId || count == 0)
             {
-                Assert.Inconclusive("Immersive color APIs returned no data on this machine.");
+                Assert.Skip("Immersive color APIs returned no data on this machine.");
                 return;
             }
 
             HashSet<int> seenBases = [];
             int duplicateBaseCount = 0;
 
-            TestContext?.WriteLine("Set | Base    | L3      L2      L1      Base    D1      D2      D3");
-            TestContext?.WriteLine("----+---------+--------------------------------------------------------");
+            _output.WriteLine("Set | Base    | L3      L2      L1      Base    D1      D2      D3");
+            _output.WriteLine("----+---------+--------------------------------------------------------");
 
             for (uint i = 0; i < count; i++)
             {
@@ -123,12 +122,12 @@ namespace Fluence.Wpf.Tests
                 uint d3Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark3, bIgnoreHighContrast: true, 0);
 
                 string activeMarker = (i == activeSet) ? "*" : " ";
-                TestContext?.WriteLine($"{i,3} | {Hex(baseColor)}{activeMarker}| {Hex(DecodeAbgrToRgb(l3Raw))} {Hex(DecodeAbgrToRgb(l2Raw))} {Hex(DecodeAbgrToRgb(l1Raw))} {Hex(baseColor)} {Hex(DecodeAbgrToRgb(d1Raw))} {Hex(DecodeAbgrToRgb(d2Raw))} {Hex(DecodeAbgrToRgb(d3Raw))}");
+                _output.WriteLine($"{i,3} | {Hex(baseColor)}{activeMarker}| {Hex(DecodeAbgrToRgb(l3Raw))} {Hex(DecodeAbgrToRgb(l2Raw))} {Hex(DecodeAbgrToRgb(l1Raw))} {Hex(baseColor)} {Hex(DecodeAbgrToRgb(d1Raw))} {Hex(DecodeAbgrToRgb(d2Raw))} {Hex(DecodeAbgrToRgb(d3Raw))}");
             }
 
-            TestContext?.WriteLine("");
-            TestContext?.WriteLine($"Unique base colors: {seenBases.Count} (of {count} total sets, {duplicateBaseCount.ToString(CultureInfo.InvariantCulture)} skipped duplicates)");
-            TestContext?.WriteLine("");
+            _output.WriteLine("");
+            _output.WriteLine($"Unique base colors: {seenBases.Count} (of {count} total sets, {duplicateBaseCount.ToString(CultureInfo.InvariantCulture)} skipped duplicates)");
+            _output.WriteLine("");
 
             // Cross-check against our design.md candidate list.
             Color[] candidates =
@@ -143,14 +142,14 @@ namespace Fluence.Wpf.Tests
                 Color.FromRgb(0x00, 0xB2, 0x94), // Sport Blue
             ];
 
-            TestContext?.WriteLine("Cross-check vs design.md candidate accents:");
+            _output.WriteLine("Cross-check vs design.md candidate accents:");
             foreach (Color c in candidates)
             {
                 bool present = seenBases.Contains(Pack(c));
-                TestContext?.WriteLine($"  {Hex(c)} -> {(present ? "PRESENT" : "NOT FOUND")}");
+                _output.WriteLine($"  {Hex(c)} -> {(present ? "PRESENT" : "NOT FOUND")}");
             }
 
-            Assert.IsTrue(count > 0, "Expected at least one immersive color set");
+            Assert.True(count > 0, "Expected at least one immersive color set");
         }
 
         private static Color DecodeAbgrToRgb(uint nativeColor)
@@ -161,7 +160,7 @@ namespace Fluence.Wpf.Tests
             byte g = (byte)((nativeColor >> 8) & 0xFF);
             byte b = (byte)((nativeColor >> 16) & 0xFF);
             byte a = (byte)((nativeColor >> 24) & 0xFF);
-            return Color.FromArgb(a == 0 ? (byte)0xFF : a, r, g, b);
+            return Color.FromArgb(a is 0 ? (byte)0xFF : a, r, g, b);
         }
 
         private static int Pack(Color c)

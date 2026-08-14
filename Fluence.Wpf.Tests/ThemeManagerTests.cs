@@ -26,17 +26,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Media;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class ThemeManagerTests
     {
-        [TestInitialize]
-        public void TestInitialize()
+        public ThemeManagerTests()
         {
             WpfTestSta.Invoke(static () =>
             {
@@ -47,43 +45,26 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
-        public void Apply_Light_TextBrushIsDarkOnLight()
+        [Theory]
+        [InlineData(ApplicationTheme.Light, 0xE4, 0x00, 0x00, 0x00)]
+        [InlineData(ApplicationTheme.Dark, 0xFF, 0xFF, 0xFF, 0xFF)]
+        public void Apply_Theme_TextFillColorPrimaryMatches(ApplicationTheme theme, byte a, byte r, byte g, byte b)
         {
-            WpfTestSta.Invoke(static () =>
+            WpfTestSta.Invoke(() =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
 
-                Color? textColor = app.Resources["TextFillColorPrimary"] as Color?;
-                Assert.IsNotNull(textColor, "TextFillColorPrimary should be defined");
+                Color textColor = Assert.IsType<Color>(app.Resources["TextFillColorPrimary"]);
 
-                Assert.AreEqual((byte)0xE4, textColor.Value.A, "Alpha should be 0xE4");
-                Assert.AreEqual((byte)0x00, textColor.Value.R, "Red should be 0x00");
-                Assert.AreEqual((byte)0x00, textColor.Value.G, "Green should be 0x00");
-                Assert.AreEqual((byte)0x00, textColor.Value.B, "Blue should be 0x00");
+                Assert.Equal(a, textColor.A);
+                Assert.Equal(r, textColor.R);
+                Assert.Equal(g, textColor.G);
+                Assert.Equal(b, textColor.B);
             });
         }
 
-        [TestMethod]
-        public void Apply_Dark_TextBrushIsLightOnDark()
-        {
-            WpfTestSta.Invoke(static () =>
-            {
-                Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
-
-                Color? textColor = app.Resources["TextFillColorPrimary"] as Color?;
-                Assert.IsNotNull(textColor, "TextFillColorPrimary should be defined");
-
-                Assert.AreEqual((byte)0xFF, textColor.Value.A, "Alpha should be 0xFF");
-                Assert.AreEqual((byte)0xFF, textColor.Value.R, "Red should be 0xFF");
-                Assert.AreEqual((byte)0xFF, textColor.Value.G, "Green should be 0xFF");
-                Assert.AreEqual((byte)0xFF, textColor.Value.B, "Blue should be 0xFF");
-            });
-        }
-
-        [TestMethod]
+        [Fact]
         public void Apply_HighContrast_UsesSystemColors()
         {
             WpfTestSta.Invoke(static () =>
@@ -91,12 +72,30 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
 
-                SolidColorBrush? brush = app.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush;
-                Assert.IsNotNull(brush, "TextFillColorPrimaryBrush should be defined");
+                SolidColorBrush brush = Assert.IsType<SolidColorBrush>(app.Resources["TextFillColorPrimaryBrush"]);
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void Apply_HighContrast_CloseButtonUsesSystemHighlight_NotBrandRed()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application app = Application.Current;
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
+
+                SolidColorBrush pointerOver = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonBackgroundPointerOverBrush"]);
+                SolidColorBrush pressed = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonBackgroundPressedBrush"]);
+                SolidColorBrush foreground = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonForegroundPointerOverBrush"]);
+
+
+                Assert.Equal(SystemColors.HighlightColor, pointerOver.Color);
+                Assert.Equal(SystemColors.HighlightColor, pressed.Color);
+                Assert.Equal(SystemColors.HighlightTextColor, foreground.Color);
+            });
+        }
+
+        [Fact]
         public void Apply_FiresChangedExactlyOnce()
         {
             WpfTestSta.Invoke(() =>
@@ -108,7 +107,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
-                    Assert.AreEqual(1, eventCount, "Changed event should fire exactly once");
+                    Assert.Equal(1, eventCount);
                 }
                 finally
                 {
@@ -117,7 +116,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TwoRapidApplies_FiresExactlyTwoEvents()
         {
             WpfTestSta.Invoke(() =>
@@ -130,7 +129,7 @@ namespace Fluence.Wpf.Tests
                 {
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
-                    Assert.AreEqual(2, eventCount, "Changed event should fire exactly twice");
+                    Assert.Equal(2, eventCount);
                 }
                 finally
                 {
@@ -139,7 +138,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FiveSwitches_DictionaryCountStable()
         {
             WpfTestSta.Invoke(static () =>
@@ -155,24 +154,87 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
 
                 int finalCount = app.Resources.MergedDictionaries.Count;
-                Assert.AreEqual(initialCount, finalCount, "Dictionary count should remain stable after multiple switches");
+                Assert.Equal(initialCount, finalCount);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void IsSystemInDarkMode_IsInverseOfRegistrySystemLight()
         {
             bool registryLight = Helpers.RegistryHelper.GetSystemUsesLightTheme();
             bool result = ApplicationThemeManager.IsSystemInDarkMode;
-            Assert.AreEqual(!registryLight, result);
+            Assert.Equal(!registryLight, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAppInDarkMode_IsInverseOfRegistryAppsLight()
         {
             bool registryLight = Helpers.RegistryHelper.GetAppsUseLightTheme();
             bool result = ApplicationThemeManager.IsAppInDarkMode;
-            Assert.AreEqual(!registryLight, result);
+            Assert.Equal(!registryLight, result);
+        }
+
+        [Theory]
+        [InlineData(ApplicationTheme.Light)]
+        [InlineData(ApplicationTheme.Dark)]
+        [InlineData(ApplicationTheme.HighContrast)]
+        public void Apply_ExplicitTheme_ResolvedThemeMatches(ApplicationTheme theme)
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
+                Assert.Equal(theme, ApplicationThemeManager.ResolvedTheme);
+            });
+        }
+
+        [Theory]
+        [InlineData(ApplicationTheme.Light)]
+        [InlineData(ApplicationTheme.Auto)]
+        public void Apply_ResolvedThemeNeverReturnsAuto(ApplicationTheme theme)
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
+                Assert.NotEqual(ApplicationTheme.Auto, ApplicationThemeManager.ResolvedTheme);
+            });
+        }
+
+        [Fact]
+        public void ResolvedTheme_TracksLastAppliedTheme()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                Assert.Equal(ApplicationTheme.Light, ApplicationThemeManager.ResolvedTheme);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                Assert.Equal(ApplicationTheme.Dark, ApplicationThemeManager.ResolvedTheme);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
+                Assert.Equal(ApplicationTheme.HighContrast, ApplicationThemeManager.ResolvedTheme);
+            });
+        }
+
+        [Fact]
+        public void ResolvedTheme_RemainsConsistentAfterAccentChange()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                ApplicationTheme themeBeforeAccent = ApplicationThemeManager.ResolvedTheme;
+
+                ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0xFF, 0x00, 0x00));
+
+                Assert.Equal(themeBeforeAccent, ApplicationThemeManager.ResolvedTheme);
+                Assert.NotEqual(ApplicationTheme.Auto, ApplicationThemeManager.ResolvedTheme);
+            });
+        }
+
+        [Fact]
+        public void ResolvedTheme_DefaultsToLight_BeforeFirstApply()
+        {
+            WpfTestSta.Invoke(static () =>
+                Assert.Equal(ApplicationTheme.Light, ApplicationThemeManager.ResolvedTheme));
         }
 
     }

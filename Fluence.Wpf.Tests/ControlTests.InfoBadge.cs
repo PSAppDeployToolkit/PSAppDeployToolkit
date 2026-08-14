@@ -26,14 +26,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Shapes;
+using Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -46,7 +47,7 @@ namespace Fluence.Wpf.Tests
         // WI-3 A10  InfoBadge DisplayKindStates VSM group
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_DisplayKindStates_GroupExists()
         {
             WpfTestSta.Invoke(static () =>
@@ -67,16 +68,16 @@ namespace Fluence.Wpf.Tests
                 {
                     foreach (object? g in groups)
                     {
-                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", System.StringComparison.Ordinal))
+                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", StringComparison.Ordinal))
                         { found = true; break; }
                     }
                 }
-                Assert.IsTrue(found, "InfoBadge template must contain a VisualStateGroup named 'DisplayKindStates'.");
+                Assert.True(found, "InfoBadge template must contain a VisualStateGroup named 'DisplayKindStates'.");
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_DefaultState_IsDot()
         {
             WpfTestSta.Invoke(static () =>
@@ -91,17 +92,15 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // DotIndicator should be visible; BadgeBorder should be collapsed.
-                Ellipse? dot = FindVisualChildByName<Ellipse>(badge, "DotIndicator");
-                System.Windows.Controls.Border? border = FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder");
-                Assert.IsNotNull(dot, "DotIndicator element must exist.");
-                Assert.IsNotNull(border, "BadgeBorder element must exist.");
-                Assert.AreEqual(Visibility.Visible, dot.Visibility, "DotIndicator must be Visible in Dot state.");
-                Assert.AreEqual(Visibility.Collapsed, border.Visibility, "BadgeBorder must be Collapsed in Dot state.");
+                Ellipse dot = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(badge, "DotIndicator"));
+                System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
+                Assert.Equal(Visibility.Visible, dot.Visibility);
+                Assert.Equal(Visibility.Collapsed, border.Visibility);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_ValueSet_ShowsBadgeBorder()
         {
             WpfTestSta.Invoke(static () =>
@@ -116,13 +115,13 @@ namespace Fluence.Wpf.Tests
 
                 Ellipse? dot = FindVisualChildByName<Ellipse>(badge, "DotIndicator");
                 System.Windows.Controls.Border? border = FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder");
-                Assert.AreEqual(Visibility.Collapsed, dot?.Visibility, "DotIndicator must be Collapsed when Value >= 0.");
-                Assert.AreEqual(Visibility.Visible, border?.Visibility, "BadgeBorder must be Visible when Value >= 0.");
+                Assert.Equal(Visibility.Collapsed, dot?.Visibility);
+                Assert.Equal(Visibility.Visible, border?.Visibility);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_ValueBadge_UsesStableScreenshotPillMetrics()
         {
             WpfTestSta.Invoke(static () =>
@@ -138,28 +137,18 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(w.Dispatcher);
                     w.UpdateLayout();
 
-                    System.Windows.Controls.Border? border = FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder");
-                    ContentPresenter? content = FindVisualChildByName<ContentPresenter>(badge, "ContentArea");
-                    Assert.IsNotNull(border, "Value badge must render through BadgeBorder.");
-                    Assert.IsNotNull(content, "Value badge must render centered text through ContentArea.");
-                    Assert.AreEqual(34.0, border.MinWidth, 0.1,
-                        "Value badges should keep the stable pill width shown in the Navigation sample screenshot.");
-                    Assert.AreEqual(24.0, border.MinHeight, 0.1,
-                        "Value badges should keep the stable pill height shown in the Navigation sample screenshot.");
-                    Assert.AreEqual(24.0, border.MaxHeight, 0.1,
-                        "Value badges should not stretch taller than the screenshot pill height.");
-                    Assert.AreEqual(border.Padding.Left, border.Padding.Right, 0.01,
-                        "Value badge horizontal padding should be symmetric.");
-                    Assert.AreEqual(border.Padding.Top, border.Padding.Bottom, 0.01,
-                        "Value badge vertical padding should be symmetric.");
-                    Assert.IsTrue(border.Padding.Top > border.Padding.Left,
+                    System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
+                    ContentPresenter content = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(badge, "ContentArea"));
+                    Assert.Equal(34.0, border.MinWidth, 0.1);
+                    Assert.Equal(24.0, border.MinHeight, 0.1);
+                    Assert.Equal(24.0, border.MaxHeight, 0.1);
+                    Assert.Equal(border.Padding.Left, border.Padding.Right, 0.01);
+                    Assert.Equal(border.Padding.Top, border.Padding.Bottom, 0.01);
+                    Assert.True(border.Padding.Top > border.Padding.Left,
                         "Value badge vertical padding should be taller than the horizontal padding.");
-                    Assert.AreEqual(HorizontalAlignment.Center, content.HorizontalAlignment,
-                        "Value badge text should be centered horizontally.");
-                    Assert.AreEqual(VerticalAlignment.Center, content.VerticalAlignment,
-                        "Value badge text should be centered vertically.");
-                    Assert.AreEqual(FontWeights.SemiBold, TextElement.GetFontWeight(content),
-                        "Value badge text should render bold.");
+                    Assert.Equal(HorizontalAlignment.Center, content.HorizontalAlignment);
+                    Assert.Equal(VerticalAlignment.Center, content.VerticalAlignment);
+                    Assert.Equal(FontWeights.SemiBold, TextElement.GetFontWeight(content));
                 }
                 finally
                 {
@@ -168,7 +157,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBadge_DisplayKindStates_HasAllFourStates()
         {
             WpfTestSta.Invoke(static () =>
@@ -187,12 +176,12 @@ namespace Fluence.Wpf.Tests
                 {
                     foreach (object? g in groups)
                     {
-                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", System.StringComparison.Ordinal)) { dkg = vsg; break; }
+                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", StringComparison.Ordinal)) { dkg = vsg; break; }
                     }
                 }
-                Assert.IsNotNull(dkg, "DisplayKindStates group must exist.");
 
-                HashSet<string> stateNames = [];
+                Assert.NotNull(dkg);
+                HashSet<string> stateNames = new(StringComparer.OrdinalIgnoreCase);
                 foreach (object? s in dkg.States)
                 {
                     if (s is VisualState vs)
@@ -200,10 +189,10 @@ namespace Fluence.Wpf.Tests
                         _ = stateNames.Add(vs.Name);
                     }
                 }
-                Assert.IsTrue(stateNames.Contains("Dot"), "DisplayKindStates must include 'Dot'.");
-                Assert.IsTrue(stateNames.Contains("Icon"), "DisplayKindStates must include 'Icon'.");
-                Assert.IsTrue(stateNames.Contains("FontIcon"), "DisplayKindStates must include 'FontIcon'.");
-                Assert.IsTrue(stateNames.Contains("Value"), "DisplayKindStates must include 'Value'.");
+                Assert.True(stateNames.Contains("Dot"), "DisplayKindStates must include 'Dot'.");
+                Assert.True(stateNames.Contains("Icon"), "DisplayKindStates must include 'Icon'.");
+                Assert.True(stateNames.Contains("FontIcon"), "DisplayKindStates must include 'FontIcon'.");
+                Assert.True(stateNames.Contains("Value"), "DisplayKindStates must include 'Value'.");
                 w.Close();
             });
         }

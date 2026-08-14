@@ -36,11 +36,10 @@ using System.Windows.Automation.Provider;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using Fluence.Wpf.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class TabViewTests
     {
         private static void RunOnFreshStaThread(Action action)
@@ -86,27 +85,27 @@ namespace Fluence.Wpf.Tests
 
         // ---- TabViewItem defaults ----
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_DefaultIsClosable_IsTrue()
         {
             RunOnFreshStaThread(static () =>
             {
                 TabViewItem tab = new();
-                Assert.IsTrue(tab.IsClosable);
+                Assert.True(tab.IsClosable);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_DefaultIcon_IsNull()
         {
             RunOnFreshStaThread(static () =>
             {
                 TabViewItem tab = new();
-                Assert.IsNull(tab.Icon);
+                Assert.Null(tab.Icon);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_IconProperty_RoundTrips()
         {
             RunOnFreshStaThread(static () =>
@@ -115,43 +114,43 @@ namespace Fluence.Wpf.Tests
                 FontIcon icon = new() { Glyph = "\uE8A5" };
                 tab.Icon = icon;
 
-                Assert.AreSame(icon, tab.Icon);
+                Assert.Same(icon, tab.Icon);
             });
         }
 
         // ---- TabView defaults ----
 
-        [TestMethod]
+        [Fact]
         public void TabView_DefaultIsAddTabButtonVisible_IsTrue()
         {
             RunOnFreshStaThread(static () =>
             {
                 TabView tabs = new();
-                Assert.IsTrue(tabs.IsAddTabButtonVisible);
+                Assert.True(tabs.IsAddTabButtonVisible);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_DefaultTabWidthMode_IsSizeToContent()
         {
             RunOnFreshStaThread(static () =>
             {
                 TabView tabs = new();
-                Assert.AreEqual(TabViewWidthMode.SizeToContent, tabs.TabWidthMode);
+                Assert.Equal(TabViewWidthMode.SizeToContent, tabs.TabWidthMode);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_DefaultCloseButtonOverlayMode_IsAuto()
         {
             RunOnFreshStaThread(static () =>
             {
                 TabView tabs = new();
-                Assert.AreEqual(TabViewCloseButtonOverlayMode.Auto, tabs.CloseButtonOverlayMode);
+                Assert.Equal(TabViewCloseButtonOverlayMode.Auto, tabs.CloseButtonOverlayMode);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_ContainerGeneration_UsesTabViewItem()
         {
             RunOnFreshStaThread(static () =>
@@ -174,8 +173,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     DependencyObject container = tabs.ItemContainerGenerator.ContainerFromIndex(0);
-                    Assert.IsInstanceOfType(container, typeof(TabViewItem),
-                        "TabView should generate TabViewItem containers, not base TabItem.");
+                    _ = Assert.IsAssignableFrom<TabViewItem>(container);
                 }
                 finally
                 {
@@ -188,7 +186,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_IsItemItsOwnContainerOverride_TrueForTabViewItem()
         {
             RunOnFreshStaThread(static () =>
@@ -199,18 +197,18 @@ namespace Fluence.Wpf.Tests
                 MethodInfo? method = typeof(TabView).GetMethod(
                     "IsItemItsOwnContainerOverride",
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                Assert.IsNotNull(method, "TabView must override IsItemItsOwnContainerOverride.");
+                Assert.NotNull(method);
                 bool? result = (bool?)method.Invoke(tabs, [candidate]);
-                Assert.IsTrue(result, "A TabViewItem should be recognized as its own container.");
+                Assert.True(result, "A TabViewItem should be recognized as its own container.");
 
                 bool? nonTab = (bool?)method.Invoke(tabs, ["Alpha"]);
-                Assert.IsFalse(nonTab, "Plain objects should require container generation.");
+                Assert.False(nonTab, "Plain objects should require container generation.");
             });
         }
 
         // ---- Template parts & events ----
 
-        [TestMethod]
+        [Fact]
         public void TabView_AddTabButtonClick_RaisesAddTabButtonClickEvent()
         {
             RunOnFreshStaThread(() =>
@@ -227,20 +225,19 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ButtonBase? addButton = tabs.Template.FindName("PART_AddTabButton", tabs) as ButtonBase;
-                    Assert.IsNotNull(addButton, "TabView template must expose PART_AddTabButton.");
+                    ButtonBase addButton = Assert.IsAssignableFrom<ButtonBase>(tabs.Template.FindName("PART_AddTabButton", tabs));
 
                     int raised = 0;
                     tabs.AddTabButtonClick += (s, e) => raised++;
                     ButtonAutomationPeer peer = new(addButton as System.Windows.Controls.Button);
                     IInvokeProvider? invoke = peer.GetPattern(PatternInterface.Invoke)
                         as IInvokeProvider;
-                    Assert.IsNotNull(invoke, "PART_AddTabButton must expose an Invoke pattern.");
+                    Assert.NotNull(invoke);
                     invoke.Invoke();
 
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(1, raised, "AddTabButtonClick should bubble to the TabView handler once per press.");
+                    Assert.Equal(1, raised);
                 }
                 finally
                 {
@@ -253,7 +250,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_CloseButton_RaisesCloseRequestedAndBubblesToTabView()
         {
             RunOnFreshStaThread(() =>
@@ -276,8 +273,7 @@ namespace Fluence.Wpf.Tests
                     // Force template application on the first tab so its PART_CloseButton is realized.
                     _ = first.ApplyTemplate();
 
-                    ButtonBase? closeButton = first.Template.FindName("PART_CloseButton", first) as ButtonBase;
-                    Assert.IsNotNull(closeButton, "TabViewItem template must expose PART_CloseButton.");
+                    ButtonBase closeButton = Assert.IsAssignableFrom<ButtonBase>(first.Template.FindName("PART_CloseButton", first));
 
                     TabViewTabCloseRequestedEventArgs? viewArgs = null;
                     int itemRaised = 0;
@@ -287,13 +283,13 @@ namespace Fluence.Wpf.Tests
                     ButtonAutomationPeer peer = new(closeButton as System.Windows.Controls.Button);
                     IInvokeProvider? invoke = peer.GetPattern(PatternInterface.Invoke)
                         as IInvokeProvider;
-                    Assert.IsNotNull(invoke, "PART_CloseButton must expose an Invoke pattern.");
+                    Assert.NotNull(invoke);
                     invoke.Invoke();
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(1, itemRaised, "TabViewItem.CloseRequested should fire exactly once per click.");
-                    Assert.IsNotNull(viewArgs, "TabView.TabCloseRequested should aggregate the item event.");
-                    Assert.AreSame(first, viewArgs.Tab, "TabView.TabCloseRequested should carry the originating tab.");
+                    Assert.Equal(1, itemRaised);
+                    Assert.NotNull(viewArgs);
+                    Assert.Same(first, viewArgs.Tab);
                 }
                 finally
                 {
@@ -306,7 +302,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_IsClosableFalse_HidesCloseButton()
         {
             RunOnFreshStaThread(static () =>
@@ -326,9 +322,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     _ = locked.ApplyTemplate();
 
-                    FrameworkElement? closeButton = locked.Template.FindName("PART_CloseButton", locked) as FrameworkElement;
-                    Assert.IsNotNull(closeButton, "Template should still create PART_CloseButton, just hidden.");
-                    Assert.IsFalse(closeButton.IsVisible,
+                    FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(locked.Template.FindName("PART_CloseButton", locked));
+                    Assert.False(closeButton.IsVisible,
                         "IsClosable=false should hide the close button regardless of overlay mode.");
                 }
                 finally
@@ -342,7 +337,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_AddTabButtonHidden_WhenIsAddTabButtonVisibleFalse()
         {
             RunOnFreshStaThread(static () =>
@@ -359,9 +354,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FrameworkElement? addButton = tabs.Template.FindName("PART_AddTabButton", tabs) as FrameworkElement;
-                    Assert.IsNotNull(addButton, "Template always produces PART_AddTabButton.");
-                    Assert.IsFalse(addButton.IsVisible,
+                    FrameworkElement addButton = Assert.IsAssignableFrom<FrameworkElement>(tabs.Template.FindName("PART_AddTabButton", tabs));
+                    Assert.False(addButton.IsVisible,
                         "IsAddTabButtonVisible=false should collapse the add button.");
                 }
                 finally
@@ -375,7 +369,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabView_Items_AddsAndRemovesTabsOnDemand()
         {
             RunOnFreshStaThread(static () =>
@@ -399,14 +393,14 @@ namespace Fluence.Wpf.Tests
                     tabs.SelectedItem = added;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(2, tabs.Items.Count);
-                    Assert.AreSame(added, tabs.SelectedItem);
+                    Assert.Equal(2, tabs.Items.Count);
+                    Assert.Same(added, tabs.SelectedItem);
 
                     tabs.Items.Remove(first);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(1, tabs.Items.Count);
-                    Assert.AreSame(added, tabs.Items[0]);
+                    _ = Assert.Single(tabs.Items);
+                    Assert.Same(added, tabs.Items[0]);
                 }
                 finally
                 {

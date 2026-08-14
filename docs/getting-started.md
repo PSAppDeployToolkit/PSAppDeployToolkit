@@ -1,4 +1,4 @@
-## Reference the library
+﻿## Reference the library
 
 1. Add a **project reference** to `Fluence.Wpf/Fluence.Wpf.csproj` (recommended until a NuGet package is published):
 
@@ -83,7 +83,7 @@ Fluence.Wpf.ApplicationThemeManager.Changed += (s, e) => { /* refresh theme-spec
 Fluence.Wpf.SystemThemeWatcher.UnWatch(myWindow);
 ```
 
-`ApplicationThemeManager.Changed` fires once per applied theme change. Use it to swap theme-specific image assets; `GalleryHomePage.xaml.cs` in the demo shows the banner swap pattern.
+`ApplicationThemeManager.Changed` fires once per applied theme change. Use it to swap theme-specific image assets; `GalleryHomePage.xaml.cs` in the demo shows the pattern, swapping the home hero between the light and dark header lockups.
 
 ## Verify locally
 

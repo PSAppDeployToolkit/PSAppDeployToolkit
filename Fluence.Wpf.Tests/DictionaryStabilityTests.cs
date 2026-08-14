@@ -26,20 +26,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class DictionaryStabilityTests
     {
-        [TestInitialize]
-        public void TestInitialize()
+        public DictionaryStabilityTests()
         {
             WpfTestSta.Invoke(static () =>
             {
@@ -50,7 +47,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedThemeSwitches_NoDictionaryAccumulation()
         {
             WpfTestSta.Invoke(static () =>
@@ -66,13 +63,11 @@ namespace Fluence.Wpf.Tests
                 }
 
                 int finalCount = app.Resources.MergedDictionaries.Count;
-                Assert.AreEqual(baselineCount, finalCount,
-                    string.Format(CultureInfo.InvariantCulture, "Dictionary count should remain at {0}, but was {1} after 20 switches",
-                        baselineCount, finalCount));
+                Assert.Equal(baselineCount, finalCount);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeSlotIsReused()
         {
             WpfTestSta.Invoke(static () =>
@@ -84,12 +79,11 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
                 int countAfterSecond = app.Resources.MergedDictionaries.Count;
 
-                Assert.AreEqual(countAfterFirst, countAfterSecond,
-                    "Theme dictionary slot should be reused, not added");
+                Assert.Equal(countAfterFirst, countAfterSecond);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AllThemeVariants_SameSlotCount()
         {
             WpfTestSta.Invoke(static () =>
@@ -104,12 +98,12 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
                 int hcCount = app.Resources.MergedDictionaries.Count;
 
-                Assert.AreEqual(lightCount, darkCount, "Light and Dark should use same slot count");
-                Assert.AreEqual(darkCount, hcCount, "Dark and HighContrast should use same slot count");
+                Assert.Equal(lightCount, darkCount);
+                Assert.Equal(darkCount, hcCount);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FirstApply_LoadsThreeDictionaries()
         {
             WpfTestSta.Invoke(static () =>
@@ -117,12 +111,11 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
-                Assert.AreEqual(3, app.Resources.MergedDictionaries.Count,
-                    "Initial Apply should load exactly 3 dictionaries ([0] computed, [1] Typography, [2] Generic).");
+                Assert.Equal(3, app.Resources.MergedDictionaries.Count);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Apply_UsesThreeSlots_ReplacesComputedSlotOnChange()
         {
             WpfTestSta.Invoke(static () =>
@@ -130,7 +123,7 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Collection<ResourceDictionary> dicts = app.Resources.MergedDictionaries;
-                Assert.AreEqual(3, dicts.Count, "Three slots after the first Apply.");
+                Assert.Equal(3, dicts.Count);
 
                 object slot0 = dicts[0];
                 object typography = dicts[1];
@@ -138,13 +131,13 @@ namespace Fluence.Wpf.Tests
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
 
-                Assert.AreNotSame(slot0, dicts[0], "Computed slot [0] is replaced on theme change.");
-                Assert.AreSame(typography, dicts[1], "Typography slot [1] identity is stable across theme change.");
-                Assert.AreSame(generic, dicts[2], "Generic slot [2] identity is stable across theme change.");
+                Assert.NotSame(slot0, dicts[0]);
+                Assert.Same(typography, dicts[1]);
+                Assert.Same(generic, dicts[2]);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AccentUpdate_DoesNotChangeDictionaryCount()
         {
             WpfTestSta.Invoke(static () =>
@@ -156,12 +149,11 @@ namespace Fluence.Wpf.Tests
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
                 int countAfter = app.Resources.MergedDictionaries.Count;
 
-                Assert.AreEqual(countBefore, countAfter,
-                    "Applying a custom accent should not change the merged dictionary count.");
+                Assert.Equal(countBefore, countAfter);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AllBrushKeys_Resolve_AfterLightDarkHcCycle()
         {
             WpfTestSta.Invoke(static () =>
@@ -182,13 +174,12 @@ namespace Fluence.Wpf.Tests
 
                 foreach (string? key in keyBrushNames)
                 {
-                    Brush? brush = app.Resources[key] as Brush;
-                    Assert.IsNotNull(brush, string.Format("Brush key '{0}' should resolve to non-null after Light->Dark->HC cycle.", key));
+                    Brush brush = Assert.IsAssignableFrom<Brush>(app.Resources[key]);
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InitialApply_SlotsAreComputedTypographyGeneric_InOrder()
         {
             WpfTestSta.Invoke(static () =>
@@ -197,20 +188,20 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 Collection<ResourceDictionary> dictionaries = app.Resources.MergedDictionaries;
 
-                Assert.AreEqual(3, dictionaries.Count);
+                Assert.Equal(3, dictionaries.Count);
 
                 // Slot [0] is the computed dictionary: no Source of its own, populated by the engine.
-                Assert.IsNull(dictionaries[0].Source, "Computed slot [0] should have no Source URI.");
-                Assert.IsTrue(dictionaries[0].Count > 0, "Computed slot [0] should hold resolved entries.");
+                Assert.Null(dictionaries[0].Source);
+                Assert.True(dictionaries[0].Count > 0, "Computed slot [0] should hold resolved entries.");
 
                 Uri typographySource = dictionaries[1].Source;
-                Assert.IsNotNull(typographySource, "Typography slot [1] should have a Source URI.");
-                Assert.IsTrue(typographySource.OriginalString.IndexOf("Typography", StringComparison.OrdinalIgnoreCase) >= 0,
+                Assert.NotNull(typographySource);
+                Assert.True(typographySource.OriginalString.Contains("Typography", StringComparison.OrdinalIgnoreCase),
                     "Slot [1] Source should be Typography.xaml, but was " + typographySource.OriginalString);
 
                 Uri genericSource = dictionaries[2].Source;
-                Assert.IsNotNull(genericSource, "Generic slot [2] should have a Source URI.");
-                Assert.IsTrue(genericSource.OriginalString.IndexOf("Generic", StringComparison.OrdinalIgnoreCase) >= 0,
+                Assert.NotNull(genericSource);
+                Assert.True(genericSource.OriginalString.Contains("Generic", StringComparison.OrdinalIgnoreCase),
                     "Slot [2] Source should be Generic.xaml, but was " + genericSource.OriginalString);
             });
         }

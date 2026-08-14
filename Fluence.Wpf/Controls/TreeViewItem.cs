@@ -107,11 +107,11 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (owner.SelectionMode == TreeViewSelectionMode.None)
+            if (owner.SelectionMode is TreeViewSelectionMode.None)
             {
                 SetCurrentValue(IsSelectedProperty, value: false);
             }
-            else if (owner.SelectionMode == TreeViewSelectionMode.Multiple)
+            else if (owner.SelectionMode is TreeViewSelectionMode.Multiple)
             {
                 SetCurrentValue(IsSelectionCheckedProperty, value: true);
             }
@@ -120,7 +120,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Space && ToggleMultipleSelectionFromKeyboard())
+            if (e.Key is Key.Space && ToggleMultipleSelectionFromKeyboard())
             {
                 e.Handled = true;
                 return;
@@ -132,7 +132,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Space && ToggleMultipleSelectionFromKeyboard())
+            if (e.Key is Key.Space && ToggleMultipleSelectionFromKeyboard())
             {
                 e.Handled = true;
                 return;
@@ -148,7 +148,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (owner.SelectionMode != TreeViewSelectionMode.Multiple && IsSelectionChecked != false)
+            if (owner.SelectionMode is not TreeViewSelectionMode.Multiple && IsSelectionChecked is not false)
             {
                 SetCurrentValue(IsSelectionCheckedProperty, value: false);
             }
@@ -168,9 +168,9 @@ namespace Fluence.Wpf.Controls
             }
 
             bool? isChecked = (bool?)e.NewValue;
-            if (owner.SelectionMode != TreeViewSelectionMode.Multiple)
+            if (owner.SelectionMode is not TreeViewSelectionMode.Multiple)
             {
-                if (isChecked != false && !item._isKeyboardSelectionToggle)
+                if (isChecked is not false && !item._isKeyboardSelectionToggle)
                 {
                     item.SetCurrentValue(IsSelectionCheckedProperty, value: false);
                 }
@@ -187,17 +187,17 @@ namespace Fluence.Wpf.Controls
             if (owner is null)
             {
                 CheckBox? selectionCheckBox = GetTemplateChild(SelectionCheckBoxPart) as CheckBox;
-                if (selectionCheckBox?.Visibility != Visibility.Visible)
+                if ((selectionCheckBox?.Visibility) is not Visibility.Visible)
                 {
                     return false;
                 }
             }
-            else if (owner.SelectionMode != TreeViewSelectionMode.Multiple)
+            else if (owner.SelectionMode is not TreeViewSelectionMode.Multiple)
             {
                 return false;
             }
 
-            bool nextState = IsSelectionChecked != true;
+            bool nextState = IsSelectionChecked is not true;
             _isKeyboardSelectionToggle = true;
             try
             {

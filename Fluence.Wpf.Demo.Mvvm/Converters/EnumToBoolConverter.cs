@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Demo.Mvvm.Converters
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value?.Equals(parameter) == true;
+            return (value?.Equals(parameter)) is true;
         }
 
         /// <inheritdoc />

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Theming
         internal static Dictionary<string, Color> Build(ApplicationTheme theme, AccentPalette p, bool deterministicChrome = false)
         {
             Dictionary<string, Color> m = BaseColorTables.Load(theme);
-            bool dark = theme == ApplicationTheme.Dark;
+            bool dark = theme is ApplicationTheme.Dark;
 
             // Raw ramp (theme-independent keys)
             m["SystemAccentColor"] = p.Accent;
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Theming
             m["AccentFillColorSelectedTextBackground"] = p.Accent;
 
             // Disabled accent + attention (from UpdateDisabledAccentFill / UpdateSystemAttentionFill), skip for HC
-            if (theme != ApplicationTheme.HighContrast)
+            if (theme is not ApplicationTheme.HighContrast)
             {
                 m["AccentFillColorDisabled"] = dark ? Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x37, 0, 0, 0);
                 m["SystemFillColorAttention"] = dark ? p.Light2 : p.Accent;

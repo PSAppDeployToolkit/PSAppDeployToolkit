@@ -10,7 +10,7 @@ in AGENTS.md -- read it before making any non-trivial change.
 WPF control library reproducing Windows 11 Fluent / WinUI 3 visuals on .NET
 Framework 4.7.2 and .NET 10. Four projects: `Fluence.Wpf` (library),
 `Fluence.Wpf.Demo` (gallery), `Fluence.Wpf.Demo.Mvvm` (MVVM demo),
-`Fluence.Wpf.Tests` (MSTest 4.2.2, multi-TFM).
+`Fluence.Wpf.Tests` (xunit.v3 3.2.2, multi-TFM).
 
 **XML namespace:** `http://schemas.fluencewpf.com` (prefix: `fluence`)
 
@@ -96,7 +96,8 @@ dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug
 ```
 
 Both `net472` and `net10.0-windows10.0.26100.0` must pass. Tests are
-non-parallel (`[assembly: DoNotParallelize]`). All UI-touching work goes
+non-parallel (`[assembly: CollectionBehavior(DisableTestParallelization = true)]`
+plus `xunit.runner.json`). All UI-touching work goes
 through `WpfTestSta.Invoke`.
 
 ---
@@ -105,7 +106,7 @@ through `WpfTestSta.Invoke`.
 
 1. BSD header present on every `.cs` file.
 2. Build: 0 errors, 0 warnings on both TFMs.
-3. Tests: no new failures; new controls/behaviors ship with new MSTests.
+3. Tests: no new failures; new controls/behaviors ship with new xUnit tests.
 4. Visual parity: template changes verified in Demo across Light, Dark, High
    Contrast, and at least one backdrop.
 5. Docs synced: `CHANGELOG.md` updated; `docs/controls.md` / `docs/theming.md`
@@ -115,5 +116,11 @@ through `WpfTestSta.Invoke`.
 
 ---
 
+## Background Terminal Commands
+
+- When polling background terminal commands, use short wait intervals (30-60 seconds per read) instead of multi-minute waits, so completed work is noticed promptly.
+
+---
+
 For full detail on control authoring, theme API, common pitfalls, naming
-conventions, and C# style rules: read **AGENTS.md**.
+conventions, and C# style rules: read **AGENTS.md**

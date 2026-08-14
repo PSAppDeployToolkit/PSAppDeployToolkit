@@ -26,11 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using FluenceSeparator = Fluence.Wpf.Controls.Separator;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -44,7 +43,7 @@ namespace Fluence.Wpf.Tests
         // Separator
         // ---------------------------------------------------------------------------
 
-        [TestMethod]
+        [Fact]
         public void Separator_DefaultStyle_Applies()
         {
             WpfTestSta.Invoke(static () =>
@@ -52,19 +51,18 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
                 // Template applied - Border is the root of the template
-                Border? border = FindVisualChild<Border>(sep);
-                Assert.IsNotNull(border, "Separator template must contain a Border.");
+                Border border = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(sep));
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Separator_Height_IsOne()
         {
             WpfTestSta.Invoke(static () =>
@@ -72,18 +70,17 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Assert.AreEqual(1.0, sep.Height,
-                    "Separator Height must be 1 per .NET 10 WPF Fluent Separator style.");
+                Assert.Equal(1.0, sep.Height);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Separator_Background_UsesDividerStrokeColorDefaultBrush()
         {
             WpfTestSta.Invoke(static () =>
@@ -91,23 +88,20 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? bg = sep.Background as SolidColorBrush;
-                SolidColorBrush? expected = app?.TryFindResource("DividerStrokeColorDefaultBrush") as SolidColorBrush;
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(sep.Background);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("DividerStrokeColorDefaultBrush"));
 
-                Assert.IsNotNull(expected, "DividerStrokeColorDefaultBrush must resolve.");
-                Assert.IsNotNull(bg, "Separator.Background must be a SolidColorBrush.");
-                Assert.AreEqual(expected.Color, bg.Color,
-                    "Separator.Background must use DividerStrokeColorDefaultBrush.");
+                Assert.Equal(expected.Color, bg.Color);
                 w.Close();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Separator_ThemeCycle_StyleRemainsApplied()
         {
             WpfTestSta.Invoke(static () =>
@@ -115,7 +109,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -123,8 +117,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                Border? border = FindVisualChild<Border>(sep);
-                Assert.IsNotNull(border, "Separator template Border must still exist after theme cycle.");
+                Border border = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(sep));
                 w.Close();
             });
         }

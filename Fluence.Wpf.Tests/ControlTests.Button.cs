@@ -26,19 +26,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Fluent = Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokens()
         {
             RunOnStaThread(static () =>
@@ -61,7 +60,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokens()
         {
             RunOnStaThread(static () =>
@@ -84,7 +83,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_ExplicitToolTip_IsNotClearedByTruncationFallback()
         {
             RunOnStaThread(static () =>
@@ -92,8 +91,8 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
-                Fluent.ToolTip toolTip = new() { Content = "Save changes" };
-                Fluent.Button button = new()
+                Controls.ToolTip toolTip = new() { Content = "Save changes" };
+                Controls.Button button = new()
                 {
                     Width = 160,
                     Content = "Save",
@@ -107,8 +106,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreSame(toolTip, button.ToolTip,
-                        "Button truncation fallback must not clear an explicit tooltip supplied by the consumer.");
+                    Assert.Same(toolTip, button.ToolTip);
                 }
                 finally
                 {
@@ -118,7 +116,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_IconOnly_CentersGlyphAndRestoresGapWithContent()
         {
             RunOnStaThread(static () =>
@@ -126,11 +124,11 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     MinWidth = 32,
                     Padding = new Thickness(8, 4, 8, 4),
-                    Icon = new Fluent.FontIcon { Glyph = "", IconFontSize = 14 },
+                    Icon = new Controls.FontIcon { Glyph = "", IconFontSize = 14 },
                 };
 
                 try
@@ -142,19 +140,16 @@ namespace Fluence.Wpf.Tests
 
                     ContentPresenter iconPresenter = FindVisualChildByName<ContentPresenter>(button, "IconPresenter")
                         ?? throw new InvalidOperationException("IconPresenter must exist in the Button template.");
-                    Assert.AreEqual(new Thickness(0), iconPresenter.Margin,
-                        "An icon-only button must drop the icon-to-text gap.");
+                    Assert.Equal(new Thickness(0), iconPresenter.Margin);
 
                     Point iconCenter = iconPresenter.TranslatePoint(
                         new Point(iconPresenter.ActualWidth / 2.0, iconPresenter.ActualHeight / 2.0), button);
-                    Assert.AreEqual(button.ActualWidth / 2.0, iconCenter.X, 1.0,
-                        "The icon-only glyph must be horizontally centered in the button.");
+                    Assert.Equal(button.ActualWidth / 2.0, iconCenter.X, 1.0);
 
                     button.Content = "Copy";
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    Assert.AreEqual(new Thickness(0, 0, 8, 0), iconPresenter.Margin,
-                        "A button with icon and content must keep the 8px icon-to-text gap.");
+                    Assert.Equal(new Thickness(0, 0, 8, 0), iconPresenter.Margin);
                 }
                 finally
                 {
@@ -164,7 +159,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_Appearances_ApplyWinUiRestBrushesAndBorders()
         {
             RunOnStaThread(static () =>
@@ -174,9 +169,9 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
-                Fluent.Button standard = new() { Content = "Standard" };
-                Fluent.Button accent = new() { Appearance = ControlAppearance.Accent, Content = "Accent" };
-                Fluent.Button subtle = new() { Appearance = ControlAppearance.Subtle, Content = "Subtle" };
+                Controls.Button standard = new() { Content = "Standard" };
+                Controls.Button accent = new() { Appearance = ControlAppearance.Accent, Content = "Accent" };
+                Controls.Button subtle = new() { Appearance = ControlAppearance.Subtle, Content = "Subtle" };
                 StackPanel panel = new();
                 _ = panel.Children.Add(standard);
                 _ = panel.Children.Add(accent);
@@ -217,7 +212,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_Template_UsesWinUiStateResourceMappings()
         {
             string xaml = File.ReadAllText(GetRepositoryFilePath("Fluence.Wpf", "Themes", "Controls", "Button.xaml"));
@@ -238,8 +233,8 @@ namespace Fluence.Wpf.Tests
 
             foreach (string resource in requiredStateResources)
             {
-                Assert.IsTrue(
-                    xaml.IndexOf(resource, StringComparison.Ordinal) >= 0,
+                Assert.True(
+                    xaml.Contains(resource, StringComparison.Ordinal),
                     "Button template should include the WinUI state resource: " + resource);
             }
 
@@ -247,18 +242,18 @@ namespace Fluence.Wpf.Tests
                 xaml,
                 "<Condition Property=\"IsPressed\" Value=\"True\" />",
                 "<Condition Property=\"Appearance\" Value=\"Accent\" />");
-            Assert.IsFalse(
-                accentPressedBlock.IndexOf("AccentFillColorDisabledBrush", StringComparison.Ordinal) >= 0,
+            Assert.False(
+                accentPressedBlock.Contains("AccentFillColorDisabledBrush", StringComparison.Ordinal),
                 "Accent pressed state must not reuse the disabled accent fill as the button Background.");
-            Assert.IsFalse(
-                xaml.IndexOf("Value=\"Transparent\"", StringComparison.Ordinal) >= 0,
+            Assert.False(
+                xaml.Contains("Value=\"Transparent\"", StringComparison.Ordinal),
                 "Button template should use theme resources rather than literal transparent brush values.");
         }
 
         private static void AssertDisabledAccentButtonUsesDarkTokens()
         {
             Window window = new();
-            Fluent.Button button = new()
+            Controls.Button button = new()
             {
                 Width = 100,
                 Appearance = ControlAppearance.Accent,
@@ -273,15 +268,12 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(window.Dispatcher);
                 window.UpdateLayout();
 
-                Border? restFill = button.Template.FindName("RestFill", button) as Border;
+                Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
 
-                Assert.IsNotNull(restFill, "Button template should expose RestFill.");
-                Assert.IsInstanceOfType(restFill.Background, typeof(SolidColorBrush));
-                Assert.IsInstanceOfType(button.Foreground, typeof(SolidColorBrush));
-                Assert.AreEqual(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)restFill.Background).Color,
-                    "Disabled Accent buttons in Dark theme must use the WinUI dark disabled accent fill so the disabled surface stays visible.");
-                Assert.AreEqual(Color.FromArgb(0x87, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)button.Foreground).Color,
-                    "Disabled Accent button text in Dark theme must use the theme's disabled on-accent text token.");
+                _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
+                _ = Assert.IsAssignableFrom<SolidColorBrush>(button.Foreground);
+                Assert.Equal(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)restFill.Background).Color);
+                Assert.Equal(Color.FromArgb(0x87, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)button.Foreground).Color);
             }
             finally
             {
@@ -290,17 +282,14 @@ namespace Fluence.Wpf.Tests
         }
 
         private static void AssertButtonChromeMatchesResources(
-            Fluent.Button button,
+            Controls.Button button,
             string backgroundKey,
             string foregroundKey,
             string borderKey)
         {
-            Border? restFill = button.Template.FindName("RestFill", button) as Border;
-            Border? outerBorder = button.Template.FindName("OuterBorder", button) as Border;
-            Assert.IsNotNull(restFill, "Button template should expose RestFill.");
-            Assert.IsNotNull(outerBorder, "Button template should expose OuterBorder.");
-            Assert.AreEqual(new Thickness(1), outerBorder.BorderThickness,
-                "Button chrome should apply the WinUI one-pixel border thickness.");
+            Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+            Border outerBorder = Assert.IsType<Border>(button.Template.FindName("OuterBorder", button));
+            Assert.Equal(new Thickness(1), outerBorder.BorderThickness);
 
             AssertBrushMatchesResource(restFill.Background, backgroundKey);
             AssertBrushMatchesResource(button.Foreground, foregroundKey);
@@ -310,23 +299,22 @@ namespace Fluence.Wpf.Tests
         private static void AssertBrushMatchesResource(Brush? actual, string resourceKey)
         {
             object? expected = Application.Current.TryFindResource(resourceKey);
-            Assert.IsNotNull(actual, "Actual brush should be set for " + resourceKey + ".");
-            Assert.IsInstanceOfType(expected, typeof(Brush), "Resource should resolve to a Brush: " + resourceKey);
+            Assert.NotNull(actual);
+            _ = Assert.IsAssignableFrom<Brush>(expected);
 
             if (actual is SolidColorBrush actualSolid && expected is SolidColorBrush expectedSolid)
             {
-                Assert.AreEqual(expectedSolid.Color, actualSolid.Color, "Unexpected brush color for " + resourceKey + ".");
+                Assert.Equal(expectedSolid.Color, actualSolid.Color);
                 return;
             }
 
             if (actual is LinearGradientBrush actualGradient && expected is LinearGradientBrush expectedGradient)
             {
-                Assert.AreEqual(expectedGradient.GradientStops.Count, actualGradient.GradientStops.Count,
-                    "Unexpected gradient stop count for " + resourceKey + ".");
+                Assert.Equal(expectedGradient.GradientStops.Count, actualGradient.GradientStops.Count);
                 return;
             }
 
-            Assert.AreSame(expected, actual, "Unexpected brush instance for " + resourceKey + ".");
+            Assert.Same(expected, actual);
         }
 
         private static string GetRepositoryFilePath(params string[] relativeSegments)
@@ -341,11 +329,11 @@ namespace Fluence.Wpf.Tests
         private static string GetTriggerBlock(string xaml, string firstCondition, string secondCondition)
         {
             int firstIndex = xaml.IndexOf(firstCondition, StringComparison.Ordinal);
-            Assert.IsTrue(firstIndex >= 0, "Button trigger should contain condition: " + firstCondition);
+            Assert.True(firstIndex >= 0, "Button trigger should contain condition: " + firstCondition);
             int secondIndex = xaml.IndexOf(secondCondition, firstIndex, StringComparison.Ordinal);
-            Assert.IsTrue(secondIndex >= 0, "Button trigger should contain condition: " + secondCondition);
+            Assert.True(secondIndex >= 0, "Button trigger should contain condition: " + secondCondition);
             int endIndex = xaml.IndexOf("</MultiTrigger>", secondIndex, StringComparison.Ordinal);
-            Assert.IsTrue(endIndex >= 0, "Button trigger should close after the requested conditions.");
+            Assert.True(endIndex >= 0, "Button trigger should close after the requested conditions.");
             return xaml[firstIndex..endIndex];
         }
     }
