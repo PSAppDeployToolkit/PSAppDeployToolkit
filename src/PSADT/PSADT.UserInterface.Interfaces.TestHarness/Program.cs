@@ -284,7 +284,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                 // Simulate a process with progress updates.
                 for (int i = 0; i <= 100; i += 10)
                 {
-                    // Update progress
+                    // Update progress.
                     await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
                     await Task.Delay(250, default).ConfigureAwait(false);  // Simulate work being done
                 }
