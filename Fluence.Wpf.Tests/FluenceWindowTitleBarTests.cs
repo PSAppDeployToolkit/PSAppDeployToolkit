@@ -73,7 +73,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -122,7 +122,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -379,7 +379,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -411,7 +411,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -460,8 +460,8 @@ namespace Fluence.Wpf.Tests
                     foreach (ApplicationTheme theme in (ApplicationTheme[])[ApplicationTheme.Dark, ApplicationTheme.Light])
                     {
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-                        object bg = Assert.IsAssignableFrom<object>(app?.TryFindResource("ApplicationBackgroundBrush"));
-                        object fg = Assert.IsAssignableFrom<object>(app?.TryFindResource("TextFillColorPrimaryBrush"));
+                        object bg = Assert.IsAssignableFrom<object>(app.TryFindResource("ApplicationBackgroundBrush"));
+                        object fg = Assert.IsAssignableFrom<object>(app.TryFindResource("TextFillColorPrimaryBrush"));
                     }
                 }
                 finally
@@ -470,7 +470,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -486,7 +486,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    int? initialCount = app?.Resources.MergedDictionaries.Count;
+                    int? initialCount = app.Resources.MergedDictionaries.Count;
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -494,7 +494,7 @@ namespace Fluence.Wpf.Tests
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     }
 
-                    Assert.Equal(initialCount, app?.Resources.MergedDictionaries.Count);
+                    Assert.Equal(initialCount, app.Resources.MergedDictionaries.Count);
                 }
                 finally
                 {
@@ -502,7 +502,7 @@ namespace Fluence.Wpf.Tests
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -1156,7 +1156,7 @@ modifiers: null);
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             }).ConfigureAwait(true);
@@ -1263,7 +1263,7 @@ modifiers: null);
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             }).ConfigureAwait(true);
@@ -1295,7 +1295,7 @@ modifiers: null);
                 {
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });
@@ -1443,7 +1443,7 @@ filterCallback: null,
 
                     if (dict is not null)
                     {
-                        _ = app?.Resources.MergedDictionaries.Remove(dict);
+                        _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
             });

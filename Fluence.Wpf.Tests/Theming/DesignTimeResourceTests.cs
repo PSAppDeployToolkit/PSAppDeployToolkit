@@ -72,7 +72,7 @@ namespace Fluence.Wpf.Tests.Theming
 
         private static string Normalize(string text)
         {
-            return text.Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase);
+            return text.Replace("\r\n", "\n", StringComparison.Ordinal);
         }
 
         /// <summary>

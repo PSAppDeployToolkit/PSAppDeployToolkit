@@ -128,7 +128,7 @@ namespace Fluence.Wpf.Tests
                     _ = button.ApplyTemplate();
                     System.Windows.Controls.Button primaryButton = Assert.IsType<System.Windows.Controls.Button>(button.Template.FindName("PART_PrimaryButton", button));
                     System.Windows.Controls.Primitives.ToggleButton secondaryButton = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(button.Template.FindName("PART_SecondaryButton", button));
-                    Style focusVisualStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                    Style focusVisualStyle = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
 
                     Assert.Same(focusVisualStyle, primaryButton.FocusVisualStyle);
                     Assert.Same(focusVisualStyle, secondaryButton.FocusVisualStyle);

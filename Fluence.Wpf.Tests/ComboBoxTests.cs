@@ -199,13 +199,11 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     _ = comboBox.ApplyTemplate();
 
-                    System.Windows.Controls.Border? dropdownBorder = comboBox.Template.FindName("PART_DropdownBorder", comboBox)
-                        as System.Windows.Controls.Border;
-                    Assert.NotNull(dropdownBorder);
+                    System.Windows.Controls.Border dropdownBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(
+                        comboBox.Template.FindName("PART_DropdownBorder", comboBox));
 
-                    System.Windows.Controls.Border? noiseOverlay = comboBox.Template.FindName("NoiseOverlay", comboBox)
-                        as System.Windows.Controls.Border;
-                    Assert.NotNull(noiseOverlay);
+                    System.Windows.Controls.Border noiseOverlay = Assert.IsAssignableFrom<System.Windows.Controls.Border>(
+                        comboBox.Template.FindName("NoiseOverlay", comboBox));
 
                     // Default (downward-opening) state: both borders share the same radius,
                     // inherited from DropdownCornerRadius (default CornerRadius(8)).

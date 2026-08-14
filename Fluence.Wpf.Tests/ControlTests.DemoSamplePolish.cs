@@ -299,7 +299,7 @@ namespace Fluence.Wpf.Tests
             return RunDemoPageTestAsync(static () => new GalleryDataBindingPage(), static window =>
             {
                 Controls.TextBox newItemBox = Assert.IsAssignableFrom<Controls.TextBox>(FindVisualChildByName<Controls.TextBox>(window, "NewItemBox"));
-                StackPanel rightRailStack = Assert.IsType<StackPanel>(newItemBox?.Parent);
+                StackPanel rightRailStack = Assert.IsType<StackPanel>(newItemBox.Parent);
 
                 Assert.Equal(320.0, rightRailStack.MinWidth, 0.1);
                 Assert.Equal(320.0, newItemBox.Width, 0.1);

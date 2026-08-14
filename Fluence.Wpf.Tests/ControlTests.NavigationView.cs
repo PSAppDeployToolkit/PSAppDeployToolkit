@@ -123,10 +123,8 @@ namespace Fluence.Wpf.Tests
         private static void AssertPaneToggleVisible(NavigationView nav)
         {
             _ = nav.ApplyTemplate();
-            System.Windows.Controls.Button? paneToggle = nav.Template.FindName(
-                NavigationView.PartPaneToggleButton,
-                nav) as System.Windows.Controls.Button;
-            Assert.NotNull(paneToggle);
+            System.Windows.Controls.Button paneToggle = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
+                nav.Template.FindName(NavigationView.PartPaneToggleButton, nav));
             Assert.Equal(Visibility.Visible, paneToggle.Visibility);
         }
 

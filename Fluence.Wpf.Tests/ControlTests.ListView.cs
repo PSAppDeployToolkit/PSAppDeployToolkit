@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
                 ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
                 Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush"));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(indicator.Background);
                 Assert.Equal(

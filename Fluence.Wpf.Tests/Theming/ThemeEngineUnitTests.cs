@@ -68,8 +68,8 @@ namespace Fluence.Wpf.Tests.Theming
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
                 Dictionary<string, Color> m = ColorMap.Build(theme, p);
-                Assert.True(m.ContainsKey("AccentFillColorDefault"), $"AccentFillColorDefault must be present in {theme}.");
-                Assert.NotEqual(default, m["AccentFillColorDefault"]);
+                Assert.True(m.TryGetValue("AccentFillColorDefault", out Color accentFillColorDefault), $"AccentFillColorDefault must be present in {theme}.");
+                Assert.NotEqual(default, accentFillColorDefault);
             });
         }
 
@@ -84,10 +84,10 @@ namespace Fluence.Wpf.Tests.Theming
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
                 Dictionary<string, Color> m = ColorMap.Build(ApplicationTheme.Light, p);
-                Assert.True(m.ContainsKey("SystemAccentColor"), "SystemAccentColor missing.");
+                Assert.True(m.TryGetValue("SystemAccentColor", out Color systemAccentColor), "SystemAccentColor missing.");
                 Assert.True(m.ContainsKey("SystemAccentColorLight1"), "SystemAccentColorLight1 missing.");
                 Assert.True(m.ContainsKey("SystemAccentColorDark3"), "SystemAccentColorDark3 missing.");
-                Assert.Equal(TestBlue, m["SystemAccentColor"]);
+                Assert.Equal(TestBlue, systemAccentColor);
             });
         }
 
@@ -120,10 +120,10 @@ namespace Fluence.Wpf.Tests.Theming
                 AccentPalette p = MakeTestPalette();
                 Dictionary<string, Color> m = ColorMap.Build(ApplicationTheme.HighContrast, p);
                 Assert.True(m.Count > 5, "ColorMap.Build(HighContrast) must return a non-trivial map.");
-                Assert.True(m.ContainsKey("SystemAccentColor"), "SystemAccentColor must be present even in HC.");
+                Assert.True(m.TryGetValue("SystemAccentColor", out Color systemAccentColor), "SystemAccentColor must be present even in HC.");
                 // The HC C# path does NOT inject AccentFillColorDisabled or SystemFillColorAttention
                 // via the guard; those may come from base XAML instead.
-                Assert.Equal(TestBlue, m["SystemAccentColor"]);
+                Assert.Equal(TestBlue, systemAccentColor);
             });
         }
 

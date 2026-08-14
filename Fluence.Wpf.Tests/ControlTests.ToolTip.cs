@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
             });
         }
 
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
             });
         }
 
@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
                 _ = MergeGenericDictionary(app);
 
                 // Default style is keyed to the Fluence ToolTip type.
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ToolTip)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(ToolTip)));
 
                 // Apply manually so property setters are evaluated.
                 ToolTip tt = new()
@@ -146,7 +146,7 @@ namespace Fluence.Wpf.Tests
                 // The WPF tooltip pipeline resolves its host popup animation through this
                 // system resource key, and the theme overrides it so the template
                 // storyboard owns the single fade.
-                object? animation = app?.TryFindResource(SystemParameters.ToolTipPopupAnimationKey);
+                object? animation = app.TryFindResource(SystemParameters.ToolTipPopupAnimationKey);
                 Assert.Equal(System.Windows.Controls.Primitives.PopupAnimation.None, animation);
             });
         }
@@ -166,7 +166,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

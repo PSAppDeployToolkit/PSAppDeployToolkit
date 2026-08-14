@@ -35,6 +35,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -52,14 +53,14 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static readonly Lock IconCatalogLock = new();
         private static readonly char[] SearchTermSeparators = [' '];
-        private static List<IconCatalogItem>? cachedIcons;
+        private static Task<List<IconCatalogItem>>? cachedIconsTask;
 
         private static readonly Uri KnownIconNamesResourceUri = new(
             "/Fluence.Wpf.Demo;component/Resources/SegoeFluentIcons.tsv",
             UriKind.Relative);
 
-        private readonly List<IconCatalogItem> _allIcons;
-        private List<IconCatalogItem> _filteredIcons;
+        private readonly List<IconCatalogItem> _allIcons = [];
+        private List<IconCatalogItem> _filteredIcons = [];
         private IconCatalogItem? _selectedIcon;
         private int _columns = DefaultColumns;
 
@@ -67,7 +68,24 @@ namespace Fluence.Wpf.Demo.Pages
         {
             InitializeComponent();
 
-            _allIcons = GetIconCatalog();
+            Loaded += GalleryIconsPage_Loaded;
+            CopyIconNameButton.Click += CopyIconValueButton_Click;
+            CopyTextGlyphButton.Click += CopyIconValueButton_Click;
+            CopyCodeGlyphButton.Click += CopyIconValueButton_Click;
+            CopyXamlButton.Click += CopyIconValueButton_Click;
+            CopyCSharpButton.Click += CopyIconValueButton_Click;
+        }
+
+        private void GalleryIconsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= GalleryIconsPage_Loaded;
+            _ = InitializeIconCatalogAsync();
+        }
+
+        private async Task InitializeIconCatalogAsync()
+        {
+            List<IconCatalogItem> icons = await GetIconCatalogAsync().ConfigureAwait(true);
+            _allIcons.AddRange(icons);
             foreach (IconCatalogItem icon in _allIcons)
             {
                 icon.IsSelected = false;
@@ -79,12 +97,6 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 SelectIcon(_allIcons[0]);
             }
-
-            CopyIconNameButton.Click += CopyIconValueButton_Click;
-            CopyTextGlyphButton.Click += CopyIconValueButton_Click;
-            CopyCodeGlyphButton.Click += CopyIconValueButton_Click;
-            CopyXamlButton.Click += CopyIconValueButton_Click;
-            CopyCSharpButton.Click += CopyIconValueButton_Click;
         }
 
         private void IconSearchBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
@@ -258,18 +270,18 @@ namespace Fluence.Wpf.Demo.Pages
             return rows;
         }
 
-        private static List<IconCatalogItem> GetIconCatalog()
+        private static Task<List<IconCatalogItem>> GetIconCatalogAsync()
         {
             lock (IconCatalogLock)
             {
-                cachedIcons ??= LoadIconCatalog();
-                return cachedIcons;
+                cachedIconsTask ??= LoadIconCatalogAsync();
+                return cachedIconsTask;
             }
         }
 
-        private static List<IconCatalogItem> LoadIconCatalog()
+        private static async Task<List<IconCatalogItem>> LoadIconCatalogAsync()
         {
-            Dictionary<string, string> knownNames = LoadKnownIconNames();
+            Dictionary<string, string> knownNames = await LoadKnownIconNamesAsync().ConfigureAwait(false);
             Typeface typeface = new(
                 new FontFamily("Segoe Fluent Icons"),
                 FontStyles.Normal,
@@ -353,14 +365,13 @@ namespace Fluence.Wpf.Demo.Pages
             tags.Add(tag);
         }
 
-        private static Dictionary<string, string> LoadKnownIconNames()
+        private static async Task<Dictionary<string, string>> LoadKnownIconNamesAsync()
         {
             StreamResourceInfo info = Application.GetResourceStream(KnownIconNamesResourceUri) ?? throw new InvalidOperationException("Segoe Fluent Icons name data was not found.");
             Dictionary<string, string> names = new(comparer: StringComparer.OrdinalIgnoreCase);
             using (StreamReader reader = new(info.Stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
             {
-                string? line;
-                while ((line = reader.ReadLine()) is not null)
+                while (await reader.ReadLineAsync(CancellationToken.None).ConfigureAwait(false) is string line)
                 {
                     if (line.Length is 0)
                     {

@@ -51,7 +51,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
+                CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
 
                 ComboBox cb = new();
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
@@ -93,7 +93,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
+                CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
 
                 DropDownButton ddb = new();
                 Window w = new() { Content = ddb, Width = 200, Height = 100 };

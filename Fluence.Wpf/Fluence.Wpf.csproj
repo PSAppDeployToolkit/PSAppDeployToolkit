@@ -6,7 +6,7 @@
     <RootNamespace>Fluence.Wpf</RootNamespace>
     <AssemblyName>Fluence.Wpf</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <NoWarn>$(NoWarn);SYSLIB1045;S1244;VSTHRD001</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB1045;S1244</NoWarn>
     <DocumentationFile Condition="'$(TargetFramework)' != ''">bin/$(Configuration)/$(TargetFramework)/Fluence.Wpf.xml</DocumentationFile>
     <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2, .NET 8, and .NET 10)</Description>
     <Product>Fluence.Wpf</Product>
@@ -55,10 +55,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.26100.0' or '$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
-    <NoWarn>$(NoWarn);RCS1255</NoWarn>
-  </PropertyGroup>
-
 
 </Project>

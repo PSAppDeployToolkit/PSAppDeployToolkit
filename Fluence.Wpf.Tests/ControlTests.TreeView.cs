@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
                 // Template applied → ScrollViewer present
                 ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
                 _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
-                Assert.Same(app?.TryFindResource("ScrollViewerStyle"), sv.Style);
+                Assert.Same(app.TryFindResource("ScrollViewerStyle"), sv.Style);
                 w.Close();
             });
         }
@@ -195,7 +195,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush selectedBg = Assert.IsType<SolidColorBrush>(itemBorder.Background);
-                SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SubtleFillColorSecondaryBrush"));
+                SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(app.TryFindResource("SubtleFillColorSecondaryBrush"));
                 Assert.Equal(expectedBrush.Color, selectedBg.Color);
 
                 w.Close();

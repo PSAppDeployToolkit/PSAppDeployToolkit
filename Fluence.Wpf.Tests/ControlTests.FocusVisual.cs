@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests
                     _ = MergeGenericDictionary(app);
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
-                    Style style = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                    Style style = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
                 }
             });
         }
@@ -74,10 +74,10 @@ namespace Fluence.Wpf.Tests
 
                 // These per-control duplicate keys must no longer exist now that
                 // all four controls reference DefaultControlFocusVisualStyle.
-                Assert.Null(app?.TryFindResource("ButtonFocusVisual"));
-                Assert.Null(app?.TryFindResource("CheckBoxFocusVisual"));
-                Assert.Null(app?.TryFindResource("RadioButtonFocusVisual"));
-                Assert.Null(app?.TryFindResource("ToggleButtonFocusVisual"));
+                Assert.Null(app.TryFindResource("ButtonFocusVisual"));
+                Assert.Null(app.TryFindResource("CheckBoxFocusVisual"));
+                Assert.Null(app.TryFindResource("RadioButtonFocusVisual"));
+                Assert.Null(app.TryFindResource("ToggleButtonFocusVisual"));
             });
         }
 
@@ -89,7 +89,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                Style sharedStyle = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 Button btn = new();
                 Window w = new() { Content = btn, Width = 200, Height = 100 };
@@ -109,7 +109,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                Style sharedStyle = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 CheckBox cb = new() { Content = "Test" };
                 Window w = new() { Content = cb, Width = 200, Height = 100 };
@@ -129,7 +129,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                Style sharedStyle = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 RadioButton rb = new() { Content = "Option A" };
                 Window w = new() { Content = rb, Width = 200, Height = 100 };
@@ -149,7 +149,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
+                Style sharedStyle = Assert.IsType<Style>(app.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 ToggleButton tb = new() { Content = "Toggle" };
                 Window w = new() { Content = tb, Width = 200, Height = 100 };
@@ -169,7 +169,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultCollectionFocusVisualStyle"));
+                Style sharedStyle = Assert.IsType<Style>(app.TryFindResource("DefaultCollectionFocusVisualStyle"));
 
                 System.Windows.Controls.TabControl tabControl = new();
                 _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "Text", Content = new System.Windows.Controls.TextBlock { Text = "A" } });

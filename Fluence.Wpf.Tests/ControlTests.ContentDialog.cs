@@ -118,7 +118,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(320.0, dialog.MinWidth, 0.01);
 
                     Border surface = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"));
-                    CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
+                    CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
                     Assert.Equal(overlayRadius, surface.CornerRadius);
 
                     ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
@@ -686,10 +686,10 @@ namespace Fluence.Wpf.Tests
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
 
-                SolidColorBrush smoke = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SmokeFillColorDefaultBrush"));
+                SolidColorBrush smoke = Assert.IsType<SolidColorBrush>(app.TryFindResource("SmokeFillColorDefaultBrush"));
                 Assert.Equal(Color.FromArgb(0x4D, 0x00, 0x00, 0x00), smoke.Color);
 
-                Color smokeColor = Assert.IsAssignableFrom<Color>(app?.TryFindResource("SmokeFillColorDefault") as Color?);
+                Color smokeColor = Assert.IsAssignableFrom<Color>(app.TryFindResource("SmokeFillColorDefault") as Color?);
             });
         }
 
@@ -859,7 +859,7 @@ namespace Fluence.Wpf.Tests
 
                     // C1: the outer dialog stroke is the WinUI ContentDialogBorderBrush.
                     Border surface = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"));
-                    Assert.Same(app?.TryFindResource("SurfaceStrokeColorDefaultBrush"), surface.BorderBrush);
+                    Assert.Same(app.TryFindResource("SurfaceStrokeColorDefaultBrush"), surface.BorderBrush);
 
                     // C2: the entrance animates opacity 0->1 and scale 1.05->1.0 around the center.
                     Assert.Equal(new Point(0.5, 0.5), dialog.RenderTransformOrigin);

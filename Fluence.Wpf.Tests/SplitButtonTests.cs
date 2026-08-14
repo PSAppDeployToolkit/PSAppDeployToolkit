@@ -123,17 +123,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
-                        as System.Windows.Controls.Button;
-                    Assert.NotNull(primary);
+                    System.Windows.Controls.Button primary = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton));
 
-                    System.Windows.Controls.Primitives.ToggleButton? secondary = splitButton.Template.FindName("PART_SecondaryButton", splitButton)
-                        as System.Windows.Controls.Primitives.ToggleButton;
-                    Assert.NotNull(secondary);
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton));
 
-                    Popup? popup = splitButton.Template.FindName("PART_Popup", splitButton)
-                        as Popup;
-                    Assert.NotNull(popup);
+                    Popup popup = Assert.IsAssignableFrom<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton));
                     Assert.False(popup.StaysOpen,
                         "PART_Popup.StaysOpen must be false so outside-clicks close the flyout.");
                 }
@@ -174,9 +171,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
-                        as System.Windows.Controls.Button;
-                    Assert.NotNull(primary);
+                    System.Windows.Controls.Button primary = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton));
 
                     // Use UI Automation peer -> IInvokeProvider.Invoke(), the canonical
                     // equivalent of a user press-release on the button.
@@ -267,12 +263,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Primitives.ToggleButton? secondary = splitButton.Template.FindName("PART_SecondaryButton", splitButton)
-                        as System.Windows.Controls.Primitives.ToggleButton;
-                    Popup? popup = splitButton.Template.FindName("PART_Popup", splitButton)
-                        as Popup;
-                    Assert.NotNull(secondary);
-                    Assert.NotNull(popup);
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton));
+                    Popup popup = Assert.IsAssignableFrom<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton));
 
                     Assert.False(popup.IsOpen, "Popup should start closed.");
                     Assert.False(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");

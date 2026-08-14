@@ -133,10 +133,7 @@ namespace Fluence.Wpf.Helpers
             // from the property's current animated base value - this is what WPF does
             // for a DoubleAnimation with only To set, and is what keeps a reverse
             // collapse (280 -> 48) from snapping to 0 on the first frame.
-            if (animationClock is null)
-            {
-                throw new ArgumentNullException(nameof(animationClock));
-            }
+            ArgumentNullException.ThrowIfNull(animationClock);
             GridLength fromLength = From; double fromValue;
             if (fromLength.GridUnitType is GridUnitType.Auto)
             {

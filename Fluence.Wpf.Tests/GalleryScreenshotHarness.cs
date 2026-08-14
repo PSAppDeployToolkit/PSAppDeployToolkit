@@ -129,12 +129,16 @@ namespace Fluence.Wpf.Tests
             PngBitmapEncoder encoder = new();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-            // MemoryStream holds no unmanaged resources; disposal is a no-op, and avoiding
-            // the using block sidesteps sync-dispose-in-async-method analyzer noise.
-            MemoryStream buffer = new();
-            encoder.Save(buffer);
-            byte[] pngBytes = buffer.ToArray();
-
+            byte[] pngBytes;
+#if NET10_0_OR_GREATER
+            MemoryStream buffer = new(); await using (buffer.ConfigureAwait(continueOnCapturedContext: true))
+#else
+            using (MemoryStream buffer = new())
+#endif
+            {
+                encoder.Save(buffer);
+                pngBytes = buffer.ToArray();
+            }
             await File.WriteAllBytesAsync(fullPath, pngBytes, TestContext.Current.CancellationToken).ConfigureAwait(true);
         }
 

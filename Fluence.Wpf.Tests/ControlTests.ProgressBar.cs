@@ -67,13 +67,13 @@ namespace Fluence.Wpf.Tests
                 SolidColorBrush initial = Assert.IsType<SolidColorBrush>(fill.Background);
                 Color initialColor = initial.Color;
 
-                SolidColorBrush initialExpected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCautionBrush"));
+                SolidColorBrush initialExpected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCautionBrush"));
                 Assert.Equal(initialExpected.Color, initialColor);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCautionBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCautionBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
                 Assert.Equal(expected.Color, actual.Color);
                 Assert.NotEqual(initialColor, actual.Color);
@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Tests
                 progressBar.ProgressMode = ProgressBarMode.Standard;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush"));
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
                 Assert.Equal(expected.Color, actual.Color);
 
@@ -501,7 +501,7 @@ namespace Fluence.Wpf.Tests
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource(brushKey));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource(brushKey));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
                 Assert.Equal(expected.Color, actual.Color);
@@ -549,7 +549,7 @@ namespace Fluence.Wpf.Tests
 
                 System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
 
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource(brushKey));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource(brushKey));
 
                 SolidColorBrush actual = Assert.IsType<SolidColorBrush>(fill.Background);
                 Assert.Equal(expected.Color, actual.Color);

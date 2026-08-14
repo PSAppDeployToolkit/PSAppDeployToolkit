@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.FlyoutPresenter)));
+                Style style = Assert.IsType<Style>(app.TryFindResource(typeof(Controls.FlyoutPresenter)));
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.FlyoutPresenter presenter = new() { Content = "Surface" };
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    CornerRadius? overlayRadius = (CornerRadius?)app?.FindResource("OverlayCornerRadius");
+                    CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
                     Border surface = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(presenter));
 
                     Assert.Equal(overlayRadius, surface.CornerRadius);
@@ -546,7 +546,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.NotNull(app?.TryFindResource(key));
+                        Assert.NotNull(app.TryFindResource(key));
                     }
                 }
             });

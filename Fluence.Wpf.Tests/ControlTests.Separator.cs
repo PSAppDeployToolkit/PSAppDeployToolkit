@@ -95,7 +95,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush bg = Assert.IsType<SolidColorBrush>(sep.Background);
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("DividerStrokeColorDefaultBrush"));
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("DividerStrokeColorDefaultBrush"));
 
                 Assert.Equal(expected.Color, bg.Color);
                 w.Close();

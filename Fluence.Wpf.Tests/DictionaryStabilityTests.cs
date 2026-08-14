@@ -181,7 +181,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (string? key in keyBrushNames)
                 {
-                    Brush brush = Assert.IsAssignableFrom<Brush>(app.Resources[key]);
+                    _ = Assert.IsAssignableFrom<Brush>(app.Resources[key]);
                 }
             });
         }
