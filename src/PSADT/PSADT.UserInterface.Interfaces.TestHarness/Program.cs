@@ -113,7 +113,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             const string inputDialogButtonLeftText = "Continue";
             const string inputDialogButtonRightText = "Cancel";
 
-            // Set up options for the dialogs
+            // Set up options for the dialogs.
             CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => default);
             await using (closeAppsDialogState.ConfigureAwait(false))
             {
