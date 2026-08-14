@@ -92,9 +92,8 @@ namespace Fluence.Wpf.Tests
                     w.Show();
                     DrainDispatcher(w.Dispatcher);
 
-                    TranslateTransform? translate =
-                        bar.Template.FindName("PART_IndeterminateTranslate", bar) as TranslateTransform;
-                    Assert.NotNull(translate);
+                    TranslateTransform translate =
+                        Assert.IsType<TranslateTransform>(bar.Template.FindName("PART_IndeterminateTranslate", bar));
 
                     Assert.True(translate.HasAnimatedProperties,
                         "An indeterminate ProgressBar must animate with motion disabled: the movement is the only status signal it has.");
@@ -133,13 +132,11 @@ namespace Fluence.Wpf.Tests
                     w.Show();
                     DrainDispatcher(w.Dispatcher);
 
-                    Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
-                    Assert.NotNull(indeterminateArc);
+                    Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                     Assert.Equal(Visibility.Visible, indeterminateArc.Visibility);
                     Assert.NotNull(indeterminateArc.Data);
 
-                    RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
-                    Assert.NotNull(rotate);
+                    RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
                     Assert.False(rotate.HasAnimatedProperties,
                         "With motion disabled the indeterminate rotation must not run.");
                     Assert.Equal(90.0, rotate.Angle, 0.01);
@@ -172,8 +169,7 @@ namespace Fluence.Wpf.Tests
                     w.Show();
                     DrainDispatcher(w.Dispatcher);
 
-                    RotateTransform? rotate = icon.Template.FindName("PART_Rotate", icon) as RotateTransform;
-                    Assert.NotNull(rotate);
+                    RotateTransform rotate = Assert.IsType<RotateTransform>(icon.Template.FindName("PART_Rotate", icon));
                     Assert.False(rotate.HasAnimatedProperties,
                         "With motion disabled the spin animation must not run even while IsSpinning is true.");
                     Assert.Equal(icon.Rotation, rotate.Angle, 0.01);
@@ -242,16 +238,13 @@ namespace Fluence.Wpf.Tests
                     expander.IsExpanded = true;
 
                     // No drain: the steady state must apply synchronously (no deferred slide).
-                    ContentPresenter? expandSite = expander.Template.FindName("ExpandSite", expander) as ContentPresenter;
-                    Assert.NotNull(expandSite);
-                    TranslateTransform? translate = expandSite.RenderTransform as TranslateTransform;
-                    Assert.NotNull(translate);
+                    ContentPresenter expandSite = Assert.IsType<ContentPresenter>(expander.Template.FindName("ExpandSite", expander));
+                    TranslateTransform translate = Assert.IsType<TranslateTransform>(expandSite.RenderTransform);
                     Assert.False(translate.HasAnimatedProperties,
                         "With motion disabled the expand slide must not run.");
                     Assert.Equal(0.0, translate.Y, 0.001);
 
-                    RowDefinition? contentRow = expander.Template.FindName("Row1Def", expander) as RowDefinition;
-                    Assert.NotNull(contentRow);
+                    RowDefinition contentRow = Assert.IsType<RowDefinition>(expander.Template.FindName("Row1Def", expander));
                     Assert.True(contentRow.Height.IsStar,
                         "With motion disabled the content row must open to its star height immediately.");
 
@@ -289,18 +282,14 @@ namespace Fluence.Wpf.Tests
                     Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the flyout popup.");
 
-                    Popup? popup = flyout.HostPopup;
-                    Assert.NotNull(popup);
-                    Controls.FlyoutPresenter? presenter = popup.Child as Controls.FlyoutPresenter;
-                    Assert.NotNull(presenter);
+                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(popup.Child);
                     Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.IsLoaded),
                         "The presenter must load inside the open popup.");
 
-                    TranslateTransform? translate =
-                        presenter.Template.FindName("PresenterTranslate", presenter) as TranslateTransform;
-                    Assert.NotNull(translate);
-                    Border? surface = presenter.Template.FindName("PresenterSurface", presenter) as Border;
-                    Assert.NotNull(surface);
+                    TranslateTransform translate =
+                        Assert.IsType<TranslateTransform>(presenter.Template.FindName("PresenterTranslate", presenter));
+                    Border surface = Assert.IsType<Border>(presenter.Template.FindName("PresenterSurface", presenter));
 
                     Assert.Equal(0.0, translate.X, 0.001);
                     Assert.Equal(0.0, translate.Y, 0.001);
@@ -348,11 +337,9 @@ namespace Fluence.Wpf.Tests
                     Assert.True(WaitUntil(window.Dispatcher, 2000, () => tip.HostPopup is { IsOpen: true } && tip.IsLoaded),
                         "IsOpen=true should open the host popup and load the tip.");
 
-                    TranslateTransform? translate =
-                        tip.Template.FindName("TipTranslate", tip) as TranslateTransform;
-                    Assert.NotNull(translate);
-                    Grid? tipRoot = tip.Template.FindName("TipRoot", tip) as Grid;
-                    Assert.NotNull(tipRoot);
+                    TranslateTransform translate =
+                        Assert.IsType<TranslateTransform>(tip.Template.FindName("TipTranslate", tip));
+                    Grid tipRoot = Assert.IsType<Grid>(tip.Template.FindName("TipRoot", tip));
 
                     Assert.Equal(0.0, translate.X, 0.001);
                     Assert.Equal(0.0, translate.Y, 0.001);
@@ -443,11 +430,9 @@ namespace Fluence.Wpf.Tests
                     combo.IsDropDownOpen = true;
                     DrainDispatcher(window.Dispatcher);
 
-                    System.Windows.Controls.Border? border =
-                        combo.Template.FindName("PART_DropdownBorder", combo) as System.Windows.Controls.Border;
-                    Assert.NotNull(border);
-                    TranslateTransform? translate = border.RenderTransform as TranslateTransform;
-                    Assert.NotNull(translate);
+                    System.Windows.Controls.Border border =
+                        Assert.IsType<System.Windows.Controls.Border>(combo.Template.FindName("PART_DropdownBorder", combo));
+                    TranslateTransform translate = Assert.IsType<TranslateTransform>(border.RenderTransform);
 
                     Assert.Equal(0.0, translate.Y, 0.001);
                     Assert.Equal(1.0, border.Opacity, 0.001);

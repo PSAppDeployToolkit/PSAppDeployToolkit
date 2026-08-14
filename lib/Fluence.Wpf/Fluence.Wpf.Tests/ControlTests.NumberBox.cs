@@ -66,8 +66,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = numberBox.ApplyTemplate();
-                    RepeatButton? upButton = numberBox.Template.FindName("PART_UpButton", numberBox) as RepeatButton;
-                    Assert.NotNull(upButton);
+                    RepeatButton upButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_UpButton", numberBox));
 
                     // Use the UI Automation peer's IInvokeProvider.Invoke, which calls the
                     // button's protected OnClick() and raises ClickEvent through the proper
@@ -117,8 +116,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = numberBox.ApplyTemplate();
-                    RepeatButton? downButton = numberBox.Template.FindName("PART_DownButton", numberBox) as RepeatButton;
-                    Assert.NotNull(downButton);
+                    RepeatButton downButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_DownButton", numberBox));
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(downButton);
                     IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
@@ -168,10 +166,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = numberBox.ApplyTemplate();
-                    RepeatButton? upButton = numberBox.Template.FindName("PART_UpButton", numberBox) as RepeatButton;
-                    RepeatButton? downButton = numberBox.Template.FindName("PART_DownButton", numberBox) as RepeatButton;
-                    Assert.NotNull(upButton);
-                    Assert.NotNull(downButton);
+                    RepeatButton upButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_UpButton", numberBox));
+                    RepeatButton downButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_DownButton", numberBox));
 
                     Assert.Equal(ClickMode.Press, upButton.ClickMode);
                     Assert.Equal(ClickMode.Press, downButton.ClickMode);
@@ -212,10 +208,8 @@ namespace Fluence.Wpf.Tests
 
                     _ = numberBox.ApplyTemplate();
 
-                    RepeatButton? upButton = numberBox.Template.FindName("PART_UpButton", numberBox) as RepeatButton;
-                    RepeatButton? downButton = numberBox.Template.FindName("PART_DownButton", numberBox) as RepeatButton;
-                    Assert.NotNull(upButton);
-                    Assert.NotNull(downButton);
+                    RepeatButton upButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_UpButton", numberBox));
+                    RepeatButton downButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_DownButton", numberBox));
                     Assert.False(upButton.IsTabStop,
                         "Inline spin increment button should not become a separate tab stop.");
                     Assert.False(downButton.IsTabStop,
@@ -260,8 +254,7 @@ namespace Fluence.Wpf.Tests
 
                     _ = numberBox.ApplyTemplate();
 
-                    StackPanel? spinPanel = numberBox.Template.FindName("SpinPanel", numberBox) as StackPanel;
-                    Assert.NotNull(spinPanel);
+                    StackPanel spinPanel = Assert.IsType<StackPanel>(numberBox.Template.FindName("SpinPanel", numberBox));
                     Assert.Equal(0.0, spinPanel.Margin.Left);
                     Assert.Equal(1.0, spinPanel.Margin.Top);
                     Assert.Equal(2.0, spinPanel.Margin.Right);
@@ -302,10 +295,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = numberBox.ApplyTemplate();
-                    StackPanel? spinPanel = numberBox.Template.FindName("SpinPanel", numberBox) as StackPanel;
-                    TextBox? textBox = numberBox.Template.FindName("PART_TextBox", numberBox) as TextBox;
-                    Assert.NotNull(spinPanel);
-                    Assert.NotNull(textBox);
+                    StackPanel spinPanel = Assert.IsType<StackPanel>(numberBox.Template.FindName("SpinPanel", numberBox));
+                    TextBox textBox = Assert.IsType<TextBox>(numberBox.Template.FindName("PART_TextBox", numberBox));
                     Assert.Equal(Visibility.Visible, spinPanel.Visibility);
                     Assert.Equal(0.0, spinPanel.Opacity);
                     Assert.False(spinPanel.IsHitTestVisible,
@@ -396,8 +387,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = numberBox.ApplyTemplate();
-                    RepeatButton? upButton = numberBox.Template.FindName("PART_UpButton", numberBox) as RepeatButton;
-                    Assert.NotNull(upButton);
+                    RepeatButton upButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_UpButton", numberBox));
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(upButton);
                     IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);

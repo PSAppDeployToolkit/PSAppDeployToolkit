@@ -320,19 +320,16 @@ namespace Fluence.Wpf.Tests
 
         private static Color AssertForegroundMatchesToken(TextBlock probe)
         {
-            SolidColorBrush? tokenBrush = Application.Current.TryFindResource("TextFillColorPrimaryBrush") as SolidColorBrush;
-            Assert.NotNull(tokenBrush);
+            SolidColorBrush tokenBrush = Assert.IsType<SolidColorBrush>(Application.Current.TryFindResource("TextFillColorPrimaryBrush"));
 
-            SolidColorBrush? foreground = probe.Foreground as SolidColorBrush;
-            Assert.NotNull(foreground);
+            SolidColorBrush foreground = Assert.IsType<SolidColorBrush>(probe.Foreground);
             Assert.Equal(tokenBrush.Color, foreground.Color);
             return foreground.Color;
         }
 
         private static void AssertProbeBrush(Window window, Color expected)
         {
-            SolidColorBrush? brush = window.TryFindResource("ProbeBrush") as SolidColorBrush;
-            Assert.NotNull(brush);
+            SolidColorBrush brush = Assert.IsType<SolidColorBrush>(window.TryFindResource("ProbeBrush"));
             Assert.Equal(expected, brush.Color);
         }
 

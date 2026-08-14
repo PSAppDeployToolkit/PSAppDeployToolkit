@@ -225,8 +225,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ButtonBase? addButton = tabs.Template.FindName("PART_AddTabButton", tabs) as ButtonBase;
-                    Assert.NotNull(addButton);
+                    ButtonBase addButton = Assert.IsAssignableFrom<ButtonBase>(tabs.Template.FindName("PART_AddTabButton", tabs));
 
                     int raised = 0;
                     tabs.AddTabButtonClick += (s, e) => raised++;
@@ -274,8 +273,7 @@ namespace Fluence.Wpf.Tests
                     // Force template application on the first tab so its PART_CloseButton is realized.
                     _ = first.ApplyTemplate();
 
-                    ButtonBase? closeButton = first.Template.FindName("PART_CloseButton", first) as ButtonBase;
-                    Assert.NotNull(closeButton);
+                    ButtonBase closeButton = Assert.IsAssignableFrom<ButtonBase>(first.Template.FindName("PART_CloseButton", first));
 
                     TabViewTabCloseRequestedEventArgs? viewArgs = null;
                     int itemRaised = 0;
@@ -324,8 +322,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     _ = locked.ApplyTemplate();
 
-                    FrameworkElement? closeButton = locked.Template.FindName("PART_CloseButton", locked) as FrameworkElement;
-                    Assert.NotNull(closeButton);
+                    FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(locked.Template.FindName("PART_CloseButton", locked));
                     Assert.False(closeButton.IsVisible,
                         "IsClosable=false should hide the close button regardless of overlay mode.");
                 }
@@ -357,8 +354,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FrameworkElement? addButton = tabs.Template.FindName("PART_AddTabButton", tabs) as FrameworkElement;
-                    Assert.NotNull(addButton);
+                    FrameworkElement addButton = Assert.IsAssignableFrom<FrameworkElement>(tabs.Template.FindName("PART_AddTabButton", tabs));
                     Assert.False(addButton.IsVisible,
                         "IsAddTabButtonVisible=false should collapse the add button.");
                 }

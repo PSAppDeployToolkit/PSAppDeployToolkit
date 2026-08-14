@@ -168,8 +168,7 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertNativeConstantValue(string fieldName, object expectedValue)
         {
-            FieldInfo? field = typeof(NativeConstants).GetField(fieldName, BindingFlags.Static | BindingFlags.Public);
-            Assert.NotNull(field);
+            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(NativeConstants).GetField(fieldName, BindingFlags.Static | BindingFlags.Public));
             Assert.Equal(expectedValue, field.GetRawConstantValue());
         }
 
@@ -182,8 +181,7 @@ namespace Fluence.Wpf.Tests
 
         private static System.Windows.Controls.Button? GetCaptionButtonField(FluenceWindow window, string fieldName)
         {
-            FieldInfo? field = typeof(FluenceWindow).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(field);
+            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(FluenceWindow).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic));
             return field.GetValue(window) as System.Windows.Controls.Button;
         }
 
@@ -478,10 +476,8 @@ namespace Fluence.Wpf.Tests
                     foreach (ApplicationTheme theme in (ApplicationTheme[])[ApplicationTheme.Dark, ApplicationTheme.Light])
                     {
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-                        object? bg = app?.TryFindResource("ApplicationBackgroundBrush");
-                        Assert.NotNull(bg);
-                        object? fg = app?.TryFindResource("TextFillColorPrimaryBrush");
-                        Assert.NotNull(fg);
+                        object bg = Assert.IsAssignableFrom<object>(app?.TryFindResource("ApplicationBackgroundBrush"));
+                        object fg = Assert.IsAssignableFrom<object>(app?.TryFindResource("TextFillColorPrimaryBrush"));
                     }
                 }
                 finally
@@ -560,8 +556,7 @@ namespace Fluence.Wpf.Tests
         {
             RunWithShownWindow(static w =>
             {
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -576,8 +571,7 @@ namespace Fluence.Wpf.Tests
         {
             RunWithShownWindow(static w =>
             {
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_closeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"));
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
@@ -592,8 +586,7 @@ namespace Fluence.Wpf.Tests
             RunWithShownWindow(static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -610,8 +603,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
                 w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Hidden, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -628,8 +620,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMaximizable = false;
                 w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Visible, btn.Visibility);
                 Assert.False(btn.IsEnabled);
 
@@ -716,10 +707,8 @@ namespace Fluence.Wpf.Tests
         {
             RunWithShownWindow(static w =>
             {
-                System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
-                System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
-                Assert.NotNull(max);
-                Assert.NotNull(restore);
+                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button restore = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"));
                 Assert.Equal(Visibility.Visible, max.Visibility);
                 Assert.Equal(Visibility.Collapsed, restore.Visibility);
 
@@ -767,8 +756,7 @@ namespace Fluence.Wpf.Tests
             // OS build, or IsMaximizable gate that WM_NCHITTEST applies before reaching it.
             RunWithShownWindow(static w =>
             {
-                System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.NotNull(max);
+                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.True(max.IsEnabled,
                     "Precondition: maximize button must be enabled for SetSnapHover to apply a hover visual.");
 
@@ -821,8 +809,7 @@ namespace Fluence.Wpf.Tests
                 w.ResizeMode = ResizeMode.NoResize;
                 w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Collapsed, btn.Visibility);
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
@@ -844,8 +831,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
                 w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
                 Assert.Equal(Visibility.Collapsed, btn?.Visibility);
                 Assert.False(btn?.IsEnabled ?? false,
                     "Explicit Collapsed must also disable the button.");
@@ -861,8 +847,7 @@ namespace Fluence.Wpf.Tests
                 w.ResizeMode = ResizeMode.NoResize;
                 w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.NotNull(max);
+                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.Equal(Visibility.Collapsed, max.Visibility);
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
@@ -924,14 +909,10 @@ namespace Fluence.Wpf.Tests
         {
             RunWithShownWindow(static w =>
             {
-                System.Windows.Controls.Button? minimize = GetCaptionButtonField(w, "_minimizeButton");
-                System.Windows.Controls.Button? maximize = GetCaptionButtonField(w, "_maximizeButton");
-                System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
-                System.Windows.Controls.Button? close = GetCaptionButtonField(w, "_closeButton");
-                Assert.NotNull(minimize);
-                Assert.NotNull(maximize);
-                Assert.NotNull(restore);
-                Assert.NotNull(close);
+                System.Windows.Controls.Button minimize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
+                System.Windows.Controls.Button maximize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button restore = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"));
+                System.Windows.Controls.Button close = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"));
 
                 foreach (Visibility value in (Visibility[])[Visibility.Visible, Visibility.Hidden, Visibility.Collapsed])
                 {
@@ -1165,8 +1146,7 @@ modifiers: null);
                     CommandManager.InvalidateRequerySuggested();
                     window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
 
-                    System.Windows.Controls.Button? minBtn = GetCaptionButtonField(window, "_minimizeButton");
-                    Assert.NotNull(minBtn);
+                    System.Windows.Controls.Button minBtn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(window, "_minimizeButton"));
                     Assert.Equal(Visibility.Visible, minBtn.Visibility);
                     Assert.True(minBtn.IsEnabled,
                         "PSADT flow: Button.IsEnabled must be true so clicks dispatch the command.");
@@ -1448,8 +1428,7 @@ modifiers: null);
 
                     foreach (string? fieldName in new[] { "_minimizeButton", "_maximizeButton", "_closeButton" })
                     {
-                        System.Windows.Controls.Button? btn = GetCaptionButtonField(window, fieldName);
-                        Assert.NotNull(btn);
+                        System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(window, fieldName));
                         Assert.True(btn.IsVisible, fieldName + " must be visible.");
 
                         Point center = new(btn.ActualWidth / 2, btn.ActualHeight / 2);

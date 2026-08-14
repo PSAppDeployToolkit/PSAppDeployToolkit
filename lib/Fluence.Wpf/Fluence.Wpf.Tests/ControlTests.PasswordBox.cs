@@ -144,8 +144,7 @@ namespace Fluence.Wpf.Tests
                     _ = box.ApplyTemplate();
                     DrainDispatcher(window.Dispatcher);
 
-                    Button? revealButton = FindVisualChildByName<Button>(box, "PART_RevealButton");
-                    Assert.NotNull(revealButton);
+                    Button revealButton = Assert.IsAssignableFrom<Button>(FindVisualChildByName<Button>(box, "PART_RevealButton"));
 
                     string accessibleName = AutomationProperties.GetName(revealButton);
                     Assert.False(string.IsNullOrWhiteSpace(accessibleName),
@@ -210,8 +209,7 @@ namespace Fluence.Wpf.Tests
                     _ = box.ApplyTemplate();
                     DrainDispatcher(window.Dispatcher);
 
-                    Button? revealButton = FindVisualChildByName<Button>(box, "PART_RevealButton");
-                    Assert.NotNull(revealButton);
+                    Button revealButton = Assert.IsAssignableFrom<Button>(FindVisualChildByName<Button>(box, "PART_RevealButton"));
 
                     // Simulate PreviewMouseLeftButtonDown - password should reveal while held.
                     MouseButtonEventArgs downArgs = new(

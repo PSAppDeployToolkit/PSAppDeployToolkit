@@ -57,8 +57,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Primitives.RepeatButton? btn = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Primitives.RepeatButton btn = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton"));
                 w.Close();
             });
         }
@@ -78,8 +77,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Primitives.RepeatButton? btn = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton");
-                Assert.NotNull(btn);
+                System.Windows.Controls.Primitives.RepeatButton btn = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton"));
                 w.Close();
             });
         }
@@ -98,8 +96,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ScrollViewer? sv = FindVisualChildByName<ScrollViewer>(tv, "PART_TabContentScroller");
-                Assert.NotNull(sv);
+                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChildByName<ScrollViewer>(tv, "PART_TabContentScroller"));
                 w.Close();
             });
         }
@@ -120,10 +117,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Primitives.RepeatButton? back = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton");
-                System.Windows.Controls.Primitives.RepeatButton? fwd = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton");
-                Assert.NotNull(back);
-                Assert.NotNull(fwd);
+                System.Windows.Controls.Primitives.RepeatButton back = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton"));
+                System.Windows.Controls.Primitives.RepeatButton fwd = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.RepeatButton>(FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton"));
 
                 Assert.Equal(
                     Visibility.Collapsed, back.Visibility);

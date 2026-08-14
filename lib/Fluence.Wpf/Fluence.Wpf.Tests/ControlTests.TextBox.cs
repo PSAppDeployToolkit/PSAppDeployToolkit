@@ -61,14 +61,11 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                TextBlock? placeholder = FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock");
-                Assert.NotNull(placeholder);
+                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
-                SolidColorBrush? expected = app?.TryFindResource("TextFillColorTertiaryBrush") as SolidColorBrush;
-                Assert.NotNull(expected);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
 
-                SolidColorBrush? actual = placeholder.Foreground as SolidColorBrush;
-                Assert.NotNull(actual);
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
                     expected.Color,
                     actual.Color);
@@ -89,14 +86,11 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                TextBlock? placeholder = FindVisualChildByName<TextBlock>(pb, "PlaceholderTextBlock");
-                Assert.NotNull(placeholder);
+                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(pb, "PlaceholderTextBlock"));
 
-                SolidColorBrush? expected = app?.TryFindResource("TextFillColorTertiaryBrush") as SolidColorBrush;
-                Assert.NotNull(expected);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
 
-                SolidColorBrush? actual = placeholder.Foreground as SolidColorBrush;
-                Assert.NotNull(actual);
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
                     expected.Color,
                     actual.Color);
@@ -153,14 +147,11 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                TextBlock? placeholder = FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock");
-                Assert.NotNull(placeholder);
+                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
 
-                SolidColorBrush? expected = app?.TryFindResource("TextFillColorTertiaryBrush") as SolidColorBrush;
-                Assert.NotNull(expected);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorTertiaryBrush"));
 
-                SolidColorBrush? actual = placeholder.Foreground as SolidColorBrush;
-                Assert.NotNull(actual);
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
                 Assert.Equal(
                     expected.Color,
                     actual.Color);
@@ -186,8 +177,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Border? validationLine = FindVisualChildByName<Border>(tb, "PART_ValidationLine");
-                Assert.NotNull(validationLine);
+                Border validationLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(tb, "PART_ValidationLine"));
                 Assert.Equal(0.0, validationLine.Opacity, 0.001);
 
                 FocusManager.SetFocusedElement(w, tb);
@@ -195,10 +185,8 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(1.0, validationLine.Opacity, 0.001);
-                SolidColorBrush? expected = app?.TryFindResource("SystemFillColorCriticalBrush") as SolidColorBrush;
-                Assert.NotNull(expected);
-                SolidColorBrush? actual = validationLine.Background as SolidColorBrush;
-                Assert.NotNull(actual);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SystemFillColorCriticalBrush"));
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(validationLine.Background);
                 Assert.Equal(expected.Color, actual.Color);
 
                 w.Close();
@@ -223,13 +211,10 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                TextBlock? helper = FindVisualChildByName<TextBlock>(tb, "PART_HelperText");
-                Assert.NotNull(helper);
-                TextBlock? icon = FindVisualChildByName<TextBlock>(tb, "PART_ValidationIcon");
-                Assert.NotNull(icon);
+                TextBlock helper = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_HelperText"));
+                TextBlock icon = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_ValidationIcon"));
 
-                StackPanel? helperRow = VisualTreeHelper.GetParent(helper) as StackPanel;
-                Assert.NotNull(helperRow);
+                StackPanel helperRow = Assert.IsType<StackPanel>(VisualTreeHelper.GetParent(helper));
                 Assert.Equal(new Thickness(12, 9, 12, 0), helperRow.Margin);
                 Assert.Equal(VerticalAlignment.Center, helper.VerticalAlignment);
                 Assert.Equal(VerticalAlignment.Center, icon.VerticalAlignment);

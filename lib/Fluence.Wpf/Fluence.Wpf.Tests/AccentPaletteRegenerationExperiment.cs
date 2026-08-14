@@ -105,8 +105,7 @@ namespace Fluence.Wpf.Tests
 
             // Observational probe - the actual outcome is logged via ITestOutputHelper.WriteLine
             // inside RunExperiment. Confirms the restore step left the palette readable.
-            object? restored = ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue);
-            Assert.NotNull(restored);
+            Assert.NotNull(ReadRaw(Registry.CurrentUser, AccentKey, AccentPaletteValue));
         }
 
         private enum WriteMode

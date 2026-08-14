@@ -61,11 +61,9 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Find the first ListViewItem in the visual tree
-                ListViewItem? item = FindVisualChild<ListViewItem>(lv);
-                Assert.NotNull(item);
+                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
 
-                Border? indicator = FindVisualChildByName<Border>(item, "SelectionIndicator");
-                Assert.NotNull(indicator);
+                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
                 w.Close();
             });
         }
@@ -84,10 +82,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ListViewItem? item = FindVisualChild<ListViewItem>(lv);
-                Assert.NotNull(item);
-                Border? indicator = FindVisualChildByName<Border>(item, "SelectionIndicator");
-                Assert.NotNull(indicator);
+                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
+                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
 
                 Assert.Equal(3.0, indicator.Width, 0.01);
                 w.Close();
@@ -108,10 +104,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ListViewItem? item = FindVisualChild<ListViewItem>(lv);
-                Assert.NotNull(item);
-                Border? indicator = FindVisualChildByName<Border>(item, "SelectionIndicator");
-                Assert.NotNull(indicator);
+                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
+                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
 
                 Assert.Equal(new CornerRadius(1.5), indicator.CornerRadius);
                 w.Close();
@@ -132,16 +126,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ListViewItem? item = FindVisualChild<ListViewItem>(lv);
-                Assert.NotNull(item);
-                Border? indicator = FindVisualChildByName<Border>(item, "SelectionIndicator");
-                Assert.NotNull(indicator);
+                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
+                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
 
-                SolidColorBrush? expected = app?.TryFindResource("AccentFillColorDefaultBrush") as SolidColorBrush;
-                Assert.NotNull(expected);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
 
-                SolidColorBrush? actual = indicator.Background as SolidColorBrush;
-                Assert.NotNull(actual);
+                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(indicator.Background);
                 Assert.Equal(
                     expected.Color,
                     actual.Color);

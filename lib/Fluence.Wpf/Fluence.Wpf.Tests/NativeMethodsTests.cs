@@ -58,8 +58,7 @@ namespace Fluence.Wpf.Tests
                 name,
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
             Assert.NotNull(field);
-            object? value = field.GetValue(null);
-            Assert.NotNull(value);
+            object value = Assert.IsAssignableFrom<object>(field.GetValue(null));
             return (int)value;
         }
 

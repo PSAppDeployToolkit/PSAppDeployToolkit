@@ -55,13 +55,12 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: false);
 
-                Color? textColor = app.Resources["TextFillColorPrimary"] as Color?;
-                _ = Assert.NotNull(textColor);
+                Color textColor = Assert.IsType<Color>(app.Resources["TextFillColorPrimary"]);
 
-                Assert.Equal(a, textColor.Value.A);
-                Assert.Equal(r, textColor.Value.R);
-                Assert.Equal(g, textColor.Value.G);
-                Assert.Equal(b, textColor.Value.B);
+                Assert.Equal(a, textColor.A);
+                Assert.Equal(r, textColor.R);
+                Assert.Equal(g, textColor.G);
+                Assert.Equal(b, textColor.B);
             });
         }
 
@@ -73,8 +72,7 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
 
-                SolidColorBrush? brush = app.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush;
-                Assert.NotNull(brush);
+                SolidColorBrush brush = Assert.IsType<SolidColorBrush>(app.Resources["TextFillColorPrimaryBrush"]);
             });
         }
 
@@ -86,13 +84,10 @@ namespace Fluence.Wpf.Tests
                 Application app = Application.Current;
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
 
-                SolidColorBrush? pointerOver = app.Resources["WindowCloseButtonBackgroundPointerOverBrush"] as SolidColorBrush;
-                SolidColorBrush? pressed = app.Resources["WindowCloseButtonBackgroundPressedBrush"] as SolidColorBrush;
-                SolidColorBrush? foreground = app.Resources["WindowCloseButtonForegroundPointerOverBrush"] as SolidColorBrush;
+                SolidColorBrush pointerOver = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonBackgroundPointerOverBrush"]);
+                SolidColorBrush pressed = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonBackgroundPressedBrush"]);
+                SolidColorBrush foreground = Assert.IsType<SolidColorBrush>(app.Resources["WindowCloseButtonForegroundPointerOverBrush"]);
 
-                Assert.NotNull(pointerOver);
-                Assert.NotNull(pressed);
-                Assert.NotNull(foreground);
 
                 Assert.Equal(SystemColors.HighlightColor, pointerOver.Color);
                 Assert.Equal(SystemColors.HighlightColor, pressed.Color);

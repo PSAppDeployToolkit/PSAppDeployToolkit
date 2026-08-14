@@ -58,8 +58,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
-                Assert.NotNull(outerBorder);
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
                 Assert.NotNull(outerBorder.Effect);
                 _ = Assert.IsAssignableFrom<DropShadowEffect>(outerBorder.Effect);
@@ -80,8 +79,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
-                Assert.NotNull(outerBorder);
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -101,8 +99,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
-                Assert.NotNull(outerBorder);
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -122,8 +119,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
-                Assert.NotNull(outerBorder);
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -143,10 +139,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
-                Assert.NotNull(outerBorder);
-                DropShadowEffect? shadow = outerBorder.Effect as DropShadowEffect;
-                Assert.NotNull(shadow);
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+                DropShadowEffect shadow = Assert.IsType<DropShadowEffect>(outerBorder.Effect);
 
                 // WI-3 C21: subtle elevation - soft blur, low opacity, downward direction
                 Assert.True(shadow.BlurRadius is >= 4 and <= 16,

@@ -92,8 +92,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Rectangle? divider = FindVisualChildByName<Rectangle>(btn, "Divider");
-                Assert.NotNull(divider);
+                Rectangle divider = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btn, "Divider"));
                 Assert.NotNull(divider.Fill);
                 w.Close();
             });
@@ -126,13 +125,10 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = button.ApplyTemplate();
-                    System.Windows.Controls.Button? primaryButton = button.Template.FindName("PART_PrimaryButton", button) as System.Windows.Controls.Button;
-                    System.Windows.Controls.Primitives.ToggleButton? secondaryButton = button.Template.FindName("PART_SecondaryButton", button) as System.Windows.Controls.Primitives.ToggleButton;
-                    Style? focusVisualStyle = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
+                    System.Windows.Controls.Button primaryButton = Assert.IsType<System.Windows.Controls.Button>(button.Template.FindName("PART_PrimaryButton", button));
+                    System.Windows.Controls.Primitives.ToggleButton secondaryButton = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(button.Template.FindName("PART_SecondaryButton", button));
+                    Style focusVisualStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
 
-                    Assert.NotNull(primaryButton);
-                    Assert.NotNull(secondaryButton);
-                    Assert.NotNull(focusVisualStyle);
                     Assert.Same(focusVisualStyle, primaryButton.FocusVisualStyle);
                     Assert.Same(focusVisualStyle, secondaryButton.FocusVisualStyle);
                     Assert.Null(FindVisualChildByName<System.Windows.Controls.Border>(button, "PrimaryFocusOuter"));
@@ -160,10 +156,8 @@ namespace Fluence.Wpf.Tests
                 wStd.Show();
                 DrainDispatcher(wStd.Dispatcher);
 
-                Rectangle? dividerStd = FindVisualChildByName<Rectangle>(btnStd, "Divider");
-                Assert.NotNull(dividerStd);
-                SolidColorBrush? stdBrush = dividerStd.Fill as SolidColorBrush;
-                Assert.NotNull(stdBrush);
+                Rectangle dividerStd = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btnStd, "Divider"));
+                SolidColorBrush stdBrush = Assert.IsType<SolidColorBrush>(dividerStd.Fill);
                 wStd.Close();
 
                 // Accent appearance - get divider color
@@ -172,10 +166,8 @@ namespace Fluence.Wpf.Tests
                 wAcc.Show();
                 DrainDispatcher(wAcc.Dispatcher);
 
-                Rectangle? dividerAcc = FindVisualChildByName<Rectangle>(btnAcc, "Divider");
-                Assert.NotNull(dividerAcc);
-                SolidColorBrush? accBrush = dividerAcc.Fill as SolidColorBrush;
-                Assert.NotNull(accBrush);
+                Rectangle dividerAcc = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(btnAcc, "Divider"));
+                SolidColorBrush accBrush = Assert.IsType<SolidColorBrush>(dividerAcc.Fill);
 
                 Assert.NotEqual(
                     stdBrush.Color,

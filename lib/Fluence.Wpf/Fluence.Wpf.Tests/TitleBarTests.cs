@@ -103,8 +103,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(40.0, paneToggleButton.ActualWidth, 0.5);
                     Assert.Equal(36.0, paneToggleButton.ActualHeight, 0.5);
 
-                    System.Windows.Controls.TextBlock? backGlyph = FindVisualChild<System.Windows.Controls.TextBlock>(backButton);
-                    Assert.NotNull(backGlyph);
+                    System.Windows.Controls.TextBlock backGlyph = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChild<System.Windows.Controls.TextBlock>(backButton));
                     Assert.Equal(16.0, backGlyph.ActualWidth, 0.5);
                     Assert.Equal(16.0, backGlyph.ActualHeight, 0.5);
                 });
@@ -260,9 +259,7 @@ namespace Fluence.Wpf.Tests
 
         private static System.Windows.Controls.Button GetTemplateButton(Controls.TitleBar titleBar, string partName)
         {
-            System.Windows.Controls.Button? button = titleBar.Template.FindName(partName, titleBar) as System.Windows.Controls.Button;
-            Assert.NotNull(button);
-            return button;
+            return Assert.IsType<System.Windows.Controls.Button>(titleBar.Template.FindName(partName, titleBar));
         }
 
         private static T? FindVisualChild<T>(DependencyObject parent)

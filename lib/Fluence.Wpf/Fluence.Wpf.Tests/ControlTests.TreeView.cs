@@ -61,8 +61,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Template applied → ScrollViewer present
-                ScrollViewer? sv = FindVisualChild<ScrollViewer>(tv);
-                Assert.NotNull(sv);
+                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
                 _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
                 Assert.Same(app?.TryFindResource("ScrollViewerStyle"), sv.Style);
                 w.Close();
@@ -85,11 +84,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ContentPresenter? cp = FindVisualChildByName<ContentPresenter>(item, "PART_Header");
-                Assert.NotNull(cp);
+                ContentPresenter cp = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "PART_Header"));
 
-                ItemsPresenter? itemsPresenter = FindVisualChildByName<ItemsPresenter>(item, "ItemsHost");
-                Assert.NotNull(itemsPresenter);
+                ItemsPresenter itemsPresenter = Assert.IsAssignableFrom<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"));
 
                 w.Close();
             });
@@ -112,8 +109,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // The ToggleButton expander must be Visible when HasItems is true
-                ToggleButton? expander = FindVisualChildByName<ToggleButton>(item, "Expander");
-                Assert.NotNull(expander);
+                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
                 Assert.Equal(Visibility.Visible, expander.Visibility);
 
                 w.Close();
@@ -135,8 +131,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ToggleButton? expander = FindVisualChildByName<ToggleButton>(item, "Expander");
-                Assert.NotNull(expander);
+                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
                 Assert.Equal(Visibility.Collapsed, expander.Visibility);
 
                 w.Close();
@@ -160,8 +155,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Initially collapsed
-                ItemsPresenter? itemsHost = FindVisualChildByName<ItemsPresenter>(item, "ItemsHost");
-                Assert.NotNull(itemsHost);
+                ItemsPresenter itemsHost = Assert.IsAssignableFrom<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"));
                 Assert.Equal(Visibility.Collapsed, itemsHost.Visibility);
 
                 // Expand
@@ -189,8 +183,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Border? itemBorder = FindVisualChildByName<Border>(item, "ItemBorder");
-                Assert.NotNull(itemBorder);
+                Border itemBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "ItemBorder"));
 
                 // Background must be transparent (or null) in normal state
                 Brush normalBg = itemBorder.Background;
@@ -199,10 +192,8 @@ namespace Fluence.Wpf.Tests
                 item.IsSelected = true;
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? selectedBg = itemBorder.Background as SolidColorBrush;
-                SolidColorBrush? expectedBrush = app?.TryFindResource("SubtleFillColorSecondaryBrush") as SolidColorBrush;
-                Assert.NotNull(expectedBrush);
-                Assert.NotNull(selectedBg);
+                SolidColorBrush selectedBg = Assert.IsType<SolidColorBrush>(itemBorder.Background);
+                SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("SubtleFillColorSecondaryBrush"));
                 Assert.Equal(expectedBrush.Color, selectedBg.Color);
 
                 w.Close();
@@ -288,8 +279,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                ScrollViewer? sv = FindVisualChild<ScrollViewer>(tv);
-                Assert.NotNull(sv);
+                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
                 _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
 
                 w.Close();
@@ -312,10 +302,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                ToggleButton? expander = FindVisualChildByName<ToggleButton>(item, "Expander");
-                Assert.NotNull(expander);
-                TextBlock? chevron = FindVisualChildByName<TextBlock>(expander, "ChevronGlyph");
-                Assert.NotNull(chevron);
+                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
+                TextBlock chevron = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(expander, "ChevronGlyph"));
                 Assert.Equal("\uE76C", chevron.Text, StringComparer.Ordinal);
 
                 w.Close();

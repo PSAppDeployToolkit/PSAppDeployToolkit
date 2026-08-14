@@ -57,8 +57,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Background must be Transparent (from style setter)
-                SolidColorBrush? bg = menu.Background as SolidColorBrush;
-                Assert.NotNull(bg);
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
                 Assert.Equal(
                     Colors.Transparent,
                     bg.Color);
@@ -128,8 +127,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? bg = menu.Background as SolidColorBrush;
-                Assert.NotNull(bg);
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(menu.Background);
                 Assert.Equal(
                     Colors.Transparent,
                     bg.Color);

@@ -61,10 +61,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.NotNull(thumb);
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.NotNull(input);
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 w.Close();
             });
         }
@@ -82,8 +80,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.NotNull(thumb);
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
                 Assert.Equal(12.0, thumb.Width, 0.001);
                 Assert.Equal(12.0, thumb.Height, 0.001);
 
@@ -171,10 +168,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.NotNull(thumb);
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.NotNull(input);
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
                 ScaleTransform scale = GetToggleSwitchThumbScale(ts);
 
@@ -225,10 +220,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
-                Assert.NotNull(thumb);
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.NotNull(input);
+                Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(ts, "SwitchThumb"));
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 ScaleTransform scale = GetToggleSwitchThumbScale(ts);
                 Assert.Equal(1.0, scale.ScaleX, 0.001);
 
@@ -269,8 +262,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.NotNull(input);
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
 
                 MouseButtonEventArgs pressed = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
@@ -307,8 +299,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
-                Assert.NotNull(input);
+                Thumb input = Assert.IsAssignableFrom<Thumb>(FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput"));
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
 
                 DragStartedEventArgs started = new(0, 0)
@@ -380,20 +371,14 @@ namespace Fluence.Wpf.Tests
 
         private static ScaleTransform GetToggleSwitchThumbScale(ToggleSwitch toggleSwitch)
         {
-            Ellipse? thumb = FindVisualChildByName<Ellipse>(toggleSwitch, "SwitchThumb");
-            Assert.NotNull(thumb);
-            ScaleTransform? scale = thumb.RenderTransform as ScaleTransform;
-            Assert.NotNull(scale);
-            return scale;
+            Ellipse thumb = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(toggleSwitch, "SwitchThumb"));
+            return Assert.IsType<ScaleTransform>(thumb.RenderTransform);
         }
 
         private static TranslateTransform GetToggleSwitchKnobTranslate(ToggleSwitch toggleSwitch)
         {
-            FrameworkElement? knob = FindVisualChildByName<FrameworkElement>(toggleSwitch, "SwitchKnob");
-            Assert.NotNull(knob);
-            TranslateTransform? tx = knob.RenderTransform as TranslateTransform;
-            Assert.NotNull(tx);
-            return tx;
+            FrameworkElement knob = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(toggleSwitch, "SwitchKnob"));
+            return Assert.IsType<TranslateTransform>(knob.RenderTransform);
         }
     }
 }

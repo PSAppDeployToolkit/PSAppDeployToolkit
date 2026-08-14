@@ -159,8 +159,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
-                        object? resource = app?.TryFindResource(key);
-                        Assert.NotNull(resource);
+                        object resource = Assert.IsAssignableFrom<object>(app?.TryFindResource(key));
                     }
                 }
             });
@@ -178,8 +177,7 @@ namespace Fluence.Wpf.Tests
                 ResetAndApply(ApplicationTheme.Light, app);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
-                object? brush = app?.TryFindResource("SystemFillColorCriticalBrush");
-                Assert.NotNull(brush);
+                object brush = Assert.IsAssignableFrom<object>(app?.TryFindResource("SystemFillColorCriticalBrush"));
             });
         }
 
@@ -334,8 +332,7 @@ namespace Fluence.Wpf.Tests
 
         private static int GetEventSubscriberCount(Type declaringType, string eventName)
         {
-            FieldInfo? field = declaringType.GetField(eventName, BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.NotNull(field);
+            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(declaringType.GetField(eventName, BindingFlags.NonPublic | BindingFlags.Static));
             Delegate? handler = field.GetValue(null) as Delegate;
             return handler?.GetInvocationList().Length ?? 0;
         }
@@ -477,8 +474,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher();
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
-                    System.Windows.Interop.HwndSource? source = System.Windows.Interop.HwndSource.FromHwnd(handle);
-                    Assert.NotNull(source);
+                    System.Windows.Interop.HwndSource source = Assert.IsAssignableFrom<System.Windows.Interop.HwndSource>(System.Windows.Interop.HwndSource.FromHwnd(handle));
                     Assert.NotNull(source!.CompositionTarget);
 
                     // The fix: the HWND redirection surface (HwndTarget.BackgroundColor) must be
@@ -504,8 +500,7 @@ namespace Fluence.Wpf.Tests
 
         private static int GetWatchedWindowCount()
         {
-            FieldInfo? field = typeof(SystemThemeWatcher).GetField("_watchedWindows", BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.NotNull(field);
+            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(SystemThemeWatcher).GetField("_watchedWindows", BindingFlags.NonPublic | BindingFlags.Static));
             return field.GetValue(null) is System.Collections.IList list ? list.Count : 0;
         }
 
@@ -537,8 +532,7 @@ namespace Fluence.Wpf.Tests
                 // its managed references to that HWND's source so nothing is pinned past teardown.
                 Assert.Equal(baselineWatched, GetWatchedWindowCount());
 
-                FieldInfo? sourceField = typeof(FluenceWindow).GetField("_hwndSource", BindingFlags.NonPublic | BindingFlags.Instance);
-                Assert.NotNull(sourceField);
+                FieldInfo sourceField = Assert.IsAssignableFrom<FieldInfo>(typeof(FluenceWindow).GetField("_hwndSource", BindingFlags.NonPublic | BindingFlags.Instance));
                 Assert.Null(sourceField.GetValue(w));
             });
         }

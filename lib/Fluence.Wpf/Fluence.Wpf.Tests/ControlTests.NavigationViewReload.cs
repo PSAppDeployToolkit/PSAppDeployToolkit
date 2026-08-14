@@ -78,8 +78,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WaitForAnimationAndDrain(window.Dispatcher, 400);
 
-                    FrameworkElement? indicator = nav.GetSelectionIndicatorForTesting();
-                    Assert.NotNull(indicator);
+                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
                     double homeY = GetSelectionIndicatorTranslate(indicator).Y;
 
                     nav.InvokeItem(files);

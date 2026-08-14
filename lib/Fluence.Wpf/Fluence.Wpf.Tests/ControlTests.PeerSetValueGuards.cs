@@ -68,8 +68,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(numberBox);
-                    IRangeValueProvider? rangeValueProvider = peer.GetPattern(PatternInterface.RangeValue) as IRangeValueProvider;
-                    Assert.NotNull(rangeValueProvider);
+                    IRangeValueProvider rangeValueProvider = Assert.IsAssignableFrom<IRangeValueProvider>(peer.GetPattern(PatternInterface.RangeValue));
 
                     _ = Assert.Throws<ElementNotEnabledException>(() => rangeValueProvider.SetValue(5d));
                 }
@@ -109,8 +108,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(numberBox);
-                    IRangeValueProvider? rangeValueProvider = peer.GetPattern(PatternInterface.RangeValue) as IRangeValueProvider;
-                    Assert.NotNull(rangeValueProvider);
+                    IRangeValueProvider rangeValueProvider = Assert.IsAssignableFrom<IRangeValueProvider>(peer.GetPattern(PatternInterface.RangeValue));
 
                     Assert.False(rangeValueProvider.IsReadOnly,
                         "A disabled NumberBox has no read-only mode; disabled state is conveyed by IsEnabled, not IsReadOnly.");
@@ -151,8 +149,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(autoSuggestBox);
-                    IValueProvider? valueProvider = peer.GetPattern(PatternInterface.Value) as IValueProvider;
-                    Assert.NotNull(valueProvider);
+                    IValueProvider valueProvider = Assert.IsAssignableFrom<IValueProvider>(peer.GetPattern(PatternInterface.Value));
 
                     _ = Assert.Throws<ElementNotEnabledException>(() => valueProvider.SetValue("hello"));
                 }
@@ -192,8 +189,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(autoSuggestBox);
-                    IValueProvider? valueProvider = peer.GetPattern(PatternInterface.Value) as IValueProvider;
-                    Assert.NotNull(valueProvider);
+                    IValueProvider valueProvider = Assert.IsAssignableFrom<IValueProvider>(peer.GetPattern(PatternInterface.Value));
 
                     Assert.False(valueProvider.IsReadOnly,
                         "A disabled AutoSuggestBox has no read-only mode; disabled state is conveyed by IsEnabled, not IsReadOnly.");

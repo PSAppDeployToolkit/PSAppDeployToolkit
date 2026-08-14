@@ -195,8 +195,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.ListViewItem;
-                    Assert.NotNull(container);
+                    System.Windows.Controls.ListViewItem container = Assert.IsType<System.Windows.Controls.ListViewItem>(lv.ItemContainerGenerator.ContainerFromIndex(0));
                     Assert.False(container.Focusable);
                     Assert.False(Controls.ListView.GetParentIsItemSelectable(container));
                 }
@@ -235,8 +234,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.ListViewItem;
-                    Assert.NotNull(container);
+                    System.Windows.Controls.ListViewItem container = Assert.IsType<System.Windows.Controls.ListViewItem>(lv.ItemContainerGenerator.ContainerFromIndex(0));
                     Assert.True(container.Focusable);
                     Assert.True(Controls.ListView.GetParentIsItemSelectable(container));
                 }

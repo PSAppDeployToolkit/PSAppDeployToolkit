@@ -54,8 +54,7 @@ namespace Fluence.Wpf.Tests
             string targetProperty,
             double expectedValue)
         {
-            Grid? root = FindVisualChildByName<Grid>(scrollBar, "Root");
-            Assert.NotNull(root);
+            Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(scrollBar, "Root"));
 
             IList groups = VisualStateManager.GetVisualStateGroups(root);
             VisualState? state = null;
@@ -130,11 +129,9 @@ namespace Fluence.Wpf.Tests
                     window.Show();
                     sv.UpdateLayout();
 
-                    ScrollBar? vertBar = FindVisualChildByName<ScrollBar>(sv, "PART_VerticalScrollBar");
-                    ScrollBar? horizBar = FindVisualChildByName<ScrollBar>(sv, "PART_HorizontalScrollBar");
+                    ScrollBar vertBar = Assert.IsAssignableFrom<ScrollBar>(FindVisualChildByName<ScrollBar>(sv, "PART_VerticalScrollBar"));
+                    ScrollBar horizBar = Assert.IsAssignableFrom<ScrollBar>(FindVisualChildByName<ScrollBar>(sv, "PART_HorizontalScrollBar"));
 
-                    Assert.NotNull(vertBar);
-                    Assert.NotNull(horizBar);
                 }
                 finally
                 {
@@ -311,16 +308,13 @@ namespace Fluence.Wpf.Tests
                     _ = sb.ApplyTemplate();
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    Grid? root = FindVisualChildByName<Grid>(sb, "Root");
-                    Assert.NotNull(root);
+                    Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(sb, "Root"));
                     Assert.Equal(8.0, sb.ActualWidth, 0.5);
                     Assert.Equal(6.0, root.Width, 0.5);
                     Assert.Equal(HorizontalAlignment.Right, root.HorizontalAlignment);
 
-                    RepeatButton? decreaseButton = FindVisualChildByName<RepeatButton>(sb, "DecreaseButton");
-                    RepeatButton? increaseButton = FindVisualChildByName<RepeatButton>(sb, "IncreaseButton");
-                    Assert.NotNull(decreaseButton);
-                    Assert.NotNull(increaseButton);
+                    RepeatButton decreaseButton = Assert.IsAssignableFrom<RepeatButton>(FindVisualChildByName<RepeatButton>(sb, "DecreaseButton"));
+                    RepeatButton increaseButton = Assert.IsAssignableFrom<RepeatButton>(FindVisualChildByName<RepeatButton>(sb, "IncreaseButton"));
                     Assert.Equal(0.0, decreaseButton.Opacity, 0.01);
                     Assert.Equal(0.0, increaseButton.Opacity, 0.01);
                 }

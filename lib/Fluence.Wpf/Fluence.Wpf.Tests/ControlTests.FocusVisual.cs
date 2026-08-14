@@ -58,8 +58,7 @@ namespace Fluence.Wpf.Tests
                     _ = MergeGenericDictionary(app);
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
-                    Style? style = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
-                    Assert.NotNull(style);
+                    Style style = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
                 }
             });
         }
@@ -89,8 +88,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? sharedStyle = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
-                Assert.NotNull(sharedStyle);
+                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 Button btn = new();
                 Window w = new() { Content = btn, Width = 200, Height = 100 };
@@ -110,8 +108,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? sharedStyle = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
-                Assert.NotNull(sharedStyle);
+                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 CheckBox cb = new() { Content = "Test" };
                 Window w = new() { Content = cb, Width = 200, Height = 100 };
@@ -131,8 +128,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? sharedStyle = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
-                Assert.NotNull(sharedStyle);
+                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 RadioButton rb = new() { Content = "Option A" };
                 Window w = new() { Content = rb, Width = 200, Height = 100 };
@@ -152,8 +148,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? sharedStyle = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
-                Assert.NotNull(sharedStyle);
+                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
 
                 ToggleButton tb = new() { Content = "Toggle" };
                 Window w = new() { Content = tb, Width = 200, Height = 100 };
@@ -173,8 +168,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? sharedStyle = app?.TryFindResource("DefaultCollectionFocusVisualStyle") as Style;
-                Assert.NotNull(sharedStyle);
+                Style sharedStyle = Assert.IsType<Style>(app?.TryFindResource("DefaultCollectionFocusVisualStyle"));
 
                 System.Windows.Controls.TabControl tabControl = new();
                 _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "Text", Content = new System.Windows.Controls.TextBlock { Text = "A" } });
@@ -187,8 +181,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(w.Dispatcher);
                     w.UpdateLayout();
 
-                    System.Windows.Controls.TabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.TabItem;
-                    Assert.NotNull(first);
+                    System.Windows.Controls.TabItem first = Assert.IsType<System.Windows.Controls.TabItem>(tabControl.ItemContainerGenerator.ContainerFromIndex(0));
                     Assert.Same(sharedStyle, first.FocusVisualStyle);
                     Assert.True(first.Margin.Right >= 8.0,
                         "TabItem should reserve enough right margin so the focus rectangle is not clipped at the tab edge.");
@@ -229,10 +222,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.TabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.TabItem;
-                    System.Windows.Controls.TabItem? second = tabControl.ItemContainerGenerator.ContainerFromIndex(1) as System.Windows.Controls.TabItem;
-                    Assert.NotNull(first);
-                    Assert.NotNull(second);
+                    System.Windows.Controls.TabItem first = Assert.IsType<System.Windows.Controls.TabItem>(tabControl.ItemContainerGenerator.ContainerFromIndex(0));
+                    System.Windows.Controls.TabItem second = Assert.IsType<System.Windows.Controls.TabItem>(tabControl.ItemContainerGenerator.ContainerFromIndex(1));
 
                     _ = Keyboard.Focus(first);
                     DrainDispatcher(window.Dispatcher);
@@ -296,10 +287,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.Grid? rootGrid = tabView.Template.FindName("RootGrid", tabView) as System.Windows.Controls.Grid;
-                    System.Windows.Controls.Border? contentPanel = tabView.Template.FindName("ContentPanel", tabView) as System.Windows.Controls.Border;
-                    Assert.NotNull(rootGrid);
-                    Assert.NotNull(contentPanel);
+                    System.Windows.Controls.Grid rootGrid = Assert.IsType<System.Windows.Controls.Grid>(tabView.Template.FindName("RootGrid", tabView));
+                    System.Windows.Controls.Border contentPanel = Assert.IsType<System.Windows.Controls.Border>(tabView.Template.FindName("ContentPanel", tabView));
                     Assert.Equal(KeyboardNavigationMode.Continue, KeyboardNavigation.GetTabNavigation(rootGrid));
                     Assert.Equal(KeyboardNavigationMode.Continue, KeyboardNavigation.GetTabNavigation(contentPanel));
 

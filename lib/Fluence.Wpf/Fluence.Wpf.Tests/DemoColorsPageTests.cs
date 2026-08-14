@@ -69,8 +69,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
 
-                    NavigationView? navigationView = FindByName<NavigationView>(window, "DemoNav");
-                    Assert.NotNull(navigationView);
+                    NavigationView navigationView = Assert.IsAssignableFrom<NavigationView>(FindByName<NavigationView>(window, "DemoNav"));
                     _ = Assert.IsAssignableFrom<GalleryColorsPage>(navigationView.Content);
                 }
                 finally
@@ -90,11 +89,9 @@ namespace Fluence.Wpf.Tests
                 Window window = CreateHostWindow(page);
                 try
                 {
-                    SmoothScrollViewer? scrollViewer = FindVisualChild<SmoothScrollViewer>(page);
-                    Assert.NotNull(scrollViewer);
+                    SmoothScrollViewer scrollViewer = Assert.IsAssignableFrom<SmoothScrollViewer>(FindVisualChild<SmoothScrollViewer>(page));
 
-                    TabControl? colorTabs = FindByName<TabControl>(page, "ColorSectionTabs");
-                    Assert.NotNull(colorTabs);
+                    TabControl colorTabs = Assert.IsAssignableFrom<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"));
                     Assert.Equal(SectionNames.Length, colorTabs.Items.Count);
 
                     for (int i = 0; i < SectionNames.Length; i++)
@@ -228,8 +225,7 @@ namespace Fluence.Wpf.Tests
         private static SortedSet<string> CollectColorTokenResourceKeys(GalleryColorsPage page, Dispatcher dispatcher)
         {
             SortedSet<string> resourceKeys = new(StringComparer.OrdinalIgnoreCase);
-            TabControl? colorTabs = FindByName<TabControl>(page, "ColorSectionTabs");
-            Assert.NotNull(colorTabs);
+            TabControl colorTabs = Assert.IsAssignableFrom<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"));
 
             for (int index = 0; index < colorTabs.Items.Count; index++)
             {

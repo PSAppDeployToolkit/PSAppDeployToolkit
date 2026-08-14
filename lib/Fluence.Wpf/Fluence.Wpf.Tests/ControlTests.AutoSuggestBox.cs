@@ -51,8 +51,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(Controls.AutoSuggestBox)) as Style;
-                Assert.NotNull(style);
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(Controls.AutoSuggestBox)));
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.AutoSuggestBox box = new() { PlaceholderText = "Search" };
@@ -64,17 +63,13 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate? template = box.Template;
-                    Assert.NotNull(template);
+                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(box.Template);
 
-                    Controls.TextBox? textBox = template.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Popup? popup = template.FindName("PART_SuggestionsPopup", box) as Popup;
-                    Selector? list = template.FindName("PART_SuggestionsList", box) as Selector;
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(template.FindName("PART_TextBox", box));
+                    Popup popup = Assert.IsType<Popup>(template.FindName("PART_SuggestionsPopup", box));
+                    Selector list = Assert.IsAssignableFrom<Selector>(template.FindName("PART_SuggestionsList", box));
 
-                    Assert.NotNull(textBox);
                     Controls.TextBox verifiedTextBox = textBox ?? throw new InvalidOperationException("PART_TextBox must be a Fluence TextBox so the field matches the themed look.");
-                    Assert.NotNull(popup);
-                    Assert.NotNull(list);
                     _ = Assert.IsAssignableFrom<Controls.ListBox>(list);
                     Assert.False(popup.StaysOpen, "The suggestion popup must be light-dismiss (StaysOpen=false).");
                     Assert.True(popup.AllowsTransparency, "The suggestion popup must allow transparency for the rounded surface.");
@@ -116,12 +111,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(captured.CheckCurrent(),
                         "CheckCurrent must report true while the text is still the value that raised the event.");
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Assert.NotNull(textBox);
-                    if (textBox is null)
-                    {
-                        throw new Xunit.Sdk.XunitException("PART_TextBox must be present in the template.");
-                    }
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
                     Assert.Equal("fluent", textBox.Text, StringComparer.Ordinal);
                 }
                 finally
@@ -149,8 +139,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Assert.NotNull(textBox);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
 
                     AutoSuggestBoxTextChangedEventArgs? captured = null;
                     box.TextChanged += (_, args) => captured = args;
@@ -189,10 +178,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Popup? popup = box.Template?.FindName("PART_SuggestionsPopup", box) as Popup;
-                    Selector? list = box.Template?.FindName("PART_SuggestionsList", box) as Selector;
-                    Assert.NotNull(popup);
-                    Assert.NotNull(list);
+                    Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
+                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
@@ -226,12 +213,9 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Popup? popup = box.Template?.FindName("PART_SuggestionsPopup", box) as Popup;
-                    Selector? list = box.Template?.FindName("PART_SuggestionsList", box) as Selector;
-                    Assert.NotNull(textBox);
-                    Assert.NotNull(popup);
-                    Assert.NotNull(list);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
+                    Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
+                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
@@ -287,8 +271,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Assert.NotNull(textBox);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
 
                     box.Text = "search term";
                     AutoSuggestBoxQuerySubmittedEventArgs? submitted = null;
@@ -326,10 +309,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Popup? popup = box.Template?.FindName("PART_SuggestionsPopup", box) as Popup;
-                    Assert.NotNull(textBox);
-                    Assert.NotNull(popup);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
+                    Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
@@ -367,12 +348,9 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    Popup? popup = box.Template?.FindName("PART_SuggestionsPopup", box) as Popup;
-                    Selector? list = box.Template?.FindName("PART_SuggestionsList", box) as Selector;
-                    Assert.NotNull(textBox);
-                    Assert.NotNull(popup);
-                    Assert.NotNull(list);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
+                    Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
+                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
 
                     // Type "ap" (UserInput baseline), then open the list.
                     textBox.Text = "ap";
@@ -446,10 +424,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Controls.TextBox? textBox = box.Template?.FindName("PART_TextBox", box) as Controls.TextBox;
-                    ButtonBase? queryButton = box.Template?.FindName("PART_QueryButton", box) as ButtonBase;
-                    Assert.NotNull(textBox);
-                    Assert.NotNull(queryButton);
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
+                    ButtonBase queryButton = Assert.IsAssignableFrom<ButtonBase>(box.Template?.FindName("PART_QueryButton", box));
                     Assert.Same(queryButton, textBox.Icon);
                     Assert.Same(box.QueryIcon, queryButton.Content);
 

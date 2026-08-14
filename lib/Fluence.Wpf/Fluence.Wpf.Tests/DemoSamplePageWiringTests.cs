@@ -187,8 +187,7 @@ namespace Fluence.Wpf.Tests
                 Window window = DemoTestHost.CreateHostWindow(sample);
                 try
                 {
-                    Controls.Expander? expander = DemoTestHost.FindByName<Controls.Expander>(sample, "SourceExpander");
-                    Assert.NotNull(expander);
+                    Controls.Expander expander = Assert.IsAssignableFrom<Controls.Expander>(DemoTestHost.FindByName<Controls.Expander>(sample, "SourceExpander"));
                     expander.IsExpanded = true;
                     DemoTestHost.Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -303,12 +302,10 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertSourceCopyTag(DemoSampleControl sample, string expectedSource)
         {
-            TabControl? tabs = DemoTestHost.FindByName<TabControl>(sample, "SourceTabControl");
-            Assert.NotNull(tabs);
+            TabControl tabs = Assert.IsAssignableFrom<TabControl>(DemoTestHost.FindByName<TabControl>(sample, "SourceTabControl"));
             _ = Assert.Single(tabs.Items);
             TabItem tab = (TabItem)tabs.Items[0];
-            Button? copy = DemoTestHost.FindByName<Button>(tab.Content as DependencyObject, "CopySourceButton");
-            Assert.NotNull(copy);
+            Button copy = Assert.IsAssignableFrom<Button>(DemoTestHost.FindByName<Button>(tab.Content as DependencyObject, "CopySourceButton"));
             Assert.Equal(expectedSource, copy.Tag as string, StringComparer.Ordinal);
         }
 

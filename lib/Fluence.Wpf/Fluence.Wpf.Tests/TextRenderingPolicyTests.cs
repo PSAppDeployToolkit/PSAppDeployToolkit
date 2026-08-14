@@ -242,8 +242,7 @@ namespace Fluence.Wpf.Tests
             FontWeight expectedFontWeight,
             double expectedLineHeight)
         {
-            Style? style = application?.TryFindResource(styleKey) as Style;
-            Assert.NotNull(style);
+            Style style = Assert.IsType<Style>(application?.TryFindResource(styleKey));
 
             System.Windows.Controls.TextBlock textBlock = new()
             {

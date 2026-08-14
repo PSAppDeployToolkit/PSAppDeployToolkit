@@ -51,7 +51,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             Hashtable configTable = GetModuleDefaultTable(stringsAst, "Config");
             Hashtable assetsTable = (Hashtable)configTable["Assets"]!;
 
-            // Set up parameters for testing
+            // Set up parameters for testing.
             const string appTitle = "Adobe Creative Suite 2.1.45 EN";
             const string subtitle = "EQ Bank Global IT Services - App Installation";
             string appIconImage = (string?)assetsTable["Logo"]!;

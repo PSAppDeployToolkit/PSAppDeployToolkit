@@ -87,8 +87,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.CheckBox? firstCheckBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(first, "SelectionCheckBox");
-                    Assert.NotNull(firstCheckBox);
+                    System.Windows.Controls.CheckBox firstCheckBox = Assert.IsAssignableFrom<System.Windows.Controls.CheckBox>(FindVisualChildByName<System.Windows.Controls.CheckBox>(first, "SelectionCheckBox"));
                     Assert.Equal(Visibility.Visible, firstCheckBox.Visibility);
                     Assert.True(firstCheckBox.IsThreeState,
                         "Multiple-selection TreeViewItem checkbox should support indeterminate parent state.");
@@ -211,8 +210,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.CheckBox? checkBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(item, "SelectionCheckBox");
-                    Assert.NotNull(checkBox);
+                    System.Windows.Controls.CheckBox checkBox = Assert.IsAssignableFrom<System.Windows.Controls.CheckBox>(FindVisualChildByName<System.Windows.Controls.CheckBox>(item, "SelectionCheckBox"));
                     Assert.Equal(Visibility.Collapsed, checkBox.Visibility);
                     Assert.Equal(false, item.IsSelectionChecked);
                     Assert.Empty(treeView.SelectedItems);

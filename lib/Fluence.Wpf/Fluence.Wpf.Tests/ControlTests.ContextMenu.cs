@@ -49,8 +49,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(ContextMenu)) as Style;
-                Assert.NotNull(style);
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ContextMenu)));
             });
         }
 
@@ -75,8 +74,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(ContextMenu)) as Style;
-                Assert.NotNull(style);
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(ContextMenu)));
 
                 // HasDropShadow only activates when the Popup opens; verify the
                 // Setter is present and declared True rather than applying the style
@@ -108,8 +106,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                Style? style = app?.TryFindResource(typeof(MenuItem)) as Style;
-                Assert.NotNull(style);
+                Style style = Assert.IsType<Style>(app?.TryFindResource(typeof(MenuItem)));
             });
         }
 
@@ -134,10 +131,11 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                MenuItem mi = new() { Header = "Test" };
-                Style? style = app?.TryFindResource(typeof(MenuItem)) as Style;
-                Assert.NotNull(style);
-                mi.Style = style;
+                MenuItem mi = new()
+                {
+                    Header = "Test",
+                    Style = Assert.IsType<Style>(app?.TryFindResource(typeof(MenuItem))),
+                };
                 Assert.Equal(14.0, mi.FontSize, 0.01);
             });
         }

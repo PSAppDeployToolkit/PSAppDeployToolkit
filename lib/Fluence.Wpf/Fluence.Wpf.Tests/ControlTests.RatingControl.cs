@@ -61,8 +61,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // PART_StarsPanel must be present after template is applied.
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
                 w.Close();
             });
         }
@@ -80,8 +79,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
                 Assert.Equal(5, panel.Children.Count);
                 w.Close();
             });
@@ -100,8 +98,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
 
                 // Stars 1-3 must be filled (U+E735), stars 4-5 must be empty (U+E734).
                 int filledCount = 0;
@@ -131,16 +128,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
 
-                SolidColorBrush? accentBrush = app?.TryFindResource("AccentFillColorDefaultBrush") as SolidColorBrush;
-                Assert.NotNull(accentBrush);
+                SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("AccentFillColorDefaultBrush"));
 
                 // First two stars (filled) must use AccentFillColorDefaultBrush.
                 System.Windows.Controls.TextBlock? star1 = panel.Children[0] as System.Windows.Controls.TextBlock;
-                SolidColorBrush? star1Fg = star1?.Foreground as SolidColorBrush;
-                Assert.NotNull(star1Fg);
+                SolidColorBrush star1Fg = Assert.IsType<SolidColorBrush>(star1?.Foreground);
                 Assert.Equal(accentBrush.Color, star1Fg.Color);
                 w.Close();
             });
@@ -159,15 +153,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
 
-                SolidColorBrush? secondaryBrush = app?.TryFindResource("TextFillColorSecondaryBrush") as SolidColorBrush;
-                Assert.NotNull(secondaryBrush);
+                SolidColorBrush secondaryBrush = Assert.IsType<SolidColorBrush>(app?.TryFindResource("TextFillColorSecondaryBrush"));
 
                 System.Windows.Controls.TextBlock? star = panel.Children[0] as System.Windows.Controls.TextBlock;
-                SolidColorBrush? starFg = star?.Foreground as SolidColorBrush;
-                Assert.NotNull(starFg);
+                SolidColorBrush starFg = Assert.IsType<SolidColorBrush>(star?.Foreground);
                 Assert.Equal(secondaryBrush.Color, starFg.Color);
                 w.Close();
             });
@@ -186,8 +177,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock? caption = FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption");
-                Assert.NotNull(caption);
+                System.Windows.Controls.TextBlock caption = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"));
                 Assert.Equal(Visibility.Visible, caption.Visibility);
                 Assert.Equal("4.0", caption.Text, StringComparer.Ordinal);
                 w.Close();
@@ -207,8 +197,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock? caption = FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption");
-                Assert.NotNull(caption);
+                System.Windows.Controls.TextBlock caption = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"));
                 Assert.Equal(Visibility.Collapsed, caption.Visibility);
                 w.Close();
             });
@@ -252,8 +241,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel? panel = FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel");
-                Assert.NotNull(panel);
+                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
                 w.Close();
             });
         }
@@ -284,8 +272,7 @@ namespace Fluence.Wpf.Tests
                 _ = rating.Focus();
                 DrainDispatcher(window.Dispatcher);
 
-                PresentationSource? source = PresentationSource.FromVisual(rating);
-                Assert.NotNull(source);
+                PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(rating));
                 rating.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
                 {
                     RoutedEvent = Keyboard.KeyDownEvent,

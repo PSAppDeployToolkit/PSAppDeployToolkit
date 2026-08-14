@@ -64,8 +64,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_DownButton", "Decrease"),
                     })
                     {
-                        FrameworkElement? btn = FindVisualChildByName<FrameworkElement>(numberBox, part);
-                        Assert.NotNull(btn);
+                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(numberBox, part));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -102,8 +101,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CloseButton", "Close"),
                     })
                     {
-                        FrameworkElement? button = FindVisualChildByName<FrameworkElement>(window, part);
-                        Assert.NotNull(button);
+                        FrameworkElement button = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(window, part));
                         string actualName = AutomationProperties.GetName(button);
                         Assert.True(
                             string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -141,10 +139,8 @@ namespace Fluence.Wpf.Tests
                     _ = autoSuggestBox.ApplyTemplate();
                     DrainDispatcher(window.Dispatcher);
 
-                    ControlTemplate? template = autoSuggestBox.Template;
-                    Assert.NotNull(template);
-                    FrameworkElement? queryButton = template.FindName("PART_QueryButton", autoSuggestBox) as FrameworkElement;
-                    Assert.NotNull(queryButton);
+                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(autoSuggestBox.Template);
+                    FrameworkElement queryButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_QueryButton", autoSuggestBox));
                     string actualName = AutomationProperties.GetName(queryButton);
                     Assert.True(
                         string.Equals("Search", actualName, System.StringComparison.Ordinal),
@@ -175,8 +171,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate? template = picker.Template;
-                    Assert.NotNull(template);
+                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -184,8 +179,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CancelButton", "Cancel"),
                     })
                     {
-                        FrameworkElement? btn = template.FindName(part, picker) as FrameworkElement;
-                        Assert.NotNull(btn);
+                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -217,8 +211,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate? template = picker.Template;
-                    Assert.NotNull(template);
+                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -226,8 +219,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CancelButton", "Cancel"),
                     })
                     {
-                        FrameworkElement? btn = template.FindName(part, picker) as FrameworkElement;
-                        Assert.NotNull(btn);
+                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -262,10 +254,8 @@ namespace Fluence.Wpf.Tests
                         _ = infoBar.ApplyTemplate();
                         DrainDispatcher(infoBarWindow.Dispatcher);
 
-                        ControlTemplate? infoBarTemplate = infoBar.Template;
-                        Assert.NotNull(infoBarTemplate);
-                        FrameworkElement? closeButton = infoBarTemplate.FindName("PART_CloseButton", infoBar) as FrameworkElement;
-                        Assert.NotNull(closeButton);
+                        ControlTemplate infoBarTemplate = Assert.IsAssignableFrom<ControlTemplate>(infoBar.Template);
+                        FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(infoBarTemplate.FindName("PART_CloseButton", infoBar));
                         string closeActualName = AutomationProperties.GetName(closeButton);
                         Assert.True(
                             string.Equals("Close", closeActualName, System.StringComparison.Ordinal),
@@ -292,8 +282,7 @@ namespace Fluence.Wpf.Tests
                         _ = pipsPager.ApplyTemplate();
                         DrainDispatcher(pipsWindow.Dispatcher);
 
-                        ControlTemplate? pipsTemplate = pipsPager.Template;
-                        Assert.NotNull(pipsTemplate);
+                        ControlTemplate pipsTemplate = Assert.IsAssignableFrom<ControlTemplate>(pipsPager.Template);
 
                         foreach ((string part, string expectedName) in new[]
                         {
@@ -301,8 +290,7 @@ namespace Fluence.Wpf.Tests
                             ("PART_NextButton", "Next page"),
                         })
                         {
-                            FrameworkElement? btn = pipsTemplate.FindName(part, pipsPager) as FrameworkElement;
-                            Assert.NotNull(btn);
+                            FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(pipsTemplate.FindName(part, pipsPager));
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
                                 string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -347,10 +335,8 @@ namespace Fluence.Wpf.Tests
                     _ = item.ApplyTemplate();
                     DrainDispatcher(window.Dispatcher);
 
-                    ControlTemplate? template = item.Template;
-                    Assert.NotNull(template);
-                    FrameworkElement? closeButton = template.FindName("PART_CloseButton", item) as FrameworkElement;
-                    Assert.NotNull(closeButton);
+                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(item.Template);
+                    FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_CloseButton", item));
                     string actualName = AutomationProperties.GetName(closeButton);
                     Assert.True(
                         string.Equals("Close tab", actualName, System.StringComparison.Ordinal),
@@ -384,8 +370,7 @@ namespace Fluence.Wpf.Tests
                         _ = nav.ApplyTemplate();
                         DrainDispatcher(navWindow.Dispatcher);
 
-                        ControlTemplate? navTemplate = nav.Template;
-                        Assert.NotNull(navTemplate);
+                        ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
 
                         foreach ((string part, string expectedName) in new[]
                         {
@@ -393,8 +378,7 @@ namespace Fluence.Wpf.Tests
                             ("PART_PaneToggleButton", "Navigation"),
                         })
                         {
-                            FrameworkElement? btn = navTemplate.FindName(part, nav) as FrameworkElement;
-                            Assert.NotNull(btn);
+                            FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName(part, nav));
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
                                 string.Equals(expectedName, actualName, System.StringComparison.Ordinal),
@@ -437,11 +421,9 @@ namespace Fluence.Wpf.Tests
                         _ = nav.ApplyTemplate();
                         DrainDispatcher(navWindow.Dispatcher);
 
-                        ControlTemplate? navTemplate = nav.Template;
-                        Assert.NotNull(navTemplate);
+                        ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
 
-                        FrameworkElement? backButton = navTemplate.FindName("PART_BackButton", nav) as FrameworkElement;
-                        Assert.NotNull(backButton);
+                        FrameworkElement backButton = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName("PART_BackButton", nav));
                         string actualName = AutomationProperties.GetName(backButton);
                         Assert.True(
                             string.Equals("Back", actualName, System.StringComparison.Ordinal),

@@ -59,8 +59,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // VSM groups are attached to the root Grid of the template
-                Grid? root = FindVisualChild<Grid>(cb);
-                Assert.NotNull(root);
+                Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChild<Grid>(cb));
                 IList groups = VisualStateManager.GetVisualStateGroups(root);
                 bool hasFocusedStates = groups
                     .Cast<VisualStateGroup>()
@@ -85,8 +84,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Grid? root = FindVisualChild<Grid>(cb);
-                Assert.NotNull(root);
+                Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChild<Grid>(cb));
                 IList groups = VisualStateManager.GetVisualStateGroups(root);
                 bool hasEditableFocusedStates = groups
                     .Cast<VisualStateGroup>()
@@ -115,8 +113,7 @@ namespace Fluence.Wpf.Tests
                 Assert.True(transitioned, "GoToState('Focused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
-                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
-                Assert.NotNull(accentLine);
+                Border accentLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(cb, "FocusAccentLine"));
                 Assert.Equal(Visibility.Collapsed, accentLine.Visibility);
                 Assert.Equal(0.0, accentLine.Opacity, 0.01);
                 w.Close();
@@ -144,8 +141,7 @@ namespace Fluence.Wpf.Tests
                 Assert.True(transitioned, "GoToState('Unfocused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
-                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
-                Assert.NotNull(accentLine);
+                Border accentLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(cb, "FocusAccentLine"));
                 Assert.Equal(0.0, accentLine.Opacity, 0.01);
                 Assert.Equal(Visibility.Collapsed, accentLine.Visibility);
                 w.Close();
@@ -167,8 +163,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
-                Assert.NotNull(accentLine);
+                Border accentLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(cb, "FocusAccentLine"));
                 Assert.Equal(Visibility.Collapsed, accentLine.Visibility);
                 Assert.Equal(0.0, accentLine.Opacity, 0.01);
 
@@ -200,8 +195,7 @@ namespace Fluence.Wpf.Tests
                 Assert.True(transitioned, "GoToState('Focused') must return true after theme cycle.");
                 DrainDispatcher(w.Dispatcher);
 
-                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
-                Assert.NotNull(accentLine);
+                Border accentLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(cb, "FocusAccentLine"));
                 Assert.Equal(Visibility.Collapsed, accentLine.Visibility);
                 Assert.Equal(0.0, accentLine.Opacity, 0.01);
                 w.Close();

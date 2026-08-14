@@ -268,9 +268,8 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(window.Dispatcher);
                 window.UpdateLayout();
 
-                Border? restFill = button.Template.FindName("RestFill", button) as Border;
+                Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
 
-                Assert.NotNull(restFill);
                 _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
                 _ = Assert.IsAssignableFrom<SolidColorBrush>(button.Foreground);
                 Assert.Equal(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)restFill.Background).Color);
@@ -288,10 +287,8 @@ namespace Fluence.Wpf.Tests
             string foregroundKey,
             string borderKey)
         {
-            Border? restFill = button.Template.FindName("RestFill", button) as Border;
-            Border? outerBorder = button.Template.FindName("OuterBorder", button) as Border;
-            Assert.NotNull(restFill);
-            Assert.NotNull(outerBorder);
+            Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+            Border outerBorder = Assert.IsType<Border>(button.Template.FindName("OuterBorder", button));
             Assert.Equal(new Thickness(1), outerBorder.BorderThickness);
 
             AssertBrushMatchesResource(restFill.Background, backgroundKey);

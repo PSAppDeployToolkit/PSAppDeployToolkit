@@ -116,5 +116,11 @@ through `WpfTestSta.Invoke`.
 
 ---
 
+## Background Terminal Commands
+
+- When polling background terminal commands, use short wait intervals (30-60 seconds per read) instead of multi-minute waits, so completed work is noticed promptly.
+
+---
+
 For full detail on control authoring, theme API, common pitfalls, naming
-conventions, and C# style rules: read **AGENTS.md**.
+conventions, and C# style rules: read **AGENTS.md**

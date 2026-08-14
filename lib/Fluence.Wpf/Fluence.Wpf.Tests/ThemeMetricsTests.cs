@@ -79,8 +79,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
-                object? cr = app?.TryFindResource("ControlCornerRadius");
-                Assert.NotNull(cr);
+                object cr = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlCornerRadius"));
                 Assert.Equal(new CornerRadius(4), (CornerRadius)cr);
             });
         }
@@ -92,8 +91,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
-                object? cr = app?.TryFindResource("ControlCornerRadius");
-                Assert.NotNull(cr);
+                object cr = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlCornerRadius"));
                 Assert.Equal(new CornerRadius(4), (CornerRadius)cr);
             });
         }
@@ -105,8 +103,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);
-                object? cr = app?.TryFindResource("ControlCornerRadius");
-                Assert.NotNull(cr);
+                object cr = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlCornerRadius"));
                 Assert.Equal(new CornerRadius(4), (CornerRadius)cr);
             });
         }
@@ -122,8 +119,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
-                object? or_ = app?.TryFindResource("OverlayCornerRadius");
-                Assert.NotNull(or_);
+                object or_ = Assert.IsAssignableFrom<object>(app?.TryFindResource("OverlayCornerRadius"));
                 Assert.Equal(new CornerRadius(8), (CornerRadius)or_);
             });
         }
@@ -135,8 +131,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
-                object? or_ = app?.TryFindResource("OverlayCornerRadius");
-                Assert.NotNull(or_);
+                object or_ = Assert.IsAssignableFrom<object>(app?.TryFindResource("OverlayCornerRadius"));
                 Assert.Equal(new CornerRadius(8), (CornerRadius)or_);
             });
         }
@@ -148,8 +143,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);
-                object? or_ = app?.TryFindResource("OverlayCornerRadius");
-                Assert.NotNull(or_);
+                object or_ = Assert.IsAssignableFrom<object>(app?.TryFindResource("OverlayCornerRadius"));
                 Assert.Equal(new CornerRadius(8), (CornerRadius)or_);
             });
         }
@@ -167,8 +161,7 @@ namespace Fluence.Wpf.Tests
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
                 {
                     ResetAndApply(theme, app);
-                    object? fx = app?.TryFindResource("FlyoutShadowEffect");
-                    Assert.NotNull(fx);
+                    object fx = Assert.IsAssignableFrom<object>(app?.TryFindResource("FlyoutShadowEffect"));
                     _ = Assert.IsAssignableFrom<DropShadowEffect>(fx);
                 }
             });
@@ -181,8 +174,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
-                DropShadowEffect? fx = (DropShadowEffect?)app?.TryFindResource("FlyoutShadowEffect");
-                Assert.NotNull(fx);
+                DropShadowEffect fx = Assert.IsAssignableFrom<DropShadowEffect>((DropShadowEffect?)app?.TryFindResource("FlyoutShadowEffect"));
                 Assert.Equal(18.0, fx.BlurRadius, 0.01);
                 Assert.Equal(270.0, fx.Direction, 0.01);
                 Assert.Equal(0.22, fx.Opacity, 0.01);
@@ -203,8 +195,7 @@ namespace Fluence.Wpf.Tests
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
                 {
                     ResetAndApply(theme, app);
-                    object? style = app?.TryFindResource("DefaultControlFocusVisualStyle");
-                    Assert.NotNull(style);
+                    object style = Assert.IsAssignableFrom<object>(app?.TryFindResource("DefaultControlFocusVisualStyle"));
                     _ = Assert.IsAssignableFrom<Style>(style);
                 }
             });
@@ -225,10 +216,8 @@ namespace Fluence.Wpf.Tests
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-                    object? cr = app?.TryFindResource("ControlCornerRadius");
-                    object? or_ = app?.TryFindResource("OverlayCornerRadius");
-                    Assert.NotNull(cr);
-                    Assert.NotNull(or_);
+                    object cr = Assert.IsAssignableFrom<object>(app?.TryFindResource("ControlCornerRadius"));
+                    object or_ = Assert.IsAssignableFrom<object>(app?.TryFindResource("OverlayCornerRadius"));
                     Assert.Equal(new CornerRadius(4), (CornerRadius)cr);
                     Assert.Equal(new CornerRadius(8), (CornerRadius)or_);
                 }
@@ -246,8 +235,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
-                object? style = app?.TryFindResource("DefaultCollectionFocusVisualStyle");
-                Assert.NotNull(style);
+                object style = Assert.IsAssignableFrom<object>(app?.TryFindResource("DefaultCollectionFocusVisualStyle"));
                 _ = Assert.IsAssignableFrom<Style>(style);
             });
         }
@@ -259,8 +247,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
-                object? style = app?.TryFindResource("DefaultCollectionFocusVisualStyle");
-                Assert.NotNull(style);
+                object style = Assert.IsAssignableFrom<object>(app?.TryFindResource("DefaultCollectionFocusVisualStyle"));
             });
         }
 
@@ -271,8 +258,7 @@ namespace Fluence.Wpf.Tests
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);
-                object? style = app?.TryFindResource("DefaultCollectionFocusVisualStyle");
-                Assert.NotNull(style);
+                object style = Assert.IsAssignableFrom<object>(app?.TryFindResource("DefaultCollectionFocusVisualStyle"));
             });
         }
     }

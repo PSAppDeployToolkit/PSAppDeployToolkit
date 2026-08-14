@@ -167,8 +167,7 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     _ = btn.ApplyTemplate();
 
-                    ContentPresenter? presenter = btn.Template.FindName("FlyoutContentPresenter", btn) as ContentPresenter;
-                    Assert.NotNull(presenter);
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(btn.Template.FindName("FlyoutContentPresenter", btn));
                     Assert.Equal(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
                 }
                 finally
@@ -194,8 +193,7 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     _ = btn.ApplyTemplate();
 
-                    ContentPresenter? presenter = btn.Template.FindName("FlyoutContentPresenter", btn) as ContentPresenter;
-                    Assert.NotNull(presenter);
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(btn.Template.FindName("FlyoutContentPresenter", btn));
                     Assert.Equal(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
                 }
                 finally

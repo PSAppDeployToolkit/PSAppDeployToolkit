@@ -92,10 +92,8 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // DotIndicator should be visible; BadgeBorder should be collapsed.
-                Ellipse? dot = FindVisualChildByName<Ellipse>(badge, "DotIndicator");
-                System.Windows.Controls.Border? border = FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder");
-                Assert.NotNull(dot);
-                Assert.NotNull(border);
+                Ellipse dot = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(badge, "DotIndicator"));
+                System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
                 Assert.Equal(Visibility.Visible, dot.Visibility);
                 Assert.Equal(Visibility.Collapsed, border.Visibility);
                 w.Close();
@@ -139,10 +137,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(w.Dispatcher);
                     w.UpdateLayout();
 
-                    System.Windows.Controls.Border? border = FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder");
-                    ContentPresenter? content = FindVisualChildByName<ContentPresenter>(badge, "ContentArea");
-                    Assert.NotNull(border);
-                    Assert.NotNull(content);
+                    System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
+                    ContentPresenter content = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(badge, "ContentArea"));
                     Assert.Equal(34.0, border.MinWidth, 0.1);
                     Assert.Equal(24.0, border.MinHeight, 0.1);
                     Assert.Equal(24.0, border.MaxHeight, 0.1);
@@ -183,8 +179,8 @@ namespace Fluence.Wpf.Tests
                         if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", StringComparison.Ordinal)) { dkg = vsg; break; }
                     }
                 }
-                Assert.NotNull(dkg);
 
+                Assert.NotNull(dkg);
                 HashSet<string> stateNames = new(StringComparer.OrdinalIgnoreCase);
                 foreach (object? s in dkg.States)
                 {

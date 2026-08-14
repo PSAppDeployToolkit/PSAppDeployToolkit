@@ -87,11 +87,9 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = radio.ApplyTemplate();
-                    Ellipse? outerEllipse = FindVisualChildByName<Ellipse>(radio, "OuterEllipse");
-                    Assert.NotNull(outerEllipse);
+                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
 
-                    Brush? expected = radio.FindResource("ControlStrongStrokeColorDefaultBrush") as Brush;
-                    Assert.NotNull(expected);
+                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDefaultBrush"));
                     Assert.Same(expected, outerEllipse.Stroke);
 
                     Color strokeColor = ((SolidColorBrush)outerEllipse.Stroke).Color;
@@ -139,11 +137,9 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Ellipse? outerEllipse = FindVisualChildByName<Ellipse>(radio, "OuterEllipse");
-                    Assert.NotNull(outerEllipse);
+                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
 
-                    Brush? expected = radio.FindResource("ControlStrongStrokeColorDisabledBrush") as Brush;
-                    Assert.NotNull(expected);
+                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDisabledBrush"));
                     Assert.Same(expected, outerEllipse.Stroke);
                 }
                 finally
@@ -186,10 +182,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path? checkGlyph = FindVisualChildByName<Path>(checkBox, "CheckGlyph");
-                    Border? indeterminateDash = FindVisualChildByName<Border>(checkBox, "IndeterminateDash");
-                    Assert.NotNull(checkGlyph);
-                    Assert.NotNull(indeterminateDash);
+                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
+                    Border indeterminateDash = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndeterminateDash"));
 
                     // The check-in storyboard now fades the glyph in, so sample until it
                     // settles at the trigger setter steady state instead of asserting
@@ -240,8 +234,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path? checkGlyph = FindVisualChildByName<Path>(checkBox, "CheckGlyph");
-                    Assert.NotNull(checkGlyph);
+                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
                     Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
 
                     checkBox.IsChecked = true;
@@ -261,8 +254,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(settled,
                         "The check-in storyboard should complete and hand the glyph back to the trigger setter steady state.");
 
-                    ScaleTransform? scale = checkGlyph.RenderTransform as ScaleTransform;
-                    Assert.NotNull(scale);
+                    ScaleTransform scale = Assert.IsType<ScaleTransform>(checkGlyph.RenderTransform);
                     Assert.Equal(1.0, checkGlyph.Opacity, 0.001);
                     Assert.Equal(1.0, scale.ScaleX, 0.001);
                     Assert.Equal(1.0, scale.ScaleY, 0.001);
@@ -428,11 +420,9 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = nav.ApplyTemplate();
-                    ContentPresenter? contentPresenter = nav.Template.FindName("PART_ContentPresenter", nav) as ContentPresenter;
-                    Assert.NotNull(contentPresenter);
+                    ContentPresenter contentPresenter = Assert.IsType<ContentPresenter>(nav.Template.FindName("PART_ContentPresenter", nav));
 
-                    Border? contentBorder = VisualTreeHelper.GetParent(contentPresenter) as Border;
-                    Assert.NotNull(contentBorder);
+                    Border contentBorder = Assert.IsType<Border>(VisualTreeHelper.GetParent(contentPresenter));
 
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius);
 
@@ -440,18 +430,15 @@ namespace Fluence.Wpf.Tests
                     // PART_ContentPresenter lines up with the pane column edge.
                     // Wrapping the presenter in a BorderThickness=1 Border introduces
                     // layout-rounding drift at 150% DPI.
-                    Grid? contentGrid = VisualTreeHelper.GetParent(contentBorder) as Grid;
-                    Assert.NotNull(contentGrid);
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentBorder));
                     Assert.Equal(2, VisualTreeHelper.GetChildrenCount(contentGrid));
 
-                    Border? strokeBorder = VisualTreeHelper.GetChild(contentGrid, 1) as Border;
-                    Assert.NotNull(strokeBorder);
+                    Border strokeBorder = Assert.IsType<Border>(VisualTreeHelper.GetChild(contentGrid, 1));
                     Assert.False(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
                     Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
-                    Assert.NotNull(expectedStroke);
+                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
                     Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally
@@ -491,29 +478,24 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = nav.ApplyTemplate();
-                    ContentPresenter? contentPresenter = nav.Template.FindName("PART_ContentPresenter", nav) as ContentPresenter;
-                    Assert.NotNull(contentPresenter);
+                    ContentPresenter contentPresenter = Assert.IsType<ContentPresenter>(nav.Template.FindName("PART_ContentPresenter", nav));
 
-                    Border? contentBorder = VisualTreeHelper.GetParent(contentPresenter) as Border;
-                    Assert.NotNull(contentBorder);
+                    Border contentBorder = Assert.IsType<Border>(VisualTreeHelper.GetParent(contentPresenter));
 
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), contentBorder.CornerRadius);
 
                     // The 1,1,0,0 stroke sits on a sibling decorative Border so
                     // PART_ContentPresenter lines up with the pane column edge without
                     // layout-rounding drift.
-                    Grid? contentGrid = VisualTreeHelper.GetParent(contentBorder) as Grid;
-                    Assert.NotNull(contentGrid);
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentBorder));
                     Assert.Equal(2, VisualTreeHelper.GetChildrenCount(contentGrid));
 
-                    Border? strokeBorder = VisualTreeHelper.GetChild(contentGrid, 1) as Border;
-                    Assert.NotNull(strokeBorder);
+                    Border strokeBorder = Assert.IsType<Border>(VisualTreeHelper.GetChild(contentGrid, 1));
                     Assert.False(strokeBorder.IsHitTestVisible, "The decorative stroke Border must not capture hit-tests.");
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
                     Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
-                    Assert.NotNull(expectedStroke);
+                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
                     Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally
@@ -555,11 +537,9 @@ namespace Fluence.Wpf.Tests
 
                     Assert.Equal(NavigationViewPaneDisplayMode.Left, nav.PaneDisplayMode);
 
-                    Button? paneToggle = nav.Template.FindName("PART_PaneToggleButton", nav) as Button;
-                    Assert.NotNull(paneToggle);
+                    Button paneToggle = Assert.IsType<Button>(nav.Template.FindName("PART_PaneToggleButton", nav));
 
-                    Button? backButton = nav.Template.FindName("PART_BackButton", nav) as Button;
-                    Assert.NotNull(backButton);
+                    Button backButton = Assert.IsType<Button>(nav.Template.FindName("PART_BackButton", nav));
                 }
                 finally
                 {

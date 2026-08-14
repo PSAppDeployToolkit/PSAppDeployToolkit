@@ -57,8 +57,7 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Template applied - Border is the root of the template
-                Border? border = FindVisualChild<Border>(sep);
-                Assert.NotNull(border);
+                Border border = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(sep));
                 w.Close();
             });
         }
@@ -94,11 +93,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                SolidColorBrush? bg = sep.Background as SolidColorBrush;
-                SolidColorBrush? expected = app?.TryFindResource("DividerStrokeColorDefaultBrush") as SolidColorBrush;
+                SolidColorBrush bg = Assert.IsType<SolidColorBrush>(sep.Background);
+                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app?.TryFindResource("DividerStrokeColorDefaultBrush"));
 
-                Assert.NotNull(expected);
-                Assert.NotNull(bg);
                 Assert.Equal(expected.Color, bg.Color);
                 w.Close();
             });
@@ -120,8 +117,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                Border? border = FindVisualChild<Border>(sep);
-                Assert.NotNull(border);
+                Border border = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(sep));
                 w.Close();
             });
         }

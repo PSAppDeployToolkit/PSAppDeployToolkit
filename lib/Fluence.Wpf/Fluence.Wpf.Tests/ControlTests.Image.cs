@@ -76,11 +76,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image? inner = FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image");
-                Assert.NotNull(inner);
+                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
 
-                System.Windows.Controls.Border? frame = FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder");
-                Assert.NotNull(frame);
+                System.Windows.Controls.Border frame = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder"));
                 w.Close();
             });
         }
@@ -99,8 +97,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image? inner = FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image");
-                Assert.NotNull(inner);
+                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
                 Assert.Same(probe, inner.Source);
                 Assert.Equal(Stretch.UniformToFill, inner.Stretch);
                 w.Close();
@@ -122,11 +119,9 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image? inner = FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image");
-                Assert.NotNull(inner);
+                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
 
-                RectangleGeometry? clip = inner.Clip as RectangleGeometry;
-                Assert.NotNull(clip);
+                RectangleGeometry clip = Assert.IsType<RectangleGeometry>(inner.Clip);
                 Assert.Equal(8.0, clip.RadiusX);
                 Assert.True(clip.IsFrozen, "The clip geometry must be frozen.");
 
@@ -153,8 +148,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border? frame = FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder");
-                Assert.NotNull(frame);
+                System.Windows.Controls.Border frame = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder"));
                 Assert.NotNull(frame.BorderBrush);
                 w.Close();
             });
