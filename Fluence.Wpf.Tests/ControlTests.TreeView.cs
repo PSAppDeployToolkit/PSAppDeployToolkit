@@ -218,11 +218,11 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Assert.NotNull(item.Template);
+                ControlTemplate itemTemplate = Assert.IsAssignableFrom<ControlTemplate>(item.Template);
                 bool hasHeaderHoverTrigger = false;
                 bool hasAncestorHoverTrigger = false;
 
-                foreach (TriggerBase triggerBase in item.Template.Triggers)
+                foreach (TriggerBase triggerBase in itemTemplate.Triggers)
                 {
                     if (triggerBase is Trigger trigger && trigger.Property == UIElement.IsMouseOverProperty)
                     {

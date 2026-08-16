@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -150,7 +150,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -190,7 +190,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -230,7 +230,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -305,7 +305,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -346,7 +346,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -393,7 +393,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -437,7 +437,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -453,9 +453,8 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     Controls.FontIcon icon = new() { Glyph = "" };
-                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(icon);
+                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(icon));
 
-                    Assert.NotNull(peer);
                     _ = Assert.IsAssignableFrom<Automation.FontIconAutomationPeer>(peer);
                     Assert.False(
                         peer.IsControlElement(),
@@ -466,7 +465,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -525,7 +524,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });

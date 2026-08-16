@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -114,7 +114,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -175,20 +175,20 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
         }
 
         [Fact]
-        public async Task PasswordBox_RevealButton_MousePressAndHold_IsTransientAsync()
+        public Task PasswordBox_RevealButton_MousePressAndHold_IsTransientAsync()
         {
             // Regression test: a mouse press-and-release must NOT leave the password revealed.
             // Contract: press-and-hold = transient reveal; release = hide immediately.
             // Prior to the fix, OnRevealButtonUp reset _isMouseRevealActive before Click fired,
             // causing the Click toggle branch to run and leaving IsPasswordRevealed = true.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -272,10 +272,10 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
-            }).ConfigureAwait(true);
+            });
         }
     }
 }

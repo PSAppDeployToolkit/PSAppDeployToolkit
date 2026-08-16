@@ -152,8 +152,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
-                Assert.NotNull(indicator.Background);
+                Assert.NotNull(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar")?.Background);
                 w.Close();
             });
         }

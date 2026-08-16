@@ -86,17 +86,17 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
-            application?.Resources.Clear();
+            application.Resources.MergedDictionaries.Clear();
+            application.Resources.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
+            Collection<ResourceDictionary>? dictionaries = application.Resources.MergedDictionaries;
             ResourceDictionary? genericDictionary = dictionaries?.Count > 0 ? dictionaries[^1] : null;
 
             ResourceDictionary demoShared = new()
             {
                 Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
-            application?.Resources.MergedDictionaries.Add(demoShared);
+            application.Resources.MergedDictionaries.Add(demoShared);
 
             return genericDictionary;
         }
@@ -325,7 +325,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -361,7 +361,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -398,7 +398,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -439,7 +439,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -498,7 +498,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -537,7 +537,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -582,8 +582,8 @@ namespace Fluence.Wpf.Tests
                     _ = item.ApplyTemplate();
                     Border selectedOverlay = Assert.IsType<Border>(item.Template.FindName("SelectedOverlay", item));
                     Border selectionIndicator = Assert.IsType<Border>(item.Template.FindName("SelectionIndicator", item));
-                    SolidColorBrush expectedSelectedBrush = Assert.IsType<SolidColorBrush>(application?.Resources["SubtleFillColorSecondaryBrush"]);
-                    SolidColorBrush expectedIndicatorBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorDefaultBrush"]);
+                    SolidColorBrush expectedSelectedBrush = Assert.IsType<SolidColorBrush>(application.Resources["SubtleFillColorSecondaryBrush"]);
+                    SolidColorBrush expectedIndicatorBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorDefaultBrush"]);
 
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(selectedOverlay.Background);
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(selectionIndicator.Background);
@@ -593,7 +593,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -612,14 +612,14 @@ namespace Fluence.Wpf.Tests
 
                     Controls.TextBlockExtensions.SetTypography(textBlock, FluentTypography.BodyLarge);
 
-                    Assert.Same(application?.TryFindResource("BodyLargeTextBlockStyle"), textBlock.Style);
+                    Assert.Same(application.TryFindResource("BodyLargeTextBlockStyle"), textBlock.Style);
                     Assert.Equal(18.0, textBlock.FontSize);
                 }
                 finally
                 {
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -668,7 +668,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -700,7 +700,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
-                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorDefaultBrush"]);
+                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorDefaultBrush"]);
 
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
                     Assert.Equal(accentBrush.Color, ((SolidColorBrush)restFill.Background).Color);
@@ -708,7 +708,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -744,7 +744,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -781,7 +781,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -819,7 +819,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -852,13 +852,12 @@ namespace Fluence.Wpf.Tests
 
                     Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
                     Border outerBorder = Assert.IsType<Border>(button.Template.FindName("OuterBorder", button));
-                    SolidColorBrush accentDefaultBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorDefaultBrush"]);
-                    LinearGradientBrush accentBorderBrush = Assert.IsType<LinearGradientBrush>(application?.Resources["AccentControlElevationBorderBrush"]);
-                    SolidColorBrush accentSecondaryBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorSecondaryBrush"]);
-                    SolidColorBrush accentTertiaryBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorTertiaryBrush"]);
-                    FontFamily fluentFontFamily = Assert.IsType<FontFamily>(application?.Resources["FluentFontFamily"]);
-                    TextBlock? contentText = FindVisualChildren<TextBlock>(button)
-                        .FirstOrDefault(static tb => string.Equals(tb.Text, "Accent", StringComparison.Ordinal));
+                    SolidColorBrush accentDefaultBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorDefaultBrush"]);
+                    LinearGradientBrush accentBorderBrush = Assert.IsType<LinearGradientBrush>(application.Resources["AccentControlElevationBorderBrush"]);
+                    SolidColorBrush accentSecondaryBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorSecondaryBrush"]);
+                    SolidColorBrush accentTertiaryBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorTertiaryBrush"]);
+                    FontFamily fluentFontFamily = Assert.IsType<FontFamily>(application.Resources["FluentFontFamily"]);
+                    TextBlock contentText = Assert.IsType<TextBlock>(FindVisualChildren<TextBlock>(button).FirstOrDefault(static tb => string.Equals(tb.Text, "Accent", StringComparison.Ordinal)));
 
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
                     _ = Assert.IsAssignableFrom<LinearGradientBrush>(outerBorder.BorderBrush);
@@ -866,7 +865,6 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(accentBorderBrush.GradientStops.Count, ((LinearGradientBrush)outerBorder.BorderBrush).GradientStops.Count);
                     Assert.Null(outerBorder.Effect);
                     Assert.Equal(fluentFontFamily.Source, button.FontFamily.Source, StringComparer.Ordinal);
-                    Assert.NotNull(contentText);
                     Assert.Equal(fluentFontFamily.Source, contentText.FontFamily.Source, StringComparer.Ordinal);
                     Assert.NotEqual(accentDefaultBrush.Color, accentSecondaryBrush.Color);
                     Assert.NotEqual(accentDefaultBrush.Color, accentTertiaryBrush.Color);
@@ -876,7 +874,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -924,7 +922,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -958,7 +956,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -998,7 +996,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1032,7 +1030,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1058,7 +1056,7 @@ namespace Fluence.Wpf.Tests
 
                     Controls.Button iconLeftButton = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Icon Left"));
                     Controls.Button iconRightButton = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Icon Right"));
-                    SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(application?.Resources["TextFillColorPrimaryBrush"]);
+                    SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(application.Resources["TextFillColorPrimaryBrush"]);
 
 
                     TextBlock iconLeftGlyph = Assert.IsAssignableFrom<TextBlock>(FindButtonIconTextBlock(iconLeftButton));
@@ -1073,7 +1071,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1122,7 +1120,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1174,7 +1172,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1218,7 +1216,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1259,7 +1257,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1302,7 +1300,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1350,7 +1348,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1382,7 +1380,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1423,7 +1421,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1460,7 +1458,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1494,7 +1492,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1571,7 +1569,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1602,18 +1600,15 @@ namespace Fluence.Wpf.Tests
                     ComboBoxItem item = Assert.IsType<ComboBoxItem>(combo.ItemContainerGenerator.ContainerFromIndex(0));
                     _ = item.ApplyTemplate();
 
-                    object outerBorder = item.Template.FindName("OuterBorder", item);
-                    Assert.NotNull(outerBorder);
-
-                    object selectionIndicator = item.Template.FindName("SelectionIndicator", item);
-                    Assert.NotNull(selectionIndicator);
+                    Assert.NotNull(item.Template.FindName("OuterBorder", item));
+                    Assert.NotNull(item.Template.FindName("SelectionIndicator", item));
 
                     combo.IsDropDownOpen = false;
                 }
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1661,7 +1656,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1701,7 +1696,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1748,7 +1743,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1783,7 +1778,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1827,7 +1822,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -1985,7 +1980,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2023,7 +2018,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2067,7 +2062,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2101,7 +2096,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2130,7 +2125,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2158,7 +2153,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2194,7 +2189,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2230,7 +2225,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2268,7 +2263,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2295,14 +2290,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentTextFillColorPrimaryBrush"]);
+                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentTextFillColorPrimaryBrush"]);
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(button.Foreground);
                     Assert.Equal(accentBrush.Color, ((SolidColorBrush)button.Foreground).Color);
                 }
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2338,7 +2333,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2367,7 +2362,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Brush expectedBrush = Assert.IsAssignableFrom<Brush>(application?.Resources["SystemFillColorCriticalBackgroundBrush"]);
+                    Brush expectedBrush = Assert.IsAssignableFrom<Brush>(application.Resources["SystemFillColorCriticalBackgroundBrush"]);
 
                     _ = infoBar.ApplyTemplate();
                     Border rootBorder = Assert.IsType<Border>(infoBar.Template.FindName("RootBorder", infoBar));
@@ -2376,7 +2371,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2417,7 +2412,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2460,7 +2455,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2490,7 +2485,7 @@ namespace Fluence.Wpf.Tests
 
                     _ = radio.ApplyTemplate();
                     Ellipse checkedEllipse = Assert.IsType<Ellipse>(radio.Template.FindName("CheckedEllipse", radio));
-                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application?.Resources["AccentFillColorDefaultBrush"]);
+                    SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(application.Resources["AccentFillColorDefaultBrush"]);
 
                     Assert.Equal(1.0, checkedEllipse.Opacity);
                     _ = Assert.IsAssignableFrom<SolidColorBrush>(checkedEllipse.Fill);
@@ -2499,7 +2494,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2539,7 +2534,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2579,7 +2574,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2622,7 +2617,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2655,7 +2650,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2693,7 +2688,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2738,7 +2733,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -2771,7 +2766,7 @@ namespace Fluence.Wpf.Tests
                 {
                     window?.Close();
 
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }

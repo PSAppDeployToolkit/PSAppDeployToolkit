@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +38,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
 using Xunit;
 
 namespace Fluence.Wpf.Tests
@@ -129,14 +129,14 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task DemoMainWindow_LeftPaneFooterIcon_StaysLeftAnchored_WhileCollapsedAsync()
+        public Task DemoMainWindow_LeftPaneFooterIcon_StaysLeftAnchored_WhileCollapsedAsync()
         {
             // Regression: the Settings footer item must keep its icon at the pane's left edge at every
             // pane width. As a FooterMenuItems entry it is hosted in a stretching StackPanel (like the
             // main items), so the fixed 40px icon column keeps the icon anchored at the left regardless
             // of the animating pane width. We force intermediate closed pane widths against the real
             // gallery MainWindow and assert the footer icon stays at the left.
-            await WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -159,8 +159,7 @@ namespace Fluence.Wpf.Tests
                     mw.UpdateLayout();
 
                     NavigationView nav = Assert.IsAssignableFrom<NavigationView>(FindVisualChildByName<NavigationView>(mw, "DemoNav"));
-                    NavigationViewItem? footer = nav!.FooterMenuItems.Count > 0 ? nav.FooterMenuItems[0] as NavigationViewItem : null;
-                    Assert.NotNull(footer);
+                    NavigationViewItem footer = Assert.IsType<NavigationViewItem>(nav.FooterMenuItems.Count > 0 ? nav.FooterMenuItems[0] as NavigationViewItem : null);
                     ContentPresenter footerIcon = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer!, "IconPresenter"));
 
                     nav.IsPaneOpen = false;
@@ -186,7 +185,7 @@ namespace Fluence.Wpf.Tests
                     mw.Close();
                     WpfTestSta.DrainDispatcher(mw.Dispatcher);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         [Fact]
@@ -221,7 +220,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -259,7 +258,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -282,7 +281,7 @@ namespace Fluence.Wpf.Tests
                 {
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -333,7 +332,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -382,7 +381,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -431,7 +430,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -468,7 +467,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -517,7 +516,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -554,7 +553,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -597,7 +596,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -642,7 +641,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -687,8 +686,7 @@ namespace Fluence.Wpf.Tests
                         calls.Add("selection:" + ((NavigationViewItem)nav.SelectedItem).Content);
                     };
 
-                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(item1);
-                    Assert.NotNull(peer);
+                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(item1));
                     IInvokeProvider invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
 
                     invokeProvider.Invoke();
@@ -708,7 +706,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -752,7 +750,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -796,7 +794,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -835,7 +833,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -876,7 +874,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -946,7 +944,7 @@ namespace Fluence.Wpf.Tests
                 {
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -990,7 +988,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1021,7 +1019,7 @@ namespace Fluence.Wpf.Tests
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.True(application?.Resources.MergedDictionaries.Count > 0);
+                    Assert.True(application.Resources.MergedDictionaries.Count > 0);
                     Color lightBase = (Color)application.Resources.MergedDictionaries[0]["SolidBackgroundFillColorBase"];
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
@@ -1036,7 +1034,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1084,7 +1082,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1129,7 +1127,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1186,7 +1184,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1248,7 +1246,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1349,7 +1347,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1420,7 +1418,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1491,7 +1489,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1547,7 +1545,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1563,10 +1561,9 @@ topMode: false,
 
                 try
                 {
-                    Style style = Assert.IsType<Style>(application?.TryFindResource("NavigationViewItemFocusVisual"));
+                    Style style = Assert.IsType<Style>(application.TryFindResource("NavigationViewItemFocusVisual"));
                     ControlTemplate template = Assert.IsType<ControlTemplate>(style.Setters.OfType<Setter>().FirstOrDefault(setter => setter.Property == Control.TemplateProperty)?.Value as ControlTemplate);
-                    DependencyObject root = template.LoadContent();
-                    Assert.NotNull(root);
+                    DependencyObject root = Assert.IsAssignableFrom<DependencyObject>(template.LoadContent());
 
                     foreach (System.Windows.Controls.Border border in FindVisualChildren<System.Windows.Controls.Border>(root))
                     {
@@ -1578,7 +1575,7 @@ topMode: false,
                 {
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1627,7 +1624,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1670,7 +1667,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1723,7 +1720,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1771,7 +1768,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1826,7 +1823,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1870,7 +1867,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1911,7 +1908,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1952,7 +1949,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -1994,7 +1991,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2042,7 +2039,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2099,7 +2096,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2143,7 +2140,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2186,7 +2183,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2226,7 +2223,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2278,7 +2275,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2329,7 +2326,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2359,7 +2356,7 @@ topMode: false,
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    SolidColorBrush expected = Assert.IsType<SolidColorBrush>(application?.TryFindResource("NavigationViewContentBackgroundBrush"));
+                    SolidColorBrush expected = Assert.IsType<SolidColorBrush>(application.TryFindResource("NavigationViewContentBackgroundBrush"));
                     SolidColorBrush actual = Assert.IsType<SolidColorBrush>(nav.ContentBackground);
 
                     Assert.Equal(expected.Color, actual.Color);
@@ -2369,7 +2366,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2412,7 +2409,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2450,7 +2447,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2480,7 +2477,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2516,12 +2513,12 @@ topMode: false,
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.NotNull(nav.ContentBackground);
-                    Assert.NotNull(application?.TryFindResource("NavigationViewContentBackgroundBrush"));
+                    Assert.NotNull(application.TryFindResource("NavigationViewContentBackgroundBrush"));
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.NotNull(nav.ContentBackground);
-                    Assert.NotNull(application?.TryFindResource("NavigationViewContentBackgroundBrush"));
+                    Assert.NotNull(application.TryFindResource("NavigationViewContentBackgroundBrush"));
 
                     ThemeTestHelpers.ApplyStandardThemeCycle();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -2533,7 +2530,7 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -2544,13 +2541,13 @@ topMode: false,
         // Both replaced by NavigationView_PaneBorders_AreTransparent below.
 
         [Fact]
-        public async Task NavigationView_PaneBorders_AreTransparentAsync()
+        public Task NavigationView_PaneBorders_AreTransparentAsync()
         {
             // Regression guard: pane borders (PaneBorder, CompactPane, PaneHeaderBorder) must
             // be Transparent (or null) so the DWM Mica/Acrylic backdrop shows through. The
             // WI-3 B15 commit wrongly set them to LayerFillColorAltBrush, which blocked the
             // backdrop entirely. This test asserts the reverted state is preserved.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2630,10 +2627,10 @@ topMode: false,
                     CloseWindowAndDrain(winTop);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         /// <summary>
@@ -2665,7 +2662,7 @@ topMode: false,
         private static void AssertPaneItemsScrollViewerUsesFluentStyle(NavigationViewPaneDisplayMode mode, bool isPaneOpen)
         {
             Application application = WpfTestSta.EnsureApplication();
-            Style expected = Assert.IsType<Style>(application?.TryFindResource("ScrollViewerStyle"));
+            Style expected = Assert.IsType<Style>(application.TryFindResource("ScrollViewerStyle"));
 
             Window window = new();
             try
@@ -2709,14 +2706,14 @@ topMode: false,
         }
 
         [Fact]
-        public async Task NavigationViewItem_Template_HasNoInnerSelectionIndicatorAsync()
+        public Task NavigationViewItem_Template_HasNoInnerSelectionIndicatorAsync()
         {
             // Regression: per-item Border named "SelectionIndicator" was duplicating the
             // pane-level PART_SelectionIndicator (animated by NavigationView code-behind),
             // producing two visible accent pills on the selected item. The pane-level
             // indicator is canonical (WinUI 3) and is wired in NavigationView.cs; the
             // per-item one must NOT exist in the template.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2744,10 +2741,10 @@ topMode: false,
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
-            }).ConfigureAwait(true);
+            });
         }
     }
 }

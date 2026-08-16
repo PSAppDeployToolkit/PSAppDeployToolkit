@@ -876,11 +876,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task ColorPicker_SpectrumKeyboard_RightKeyIncreasesSaturationAsync()
+        public Task ColorPicker_SpectrumKeyboard_RightKeyIncreasesSaturationAsync()
         {
             // Start with a mid-saturation color: FromRgb(128, 64, 64) has saturation ~0.5
             // (Max=128, Min=64, S=(128-64)/128=0.5) so pressing Right has room to increase it.
-            await RunColorPickerOptionTestAsync(
+            return RunColorPickerOptionTestAsync(
                 () => new Controls.ColorPicker { Color = Color.FromRgb(0x80, 0x40, 0x40) },
                 (picker, template, window) =>
                 {
@@ -906,14 +906,14 @@ namespace Fluence.Wpf.Tests
                     Assert.True(
                         colorAfter.R >= colorBefore.R,
                         "Pressing Right on the spectrum must increase saturation, brightening the hue channel.");
-                }).ConfigureAwait(true);
+                });
         }
 
         [Fact]
-        public async Task ColorPicker_SpectrumKeyboard_UpKeyIncreasesValueAsync()
+        public Task ColorPicker_SpectrumKeyboard_UpKeyIncreasesValueAsync()
         {
             // Start dark so Value (brightness) has room to increase.
-            await RunColorPickerOptionTestAsync(
+            return RunColorPickerOptionTestAsync(
                 () => new Controls.ColorPicker { Color = Color.FromRgb(0x40, 0x20, 0x00) },
                 (picker, template, window) =>
                 {
@@ -939,7 +939,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(
                         colorAfter.R > colorBefore.R || colorAfter.G > colorBefore.G || colorAfter.B > colorBefore.B,
                         "Pressing Up on the spectrum must increase Value, making channels brighter.");
-                }).ConfigureAwait(true);
+                });
         }
     }
 }

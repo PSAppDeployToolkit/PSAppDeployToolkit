@@ -43,7 +43,7 @@ namespace Fluence.Wpf.Tests
                 Application application = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
-                application?.Resources.Clear();
+                application.Resources.Clear();
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
                 try
@@ -52,13 +52,13 @@ namespace Fluence.Wpf.Tests
                     textBlock.SetTypography(FluentTypography.BodyLarge);
 
                     Assert.Same(
-                        application?.TryFindResource("BodyLargeTextBlockStyle"),
+                        application.TryFindResource("BodyLargeTextBlockStyle"),
                         textBlock.Style);
                 }
                 finally
                 {
-                    application?.Resources.MergedDictionaries.Clear();
-                    application?.Resources.Clear();
+                    application.Resources.MergedDictionaries.Clear();
+                    application.Resources.Clear();
                     ApplicationThemeManager.ResetForTesting();
                     ApplicationAccentColorManager.ResetForTesting();
                 }

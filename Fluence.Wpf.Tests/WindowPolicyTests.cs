@@ -516,8 +516,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void WindowCapabilities_Current_NotNull()
         {
-            WindowCapabilities caps = WindowCapabilities.Current;
-            Assert.NotNull(caps);
+            Assert.NotNull(WindowCapabilities.Current);
         }
 
         #endregion WindowCapabilities.Current - sanity

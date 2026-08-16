@@ -149,8 +149,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border frame = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder"));
-                Assert.NotNull(frame.BorderBrush);
+                Assert.NotNull(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder")?.BorderBrush);
                 w.Close();
             });
         }

@@ -112,14 +112,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                MethodInfo? startCapsPoll = typeof(Controls.PasswordBox).GetMethod(
-                    "StartCapsPoll",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                FieldInfo? capsPollTimer = typeof(Controls.PasswordBox).GetField(
-                    "_capsPollTimer",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.NotNull(startCapsPoll);
-                Assert.NotNull(capsPollTimer);
+                MethodInfo startCapsPoll = Assert.IsAssignableFrom<MethodInfo>(typeof(Controls.PasswordBox).GetMethod("StartCapsPoll", BindingFlags.Instance | BindingFlags.NonPublic));
+                FieldInfo capsPollTimer = Assert.IsAssignableFrom<FieldInfo>(typeof(Controls.PasswordBox).GetField("_capsPollTimer", BindingFlags.Instance | BindingFlags.NonPublic));
 
                 _ = startCapsPoll.Invoke(pb, parameters: null);
                 Assert.NotNull(capsPollTimer.GetValue(pb));

@@ -26,10 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Native;
-using Microsoft.Win32;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Media;
+using Microsoft.Win32;
+using Fluence.Wpf.Native;
 
 namespace Fluence.Wpf.Helpers
 {
@@ -53,7 +54,7 @@ namespace Fluence.Wpf.Helpers
             return key?.GetValue(RegistryConstants.ColorPrevalence) is not int intValue || intValue is not 0;
         }
 
-        internal static bool TryGetAccentPalette(out Color[]? palette)
+        internal static bool TryGetAccentPalette([NotNullWhen(true)] out Color[]? palette)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryConstants.AccentRegistryPath);
             if (key?.GetValue(RegistryConstants.AccentPalette) is byte[] bytes && bytes.Length >= 32)

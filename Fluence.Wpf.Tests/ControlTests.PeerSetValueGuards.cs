@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -119,7 +119,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -159,7 +159,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -200,7 +200,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });

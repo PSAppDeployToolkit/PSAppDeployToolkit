@@ -53,9 +53,9 @@ namespace Fluence.Wpf.Tests
 
         internal static void AssertKeyThemeBrushesResolve(Application application)
         {
-            Assert.NotNull(application?.TryFindResource("ApplicationBackgroundBrush"));
-            Assert.NotNull(application?.TryFindResource("TextFillColorPrimaryBrush"));
-            Assert.NotNull(application?.TryFindResource("AccentFillColorDefaultBrush"));
+            Assert.NotNull(application.TryFindResource("ApplicationBackgroundBrush"));
+            Assert.NotNull(application.TryFindResource("TextFillColorPrimaryBrush"));
+            Assert.NotNull(application.TryFindResource("AccentFillColorDefaultBrush"));
         }
     }
 }

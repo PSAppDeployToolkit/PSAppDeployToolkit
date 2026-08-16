@@ -83,7 +83,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -458,12 +458,12 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task ToggleSplitButton_FocusVisuals_UseKeyboardOnlyFocusVisualStyleAsync()
+        public Task ToggleSplitButton_FocusVisuals_UseKeyboardOnlyFocusVisualStyleAsync()
         {
             // Mirrors the SplitButton contract: focus rings come from the
             // DefaultControlFocusVisualStyle adorner on each half, which WPF shows only
             // for keyboard navigation (Tab), never on mouse click - matching DropDownButton.
-            await RunToggleSplitButtonTestAsync(
+            return RunToggleSplitButtonTestAsync(
                 () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
@@ -473,13 +473,13 @@ namespace Fluence.Wpf.Tests
                 {
                     Button primary = GetPrimaryButtonPart(button);
                     ToggleButton secondary = GetSecondaryButtonPart(button);
-                    Style focusVisualStyle = Assert.IsType<Style>(application?.TryFindResource("DefaultControlFocusVisualStyle"));
+                    Style focusVisualStyle = Assert.IsType<Style>(application.TryFindResource("DefaultControlFocusVisualStyle"));
 
                     Assert.Same(focusVisualStyle, primary.FocusVisualStyle);
                     Assert.Same(focusVisualStyle, secondary.FocusVisualStyle);
                     Assert.Null(FindVisualChildByName<Border>(button, "PrimaryFocusOuter"));
                     Assert.Null(FindVisualChildByName<Border>(button, "SecondaryFocusOuter"));
-                }).ConfigureAwait(true);
+                });
         }
 
         [Fact]

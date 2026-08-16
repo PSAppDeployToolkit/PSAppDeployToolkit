@@ -354,12 +354,10 @@ namespace Fluence.Wpf.Tests
                         "Expanding the overflow must materialize the secondary command.");
 
                     Style secondaryStyle = Assert.IsType<Style>(app.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"));
-                    Assert.NotNull(deleteButton.Style);
-                    Assert.Same(secondaryStyle, deleteButton.Style.BasedOn);
+                    Style deleteButtonStyle = Assert.IsType<Style>(deleteButton.Style);
+                    Assert.Same(secondaryStyle, deleteButtonStyle.BasedOn);
 
-                    TextBlock? labelText = FindVisualChildren<TextBlock>(deleteButton)
-                        .FirstOrDefault(textBlock => string.Equals(textBlock.Text, "Delete", StringComparison.Ordinal));
-                    Assert.NotNull(labelText);
+                    Assert.NotNull(FindVisualChildren<TextBlock>(deleteButton).FirstOrDefault(textBlock => string.Equals(textBlock.Text, "Delete", StringComparison.Ordinal)));
                 }
                 finally
                 {

@@ -70,8 +70,7 @@ namespace Fluence.Wpf.Tests
                 Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark2);
                 Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark3);
 
-                object accentResource = app.Resources["SystemAccentColor"];
-                Assert.NotNull(accentResource);
+                Assert.NotNull(app.Resources["SystemAccentColor"]);
             });
         }
 

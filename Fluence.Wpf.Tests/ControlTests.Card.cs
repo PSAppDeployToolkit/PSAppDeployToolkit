@@ -59,10 +59,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
-
-                Assert.NotNull(outerBorder.Effect);
-                _ = Assert.IsAssignableFrom<DropShadowEffect>(outerBorder.Effect);
+                Assert.NotNull(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder")?.Effect as DropShadowEffect);
                 w.Close();
             });
         }

@@ -40,16 +40,16 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
+            application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
+            Collection<ResourceDictionary>? dictionaries = application.Resources.MergedDictionaries;
             ResourceDictionary? genericDictionary = dictionaries?.Count > 0 ? dictionaries[^1] : null;
 
             ResourceDictionary demoShared = new()
             {
                 Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
-            application?.Resources.MergedDictionaries.Add(demoShared);
+            application.Resources.MergedDictionaries.Add(demoShared);
 
             return genericDictionary;
         }
@@ -95,7 +95,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -133,7 +133,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -172,7 +172,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -211,7 +211,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });

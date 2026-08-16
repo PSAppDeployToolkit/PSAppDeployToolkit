@@ -158,7 +158,7 @@ namespace Fluence.Wpf.Tests
                 ScrollBar scrollBar = new()
                 {
                     Orientation = Orientation.Vertical,
-                    Style = application?.TryFindResource("VerticalScrollBarStyle") as Style,
+                    Style = application.TryFindResource("VerticalScrollBarStyle") as Style,
                     Minimum = 0,
                     Maximum = 100,
                     Value = 0,
@@ -265,7 +265,7 @@ namespace Fluence.Wpf.Tests
                 {
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
-                    _ = Assert.IsAssignableFrom<Color>(application?.TryFindResource("CardBackgroundFillColorDefault"));
+                    _ = Assert.IsAssignableFrom<Color>(application.TryFindResource("CardBackgroundFillColorDefault"));
                     AssertBrushResolves("CardBackgroundFillColorDefaultBrush");
                 }
             });
@@ -286,7 +286,7 @@ namespace Fluence.Wpf.Tests
 
                     foreach (string key in GetNativeDemoSurfaceBrushKeys())
                     {
-                        SolidColorBrush brush = Assert.IsType<SolidColorBrush>(application?.TryFindResource(key));
+                        SolidColorBrush brush = Assert.IsType<SolidColorBrush>(application.TryFindResource(key));
                         Assert.NotEqual(Color.FromRgb(0x27, 0x27, 0x27), brush.Color);
                     }
                 }
@@ -363,7 +363,7 @@ namespace Fluence.Wpf.Tests
 
                     foreach (string key in keys)
                     {
-                        Assert.NotNull(application?.TryFindResource(key));
+                        Assert.NotNull(application.TryFindResource(key));
                     }
                 }
             });
@@ -570,7 +570,7 @@ namespace Fluence.Wpf.Tests
             {
                 Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
-            application?.Resources.MergedDictionaries.Add(demoShared);
+            application.Resources.MergedDictionaries.Add(demoShared);
         }
 
         private static bool IsBackgroundLiteralAllowedPath(string path)

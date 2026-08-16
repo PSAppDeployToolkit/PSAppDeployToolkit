@@ -44,9 +44,9 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
+            application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
+            Collection<ResourceDictionary>? dictionaries = application.Resources.MergedDictionaries;
             return dictionaries?.Count > 0 ? dictionaries[^1] : null;
         }
 
@@ -147,7 +147,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -161,10 +161,9 @@ namespace Fluence.Wpf.Tests
                 TabView tabs = new();
                 TabViewItem candidate = new();
 
-                MethodInfo? method = typeof(TabView).GetMethod(
+                MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(TabView).GetMethod(
                     "IsItemItsOwnContainerOverride",
-                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                Assert.NotNull(method);
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
                 bool? result = (bool?)method.Invoke(tabs, [candidate]);
                 Assert.True(result, "A TabViewItem should be recognized as its own container.");
 
@@ -209,7 +208,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -259,7 +258,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -294,7 +293,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -326,7 +325,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -370,7 +369,7 @@ namespace Fluence.Wpf.Tests
                     window.Close();
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
