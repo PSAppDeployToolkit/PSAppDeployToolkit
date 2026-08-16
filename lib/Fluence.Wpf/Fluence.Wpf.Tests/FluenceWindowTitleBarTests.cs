@@ -132,19 +132,13 @@ namespace Fluence.Wpf.Tests
 
         private static uint? InvokeHitTestTitleBar(FluenceWindow window, IntPtr lParam)
         {
-            MethodInfo? method = typeof(FluenceWindow).GetMethod(
-                "HitTestTitleBar",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(method);
+            MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod("HitTestTitleBar", BindingFlags.Instance | BindingFlags.NonPublic));
             return (uint?)method.Invoke(window, [lParam]);
         }
 
         private static IntPtr? InvokeWndProc(FluenceWindow window, uint msg, IntPtr wParam, IntPtr lParam, out bool handled)
         {
-            MethodInfo? method = typeof(FluenceWindow).GetMethod(
-                "WndProc",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(method);
+            MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod("WndProc", BindingFlags.Instance | BindingFlags.NonPublic));
 
             object[] args = [IntPtr.Zero, (int)msg, wParam, lParam, false];
             IntPtr? result = (IntPtr?)method.Invoke(window, args);
@@ -288,8 +282,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithWindowAsync(static w =>
             {
-                WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.NotNull(chrome);
+                WindowChrome chrome = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w));
                 Assert.Equal(0d, chrome.CaptionHeight);
 
                 w.ExtendsContentIntoTitleBar = true;
@@ -326,8 +319,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithWindowAsync(static w =>
             {
-                WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.NotNull(chrome);
+                WindowChrome chrome = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w));
                 Assert.Equal(0d, chrome.CaptionHeight);
             });
         }
@@ -335,11 +327,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task WindowChrome_AppliedInConstructorAsync()
         {
-            return RunWithWindowAsync(static w =>
-            {
-                WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.NotNull(chrome);
-            });
+            return RunWithWindowAsync(static w => _ = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w)));
         }
 
         [Fact]
@@ -723,7 +711,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task SetSnapHover_UsesSubtleFillTokens_MatchingTemplatePointerOverAsync()
+        public Task SetSnapHover_UsesSubtleFillTokens_MatchingTemplatePointerOverAsync()
         {
             // The Windows 11 snap-layout flyout hover over the maximize/restore button is driven by
             // SetSnapHover, because the WM_NCHITTEST/HTMAXBUTTON path bypasses the XAML IsMouseOver
@@ -734,7 +722,7 @@ namespace Fluence.Wpf.Tests
             // paths cannot silently drift apart again. SetSnapHover is invoked directly (rather than
             // through WndProc) so the assertion does not depend on the machine's snap-layout setting,
             // OS build, or IsMaximizable gate that WM_NCHITTEST applies before reaching it.
-            await RunWithShownWindowAsync(async static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
                 Assert.True(max.IsEnabled,
@@ -748,10 +736,9 @@ namespace Fluence.Wpf.Tests
                 _ = Assert.IsAssignableFrom<Brush>(expectedBackground);
                 _ = Assert.IsAssignableFrom<Brush>(expectedForeground);
 
-                MethodInfo? setSnapHover = typeof(FluenceWindow).GetMethod(
+                MethodInfo setSnapHover = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
                     "SetSnapHover",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.NotNull(setSnapHover);
+                    BindingFlags.Instance | BindingFlags.NonPublic));
                 _ = setSnapHover.Invoke(w, [max]);
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
@@ -761,16 +748,15 @@ namespace Fluence.Wpf.Tests
 
                 // ClearSnapHover must restore the template/style defaults via ClearValue, so the
                 // local Background/Foreground values are cleared back to the unset (style-driven) state.
-                MethodInfo? clearSnapHover = typeof(FluenceWindow).GetMethod(
+                MethodInfo clearSnapHover = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
                     "ClearSnapHover",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.NotNull(clearSnapHover);
+                    BindingFlags.Instance | BindingFlags.NonPublic));
                 _ = clearSnapHover.Invoke(w, parameters: null);
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty));
                 Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.ForegroundProperty));
-            }).ConfigureAwait(true);
+            });
         }
 
         #endregion Caption button hit-test (WM_NCHITTEST vs WPF commands)
@@ -917,42 +903,38 @@ namespace Fluence.Wpf.Tests
 
         private static CanExecuteRoutedEventArgs CreateCanExecuteArgs(ICommand command)
         {
-            ConstructorInfo? ctor = typeof(CanExecuteRoutedEventArgs).GetConstructor(
+            ConstructorInfo ctor = Assert.IsAssignableFrom<ConstructorInfo>(typeof(CanExecuteRoutedEventArgs).GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-binder: null,
+                binder: null,
                 [typeof(ICommand), typeof(object)],
-modifiers: null);
-            Assert.NotNull(ctor);
+                modifiers: null));
             return (CanExecuteRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
         private static bool InvokeCanHandler(FluenceWindow window, string handlerName, CanExecuteRoutedEventArgs args)
         {
-            MethodInfo? handler = typeof(FluenceWindow).GetMethod(
+            MethodInfo handler = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
                 handlerName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(handler);
+                BindingFlags.Instance | BindingFlags.NonPublic));
             _ = handler.Invoke(window, [window, args]);
             return args.CanExecute;
         }
 
         private static ExecutedRoutedEventArgs CreateExecutedArgs(ICommand command)
         {
-            ConstructorInfo? ctor = typeof(ExecutedRoutedEventArgs).GetConstructor(
+            ConstructorInfo ctor = Assert.IsAssignableFrom<ConstructorInfo>(typeof(ExecutedRoutedEventArgs).GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-binder: null,
+                binder: null,
                 [typeof(ICommand), typeof(object)],
-modifiers: null);
-            Assert.NotNull(ctor);
+                modifiers: null));
             return (ExecutedRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
         private static void InvokeExecutedHandler(FluenceWindow window, string handlerName, ExecutedRoutedEventArgs args)
         {
-            MethodInfo? handler = typeof(FluenceWindow).GetMethod(
+            MethodInfo handler = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
                 handlerName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(handler);
+                BindingFlags.Instance | BindingFlags.NonPublic));
             _ = handler.Invoke(window, [window, args]);
         }
 
@@ -1018,7 +1000,7 @@ modifiers: null);
         }
 
         [Fact]
-        public async Task OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStrippedAsync()
+        public Task OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStrippedAsync()
         {
             // RunWithShownWindow triggers OnSourceInitialized → ApplyWindowShell →
             // HideNativeCaptionButtons → NativeMethods.HideAllWindowButtons, which strips
@@ -1028,7 +1010,7 @@ modifiers: null);
             // symptom that made the AllowMinimize caption button look clickable but
             // refuse to actually minimize. The Executed handler must bypass the sysmenu gate
             // by assigning WindowState directly so the transition always lands.
-            await RunWithShownWindowAsync(async static w =>
+            return RunWithShownWindowAsync(async static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
 
@@ -1040,7 +1022,7 @@ modifiers: null);
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
                 Assert.Equal(WindowState.Minimized, w.WindowState);
-            }).ConfigureAwait(true);
+            });
         }
 
         [Fact]
@@ -1082,7 +1064,7 @@ modifiers: null);
         }
 
         [Fact]
-        public async Task MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfigAsync()
+        public Task MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfigAsync()
         {
             // Reproduces the exact PSADT FluentDialog topology: Topmost=True + ResizeMode=NoResize
             // + ExtendsContentIntoTitleBar=True + IsMinimizeButtonVisible flipped from
@@ -1092,7 +1074,7 @@ modifiers: null);
             // OnMinimizeWindow) and asserts the caption is clickable AND the state lands on
             // Minimized. If this ever regresses to "visible but inert" we'll catch it here
             // instead of only in manual QA.
-            await WpfTestSta.RunOnStaAsync(async static () =>
+            return WpfTestSta.RunOnStaAsync(async static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
@@ -1155,11 +1137,11 @@ modifiers: null);
                         _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         [Fact]
-        public async Task MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfigAsync()
+        public Task MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfigAsync()
         {
             // Same topology as the Show() variant above, but uses ShowDialog() which is what
             // PSADT's DialogManager actually invokes (see DialogManager.ShowModalDialog -> dialog.ShowDialog()).
@@ -1167,7 +1149,7 @@ modifiers: null);
             // PSADT case are also Topmost - a combination that can mask bugs a Show() test misses.
             // We schedule the click via Dispatcher.BeginInvoke(ApplicationIdle) from Loaded so
             // the command fires after the modal frame is pumping, then verify WindowState.
-            await WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(() =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
@@ -1262,7 +1244,7 @@ modifiers: null);
                         _ = app.Resources.MergedDictionaries.Remove(dict);
                     }
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         #endregion Caption button DP overrides (authoritative when explicitly set)
@@ -1409,7 +1391,7 @@ modifiers: null);
                         Visual? hitVisual = null;
                         VisualTreeHelper.HitTest(
                             window,
-filterCallback: null,
+                            filterCallback: null,
                             new HitTestResultCallback(r =>
                             {
                                 hitVisual = r.VisualHit as Visual;

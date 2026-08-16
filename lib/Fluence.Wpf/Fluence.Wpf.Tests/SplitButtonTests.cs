@@ -44,9 +44,9 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.MergedDictionaries.Clear();
+            application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-            application?.Resources.MergedDictionaries.Add(new ResourceDictionary
+            application.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
                 Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             });
@@ -304,8 +304,7 @@ namespace Fluence.Wpf.Tests
             return WpfTestSta.RunOnStaAsync(static () =>
             {
                 SplitButton splitButton = new();
-                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(splitButton);
-                Assert.NotNull(peer);
+                AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(splitButton));
 
                 Assert.Equal(AutomationControlType.SplitButton,
                     peer.GetAutomationControlType());

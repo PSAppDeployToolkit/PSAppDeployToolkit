@@ -82,8 +82,7 @@ namespace Fluence.Wpf.Tests
                         window.UpdateLayout();
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                        object content = GetSelectedPageContent(window);
-                        Assert.NotNull(content);
+                        object content = Assert.IsAssignableFrom<object>(GetSelectedPageContent(window));
                         Assert.Equal(expectation.PageType, content.GetType());
                         Assert.NotEqual("GalleryControlPage", content.GetType().Name, StringComparer.Ordinal);
                         Assert.NotEqual("GalleryCategoryPage", content.GetType().Name, StringComparer.Ordinal);
@@ -105,8 +104,7 @@ namespace Fluence.Wpf.Tests
                 MainWindow window = CreateShownMainWindow();
                 try
                 {
-                    object content = GetSelectedPageContent(window);
-                    Assert.NotNull(content);
+                    object content = Assert.IsAssignableFrom<object>(GetSelectedPageContent(window));
                     Assert.Equal(typeof(GalleryHomePage), content.GetType());
 
                     NavigationView nav = Assert.IsAssignableFrom<NavigationView>(FindByName<NavigationView>(window, "DemoNav"));
@@ -638,8 +636,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(Visibility.Collapsed, internalBack.Visibility);
                     Assert.Null(internalToggle);
 
-                    NavigationViewItem? firstItem = nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null;
-                    Assert.NotNull(firstItem);
+                    NavigationViewItem firstItem = Assert.IsType<NavigationViewItem>(nav.Items.Count > 0 ? nav.Items[0] as NavigationViewItem : null);
                     Assert.Equal(Visibility.Visible, firstItem.Visibility);
                 }
                 finally
@@ -747,10 +744,7 @@ namespace Fluence.Wpf.Tests
                     Assert.False(nav.IsPaneOpen,
                         "Opening Settings must preserve the real collapsed pane state.");
 
-                    Controls.ComboBox? navigationStyle = FindByName<Controls.ComboBox>(
-                        nav.Content as DependencyObject,
-                        "NavigationStyleComboBox");
-                    Assert.NotNull(navigationStyle);
+                    Controls.ComboBox navigationStyle = Assert.IsAssignableFrom<Controls.ComboBox>(FindByName<Controls.ComboBox>(nav.Content as DependencyObject, "NavigationStyleComboBox"));
                     Assert.Equal(2, navigationStyle.SelectedIndex);
                 }
                 finally
@@ -776,10 +770,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    Controls.ComboBox? navigationStyle = FindByName<Controls.ComboBox>(
-                        nav.Content as DependencyObject,
-                        "NavigationStyleComboBox");
-                    Assert.NotNull(navigationStyle);
+                    Controls.ComboBox navigationStyle = Assert.IsAssignableFrom<Controls.ComboBox>(FindByName<Controls.ComboBox>(nav.Content as DependencyObject, "NavigationStyleComboBox"));
 
                     nav.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
                     nav.IsPaneOpen = false;
@@ -866,10 +857,7 @@ namespace Fluence.Wpf.Tests
 
                     object settingsPage = nav.Content
                         ?? throw new InvalidOperationException("Settings navigation should create a live Settings page.");
-                    Controls.ComboBox? navigationStyle = FindByName<Controls.ComboBox>(
-                        settingsPage as DependencyObject,
-                        "NavigationStyleComboBox");
-                    Assert.NotNull(navigationStyle);
+                    Controls.ComboBox navigationStyle = Assert.IsAssignableFrom<Controls.ComboBox>(FindByName<Controls.ComboBox>(settingsPage as DependencyObject, "NavigationStyleComboBox"));
 
                     navigationStyle.SelectedIndex = 1;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -919,10 +907,7 @@ namespace Fluence.Wpf.Tests
 
                     object settingsPage = nav.Content
                         ?? throw new InvalidOperationException("Settings navigation should create a live Settings page.");
-                    Controls.ComboBox? navigationStyle = FindByName<Controls.ComboBox>(
-                        settingsPage as DependencyObject,
-                        "NavigationStyleComboBox");
-                    Assert.NotNull(navigationStyle);
+                    Controls.ComboBox navigationStyle = Assert.IsAssignableFrom<Controls.ComboBox>(FindByName<Controls.ComboBox>(settingsPage as DependencyObject, "NavigationStyleComboBox"));
 
                     navigationStyle.SelectedIndex = 1;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -1295,7 +1280,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    TabControl? tabs = FindByName<TabControl>(sample, "SourceTabControl");
+                    TabControl tabs = Assert.IsAssignableFrom<TabControl>(FindByName<TabControl>(sample, "SourceTabControl"));
                     string renderedXaml = GetSourceTabText(tabs, "XAML");
                     string renderedCSharp = GetSourceTabText(tabs, "C#");
 
@@ -1431,9 +1416,8 @@ namespace Fluence.Wpf.Tests
 
                     Assert.Equal(0.0, progressBar.Value, 0.001);
 
-                    DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarValue", StringComparison.Ordinal));
-                    Assert.NotNull(sample);
+                    DemoSampleControl sample = Assert.IsAssignableFrom<DemoSampleControl>(FindAllVisualChildren<DemoSampleControl>(page)
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarValue", StringComparison.Ordinal)));
                     Assert.Contains("x:Name=\"ProgressValueNumberBox\"", sample.XamlSource, StringComparison.Ordinal);
                     Assert.Contains("Minimum=\"0\"", sample.XamlSource, StringComparison.Ordinal);
                     Assert.Equal(-1, sample.XamlSource.IndexOf("Minimum=\"1\"", StringComparison.Ordinal));
@@ -1455,12 +1439,10 @@ namespace Fluence.Wpf.Tests
                 Window window = CreateHostWindow(page);
                 try
                 {
-                    DemoSampleControl? stepSample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarSteps", StringComparison.Ordinal));
-                    DemoSampleControl? ringSample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressRings", StringComparison.Ordinal));
-                    Assert.NotNull(stepSample);
-                    Assert.NotNull(ringSample);
+                    DemoSampleControl stepSample = Assert.IsAssignableFrom<DemoSampleControl>(FindAllVisualChildren<DemoSampleControl>(page)
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarSteps", StringComparison.Ordinal)));
+                    DemoSampleControl ringSample = Assert.IsAssignableFrom<DemoSampleControl>(FindAllVisualChildren<DemoSampleControl>(page)
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressRings", StringComparison.Ordinal)));
 
                     Assert.Contains("Steps=\"10\"", stepSample.XamlSource, StringComparison.Ordinal);
                     Assert.Contains("Text=\"Step 1 of 10\"", stepSample.XamlSource, StringComparison.Ordinal);
@@ -1534,9 +1516,8 @@ namespace Fluence.Wpf.Tests
                 Window window = CreateHostWindow(page);
                 try
                 {
-                    DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(static control => control.XamlSource.Contains("CompactNavigationView", StringComparison.Ordinal));
-                    Assert.NotNull(sample);
+                    DemoSampleControl sample = Assert.IsAssignableFrom<DemoSampleControl>(FindAllVisualChildren<DemoSampleControl>(page)
+                        .FirstOrDefault(static control => control.XamlSource.Contains("CompactNavigationView", StringComparison.Ordinal)));
 
                     Assert.Contains("IsBackEnabled=\"{Binding IsChecked, ElementName=BackEnabledToggle}\"", sample.XamlSource, StringComparison.Ordinal);
                     Assert.Contains("IsPaneToggleButtonVisible=\"True\"", sample.XamlSource, StringComparison.Ordinal);
@@ -1581,9 +1562,8 @@ namespace Fluence.Wpf.Tests
                     TabViewItem selectedTab = Assert.IsType<TabViewItem>(tabView.SelectedItem);
                     AssertTabViewItemContentSurface(selectedTab);
 
-                    DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(static control => control.XamlSource.Contains("TabViewDocuments", StringComparison.Ordinal));
-                    Assert.NotNull(sample);
+                    DemoSampleControl sample = Assert.IsAssignableFrom<DemoSampleControl>(FindAllVisualChildren<DemoSampleControl>(page)
+                        .FirstOrDefault(static control => control.XamlSource.Contains("TabViewDocuments", StringComparison.Ordinal)));
                     Assert.Contains("LayerFillColorDefaultBrush", sample.XamlSource, StringComparison.Ordinal);
                     Assert.Contains("LayerFillColorDefaultBrush", sample.CSharpSource, StringComparison.Ordinal);
                 }
@@ -1606,16 +1586,12 @@ namespace Fluence.Wpf.Tests
                 {
                     Grid table = Assert.IsAssignableFrom<Grid>(FindByName<Grid>(page, "TypographyTable"));
 
-                    System.Windows.Controls.TextBlock? firstBodyCell = table.Children
-                        .OfType<System.Windows.Controls.TextBlock>()
-                        .FirstOrDefault(static textBlock => Grid.GetRow(textBlock) is 1 && Grid.GetColumn(textBlock) is 0);
-                    Assert.NotNull(firstBodyCell);
+                    System.Windows.Controls.TextBlock firstBodyCell = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(table.Children
+                        .OfType<System.Windows.Controls.TextBlock>().FirstOrDefault(static textBlock => Grid.GetRow(textBlock) is 1 && Grid.GetColumn(textBlock) is 0));
                     Assert.Equal(new Thickness(24, 8, 16, 8), firstBodyCell.Margin);
 
-                    System.Windows.Controls.Border? firstShadedRow = table.Children
-                        .OfType<System.Windows.Controls.Border>()
-                        .FirstOrDefault(static border => Grid.GetRow(border) is 1);
-                    Assert.NotNull(firstShadedRow);
+                    System.Windows.Controls.Border firstShadedRow = Assert.IsAssignableFrom<System.Windows.Controls.Border>(table.Children
+                        .OfType<System.Windows.Controls.Border>().FirstOrDefault(static border => Grid.GetRow(border) is 1));
                     Assert.Equal(new Thickness(0, 2, 0, 2), firstShadedRow.Margin);
                 }
                 finally
@@ -1951,9 +1927,8 @@ namespace Fluence.Wpf.Tests
             Assert.Fail("Missing source tab: " + expectedHeader);
         }
 
-        private static string GetSourceTabText(TabControl? tabs, string expectedHeader)
+        private static string GetSourceTabText(TabControl tabs, string expectedHeader)
         {
-            Assert.NotNull(tabs);
             foreach (object item in tabs.Items)
             {
                 if (item is TabItem tab && string.Equals(tab.Header as string, expectedHeader, StringComparison.Ordinal))

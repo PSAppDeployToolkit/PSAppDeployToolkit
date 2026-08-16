@@ -174,8 +174,8 @@ namespace Fluence.Wpf
         {
             bool isThemeRelevant = (uint)msg switch
             {
-                // WM_SETTINGCHANGE fires for every settings-class change (region, sound, region,
-                // policy, file types, etc.). Only the "ImmersiveColorSet" broadcast carries a
+                // WM_SETTINGCHANGE fires for every settings-class change (region, sound, policy,
+                // file types, etc.). Only the "ImmersiveColorSet" broadcast carries a
                 // theme/accent change. Without this filter the watcher debounces against any
                 // unrelated settings broadcast, swallowing a follow-up real theme change inside
                 // the 100 ms debounce window.

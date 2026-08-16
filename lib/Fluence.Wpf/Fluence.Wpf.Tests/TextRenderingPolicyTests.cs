@@ -202,7 +202,7 @@ namespace Fluence.Wpf.Tests
                 textBlock.SetTypography(FluentTypography.Title);
 
                 Assert.Same(
-                    application?.TryFindResource("TitleTextBlockStyle"),
+                    application.TryFindResource("TitleTextBlockStyle"),
                     textBlock.Style);
                 Assert.Equal(28d, textBlock.FontSize, 0.01d);
                 Assert.Equal(FontWeights.SemiBold, textBlock.FontWeight);
@@ -240,7 +240,7 @@ namespace Fluence.Wpf.Tests
         {
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            application?.Resources.Clear();
+            application.Resources.Clear();
             ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
         }
 
@@ -251,7 +251,7 @@ namespace Fluence.Wpf.Tests
             FontWeight expectedFontWeight,
             double expectedLineHeight)
         {
-            Style style = Assert.IsType<Style>(application?.TryFindResource(styleKey));
+            Style style = Assert.IsType<Style>(application.TryFindResource(styleKey));
 
             System.Windows.Controls.TextBlock textBlock = new()
             {

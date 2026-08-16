@@ -224,31 +224,30 @@ namespace Fluence.Wpf.Tests
         {
             await RunDemoPageTestAsync(static () => new GalleryDataPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SimpleListView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "RichListView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SimpleListView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "RichListView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox")));
             }).ConfigureAwait(true);
 
             await RunDemoPageTestAsync(static () => new GalleryDataBindingPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "BoundListView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView"));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "BoundListView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView")));
             }).ConfigureAwait(true);
 
             await RunDemoPageTestAsync(static () => new GalleryTreesPage(), static window =>
             {
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"));
-                AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView"));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView")));
+                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView")));
             }).ConfigureAwait(true);
         }
 
-        private static void AssertControlHasThemedBorder(Control? control)
+        private static void AssertControlHasThemedBorder(Control control)
         {
-            Assert.NotNull(control);
             Assert.Equal(new Thickness(1), control.BorderThickness);
             Assert.NotNull(control.BorderBrush);
         }
@@ -296,7 +295,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });

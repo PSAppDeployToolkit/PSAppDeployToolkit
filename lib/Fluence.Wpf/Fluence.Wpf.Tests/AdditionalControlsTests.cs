@@ -233,10 +233,9 @@ namespace Fluence.Wpf.Tests
             return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Controls.ListBox list = new();
-                MethodInfo? m = typeof(Controls.ListBox).GetMethod(
+                MethodInfo m = Assert.IsAssignableFrom<MethodInfo>(typeof(Controls.ListBox).GetMethod(
                     "GetContainerForItemOverride",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.NotNull(m);
+                    BindingFlags.Instance | BindingFlags.NonPublic));
                 object? container = m.Invoke(list, []);
                 _ = Assert.IsAssignableFrom<Controls.ListBoxItem>(container);
             });

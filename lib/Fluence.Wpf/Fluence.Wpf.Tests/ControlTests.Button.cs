@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -79,7 +79,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -155,7 +155,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -208,7 +208,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
@@ -297,11 +297,9 @@ namespace Fluence.Wpf.Tests
             AssertBrushMatchesResource(outerBorder.BorderBrush, borderKey);
         }
 
-        private static void AssertBrushMatchesResource(Brush? actual, string resourceKey)
+        private static void AssertBrushMatchesResource(Brush actual, string resourceKey)
         {
-            object? expected = Application.Current.TryFindResource(resourceKey);
-            Assert.NotNull(actual);
-            _ = Assert.IsAssignableFrom<Brush>(expected);
+            Brush expected = Assert.IsAssignableFrom<Brush>(Application.Current.TryFindResource(resourceKey));
 
             if (actual is SolidColorBrush actualSolid && expected is SolidColorBrush expectedSolid)
             {

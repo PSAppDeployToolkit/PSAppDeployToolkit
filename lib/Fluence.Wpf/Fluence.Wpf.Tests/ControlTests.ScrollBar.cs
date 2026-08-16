@@ -60,10 +60,9 @@ namespace Fluence.Wpf.Tests
             Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(scrollBar, "Root"));
 
             IList groups = VisualStateManager.GetVisualStateGroups(root);
-            VisualState state = Assert.IsType<VisualState>(groups.Cast<VisualStateGroup>().SelectMany(group => group.States.Cast<VisualState>()).FirstOrDefault(candidate => string.Equals(candidate.Name, stateName, StringComparison.Ordinal)));
-            Assert.NotNull(state.Storyboard);
+            Storyboard storyboard = Assert.IsAssignableFrom<Storyboard>(groups.Cast<VisualStateGroup>().SelectMany(group => group.States.Cast<VisualState>()).FirstOrDefault(candidate => string.Equals(candidate.Name, stateName, StringComparison.Ordinal))?.Storyboard);
 
-            foreach (Timeline timeline in state.Storyboard.Children)
+            foreach (Timeline timeline in storyboard.Children)
             {
                 if (timeline is not DoubleAnimationUsingKeyFrames animation ||
                     !string.Equals(Storyboard.GetTargetName(animation), targetName, StringComparison.Ordinal) ||

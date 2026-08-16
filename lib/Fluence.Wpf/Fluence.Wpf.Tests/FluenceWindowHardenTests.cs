@@ -75,10 +75,10 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task SystemBackdropType_CanSetAllValuesAsync()
+        public Task SystemBackdropType_CanSetAllValuesAsync()
         {
             // Verifies that the DP accepts all four BackdropType values without throwing.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -92,7 +92,7 @@ namespace Fluence.Wpf.Tests
                     }
                 }
                 finally { w.Close(); }
-            }).ConfigureAwait(true);
+            });
         }
 
         // ---------------------------------------------------------------------------
@@ -131,19 +131,19 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task ThemeCycle_HighContrast_SystemFillColorCriticalBrush_ResolvesAsync()
+        public Task ThemeCycle_HighContrast_SystemFillColorCriticalBrush_ResolvesAsync()
         {
             // HC theme maps SystemFillColorCriticalBrush to WindowTextColorKey (white on black).
             // Caption close-button chrome uses its own DynamicResource tokens; this guard keeps the
             // general critical brush available for controls that intentionally consume it.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(ApplicationTheme.Light, app);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
                 object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SystemFillColorCriticalBrush"));
-            }).ConfigureAwait(true);
+            });
         }
 
         // ---------------------------------------------------------------------------
@@ -172,12 +172,12 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public async Task FluenceWindowCloseButtonThemeTokens_AreThemeIndependentAndResolveAsync()
+        public Task FluenceWindowCloseButtonThemeTokens_AreThemeIndependentAndResolveAsync()
         {
             // The three Windows close-button Color tokens are theme-independent - the Windows shell
             // uses the same red across Light, Dark, and HighContrast - so they are seeded in code by
             // BaseColorTables, not duplicated across per-theme XAML. BrushFactory emits the *Brush twins.
-            await WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -185,7 +185,7 @@ namespace Fluence.Wpf.Tests
                 AssertCloseButtonBrush(app, "WindowCloseButtonBackgroundPointerOverBrush", Color.FromArgb(0xFF, 0xC4, 0x2B, 0x1C));
                 AssertCloseButtonBrush(app, "WindowCloseButtonBackgroundPressedBrush", Color.FromArgb(0xFF, 0xB4, 0x27, 0x1C));
                 AssertCloseButtonBrush(app, "WindowCloseButtonForegroundPointerOverBrush", Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
-            }).ConfigureAwait(true);
+            });
         }
 
         private static void AssertCloseButtonBrush(Application app, string key, Color expected)
@@ -426,21 +426,20 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
-                    System.Windows.Interop.HwndSource source = Assert.IsAssignableFrom<System.Windows.Interop.HwndSource>(System.Windows.Interop.HwndSource.FromHwnd(handle));
-                    Assert.NotNull(source!.CompositionTarget);
+                    System.Windows.Interop.HwndTarget sourceCompositionTarget = Assert.IsAssignableFrom<System.Windows.Interop.HwndTarget>(System.Windows.Interop.HwndSource.FromHwnd(handle)?.CompositionTarget);
 
                     // The fix: the HWND redirection surface (HwndTarget.BackgroundColor) must be
                     // cleared to the same color WPF paints its content background, so no opaque
                     // black surface is exposed before the DWM backdrop composites.
                     Color content = ((SolidColorBrush)w.Background).Color;
-                    Assert.Equal(content, source.CompositionTarget.BackgroundColor);
+                    Assert.Equal(content, sourceCompositionTarget.BackgroundColor);
 
                     // Swapping to None re-runs ApplyBackdrop; both layers must move together to the
                     // opaque theme fallback so the invariant holds across runtime backdrop changes.
                     w.SystemBackdropType = BackdropType.None;
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                     Color contentNone = ((SolidColorBrush)w.Background).Color;
-                    Assert.Equal(contentNone, source.CompositionTarget.BackgroundColor);
+                    Assert.Equal(contentNone, sourceCompositionTarget.BackgroundColor);
                 }
                 finally
                 {

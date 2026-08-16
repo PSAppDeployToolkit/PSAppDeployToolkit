@@ -327,8 +327,8 @@ namespace Fluence.Wpf.Tests
                         "ShowAt should open the flyout popup before placement mapping is verified.");
 
                     Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    CustomPopupPlacementCallback? callback = Assert.IsType<CustomPopupPlacementCallback>(popup.CustomPopupPlacementCallback);
                     Assert.Equal(PlacementMode.Custom, popup.Placement);
-                    Assert.NotNull(popup.CustomPopupPlacementCallback);
 
                     // The popup side mapping that feeds the callback.
                     Assert.Equal(PlacementMode.Top, Controls.FlyoutBase.MapPlacementSide(FlyoutPlacementMode.Top));
@@ -342,11 +342,11 @@ namespace Fluence.Wpf.Tests
                     // default Top placement centers the popup horizontally above the target.
                     Size popupSize = new(100, 40);
                     Size targetSize = new(60, 20);
-                    CustomPopupPlacement[] topPlacements = popup.CustomPopupPlacementCallback(popupSize, targetSize, default);
+                    CustomPopupPlacement[] topPlacements = callback(popupSize, targetSize, default);
                     Assert.Equal(new Point(-20, -40), topPlacements[0].Point);
 
                     flyout.Placement = FlyoutPlacementMode.Bottom;
-                    CustomPopupPlacement[] bottomPlacements = popup.CustomPopupPlacementCallback(popupSize, targetSize, default);
+                    CustomPopupPlacement[] bottomPlacements = callback(popupSize, targetSize, default);
                     Assert.Equal(new Point(-20, 20), bottomPlacements[0].Point);
                 }
                 finally

@@ -250,13 +250,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path? arc = FindVisualChildByName<Path>(ring, "PART_DeterminateArc");
-                Assert.NotNull(arc?.Data);
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
+                Assert.NotNull(arc.Data);
 
                 ring.IsIndeterminate = true;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Assert.Null(arc?.Data);
+                Assert.Null(arc.Data);
 
                 w.Close();
             });
@@ -372,14 +372,14 @@ namespace Fluence.Wpf.Tests
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCautionBrush"));
 
-                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, expected);
 
                 ring.IsIndeterminate = false;
                 ring.Value = 50;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path? determinateArc = FindVisualChildByName<Path>(ring, "PART_DeterminateArc");
+                Path determinateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
                 AssertPathStroke(determinateArc, expected);
 
                 w.Close();
@@ -453,10 +453,10 @@ namespace Fluence.Wpf.Tests
                 // turns) per 2 second cycle with no easing.
                 Assert.Equal(TimeSpan.FromMilliseconds(2000), rotation.Duration.TimeSpan);
                 Assert.Equal(RepeatBehavior.Forever, rotation.RepeatBehavior);
-                _ = Assert.NotNull(rotation.From);
-                Assert.Equal(90.0, rotation.From.Value, 0.001);
-                _ = Assert.NotNull(rotation.To);
-                Assert.Equal(1170.0, rotation.To.Value, 0.001);
+                double rotationFrom = Assert.IsType<double>(rotation.From);
+                Assert.Equal(90.0, rotationFrom, 0.001);
+                double rotationTo = Assert.IsType<double>(rotation.To);
+                Assert.Equal(1170.0, rotationTo, 0.001);
                 Assert.Null(rotation.EasingFunction);
             });
         }
@@ -530,13 +530,13 @@ namespace Fluence.Wpf.Tests
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCriticalBrush"));
 
-                Path? determinateArc = FindVisualChildByName<Path>(ring, "PART_DeterminateArc");
+                Path determinateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
                 AssertPathStroke(determinateArc, expected);
 
                 ring.IsIndeterminate = true;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, expected);
 
                 w.Close();
@@ -571,7 +571,7 @@ namespace Fluence.Wpf.Tests
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCriticalBrush"));
 
-                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, expected);
 
                 RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
@@ -582,7 +582,7 @@ namespace Fluence.Wpf.Tests
                 ring.Value = 50;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path? determinateArc = FindVisualChildByName<Path>(ring, "PART_DeterminateArc");
+                Path determinateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
                 AssertPathStroke(determinateArc, expected);
 
                 w.Close();
@@ -613,9 +613,9 @@ namespace Fluence.Wpf.Tests
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCautionBrush"));
 
-                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, expected);
-                Assert.NotNull(indeterminateArc?.Data);
+                Assert.NotNull(indeterminateArc.Data);
 
                 double sweepFraction = GetPrivateDoubleDependencyPropertyValue(ring, "IndeterminateSweepFractionProperty");
                 Assert.Equal(0.5, sweepFraction, 0.001);
@@ -699,7 +699,7 @@ namespace Fluence.Wpf.Tests
                 Assert.False(ring.ShowPaused, "ProgressState=Error must clear ShowPaused.");
 
                 SolidColorBrush critical = Assert.IsType<SolidColorBrush>(app.TryFindResource("SystemFillColorCriticalBrush"));
-                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, critical);
 
                 ring.ProgressState = ProgressRingState.Paused;
@@ -764,9 +764,8 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        private static void AssertPathStroke(Path? path, SolidColorBrush expected)
+        private static void AssertPathStroke(Path path, SolidColorBrush expected)
         {
-            Assert.NotNull(path);
             SolidColorBrush actual = Assert.IsType<SolidColorBrush>(path.Stroke);
             Assert.Equal(expected.Color, actual.Color);
         }

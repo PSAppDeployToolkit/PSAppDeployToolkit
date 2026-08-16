@@ -40,12 +40,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Fluence.Wpf.Native
 {
-    // SYSLIB1054 asks for [LibraryImport] source generation, but this assembly multi-targets
-    // net472 (where the source generator is unavailable) and net10, and the two TFMs must expose
-    // an identical interop surface. Classic [DllImport] is the only declaration form that compiles
-    // on both, so the analyzer is suppressed for this single interop file. This is the documented
-    // "exceptional third-party interop" carve-out; no other file may use an inline pragma.
-#pragma warning disable SYSLIB1054
     /// <summary>
     /// The native interop surface for <see cref="Controls.FluenceWindow"/> and its
     /// policy/capability helpers: DWM backdrop and frame attributes, UxTheme caption suppression,
@@ -56,8 +50,6 @@ namespace Fluence.Wpf.Native
     internal static class NativeMethods
     {
         private const string UxTheme = "uxtheme.dll";
-
-        private const int WS_SYSMENU = 0x80000;
 
         #region P/Invoke declarations
 
@@ -318,7 +310,7 @@ namespace Fluence.Wpf.Native
         /// <returns><see langword="true"/> on success.</returns>
         public static bool RoundWindowCorner(IntPtr hwnd)
         {
-            return SetWindowAttribute(hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, (int)DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
+            return SetWindowAttribute(hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, (uint)DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
         }
 
         #endregion DWM attribute helpers
@@ -332,8 +324,8 @@ namespace Fluence.Wpf.Native
         /// <param name="hwnd">The target window handle.</param>
         public static void HideAllWindowButtons(IntPtr hwnd)
         {
-            int style = PInvoke.GetWindowLong((HWND)hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
-            _ = PInvoke.SetWindowLong((HWND)hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, style & ~WS_SYSMENU);
+            WINDOW_STYLE style = (WINDOW_STYLE)PInvoke.GetWindowLong((HWND)hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+            _ = PInvoke.SetWindowLong((HWND)hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)(style & ~WINDOW_STYLE.WS_SYSMENU));
         }
 
         /// <summary>
@@ -469,5 +461,4 @@ namespace Fluence.Wpf.Native
 
         #endregion OS version and taskbar helpers
     }
-#pragma warning restore SYSLIB1054
 }

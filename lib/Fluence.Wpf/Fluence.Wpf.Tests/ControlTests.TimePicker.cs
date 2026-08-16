@@ -588,16 +588,16 @@ namespace Fluence.Wpf.Tests
                     ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
                     ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Assert.NotNull(popup.Child);
+                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
 
-                    Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(popup.Child));
+                    Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(popupChild));
 
                     RaiseButtonClick(flyoutButton);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "Clicking the field must open the selector flyout.");
 
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () =>
-                            popup.Child is Visual root
+                            popupChild is Visual root
                             && Keyboard.FocusedElement is Visual focused
                             && focused.IsDescendantOf(root)).ConfigureAwait(true),
                         "Opening the flyout must move keyboard focus inside the popup.");
@@ -640,7 +640,7 @@ namespace Fluence.Wpf.Tests
                     RaiseButtonClick(flyoutButton);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The selector flyout must open before the Escape scenario.");
-                    Assert.NotNull(popup.Child);
+                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
 
                     bool raised = false;
                     picker.SelectedTimeChanged += (_, _) => raised = true;
@@ -649,7 +649,7 @@ namespace Fluence.Wpf.Tests
                     minuteList.SelectedIndex = 45;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    RaiseKeyEvent(popup.Child, Key.Escape, UIElement.PreviewKeyDownEvent);
+                    RaiseKeyEvent(popupChild, Key.Escape, UIElement.PreviewKeyDownEvent);
 
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true),
                         "Escape must close the selector flyout.");
@@ -694,14 +694,14 @@ namespace Fluence.Wpf.Tests
                     RaiseButtonClick(flyoutButton);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The selector flyout must open before the Enter scenario.");
-                    Assert.NotNull(popup.Child);
+                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
 
                     hourList.SelectedIndex = 11;
                     minuteList.SelectedIndex = 30;
                     periodList.SelectedIndex = 1;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    RaiseKeyEvent(popup.Child, Key.Enter, UIElement.PreviewKeyDownEvent);
+                    RaiseKeyEvent(popupChild, Key.Enter, UIElement.PreviewKeyDownEvent);
 
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true),
                         "Enter must close the selector flyout.");

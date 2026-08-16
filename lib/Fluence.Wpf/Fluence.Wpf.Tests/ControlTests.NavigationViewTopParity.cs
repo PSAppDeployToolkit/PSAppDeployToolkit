@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -126,7 +126,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -200,7 +200,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -261,14 +261,13 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.StackPanel footer = Assert.IsType<System.Windows.Controls.StackPanel>(nav.PaneFooter);
                     Assert.True(GetNavigationElementRight(overflowButton, nav) <= GetNavigationElementX(footer, nav) + 0.5,
                         "Top pane overflow button should appear before the right-docked PaneFooter instead of docking to the strip edge.");
-                    Assert.NotNull(overflowButton.ContextMenu);
-                    Assert.True(overflowButton.ContextMenu.Items.Count > 0,
+                    System.Windows.Controls.ContextMenu overflowButtonContextMenu = Assert.IsAssignableFrom<System.Windows.Controls.ContextMenu>(overflowButton.ContextMenu);
+                    Assert.True(overflowButtonContextMenu.Items.Count > 0,
                         "Top pane overflow menu should contain hidden navigation items.");
 
-                    Controls.MenuItem overflowItem = Assert.IsType<Controls.MenuItem>(overflowButton.ContextMenu.Items[^1]);
+                    Controls.MenuItem overflowItem = Assert.IsType<Controls.MenuItem>(overflowButtonContextMenu.Items[^1]);
                     Assert.Equal(280.0, overflowItem.MinWidth, 0.01);
                     Assert.Equal(44.0, overflowItem.MinHeight, 0.01);
-                    Assert.NotNull(overflowItem.Icon);
                     FontIcon overflowIcon = Assert.IsType<FontIcon>(overflowItem.Icon);
                     Assert.Equal(16.0, overflowIcon.IconFontSize, 0.01);
                     Assert.Equal("Diagnostics", overflowItem.Header);
@@ -283,7 +282,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -331,9 +330,9 @@ namespace Fluence.Wpf.Tests
                         "The overflow button should be laid out after the last visible item without overlapping it. "
                         + "overflowLeft=" + overflowLeft.ToString(format: null, CultureInfo.InvariantCulture) + ", secondRight=" + secondRight.ToString(format: null, CultureInfo.InvariantCulture) + ".");
 
-                    Assert.NotNull(overflowButton.ContextMenu);
-                    _ = Assert.Single(overflowButton.ContextMenu.Items);
-                    Controls.MenuItem? firstOverflowItem = overflowButton.ContextMenu.Items[0] as Controls.MenuItem;
+                    System.Windows.Controls.ContextMenu overflowButtonContextMenu = Assert.IsAssignableFrom<System.Windows.Controls.ContextMenu>(overflowButton.ContextMenu);
+                    _ = Assert.Single(overflowButtonContextMenu.Items);
+                    Controls.MenuItem? firstOverflowItem = overflowButtonContextMenu.Items[0] as Controls.MenuItem;
                     Assert.Equal("Three", firstOverflowItem?.Header);
                 }
                 finally
@@ -341,7 +340,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });
@@ -402,7 +401,7 @@ namespace Fluence.Wpf.Tests
                     CloseWindowAndDrain(window);
                     if (genericDictionary is not null)
                     {
-                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                        _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
                     }
                 }
             });

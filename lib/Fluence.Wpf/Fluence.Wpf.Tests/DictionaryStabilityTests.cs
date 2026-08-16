@@ -201,13 +201,11 @@ namespace Fluence.Wpf.Tests
                 Assert.Null(dictionaries[0].Source);
                 Assert.True(dictionaries[0].Count > 0, "Computed slot [0] should hold resolved entries.");
 
-                Uri typographySource = dictionaries[1].Source;
-                Assert.NotNull(typographySource);
+                Uri typographySource = Assert.IsType<Uri>(dictionaries[1].Source);
                 Assert.True(typographySource.OriginalString.Contains("Typography", StringComparison.OrdinalIgnoreCase),
                     "Slot [1] Source should be Typography.xaml, but was " + typographySource.OriginalString);
 
-                Uri genericSource = dictionaries[2].Source;
-                Assert.NotNull(genericSource);
+                Uri genericSource = Assert.IsType<Uri>(dictionaries[2].Source);
                 Assert.True(genericSource.OriginalString.Contains("Generic", StringComparison.OrdinalIgnoreCase),
                     "Slot [2] Source should be Generic.xaml, but was " + genericSource.OriginalString);
             });

@@ -516,9 +516,7 @@ namespace Fluence.Wpf.Tests
                 Assert.True(leftIcons.TrueForAll(static icon => Math.Abs(icon.IconFontSize - 16d) < 0.1),
                     "NavigationView item icons should align with the compact pane glyph size.");
 
-                Controls.NavigationView? badgeNavigation = FindVisualChildren<Controls.NavigationView>(window)
-                    .FirstOrDefault(static nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal));
-                Assert.NotNull(badgeNavigation);
+                Controls.NavigationView badgeNavigation = Assert.IsAssignableFrom<Controls.NavigationView>(FindVisualChildren<Controls.NavigationView>(window).FirstOrDefault(static nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal)));
                 Assert.Equal(NavigationViewPaneDisplayMode.Left, badgeNavigation.PaneDisplayMode);
                 Assert.True(badgeNavigation.IsPaneOpen,
                     "InfoBadge NavigationView sample should keep the pane open.");
@@ -588,9 +586,8 @@ namespace Fluence.Wpf.Tests
             return double.IsNaN(item.Width) ? item.MinWidth : item.Width;
         }
 
-        private static void AssertBrushIsTransparent(Brush? brush)
+        private static void AssertBrushIsTransparent(Brush brush)
         {
-            Assert.NotNull(brush);
             if (brush is SolidColorBrush solid)
             {
                 Assert.Equal(0, solid.Color.A);
