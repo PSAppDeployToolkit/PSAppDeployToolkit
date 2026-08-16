@@ -258,6 +258,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e">An object containing event data, including the updated list of processes to close.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD001:Avoid legacy thread switching APIs", Justification = "Standalone WPF STA thread; JoinableTaskFactory not applicable.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "This method is not awaitable.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is necessary here.")]
         private async void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
@@ -323,6 +324,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the collection that was modified.</param>
         /// <param name="e">An object that provides data about the type of change that occurred in the collection.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "This method is not awaitable.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
         private async void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {

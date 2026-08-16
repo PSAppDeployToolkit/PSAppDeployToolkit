@@ -71,6 +71,7 @@ dotnet_diagnostic.RCS1223.severity = none
 dotnet_diagnostic.RCS1231.severity = none
 dotnet_diagnostic.RCS1238.severity = none
 dotnet_diagnostic.RCS1242.severity = none
+dotnet_diagnostic.MA0214.severity = none
 
 # Report collection expressions ([]) for C#14 and lower
 # C# preview reports those diagnostics by default
