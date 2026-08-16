@@ -6,6 +6,23 @@
 
 function Invoke-ADTDotNetCompilation
 {
+    # Internal filter for processing dotnet.exe output.
+    filter Write-ADTDotNetOutputBuildLogEntry
+    {
+        if ([System.String]::IsNullOrWhiteSpace(($message = ($_ -replace '^\s+', "> ").Trim())))
+        {
+            return
+        }
+        if ($_ -match ': error ')
+        {
+            Write-ADTBuildLogEntry -Message $message -ForegroundColor DarkRed
+        }
+        else
+        {
+            Write-ADTBuildLogEntry -Message $message
+        }
+    }
+
     # Initialise the module build function.
     Initialize-ADTModuleBuildFunction
     $testFileChanges = $true
@@ -108,28 +125,17 @@ function Invoke-ADTDotNetCompilation
             # Build the module configs we've determined we require.
             foreach ($buildType in ($buildConfigs | Select-Object -Unique))
             {
-                # We use dotnet msbuild here as it has better reproducibility and allows us to do compilation and unit tests all in one operation.
+                # We use dotnet msbuild here as it best matches the build process used by Visual Studio which is our IDE of choice.
                 Write-ADTBuildLogEntry -Message "Building [$($buildItem.SolutionPath)] solution in [$buildType] mode, please wait..."
-                & $dotnet msbuild $buildItem.SolutionPath -target:"Rebuild,VSTest" -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m | & {
-                    process
-                    {
-                        if ([System.String]::IsNullOrWhiteSpace(($message = ($_ -replace '^\s+', "> ").Trim())))
-                        {
-                            return
-                        }
-                        if ($_ -match ': error ')
-                        {
-                            Write-ADTBuildLogEntry -Message $message -ForegroundColor DarkRed
-                        }
-                        else
-                        {
-                            Write-ADTBuildLogEntry -Message $message
-                        }
-                    }
-                }
+                & $dotnet msbuild $buildItem.SolutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m | Write-ADTDotNetOutputBuildLogEntry
                 if ($Global:LASTEXITCODE)
                 {
                     throw "Failed to build solution [$($buildItem.SolutionPath -replace '^.+\\')] with exit code [$Global:LASTEXITCODE]."
+                }
+                & $dotnet test --solution $buildItem.SolutionPath --configuration $buildType --no-build --no-restore | Write-ADTDotNetOutputBuildLogEntry
+                if ($Global:LASTEXITCODE)
+                {
+                    throw "Unit testing solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
                 }
 
                 # Run any publish actions if present.
