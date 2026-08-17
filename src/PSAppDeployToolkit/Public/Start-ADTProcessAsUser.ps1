@@ -16,7 +16,7 @@ function Start-ADTProcessAsUser
     .PARAMETER FilePath
         Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
-        Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the `$($adtSession.DirFiles)` variable, as shown in the example.
+        Otherwise, the full path of the file must be specified. If the file is in a subdirectory of "Files", use the `$($adtSession.DirFiles)` variable, as shown in the example.
 
     .PARAMETER ArgumentList
         Arguments to be passed to the executable.
@@ -50,7 +50,7 @@ function Start-ADTProcessAsUser
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. `$true` if the shell should be used when starting the process; `$false` if the process should be created directly from the executable file.
 
-        The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents. It lets you open a file or a url and the Shell will figure out the program to open it with.
+        The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents. It lets you open a file or a URL and the Shell will figure out the program to open it with.
 
         The `-WorkingDirectory` parameter behaves differently depending on the value of the `-UseShellExecute` parameter. When `-UseShellExecute` is `$true`, the `-WorkingDirectory` parameter specifies the location of the executable. When `-UseShellExecute` is `$false`, the `-WorkingDirectory` parameter is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
 

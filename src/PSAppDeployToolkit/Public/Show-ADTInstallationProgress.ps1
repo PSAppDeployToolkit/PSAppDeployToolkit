@@ -31,7 +31,7 @@ function Show-ADTInstallationProgress
         The location of the dialog on the screen.
 
     .PARAMETER NotTopMost
-        Specifies whether the progress window shouldn't be topmost.
+        Specifies that the progress window will not be displayed as the topmost window.
 
     .PARAMETER AllowMove
         Specifies that the user can move the dialog on the screen.
