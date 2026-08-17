@@ -43,7 +43,7 @@ function Invoke-ADTDotNetCompilation
 
         # Confirm whether we've got a Git client present and whether we're in a repository or not.
         Write-ADTBuildLogEntry -Message "Locating Git on this system to determine whether debug DLLs require compilation."
-        if ($testFileChanges -and ($null -eq ($git = Get-Command -Name git -ErrorAction Ignore)) -or ($git.Source -notmatch '\\git\.exe$'))
+        if ($testFileChanges -and (($null -eq ($git = Get-Command -Name git -ErrorAction Ignore)) -or ($git.Source -notmatch '\\git\.exe$')))
         {
             Write-ADTBuildLogEntry -Message "Unable to locate git.exe on this system, compiling C# project sources unconditionally." -ForegroundColor Yellow
             $testFileChanges = $false
@@ -65,7 +65,7 @@ function Invoke-ADTDotNetCompilation
         # Process each build item.
         foreach ($buildItem in $Script:ModuleConstants.DotNetBuildItems)
         {
-            # Only build a debug version if there's changed to the C# files since the last DLL commit.
+            # Only build a debug version if there are changes to the C# files since the last DLL commit.
             $buildConfigs = [System.Collections.Generic.List[System.String]]'Release'
             if ($testFileChanges)
             {
