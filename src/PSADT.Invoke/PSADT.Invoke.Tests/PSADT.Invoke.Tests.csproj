@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.160">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageReference Include="xunit.v3" Version="4.0.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
@@ -17,6 +21,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.IO.Path.Join|
+    </MeziantouPolyfill_IncludedPolyfills>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PSADT.Invoke\PSADT.Invoke.csproj" />

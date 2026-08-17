@@ -105,9 +105,9 @@ namespace PSADT.Invoke.Tests
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
             foreach (string sourceFilePath in Directory.EnumerateFiles(sourceDirectoryPath, sourceFileNameWithoutExtension + ".*"))
             {
-                File.Copy(sourceFilePath, Path.Combine(directoryPath, Path.GetFileName(sourceFilePath)));
+                File.Copy(sourceFilePath, Path.Join(directoryPath, Path.GetFileName(sourceFilePath)));
             }
-            return Path.Combine(directoryPath, InvokerFileName);
+            return Path.Join(directoryPath, InvokerFileName);
         }
 
         private static string GetExitScript(int exitCode)
@@ -117,7 +117,7 @@ namespace PSADT.Invoke.Tests
 
         private static string GetInvokerPath()
         {
-            string outputPath = Path.Combine(AppContext.BaseDirectory, InvokerFileName);
+            string outputPath = Path.Join(AppContext.BaseDirectory, InvokerFileName);
             if (File.Exists(outputPath))
             {
                 return outputPath;
@@ -125,7 +125,7 @@ namespace PSADT.Invoke.Tests
 
             DirectoryInfo baseDirectory = new(AppContext.BaseDirectory);
             string configuration = baseDirectory.Parent?.Name ?? "Debug";
-            string projectOutputPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "PSADT.Invoke", "bin", configuration, "net472", InvokerFileName));
+            string projectOutputPath = Path.GetFullPath(Path.Join(AppContext.BaseDirectory, "..", "..", "..", "PSADT.Invoke", "bin", configuration, "net472", InvokerFileName));
             return File.Exists(projectOutputPath)
                 ? projectOutputPath
                 : throw new FileNotFoundException("Unable to find the launcher executable in the test output directory.", outputPath);
@@ -134,8 +134,8 @@ namespace PSADT.Invoke.Tests
         private static string GetScriptPath(string directoryPath, string invocationMode)
         {
             return invocationMode.Equals(DefaultMode, StringComparison.Ordinal)
-                ? Path.Combine(directoryPath, "Invoke-AppDeployToolkit.ps1")
-                : Path.Combine(directoryPath, "Exit With Code.ps1");
+                ? Path.Join(directoryPath, "Invoke-AppDeployToolkit.ps1")
+                : Path.Join(directoryPath, "Exit With Code.ps1");
         }
 
         private static bool IsPowerShellCoreAvailable()
