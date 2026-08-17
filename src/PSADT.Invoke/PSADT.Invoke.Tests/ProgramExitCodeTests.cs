@@ -177,7 +177,7 @@ namespace PSADT.Invoke.Tests
 
             internal static TemporaryDirectory Create()
             {
-                string directoryPath = Path.Combine(Path.GetTempPath(), "PSADT.Invoke.Tests", Guid.NewGuid().ToString("N"));
+                string directoryPath = Path.Join(Path.GetTempPath(), "PSADT.Invoke.Tests", Guid.NewGuid().ToString("N"));
                 _ = Directory.CreateDirectory(directoryPath);
                 return new(directoryPath);
             }
