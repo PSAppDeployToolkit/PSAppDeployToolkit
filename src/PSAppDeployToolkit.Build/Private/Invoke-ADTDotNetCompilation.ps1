@@ -145,6 +145,10 @@ function Invoke-ADTDotNetCompilation
                     {
                         Write-ADTBuildLogEntry -Message "Running publish action for [$([System.IO.Path]::GetFileName($publishItem.Key))], please wait..."
                         $null = & $dotnet publish $publishItem.Key -r win-x64  # The RID doesn't matter here, it's all IL but we need to specify it.
+                        if ($Global:LASTEXITCODE)
+                        {
+                            throw "Publishing item [$($publishItem.Key -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
+                        }
                     }
                 }
 
