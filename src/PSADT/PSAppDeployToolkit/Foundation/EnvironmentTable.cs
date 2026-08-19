@@ -94,7 +94,6 @@ namespace PSAppDeployToolkit.Foundation
                     try
                     {
                         EnvLogonServer = Dns.GetHostEntry(logonServer).HostName;
-
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {

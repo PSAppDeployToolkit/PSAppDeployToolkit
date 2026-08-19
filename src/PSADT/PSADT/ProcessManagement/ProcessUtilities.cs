@@ -360,7 +360,7 @@ namespace PSADT.ProcessManagement
                 // Attempt to get the ImageName via a kernel API first as it's reliable for native processes.
                 return QuerySystemProcessIdInformationImageName(processId, ntPathLookupTable);
             }
-            catch (Exception ex1) when (ex1.Message is not null)
+            catch (Exception ex1)
             {
                 // The kernel API call failed. This can occur when the caller is a 32-bit process on a 64-bit system, etc.
                 // Open a handle to the target process. If this fails, something is seriously wrong and we cannot continue.
@@ -369,7 +369,7 @@ namespace PSADT.ProcessManagement
                 {
                     hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, processId);
                 }
-                catch (Exception ex2) when (ex2.Message is not null)
+                catch (Exception ex2)
                 {
                     throw new AggregateException($"Failed to open process ID [{processId}] for querying the image name after the kernel API call failed.", ex1, ex2);
                 }
@@ -382,7 +382,7 @@ namespace PSADT.ProcessManagement
                         // QueryFullProcessImageName is the standard API for this purpose.
                         return QueryFullProcessImageName(hProcess);
                     }
-                    catch (Exception ex3) when (ex3.Message is not null)
+                    catch (Exception ex3)
                     {
                         // That failed. Fall back to the Windows XP-era API.
                         try
@@ -390,7 +390,7 @@ namespace PSADT.ProcessManagement
                             // Unlike the above, this provides the path in NT device format.
                             return GetProcessImageFileName(hProcess, ntPathLookupTable);
                         }
-                        catch (Exception ex4) when (ex4.Message is not null)
+                        catch (Exception ex4)
                         {
                             // That failed too. Go back down to the kernel API level and see how we go.
                             try
@@ -398,7 +398,7 @@ namespace PSADT.ProcessManagement
                                 // This leverages the documented ProcessImageFileNameWin32 info class.
                                 return QueryProcessImageFileNameWin32(hProcess);
                             }
-                            catch (Exception ex5) when (ex5.Message is not null)
+                            catch (Exception ex5)
                             {
                                 // The Win32 API call failed. Try the NT API directly as the last resort.
                                 try
@@ -406,14 +406,19 @@ namespace PSADT.ProcessManagement
                                     // The NT device path will get translated internally for us.
                                     return QueryProcessImageFileName(hProcess, ntPathLookupTable);
                                 }
-                                catch (Exception ex6) when (ex6.Message is not null)
+                                catch (Exception ex6)
                                 {
                                     throw new AggregateException($"Failed to retrieve the process image name for process ID [{processId}] via all available methods.", ex1, ex3, ex4, ex5, ex6);
                                 }
+                                throw;
                             }
+                            throw;
                         }
+                        throw;
                     }
+                    throw;
                 }
+                throw;
             }
         }
 
