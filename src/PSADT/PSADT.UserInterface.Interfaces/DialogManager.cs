@@ -77,13 +77,14 @@ namespace PSADT.UserInterface.Interfaces
                     };
                     _ = app.Run();
                 }
-                catch (Exception exception) when (exception.Message is not null)
+                catch (Exception exception)
                 {
                     // We capture the error for later rethrowing so that we can ensure the dispatcher is signaled to avoid deadlocks.
                     appThreadException = exception;
                     if (!dispatcherRunning.Set())
                     {
                         Environment.FailFast($"Failed to initialize WPF application and failed to signal dispatcher.{Environment.NewLine}Exception Info: {exception}", exception);
+                        throw;
                     }
                 }
             });
