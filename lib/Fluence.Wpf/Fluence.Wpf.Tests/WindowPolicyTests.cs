@@ -212,9 +212,7 @@ namespace Fluence.Wpf.Tests
                 "None must paint a solid background - transparency would reveal the glass frame.");
             Assert.Equal(fallback, plan.BackgroundColor);
             Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.CaptionColor);
-            Assert.True(plan.SystemBackdropType is not null,
-                "On 22H2 DWM exposes DWMWA_SYSTEMBACKDROP_TYPE - None must emit DWMSBT_NONE to explicitly clear Mica/Acrylic.");
-            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE, plan.SystemBackdropType.Value);
+            Assert.Equal((DWM_SYSTEMBACKDROP_TYPE?)DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE, plan.SystemBackdropType);
             Assert.False(plan.UseLegacyMicaEffect);
         }
 
@@ -266,8 +264,7 @@ namespace Fluence.Wpf.Tests
 
             Assert.Equal(BackdropType.Mica, plan.EffectiveBackdrop);
             Assert.True(plan.UseTransparentBackground);
-            Assert.True(plan.SystemBackdropType is not null);
-            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW, plan.SystemBackdropType.Value);
+            Assert.Equal(DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW, plan.SystemBackdropType);
             Assert.False(plan.UseLegacyMicaEffect,
                 "22H2 must use the canonical DWMWA_SYSTEMBACKDROP_TYPE path, not the legacy Mica attribute.");
         }
