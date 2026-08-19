@@ -1179,7 +1179,7 @@ namespace PSAppDeployToolkit.Foundation
         /// manipulate files.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
-        public IReadOnlyList<char> InvalidFileNameChars => new ReadOnlyCollection<char>(_invalidFileNameChars);
+        public IReadOnlyList<char> InvalidFileNameChars => _invalidFileNameCharsReadOnly;
 
         /// <summary>
         /// Gets the regular expression pattern used to identify invalid characters in file names.
@@ -1219,6 +1219,11 @@ namespace PSAppDeployToolkit.Foundation
         /// by the underlying operating system. It can be used to validate or sanitize file names to ensure
         /// compatibility across different environments.</remarks>
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+        /// <summary>
+        /// Gets a read-only collection of characters that are invalid in file names.
+        /// </summary>
+        private static readonly ReadOnlyCollection<char> _invalidFileNameCharsReadOnly = new(_invalidFileNameChars);
 
         /// <summary>
         /// Represents a compiled regular expression that matches any character considered invalid in a file name.
