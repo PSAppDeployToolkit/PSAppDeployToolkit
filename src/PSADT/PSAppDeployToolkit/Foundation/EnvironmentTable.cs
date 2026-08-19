@@ -502,7 +502,7 @@ namespace PSAppDeployToolkit.Foundation
         public DirectoryInfo? EnvUserProfile { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.UserProfile);
 
         /// <summary>
-        /// Gets the email address to which user notifications are sent.
+        /// Gets the full path to the current user's SendTo folder.
         /// </summary>
         public DirectoryInfo? EnvUserSendTo { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.SendTo);
 
