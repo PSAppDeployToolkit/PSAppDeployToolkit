@@ -1155,8 +1155,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the type of hardware used in the current environment.
         /// </summary>
-        /// <remarks>This property provides information about the hardware configuration, which can be
-        /// useful for diagnostics and performance tuning.</remarks>
+        /// <remarks>This property provides information about the hardware configuration, which can be useful
+        /// for diagnostics and performance tuning. Note that "VRTUAL" is the correct spelling.</remarks>
         private static readonly string _envHardwareType = HardwareInfo.SystemInformation.Version?.Contains("VRTUAL", StringComparison.Ordinal) is true || (HardwareInfo.SystemInformation.Manufacturer?.Contains("Microsoft", StringComparison.Ordinal) is true && HardwareInfo.SystemInformation.ProductName?.Contains("Surface", StringComparison.Ordinal) is not true)
             ? "Virtual:Hyper-V"
             : HardwareInfo.SystemInformation.Version?.Contains("A M I", StringComparison.Ordinal) is true
