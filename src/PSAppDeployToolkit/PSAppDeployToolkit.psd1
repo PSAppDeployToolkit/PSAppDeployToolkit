@@ -248,7 +248,7 @@
             ReleaseNotes = 'https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases/latest'
 
             # Prerelease tag for PSGallery.
-            Prerelease = 'alpha1'
+            Prerelease = 'rc1'
 
         } # End of PSData hashtable
 
