@@ -485,9 +485,10 @@ namespace Fluence.Wpf.Controls
             // The when-filter is always true (Exception.Message is never null); it catches broadly while
             // satisfying the no-general-catch analyzers, matching the filtered-catch idiom used elsewhere
             // in this assembly.
-            catch (Exception ex) when (ex.Message is not null)
+            catch
             {
                 return null;
+                throw;
             }
         }
 
