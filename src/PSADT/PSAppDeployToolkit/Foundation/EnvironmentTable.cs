@@ -307,7 +307,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the location where applications can store data or
         /// configuration files that are accessible to every user account on the computer. The exact path may vary
         /// depending on the operating system version and configuration.</remarks>
-        public DirectoryInfo? EnvAllUsersProfile { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        public DirectoryInfo? EnvAllUsersProfile { get; } = GetEnvironmentVariableDirectory("ALLUSERSPROFILE");
 
         /// <summary>
         /// Gets the application-specific data directory for the current environment.
