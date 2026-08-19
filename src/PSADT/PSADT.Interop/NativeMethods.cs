@@ -3887,7 +3887,7 @@ namespace PSADT.Interop
         internal static WIN32_ERROR MsiDatabaseGenerateTransform(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile)
         {
             ArgumentException.ThrowIfNullOrInvalid(hDatabase); ArgumentException.ThrowIfNullOrInvalid(hDatabaseReference);
-            return ((WIN32_ERROR)PInvoke.MsiDatabaseGenerateTransform(hDatabase, hDatabaseReference, szTransformFile.ThrowIfFileDirectoryDoesNotExist(), 0, 0)).ThrowOnFailure();
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseGenerateTransform(hDatabase, hDatabaseReference, szTransformFile.ThrowIfFileDirectoryDoesNotExist())).ThrowOnFailure();
         }
 
         /// <summary>
