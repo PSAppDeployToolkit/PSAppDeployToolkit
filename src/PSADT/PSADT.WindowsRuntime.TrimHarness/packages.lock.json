@@ -4,9 +4,9 @@
     "net8.0-windows10.0.22621": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.166, )",
-        "resolved": "3.0.166",
-        "contentHash": "OyodWHnx46I9Gt9REZ51y/QEhZUxX5/1yIksIwrQSHmSyihBaC3pgv5wdlykO+dSPU9L/BbPpgUlkGJOfNa4Fg=="
+        "requested": "[3.0.177, )",
+        "resolved": "3.0.177",
+        "contentHash": "Un9RDShcg4kaNiQtNJvNaRQU5ogcFCB6YLSL2TLx49hmLSU+vd6YixciWxWmoKIOdGvPV27dqHHFIBm8qd5U1Q=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",

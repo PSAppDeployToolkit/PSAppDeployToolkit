@@ -114,7 +114,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             const string inputDialogButtonRightText = "Cancel";
 
             // Set up options for the dialogs.
-            CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => default);
+            CloseAppsDialogState closeAppsDialogState = new(appsToClose, static (_, _, _) => default);
             await using (closeAppsDialogState.ConfigureAwait(false))
             {
                 Hashtable closeAppsDialogOptions = new()

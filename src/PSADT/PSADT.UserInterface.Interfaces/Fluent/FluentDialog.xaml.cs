@@ -516,7 +516,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else if (match.Groups["CloseAccent"].Success)
             {
-                PopFormattingContext(formattingStack, ctx => ctx.IsAccent);
+                PopFormattingContext(formattingStack, static ctx => ctx.IsAccent);
             }
             else if (match.Groups["OpenBold"].Success)
             {
@@ -526,7 +526,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else if (match.Groups["CloseBold"].Success)
             {
-                PopFormattingContext(formattingStack, ctx => ctx.IsBold);
+                PopFormattingContext(formattingStack, static ctx => ctx.IsBold);
             }
             else if (match.Groups["OpenItalic"].Success)
             {
@@ -536,7 +536,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else if (match.Groups["CloseItalic"].Success)
             {
-                PopFormattingContext(formattingStack, ctx => ctx.IsItalic);
+                PopFormattingContext(formattingStack, static ctx => ctx.IsItalic);
             }
         }
 

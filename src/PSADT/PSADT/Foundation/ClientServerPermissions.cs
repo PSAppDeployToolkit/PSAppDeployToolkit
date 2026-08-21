@@ -88,7 +88,7 @@ namespace PSADT.Foundation
         /// <returns>True if the Local System account has the required permissions; otherwise, false.</returns>
         internal static bool SystemAccountHasPermissions()
         {
-            return _assemblies.All(path => FileSystemUtilities.TestEffectiveAccess(path, AccountUtilities.LocalSystemSid, _requiredPermissions));
+            return _assemblies.All(static path => FileSystemUtilities.TestEffectiveAccess(path, AccountUtilities.LocalSystemSid, _requiredPermissions));
         }
 
         /// <summary>

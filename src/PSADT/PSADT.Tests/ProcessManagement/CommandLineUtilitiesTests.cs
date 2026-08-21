@@ -125,7 +125,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_NullInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.CommandLineToArgumentList(null!));
+            _ = Assert.Throws<ArgumentNullException>(static () => CommandLineUtilities.CommandLineToArgumentList(null!));
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_NullArrayInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine(null!));
+            _ = Assert.Throws<ArgumentNullException>(static () => CommandLineUtilities.ArgumentListToCommandLine(null!));
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_NullListInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine(null!));
+            _ = Assert.Throws<ArgumentNullException>(static () => CommandLineUtilities.ArgumentListToCommandLine(null!));
         }
 
         /// <summary>

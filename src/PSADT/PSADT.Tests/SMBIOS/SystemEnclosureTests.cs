@@ -99,12 +99,12 @@ namespace PSADT.Tests.SMBIOS
 
             Assert.Collection(
                 enclosure.ContainedElementRecords,
-                record => Assert.Equal(new byte[] { (byte)SmbiosType.BaseboardInformation, 0x01, 0x04 }, record),
-                record => Assert.Equal(new byte[] { 0x80 | (byte)BaseboardType.Motherboard, 0xFF, 0x00 }, record));
+                static record => Assert.Equal(new byte[] { (byte)SmbiosType.BaseboardInformation, 0x01, 0x04 }, record),
+                static record => Assert.Equal(new byte[] { 0x80 | (byte)BaseboardType.Motherboard, 0xFF, 0x00 }, record));
 
             Assert.Collection(
                 enclosure.ContainedElements,
-                element =>
+                static element =>
                 {
                     Assert.True(element.IsType);
                     Assert.Equal(SmbiosType.BaseboardInformation, element.Type);
@@ -113,7 +113,7 @@ namespace PSADT.Tests.SMBIOS
                     Assert.Equal<byte?>(4, element.Maximum);
                     Assert.True(element.IsRangeValid);
                 },
-                element =>
+                static element =>
                 {
                     Assert.False(element.IsType);
                     Assert.Null(element.Type);

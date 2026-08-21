@@ -81,7 +81,7 @@ namespace PSADT.Invoke
                         using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
                         if (inDebugMode)
                         {
-                            process.ErrorDataReceived += (sender, e) =>
+                            process.ErrorDataReceived += static (sender, e) =>
                             {
                                 if (!string.IsNullOrWhiteSpace(e.Data))
                                 {
@@ -90,7 +90,7 @@ namespace PSADT.Invoke
                                     Console.ResetColor();
                                 }
                             };
-                            process.OutputDataReceived += (sender, e) =>
+                            process.OutputDataReceived += static (sender, e) =>
                             {
                                 if (!string.IsNullOrWhiteSpace(e.Data))
                                 {

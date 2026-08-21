@@ -381,7 +381,7 @@ namespace PSADT.FileSystem
         /// otherwise, <see langword="false"/>.</returns>
         public static bool TestEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
-            return (GetEffectiveAccess(path, sid, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
+            return GetEffectiveAccess(path, sid, desiredAccessMask).HasFlag(desiredAccessMask);
         }
 
         /// <summary>
@@ -399,7 +399,7 @@ namespace PSADT.FileSystem
         /// <see langword="false"/>.</returns>
         public static bool TestEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
-            return (GetEffectiveAccess(path, token, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
+            return GetEffectiveAccess(path, token, desiredAccessMask).HasFlag(desiredAccessMask);
         }
 
         /// <summary>

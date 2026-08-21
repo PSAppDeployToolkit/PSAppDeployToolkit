@@ -372,7 +372,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to close it.</exception>
         internal static Task CloseProgressDialogAsync()
         {
-            return progressDialog is null ? throw new InvalidOperationException("Cannot close a progress dialog while one is not open.") : InvokeDialogActionAsync(() =>
+            return progressDialog is null ? throw new InvalidOperationException("Cannot close a progress dialog while one is not open.") : InvokeDialogActionAsync(static () =>
             {
                 try
                 {
@@ -476,7 +476,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <exception cref="InvalidOperationException">Thrown when no notify icon is currently open.</exception>
         internal static Task CloseNotifyIconAsync()
         {
-            return notifyIcon is null ? throw new InvalidOperationException("Cannot close a notify icon while one is not open.") : InvokeDialogActionAsync(() =>
+            return notifyIcon is null ? throw new InvalidOperationException("Cannot close a notify icon while one is not open.") : InvokeDialogActionAsync(static () =>
             {
                 using (notifyIcon)
                 {

@@ -234,7 +234,7 @@ namespace PSADT.FileSystem
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
             using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
             (
-                () => (SafePinnedGCHandle.Alloc(new byte[1024]), SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE).Write(NtQueryObjectStartRoutineTemplate.Bytes)),
+                static () => (SafePinnedGCHandle.Alloc(new byte[1024]), SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE).Write(NtQueryObjectStartRoutineTemplate.Bytes)),
                 trackAllValues: true
             );
 

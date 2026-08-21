@@ -43,7 +43,7 @@ namespace PSADT.Tests.SMBIOS
         [Fact]
         public void ReadStructure_ThrowsWhenBufferTooShort()
         {
-            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.ReadStructure(new byte[7], SmbiosType.EndOfTable, FakeStructureParser));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => SmbiosParsing.ReadStructure(new byte[7], SmbiosType.EndOfTable, FakeStructureParser));
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace PSADT.Tests.SMBIOS
         [Fact]
         public void GetSmbiosVersion_ThrowsWhenBufferTooShort()
         {
-            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.GetSmbiosVersion(new byte[4]));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => SmbiosParsing.GetSmbiosVersion(new byte[4]));
         }
 
         /// <summary>
