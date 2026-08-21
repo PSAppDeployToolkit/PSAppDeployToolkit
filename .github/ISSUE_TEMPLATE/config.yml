@@ -1,7 +1,8 @@
+blank_issues_enabled: false
 contact_links:
-  - name: Chat with the community
-    url: https://discord.com/channels/618712310185197588/627204361545842688
-    about: PSAppDeployToolkit channel on Discord (WinAdmins)
-  - name: Join in the discussion
-    url: https://discourse.psappdeploytoolkit.com
-    about: PSAppDeployToolkit Discourse Forums
+  - name: Documentation
+    url: https://github.com/sintaxasn/Fluence.Wpf/tree/main/docs
+    about: Check the public documentation before opening an issue.
+  - name: Known issues
+    url: https://github.com/sintaxasn/Fluence.Wpf/blob/main/KNOWN_ISSUES.md
+    about: Check current known follow-ups and deliberate non-features.

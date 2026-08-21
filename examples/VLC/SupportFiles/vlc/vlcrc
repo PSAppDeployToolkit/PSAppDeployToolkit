@@ -1,6 +1,0 @@
-﻿[qt]
-# Activate the updates availability notification (boolean)
-qt-updates-notif=0
-
-# Ask for network policy at start (boolean)
-qt-privacy-ask=0

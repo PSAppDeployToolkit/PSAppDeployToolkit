@@ -1,24 +1,5 @@
-// PSAppDeployToolkit default settings to ensure consistent code formatting and file encoding
-{
-    //-------- Indentation configuration --------
-    "editor.detectIndentation": true,
-    "editor.formatOnPaste": true,
-    "editor.insertSpaces": false,
-    "editor.tabSize": 4,
-
-    //-------- Files configuration --------
-    "files.autoGuessEncoding": true,
-    "files.encoding": "utf8bom",
-    "files.insertFinalNewline": true,
-
-    // When enabled, will trim trailing whitespace when you save a file.
-    "files.trimTrailingWhitespace": true,
-    // specifies the location of the explicitly ScriptAnalyzer settings file
-    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
-    // specifies the PowerShell coding style used in this project (https://github.com/PoshCode/PowerShellPracticeAndStyle/issues/81)
-    "powershell.codeFormatting.preset": "Allman",
-    "powershell.codeFormatting.alignPropertyValuePairs": false,
-    "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
-    "dotnet.preferCSharpExtension": true,
-    "dotnet.defaultSolution": "PSADT.slnx"
+﻿{
+    "files.exclude": {
+        "**/.history": true
+    }
 }

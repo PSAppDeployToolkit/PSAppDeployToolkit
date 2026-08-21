@@ -1,67 +1,136 @@
-﻿# PSAppDeployToolkit Copilot Coding Agent Instructions
+﻿# Fluence.Wpf -- Copilot Instructions
 
-## Repository Overview
+Condensed guidance for Copilot, Gemini, and similar assistants. Full detail is
+in AGENTS.md -- read it before making any non-trivial change.
 
-**PSAppDeployToolkit** is an open source PowerShell module/framework for Windows software deployment that features an extensive library of functions for common deployment tasks and a customizable branded User Interface.
+---
 
-- **Languages**: PowerShell (primary), C#, XAML
-- **Dependencies**: A current .NET SDK is required for builds. Visual Studio is useful for C# and XAML work. `build.ps1` bootstraps the required PowerShell module dependencies.
-- **Branches**: `main` is the integration branch for active development. Release branches such as `4.0.x` and `4.1.x` are maintained as needed.
+## Project at a glance
 
-## General Coding Conventions
-- When editing existing code, prefer repository consistency over introducing style-only rewrites. Follow the surrounding file's patterns unless a broader cleanup is explicitly requested.
-- When working on a feature branch from `main`, public function contracts should remain backward compatible wherever practical. Avoid breaking changes to parameter names, parameter behaviour, and output types unless the work clearly justifies it. On release branches such as `4.1.x`, avoid breaking changes to public contracts entirely.
-- Ignore IDE0028 in this repository context because it is an IntelliSense bug and should not block work.
-- Prefer delegate-based refactors to keep delegates inlined at the call site rather than introducing named local delegate functions when possible.
-- Prefer standard, compiler/analyzer-recognizable C# patterns over custom non-standard lifecycle hooks, especially for IDisposable/disposal implementations, to keep code review and commit ownership clear.
-- Avoid changes that cause `DialogManager` static initialization when the client/server process has not used dialog functionality; do not change `DialogManager` static constructor setup unless explicitly requested. For the client/server WPF shutdown issue, prefer a narrow suppression of the known WPF Win32Exception native error 1400 during shutdown over initializing `DialogManager` or changing its static constructor setup.
-- Keep edits specific to the requested change and avoid unrelated formatting/style refactors, even when touching nearby code.
-- Centralize shared helper logic rather than duplicating boilerplate across call sites.
-- For Meziantou Analyzer MA0045 suppressions in this repository, use category "Design" because the analyzer declares RuleCategories.Design.
+WPF control library reproducing Windows 11 Fluent / WinUI 3 visuals on .NET
+Framework 4.7.2 and .NET 10. Four projects: `Fluence.Wpf` (library),
+`Fluence.Wpf.Demo` (gallery), `Fluence.Wpf.Demo.Mvvm` (MVVM demo),
+`Fluence.Wpf.Tests` (xunit.v3 3.2.2, multi-TFM).
 
-## Language-Specific Coding Conventions
+**XML namespace:** `http://schemas.fluencewpf.com` (prefix: `fluence`)
 
-Detailed coding standards are maintained in dedicated instruction files that Copilot applies automatically based on file type:
+---
 
-- `.github/instructions/powershell.md` — PowerShell conventions (applied to `*.ps1`, `*.psm1`, `*.psd1`)
-- `.github/instructions/pester.md` — Pester test conventions (applied to `*.Tests.ps1`)
-- `.github/instructions/csharp.md` — C# conventions (applied to `*.cs`)
+## Non-negotiable rules
 
-## Build System & Validation
+1. **File encoding:** All `.cs`, `.xaml`, `.csproj` files must be **UTF-8 with
+   BOM + LF line endings**. The PostToolUse hook enforces this -- violations
+   block writes.
 
-The main build dependency is a current .NET SDK. Visual Studio is recommended for C# and XAML work.
+2. **Zero warnings:** `TreatWarningsAsErrors=True`. Never suppress a warning
+   with `#pragma`; fix the root cause.
 
-- If there are only PowerShell changes, the module can be re-imported via `Import-Module .\src\PSAppDeployToolkit\PSAppDeployToolkit.psd1 -Force`. If this gives an error containing `assembly of a different file hash is already loaded`, the PowerShell session needs to be restarted.
-- Run `build.cmd` or `build.ps1` from the repository root to perform a full build.
-- Prefer the existing VS Code tasks and build entry points over ad-hoc commands when validating changes.
-- Common validation tasks include `Build`, `Test`, `Analyze`, `FormattingCheck`, and `ValidateRequirements`.
-- Only build from within Visual Studio; do not use `dotnet build` for validation/builds. When diagnosing build behavior in this repository, prefer Visual Studio/MSBuild workspace builds and Output window logs over `dotnet build` for issues suspected to be MSBuild-specific. Use `dotnet msbuild` when compiling and permit it for MSBuild diagnostics.
+3. **Banned API:** `string.IsNullOrEmpty()` is banned (RS0030). Always use
+   `string.IsNullOrWhiteSpace()`.
 
-## Repository Orientation
+4. **BSD header:** Every `.cs` file starts with the 27-line BSD 3-Clause header.
+   Copy it from any existing library file.
 
-- `src/PSAppDeployToolkit/` contains the PowerShell module source.
-- `src/PSAppDeployToolkit/Public/` contains exported PowerShell functions, generally one function per file.
-- `src/PSAppDeployToolkit/Private/` contains internal PowerShell helpers.
-- `src/PSADT/` contains the main C# projects, including core utilities, interop, UI, client/server components, and tests.
-- `src/Tests/` contains Pester tests, including `Unit/` and `Integration/`.
-- `src/PSAppDeployToolkit.Build/` contains the PowerShell build module.
-- `examples/` contains sample deployment scripts and usage examples.
+5. **XML docs:** All `public` API members need `///` XML doc comments. Missing
+   comments fail the build.
 
-## Key Files
+6. **Nullable clean:** `Nullable=enable` project-wide. Annotate `?` only where
+   genuinely nullable.
 
-- `src/PSAppDeployToolkit/PSAppDeployToolkit.psd1` - module manifest.
-- `src/PSAppDeployToolkit/PSAppDeployToolkit.psm1` - main module entry point.
-- `.vscode/PSScriptAnalyzerSettings.psd1` - PowerShell analyzer configuration.
-- `.github/workflows/module-build.yml` - CI pipeline.
+7. **DynamicResource for theme values:** Any brush, color, corner radius, or
+   typography that must react to theme changes uses `DynamicResource`. Static
+   assets only use `StaticResource`.
 
-## C# Notes
+8. **No hard-coded colors:** Never write hex values in XAML templates. Use
+   canonical WinUI-style resource keys. Hex literals belong only in the Color
+   tables `Themes/Colors/Theme.{Light|Dark|HighContrast}.xaml`; templates bind
+   the auto-generated `*Brush` twin via `DynamicResource`.
 
-- Most first-party C# projects in `src/PSADT/` target .NET Framework 4.7.2 and a current modern .NET Windows target, but check the specific `.csproj` before assuming dual-targeting.
-- `PSADT.Interop` contains Win32 interop and CsWin32-generated symbols.
-- `PSADT` contains core C# utilities.
-- `PSAppDeployToolkit` contains PowerShell-facing C# types.
+9. **Overflow in Win32 bit-math:** Wrap HIWORD/LOWORD extractions in
+   `unchecked { }`. `CheckForOverflowUnderflow=True` is active.
 
-## API Usage Guidelines
+10. **Discard return values:** `_ = method()` for non-void returns you are not
+    using. Ignored returns are build errors (CA1806).
 
-- Expect accurate, well-researched answers about Windows APIs and COM interfaces. Do not fabricate API names or suggest hacky workarounds when proper documented APIs exist (e.g., Appx COM interfaces for reading package identity).
-- Acknowledge uncertainty rather than inventing answers.
+11. **Analyzer rule severity:** Centralize analyzer rule severity overrides (e.g., VSTHRD001) in `.editorconfig` rather than per-project NoWarn entries in `.csproj` files. Inline `#pragma` suppressions are only permitted in the documented "exceptional third-party interop" carve-out (NativeMethods.cs).
+
+---
+
+## Theme architecture (3-slot layout -- do not break)
+
+`Application.Current.Resources.MergedDictionaries` always has exactly 3 entries
+after `ApplicationThemeManager.Apply(...)`:
+
+| Slot | File | Lifecycle |
+|------|------|-----------|
+| [0] | Computed colors + brushes (built by `FluenceThemeEngine.BuildComputedDictionary`) | Rebuilt and replaced on every theme or accent change |
+| [1] | `Themes/Typography/Typography.xaml` | Loaded once; never replaced |
+| [2] | `Themes/Generic.xaml` | Loaded once; never replaced |
+
+Slot [0] holds every canonical Color token plus its frozen `SolidColorBrush`
+twin and the special brushes (gradients, high-contrast overrides). Adding a
+color means adding it to all three `Themes/Colors/Theme.{Light|Dark|HighContrast}.xaml`
+tables; `BrushFactory` auto-emits the `*Brush` twin. `DictionaryStabilityTests`
+enforces the slot count and order. Changing either requires updating both the
+code and the tests together.
+
+---
+
+## Reference priority
+
+1. **In-tree precedent** -- existing XAML templates and C# controls always win.
+2. **WinUI 3 CommonStyles** for visual tokens, states, animations, control
+   templates.
+3. **.NET 10 WPF Themes** for WPF-native chrome, DWM, dispatcher, `net472`
+   patterns.
+4. **Microsoft Learn docs** as tie-breaker only.
+
+Never fabricate Fluent semantics from imagination. Cite an authority.
+
+---
+
+## Build and test
+
+```powershell
+dotnet restore Fluence.Wpf.sln
+dotnet build   Fluence.Wpf.sln -c Debug          # must be 0 errors / 0 warnings
+dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug
+```
+
+Both `net472` and `net10.0-windows10.0.26100.0` must pass. Tests are
+non-parallel (`[assembly: CollectionBehavior(DisableTestParallelization = true)]`
+plus `xunit.runner.json`). All UI-touching work goes
+through `WpfTestSta.Invoke`.
+
+---
+
+## Quality gates (all changes)
+
+1. BSD header present on every `.cs` file.
+2. Build: 0 errors, 0 warnings on both TFMs.
+3. Tests: no new failures; new controls/behaviors ship with new xUnit tests.
+4. Visual parity: template changes verified in Demo across Light, Dark, High
+   Contrast, and at least one backdrop.
+5. Docs synced: `CHANGELOG.md` updated; `docs/controls.md` / `docs/theming.md`
+   updated when public surface changes.
+6. No new third-party runtime dependencies without explicit user approval.
+7. Do not commit without the user's explicit instruction.
+
+---
+
+## Background Terminal Commands
+
+- When polling background terminal commands, use short wait intervals (30-60 seconds per read) instead of multi-minute waits, so completed work is noticed promptly.
+
+---
+
+## Testing Guidelines
+
+- In `Fluence.Wpf.Tests`, prefer direct calls to the canonical `WpfTestSta` helpers (e.g., `RunOnSta`, `EnsureApplication`, `DrainDispatcher`, etc.) instead of per-class wrapper/forwarder methods. Remove any duplicated wrapper logic when encountered.
+- Prefer eliding async/await for methods whose entire body is a single awaited Task-returning call: return the Task directly instead of async/await (e.g., `public Task X() { return WpfTestSta.RunOnStaAsync(...); }`). This applies even though Roslynator RCS1174 only covers Task<T>. Keep `new ValueTask(task)` wrapping only where required by interfaces like xUnit v3 IAsyncLifetime.
+- When an analyzer flags synchronous disposal in async methods (e.g., RCS1261), do not remove the using block or suppress with comments. Instead, use `await using` with ConfigureAwait, guarded by `#if NET..._OR_GREATER` / `#else using` conditionals for TFMs where IAsyncDisposable isn't available (net472). Pattern: `MemoryStream buffer = new(); await using (buffer.ConfigureAwait(true))` with `#else using (MemoryStream buffer = new())`.
+
+---
+
+For full detail on control authoring, theme API, common pitfalls, naming
+conventions, and C# style rules: read **AGENTS.md**

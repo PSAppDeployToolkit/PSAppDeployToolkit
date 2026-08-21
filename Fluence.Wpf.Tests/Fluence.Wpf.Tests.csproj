@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Fluence.Wpf.Tests</RootNamespace>
+    <AssemblyName>Fluence.Wpf.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <TestTfmsInParallel>false</TestTfmsInParallel>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <NoWarn>$(NoWarn);CS1591;CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fluence.Wpf\Fluence.Wpf.csproj" />
+    <ProjectReference Include="..\Fluence.Wpf.Demo\Fluence.Wpf.Demo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+    <ProjectReference Include="..\Fluence.Wpf.Demo.Mvvm\Fluence.Wpf.Demo.Mvvm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Theming\golden\*.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Meziantou.Polyfill">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      $(MeziantouPolyfill_IncludedPolyfills)
+      M:System.IO.Path.Join|
+      M:System.Linq.Enumerable.Order|
+      M:System.String.Join|
+      M:System.String.Replace|
+      M:System.IO.File.ReadAllTextAsync|
+      M:System.IO.File.ReadAllLinesAsync|
+      M:System.IO.File.WriteAllTextAsync|
+      M:System.IO.File.WriteAllBytesAsync|
+      M:System.IO.File.WriteAllLinesAsync|
+    </MeziantouPolyfill_IncludedPolyfills>
+  </PropertyGroup>
+
+</Project>

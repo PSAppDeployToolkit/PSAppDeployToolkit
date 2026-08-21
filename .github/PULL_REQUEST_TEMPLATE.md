@@ -1,30 +1,20 @@
-# Pull Request
+﻿## Summary
 
-## Description
+- 
 
-Please include a summary of any changes. Please also include relevant motivation and context.
+## Verification
 
-Fixes: #12345
-
-Fixes: <https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/12345>
-
-## Type of change
-
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] General code cleanup (non-breaking change which improves readability)
+- [ ] `dotnet build Fluence.Wpf.sln -c Release --no-restore -v minimal` (0 errors / 0 warnings, both TFMs)
+- [ ] `dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build`
+- [ ] `dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build`
+- [ ] `pwsh .claude/hooks/post-tool-util.ps1 -CheckAll` passes (UTF-8 BOM, LF, banned APIs, no hard-coded hex or em/en dashes).
+- [ ] Visual pass completed in `Fluence.Wpf.Demo` for Light, Dark, High Contrast, accent swap, and relevant backdrop.
 
 ## Checklist
 
-- [ ] I am pulling to the **main** branch
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] I have tested my changes to prove my fix is effective
-- [ ] I have tested that the module can build following my changes
-- [ ] I have made sure that any script file-encoding is set to UTF8 with BOM, i.e. unchanged.
-
-## How Has This Been Tested?
-
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
+- [ ] Public API changes have XML docs and tests; the test count does not drop below the baseline.
+- [ ] Template or visual changes use canonical WinUI-style theme keys and `DynamicResource` where theme-bound (no inline hex colors).
+- [ ] Visual or behavioral choices are grounded in a Section 4 reference authority (in-tree precedent, WinUI 3 CommonStyles, or .NET 10 WPF Themes).
+- [ ] `CHANGELOG.md` is updated under `Unreleased`.
+- [ ] Public docs are updated when consumer behavior changes.
+- [ ] No unrelated files or local tool state are included.

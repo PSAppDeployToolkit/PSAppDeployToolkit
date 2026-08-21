@@ -6,6 +6,7 @@ root = true
 [*]
 # Sane defaults for all files.
 charset = utf-8-bom
+end_of_line = lf
 indent_size = 4
 indent_style = space
 trim_trailing_whitespace = true
@@ -30,17 +31,17 @@ dotnet_analyzer_diagnostic.category-Usage.severity = error
 dotnet_diagnostic.RS0030.severity = error
 
 # Explicitly enable what `latest-all` doesn't enable.
+dotnet_diagnostic.CA1017.severity = error
+dotnet_diagnostic.CA1045.severity = error
 dotnet_diagnostic.CA1005.severity = error
 dotnet_diagnostic.CA1014.severity = error
-dotnet_diagnostic.CA1017.severity = error
-dotnet_diagnostic.CA1021.severity = error
-dotnet_diagnostic.CA1045.severity = error
-dotnet_diagnostic.CA1051.severity = error
 dotnet_diagnostic.CA1060.severity = error
+dotnet_diagnostic.CA1021.severity = error
 dotnet_diagnostic.CA1501.severity = error
 dotnet_diagnostic.CA1509.severity = error
 
 # Disable Microsoft.Extensions.StaticAnalysis rules we don't want to deal with.
+dotnet_diagnostic.VSTHRD001.severity = none
 dotnet_diagnostic.S103.severity = none
 dotnet_diagnostic.S104.severity = none
 dotnet_diagnostic.S107.severity = none
@@ -57,49 +58,26 @@ roslynator_compiler_diagnostic_fixes.enabled = true
 roslynator_refactorings.enabled = true
 
 # Disable Roslynator rules we don't want to deal with.
-dotnet_diagnostic.RCS1002.severity = none
-dotnet_diagnostic.RCS1004.severity = none
-dotnet_diagnostic.RCS1019.severity = none
-dotnet_diagnostic.RCS1031.severity = none
-dotnet_diagnostic.RCS1052.severity = none
-dotnet_diagnostic.RCS1081.severity = none
-dotnet_diagnostic.RCS1162.severity = none
+dotnet_diagnostic.RCS1111.severity = none
 dotnet_diagnostic.RCS1181.severity = none
-dotnet_diagnostic.RCS1198.severity = none
-dotnet_diagnostic.RCS1208.severity = none
-dotnet_diagnostic.RCS1223.severity = none
-dotnet_diagnostic.RCS1231.severity = none
 dotnet_diagnostic.RCS1238.severity = none
-dotnet_diagnostic.RCS1242.severity = none
-dotnet_diagnostic.MA0214.severity = none
 
-# Report collection expressions ([]) for C#14 and lower
-# C# preview reports those diagnostics by default
+# Opt-in strictness beyond Meziantou.Analyzer defaults.
 MA0002.report_collection_expressions = true
-MA0007.IgnoreCatchAllArm = false
-MA0011.exclude_tostring_methods = false
-MA0053.public_class_should_be_sealed = true
-MA0053.class_with_virtual_member_should_be_sealed = true
 MA0053.exceptions_should_be_sealed = true
-MA0075.exclude_tostring_methods = false
 MA0075.consider_nullable_types = true
-MA0076.exclude_tostring_methods = false
 MA0076.consider_nullable_types = true
-MA0099.exclude_enum_without_zero_member = true
-MA0107.exclude_tostring_methods = false
-MA0134.report_discarded = true
 MA0153.report_types_with_data_classification_attributes = true
 
 # Disable Meziantou.Analyzer rules we don't want to deal with.
 dotnet_diagnostic.MA0009.severity = none
-dotnet_diagnostic.MA0012.severity = none
 dotnet_diagnostic.MA0051.severity = none
+dotnet_diagnostic.MA0104.severity = none
+dotnet_diagnostic.MA0107.severity = none
 dotnet_diagnostic.MA0110.severity = none
-dotnet_diagnostic.MA0157.severity = none
-dotnet_diagnostic.MA0168.severity = none
-dotnet_diagnostic.MA0175.severity = none
 dotnet_diagnostic.MA0177.severity = none
 dotnet_diagnostic.MA0181.severity = none
+dotnet_diagnostic.MA0214.severity = none
 
 
 # Manual enablement for a number of Roslynator rules. This is the only way...
@@ -458,9 +436,6 @@ dotnet_diagnostic.rcs1108.severity = error
 
 # Declare type inside namespace
 dotnet_diagnostic.rcs1110.severity = error
-
-# Add braces to switch section with multiple statements
-dotnet_diagnostic.rcs1111.severity = error
 
 # Combine 'Enumerable.Where' method chain
 dotnet_diagnostic.rcs1112.severity = error
@@ -867,4 +842,3 @@ dotnet_diagnostic.rcs9010.severity = error
 
 # Specify ExportCodeFixProviderAttribute.Name
 dotnet_diagnostic.rcs9011.severity = error
-
