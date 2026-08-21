@@ -36,6 +36,9 @@ The main build dependency is a current .NET SDK. Visual Studio is recommended fo
 - Prefer the existing VS Code tasks and build entry points over ad-hoc commands when validating changes.
 - Common validation tasks include `Build`, `Test`, `Analyze`, `FormattingCheck`, and `ValidateRequirements`.
 - Only build from within Visual Studio; do not use `dotnet build` for validation/builds. When diagnosing build behavior in this repository, prefer Visual Studio/MSBuild workspace builds and Output window logs over `dotnet build` for issues suspected to be MSBuild-specific. Use `dotnet msbuild` when compiling and permit it for MSBuild diagnostics.
+- Package versions are centrally managed in `Directory.Packages.props`. `nuget.config` pins restore to nuget.org alone, maps every package ID to that feed, and sets `signatureValidationMode` to `require`, so an unsigned package or one not signed by nuget.org fails restore with `NU3034`. If nuget.org rotates its signing certificates, regenerate the `trustedSigners` block with `dotnet nuget trust source nuget.org` rather than editing fingerprints by hand.
+- Every project has a committed `packages.lock.json`. Changing a package version means regenerating them: restore the affected solution, then commit the changed lock files with the version change. CI sets `RestoreLockedMode` through `GITHUB_ACTIONS`, so a lock file that disagrees with its project fails the build with `NU1004` instead of being rewritten silently.
+- `Directory.Build.props` declares `RuntimeIdentifiers` as `win-x64` because `build.ps1` publishes `PSADT.WindowsRuntime.TrimHarness` with `dotnet publish -r win-x64`; without it that runtime-specific restore fails locked mode for every project in the harness graph. The vendored `lib/Fluence.Wpf` subtree stops the `Directory.Build.props` walk and carries its own copy of these settings plus its own `nuget.config`.
 
 ## Repository Orientation
 
