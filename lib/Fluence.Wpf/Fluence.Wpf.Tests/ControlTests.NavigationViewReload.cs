@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_AfterUnloadReload_SelectionIndicatorStillUpdatesAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

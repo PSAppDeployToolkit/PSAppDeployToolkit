@@ -270,7 +270,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ProgressBar_Indeterminate_StopsAnimationOnUnloadAndRestartsOnReloadAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

@@ -263,7 +263,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ReducedMotion_Flyout_ShowAt_PresentsSurfaceAtRestWithoutClocksAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -314,7 +314,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ReducedMotion_TeachingTip_Open_PresentsTipAtRestWithoutClocksAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -364,7 +364,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ReducedMotion_ContentDialog_Hide_TearsDownSynchronouslyWithoutClocksAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

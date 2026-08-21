@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Apply_FiresChangedExactlyOnceAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 int eventCount = 0;
                 void handler(object? sender, ThemeChangedEventArgs e) { eventCount++; }
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TwoRapidApplies_FiresExactlyTwoEventsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 int eventCount = 0;
                 void handler(object? sender, ThemeChangedEventArgs e) { eventCount++; }

@@ -148,7 +148,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PrimaryButtonClick_RaisesSplitButtonClickAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
@@ -193,7 +193,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PrimaryButtonClick_ExecutesCommandAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);

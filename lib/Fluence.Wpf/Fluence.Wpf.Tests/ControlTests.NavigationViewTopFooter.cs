@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_TopFooterIndicator_CentersUnderFooterItemAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -189,7 +189,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_TopFooterIndicator_AnimatesOnSelectionAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

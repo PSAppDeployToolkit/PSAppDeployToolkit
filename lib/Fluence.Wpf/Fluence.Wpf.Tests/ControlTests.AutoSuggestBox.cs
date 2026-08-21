@@ -86,7 +86,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_ProgrammaticTextChange_RaisesTextChangedWithProgrammaticReasonAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -125,7 +125,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_UserEditInTextBox_RaisesTextChangedWithUserInputReasonAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -164,7 +164,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_IsSuggestionListOpen_ShowsPopupWithItemsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -199,7 +199,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_ChooseSuggestionViaKeyboard_RaisesSuggestionChosenAndQuerySubmittedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -257,7 +257,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_EnterWithoutSelection_RaisesQuerySubmittedWithCurrentTextAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -295,7 +295,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_Escape_ClosesSuggestionListAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -334,7 +334,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_ArrowKeys_PreviewHighlightedSuggestionAndRestoreTypedTextAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -406,7 +406,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AutoSuggestBox_QueryIconButton_SubmitsQueryAndHidesWhenIconNullAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

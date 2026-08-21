@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task GalleryButtonsPage_ToggleButtonSampleUpdatesStateTextAsync()
         {
-            return RunDemoPageTestAsync(() => new GalleryButtonsPage(), window =>
+            return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
                 Controls.ToggleButton wrapToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "WrapToggleButton"));
                 Controls.ToggleButton threeStateToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "ThreeStateToggleButton"));
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task GalleryButtonsPage_ToggleSplitButtonSampleTogglesStateTextAsync()
         {
-            return RunDemoPageTestAsync(() => new GalleryButtonsPage(), window =>
+            return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
                 Controls.ToggleSplitButton listToggle = Assert.IsAssignableFrom<Controls.ToggleSplitButton>(FindVisualChildByName<Controls.ToggleSplitButton>(window, "ListToggleSplitButton"));
                 TextBlock stateText = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleSplitButtonStateText"));

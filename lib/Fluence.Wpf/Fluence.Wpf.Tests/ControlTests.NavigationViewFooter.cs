@@ -93,7 +93,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_FooterItem_Invoke_SelectsAndClearsMainSelectionAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -207,7 +207,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_FooterItem_StretchesToPaneWidth_InLeftOpenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

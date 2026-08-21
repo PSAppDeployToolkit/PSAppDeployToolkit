@@ -824,7 +824,7 @@ namespace Fluence.Wpf.Tests
                     double settingsLeft = GetVisualX(settings, nav);
                     Assert.True(overflowRight <= settingsLeft - 4.0 + 1.5, "The three-dot overflow entry should stop before it overlaps the Settings item.");
 
-                    NavigationViewItem trees = Assert.IsType<NavigationViewItem>(nav.Items.OfType<NavigationViewItem>().FirstOrDefault(navItem => string.Equals(navItem.Content as string, "Trees", StringComparison.Ordinal)));
+                    NavigationViewItem trees = Assert.IsType<NavigationViewItem>(nav.Items.OfType<NavigationViewItem>().FirstOrDefault(static navItem => string.Equals(navItem.Content as string, "Trees", StringComparison.Ordinal)));
                     if (trees.Visibility is Visibility.Visible)
                     {
                         double treesRight = GetVisualX(trees, nav) + trees.ActualWidth;
@@ -1352,7 +1352,7 @@ namespace Fluence.Wpf.Tests
                         object content = GetSelectedPageContent(window);
                         DependencyObject root = Assert.IsAssignableFrom<DependencyObject>(content);
 
-                        bool found = FindAllVisualChildren<DemoSampleControl>(root).Any(sample => !string.IsNullOrWhiteSpace(sample.XamlSource));
+                        bool found = FindAllVisualChildren<DemoSampleControl>(root).Any(static sample => !string.IsNullOrWhiteSpace(sample.XamlSource));
                         Assert.True(found, "Page must expose at least one inline XAML source sample: " + expectation.PageType.Name);
                     }
                 }

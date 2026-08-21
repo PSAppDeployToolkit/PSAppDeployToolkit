@@ -149,7 +149,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_FieldClick_OpensPopupAndPopulatesColumnsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -204,7 +204,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_Accept_CommitsSelectionAndRaisesSelectedDateChangedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -264,7 +264,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_Cancel_RevertsPendingSelectionAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -319,7 +319,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_DayColumn_AdjustsToMonthLengthAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -409,7 +409,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_FlyoutOpen_MovesKeyboardFocusIntoPopupAndCyclesTabAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -454,7 +454,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_FlyoutEscape_ClosesWithoutCommittingAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -508,7 +508,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_FlyoutEnter_CommitsPendingSelectionAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -643,7 +643,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DatePicker_FieldClickAfterLightDismiss_DoesNotImmediatelyReopenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

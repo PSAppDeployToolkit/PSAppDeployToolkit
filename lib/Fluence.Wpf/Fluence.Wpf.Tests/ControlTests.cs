@@ -812,7 +812,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    TextBlock glyphTextBlock = Assert.IsType<TextBlock>(FindVisualChildren<TextBlock>(button).FirstOrDefault(textBlock => string.Equals(textBlock.Text, "\uE710", StringComparison.Ordinal)));
+                    TextBlock glyphTextBlock = Assert.IsType<TextBlock>(FindVisualChildren<TextBlock>(button).FirstOrDefault(static textBlock => string.Equals(textBlock.Text, "\uE710", StringComparison.Ordinal)));
                     Assert.True(glyphTextBlock.IsVisible, "Left-placed button icons should be visible, not just present in the tree.");
                     Assert.True(glyphTextBlock.ActualWidth > 0, "Left-placed button icons should occupy layout space.");
                 }
@@ -2696,7 +2696,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ProgressRing_Indeterminate_CaterpillarArcBecomesVisibleAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2802,7 +2802,7 @@ namespace Fluence.Wpf.Tests
 
         private static TextBlock? FindButtonIconTextBlock(Controls.Button button)
         {
-            return FindVisualChildren<TextBlock>(button).FirstOrDefault(textBlock => textBlock.FontFamily is FontFamily fontFamily && fontFamily.Source?.IndexOf("Segoe Fluent Icons", StringComparison.OrdinalIgnoreCase) >= 0);
+            return FindVisualChildren<TextBlock>(button).FirstOrDefault(static textBlock => textBlock.FontFamily is FontFamily fontFamily && fontFamily.Source?.IndexOf("Segoe Fluent Icons", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private static TextBlock? FindButtonGlyphTextBlock(Controls.Button button, string glyph)

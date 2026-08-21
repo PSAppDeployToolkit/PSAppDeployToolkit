@@ -143,7 +143,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ListView_AnimateRemove_RemovesItemFromBoundObservableCollectionAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

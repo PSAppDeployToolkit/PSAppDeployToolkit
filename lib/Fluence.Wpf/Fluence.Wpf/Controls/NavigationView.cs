@@ -1848,7 +1848,7 @@ defaultValue: null,
             try
             {
                 List<NavigationViewItem> navItems = GetTopNavigationItems();
-                foreach (NavigationViewItem navItem in navItems.Where(navItem => (bool)navItem.GetValue(IsTopOverflowCollapsedProperty)))
+                foreach (NavigationViewItem navItem in navItems.Where(static navItem => (bool)navItem.GetValue(IsTopOverflowCollapsedProperty)))
                 {
                     navItem.Visibility = Visibility.Visible;
                     navItem.ClearValue(IsTopOverflowCollapsedProperty);
@@ -1878,7 +1878,7 @@ defaultValue: null,
                 }
 
                 double totalItemWidth = 0.0;
-                foreach (NavigationViewItem navItem in navItems.Where(navItem => navItem.Visibility is Visibility.Visible))
+                foreach (NavigationViewItem navItem in navItems.Where(static navItem => navItem.Visibility is Visibility.Visible))
                 {
                     totalItemWidth += GetElementWidth(navItem);
                 }

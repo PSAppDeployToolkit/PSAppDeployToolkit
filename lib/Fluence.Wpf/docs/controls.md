@@ -801,7 +801,7 @@ Capture is opt-in: the `GalleryScreenshotHarness` tests skip unless the `FLUENCE
 
 ```powershell
 $env:FLUENCE_CAPTURE_SCREENSHOTS = '1'
-dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-windows10.0.26100.0 --filter "TestCategory=Screenshots"
+dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-windows10.0.26100.0 --filter-trait "Category=Screenshots"
 ```
 
 The harness uses `RenderTargetBitmap` and flattens transparent WPF layers over `SolidBackgroundFillColorBaseBrush`. It cannot capture DWM Mica / Acrylic, which compose outside WPF, so the screenshots show WPF control and shell surfaces only. `FluenceWindowTitleBarTests` verifies `FluenceWindow` caption styling.

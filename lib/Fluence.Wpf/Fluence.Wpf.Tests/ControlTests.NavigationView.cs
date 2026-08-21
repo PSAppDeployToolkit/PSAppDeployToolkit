@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
             // main items), so the fixed 40px icon column keeps the icon anchored at the left regardless
             // of the animating pane width. We force intermediate closed pane widths against the real
             // gallery MainWindow and assert the footer icon stays at the left.
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -290,7 +290,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_LeftCompact_ClosedPaneKeepsIconFooterVisibleAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -650,7 +650,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_ItemInvoked_FiresBeforeSelectionChangesAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -953,7 +953,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_BackRequested_FiresOnBackClickAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1136,7 +1136,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_LeftMode_SharedIndicator_TracksHorizontalItemPlacementAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1356,7 +1356,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_LeftMode_IndicatorExitsVerticallyBeforeChangingParentChildIndentAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1427,7 +1427,7 @@ topMode: false,
         [Fact]
         public Task NavigationView_LeftMode_IndicatorExitsUpwardWhenNewSelectionIsAboveAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1498,7 +1498,7 @@ topMode: false,
         [Fact]
         public Task NavigationView_LeftMode_TopLevelIconlessItem_DoesNotUseChildIndicatorIndentAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1562,7 +1562,7 @@ topMode: false,
                 try
                 {
                     Style style = Assert.IsType<Style>(application.TryFindResource("NavigationViewItemFocusVisual"));
-                    ControlTemplate template = Assert.IsType<ControlTemplate>(style.Setters.OfType<Setter>().FirstOrDefault(setter => setter.Property == Control.TemplateProperty)?.Value as ControlTemplate);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(style.Setters.OfType<Setter>().FirstOrDefault(static setter => setter.Property == Control.TemplateProperty)?.Value as ControlTemplate);
                     DependencyObject root = Assert.IsAssignableFrom<DependencyObject>(template.LoadContent());
 
                     foreach (System.Windows.Controls.Border border in FindVisualChildren<System.Windows.Controls.Border>(root))
@@ -2050,7 +2050,7 @@ topMode: false,
         [Fact]
         public Task NavigationView_PaneDisplayModeChange_AnimatesPaneWidth_LeftAndLeftCompactAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2106,7 +2106,7 @@ topMode: false,
         [Fact]
         public Task NavigationView_LeftCompact_PaneOpen_ContentStartsAt320px_InlineAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2284,7 +2284,7 @@ topMode: false,
         [Fact]
         public Task NavigationView_LeftCompact_PaneToggle_ResizesPushingContentAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

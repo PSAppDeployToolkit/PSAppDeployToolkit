@@ -128,7 +128,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PipsPager_PipClick_SelectsPageAndRaisesSelectedIndexChangedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -292,7 +292,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PipsPager_SelectedPageIndex_CoercesIntoRangeAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -507,7 +507,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PipsPager_PipFills_UseNeutralStrongFillRolesAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -583,7 +583,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task PipsPager_PipSizeMorph_AnimatesSelectionAndSurvivesWindowRebuildAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

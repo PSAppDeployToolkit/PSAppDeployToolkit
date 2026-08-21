@@ -67,7 +67,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ThemeResource_OnElement_UpdatesAcrossThemeChangeAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
 
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ThemeResource_InStyleSetter_UpdatesAcrossThemeChangeAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
 
@@ -129,7 +129,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ThemeDictionary_XamlParsed_SwapsValuesAcrossStandardThemeCycleAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
 
@@ -187,7 +187,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ThemeDictionary_CodeFirst_UsesDefaultFallbackAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
 

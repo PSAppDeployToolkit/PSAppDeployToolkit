@@ -46,7 +46,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Button_FontIconIcon_MatchesTextForeground_AcrossStatesAndThemesAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -507,7 +507,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AppBarButton_FontIconIcon_MatchesTextForeground_SecondaryAndCompactAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

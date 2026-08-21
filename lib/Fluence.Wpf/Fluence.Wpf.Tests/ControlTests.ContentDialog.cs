@@ -142,7 +142,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_DeclaredAsWindowContentChild_CollapsedAtRestAndShowsViaShowAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_EnterInAcceptsReturnTextBox_DoesNotInvokeDefaultButtonAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -242,7 +242,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_EnterWithDefaultButton_InvokesDefaultViaBubblingAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -332,7 +332,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_Hide_PlaysDialogHiddenExitThenCompletesTaskAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -430,7 +430,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_ShowAsync_AddsOverlayAdornerAndReturnsPendingTaskAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -633,7 +633,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_CancelingPrimaryButtonClick_KeepsDialogOpenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -649,7 +649,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    dialog.PrimaryButtonClick += (_, args) => args.Cancel = true;
+                    dialog.PrimaryButtonClick += static (_, args) => args.Cancel = true;
 
                     Task<ContentDialogResult> task = dialog.ShowAsync();
                     bool templated = await WaitUntilAsync(window.Dispatcher, 2000,
@@ -696,7 +696,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_WhileOpen_BlocksPointerInputOutsideDialogAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -765,7 +765,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_WhileOpen_BlocksKeyInputOutsideDialogAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -837,7 +837,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_Open_UsesSurfaceStrokeAndPlaysEntranceAnimationAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -881,7 +881,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ContentDialog_OverFluenceWindow_HostsOverlayAboveTheWholeWindowAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

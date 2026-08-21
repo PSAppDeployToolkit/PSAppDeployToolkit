@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CommandBarFlyout_ShowAt_PresentsPrimaryCommandsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CommandBarFlyout_MoreButton_TracksSecondaryCommandsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -187,7 +187,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CommandBarFlyout_MoreButton_TogglesSecondaryOverflowAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -266,7 +266,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CommandBarFlyout_PrimaryCommandClick_RaisesClickAndHidesFlyoutAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -312,7 +312,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CommandBarFlyout_SecondaryCommands_UseOverflowStyleAndRenderLabelsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -357,7 +357,7 @@ namespace Fluence.Wpf.Tests
                     Style deleteButtonStyle = Assert.IsType<Style>(deleteButton.Style);
                     Assert.Same(secondaryStyle, deleteButtonStyle.BasedOn);
 
-                    Assert.NotNull(FindVisualChildren<TextBlock>(deleteButton).FirstOrDefault(textBlock => string.Equals(textBlock.Text, "Delete", StringComparison.Ordinal)));
+                    Assert.NotNull(FindVisualChildren<TextBlock>(deleteButton).FirstOrDefault(static textBlock => string.Equals(textBlock.Text, "Delete", StringComparison.Ordinal)));
                 }
                 finally
                 {
@@ -400,7 +400,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task AppBarButton_Pressed_AnimatesBackplatePressScaleAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

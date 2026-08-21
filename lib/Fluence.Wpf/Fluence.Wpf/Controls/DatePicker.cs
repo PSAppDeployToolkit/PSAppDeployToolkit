@@ -588,7 +588,7 @@ defaultValue: null,
         /// </summary>
         private Selector? GetFirstVisibleSelectorColumn()
         {
-            return GetOrderedVisibleFields().Select(GetSelector).FirstOrDefault(column => column?.Visibility is Visibility.Visible);
+            return GetOrderedVisibleFields().Select(GetSelector).FirstOrDefault(static column => column?.Visibility is Visibility.Visible);
         }
 
         private void OnMonthOrYearSelectionChanged(object sender, SelectionChangedEventArgs e)

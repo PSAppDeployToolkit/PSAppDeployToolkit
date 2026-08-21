@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DemoSamplePageWiring_RejectsSourceCountMismatchAsync()
         {
-            return WpfTestSta.RunOnStaAsync(delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
@@ -114,7 +114,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DemoSamplePageWiring_RejectsDuplicateSourceSlotsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DemoSamplePageWiring_RejectsUnusedContentSlotsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
@@ -146,7 +146,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DemoSamplePageWiring_RejectsZeroContentSlotAsync()
         {
-            return WpfTestSta.RunOnStaAsync(delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task DemoSamplePageWiring_RejectsDuplicateContentSlotsAsync()
         {
-            return WpfTestSta.RunOnStaAsync(delegate
+            return WpfTestSta.RunOnStaAsync(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
@@ -354,7 +354,7 @@ namespace Fluence.Wpf.Tests
         {
             const string classPrefix = "public partial class ";
             string namespaceName = GetNamespaceName(csharpSource);
-            if (SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(line => line.StartsWith(classPrefix, StringComparison.Ordinal)) is not string line)
+            if (SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(static line => line.StartsWith(classPrefix, StringComparison.Ordinal)) is not string line)
             {
                 throw new Xunit.Sdk.XunitException("Displayed C# source must declare a public partial class.");
             }
@@ -367,7 +367,7 @@ namespace Fluence.Wpf.Tests
         private static string GetNamespaceName(string csharpSource)
         {
             const string namespacePrefix = "namespace ";
-            return SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(line => line.StartsWith(namespacePrefix, StringComparison.Ordinal)) is not string line
+            return SplitLines(csharpSource).Select(static line => line.Trim()).FirstOrDefault(static line => line.StartsWith(namespacePrefix, StringComparison.Ordinal)) is not string line
                 ? throw new Xunit.Sdk.XunitException("Displayed C# source must declare a namespace.")
                 : line[namespacePrefix.Length..].Trim();
         }

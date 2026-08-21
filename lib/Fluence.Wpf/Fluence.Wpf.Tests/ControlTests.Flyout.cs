@@ -81,7 +81,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_ShowAt_OpensLightDismissPopupAndPresentsContentAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -140,7 +140,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_Hide_ClosesPopupAndRaisesClosingThenClosedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_ClosingCancel_KeepsFlyoutOpenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -229,7 +229,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_ContentChange_FlowsToPresenterAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -267,7 +267,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task FlyoutBase_ShowAttachedFlyout_OpensAttachedFlyoutAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -302,7 +302,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_PlacementModes_MapToPopupPlacementAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -360,7 +360,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_ShowAt_StampsRevealPlacementWithMappedSideAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -443,7 +443,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_Escape_HidesFlyoutThroughClosingPipelineAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -491,7 +491,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Flyout_ShowAt_FlowsTargetDataContextIntoPresenterAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

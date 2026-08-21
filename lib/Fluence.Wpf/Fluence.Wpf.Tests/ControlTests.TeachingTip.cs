@@ -113,7 +113,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_ClosedInPanel_RendersNothingBeforeFirstOpenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -159,7 +159,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_DeclaredAsBorderChild_OpensWithoutThrowingAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -197,7 +197,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_IsOpenTrue_OpensPopupAndRendersContentAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -235,13 +235,13 @@ namespace Fluence.Wpf.Tests
                     Assert.True(popup.StaysOpen, "Light dismiss is disabled by default, so the popup must stay open.");
 
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => FindVisualChildren<TextBlock>(tip)
-                            .Any(t => string.Equals(t.Text, "Update ready", StringComparison.Ordinal))).ConfigureAwait(true),
+                            .Any(static t => string.Equals(t.Text, "Update ready", StringComparison.Ordinal))).ConfigureAwait(true),
                         "The title must render inside the open tip.");
                     Assert.True(FindVisualChildren<TextBlock>(tip)
-                            .Any(t => string.Equals(t.Text, "Restart to apply the update", StringComparison.Ordinal)),
+                            .Any(static t => string.Equals(t.Text, "Restart to apply the update", StringComparison.Ordinal)),
                         "The subtitle must render inside the open tip.");
                     Assert.True(FindVisualChildren<TextBlock>(tip)
-                            .Any(t => string.Equals(t.Text, "Body text", StringComparison.Ordinal)),
+                            .Any(static t => string.Equals(t.Text, "Body text", StringComparison.Ordinal)),
                         "The body content must render inside the open tip.");
 
                     Assert.Equal(TeachingTipPlacementMode.Bottom, tip.ActualPlacement);
@@ -268,7 +268,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_IsOpenFalse_ClosesPopupAndRaisesClosedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -315,7 +315,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_IsLightDismissEnabled_MapsToPopupStaysOpenAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -359,7 +359,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_CloseButton_RaisesCloseButtonClickAndClosesAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -410,7 +410,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_ActionButton_RaisesActionButtonClickAndInvokesCommandAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -462,7 +462,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_NoTarget_DocksBottomRightAndHidesBeakAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -516,7 +516,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_PreferredPlacement_MapsToPopupPlacementAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -589,7 +589,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_CloseAffordance_FollowsCloseButtonContentAndLightDismissAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -652,7 +652,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_AlternateCloseButton_RunsCloseButtonPipelineAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -706,7 +706,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_Escape_ClosesTipAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -759,7 +759,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_OpenReveal_SettlesAtRestForEachPlacementAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -824,7 +824,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TeachingTip_OpenReveal_CenterTipFadesWithoutSlideAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

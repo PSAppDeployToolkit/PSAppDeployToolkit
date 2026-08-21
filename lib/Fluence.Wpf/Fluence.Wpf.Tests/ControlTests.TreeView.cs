@@ -238,7 +238,7 @@ namespace Fluence.Wpf.Tests
 
                     if (triggerBase is MultiTrigger multiTrigger)
                     {
-                        foreach (Condition condition in multiTrigger.Conditions.Where(condition => condition.Property == UIElement.IsMouseOverProperty))
+                        foreach (Condition condition in multiTrigger.Conditions.Where(static condition => condition.Property == UIElement.IsMouseOverProperty))
                         {
                             if (condition.SourceName.Equals("ItemBorder", StringComparison.Ordinal))
                             {

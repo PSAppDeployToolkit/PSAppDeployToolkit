@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ApplyApplicationAccent_RaisesAccentColorChangedOnceAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -124,7 +124,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ApplyCustomAccent_RaisesAccentColorChangedOnceAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
@@ -174,7 +174,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ApplyCustomAccent_PerThemeSeeds_RaisesAccentColorChangedOnceAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 

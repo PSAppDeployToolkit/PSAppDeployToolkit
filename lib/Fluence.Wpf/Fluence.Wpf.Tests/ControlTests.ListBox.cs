@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ListBox_SelectionIndicator_SlidesInAtFullSizeWhenSelectedAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

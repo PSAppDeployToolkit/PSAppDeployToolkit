@@ -165,7 +165,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task GalleryIconsPage_SearchFiltersCatalogAndSelectsFirstResultAsync()
         {
-            return RunDemoPageTestAsync(() => new GalleryIconsPage(), window =>
+            return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
                 Controls.AutoSuggestBox search = Assert.IsAssignableFrom<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"));
                 Controls.ListView list = Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"));
@@ -193,7 +193,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task GalleryIconsPage_ClickingTileSelectsIconAndPopulatesSidebarAsync()
         {
-            return RunDemoPageTestAsync(() => new GalleryIconsPage(), window =>
+            return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
                 Controls.ListView list = Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"));
 
@@ -222,7 +222,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task GalleryIconsPage_SidebarGlyphFieldsMatchWinUiGalleryFormatsAsync()
         {
-            return RunDemoPageTestAsync(() => new GalleryIconsPage(), window =>
+            return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
                 Controls.AutoSuggestBox search = Assert.IsAssignableFrom<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"));
 

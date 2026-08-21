@@ -233,7 +233,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task FluenceWindow_CloseCommand_FiresClosingEventAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async delegate
+            return WpfTestSta.RunOnStaAsync(static async delegate
             {
                 _ = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);

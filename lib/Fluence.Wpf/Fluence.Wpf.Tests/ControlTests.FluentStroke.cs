@@ -298,7 +298,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Card_Click_FiresOnMouseDownThenUp_WhenIsClickableAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -350,7 +350,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task Card_Click_DoesNotFire_WhenNotClickableAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

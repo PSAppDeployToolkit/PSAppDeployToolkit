@@ -278,7 +278,7 @@ When adding a new control or materially changing an existing one:
 - **InternalsVisibleTo**: the test assembly sees library internals; theme tests can call `ApplicationThemeManager.ResetForTesting()` to isolate fixtures.
 - **Baseline policy**: the HEAD-of-branch test count is the floor. Add tests, do not weaken it. If a test is legitimately obsoleted by a design change, remove the whole file in the same commit that supersedes it, record the rationale in `CHANGELOG.md`, and update this handbook if the testing pattern itself changed.
 - **Known pre-existing failures**: a root `KNOWN_ISSUES.md` exists; it tracks deliberate non-features and resolved follow-ups, not accepted test failures. If a failing test is ever accepted instead of fixed, record it there with the reproduction, affected TFM, reason, owner, and intended fix. A green local run is `total - skipped - known-failures = passed`; do not merge if your own changes add to the known-failure count.
-- **Screenshot harness**: `Fluence.Wpf.Tests/GalleryScreenshotHarness.cs` writes the ten documentation PNGs under `docs/screenshots/` - the gallery shell in its three navigation modes (`gallery-home` / Left, `gallery-buttons` / LeftCompact, `gallery-status` / Top) plus the MVVM (`mvvm`) and PowerShell controls-tour (`powershell`) apps, each in Light and Dark. Capture is **opt-in**: the tests are `[TestCategory("Screenshots")]` and skip (inconclusive) unless `FLUENCE_CAPTURE_SCREENSHOTS=1`, so an ordinary `dotnet test` never overwrites the committed images; set the variable to regenerate. DWM backdrops (Mica / Acrylic) are _not_ captured by `RenderTargetBitmap`, so each surface is hosted in a plain off-screen `Window` over a solid `SolidBackgroundFillColorBaseBrush`.
+- **Screenshot harness**: `Fluence.Wpf.Tests/GalleryScreenshotHarness.cs` writes the ten documentation PNGs under `docs/screenshots/` - the gallery shell in its three navigation modes (`gallery-home` / Left, `gallery-buttons` / LeftCompact, `gallery-status` / Top) plus the MVVM (`mvvm`) and PowerShell controls-tour (`powershell`) apps, each in Light and Dark. Capture is **opt-in**: the tests are `[Trait("Category", "Screenshots")]` and skip (inconclusive) unless `FLUENCE_CAPTURE_SCREENSHOTS=1`, so an ordinary `dotnet test` never overwrites the committed images; set the variable to regenerate. DWM backdrops (Mica / Acrylic) are _not_ captured by `RenderTargetBitmap`, so each surface is hosted in a plain off-screen `Window` over a solid `SolidBackgroundFillColorBaseBrush`.
 
 ---
 
@@ -297,6 +297,24 @@ dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-wi
 - The gallery demo is run with `dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -f net472` or the matching `net10.0-windows10.0.26100.0` TFM.
 - For visual verification: exercise Light / Dark / High Contrast / Auto, a couple of accent swatches, Mica / Acrylic / Tabbed / None backdrops, and at least one control per gallery page.
 
+### Package management and lock files
+
+Package versions are managed centrally in [Directory.Packages.props](Directory.Packages.props). Do not put `Version` attributes on individual `PackageReference` items.
+
+[nuget.config](nuget.config) closes the supply chain:
+
+- Restore uses nuget.org and nothing else. Inherited user-level and machine-level feeds are cleared, so a package cannot arrive from a feed this repository does not name.
+- Package source mapping binds every package ID to that feed, which is what blocks dependency-confusion substitution. Adding a private feed means giving it the narrowest patterns that cover its packages.
+- `signatureValidationMode` is `require`, so any package without a valid nuget.org signature fails restore with `NU3034`. When nuget.org rotates its certificates this fails everywhere at once; regenerate the `trustedSigners` block with `dotnet nuget trust source nuget.org` rather than editing fingerprints by hand.
+
+Every project has a committed `packages.lock.json` pinning the exact resolved version and content hash of each dependency, transitive ones included:
+
+- **Changing a package version means regenerating lock files.** Run `dotnet restore Fluence.Wpf.sln`, adding `--force-evaluate` when only a transitive dependency moved, then commit the changed `packages.lock.json` files together with the version change.
+- **NuGet writes lock files with CRLF on Windows, and the text policy gate requires LF.** Normalise regenerated lock files before committing, or `-CheckAll` fails with "must use LF line endings".
+- CI sets `RestoreLockedMode` through the `GITHUB_ACTIONS` environment variable, so a lock file that disagrees with its project fails the build with `NU1004` rather than being silently rewritten.
+- Locked mode only validates a lock file that already exists. A project with no lock file restores clean and simply generates one, so check `git status` after adding a project.
+- Dependabot raises weekly `nuget` updates. If one of those pull requests bumps a version without regenerating the lock files, CI fails with `NU1004`; regenerate locally and push to that branch.
+
 ### CI/CD pipeline
 
 CI is defined in [.github/workflows/build.yml](.github/workflows/build.yml) and triggered by any push or pull request targeting `main`, plus `v*` tag pushes. The `build` job on `windows-latest` checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts (net472, net8.0-windows, and net10.0-windows library binaries, the demo, and the nupkg). A `v*` tag additionally runs a `release` job after `build` succeeds: it zips the per-TFM binaries and the demo, and creates the GitHub release for the tag with those assets and the nupkg attached (tags containing `-pre` are marked prerelease). NuGet publish remains commented out as a deliberate manual release step.
@@ -309,8 +327,8 @@ flowchart TD
     G --> D[Cache NuGet packages]
     D --> E[dotnet restore]
     E --> H[Build solution Release]
-    H --> I[Test net472<br/>filter TestCategory!=Screenshots, TRX]
-    I --> J[Test net10.0-windows10.0.26100.0<br/>filter TestCategory!=Screenshots, TRX]
+    H --> I[Test net472<br/>filter-not-trait Category=Screenshots, TRX]
+    I --> J[Test net10.0-windows10.0.26100.0<br/>filter-not-trait Category=Screenshots, TRX]
     J --> K[Upload test results<br/>always]
     K --> L[Pack NuGet]
     L --> M[Upload artifacts<br/>dotnet10 lib, dotnet8 lib, dotnet472 lib, demo, nupkg]

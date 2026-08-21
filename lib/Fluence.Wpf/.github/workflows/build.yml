@@ -41,11 +41,15 @@ jobs:
       # Screenshots-category tests are PNG regenerators (no pass/fail assertion beyond
       # "rendered without throwing"); they run in full local test runs to refresh
       # docs/screenshots but are skipped here to keep CI fast.
+      #
+      # global.json opts dotnet test into the Microsoft.Testing.Platform runner, so these steps
+      # use MTP options. The VSTest target these previously used is rejected outright by MTP on
+      # the .NET 10 SDK. Trait filtering is by the xunit trait name (Category), not TestCategory.
       - name: Test (.NET Framework 4.7.2)
-        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build --verbosity normal --filter "TestCategory!=Screenshots" --logger "trx;LogFileName=net472.trx" --results-directory TestResults/net472
+        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net472.trx --results-directory TestResults/net472
 
       - name: Test (.NET 10)
-        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build --verbosity normal --filter "TestCategory!=Screenshots" --logger "trx;LogFileName=net10.trx" --results-directory TestResults/net10
+        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net10.trx --results-directory TestResults/net10
 
       - name: Upload test results
         if: always()

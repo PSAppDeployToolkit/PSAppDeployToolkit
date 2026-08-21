@@ -177,7 +177,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TabView_AddTabButtonClick_RaisesAddTabButtonClickEventAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -217,7 +217,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task TabViewItem_CloseButton_RaisesCloseRequestedAndBubblesToTabViewAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

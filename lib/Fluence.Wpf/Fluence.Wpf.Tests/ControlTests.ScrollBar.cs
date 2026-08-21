@@ -60,7 +60,7 @@ namespace Fluence.Wpf.Tests
             Grid root = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(scrollBar, "Root"));
 
             IList groups = VisualStateManager.GetVisualStateGroups(root);
-            Storyboard storyboard = Assert.IsAssignableFrom<Storyboard>(groups.Cast<VisualStateGroup>().SelectMany(group => group.States.Cast<VisualState>()).FirstOrDefault(candidate => string.Equals(candidate.Name, stateName, StringComparison.Ordinal))?.Storyboard);
+            Storyboard storyboard = Assert.IsAssignableFrom<Storyboard>(groups.Cast<VisualStateGroup>().SelectMany(static group => group.States.Cast<VisualState>()).FirstOrDefault(candidate => string.Equals(candidate.Name, stateName, StringComparison.Ordinal))?.Storyboard);
 
             foreach (Timeline timeline in storyboard.Children)
             {

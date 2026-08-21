@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task NavigationView_TopMode_OverflowMenuInvokesHiddenItemAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application application = WpfTestSta.EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);

@@ -372,7 +372,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ThemeChanged_FiresOnApplyAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
@@ -1149,7 +1149,7 @@ namespace Fluence.Wpf.Tests
             // PSADT case are also Topmost - a combination that can mask bugs a Show() test misses.
             // We schedule the click via Dispatcher.BeginInvoke(ApplicationIdle) from Loaded so
             // the command fires after the modal frame is pumping, then verify WindowState.
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);
@@ -1349,7 +1349,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task CaptionButtons_AboveContent_WhenExtendsContentIntoTitleBarAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 ResourceDictionary? dict = MergeTheme(app);

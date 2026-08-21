@@ -25,6 +25,23 @@
     <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
   </PropertyGroup>
 
+  <!--
+    Restore writes a packages.lock.json beside each project, pinning the exact resolved version and content
+    hash of every dependency, transitive ones included. Several entries in Directory.Packages.props can
+    resolve to more than one version over time, so without a lock file the restored graph can shift with no
+    change to this repository. Commit the updated lock files alongside whatever changed them.
+
+    In CI, RestoreLockedMode makes restore fail with NU1004 instead of quietly rewriting the lock file, so
+    a dependency change nobody committed cannot ride along in a build.
+
+    NuGet writes lock files with CRLF on Windows. This repository mandates LF, so normalise regenerated
+    lock files before committing them.
+  -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(GITHUB_ACTIONS)' == 'true'">true</RestoreLockedMode>
+  </PropertyGroup>
+
   <!-- Common company/product metadata -->
   <PropertyGroup>
     <Authors>Dan Cunningham</Authors>

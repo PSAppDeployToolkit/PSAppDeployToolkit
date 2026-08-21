@@ -102,12 +102,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_Defaults_AreWinUiCanonAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     Assert.False(button.IsChecked);
                     Assert.Equal(new CornerRadius(4), button.CornerRadius);
@@ -123,12 +123,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_DefaultStyle_ExposesTemplatePartsAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     Assert.NotNull(GetPrimaryButtonPart(button));
                     Assert.NotNull(GetSecondaryButtonPart(button));
@@ -144,11 +144,11 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_PrimaryClick_TogglesThenRaisesClickAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     int clickCount = 0;
                     bool? checkedInsideHandler = null;
@@ -171,11 +171,11 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_PrimaryClick_SecondClickTogglesOffAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     int clickCount = 0;
                     button.Click += (_, _) => clickCount++;
@@ -194,11 +194,11 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_PrimaryClick_StillExecutesCommandAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     int executeCount = 0;
                     button.Command = new ToggleSplitButtonRelayCommand(_ => executeCount++);
@@ -215,12 +215,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_IsCheckedChanged_RaisesWithNewValueAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     int raiseCount = 0;
                     object? lastSender = null;
@@ -247,12 +247,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_SecondaryToggle_OpensFlyoutWithoutTogglingAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     Flyout = "Flyout content",
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     ToggleButton secondary = GetSecondaryButtonPart(button);
                     Popup popup = Assert.IsType<Popup>(button.Template?.FindName("PART_Popup", button));
@@ -276,13 +276,13 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_Checked_AccentFillsBothHalvesAndBackdropsAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsChecked = true,
                     IsHitTestVisible = false,
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     Border primaryFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(button, "PrimaryFill"));
                     Border secondaryFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(button, "SecondaryFill"));
@@ -303,12 +303,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_Checked_DividerUsesCheckedDividerBrushAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     Rectangle divider = Assert.IsAssignableFrom<Rectangle>(FindVisualChildByName<Rectangle>(button, "Divider"));
 
@@ -329,13 +329,13 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_CheckedFlyoutOpen_TintsBothHalvesPressedFillAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsChecked = true,
                     Flyout = "Flyout content",
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     ToggleButton secondary = GetSecondaryButtonPart(button);
                     secondary.IsChecked = true;
@@ -359,13 +359,13 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_CheckedDisabled_UsesAccentDisabledPaletteAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsChecked = true,
                     IsEnabled = false,
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     Border primaryFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(button, "PrimaryFill"));
                     Border secondaryFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(button, "SecondaryFill"));
@@ -382,12 +382,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_AutomationPeer_ExposesToggleAndExpandCollapseAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
 
@@ -403,12 +403,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_TogglePattern_TogglesStateAndRaisesEventAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     int raiseCount = 0;
                     button.IsCheckedChanged += (_, _) => raiseCount++;
@@ -432,12 +432,12 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_ExpandCollapsePattern_OpensAndClosesFlyoutAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     Flyout = "Flyout content",
                 },
-                (_, button) =>
+                static (_, button) =>
                 {
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
                     IExpandCollapseProvider expandProvider = Assert.IsAssignableFrom<IExpandCollapseProvider>(peer.GetPattern(PatternInterface.ExpandCollapse));
@@ -464,12 +464,12 @@ namespace Fluence.Wpf.Tests
             // DefaultControlFocusVisualStyle adorner on each half, which WPF shows only
             // for keyboard navigation (Tab), never on mouse click - matching DropDownButton.
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsHitTestVisible = false,
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     Button primary = GetPrimaryButtonPart(button);
                     ToggleButton secondary = GetSecondaryButtonPart(button);
@@ -486,13 +486,13 @@ namespace Fluence.Wpf.Tests
         public Task ToggleSplitButton_ThemeCycle_CheckedBrushesReResolveAsync()
         {
             return RunToggleSplitButtonTestAsync(
-                () => new Controls.ToggleSplitButton
+                static () => new Controls.ToggleSplitButton
                 {
                     Content = "Toggle",
                     IsChecked = true,
                     IsHitTestVisible = false,
                 },
-                (application, button) =>
+                static (application, button) =>
                 {
                     ThemeTestHelpers.ApplyStandardThemeCycle();
                     WpfTestSta.DrainDispatcher(button.Dispatcher);

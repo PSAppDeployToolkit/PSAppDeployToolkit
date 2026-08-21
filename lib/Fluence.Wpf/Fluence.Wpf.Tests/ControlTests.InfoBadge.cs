@@ -173,7 +173,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 IList groups = VisualStateManager.GetVisualStateGroups(FindVisualChild<Grid>(badge));
-                VisualStateGroup dkg = Assert.IsType<VisualStateGroup>(groups.OfType<VisualStateGroup>().FirstOrDefault(vsg => string.Equals(vsg.Name, "DisplayKindStates", StringComparison.Ordinal)));
+                VisualStateGroup dkg = Assert.IsType<VisualStateGroup>(groups.OfType<VisualStateGroup>().FirstOrDefault(static vsg => string.Equals(vsg.Name, "DisplayKindStates", StringComparison.Ordinal)));
                 HashSet<string> stateNames = new(StringComparer.OrdinalIgnoreCase);
                 foreach (object? s in dkg.States)
                 {

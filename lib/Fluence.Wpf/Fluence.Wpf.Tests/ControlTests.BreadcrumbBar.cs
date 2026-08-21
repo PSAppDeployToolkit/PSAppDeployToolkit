@@ -170,7 +170,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task BreadcrumbBar_CrumbClick_RaisesItemClickedWithItemAndIndexAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -224,7 +224,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task BreadcrumbBarItem_MouseAndKeyboard_ActivateCrumbAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -293,7 +293,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task BreadcrumbBar_ItemsChanges_UpdateLastItemStateAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -403,7 +403,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task BreadcrumbBarItem_Pressed_AnimatesContentPlatePressScaleAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async () =>
+            return WpfTestSta.RunOnStaAsync(static async () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);

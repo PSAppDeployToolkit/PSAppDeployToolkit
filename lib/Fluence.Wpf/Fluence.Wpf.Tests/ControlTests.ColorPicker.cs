@@ -132,7 +132,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ColorPicker_SetColor_RaisesColorChangedAndUpdatesHexTextAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -239,7 +239,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task ColorPicker_HueSlider_UpdatesColorAtFullSaturationAndValueAsync()
         {
-            return WpfTestSta.RunOnStaAsync(() =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -534,8 +534,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_OptionSurfaceDefaults_MatchWinUiAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, _, _) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, _, _) =>
                 {
                     Assert.True(picker.IsColorPreviewVisible, "IsColorPreviewVisible must default to true.");
                     Assert.True(picker.IsColorSliderVisible, "IsColorSliderVisible must default to true.");
@@ -550,8 +550,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_IsColorPreviewVisible_TogglesSwatchSectionAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     FrameworkElement swatchSection = GetTemplateElement<FrameworkElement>(template, picker, "SwatchSection");
                     Assert.Equal(Visibility.Visible, swatchSection.Visibility);
@@ -570,8 +570,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_IsColorSliderVisible_TogglesHueSectionAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     FrameworkElement hueSection = GetTemplateElement<FrameworkElement>(template, picker, "HueSection");
                     FrameworkElement spectrumSection = GetTemplateElement<FrameworkElement>(template, picker, "SpectrumSection");
@@ -590,8 +590,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_IsHexInputVisible_TogglesHexTextBoxOnlyAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
                     FrameworkElement representationComboBox = GetTemplateElement<FrameworkElement>(template, picker, "ColorRepresentationComboBox");
@@ -610,8 +610,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_AlphaVisibilityFlags_AndWithIsAlphaEnabledAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { IsAlphaEnabled = true },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                static (picker, template, window) =>
                 {
                     FrameworkElement alphaSection = GetTemplateElement<FrameworkElement>(template, picker, "AlphaSection");
                     FrameworkElement alphaInputPanel = GetTemplateElement<FrameworkElement>(template, picker, "AlphaInputPanel");
@@ -642,8 +642,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_MoreButton_DefaultCollapsedWithTextEntryVisibleAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, _) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, _) =>
                 {
                     FrameworkElement moreButton = GetTemplateElement<FrameworkElement>(template, picker, "MoreButton");
                     FrameworkElement textEntryGrid = GetTemplateElement<FrameworkElement>(template, picker, "TextEntryGrid");
@@ -657,8 +657,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_MoreButton_TogglesTextEntryGridAndLabelAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { IsMoreButtonVisible = true },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { IsMoreButtonVisible = true },
+                static (picker, template, window) =>
                 {
                     Controls.ToggleButton moreButton = GetTemplateElement<Controls.ToggleButton>(template, picker, "MoreButton");
                     FrameworkElement textEntryGrid = GetTemplateElement<FrameworkElement>(template, picker, "TextEntryGrid");
@@ -686,8 +686,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_ColorRepresentationComboBox_SwapsRgbAndHsvPanelsAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     Controls.ComboBox representationComboBox = GetTemplateElement<Controls.ComboBox>(template, picker, "ColorRepresentationComboBox");
                     FrameworkElement rgbPanel = GetTemplateElement<FrameworkElement>(template, picker, "RgbChannelPanel");
@@ -709,8 +709,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_RgbTextEntry_CommitsLivePreservingExactRgbAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     TextBox redTextBox = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
                     TextBox greenTextBox = GetTemplateElement<TextBox>(template, picker, "PART_GreenTextBox");
@@ -732,8 +732,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_HsvTextEntry_GoesThroughHsvModelWithoutQuantizingSiblingsAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(template, picker, "PART_SpectrumArea");
                     TextBox hueTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HueTextBox");
@@ -763,8 +763,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_ChannelTextEntry_InvalidInputRestoredOnEnterAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     TextBox redTextBox = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
 
@@ -784,8 +784,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_AlphaTextEntry_ParsesPercentAndNormalizesAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { IsAlphaEnabled = true },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                static (picker, template, window) =>
                 {
                     TextBox alphaTextBox = GetTemplateElement<TextBox>(template, picker, "PART_AlphaTextBox");
 
@@ -817,8 +817,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_IsColorChannelTextInputVisible_CollapsesChannelPanelNotHexOrAlphaAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { IsAlphaEnabled = true },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                static (picker, template, window) =>
                 {
                     FrameworkElement representationComboBox = GetTemplateElement<FrameworkElement>(template, picker, "ColorRepresentationComboBox");
                     FrameworkElement channelPanel = GetTemplateElement<FrameworkElement>(template, picker, "ColorChannelTextInputPanel");
@@ -840,8 +840,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_HexMaxLength_TracksIsAlphaEnabledAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
                 {
                     TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
 
@@ -858,8 +858,8 @@ namespace Fluence.Wpf.Tests
         public Task ColorPicker_SpectrumArea_IsFocusableTabStopAsync()
         {
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker(),
-                (picker, template, _) =>
+                static () => new Controls.ColorPicker(),
+                static (picker, template, _) =>
                 {
                     FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
                         template, picker, "PART_SpectrumArea");
@@ -881,8 +881,8 @@ namespace Fluence.Wpf.Tests
             // Start with a mid-saturation color: FromRgb(128, 64, 64) has saturation ~0.5
             // (Max=128, Min=64, S=(128-64)/128=0.5) so pressing Right has room to increase it.
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { Color = Color.FromRgb(0x80, 0x40, 0x40) },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { Color = Color.FromRgb(0x80, 0x40, 0x40) },
+                static (picker, template, window) =>
                 {
                     FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
                         template, picker, "PART_SpectrumArea");
@@ -914,8 +914,8 @@ namespace Fluence.Wpf.Tests
         {
             // Start dark so Value (brightness) has room to increase.
             return RunColorPickerOptionTestAsync(
-                () => new Controls.ColorPicker { Color = Color.FromRgb(0x40, 0x20, 0x00) },
-                (picker, template, window) =>
+                static () => new Controls.ColorPicker { Color = Color.FromRgb(0x40, 0x20, 0x00) },
+                static (picker, template, window) =>
                 {
                     FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
                         template, picker, "PART_SpectrumArea");

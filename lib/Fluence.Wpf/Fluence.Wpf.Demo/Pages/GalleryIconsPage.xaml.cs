@@ -295,7 +295,7 @@ namespace Fluence.Wpf.Demo.Pages
 
             List<IconCatalogItem> namedIcons = new(knownNames.Count);
             List<IconCatalogItem> unnamedIcons = [];
-            foreach (int code in glyphTypeface.CharacterToGlyphMap.Keys.Where(character => character is >= 0xE000 and <= 0xF8FF).Order())
+            foreach (int code in glyphTypeface.CharacterToGlyphMap.Keys.Where(static character => character is >= 0xE000 and <= 0xF8FF).Order())
             {
                 string codeText = code.ToString("X4", CultureInfo.InvariantCulture);
                 string glyph = char.ConvertFromUtf32(code);
