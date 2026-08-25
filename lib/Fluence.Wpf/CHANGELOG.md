@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.16-Preview] - 2026-08-25
+
+### Fixed
+
+- `FluenceWindow` no longer paints client content over its own rounded corners. A WPF `Border` draws a rounded outline but does not clip its child, and the child is inset only by `BorderThickness`, so its square corners overlap the arc and anything opaque there covers the outline. The caption close button's pointer-over fill sits in exactly that spot, which is why hovering close left a jagged red block where the top-right corner should be, and DWM does not hide it because the corner it masks is the window's, not the border's. The shell now clips the template root border's child to the same rounded rect, one border thickness in, so the outline stays continuous and WPF anti-aliases the caption fill into the corner the way WinUI does. Square corners (`CornerPreference.DoNotRound`, or a maximized window) get no clip at all. The template root border is now the named template part `PART_WindowBorder`.
+- Light theme: an inactive `FluenceWindow` no longer draws a near-white halo around itself. Suppressing the DWM border in 0.8.15-preview made the template hairline the only outline, and its inactive brush was `CardStrokeColorDefaultSolidBrush`, opaque `#EBEBEB`, which is invisible against a light window surface and reads as a bright ring against a dark desktop. The inactive (and accent-borders-off) border is now `SurfaceStrokeColorDefaultBrush`, the WinUI window-surface stroke at 40% `#757575` in both Light and Dark, which is the same nominal colour DWM composites for its own border, so the single border Fluence draws reads like the system one over any content. `FluenceWindow`'s default `BorderBrush` in `Themes/Controls/FluenceWindow.xaml` follows the same key.
+
 ## [0.8.15-Preview] - 2026-08-25
 
 ### Added

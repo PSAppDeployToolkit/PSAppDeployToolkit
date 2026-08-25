@@ -419,7 +419,7 @@ namespace Fluence.Wpf.Tests
                     "TextFillColorDisabledBrush",
                     "SubtleFillColorSecondaryBrush",
                     "SubtleFillColorTertiaryBrush",
-                    "CardStrokeColorDefaultSolidBrush",
+                    "SurfaceStrokeColorDefaultBrush",
                 ];
 
                 foreach (string key in themeBrushKeys)

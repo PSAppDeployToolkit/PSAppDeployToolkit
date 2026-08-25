@@ -105,7 +105,7 @@
 
     <Style TargetType="{x:Type controls:FluenceWindow}">
         <Setter Property="Background" Value="{DynamicResource ApplicationBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolidBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
@@ -125,7 +125,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:FluenceWindow}">
                     <Border
-                        x:Name="WindowBorder"
+                        x:Name="PART_WindowBorder"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
@@ -291,10 +291,10 @@
                             maximized window still flattens to 0 whatever CornerStyle asks for.
                         -->
                         <Trigger Property="CornerStyle" Value="DoNotRound">
-                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="0" />
+                            <Setter TargetName="PART_WindowBorder" Property="CornerRadius" Value="0" />
                         </Trigger>
                         <Trigger Property="CornerStyle" Value="RoundSmall">
-                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+                            <Setter TargetName="PART_WindowBorder" Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
                         </Trigger>
 
                         <!--
@@ -304,7 +304,7 @@
                             so the border has a single owner.
                         -->
                         <Trigger Property="WindowState" Value="Maximized">
-                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="0" />
+                            <Setter TargetName="PART_WindowBorder" Property="CornerRadius" Value="0" />
                         </Trigger>
 
                         <!--  Show icon when set and ShowIcon is true  -->

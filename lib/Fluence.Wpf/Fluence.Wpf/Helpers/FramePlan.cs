@@ -62,8 +62,8 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Gets the <c>DynamicResource</c> key for the border brush to apply to the template
         /// border element. <c>"SystemAccentColorBrush"</c> when the window is active and accent
-        /// borders are enabled; <c>"CardStrokeColorDefaultSolidBrush"</c> when the window is
-        /// inactive or accent borders are off.
+        /// borders are enabled; <c>"SurfaceStrokeColorDefaultBrush"</c>, the WinUI window-surface
+        /// stroke, when the window is inactive or accent borders are off.
         /// </summary>
         internal string TemplateBorderBrushResourceKey { get; } = templateBorderBrushResourceKey;
 

@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
         {
             Border? border = WpfTestSta
                 .FindVisualDescendants<Border>(window)
-                .FirstOrDefault(static b => string.Equals(b.Name, "WindowBorder", StringComparison.Ordinal));
+                .FirstOrDefault(static b => string.Equals(b.Name, "PART_WindowBorder", StringComparison.Ordinal));
             return border ?? throw new InvalidOperationException(
                 "Expected the template root Border named 'WindowBorder' to be present after Show().");
         }
