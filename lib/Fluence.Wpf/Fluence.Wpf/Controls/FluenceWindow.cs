@@ -1094,7 +1094,8 @@ namespace Fluence.Wpf.Controls
                 WindowState,
                 IsActive,
                 ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
-                capabilities);
+                capabilities,
+                ApplicationAccentColorManager.SystemAccentColor);
 
             SetCurrentValue(BorderThicknessProperty, plan.TemplateBorderThickness);
             BorderBrush = TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent;

@@ -450,14 +450,11 @@ namespace Fluence.Wpf.Tests
         }
 
         // ---------------------------------------------------------------------------
-        // 8. Single-border wiring.
+        // 8. Border wiring.
         //
-        // DWM composites its own 1 px window border semi-transparently, so a COLORREF written to
-        // DWMWA_BORDER_COLOR can never resolve to the same on-screen colour as the opaque template
-        // border painted just inside the client area. The DWM border is therefore suppressed with
-        // the DWMWA_COLOR_NONE sentinel and WindowPolicy.BuildFramePlan owns the one border that
-        // remains: ApplyFrame writes its thickness to BorderThickness on every activation and
-        // state change, which is why the maximized template trigger no longer sets it.
+        // DWM draws the outer border and WindowPolicy.BuildFramePlan owns the template one just
+        // inside it: ApplyFrame writes the plan's thickness to BorderThickness on every activation
+        // and state change, which is why the maximized template trigger no longer sets it.
         // ---------------------------------------------------------------------------
 
         [Fact]
@@ -486,9 +483,14 @@ namespace Fluence.Wpf.Tests
                         w.WindowState,
                         w.IsActive,
                         ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
-                        WindowCapabilities.Current);
+                        WindowCapabilities.Current,
+                        ApplicationAccentColorManager.SystemAccentColor);
 
-                    Assert.Equal(new Thickness(1), plan.TemplateBorderThickness);
+                    // 0 wherever DWM can draw the border itself (Windows 11), 2 dp on Windows 10
+                    // where the template border is the only outline available.
+                    Assert.Equal(
+                        WindowCapabilities.Current.SupportsBorderColor ? new Thickness(0) : new Thickness(2),
+                        plan.TemplateBorderThickness);
                     Assert.Equal(plan.TemplateBorderThickness, w.BorderThickness);
 
                     // ApplyFrame is the single writer: perturb the value and re-run it.

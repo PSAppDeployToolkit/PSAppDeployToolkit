@@ -32,6 +32,7 @@ using System.Windows.Media;
 using System.Windows.Shell;
 using Fluence.Wpf.Controls;
 using Fluence.Wpf.Helpers;
+using Fluence.Wpf.Native;
 using Windows.Win32;
 using Windows.Win32.Graphics.Dwm;
 using Xunit;
@@ -737,52 +738,79 @@ namespace Fluence.Wpf.Tests
 
         #endregion GetResizeBorderThickness - maximised / non-resize matrix
 
-        #region BuildFramePlan - DWM border suppression and brush selection
+        #region BuildFramePlan - DWM border ownership and brush selection
 
-        // Single-border strategy: the DWM border composites semi-transparently, so it can never
-        // match the opaque template border painted inside the client area. On any OS that exposes
-        // DWMWA_BORDER_COLOR the plan writes the DWMWA_COLOR_NONE suppression sentinel in every
-        // activation state and lets the 1 dp template hairline be the only border on screen.
+        // DWM owns the border wherever it can draw one. A brush painted inside the client area
+        // composites over the window's own surface, never over the desktop, so an inner border
+        // shows as a pale line between the system border and the content and no stroke token can
+        // make it dark enough in Light theme. On an OS with DWMWA_BORDER_COLOR the plan therefore
+        // writes the accent COLORREF when the window is active with accent borders and
+        // DWMWA_COLOR_DEFAULT otherwise, and takes the template border to 0. Windows 10 has no such
+        // attribute, so there the 2 dp template border is the outline.
 
         [Fact]
-        public void BuildFramePlan_Normal_ActiveWithAccentBorder_UsesAccentKey()
+        public void BuildFramePlan_Normal_ActiveWithAccentBorder_UsesAccentKeyAndAccentDwmBorder()
         {
             FramePlan plan = WindowPolicy.BuildFramePlan(
                 WindowState.Normal,
                 isActive: true,
                 isAccentBorderEnabled: true,
-                capabilities: Caps(borderColor: true));
+                capabilities: Caps(borderColor: true),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
 
-            Assert.Equal(new Thickness(1), plan.TemplateBorderThickness);
+            Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
             Assert.Equal("SystemAccentColorBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
-            Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
+            Assert.Equal(NativeMethods.ColorToColorRef(Color.FromRgb(0x00, 0x78, 0xD4)), plan.DwmBorderColor);
         }
 
         [Fact]
-        public void BuildFramePlan_Normal_Inactive_UsesSurfaceStrokeKey()
+        public void BuildFramePlan_Normal_Inactive_UsesCardStrokeKeyAndDwmDefault()
         {
             FramePlan plan = WindowPolicy.BuildFramePlan(
                 WindowState.Normal,
                 isActive: false,
                 isAccentBorderEnabled: true,
-                capabilities: Caps(borderColor: true));
+                capabilities: Caps(borderColor: true),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
 
-            Assert.Equal("SurfaceStrokeColorDefaultBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
-            Assert.Equal(new Thickness(1), plan.TemplateBorderThickness);
-            Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
+            Assert.Equal("CardStrokeColorDefaultSolidBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
+            Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
+            Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
         }
 
         [Fact]
-        public void BuildFramePlan_AccentBorderDisabled_StillSuppressesDwmBorder()
+        public void BuildFramePlan_AccentBorderDisabled_LeavesDwmBorderToWindows()
         {
             FramePlan plan = WindowPolicy.BuildFramePlan(
                 WindowState.Normal,
                 isActive: true,
                 isAccentBorderEnabled: false,
-                capabilities: Caps(borderColor: true));
+                capabilities: Caps(borderColor: true),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
 
-            Assert.Equal("SurfaceStrokeColorDefaultBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
-            Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
+            Assert.Equal("CardStrokeColorDefaultSolidBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
+            Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
+        }
+
+        [Fact]
+        public void BuildFramePlan_NeverSuppressesTheDwmBorder()
+        {
+            // Regression guard: DWMWA_COLOR_NONE hides the one border that composites against the
+            // desktop, which is what produced the Light-theme halo around an inactive window.
+            foreach (bool active in new[] { true, false })
+            {
+                foreach (bool accent in new[] { true, false })
+                {
+                    FramePlan plan = WindowPolicy.BuildFramePlan(
+                        WindowState.Normal,
+                        active,
+                        accent,
+                        Caps(borderColor: true),
+                        Color.FromRgb(0x00, 0x78, 0xD4));
+
+                    Assert.NotEqual(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
+                }
+            }
         }
 
         [Fact]
@@ -792,10 +820,46 @@ namespace Fluence.Wpf.Tests
                 WindowState.Maximized,
                 isActive: true,
                 isAccentBorderEnabled: true,
-                capabilities: Caps(borderColor: true));
+                capabilities: Caps(borderColor: true),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
 
             Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
-            Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
+        }
+
+        [Fact]
+        public void BuildFramePlan_BorderColorCapableOs_DrawsNoTemplateBorder()
+        {
+            // Regression guard for the Light-theme halo: an inner border painted over the window's
+            // own surface shows as a pale line inside the system border, whatever token it uses.
+            foreach (bool active in new[] { true, false })
+            {
+                foreach (bool accent in new[] { true, false })
+                {
+                    FramePlan plan = WindowPolicy.BuildFramePlan(
+                        WindowState.Normal,
+                        active,
+                        accent,
+                        Caps(borderColor: true),
+                        Color.FromRgb(0x00, 0x78, 0xD4));
+
+                    Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
+                }
+            }
+        }
+
+        [Fact]
+        public void BuildFramePlan_NoBorderColorCapability_KeepsTemplateBorder()
+        {
+            // Windows 10 cannot colour its DWM border, so the template border is the outline there.
+            FramePlan plan = WindowPolicy.BuildFramePlan(
+                WindowState.Normal,
+                isActive: false,
+                isAccentBorderEnabled: true,
+                capabilities: Caps(),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
+
+            Assert.Equal(new Thickness(2), plan.TemplateBorderThickness);
+            Assert.Equal("CardStrokeColorDefaultSolidBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
         }
 
         [Fact]
@@ -805,12 +869,13 @@ namespace Fluence.Wpf.Tests
                 WindowState.Normal,
                 isActive: true,
                 isAccentBorderEnabled: true,
-                capabilities: Caps());
+                capabilities: Caps(),
+                accentColor: Color.FromRgb(0x00, 0x78, 0xD4));
 
             Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
         }
 
-        #endregion BuildFramePlan - DWM border suppression and brush selection
+        #endregion BuildFramePlan - DWM border ownership and brush selection
 
         #region WindowCapabilities.Current - sanity
 

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.17-Preview] - 2026-08-25
+
+### Fixed
+
+- Light theme: an inactive `FluenceWindow` no longer draws a pale halo inside its border, and the fix 0.8.16-preview shipped for it is superseded. The cause is where the border is painted, not which token it uses. 0.8.15-preview suppressed the DWM border with the `DWMWA_COLOR_NONE` sentinel and made the WPF template border the only outline, but that border paints inside the client area, over the window's own surface rather than over the desktop, so no stroke token can be as dark as the border Windows draws; 0.8.16-preview only moved it from `#EBEBEB` to `#D1D1D1`, and reverting the token to `CardStrokeColorDefaultSolidBrush` left a light line between the system border and the content, most visible where the content is dark (a `#EBEBEB` line against the PSAppDeployToolkit dialog's accent strip). `WindowPolicy.BuildFramePlan` now gives the border back to DWM wherever DWM can draw one: the accent COLORREF goes to `DWMWA_BORDER_COLOR` when the window is active with accent borders enabled and `DWMWA_COLOR_DEFAULT` otherwise, and the template border is 0 dp on that OS so nothing paints underneath it. Windows 10 has no `DWMWA_BORDER_COLOR`, so there the 2 dp template border remains the outline, keyed to `SystemAccentColorBrush` when active with accent borders and `CardStrokeColorDefaultSolidBrush` otherwise. The thickness does not vary with activation, so focusing a window never shifts its content. Measured on a PSAppDeployToolkit dialog over a dark backdrop, the left edge now goes `#3C3C3C` (system border) straight into the content when inactive and `#0078D4` (accent) when active, with no light line between.
+
 ## [0.8.16-Preview] - 2026-08-25
 
 ### Fixed
