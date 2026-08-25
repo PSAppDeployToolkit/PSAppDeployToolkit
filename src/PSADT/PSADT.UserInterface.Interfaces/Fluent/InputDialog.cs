@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
@@ -29,7 +28,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 InputBoxText.Visibility = Visibility.Collapsed;
                 InputBoxPassword.Visibility = Visibility.Visible;
-                DependencyPropertyDescriptor.FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))?.AddValueChanged(InputBoxPassword, OnInputChanged);
+                InputBoxPassword.PasswordChanged += OnInputChanged;
                 Loaded += static (sender, __) =>
                 {
                     if (sender is not InputDialog dialog)

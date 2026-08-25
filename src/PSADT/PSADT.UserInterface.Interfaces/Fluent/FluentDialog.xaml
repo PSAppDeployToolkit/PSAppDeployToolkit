@@ -369,10 +369,9 @@
                         TextWrapping="Wrap"
                         />
 
-                    <ui:PasswordBox
+                    <PasswordBox
                         x:Name="InputBoxPassword"
                         Margin="16,16,16,16"
-                        ui:TextBlockExtensions.Typography="Body"
                         AutomationProperties.Name="SecureInputBox"
                         Visibility="Collapsed"
                         />
