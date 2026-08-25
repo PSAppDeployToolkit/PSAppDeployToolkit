@@ -671,7 +671,7 @@ function Start-ADTProcess
 
         # Set up initial variables.
         $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
-        $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
+        $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess') -or $funcCaller.Name.Equals('Uninstall-ADTApplication')
         $SEE_MASK_NOZONECHECKS = [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('SEE_MASK_NOZONECHECKS')
         [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable('SEE_MASK_NOZONECHECKS', 1)
 
