@@ -63,8 +63,8 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             [
                 new("remotedesktopmanager", "Remote Desktop Manager"),
                 new("chrome", "Google Chrome"),
-                new("firefox", "Mozilla FireFox"),
-                new("notepad++", "NotePad++"),
+                new("firefox", "Mozilla Firefox"),
+                new("notepad++", "Notepad++"),
                 new("spotify", "Spotify"),
                 new("acrobat", "Adobe Acrobat Reader"),
                 new("photoshop", "Adobe Photoshop"),
