@@ -610,7 +610,7 @@ namespace PSADT.Interop
         /// for releasing this handle.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation is successful.</returns>
-		internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
+        internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
         {
             bool OldAclAddRef = false;
             WIN32_ERROR res;

@@ -12,7 +12,7 @@ namespace PSADT.Security
     /// <summary>
     /// Utility methods for working with security tokens.
     /// </summary>
-	internal static class PrivilegeManager
+    internal static class PrivilegeManager
     {
         /// <summary>
         /// Retrieves a read-only collection of privileges associated with the current process.

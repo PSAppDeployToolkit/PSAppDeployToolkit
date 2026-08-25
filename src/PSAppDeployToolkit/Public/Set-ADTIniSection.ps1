@@ -21,8 +21,8 @@ function Set-ADTIniSection
     .PARAMETER Section
         Section within the INI file.
 
-	.PARAMETER Content
-		A hashtable or dictionary object containing the key-value pairs to set in the specified section.
+    .PARAMETER Content
+        A hashtable or dictionary object containing the key-value pairs to set in the specified section.
         Supply an ordered hashtable to preserve the order of supplied entries. Values can be strings, numbers, booleans, enums, or null.
         Supply `$null` or an empty hashtable in combination with `-Overwrite` to empty an entire section.
 
