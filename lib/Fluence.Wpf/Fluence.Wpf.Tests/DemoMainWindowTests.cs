@@ -229,7 +229,7 @@ namespace Fluence.Wpf.Tests
                     nav.IsPaneToggleButtonVisible = true;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
 
                     search.Text = "progress ring";
                     search.RaiseEvent(new KeyEventArgs(
@@ -389,7 +389,7 @@ namespace Fluence.Wpf.Tests
                 MainWindow window = CreateShownMainWindow();
                 try
                 {
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, search.Visibility);
 
                     window.ExtendsContentIntoTitleBar = true;
@@ -425,7 +425,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     TitleBar shellTitleBar = Assert.IsAssignableFrom<TitleBar>(FindByName<TitleBar>(window, "ShellTitleBar"));
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(300.0, search.Width, 0.01);
                     Assert.Equal(300.0, search.MinWidth, 0.01);
                     Assert.Equal(475.0, search.MaxWidth, 0.01);
@@ -433,7 +433,10 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window), 1.0);
                     Assert.Equal(GetVisualCenterY(shellTitleBar, window) + 4.0, GetVisualCenterY(search, window), 1.0);
 
-                    Assert.True(search.Focus(), "Search should accept keyboard focus.");
+                    // AutoSuggestBox forwards keyboard focus to its inner PART_TextBox, so
+                    // Focus() reports false while focus genuinely lands within the control.
+                    _ = search.Focus();
+                    Assert.True(search.IsKeyboardFocusWithin, "Search should accept keyboard focus.");
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -625,7 +628,7 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.TextBlock titleBarBackGlyph = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChild<System.Windows.Controls.TextBlock>(titleBarBack));
                     Assert.Equal(16.0, titleBarBackGlyph.FontSize, 0.01);
                     ContentPresenter titleIcon = Assert.IsAssignableFrom<ContentPresenter>(FindByName<ContentPresenter>(shellTitleBar, "PART_IconPresenter"));
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
                     Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(titleIcon, window), "Top mode back should be the first visible title-bar item.");
                     Assert.True(GetVisualX(titleBarBack, window) < GetVisualX(search, window), "Top mode back should appear before centered title-bar content.");
@@ -1021,7 +1024,7 @@ namespace Fluence.Wpf.Tests
 
                     TitleBar shellTitleBar = Assert.IsAssignableFrom<TitleBar>(FindByName<TitleBar>(window, "ShellTitleBar"));
                     System.Windows.Controls.TextBlock titleText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, titleText.Visibility);
                     double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
                     double searchLeft = GetVisualX(search, window);
@@ -1067,7 +1070,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
                     if (titleText.Visibility is Visibility.Visible)
                     {
-                        Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                        AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                         double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
                         double searchLeft = GetVisualX(search, window);
                         Assert.True(titleRight <= searchLeft - 12.0, "Visible title text must keep a 12px clearance before the search box.");
@@ -1106,7 +1109,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     TitleBar shellTitleBar = Assert.IsAssignableFrom<TitleBar>(FindByName<TitleBar>(window, "ShellTitleBar"));
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(window.ActualWidth / 2.0, GetVisualCenterX(search, window), 1.0);
 
                     System.Windows.Controls.TextBlock titleText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
@@ -1153,7 +1156,7 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.TextBlock titleText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
                     if (titleText.Visibility is Visibility.Visible)
                     {
-                        Controls.TextBox setupSearch = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                        AutoSuggestBox setupSearch = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                         double titleRight = GetVisualX(titleText, window) + titleText.ActualWidth;
                         double searchLeft = GetVisualX(setupSearch, window);
                         Assert.True(titleRight <= searchLeft - 12.0, "Setup should hide or trim title text before it crosses the 12px search clearance.");
@@ -1166,7 +1169,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     titleText = Assert.IsType<System.Windows.Controls.TextBlock>(FindByName<System.Windows.Controls.TextBlock>(shellTitleBar, "PART_TitleText"));
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
                     Assert.Equal(Visibility.Visible, titleText.Visibility);
                     Assert.Equal("Fluence.Wpf", titleText.Text, StringComparer.Ordinal);
                     Assert.True(GetVisualX(titleText, window) + titleText.ActualWidth + 12.0 <= GetVisualX(search, window),
@@ -1188,7 +1191,7 @@ namespace Fluence.Wpf.Tests
                 MainWindow window = CreateShownMainWindow();
                 try
                 {
-                    Controls.TextBox search = Assert.IsAssignableFrom<Controls.TextBox>(FindByName<Controls.TextBox>(window, "NavSearchBox"));
+                    AutoSuggestBox search = Assert.IsAssignableFrom<AutoSuggestBox>(FindByName<AutoSuggestBox>(window, "NavSearchBox"));
 
                     double? initialX = GetVisualX(search, window);
 

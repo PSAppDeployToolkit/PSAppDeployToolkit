@@ -222,17 +222,21 @@ namespace Fluence.Wpf.Tests
                             () => Math.Abs(translate.Y) < 0.001 && surface.Opacity >= 1.0).ConfigureAwait(true),
                         "The flyout reveal must settle at Y=0 and full opacity.");
 
+                    // The hour and minute columns loop, so their item count is a thousand
+                    // repeats of the band and only the band length and the modular selection
+                    // index are meaningful. The AM/PM column is padded instead of looped.
                     CultureInfo culture = CultureInfo.CurrentCulture;
-                    Assert.Equal(12, hourList.Items.Count);
+                    Assert.Equal(12, LoopingColumnSourceCount(hourList));
                     Assert.Equal(1.ToString(culture), hourList.Items[0]);
-                    Assert.Equal(60, minuteList.Items.Count);
+                    Assert.Equal(60, LoopingColumnSourceCount(minuteList));
                     Assert.Equal(0.ToString("00", culture), minuteList.Items[0]);
-                    Assert.Equal(2, periodList.Items.Count);
-                    Assert.Equal(ExpectedAmDesignator(culture), periodList.Items[0]);
+                    Assert.Equal(2 + (LoopingPaddingItemsCount * 2), periodList.Items.Count);
+                    Assert.Equal(ExpectedAmDesignator(culture), periodList.Items[LoopingPaddingItemsCount]);
+                    Assert.Equal(ExpectedPmDesignator(culture), periodList.Items[LoopingPaddingItemsCount + 1]);
                     Assert.Equal(Visibility.Visible, periodList.Visibility);
-                    Assert.Equal(1, hourList.SelectedIndex);
-                    Assert.Equal(30, minuteList.SelectedIndex);
-                    Assert.Equal(1, periodList.SelectedIndex);
+                    Assert.Equal(1, LoopingColumnSourceIndex(hourList));
+                    Assert.Equal(30, LoopingColumnSourceIndex(minuteList));
+                    Assert.Equal(LoopingPaddingItemsCount + 1, periodList.SelectedIndex);
                 }
                 finally
                 {
@@ -284,11 +288,11 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "Clicking the field must open the selector flyout.");
 
-                    Assert.Equal(24, hourList.Items.Count);
+                    Assert.Equal(24, LoopingColumnSourceCount(hourList));
                     Assert.Equal(0.ToString(culture), hourList.Items[0]);
-                    Assert.Equal(4, minuteList.Items.Count);
-                    Assert.Equal(14, hourList.SelectedIndex);
-                    Assert.Equal(2, minuteList.SelectedIndex);
+                    Assert.Equal(4, LoopingColumnSourceCount(minuteList));
+                    Assert.Equal(14, LoopingColumnSourceIndex(hourList));
+                    Assert.Equal(2, LoopingColumnSourceIndex(minuteList));
                     Assert.Equal(Visibility.Collapsed, periodList.Visibility);
                     Assert.Empty(periodList.Items);
                 }
@@ -372,9 +376,9 @@ namespace Fluence.Wpf.Tests
                     TimePickerSelectedValueChangedEventArgs? captured = null;
                     picker.SelectedTimeChanged += (_, args) => captured = args;
 
-                    hourList.SelectedIndex = 11;
-                    minuteList.SelectedIndex = 30;
-                    periodList.SelectedIndex = 1;
+                    SelectLoopingColumnValue(hourList, 11);
+                    SelectLoopingColumnValue(minuteList, 30);
+                    SelectPaddedColumnValue(periodList, 1);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(acceptButton);
@@ -392,8 +396,8 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The selector flyout must reopen for the midnight scenario.");
 
-                    Assert.Equal(11, hourList.SelectedIndex);
-                    periodList.SelectedIndex = 0;
+                    Assert.Equal(11, LoopingColumnSourceIndex(hourList));
+                    SelectPaddedColumnValue(periodList, 0);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(acceptButton);
@@ -448,8 +452,8 @@ namespace Fluence.Wpf.Tests
                     bool raised = false;
                     picker.SelectedTimeChanged += (_, _) => raised = true;
 
-                    hourList.SelectedIndex = 3;
-                    minuteList.SelectedIndex = 45;
+                    SelectLoopingColumnValue(hourList, 3);
+                    SelectLoopingColumnValue(minuteList, 45);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(cancelButton);
@@ -551,9 +555,9 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "Clicking the field must open the selector flyout.");
 
-                    Assert.Equal(2, periodList.Items.Count);
-                    Assert.Equal("AM", periodList.Items[0]);
-                    Assert.Equal("PM", periodList.Items[1]);
+                    Assert.Equal(2 + (LoopingPaddingItemsCount * 2), periodList.Items.Count);
+                    Assert.Equal("AM", periodList.Items[LoopingPaddingItemsCount]);
+                    Assert.Equal("PM", periodList.Items[LoopingPaddingItemsCount + 1]);
                 }
                 finally
                 {
@@ -645,8 +649,8 @@ namespace Fluence.Wpf.Tests
                     bool raised = false;
                     picker.SelectedTimeChanged += (_, _) => raised = true;
 
-                    hourList.SelectedIndex = 3;
-                    minuteList.SelectedIndex = 45;
+                    SelectLoopingColumnValue(hourList, 3);
+                    SelectLoopingColumnValue(minuteList, 45);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     RaiseKeyEvent(popupChild, Key.Escape, UIElement.PreviewKeyDownEvent);
@@ -696,9 +700,9 @@ namespace Fluence.Wpf.Tests
                         "The selector flyout must open before the Enter scenario.");
                     UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
 
-                    hourList.SelectedIndex = 11;
-                    minuteList.SelectedIndex = 30;
-                    periodList.SelectedIndex = 1;
+                    SelectLoopingColumnValue(hourList, 11);
+                    SelectLoopingColumnValue(minuteList, 30);
+                    SelectPaddedColumnValue(periodList, 1);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     RaiseKeyEvent(popupChild, Key.Enter, UIElement.PreviewKeyDownEvent);

@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -42,12 +41,12 @@ namespace Fluence.Wpf.Demo.Pages
                                                     "            Margin=\"0,0,0,12\"\n" +
                                                     "            PlaceholderText=\"name@example.com\" />\n" +
                                                     "        <TextBlock Margin=\"0,0,0,4\" Text=\"Password\" />\n" +
-                                                    "        <fluence:PasswordBox\n" +
+                                                    "        <PasswordBox\n" +
                                                     "            Margin=\"0,0,0,12\"\n" +
-                                                    "            PlaceholderText=\"Password\"\n" +
-                                                    "            RevealButtonEnabled=\"True\"\n" +
-                                                    "            ShowCapsLockIndicator=\"True\"\n" +
-                                                    "            ShowPasswordStrength=\"True\" />\n" +
+                                                    "            fluence:PasswordBoxExtensions.PlaceholderText=\"Password\"\n" +
+                                                    "            fluence:PasswordBoxExtensions.RevealButtonEnabled=\"True\"\n" +
+                                                    "            fluence:PasswordBoxExtensions.ShowCapsLockIndicator=\"True\"\n" +
+                                                    "            fluence:PasswordBoxExtensions.ShowPasswordStrength=\"True\" />\n" +
                                                     "        <fluence:CheckBox\n" +
                                                     "            Margin=\"0,0,0,24\"\n" +
                                                     "            Content=\"Remember me\" />\n" +
@@ -214,8 +213,6 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(4, SignInFormXamlSource, SignInFormCSharpSource),
                 new DemoSampleSource(5, CheckoutFormXamlSource, CheckoutFormCSharpSource),
                 new DemoSampleSource(6, SettingsFormXamlSource, SettingsFormCSharpSource));
-
-            Loaded += GalleryFormsPage_Loaded;
         }
 
         private static readonly string TimePickerXamlSource = DemoSampleXaml.UserControl(
@@ -297,14 +294,6 @@ namespace Fluence.Wpf.Demo.Pages
                 : "No date selected";
         }
 
-        private void GalleryFormsPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= GalleryFormsPage_Loaded;
-            DependencyPropertyDescriptor
-                .FromProperty(Controls.PasswordBox.PasswordProperty, typeof(Controls.PasswordBox))
-                .AddValueChanged(SignInPasswordBox, SignInPassword_Changed);
-        }
-
         private void SignInField_Changed(object? sender, RoutedEventArgs e)
         {
             if (SignInButton is null || SignInEmailBox is null || SignInPasswordBox is null)
@@ -315,11 +304,6 @@ namespace Fluence.Wpf.Demo.Pages
             SignInButton.IsEnabled =
                 !string.IsNullOrWhiteSpace(SignInEmailBox.Text) &&
                 !string.IsNullOrWhiteSpace(SignInPasswordBox.Password);
-        }
-
-        private void SignInPassword_Changed(object? sender, System.EventArgs e)
-        {
-            SignInField_Changed(sender, new RoutedEventArgs());
         }
 
         private void SignInButton_Click(object sender, RoutedEventArgs e)

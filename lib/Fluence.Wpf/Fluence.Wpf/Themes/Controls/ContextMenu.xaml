@@ -27,12 +27,14 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ContextMenu}">
                     <Border
+                        x:Name="MenuSurface"
                         MinWidth="180"
                         Padding="2"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{DynamicResource OverlayCornerRadius}"
+                        RenderOptions.ClearTypeHint="Enabled"
                         UseLayoutRounding="True">
                         <Grid Grid.IsSharedSizeScope="True">
                             <ItemsPresenter />
@@ -96,6 +98,7 @@
                                     BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                     BorderThickness="1"
                                     CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                    RenderOptions.ClearTypeHint="Enabled"
                                     UseLayoutRounding="True">
                                     <Border.RenderTransform>
                                         <TranslateTransform x:Name="SubMenuTranslate" X="-8" />

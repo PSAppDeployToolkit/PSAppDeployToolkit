@@ -483,5 +483,34 @@ namespace Fluence.Wpf.Tests
                 }
             });
         }
+
+        /// <summary>
+        /// The test seam must decide the gate on its own. <see cref="MotionHelper.IsMotionEnabled"/>
+        /// now also requires hardware rendering, so the environment can supply either answer for the
+        /// unforced branch; a non-null <see cref="MotionHelper.OverrideIsMotionEnabled"/> has to win
+        /// in both directions or every other test in this file becomes machine dependent. The live
+        /// branch is deliberately not asserted: the render tier of the test host is not a contract.
+        /// </summary>
+        [Fact]
+        public Task ReducedMotion_Override_WinsOverEnvironmentInBothDirectionsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                try
+                {
+                    MotionHelper.OverrideIsMotionEnabled = true;
+                    Assert.True(MotionHelper.IsMotionEnabled,
+                        "An override of true must enable motion whatever the OS animation setting and render tier report.");
+
+                    MotionHelper.OverrideIsMotionEnabled = false;
+                    Assert.False(MotionHelper.IsMotionEnabled,
+                        "An override of false must disable motion whatever the OS animation setting and render tier report.");
+                }
+                finally
+                {
+                    MotionHelper.OverrideIsMotionEnabled = null;
+                }
+            });
+        }
     }
 }

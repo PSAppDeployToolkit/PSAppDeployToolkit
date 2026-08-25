@@ -46,14 +46,27 @@ namespace Fluence.Wpf.Theming
     internal static class FluenceThemeEngine
     {
         private const string PackBase = "pack://application:,,,/Fluence.Wpf;component/";
+
+        /// <summary>
+        /// Key stamped into every dictionary published at slot [0], so a previously published one
+        /// can be recognised and removed when the slots are seeded again. Typography and Generic are
+        /// identified by their pack URI; a computed dictionary is built in code and has no
+        /// <see cref="ResourceDictionary.Source"/>, so it needs a marker of its own.
+        /// </summary>
+        internal const string ComputedDictionaryMarker = "FluenceComputedDictionary";
         private static AccentIntent _intent = AccentIntent.System;
         private static bool _initialized;
 
-        // Test-only: when set, BuildComputedDictionary uses ColorMap's machine-independent
-        // (deterministic) chrome branch so the golden-parity test does not depend on the host
-        // machine's "show accent color on title bars" personalization setting. See
-        // ThemeParityTests.CaptureResolved.
+        // Test-only: when set, Apply uses ColorMap's machine-independent (deterministic) chrome
+        // branch so the golden-parity test does not depend on the host machine's "show accent color
+        // on title bars" personalization setting. See ThemeParityTests.CaptureResolved.
         private static bool _deterministicChromeForTesting;
+
+        // Redundant-publish gate. _publishedFingerprint describes the output of the last successful
+        // Publish and _publishedDictionary is the instance that reached slot [0]; both are set only
+        // together, and only after Publish reported success. See Apply.
+        private static PublishFingerprint? _publishedFingerprint;
+        private static ResourceDictionary? _publishedDictionary;
 
         /// <summary>
         /// Gets the most recently resolved <see cref="AccentPalette"/>.
@@ -88,40 +101,91 @@ namespace Fluence.Wpf.Theming
         /// Resolves the theme and accent, builds the computed dictionary, and publishes it into
         /// application resources.
         /// </summary>
+        /// <remarks>
+        /// The build is gated on a <see cref="PublishFingerprint"/> of everything that determines the
+        /// published output. Windows emits several theme-relevant broadcasts (ImmersiveColorSet,
+        /// WM_THEMECHANGED, WM_DWMCOLORIZATIONCOLORCHANGED) for a single user action, and the
+        /// <c>SystemThemeWatcher</c> debounce does not collapse all of them, so an ungated pipeline
+        /// would republish slot [0] repeatedly and force every <c>DynamicResource</c> consumer in the
+        /// tree to re-resolve for no visible change. When the fingerprint equals the last one that
+        /// was actually published, and that dictionary is still installed at slot [0], the call
+        /// returns without touching <see cref="BrushFactory"/>, <see cref="Publish"/>, or
+        /// <see cref="Published"/>. The engine state properties are still assigned, but they are
+        /// identical by construction: the resolved theme and every rung of the accent ramp are part
+        /// of the fingerprint. The fingerprint also carries the transparency-effects setting, which
+        /// changes no computed color but does change what a window's backdrop should be, so the
+        /// gate lets that toggle through to <see cref="Published"/> instead of swallowing it.
+        /// </remarks>
         /// <param name="request">The requested application theme.</param>
-        internal static void Apply(ApplicationTheme request)
+        /// <returns><see langword="true"/> when a dictionary was rebuilt and published (and
+        /// <see cref="Published"/> raised); <see langword="false"/> when the call was gated out as
+        /// redundant or when <see cref="Publish"/> found no <see cref="Application.Current"/>.</returns>
+        internal static bool Apply(ApplicationTheme request)
         {
             ApplicationTheme theme = ThemeResolver.Resolve(request);
             AccentPalette palette = AccentResolver.Resolve(_intent, theme);
+            Dictionary<string, Color> colors = ColorMap.Build(theme, palette, deterministicChrome: _deterministicChromeForTesting);
+
             ResolvedTheme = theme;
             CurrentPalette = palette;
+            CurrentTitleBarColors = (colors["TitleBarActiveColor"], colors["TitleBarInactiveColor"], colors["WindowBorderColor"]);
 
-            ResourceDictionary dict = BuildComputedDictionary(theme, palette);
-            bool published = Publish(dict);
-            if (published)
+            PublishFingerprint fingerprint = PublishFingerprint.Capture(theme, colors);
+            if (_publishedFingerprint is not null && IsPublishedDictionaryInstalled() && _publishedFingerprint.Matches(fingerprint))
             {
-                Published?.Invoke(sender: null, EventArgs.Empty);
+                return false;
             }
+
+            ResourceDictionary dict = BuildComputedDictionary(colors, theme);
+            if (!Publish(dict))
+            {
+                // Application.Current was null. Leave the stored fingerprint alone so the next call
+                // retries the publish instead of believing this dictionary reached slot [0].
+                return false;
+            }
+
+            _publishedFingerprint = fingerprint;
+            _publishedDictionary = dict;
+            Published?.Invoke(sender: null, EventArgs.Empty);
+            return true;
         }
 
         /// <summary>
-        /// Builds the single computed dictionary published at slot [0] entirely in C#. Base
-        /// Color tokens are read (Color entries only) from the per-theme and shared XAML via
-        /// <see cref="BaseColorTables"/>; accent-derived Colors are computed by
-        /// <see cref="ColorMap"/>; <see cref="BrushFactory"/> produces the solid brush twin for
+        /// Returns <see langword="true"/> when the dictionary from the last successful publish is
+        /// still the live slot [0]. Anything that clears or replaces application resources behind
+        /// the engine's back (a test fixture, or a consumer rebuilding
+        /// <see cref="Application.Current"/>.Resources) must force a republish even when the
+        /// fingerprint is unchanged, because the computed dictionary is no longer installed.
+        /// </summary>
+        private static bool IsPublishedDictionaryInstalled()
+        {
+            if (_publishedDictionary is null || Application.Current is null)
+            {
+                return false;
+            }
+
+            Collection<ResourceDictionary> dicts = Application.Current.Resources.MergedDictionaries;
+            return dicts.Count > 0 && ReferenceEquals(dicts[0], _publishedDictionary);
+        }
+
+        /// <summary>
+        /// Builds the single computed dictionary published at slot [0] entirely in C#. The
+        /// <paramref name="colors"/> map arrives from <see cref="ColorMap.Build"/>, which reads the
+        /// base Color tokens (Color entries only) from the per-theme XAML via
+        /// <see cref="BaseColorTables"/> and computes every accent-derived Color;
+        /// <see cref="BrushFactory"/> produces the solid brush twin for
         /// every Color token; and <see cref="SpecialBrushes"/> adds the non-twin brushes
         /// (elevation gradients, High-Contrast SystemColors brushes, ScrollBar track, accent
         /// overrides) plus the shared layout/shadow/focus tokens. No brush XAML is merged.
         /// </summary>
+        /// <param name="colors">The computed color map built by <see cref="ColorMap.Build"/>.</param>
         /// <param name="theme">The application theme to use.</param>
-        /// <param name="palette">The accent palette to use.</param>
-        private static ResourceDictionary BuildComputedDictionary(ApplicationTheme theme, AccentPalette palette)
+        private static ResourceDictionary BuildComputedDictionary(Dictionary<string, Color> colors, ApplicationTheme theme)
         {
-            Dictionary<string, Color> colors = ColorMap.Build(theme, palette, deterministicChrome: _deterministicChromeForTesting);
-            CurrentTitleBarColors = (colors["TitleBarActiveColor"], colors["TitleBarInactiveColor"], colors["WindowBorderColor"]);
             ResourceDictionary computed = BrushFactory.Build(colors);
             SpecialBrushes.Add(computed, colors, theme);
             computed["AcrylicNoiseBrush"] = AcrylicNoiseHelper.GetNoiseBrush(); // preserve existing token
+            computed[ComputedDictionaryMarker] = true;
             return computed;
         }
 
@@ -196,6 +260,17 @@ namespace Fluence.Wpf.Theming
         {
             for (int i = dicts.Count - 1; i >= 0; i--)
             {
+                // A computed dictionary is built in code and has no Source, so it cannot be
+                // recognised by URI the way Typography and Generic can. It carries a marker key
+                // instead. Leaving a previously published one behind is not cosmetic: WPF resolves
+                // merged dictionaries last-wins, so a stale computed dictionary sitting past the
+                // freshly inserted slot [0] shadows every token the new one publishes.
+                if (dicts[i].Contains(ComputedDictionaryMarker))
+                {
+                    dicts.RemoveAt(i);
+                    continue;
+                }
+
                 string s = dicts[i].Source?.OriginalString.ToLowerInvariant() ?? string.Empty;
                 if (s.Contains("fluence.wpf;component", StringComparison.Ordinal) && s.Contains("themes/", StringComparison.Ordinal))
                 {
@@ -224,6 +299,8 @@ namespace Fluence.Wpf.Theming
         {
             _initialized = false;
             _deterministicChromeForTesting = false;
+            _publishedFingerprint = null;
+            _publishedDictionary = null;
             _intent = AccentIntent.System;
             ResolvedTheme = ApplicationTheme.Light;
             // Seed a valid default-blue ramp rather than the zero Color value. SystemAccentColor

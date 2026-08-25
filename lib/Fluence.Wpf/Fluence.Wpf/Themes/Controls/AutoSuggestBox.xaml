@@ -138,6 +138,7 @@
                                 BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                RenderOptions.ClearTypeHint="Enabled"
                                 UseLayoutRounding="True">
                                 <controls:ListBox
                                     x:Name="PART_SuggestionsList"

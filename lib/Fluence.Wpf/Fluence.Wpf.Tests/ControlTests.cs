@@ -271,27 +271,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [Fact]
-        public Task PasswordBox_RevealButtonEnabled_DefaultTrueAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Controls.PasswordBox passwordBox = new();
 
-                Assert.True(passwordBox.RevealButtonEnabled);
-            });
-        }
-
-        [Fact]
-        public Task PasswordBox_IsPasswordRevealed_DefaultFalseAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Controls.PasswordBox passwordBox = new();
-
-                Assert.False(passwordBox.IsPasswordRevealed);
-            });
-        }
 
         [Fact]
         public Task TextBox_DefaultChrome_UsesWinUiReferenceValuesAsync()
@@ -366,83 +346,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [Fact]
-        public Task PasswordBox_DefaultChrome_UsesWinUiReferenceValuesAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Application application = WpfTestSta.EnsureApplication();
-                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-                Window window = new();
-                Controls.PasswordBox passwordBox = new()
-                {
-                    Width = 260,
-                };
 
-                try
-                {
-                    window.Content = passwordBox;
-                    window.Show();
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    window.UpdateLayout();
-
-                    Border mainBorder = Assert.IsType<Border>(passwordBox.Template.FindName("MainBorder", passwordBox));
-                    Button revealButton = Assert.IsType<Button>(passwordBox.Template.FindName("PART_RevealButton", passwordBox));
-
-                    Assert.Equal(new Thickness(10, 5, 6, 6), passwordBox.Padding);
-                    Assert.Equal(32.0, passwordBox.MinHeight);
-                    _ = Assert.IsAssignableFrom<LinearGradientBrush>(mainBorder.BorderBrush);
-                    Assert.Equal(30.0, revealButton.Width, 0.1);
-                }
-                finally
-                {
-                    window.Close();
-                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
-                }
-            });
-        }
-
-        [Fact]
-        public Task PasswordBox_FocusState_ShowsAccentLineUnderneathAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Application application = WpfTestSta.EnsureApplication();
-                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
-                Window window = new();
-                Controls.PasswordBox passwordBox = new()
-                {
-                    Width = 260,
-                    Password = "Focused",
-                };
-
-                try
-                {
-                    window.Content = passwordBox;
-                    window.Show();
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    window.UpdateLayout();
-
-                    PasswordBox innerPasswordBox = Assert.IsType<PasswordBox>(passwordBox.Template.FindName("PART_PasswordBox", passwordBox));
-                    Border accentLine = Assert.IsType<Border>(passwordBox.Template.FindName("FocusAccentLine", passwordBox));
-
-
-                    _ = innerPasswordBox.Focus();
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    window.UpdateLayout();
-
-                    Assert.Equal(1.0, accentLine.Opacity);
-                    Assert.Equal(2.0, accentLine.Height);
-                }
-                finally
-                {
-                    window.Close();
-                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
-                }
-            });
-        }
 
         [Fact]
         public Task ListView_ItemAnimationsEnabled_DefaultTrueAsync()
@@ -1887,31 +1791,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [Fact]
-        public Task Stage3_PasswordBox_IndicatorsDefaultOffAndOptInAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Controls.PasswordBox pb = new();
-                Assert.False(pb.ShowCapsLockIndicator, "Caps Lock indicator must be opt-in by default.");
-                Assert.False(pb.ShowPasswordStrength, "Password strength meter must be opt-in by default.");
 
-                pb.ShowCapsLockIndicator = true;
-                pb.ShowPasswordStrength = true;
-                Assert.True(pb.ShowCapsLockIndicator);
-                Assert.True(pb.ShowPasswordStrength);
-            });
-        }
-
-        [Fact]
-        public Task Stage3_PasswordBox_ComputesPasswordStrengthAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Controls.PasswordBox pb = new() { Password = "Aa1!aaaaaa" };
-                Assert.True(pb.PasswordStrength >= 3);
-            });
-        }
 
         [Fact]
         public Task Stage3_ListView_EmptyContent_DefaultNullAsync()

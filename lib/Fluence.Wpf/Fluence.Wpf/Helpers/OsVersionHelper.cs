@@ -75,5 +75,16 @@ namespace Fluence.Wpf.Helpers
         internal static bool SupportsCaptionColor => IsWindows11;
 
         internal static bool SupportsBorderColor => IsWindows11;
+
+        /// <summary>
+        /// Gets a value indicating whether the undocumented
+        /// <c>SetWindowCompositionAttribute</c> acrylic accent state
+        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c>) is available. Build 17063 is the first build
+        /// that honours the acrylic accent state; earlier builds accept the call but render the
+        /// plain Aero blur instead. Windows 11 is excluded deliberately: it has the DWM system
+        /// backdrops, and the legacy accent path on Windows 11 both looks wrong and fights the
+        /// rounded-corner and border attributes.
+        /// </summary>
+        internal static bool SupportsLegacyAcrylic => OsBuild >= 17063 && !IsWindows11;
     }
 }

@@ -273,11 +273,18 @@
         <GradientStop Color="#18FFFFFF" Offset="0.33" />
         <GradientStop Color="#12FFFFFF" Offset="1" />
     </LinearGradientBrush>
-    <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+    <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
         <LinearGradientBrush.RelativeTransform>
             <ScaleTransform CenterX="0" CenterY="0.5" ScaleX="1" ScaleY="-1" />
         </LinearGradientBrush.RelativeTransform>
-        <GradientStop Color="#18FFFFFF" Offset="0.33" />
+        <GradientStop Color="#8BFFFFFF" Offset="0.5" />
+        <GradientStop Color="#12FFFFFF" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+        <LinearGradientBrush.RelativeTransform>
+            <ScaleTransform CenterX="0" CenterY="0.5" ScaleX="1" ScaleY="-1" />
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FF4FB3FF" Offset="1" />
         <GradientStop Color="#12FFFFFF" Offset="1" />
     </LinearGradientBrush>
 

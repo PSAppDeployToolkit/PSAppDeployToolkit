@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,6 +96,105 @@ namespace Fluence.Wpf.Tests
 
                     Assert.True(child.UseLayoutRounding, "Children should inherit root layout rounding.");
                     Assert.True(child.SnapsToDevicePixels, "Children should inherit root device-pixel snapping.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PopupBackplates_OpaqueSurfacesEnableClearTypeAsync()
+        {
+            // Popups with AllowsTransparency="True" are layered windows, which silently drop text
+            // to grayscale anti-aliasing. RenderOptions.ClearTypeHint="Enabled" on the opaque
+            // backplate restores subpixel rendering for that subtree without touching the window
+            // root, which stays at Auto for the reasons documented in FluenceWindow.xaml.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResetApplication(application);
+
+                AssertHostedSurfaceEnablesClearType(new AutoSuggestBox(), "SuggestionsSurface");
+                AssertHostedSurfaceEnablesClearType(new Controls.DatePicker(), "FlyoutSurface");
+                AssertHostedSurfaceEnablesClearType(new TimePicker(), "FlyoutSurface");
+                AssertHostedSurfaceEnablesClearType(new DropDownButton(), "FlyoutSurface");
+                AssertHostedSurfaceEnablesClearType(new SplitButton(), "FlyoutSurface");
+                AssertHostedSurfaceEnablesClearType(new ToggleSplitButton(), "FlyoutSurface");
+                AssertHostedSurfaceEnablesClearType(new FlyoutPresenter(), "PresenterSurface");
+                AssertHostedSurfaceEnablesClearType(
+                    new Controls.MenuItem { Header = "Open" },
+                    "SubMenuBorder");
+            });
+        }
+
+        [Fact]
+        public Task ContextMenuSurface_EnablesClearTypeAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResetApplication(application);
+
+                // A ContextMenu only resolves its implicit style once it is hosted, so this is the
+                // one surface that has to be opened rather than inspected straight off the template.
+                Controls.ContextMenu contextMenu = new();
+                _ = contextMenu.Items.Add(new Controls.MenuItem { Header = "Open" });
+
+                Window window = new()
+                {
+                    Width = 400,
+                    Height = 300,
+                    ContextMenu = contextMenu,
+                };
+
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    contextMenu.IsOpen = true;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    AssertSurfaceEnablesClearType(contextMenu, "MenuSurface");
+                }
+                finally
+                {
+                    contextMenu.IsOpen = false;
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task ComboBoxDropdownSurface_KeepsDefaultClearTypeHintAsync()
+        {
+            // PART_DropdownBorder paints AcrylicBackgroundFillColorDefaultBrush (alpha F0) under a
+            // noise overlay, so it is translucent and must stay at the WPF default. Forcing ClearType
+            // over a translucent layered surface degrades text rather than sharpening it.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResetApplication(application);
+
+                Window window = new() { Width = 400, Height = 300 };
+                Controls.ComboBox comboBox = new();
+
+                try
+                {
+                    window.Content = comboBox;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.Border surface = FindTemplatedSurface(comboBox, "PART_DropdownBorder");
+
+                    Assert.Equal(ClearTypeHint.Auto, RenderOptions.GetClearTypeHint(surface));
+                    SolidColorBrush background = Assert.IsType<SolidColorBrush>(surface.Background);
+                    Assert.True(
+                        background.Color.A is not byte.MaxValue,
+                        "The dropdown surface must stay translucent. " + DescribeThemeState(application, background));
                 }
                 finally
                 {
@@ -234,6 +334,94 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(17d, textBlock.LineHeight, 0.01d);
                 Assert.Equal(LineStackingStrategy.MaxHeight, textBlock.LineStackingStrategy);
             });
+        }
+
+        private static void AssertHostedSurfaceEnablesClearType(Control control, string surfaceName)
+        {
+            Window window = new()
+            {
+                Width = 400,
+                Height = 300,
+                Content = control,
+            };
+
+            try
+            {
+                window.Show();
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
+                window.UpdateLayout();
+
+                AssertSurfaceEnablesClearType(control, surfaceName);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        private static void AssertSurfaceEnablesClearType(Control control, string surfaceName)
+        {
+            System.Windows.Controls.Border surface = FindTemplatedSurface(control, surfaceName);
+
+            Assert.Equal(
+                ClearTypeHint.Enabled,
+                RenderOptions.GetClearTypeHint(surface));
+
+            // ClearType only helps on an opaque backplate, so the treated surface must stay opaque.
+            Assert.Equal(
+                byte.MaxValue,
+                Assert.IsType<SolidColorBrush>(surface.Background).Color.A);
+        }
+
+        private static System.Windows.Controls.Border FindTemplatedSurface(Control control, string surfaceName)
+        {
+            ControlTemplate template = control.Template ??
+                throw new InvalidOperationException(
+                    control.GetType().Name + " did not resolve a default template.");
+
+            return Assert.IsType<System.Windows.Controls.Border>(template.FindName(surfaceName, control));
+        }
+
+        /// <summary>
+        /// Describes the published theme state behind a brush assertion. A theme-token failure is
+        /// almost always "the wrong dictionary is installed" rather than "the token is wrong", and
+        /// on a CI runner there is no debugger to ask, so the answer has to travel in the message.
+        /// </summary>
+        /// <param name="application">The test application.</param>
+        /// <param name="background">The brush the assertion read.</param>
+        /// <returns>A single-line description of the resolved theme and the installed dictionaries.</returns>
+        private static string DescribeThemeState(Application application, SolidColorBrush background)
+        {
+            object? token = application.TryFindResource("AcrylicBackgroundFillColorDefault");
+            string tokenText = token is Color color
+                ? color.ToString(CultureInfo.InvariantCulture)
+                : "missing";
+            IEnumerable<string> sources = application.Resources.MergedDictionaries
+                .Select(static dictionary => dictionary.Source?.ToString() ?? "computed");
+
+            return "brush=" + background.Color.ToString(CultureInfo.InvariantCulture)
+                + " token=" + tokenText
+                + " requestedTheme=" + ThemeName(ApplicationThemeManager.CurrentTheme)
+                + " highContrastSetting=" + SystemParameters.HighContrast.ToString(CultureInfo.InvariantCulture)
+                + " mergedDictionaries=[" + string.Join(", ", sources) + "]";
+        }
+
+        /// <summary>
+        /// Names a theme without <c>Enum.GetName</c>, whose generic overload the analyzers demand on
+        /// net10 and which does not exist on net472.
+        /// </summary>
+        /// <param name="theme">The theme to name.</param>
+        /// <returns>The theme name.</returns>
+        private static string ThemeName(ApplicationTheme theme)
+        {
+            return theme switch
+            {
+                ApplicationTheme.Light => "Light",
+                ApplicationTheme.Dark => "Dark",
+                ApplicationTheme.HighContrast => "HighContrast",
+                ApplicationTheme.Auto => "Auto",
+                _ => "Unknown",
+            };
         }
 
         private static void ResetApplication(Application application)

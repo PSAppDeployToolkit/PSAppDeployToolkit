@@ -48,7 +48,7 @@
     <Thickness x:Key="DemoSampleCardPadding">16</Thickness>
     <Thickness x:Key="DemoSampleOutputMargin">16,0,0,0</Thickness>
     <Thickness x:Key="DemoSampleOutputPadding">16</Thickness>
-    <Thickness x:Key="DemoSampleRightRailPadding">24,20</Thickness>
+    <Thickness x:Key="DemoSampleRightRailPadding">16,16</Thickness>
     <!--  Vertical padding pairs with the 32px WinUI chevron backplate to keep the 48px source header height.  -->
     <Thickness x:Key="DemoSampleSourceHeaderPadding">24,8</Thickness>
     <Thickness x:Key="DemoSampleSourceTabMargin">16,8,16,16</Thickness>
@@ -72,10 +72,10 @@
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect
-                    BlurRadius="6"
+                    BlurRadius="2.5"
                     Direction="270"
                     Opacity="0.25"
-                    ShadowDepth="3"
+                    ShadowDepth="2.5"
                     Color="Black" />
             </Setter.Value>
         </Setter>
@@ -113,7 +113,7 @@
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="BorderThickness" Value="1" />
                 <!--  ControlPressAnimationDuration (100 ms) hover-feedback scale.  -->
                 <Trigger.EnterActions>
                     <BeginStoryboard>
@@ -145,126 +145,6 @@
                 </Trigger.ExitActions>
             </Trigger>
         </Style.Triggers>
-    </Style>
-
-
-    <!--  **** Demo Styles *** Navigation \ Title-Bear Search  -->
-
-    <!--
-        Title-bar search box: transparent box, bottom-only underline.
-        Grey (ControlStrokeColorDefaultBrush) at rest; accent on focus.
-        Matches WinUI 3 AutoSuggestBox title-bar treatment.
-    -->
-    <Style x:Key="TitleBarSearchBoxStyle" TargetType="{x:Type fluence:TextBox}">
-        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="Padding" Value="10,2,6,2" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type fluence:TextBox}">
-                    <Border
-                        x:Name="MainBorder"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="2" />
-                            </Grid.RowDefinitions>
-
-                            <Grid Grid.Row="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ScrollViewer
-                                    x:Name="PART_ContentHost"
-                                    Grid.Column="0"
-                                    Padding="{TemplateBinding Padding}"
-                                    Focusable="False"
-                                    HorizontalScrollBarVisibility="Hidden"
-                                    VerticalScrollBarVisibility="Hidden" />
-                                <TextBlock
-                                    x:Name="PlaceholderTextBlock"
-                                    Grid.Column="0"
-                                    Margin="13,0,0,0"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    FontFamily="{TemplateBinding FontFamily}"
-                                    FontSize="{TemplateBinding FontSize}"
-                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                    IsHitTestVisible="False"
-                                    Text="{TemplateBinding PlaceholderText}"
-                                    Visibility="Collapsed" />
-                                <fluence:FontIcon
-                                    x:Name="SearchIcon"
-                                    Grid.Column="1"
-                                    Margin="6,0,12,0"
-                                    VerticalAlignment="Center"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Glyph="&#xE721;"
-                                    IconFontSize="16" />
-                            </Grid>
-
-                            <!--  Rest underline: grey stroke  -->
-                            <Border
-                                x:Name="RestLine"
-                                Grid.Row="1"
-                                HorizontalAlignment="Stretch"
-                                Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
-
-                            <!--  Underline overlay: kept visible in every state but with no colour, so focus no longer paints an accent line over the neutral rest stroke.  -->
-                            <Border
-                                x:Name="FocusLine"
-                                Grid.Row="1"
-                                HorizontalAlignment="Stretch"
-                                Background="Transparent"
-                                Opacity="1" />
-                        </Grid>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="Text" Value="" />
-                                <Condition Property="PlaceholderEnabled" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <MultiTrigger.Setters>
-                                <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
-                            </MultiTrigger.Setters>
-                        </MultiTrigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
-                            <Setter TargetName="FocusLine" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-
-                        </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsKeyboardFocused" Value="True" />
-                                <Condition Property="IsMouseOver" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <MultiTrigger.Setters>
-                                <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
-                            </MultiTrigger.Setters>
-                        </MultiTrigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
     <!--  **** Demo Styles *** Shared General  -->

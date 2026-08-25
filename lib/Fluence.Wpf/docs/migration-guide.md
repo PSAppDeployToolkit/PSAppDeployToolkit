@@ -30,6 +30,54 @@
 - Do not manually merge `Themes/Generic.xaml` when using `ApplicationThemeManager.Apply`; the manager owns the fixed resource dictionary slots.
 - Bind to brush resources such as `TextFillColorPrimaryBrush` and `ControlFillColorDefaultBrush` from control templates and application XAML, not to raw color resources.
 
+## PasswordBox
+
+`System.Windows.Controls.PasswordBox` is `sealed`, so the library cannot ship a derived Fluent
+control the way it does for `TextBox`. It styles the native control instead. Use the WPF
+`PasswordBox` directly; merging the Fluence theme applies the Fluent template implicitly, and the
+extras live on the `PasswordBoxExtensions` attached properties.
+
+```xml
+<!-- before -->
+<fluence:PasswordBox
+    PlaceholderText="Password"
+    RevealButtonEnabled="True"
+    ShowCapsLockIndicator="True"
+    ShowPasswordStrength="True" />
+
+<!-- after -->
+<PasswordBox
+    fluence:PasswordBoxExtensions.PlaceholderText="Password"
+    fluence:PasswordBoxExtensions.RevealButtonEnabled="True"
+    fluence:PasswordBoxExtensions.ShowCapsLockIndicator="True"
+    fluence:PasswordBoxExtensions.ShowPasswordStrength="True" />
+```
+
+The old control carried a two-way bindable `Password` dependency property. The native control does
+not. `Password` is a plain CLR property by design, and `SecurePassword` is the authoritative store.
+Watch for changes with the native `PasswordChanged` routed event.
+
+```csharp
+// before
+DependencyPropertyDescriptor
+    .FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))
+    .AddValueChanged(passwordBox, OnPasswordChanged);
+
+// after
+passwordBox.PasswordChanged += OnPasswordChanged;
+```
+
+Other differences worth knowing:
+
+- `MaxLength` and `PasswordChar` are the native dependency properties now; drop the Fluence copies.
+- Reveal is a peek. A read-only, non-focusable overlay paints the plaintext while the real field
+    keeps focus and keystrokes, so there is no second editable field and no second tab stop.
+- `Fluence.Wpf.Automation.PasswordBoxAutomationPeer` is gone. The native
+    `System.Windows.Automation.Peers.PasswordBoxAutomationPeer` already reports an Edit control with
+    `IsPassword`, and it sits on the element that actually takes focus.
+- To keep the native look for a specific box, clear the decoration with
+    `fluence:PasswordBoxExtensions.IsFluentDecorated="False"` and give it your own style.
+
 ## Title bar and window controls
 
 `FluenceWindow` owns DWM and caption-button behavior. Use its public properties: `SystemBackdropType`, `CornerStyle`, `ExtendsContentIntoTitleBar`, `TitleBar`, and the caption-button visibility properties. `CaptionButtonChrome` and `WindowPolicy` are internal helpers; do not reference them from application code.

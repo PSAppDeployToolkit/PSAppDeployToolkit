@@ -217,6 +217,16 @@
                             Placement="Bottom"
                             PlacementTarget="{Binding ElementName=MainBorder}"
                             PopupAnimation="None">
+                            <!--
+                                No RenderOptions.ClearTypeHint="Enabled" here, unlike the opaque
+                                popup backplates in ContextMenu / AutoSuggestBox / DatePicker /
+                                TimePicker / DropDownButton / SplitButton / ToggleSplitButton /
+                                FlyoutPresenter. AcrylicBackgroundFillColorDefaultBrush is alpha F0,
+                                and the AcrylicNoiseBrush overlay sits on top of it, so this surface
+                                is translucent. ClearType cannot blend subpixel coverage against a
+                                translucent layered-window surface and degrades instead of helping,
+                                which is the same reasoning that keeps the FluenceWindow root at Auto.
+                            -->
                             <Border
                                 x:Name="PART_DropdownBorder"
                                 MinWidth="{Binding ActualWidth, ElementName=MainBorder}"

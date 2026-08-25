@@ -218,7 +218,7 @@ namespace Fluence.Wpf.Tests.Theming
                 FluenceThemeEngine.ResetForTesting();
 
                 FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(TestBlue));
-                FluenceThemeEngine.Apply(ApplicationTheme.Light);
+                _ = FluenceThemeEngine.Apply(ApplicationTheme.Light);
 
                 Assert.Equal(ApplicationTheme.Light, FluenceThemeEngine.ResolvedTheme);
                 Assert.Equal(TestBlue, FluenceThemeEngine.CurrentPalette.Accent);
@@ -254,11 +254,11 @@ namespace Fluence.Wpf.Tests.Theming
                 FluenceThemeEngine.ResetForTesting();
 
                 FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(TestBlue));
-                FluenceThemeEngine.Apply(ApplicationTheme.Light);
+                _ = FluenceThemeEngine.Apply(ApplicationTheme.Light);
                 int countAfterFirst = app.Resources.MergedDictionaries.Count;
                 ResourceDictionary slotZeroFirst = app.Resources.MergedDictionaries[0];
 
-                FluenceThemeEngine.Apply(ApplicationTheme.Dark);
+                _ = FluenceThemeEngine.Apply(ApplicationTheme.Dark);
                 int countAfterSecond = app.Resources.MergedDictionaries.Count;
                 ResourceDictionary slotZeroSecond = app.Resources.MergedDictionaries[0];
 
@@ -308,7 +308,7 @@ namespace Fluence.Wpf.Tests.Theming
                     appInstanceField.SetValue(obj: null, value: null);
                     Assert.Null(Application.Current);
 
-                    FluenceThemeEngine.Apply(ApplicationTheme.Light);
+                    _ = FluenceThemeEngine.Apply(ApplicationTheme.Light);
                 }
                 finally
                 {

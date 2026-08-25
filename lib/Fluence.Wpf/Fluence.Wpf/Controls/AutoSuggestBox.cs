@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Controls
                 nameof(MaxSuggestionListHeight),
                 typeof(double),
                 typeof(AutoSuggestBox),
-                new FrameworkPropertyMetadata(380.0));
+                new FrameworkPropertyMetadata(374.0));
 
         /// <summary>
         /// Gets or sets the maximum height of the suggestion list popup.

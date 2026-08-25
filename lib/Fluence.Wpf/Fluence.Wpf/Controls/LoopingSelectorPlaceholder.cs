@@ -26,38 +26,44 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Windows;
-using System.Windows.Media;
-
-namespace Fluence.Wpf.Helpers
+namespace Fluence.Wpf.Controls
 {
     /// <summary>
-    /// Central gate for whether Fluence controls play motion. Respects the Windows
-    /// "Show animations in Windows" accessibility setting via
-    /// <see cref="SystemParameters.ClientAreaAnimation"/>, and additionally requires
-    /// hardware-accelerated rendering. Controls consult this gate at each code-driven
-    /// animation entry point and jump to their final visual state when motion is
-    /// disabled, matching how Windows itself behaves with the toggle off.
+    /// The filler item a <see cref="LoopingSelectorList"/> uses to pad a short, non-looping
+    /// column (the AM/PM designator column, for instance) so its real values can still be
+    /// centred under the selection band.
     /// </summary>
-    internal static class MotionHelper
+    /// <remarks>
+    /// A selector viewport is nine rows tall with the selected row in the middle, so a column
+    /// needs four rows of slack above its first value and below its last one. The padding rows
+    /// carry this singleton; <see cref="LoopingSelectorList.PrepareContainerForItemOverride"/>
+    /// recognises it and makes those containers hidden and disabled, so they occupy their row
+    /// height without being visible, hit-testable, or selectable.
+    /// </remarks>
+    internal sealed class LoopingSelectorPlaceholder
     {
         /// <summary>
-        /// Gets or sets the test seam. When non-null, overrides the OS setting.
-        /// Reset to null in test cleanup.
+        /// Prevents a default instance of the <see cref="LoopingSelectorPlaceholder"/> class
+        /// from being created outside the type; identity is what marks a padding row, so there
+        /// is exactly one instance.
         /// </summary>
-        internal static bool? OverrideIsMotionEnabled { get; set; }
+        private LoopingSelectorPlaceholder()
+        {
+        }
 
         /// <summary>
-        /// Gets a value indicating whether animations should play. When
-        /// <see cref="OverrideIsMotionEnabled"/> is null, motion requires both conditions:
-        /// the Windows "Show animations in Windows" accessibility setting is on
-        /// (<see cref="SystemParameters.ClientAreaAnimation"/>), and the process is rendering
-        /// with hardware acceleration. Software rendering (render tier 0) makes every animated
-        /// frame a CPU composite, so motion is dropped rather than played back at a stutter.
-        /// The rendering tier lives in the high word of <see cref="RenderCapability.Tier"/>, so
-        /// it must be shifted right by 16 before comparison; the raw value is not a tier number.
+        /// Gets the single placeholder instance used for every padding row.
         /// </summary>
-        internal static bool IsMotionEnabled =>
-            OverrideIsMotionEnabled ?? (SystemParameters.ClientAreaAnimation && (RenderCapability.Tier >> 16) > 0);
+        internal static LoopingSelectorPlaceholder Instance { get; } = new();
+
+        /// <summary>
+        /// Returns an empty string so a padding row renders nothing even if a custom item
+        /// template binds it before the container is hidden.
+        /// </summary>
+        /// <returns>An empty string.</returns>
+        public override string ToString()
+        {
+            return string.Empty;
+        }
     }
 }

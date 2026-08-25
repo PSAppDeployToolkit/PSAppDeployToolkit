@@ -273,6 +273,40 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
+        public Task ToggleSplitButton_CloseFlyout_ClosesOpenPopupWithoutTogglingAsync()
+        {
+            return RunToggleSplitButtonTestAsync(
+                static () => new Controls.ToggleSplitButton
+                {
+                    Content = "Toggle",
+                    Flyout = "Flyout content",
+                },
+                static (_, button) =>
+                {
+                    ToggleButton secondary = GetSecondaryButtonPart(button);
+                    Popup popup = Assert.IsType<Popup>(button.Template?.FindName("PART_Popup", button));
+
+                    secondary.IsChecked = true;
+                    WpfTestSta.DrainDispatcher(button.Dispatcher);
+                    Assert.True(popup.IsOpen);
+
+                    // The application close path after handling a click on arbitrary flyout
+                    // content (WinUI parity: plain flyouts never dismiss themselves).
+                    button.CloseFlyout();
+                    WpfTestSta.DrainDispatcher(button.Dispatcher);
+
+                    Assert.False(popup.IsOpen, "CloseFlyout should close the flyout popup.");
+                    Assert.False(button.IsFlyoutOpen);
+                    Assert.False(secondary.IsChecked, "CloseFlyout should uncheck the secondary half.");
+                    Assert.False(button.IsChecked, "CloseFlyout must not touch the primary toggle state.");
+
+                    // Closing an already-closed flyout is a no-op.
+                    button.CloseFlyout();
+                    Assert.False(button.IsFlyoutOpen);
+                });
+        }
+
+        [Fact]
         public Task ToggleSplitButton_Checked_AccentFillsBothHalvesAndBackdropsAsync()
         {
             return RunToggleSplitButtonTestAsync(

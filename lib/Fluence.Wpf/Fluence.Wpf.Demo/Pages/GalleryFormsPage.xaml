@@ -123,13 +123,14 @@
                         PlaceholderText="name@example.com"
                         TextChanged="SignInField_Changed" />
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Password" />
-                    <fluence:PasswordBox
+                    <PasswordBox
                         x:Name="SignInPasswordBox"
                         Margin="{DynamicResource DemoControlBottomGapMargin}"
-                        PlaceholderText="Password"
-                        RevealButtonEnabled="True"
-                        ShowCapsLockIndicator="True"
-                        ShowPasswordStrength="True" />
+                        PasswordChanged="SignInField_Changed"
+                        fluence:PasswordBoxExtensions.PlaceholderText="Password"
+                        fluence:PasswordBoxExtensions.RevealButtonEnabled="True"
+                        fluence:PasswordBoxExtensions.ShowCapsLockIndicator="True"
+                        fluence:PasswordBoxExtensions.ShowPasswordStrength="True" />
                     <fluence:CheckBox
                         x:Name="RememberMeCheckBox"
                         Margin="{DynamicResource DemoSampleBlockMargin}"

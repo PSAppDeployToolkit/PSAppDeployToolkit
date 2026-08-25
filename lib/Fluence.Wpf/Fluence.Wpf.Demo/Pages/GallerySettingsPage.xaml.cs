@@ -311,7 +311,7 @@ namespace Fluence.Wpf.Demo.Pages
             // Use FluenceWindow's rasterized brand icon (the same BitmapSource it applies by default),
             // not the raw vector DrawingImage resource: Window.Icon drives the Win32 HICON, which does
             // not reliably render a DrawingImage, so a re-toggle would otherwise blank the taskbar icon.
-            ImageSource? icon = showIcon ? Fluence.Wpf.Controls.FluenceWindow.DefaultIcon : null;
+            ImageSource? icon = showIcon ? Controls.FluenceWindow.DefaultIcon : null;
             _owner.SetUserShowIcon(showIcon, icon);
         }
 

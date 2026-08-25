@@ -90,8 +90,24 @@ namespace Fluence.Wpf
         /// <param name="backdrop">The requested window backdrop policy retained for <see cref="CurrentBackdrop"/> consumers.</param>
         /// <param name="updateAccent">Accepted for signature compatibility; the single pipeline always rebuilds the computed dictionary using the current accent intent.</param>
         /// <remarks>
+        /// <para>
         /// The first call seeds the three resource slots ([0] computed colors and brushes, [1] Typography,
         /// [2] Generic). Later calls replace the computed slot so <c>DynamicResource</c> consumers re-resolve.
+        /// </para>
+        /// <para>
+        /// A call whose computed output is identical to the last published one does not rebuild or
+        /// replace the computed slot; the theme engine gates that on a fingerprint of every input to
+        /// the pipeline. <see cref="CurrentTheme"/> and <see cref="CurrentBackdrop"/> are still
+        /// assigned, because they record the caller's <i>request</i> and remain observable even when
+        /// the resolved colors do not move (for example <see cref="ApplicationTheme.Auto"/> resolving
+        /// to the same concrete theme as an explicit request, or a backdrop change that no computed
+        /// brush depends on). <see cref="Changed"/> therefore fires when either the computed
+        /// dictionary was republished or the requested theme or backdrop actually changed, and is
+        /// suppressed only when the call was a true no-op in both respects. A publish that fails
+        /// because <see cref="System.Windows.Application.Current"/> is null counts as no publish, so
+        /// an early-startup call that also repeats the current request raises nothing; the state
+        /// assignments still happen and the next call retries the publish.
+        /// </para>
         /// </remarks>
         public static void Apply(ApplicationTheme theme, BackdropType backdrop = BackdropType.Auto, bool updateAccent = true)
         {
@@ -104,11 +120,15 @@ namespace Fluence.Wpf
             {
                 ApplicationAccentColorManager.EnsureInitialized();
                 TabKeyboardNavigation.EnsureRegistered();
+                bool requestChanged = CurrentTheme != theme || CurrentBackdrop != backdrop;
                 CurrentTheme = theme;
                 CurrentBackdrop = backdrop;
                 _ = updateAccent; // retained for signature compatibility; the pipeline always rebuilds.
-                FluenceThemeEngine.Apply(theme);
-                OnChanged(FluenceThemeEngine.ResolvedTheme);
+                bool published = FluenceThemeEngine.Apply(theme);
+                if (published || requestChanged)
+                {
+                    OnChanged(FluenceThemeEngine.ResolvedTheme);
+                }
             }
             finally
             {

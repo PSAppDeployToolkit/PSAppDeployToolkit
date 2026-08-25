@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -442,27 +443,15 @@ defaultValue: null,
         /// </summary>
         /// <param name="dayCount">The number of days to generate.</param>
         /// <returns>A list of day numbers from 1 to <paramref name="dayCount"/>.</returns>
-        private static List<int> BuildDayItems(int dayCount)
+        private static List<object> BuildDayItems(int dayCount)
         {
-            List<int> days = [];
+            List<object> days = [];
             for (int day = 1; day <= dayCount; day++)
             {
                 days.Add(day);
             }
 
             return days;
-        }
-
-        /// <summary>
-        /// Scrolls the selector's current selection into view when it is a ListBox.
-        /// </summary>
-        /// <param name="selector">The selector to scroll.</param>
-        private static void ScrollSelectionIntoView(Selector? selector)
-        {
-            if (selector is System.Windows.Controls.ListBox listBox && listBox.SelectedItem is not null)
-            {
-                listBox.ScrollIntoView(listBox.SelectedItem);
-            }
         }
 
         private void OnFlyoutButtonClick(object sender, RoutedEventArgs e)
@@ -604,8 +593,10 @@ defaultValue: null,
         /// <summary>
         /// Fills the three selector columns from <see cref="SelectedDate"/> (or today when
         /// unset, clamped into the <see cref="MinYear"/>..<see cref="MaxYear"/> range) and
-        /// highlights the matching items. The columns are plain scrollable lists; WinUI's
-        /// infinitely looping selectors are a deliberate v1 omission.
+        /// highlights the matching items. Day and month wrap endlessly like WinUI's looping
+        /// selectors (see <see cref="LoopingSelectorColumns"/>); the year column is padded and
+        /// bounded, exactly as WinUI's year <c>LoopingSelector</c> sets <c>ShouldLoop=false</c>,
+        /// so it stops at <see cref="MinYear"/> and <see cref="MaxYear"/>.
         /// </summary>
         private void PopulateSelectorColumns()
         {
@@ -627,32 +618,32 @@ defaultValue: null,
                     // Gregorian-pinned twelve month names so they match the Gregorian
                     // day/year math; alternate calendars are out of scope.
                     DateTimeFormatInfo gregorianFormat = GetGregorianFormat(culture);
-                    List<string> months = [];
+                    List<object> months = [];
                     for (int monthIndex = 1; monthIndex <= 12; monthIndex++)
                     {
                         months.Add(gregorianFormat.GetMonthName(monthIndex));
                     }
 
-                    _monthList.ItemsSource = months;
-                    _monthList.SelectedIndex = month - 1;
+                    LoopingSelectorColumns.SetLoopingSource(_monthList, months, month - 1);
                 }
 
                 if (_yearList is not null)
                 {
-                    List<int> years = [];
+                    List<object> years = [];
                     for (int yearValue = minYear; yearValue <= maxYear; yearValue++)
                     {
                         years.Add(yearValue);
                     }
 
-                    _yearList.ItemsSource = years;
-                    _yearList.SelectedIndex = year - minYear;
+                    // Padded, not looping: WinUI's DatePicker year column sets ShouldLoop=false,
+                    // so scrolling stops hard at MinYear and MaxYear instead of wrapping a step
+                    // past one bound into the other (a silent multi-decade jump).
+                    LoopingSelectorColumns.SetPaddedSource(_yearList, years, year - minYear);
                 }
 
                 if (_dayList is not null)
                 {
-                    _dayList.ItemsSource = BuildDayItems(DateTime.DaysInMonth(year, month));
-                    _dayList.SelectedIndex = day - 1;
+                    LoopingSelectorColumns.SetLoopingSource(_dayList, BuildDayItems(DateTime.DaysInMonth(year, month)), day - 1);
                 }
             }
             finally
@@ -661,14 +652,16 @@ defaultValue: null,
             }
 
             ApplySelectorColumnLayout();
-            ScrollSelectionIntoView(_dayList);
-            ScrollSelectionIntoView(_monthList);
-            ScrollSelectionIntoView(_yearList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_dayList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_monthList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_yearList);
         }
 
         /// <summary>
         /// Rebuilds the day column to 1..DaysInMonth for the pending month and year,
-        /// clamping the pending day when the new month is shorter.
+        /// clamping the pending day when the new month is shorter. The comparison and the
+        /// rebuild are both in source values rather than in list positions, because a looping
+        /// column reports a thousand repeats of the month's days as its item count.
         /// </summary>
         private void RefreshDayColumn()
         {
@@ -678,7 +671,7 @@ defaultValue: null,
             }
 
             int dayCount = DateTime.DaysInMonth(GetPendingYear(), GetPendingMonth());
-            if (_dayList.Items.Count == dayCount)
+            if (LoopingSelectorColumns.GetSourceCount(_dayList) == dayCount)
             {
                 return;
             }
@@ -687,15 +680,16 @@ defaultValue: null,
             _suppressColumnSync = true;
             try
             {
-                _dayList.ItemsSource = BuildDayItems(dayCount);
-                _dayList.SelectedIndex = day - 1;
+                // A fresh source rather than a mutation: the looping list is a snapshot, and
+                // re-centring the selection is what keeps the clamped day under the band.
+                LoopingSelectorColumns.SetLoopingSource(_dayList, BuildDayItems(dayCount), day - 1);
             }
             finally
             {
                 _suppressColumnSync = false;
             }
 
-            ScrollSelectionIntoView(_dayList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_dayList);
         }
 
         /// <summary>
@@ -723,23 +717,20 @@ defaultValue: null,
 
         private int GetPendingDay()
         {
-            return _dayList?.SelectedIndex >= 0
-                ? _dayList.SelectedIndex + 1
-                : _flyoutBaseDate.Day;
+            int dayIndex = LoopingSelectorColumns.GetSourceIndex(_dayList);
+            return dayIndex >= 0 ? dayIndex + 1 : _flyoutBaseDate.Day;
         }
 
         private int GetPendingMonth()
         {
-            return _monthList?.SelectedIndex >= 0
-                ? _monthList.SelectedIndex + 1
-                : _flyoutBaseDate.Month;
+            int monthIndex = LoopingSelectorColumns.GetSourceIndex(_monthList);
+            return monthIndex >= 0 ? monthIndex + 1 : _flyoutBaseDate.Month;
         }
 
         private int GetPendingYear()
         {
-            return _yearList?.SelectedIndex >= 0
-                ? _populatedMinYear + _yearList.SelectedIndex
-                : _flyoutBaseDate.Year;
+            int yearIndex = LoopingSelectorColumns.GetPaddedSourceIndex(_yearList);
+            return yearIndex >= 0 ? _populatedMinYear + yearIndex : _flyoutBaseDate.Year;
         }
 
         /// <summary>

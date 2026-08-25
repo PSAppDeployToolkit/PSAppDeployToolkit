@@ -23,7 +23,7 @@
             BackRequested="ShellTitleBar_BackRequested"
             PaneToggleRequested="ShellTitleBar_PaneToggleRequested"
             SizeChanged="TitleBarLayout_SizeChanged">
-            <fluence:TextBox
+            <fluence:AutoSuggestBox
                 x:Name="NavSearchBox"
                 Width="300"
                 MinWidth="300"
@@ -32,10 +32,15 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 PlaceholderText="Search controls and samples..."
-                PreviewKeyDown="NavSearchBox_PreviewKeyDown"
-                Style="{StaticResource TitleBarSearchBoxStyle}"
+                QuerySubmitted="NavSearchBox_QuerySubmitted"
                 TextChanged="NavSearchBox_TextChanged"
-                WindowChrome.IsHitTestVisibleInChrome="True" />
+                TextMemberPath="Title"
+                UpdateTextOnSelect="True"
+                WindowChrome.IsHitTestVisibleInChrome="True">
+                <fluence:AutoSuggestBox.QueryIcon>
+                    <fluence:FontIcon Glyph="&#xE721;" IconFontSize="12" />
+                </fluence:AutoSuggestBox.QueryIcon>
+            </fluence:AutoSuggestBox>
         </fluence:TitleBar>
     </fluence:FluenceWindow.TitleBar>
 

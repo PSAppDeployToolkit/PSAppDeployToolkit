@@ -83,9 +83,7 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public virtual void Collapse()
         {
-            SplitButton thisButton = SplitButton;
-            System.Windows.Controls.Primitives.ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as System.Windows.Controls.Primitives.ToggleButton;
-            _ = toggle?.IsChecked = false;
+            SplitButton.CloseFlyout();
         }
 
         /// <inheritdoc />

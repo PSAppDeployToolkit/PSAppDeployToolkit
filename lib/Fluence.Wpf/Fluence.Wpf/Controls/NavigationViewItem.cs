@@ -174,6 +174,26 @@ namespace Fluence.Wpf.Controls
 
         /// <inheritdoc />
         /// <remarks>
+        /// Evicts the parent <see cref="NavigationView"/>'s cached Top-overflow natural width when a
+        /// measure-affecting property changes while a width is cached. An item sitting collapsed in
+        /// the overflow menu is never measured, so it never raises the <c>SizeChanged</c> that is
+        /// the ordinary eviction path; a content or font change while overflowed would otherwise
+        /// keep the stale width forever. <see cref="UIElement.VisibilityProperty"/> is excluded
+        /// because the overflow pass itself toggles it, and that toggle carries no width change.
+        /// </remarks>
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.Property != VisibilityProperty
+                && NavigationView.HasCachedTopItemWidth(this)
+                && e.Property.GetMetadata(this) is FrameworkPropertyMetadata { AffectsMeasure: true })
+            {
+                NavigationView.InvalidateTopItemWidth(this);
+            }
+        }
+
+        /// <inheritdoc />
+        /// <remarks>
         /// Parent <see cref="NavigationView"/> derives from <see cref="System.Windows.Controls.Primitives.Selector"/> (not <see cref="ListBox"/>).
         /// <see cref="ListBoxItem"/> handles mouse on the bubbling route and may mark the event handled before selection sync runs;
         /// we handle preview mouse and sync selection on the parent so clicks always update selection.

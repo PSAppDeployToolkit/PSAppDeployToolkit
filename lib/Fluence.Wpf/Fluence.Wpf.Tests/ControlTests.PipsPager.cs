@@ -240,7 +240,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task PipsPager_MaxVisiblePips_WindowsAroundSelectionAsync()
+        public Task PipsPager_ExceedingMaxVisiblePips_RealizesEveryPipAndClampsTheViewportAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -259,28 +259,268 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
 
-                    // Selection at the leading edge: the window clamps to the first pages.
-                    Assert.Equal(3, host.Children.Count);
+                    // Every page gets a pip even past MaxVisiblePips: the count no longer bounds
+                    // what is realized, only how much of the run the viewport shows.
+                    Assert.Equal(10, host.Children.Count);
                     Assert.Equal("Page 1", AutomationProperties.GetName(GetPipAt(host, 0)!), StringComparer.Ordinal);
+                    Assert.Equal("Page 10", AutomationProperties.GetName(GetPipAt(host, 9)!), StringComparer.Ordinal);
                     Assert.True(GetPipAt(host, 0)?.IsChecked, "The first pip must be checked at page 1.");
 
-                    // Mid-range selection: the window centers on the selected page.
-                    pager.SelectedPageIndex = 5;
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Equal(3, host.Children.Count);
-                    Assert.Equal("Page 5", AutomationProperties.GetName(GetPipAt(host, 0)!), StringComparer.Ordinal);
-                    Assert.Equal("Page 7", AutomationProperties.GetName(GetPipAt(host, 2)!), StringComparer.Ordinal);
-                    Assert.True(GetPipAt(host, 1)?.IsChecked,
-                        "The centered window must check its middle pip.");
+                    // WinUI CalculateScrollViewerSize: defaultPipSize * (visible - 1) + selectedPipSize,
+                    // and Fluence pips share one 20x20 box, so the viewport is 20 * MaxVisiblePips
+                    // over an extent of 20 * NumberOfPages.
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    Assert.Equal(60.0, viewer.ViewportWidth, 0.5);
+                    Assert.Equal(200.0, viewer.ExtentWidth, 0.5);
+                    Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
 
-                    // Selection at the trailing edge: the window clamps to the last pages.
+        /// <summary>
+        /// Both halves of the bring-into-view contract. A pip asking to be brought into view must
+        /// not move the pager's own viewport, which the pager scrolls on its own terms, but the
+        /// request must still reach the ancestors so an app scroller brings the whole pager on
+        /// screen (WinUI re-raises the same way from PipsPager::OnScrollViewerBringIntoViewRequested).
+        /// </summary>
+        [Fact]
+        public Task PipsPager_PipBringIntoView_KeepsTheViewportStillAndScrollsTheOuterViewerAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 500, Height = 200 };
+                Controls.PipsPager pager = new() { NumberOfPages = 10, MaxVisiblePips = 3 };
+                System.Windows.Controls.StackPanel content = new();
+                _ = content.Children.Add(new System.Windows.Controls.Border { Height = 400 });
+                _ = content.Children.Add(pager);
+                System.Windows.Controls.ScrollViewer outerViewer = new()
+                {
+                    Height = 100,
+                    VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+                    Content = content,
+                };
+
+                try
+                {
+                    window.Content = outerViewer;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+
+                    Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+                    Assert.Equal(0.0, outerViewer.VerticalOffset, 0.5);
+
+                    // The last pip sits well past the three-pip viewport, so an unsuppressed
+                    // request would scroll the run to its far end.
+                    System.Windows.Controls.Primitives.ToggleButton lastPip =
+                        Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 9));
+                    lastPip.BringIntoView();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+                    Assert.True(outerViewer.VerticalOffset > 0.0,
+                        "The suppressed request must still be re-raised so an outer scroller brings the pager into view.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PipsPager_SelectionInsideViewport_LeavesTheScrollOffsetStationaryAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static async () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 500, Height = 200 };
+                Controls.PipsPager pager = new() { NumberOfPages = 10, MaxVisiblePips = 3 };
+
+                try
+                {
+                    window.Content = pager;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+
+                    // Pages 1 through 3 all sit inside the opening viewport, so the run of pips must
+                    // stay exactly where it is while the selection walks across it. The wait outlasts
+                    // the 167ms scroll animation, so a viewport that did move would be caught settled
+                    // at its new offset rather than mid-flight.
+                    foreach (int pageIndex in new[] { 1, 2 })
+                    {
+                        pager.SelectedPageIndex = pageIndex;
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        await WaitForAnimationAndDrainAsync(window.Dispatcher, 300).ConfigureAwait(true);
+                        Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+                    }
+
+                    Assert.True(GetPipAt(Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost")), 2)?.IsChecked,
+                        "The third pip must be the checked one after selecting page 3.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PipsPager_SelectionPastTheEdge_ScrollsTheViewportToThatEdgeOnlyAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static async () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 500, Height = 200 };
+                Controls.PipsPager pager = new() { NumberOfPages = 10, MaxVisiblePips = 3 };
+
+                try
+                {
+                    window.Content = pager;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+
+                    // Page 5 sits at [80,100) while the viewport spans [0,60). Edge scrolling moves
+                    // the minimum that puts it flush against the trailing edge: 100 - 60 = 40. A
+                    // re-centering viewport would land on 60 instead, so this offset is what
+                    // separates the two models.
+                    pager.SelectedPageIndex = 4;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 40.0) < 0.5).ConfigureAwait(true),
+                        "Selecting past the trailing edge must scroll the viewport just far enough to show the selected pip.");
+
+                    // Back past the leading edge: the viewport spans [40,100), page 2 sits at
+                    // [20,40), so the leading edge lands on the pip itself.
+                    pager.SelectedPageIndex = 1;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 20.0) < 0.5).ConfigureAwait(true),
+                        "Selecting past the leading edge must scroll back only as far as the selected pip.");
+
+                    // The last page cannot scroll past the end of the run, so the offset clamps to
+                    // the scrollable maximum (200 - 60).
                     pager.SelectedPageIndex = 9;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Equal(3, host.Children.Count);
-                    Assert.Equal("Page 8", AutomationProperties.GetName(GetPipAt(host, 0)!), StringComparer.Ordinal);
-                    Assert.Equal("Page 10", AutomationProperties.GetName(GetPipAt(host, 2)!), StringComparer.Ordinal);
-                    Assert.True(GetPipAt(host, 2)?.IsChecked,
-                        "The clamped window must check its last pip for the last page.");
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 140.0) < 0.5).ConfigureAwait(true),
+                        "The last page must leave the viewport at the end of the pip run.");
+                    Assert.Equal(140.0, viewer.ScrollableWidth, 0.5);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PipsPager_ExternalViewportScroll_SnapsBackToThePagerTargetAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static async () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 500, Height = 200 };
+                Controls.PipsPager pager = new() { NumberOfPages = 10, MaxVisiblePips = 3 };
+
+                try
+                {
+                    window.Content = pager;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+
+                    pager.SelectedPageIndex = 9;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 140.0) < 0.5).ConfigureAwait(true),
+                        "The viewport must reach the end of the run before the external scroll.");
+
+                    // Simulate input the hidden scrollbars cannot fully block (a bubbled Home key,
+                    // wheel over a vertical pager): scroll the viewer directly, away from the
+                    // pager's believed offset. The pager must snap the viewport back to its own
+                    // target instead of letting the real and believed offsets desync, which used to
+                    // leave the checked pip permanently outside the viewport.
+                    viewer.ScrollToHorizontalOffset(0.0);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 140.0) < 0.5).ConfigureAwait(true),
+                        "An external viewport scroll must be snapped back to the pager-owned offset.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PipsPager_VerticalOrientation_ClampsAndScrollsTheViewportOnTheVerticalAxisAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static async () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 500, Height = 400 };
+                Controls.PipsPager pager = new() { NumberOfPages = 10, MaxVisiblePips = 3 };
+
+                try
+                {
+                    window.Content = pager;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+
+                    // Scroll away from the start on the horizontal axis first, so the flip has a
+                    // stale cross-axis offset to release rather than a viewport already at zero.
+                    pager.SelectedPageIndex = 9;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.HorizontalOffset - 140.0) < 0.5).ConfigureAwait(true),
+                        "The horizontal viewport must reach the end of the pip run before the flip.");
+
+                    pager.Orientation = System.Windows.Controls.Orientation.Vertical;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    // The clamp moves to the vertical axis and the horizontal axis is freed, so the
+                    // run is 3 pips tall over a 10 pip extent with nothing left scrolled sideways.
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(viewer.VerticalOffset - 140.0) < 0.5).ConfigureAwait(true),
+                        "The flip must re-run the edge scroll on the vertical axis for the same selection.");
+                    Assert.Equal(60.0, viewer.ViewportHeight, 0.5);
+                    Assert.Equal(200.0, viewer.ExtentHeight, 0.5);
+                    Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
+
+                    // Selecting back inside the vertical viewport leaves it where it is.
+                    pager.SelectedPageIndex = 8;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    await WaitForAnimationAndDrainAsync(window.Dispatcher, 300).ConfigureAwait(true);
+                    Assert.Equal(140.0, viewer.VerticalOffset, 0.5);
                 }
                 finally
                 {
@@ -581,7 +821,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task PipsPager_PipSizeMorph_AnimatesSelectionAndSurvivesWindowRebuildAsync()
+        public Task PipsPager_PipSizeMorph_AnimatesSelectionAcrossTheViewportAsync()
         {
             return WpfTestSta.RunOnStaAsync(static async () =>
             {
@@ -622,8 +862,8 @@ namespace Fluence.Wpf.Tests
                         "The initially selected pip must animate to the 6px selected size at load.");
                     Assert.True(IsDotSize(DotAt(host, 1), 4.0), "An unselected pip must rest at 4px.");
 
-                    // In-place selection change (the window stays clamped at the start):
-                    // the old pip's ExitActions shrink it back to 4 while the new pip grows to 6.
+                    // Selection change inside the opening viewport: the old pip's ExitActions
+                    // shrink it back to 4 while the new pip grows to 6.
                     pager.SelectedPageIndex = 1;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => IsDotSize(DotAt(host, 1), 6.0)).ConfigureAwait(true),
@@ -631,16 +871,18 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => IsDotSize(DotAt(host, 0), 4.0)).ConfigureAwait(true),
                         "The previously selected pip must animate back to the 4px rest size.");
 
-                    // Window rebuild (mid-range selection recreates the pips): the recreated
-                    // selected pip must still land at 6x6 because its trigger condition is
-                    // already true when the recreated template applies.
+                    // A selection the viewport has to scroll to reaches a pip that was realized at
+                    // load and has been sitting outside the viewport ever since. It must still run
+                    // the same morph, and the pips it scrolled past must fall back to rest.
                     pager.SelectedPageIndex = 5;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Equal("Page 5", AutomationProperties.GetName(GetPipAt(host, 0)!), StringComparer.Ordinal);
-                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => IsDotSize(DotAt(host, 1), 6.0)).ConfigureAwait(true),
-                        "A recreated selected pip must animate to the 6px selected size.");
-                    Assert.True(IsDotSize(DotAt(host, 0), 4.0), "A recreated unselected pip must rest at 4px.");
-                    Assert.True(IsDotSize(DotAt(host, 2), 4.0), "A recreated unselected pip must rest at 4px.");
+                    Assert.Equal("Page 6", AutomationProperties.GetName(GetPipAt(host, 5)!), StringComparer.Ordinal);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => IsDotSize(DotAt(host, 5), 6.0)).ConfigureAwait(true),
+                        "A pip scrolled into the viewport must animate to the 6px selected size.");
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => IsDotSize(DotAt(host, 1), 4.0)).ConfigureAwait(true),
+                        "The pip the viewport scrolled away from must animate back to the 4px rest size.");
+                    Assert.True(IsDotSize(DotAt(host, 4), 4.0), "An unselected pip must rest at 4px.");
+                    Assert.True(IsDotSize(DotAt(host, 6), 4.0), "An unselected pip must rest at 4px.");
                 }
                 finally
                 {

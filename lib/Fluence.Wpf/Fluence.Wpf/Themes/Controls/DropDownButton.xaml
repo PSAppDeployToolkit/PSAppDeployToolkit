@@ -85,12 +85,14 @@
                             PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                             PopupAnimation="None">
                             <Border
+                                x:Name="FlyoutSurface"
                                 MinWidth="{Binding ActualWidth, ElementName=OuterBorder}"
                                 Margin="0,4,0,0"
                                 Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
                                 BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                 BorderThickness="1"
-                                CornerRadius="{TemplateBinding DropdownCornerRadius}">
+                                CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                RenderOptions.ClearTypeHint="Enabled">
                                 <!--
                                     No DropShadowEffect: WPF bitmap effects on a Border with CornerRadius
                                     always bleed into the transparent corner nooks, producing darker

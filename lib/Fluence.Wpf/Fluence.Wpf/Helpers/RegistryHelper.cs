@@ -48,6 +48,20 @@ namespace Fluence.Wpf.Helpers
             return key?.GetValue(RegistryConstants.SystemUsesLightTheme) is not int intValue || intValue is not 0;
         }
 
+        /// <summary>
+        /// Reads the Settings "Transparency effects" toggle
+        /// (<c>HKCU\...\Themes\Personalize\EnableTransparency</c>). A missing or non-integer value
+        /// reads as enabled, matching the OS default and the sibling theme-flag readers: a machine
+        /// that has never had the toggle written should get the transparent surfaces, not the
+        /// opaque fallback.
+        /// </summary>
+        /// <returns><see langword="true"/> when transparency effects are on.</returns>
+        internal static bool GetEnableTransparency()
+        {
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryConstants.PersonalizeRegistryPath);
+            return key?.GetValue(RegistryConstants.EnableTransparency) is not int intValue || intValue is not 0;
+        }
+
         internal static bool GetColorPrevalence()
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryConstants.DwmRegistryPath);

@@ -232,13 +232,15 @@ theme of a running window. All `DynamicResource` bindings update immediately.
 
 ### BackdropType enum values
 
-| Value     | Behavior                                         |
-| --------- | ------------------------------------------------ |
-| `None`    | Solid window background, no system material      |
-| `Auto`    | Let Fluence choose the best available backdrop   |
-| `Mica`    | Mica (Windows 11 only; falls back on Windows 10) |
-| `Acrylic` | Acrylic (Windows 10 1809+)                       |
-| `Tabbed`  | Tabbed / Mica Alt (Windows 11 only)              |
+| Value     | Behavior                                                                          |
+| --------- | --------------------------------------------------------------------------------- |
+| `None`    | Solid window background, no system material                                       |
+| `Auto`    | Let Fluence choose the best available backdrop                                     |
+| `Mica`    | Mica (Windows 11 only; falls back to `None` on Windows 10)                         |
+| `Acrylic` | DWM acrylic on Windows 11 22H2+, legacy acrylic on Windows 10 build 17063+, Mica on Windows 11 21H2 |
+| `Tabbed`  | Tabbed / Mica Alt (Windows 11 only; falls back to `None` on Windows 10)            |
+
+The Windows 10 legacy acrylic is applied through the `SetWindowCompositionAttribute` accent policy. It is disabled, and the window falls back to an opaque `None`, when the Windows "Transparency effects" setting is off or the high contrast theme is active. It also drops briefly to the cheaper Aero blur while the window is being dragged or resized.
 
 ### Reading the current state
 

@@ -94,25 +94,25 @@
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <fluence:StackPanel Spacing="20">
-                    <fluence:PasswordBox
+                    <PasswordBox
                         Width="480"
                         HorizontalAlignment="Left"
-                        PlaceholderText="Enter password..."
-                        RevealButtonEnabled="True"
-                        ShowCapsLockIndicator="True"
-                        ShowPasswordStrength="True" />
-                    <fluence:PasswordBox
+                        fluence:PasswordBoxExtensions.PlaceholderText="Enter password..."
+                        fluence:PasswordBoxExtensions.RevealButtonEnabled="True"
+                        fluence:PasswordBoxExtensions.ShowCapsLockIndicator="True"
+                        fluence:PasswordBoxExtensions.ShowPasswordStrength="True" />
+                    <PasswordBox
                         Width="480"
                         HorizontalAlignment="Left"
                         Password="CorrectHorse7!"
-                        RevealButtonEnabled="True"
-                        ShowCapsLockIndicator="True"
-                        ShowPasswordStrength="True" />
-                    <fluence:PasswordBox
+                        fluence:PasswordBoxExtensions.RevealButtonEnabled="True"
+                        fluence:PasswordBoxExtensions.ShowCapsLockIndicator="True"
+                        fluence:PasswordBoxExtensions.ShowPasswordStrength="True" />
+                    <PasswordBox
                         Width="480"
                         HorizontalAlignment="Left"
                         IsEnabled="False"
-                        PlaceholderText="Disabled" />
+                        fluence:PasswordBoxExtensions.PlaceholderText="Disabled" />
                 </fluence:StackPanel>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use password boxes for protected text entry, with reveal and strength affordances when appropriate." />

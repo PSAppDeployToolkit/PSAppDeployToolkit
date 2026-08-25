@@ -27,7 +27,6 @@
  */
 
 using Fluence.Wpf.Helpers;
-using Fluence.Wpf.Native;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
@@ -107,6 +106,14 @@ namespace Fluence.Wpf.Controls
         /// This dual-path is intentional: setting <c>-1</c> with
         /// <see cref="BackdropType.None"/> on Windows 11 renders a visible glass artifact,
         /// so the tiny nonzero value is the correct prevention mechanism.
+        /// <para>
+        /// The input is the <em>requested</em> backdrop, not the effective one, so a Windows 10
+        /// window that asked for a backdrop it cannot get still receives <c>-1</c>. That is
+        /// harmless on Windows 11 and matches the shipped behavior, but it is unverified against
+        /// the Windows 10 legacy acrylic path: if visual verification on real Windows 10 hardware
+        /// shows a glass-frame artifact around an accent-blurred window, switch this to be driven
+        /// by the effective backdrop from <see cref="ResolveEffectiveBackdrop"/> instead.
+        /// </para>
         /// </remarks>
         /// <param name="backdrop">The requested (not necessarily effective) backdrop type.</param>
         /// <param name="hasShadow">
@@ -152,28 +159,38 @@ namespace Fluence.Wpf.Controls
         /// Computes the <see cref="FramePlan"/> that governs the window border appearance.
         /// </summary>
         /// <remarks>
-        /// The plan has two independent halves:
+        /// The window has exactly one visible border, and it is the WPF-template one. DWM
+        /// composites its own 1 px border semi-transparently over whatever is behind the window,
+        /// so a COLORREF written to <c>DWMWA_BORDER_COLOR</c> never resolves to the same on-screen
+        /// color as the opaque template border painted just inside the client area; the two
+        /// coincident borders read as a shade mismatch along every edge. The plan therefore
+        /// suppresses the DWM border wherever the OS lets it and treats the template border as the
+        /// single source of truth:
         /// <list type="bullet">
         ///   <item>
         ///     <term>WPF-template border</term>
         ///     <description>
-        ///       Active window with accent borders enabled gets a 2 dp border keyed to
-        ///       <c>SystemAccentColorBrush</c>. Inactive windows revert to
-        ///       <c>CardStrokeColorDefaultSolidBrush</c>. Maximized windows get a 0-thick border
-        ///       in every state.
+        ///       A normal-state window gets a 1 dp hairline keyed to <c>SystemAccentColorBrush</c>
+        ///       when it is active and accent borders are enabled, and to
+        ///       <c>CardStrokeColorDefaultSolidBrush</c> when it is inactive or accent borders are
+        ///       off. Maximized windows get a 0-thick border in every state, because a border at
+        ///       the monitor edge would clip against the taskbar or an adjacent monitor.
         ///     </description>
         ///   </item>
         ///   <item>
         ///     <term>DWM border color</term>
         ///     <description>
-        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with
-        ///       accent borders, the COLORREF derived from <paramref name="accentColor"/> is
-        ///       emitted. Otherwise
-        ///       DWMWA_COLOR_DEFAULT is used, which tells DWM to
-        ///       restore its own border.
+        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> (Windows 11), the documented
+        ///       DWMWA_COLOR_NONE sentinel is emitted in every activation
+        ///       state, which suppresses the drawing of the DWM window border while keeping the
+        ///       rounded corners. When the attribute is unavailable (Windows 10) the plan records
+        ///       DWMWA_COLOR_DEFAULT; the caller never writes it on
+        ///       that OS.
         ///     </description>
         ///   </item>
         /// </list>
+        /// The accent color itself is not an input: the accent reaches the border through the
+        /// <c>SystemAccentColorBrush</c> resource key, which re-resolves on every accent change.
         /// </remarks>
         /// <param name="windowState">The current <see cref="WindowState"/>.</param>
         /// <param name="isActive">
@@ -184,28 +201,27 @@ namespace Fluence.Wpf.Controls
         ///   is set.
         /// </param>
         /// <param name="capabilities">The OS capability snapshot.</param>
-        /// <param name="accentColor">The current system accent color.</param>
         /// <returns>A <see cref="FramePlan"/> describing the border to apply.</returns>
         internal static FramePlan BuildFramePlan(
             WindowState windowState,
             bool isActive,
             bool isAccentBorderEnabled,
-            WindowCapabilities capabilities,
-            Color accentColor)
+            WindowCapabilities capabilities)
         {
             Thickness templateBorderThickness = windowState is WindowState.Maximized
                 ? new Thickness(0)
-                : new Thickness(2);
+                : new Thickness(1);
 
             string templateBorderBrushResourceKey = !isActive || !isAccentBorderEnabled
                 ? "CardStrokeColorDefaultSolidBrush"
                 : "SystemAccentColorBrush";
 
-            uint dwmBorderColor = PInvoke.DWMWA_COLOR_DEFAULT;
-            if (capabilities.SupportsBorderColor && isActive && isAccentBorderEnabled)
-            {
-                dwmBorderColor = NativeMethods.ColorToColorRef(accentColor);
-            }
+            // DWMWA_COLOR_NONE suppresses the DWM border outright so the template hairline is the
+            // only border on screen. DWMWA_COLOR_DEFAULT is recorded on Windows 10, where the
+            // caller never writes the attribute at all.
+            uint dwmBorderColor = capabilities.SupportsBorderColor
+                ? PInvoke.DWMWA_COLOR_NONE
+                : PInvoke.DWMWA_COLOR_DEFAULT;
 
             return new FramePlan(templateBorderThickness, templateBorderBrushResourceKey, dwmBorderColor);
         }
@@ -230,7 +246,11 @@ namespace Fluence.Wpf.Controls
         ///     <term>Acrylic / Tabbed</term>
         ///     <description>
         ///       Passes through on 22H2+. Downgrades to Mica on pre-22H2 Win11 (only
-        ///       <c>DWMWA_MICA_EFFECT</c> is available there). Downgrades to None on Windows 10.
+        ///       <c>DWMWA_MICA_EFFECT</c> is available there). On Windows 10, Acrylic survives as
+        ///       itself when the legacy accent path is usable (see
+        ///       <see cref="ResolveTransparentBackdrop"/>) and otherwise downgrades to None;
+        ///       Tabbed always downgrades to None there, because the legacy accent policy has no
+        ///       tabbed equivalent.
         ///     </description>
         ///   </item>
         ///   <item>
@@ -241,10 +261,21 @@ namespace Fluence.Wpf.Controls
         /// </remarks>
         /// <param name="requestedBackdrop">The <see cref="BackdropType"/> requested by the caller.</param>
         /// <param name="capabilities">The OS capability snapshot.</param>
+        /// <param name="isTransparencyEnabled">
+        ///   <see langword="true"/> when the OS transparency-effects toggle is on. Defaults to
+        ///   <see langword="false"/>, which suppresses the Windows 10 legacy acrylic path: a caller
+        ///   that does not read the setting must not get a blur the user has turned off.
+        /// </param>
+        /// <param name="resolvedTheme">
+        ///   The resolved application theme. Only <see cref="ApplicationTheme.HighContrast"/>
+        ///   changes the outcome, by suppressing the Windows 10 legacy acrylic path.
+        /// </param>
         /// <returns>The effective <see cref="BackdropType"/> to apply.</returns>
         internal static BackdropType ResolveEffectiveBackdrop(
             BackdropType requestedBackdrop,
-            WindowCapabilities capabilities)
+            WindowCapabilities capabilities,
+            bool isTransparencyEnabled = false,
+            ApplicationTheme resolvedTheme = ApplicationTheme.Light)
         {
             return requestedBackdrop switch
             {
@@ -254,12 +285,57 @@ namespace Fluence.Wpf.Controls
                         : BackdropType.None,
 
                 BackdropType.Acrylic or BackdropType.Tabbed =>
-                    !capabilities.SupportsSystemBackdropType
-                        ? capabilities.SupportsMicaEffect ? BackdropType.Mica : BackdropType.None
-                        : requestedBackdrop,
+                    ResolveTransparentBackdrop(requestedBackdrop, capabilities, isTransparencyEnabled, resolvedTheme),
 
                 BackdropType.None or _ => requestedBackdrop,
             };
+        }
+
+        /// <summary>
+        /// Resolves <see cref="BackdropType.Acrylic"/> and <see cref="BackdropType.Tabbed"/> against
+        /// the three mutually exclusive transparency mechanisms, newest first.
+        /// </summary>
+        /// <remarks>
+        /// <list type="number">
+        ///   <item>
+        ///     <c>DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) expresses both requests natively, so the
+        ///     request passes through untouched.
+        ///   </item>
+        ///   <item>
+        ///     <c>DWMWA_MICA_EFFECT</c> (21H2) expresses neither, so both downgrade to the Mica it
+        ///     does express, which is closer to the request than an opaque window.
+        ///   </item>
+        ///   <item>
+        ///     Windows 10 has neither attribute but does have the legacy accent policy, which
+        ///     expresses acrylic and nothing else. Acrylic therefore survives when the build
+        ///     supports it, the user has transparency effects on, and the theme is not high
+        ///     contrast; high contrast is excluded because a blurred desktop behind text defeats
+        ///     the contrast guarantee the theme exists to make. Tabbed has no legacy equivalent
+        ///     and downgrades to None.
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        /// <param name="requestedBackdrop">Either <see cref="BackdropType.Acrylic"/> or <see cref="BackdropType.Tabbed"/>.</param>
+        /// <param name="capabilities">The OS capability snapshot.</param>
+        /// <param name="isTransparencyEnabled">Whether the OS transparency-effects toggle is on.</param>
+        /// <param name="resolvedTheme">The resolved application theme.</param>
+        /// <returns>The effective <see cref="BackdropType"/> to apply.</returns>
+        private static BackdropType ResolveTransparentBackdrop(
+            BackdropType requestedBackdrop,
+            WindowCapabilities capabilities,
+            bool isTransparencyEnabled,
+            ApplicationTheme resolvedTheme)
+        {
+            return capabilities.SupportsSystemBackdropType
+                ? requestedBackdrop
+                : capabilities.SupportsMicaEffect
+                ? BackdropType.Mica
+                : requestedBackdrop is BackdropType.Acrylic
+                    && capabilities.SupportsLegacyAcrylic
+                    && isTransparencyEnabled
+                    && resolvedTheme is not ApplicationTheme.HighContrast
+                ? BackdropType.Acrylic
+                : BackdropType.None;
         }
 
         /// <summary>
@@ -284,6 +360,11 @@ namespace Fluence.Wpf.Controls
         ///     the canonical <c>DWMWA_SYSTEMBACKDROP_TYPE</c>.
         ///   </item>
         ///   <item>
+        ///     Acrylic that survives on Windows 10 takes the legacy accent path
+        ///     (<see cref="BackdropPlan.UseLegacyAcrylic"/> = <see langword="true"/>) and writes no
+        ///     DWM attribute at all; the tint travels in the plan instead.
+        ///   </item>
+        ///   <item>
         ///     Any other active backdrop maps to a <c>DWMSBT_*</c> value via
         ///     <see cref="MapSystemBackdropType"/>.
         ///   </item>
@@ -295,14 +376,30 @@ namespace Fluence.Wpf.Controls
         /// <param name="fallbackBackgroundColor">
         ///   The opaque background color to use when no DWM backdrop is active.
         /// </param>
+        /// <param name="isTransparencyEnabled">
+        ///   <see langword="true"/> when the OS transparency-effects toggle is on. Gates the
+        ///   Windows 10 legacy acrylic path only; every DWM backdrop path ignores it, because DWM
+        ///   already honours the setting itself.
+        /// </param>
+        /// <param name="legacyAcrylicTintColor">
+        ///   The tint color to record for the legacy acrylic accent policy, normally the
+        ///   <c>AcrylicBackgroundFillColorDefault</c> theme token. Ignored on every path except the
+        ///   Windows 10 legacy acrylic one.
+        /// </param>
         /// <returns>A <see cref="BackdropPlan"/> describing all DWM writes to perform.</returns>
         internal static BackdropPlan BuildBackdropPlan(
             BackdropType requestedBackdrop,
             ApplicationTheme resolvedTheme,
             WindowCapabilities capabilities,
-            Color fallbackBackgroundColor)
+            Color fallbackBackgroundColor,
+            bool isTransparencyEnabled,
+            Color legacyAcrylicTintColor)
         {
-            BackdropType effectiveBackdrop = ResolveEffectiveBackdrop(requestedBackdrop, capabilities);
+            BackdropType effectiveBackdrop = ResolveEffectiveBackdrop(
+                requestedBackdrop,
+                capabilities,
+                isTransparencyEnabled,
+                resolvedTheme);
             bool isDark = resolvedTheme is ApplicationTheme.Dark;
 
             // None path: solid background, default caption color, explicit DWMSBT_NONE on 22H2+.
@@ -319,7 +416,9 @@ namespace Fluence.Wpf.Controls
                     PInvoke.DWMWA_COLOR_DEFAULT,
                     clearedSystemBackdrop,
                     useLegacyMicaEffect: false,
-                    isDark);
+                    isDark,
+                    useLegacyAcrylic: false,
+                    Colors.Transparent);
             }
 
             // Mica on pre-22H2 Win11: legacy DWMWA_MICA_EFFECT; no DWMWA_SYSTEMBACKDROP_TYPE.
@@ -334,7 +433,29 @@ namespace Fluence.Wpf.Controls
                     PInvoke.DWMWA_COLOR_NONE,
                     systemBackdropType: null,
                     useLegacyMicaEffect: true,
-                    isDark);
+                    isDark,
+                    useLegacyAcrylic: false,
+                    Colors.Transparent);
+            }
+
+            // Acrylic on Windows 10: legacy SetWindowCompositionAttribute accent policy. Reaching
+            // here means ResolveEffectiveBackdrop already confirmed the build supports the acrylic
+            // accent state, transparency effects are on, and the theme is not high contrast, so the
+            // only remaining discriminator is the absence of DWMWA_SYSTEMBACKDROP_TYPE. The caption
+            // color is recorded with the same DWMWA_COLOR_NONE semantics as the DWM backdrops even
+            // though Windows 10 never exposes DWMWA_CAPTION_COLOR for the caller to write.
+            if (effectiveBackdrop is BackdropType.Acrylic && !capabilities.SupportsSystemBackdropType)
+            {
+                return new BackdropPlan(
+                    BackdropType.Acrylic,
+                    useTransparentBackground: true,
+                    Colors.Transparent,
+                    PInvoke.DWMWA_COLOR_NONE,
+                    systemBackdropType: null,
+                    useLegacyMicaEffect: false,
+                    isDark,
+                    useLegacyAcrylic: true,
+                    legacyAcrylicTintColor);
             }
 
             // All other active backdrops on 22H2+: canonical DWMWA_SYSTEMBACKDROP_TYPE path.
@@ -345,7 +466,9 @@ namespace Fluence.Wpf.Controls
                 PInvoke.DWMWA_COLOR_NONE,
                 MapSystemBackdropType(effectiveBackdrop),
                 useLegacyMicaEffect: false,
-                isDark);
+                isDark,
+                useLegacyAcrylic: false,
+                Colors.Transparent);
         }
 
         /// <summary>
