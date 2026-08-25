@@ -240,9 +240,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task BorderThickness_DefaultIsOneAsync()
+        public Task BorderThickness_DefaultIsTwoAsync()
         {
-            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(2), w.BorderThickness));
         }
 
         #endregion 5. HasShadow and WindowBorder defaults
@@ -331,9 +331,9 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task DefaultBorderThickness_IsOneAsync()
+        public Task DefaultBorderThickness_IsTwoAsync()
         {
-            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(2), w.BorderThickness));
         }
 
         [Fact]
@@ -419,7 +419,7 @@ namespace Fluence.Wpf.Tests
                     "TextFillColorDisabledBrush",
                     "SubtleFillColorSecondaryBrush",
                     "SubtleFillColorTertiaryBrush",
-                    "SurfaceStrokeColorDefaultBrush",
+                    "CardStrokeColorDefaultSolidBrush",
                 ];
 
                 foreach (string key in themeBrushKeys)

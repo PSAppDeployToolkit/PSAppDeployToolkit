@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Helpers;
+using Fluence.Wpf.Native;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
@@ -159,44 +160,38 @@ namespace Fluence.Wpf.Controls
         /// Computes the <see cref="FramePlan"/> that governs the window border appearance.
         /// </summary>
         /// <remarks>
-        /// The window has exactly one visible border, and it is the WPF-template one. DWM
-        /// composites its own 1 px border semi-transparently over whatever is behind the window,
-        /// so a COLORREF written to <c>DWMWA_BORDER_COLOR</c> never resolves to the same on-screen
-        /// color as the opaque template border painted just inside the client area; the two
-        /// coincident borders read as a shade mismatch along every edge. The plan therefore
-        /// suppresses the DWM border wherever the OS lets it and treats the template border as the
-        /// single source of truth:
+        /// The plan has two halves, and DWM owns the outer one:
         /// <list type="bullet">
         ///   <item>
         ///     <term>WPF-template border</term>
         ///     <description>
-        ///       A normal-state window gets a 1 dp hairline keyed to <c>SystemAccentColorBrush</c>
-        ///       when it is active and accent borders are enabled, and to
-        ///       <c>SurfaceStrokeColorDefaultBrush</c> when it is inactive or accent borders are
-        ///       off. That is the WinUI window-surface stroke (40% <c>#757575</c> in both Light and
-        ///       Dark), the same nominal colour DWM composites for its own border, so the one
-        ///       border Fluence draws reads like the system one over any content.
-        ///       <c>CardStrokeColorDefaultSolidBrush</c> is deliberately not used: it is opaque
-        ///       <c>#EBEBEB</c> in Light, which vanishes against a light window surface and reads
-        ///       as a bright halo against a dark desktop once the DWM border is suppressed.
-        ///       Maximized windows get a 0-thick border in every state, because a border at
-        ///       the monitor edge would clip against the taskbar or an adjacent monitor.
+        ///       An active window with accent borders enabled gets a 2 dp border keyed to
+        ///       <c>SystemAccentColorBrush</c>. Inactive windows, and windows whose accent borders
+        ///       are off, get <c>CardStrokeColorDefaultSolidBrush</c>, which is theme-matched to the
+        ///       window surface and so reads as part of it rather than as a second outline.
+        ///       Maximized windows get a 0-thick border in every state, because a border at the
+        ///       monitor edge would clip against the taskbar or an adjacent monitor.
         ///     </description>
         ///   </item>
         ///   <item>
         ///     <term>DWM border color</term>
         ///     <description>
-        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> (Windows 11), the documented
-        ///       DWMWA_COLOR_NONE sentinel is emitted in every activation
-        ///       state, which suppresses the drawing of the DWM window border while keeping the
-        ///       rounded corners. When the attribute is unavailable (Windows 10) the plan records
-        ///       DWMWA_COLOR_DEFAULT; the caller never writes it on
-        ///       that OS.
+        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with accent
+        ///       borders, the COLORREF derived from <paramref name="accentColor"/> is emitted.
+        ///       Otherwise DWMWA_COLOR_DEFAULT is used, which tells DWM to draw its own border.
         ///     </description>
         ///   </item>
         /// </list>
-        /// The accent color itself is not an input: the accent reaches the border through the
-        /// <c>SystemAccentColorBrush</c> resource key, which re-resolves on every accent change.
+        /// <para>
+        /// The DWM border is deliberately not suppressed with the DWMWA_COLOR_NONE sentinel. Doing
+        /// that leaves the template hairline as the only outline, and a brush painted inside the
+        /// client area composites over the window's own surface, never over what is behind the
+        /// window. In Light theme that reads as a bright ring around the window on a dark desktop
+        /// whatever stroke token is chosen, because no light-surface blend can be as dark as the
+        /// border Windows itself draws. The DWM border composites semi-transparently against the
+        /// desktop, which is exactly why it adapts, so Fluence lets it do that job and keeps the
+        /// template border theme-matched underneath it.
+        /// </para>
         /// </remarks>
         /// <param name="windowState">The current <see cref="WindowState"/>.</param>
         /// <param name="isActive">
@@ -207,27 +202,36 @@ namespace Fluence.Wpf.Controls
         ///   is set.
         /// </param>
         /// <param name="capabilities">The OS capability snapshot.</param>
+        /// <param name="accentColor">The current system accent color.</param>
         /// <returns>A <see cref="FramePlan"/> describing the border to apply.</returns>
         internal static FramePlan BuildFramePlan(
             WindowState windowState,
             bool isActive,
             bool isAccentBorderEnabled,
-            WindowCapabilities capabilities)
+            WindowCapabilities capabilities,
+            Color accentColor)
         {
-            Thickness templateBorderThickness = windowState is WindowState.Maximized
+            // Where DWM can draw the border, it is the only border: it composites against the
+            // desktop, so it is the one outline that can look right over any backdrop. A template
+            // border underneath it paints inside the client area over the window's own surface, so
+            // whatever token it uses shows as a pale line between the system border and the
+            // content, which is the halo this window used to draw in Light theme. Windows 10 has no
+            // DWMWA_BORDER_COLOR, so there the template border is still the outline and keeps its
+            // 2 dp. The thickness does not vary with activation in either case: it feeds layout, and
+            // a per-state value would shift the content every time the window is focused.
+            Thickness templateBorderThickness = windowState is WindowState.Maximized || capabilities.SupportsBorderColor
                 ? new Thickness(0)
-                : new Thickness(1);
+                : new Thickness(2);
 
             string templateBorderBrushResourceKey = !isActive || !isAccentBorderEnabled
-                ? "SurfaceStrokeColorDefaultBrush"
+                ? "CardStrokeColorDefaultSolidBrush"
                 : "SystemAccentColorBrush";
 
-            // DWMWA_COLOR_NONE suppresses the DWM border outright so the template hairline is the
-            // only border on screen. DWMWA_COLOR_DEFAULT is recorded on Windows 10, where the
-            // caller never writes the attribute at all.
-            uint dwmBorderColor = capabilities.SupportsBorderColor
-                ? PInvoke.DWMWA_COLOR_NONE
-                : PInvoke.DWMWA_COLOR_DEFAULT;
+            uint dwmBorderColor = PInvoke.DWMWA_COLOR_DEFAULT;
+            if (capabilities.SupportsBorderColor && isActive && isAccentBorderEnabled)
+            {
+                dwmBorderColor = NativeMethods.ColorToColorRef(accentColor);
+            }
 
             return new FramePlan(templateBorderThickness, templateBorderBrushResourceKey, dwmBorderColor);
         }

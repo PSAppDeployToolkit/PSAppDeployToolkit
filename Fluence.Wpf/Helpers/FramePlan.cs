@@ -36,14 +36,14 @@ namespace Fluence.Wpf.Helpers
     /// WPF-template border (driven by <see cref="TemplateBorderThickness"/> and
     /// <see cref="TemplateBorderBrushResourceKey"/>) from the DWM border color
     /// (<see cref="DwmBorderColor"/>), because only some OS builds support the DWM side.
-    /// The two halves are not two borders: the template border is the only one that paints, and
-    /// <see cref="DwmBorderColor"/> exists to switch the DWM border off wherever the OS allows it.
+    /// DWM draws the outer border and the template border sits just inside it, theme-matched to
+    /// the window surface unless the window is active with accent borders enabled.
     /// </summary>
     /// <param name="templateBorderThickness">The thickness of the WPF-template border element.</param>
     /// <param name="templateBorderBrushResourceKey">The <c>DynamicResource</c> key for the border brush.</param>
     /// <param name="dwmBorderColor">
-    ///   The value for <c>DWMWA_BORDER_COLOR</c>: the DWMWA_COLOR_NONE
-    ///   suppression sentinel on a capable OS, otherwise DWMWA_COLOR_DEFAULT.
+    ///   The value for <c>DWMWA_BORDER_COLOR</c>: the accent COLORREF for an active window with
+    ///   accent borders on a capable OS, otherwise DWMWA_COLOR_DEFAULT.
     /// </param>
     internal sealed class FramePlan(
         Thickness templateBorderThickness,
@@ -51,8 +51,8 @@ namespace Fluence.Wpf.Helpers
         uint dwmBorderColor)
     {
         /// <summary>
-        /// Gets the thickness of the WPF-template border element. <c>Thickness(1)</c> in the
-        /// normal window state, matching the WinUI hairline; <c>Thickness(0)</c> when maximized
+        /// Gets the thickness of the WPF-template border element. <c>Thickness(2)</c> in the
+        /// normal window state; <c>Thickness(0)</c> when maximized
         /// (a border at the monitor edge would clip against the taskbar or other monitors).
         /// This is the only border the window paints, so the value is applied to
         /// <c>FluenceWindow.BorderThickness</c> rather than left to a template trigger.
@@ -62,18 +62,16 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Gets the <c>DynamicResource</c> key for the border brush to apply to the template
         /// border element. <c>"SystemAccentColorBrush"</c> when the window is active and accent
-        /// borders are enabled; <c>"SurfaceStrokeColorDefaultBrush"</c>, the WinUI window-surface
-        /// stroke, when the window is inactive or accent borders are off.
+        /// borders are enabled; <c>"CardStrokeColorDefaultSolidBrush"</c> when the window is
+        /// inactive or accent borders are off.
         /// </summary>
         internal string TemplateBorderBrushResourceKey { get; } = templateBorderBrushResourceKey;
 
         /// <summary>
-        /// Gets the value to write to <c>DWMWA_BORDER_COLOR</c>. On an OS that exposes the
-        /// attribute this is always the DWMWA_COLOR_NONE sentinel, which
-        /// suppresses the drawing of the DWM window border and leaves the template border as the
-        /// only one on screen; the DWM border composites semi-transparently and so can never be
-        /// color-matched to it. When the attribute is unavailable (Windows 10) the plan records
-        /// DWMWA_COLOR_DEFAULT instead. A caller must check
+        /// Gets the value to write to <c>DWMWA_BORDER_COLOR</c>. The accent COLORREF when the OS
+        /// exposes the attribute and the window is active with accent borders enabled, so the DWM
+        /// border and the template border agree; DWMWA_COLOR_DEFAULT otherwise, which leaves DWM
+        /// drawing its own adaptive border. A caller must check
         /// <see cref="WindowCapabilities.SupportsBorderColor"/> before writing this value to the
         /// DWM attribute; the plan records the sentinel regardless so the caller does not need a
         /// separate null check.
