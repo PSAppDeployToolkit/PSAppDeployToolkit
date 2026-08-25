@@ -172,8 +172,14 @@ namespace Fluence.Wpf.Controls
         ///     <description>
         ///       A normal-state window gets a 1 dp hairline keyed to <c>SystemAccentColorBrush</c>
         ///       when it is active and accent borders are enabled, and to
-        ///       <c>CardStrokeColorDefaultSolidBrush</c> when it is inactive or accent borders are
-        ///       off. Maximized windows get a 0-thick border in every state, because a border at
+        ///       <c>SurfaceStrokeColorDefaultBrush</c> when it is inactive or accent borders are
+        ///       off. That is the WinUI window-surface stroke (40% <c>#757575</c> in both Light and
+        ///       Dark), the same nominal colour DWM composites for its own border, so the one
+        ///       border Fluence draws reads like the system one over any content.
+        ///       <c>CardStrokeColorDefaultSolidBrush</c> is deliberately not used: it is opaque
+        ///       <c>#EBEBEB</c> in Light, which vanishes against a light window surface and reads
+        ///       as a bright halo against a dark desktop once the DWM border is suppressed.
+        ///       Maximized windows get a 0-thick border in every state, because a border at
         ///       the monitor edge would clip against the taskbar or an adjacent monitor.
         ///     </description>
         ///   </item>
@@ -213,7 +219,7 @@ namespace Fluence.Wpf.Controls
                 : new Thickness(1);
 
             string templateBorderBrushResourceKey = !isActive || !isAccentBorderEnabled
-                ? "CardStrokeColorDefaultSolidBrush"
+                ? "SurfaceStrokeColorDefaultBrush"
                 : "SystemAccentColorBrush";
 
             // DWMWA_COLOR_NONE suppresses the DWM border outright so the template hairline is the

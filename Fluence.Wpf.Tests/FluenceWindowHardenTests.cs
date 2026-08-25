@@ -551,7 +551,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(
-                        w.Template.FindName("WindowBorder", w));
+                        w.Template.FindName("PART_WindowBorder", w));
                     CornerRadius overlay = Assert.IsType<CornerRadius>(app.TryFindResource("OverlayCornerRadius"));
                     CornerRadius small = Assert.IsType<CornerRadius>(app.TryFindResource("ControlCornerRadius"));
 
@@ -569,6 +569,109 @@ namespace Fluence.Wpf.Tests
                     w.CornerStyle = CornerPreference.Default;
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                     Assert.Equal(overlay, border.CornerRadius);
+                }
+                finally
+                {
+                    w.Close();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                }
+            });
+        }
+
+        [Fact]
+        public Task RoundedWindow_ClipsContentToTheBorderCornerAsync()
+        {
+            // A WPF Border paints a rounded outline but does not clip its child, and the child is
+            // only inset by BorderThickness, so its square corners overlap the arc. The caption
+            // close button's pointer-over fill sits in exactly that spot and used to paint straight
+            // over the top-right arc, leaving a jagged red corner where the border should be. The
+            // shell therefore clips the border's child to the same rounded rect, one border
+            // thickness in.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                ResetAndApply(ApplicationTheme.Light, app);
+
+                FluenceWindow w = new()
+                {
+                    Width = 320,
+                    Height = 240,
+                    ShowInTaskbar = false,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    Left = -10000,
+                    Top = -10000,
+                };
+                try
+                {
+                    w.Show();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(
+                        w.Template.FindName("PART_WindowBorder", w));
+                    FrameworkElement child = Assert.IsAssignableFrom<FrameworkElement>(border.Child);
+                    CornerRadius overlay = Assert.IsType<CornerRadius>(app.TryFindResource("OverlayCornerRadius"));
+
+                    RectangleGeometry clip = Assert.IsType<RectangleGeometry>(child.Clip);
+                    Assert.Equal(overlay.TopLeft - border.BorderThickness.Top, clip.RadiusX);
+                    Assert.Equal(clip.RadiusX, clip.RadiusY);
+                    Assert.Equal(child.ActualWidth, clip.Rect.Width);
+                    Assert.Equal(child.ActualHeight, clip.Rect.Height);
+                    Assert.True(clip.IsFrozen);
+
+                    // Square corners need no clip: the child's own bounds are the outline.
+                    w.CornerStyle = CornerPreference.DoNotRound;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Null(child.Clip);
+
+                    w.CornerStyle = CornerPreference.Round;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    _ = Assert.IsType<RectangleGeometry>(child.Clip);
+                }
+                finally
+                {
+                    w.Close();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                }
+            });
+        }
+
+        [Fact]
+        public Task MaximizedWindow_DropsTheCornerClipAsync()
+        {
+            // Maximized flattens the radius to 0 and the frame plan takes the border to 0 thickness,
+            // so there is no arc left to protect and the per-arrange geometry is pure overhead.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                ResetAndApply(ApplicationTheme.Light, app);
+
+                FluenceWindow w = new()
+                {
+                    Width = 320,
+                    Height = 240,
+                    ShowInTaskbar = false,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    Left = -10000,
+                    Top = -10000,
+                };
+                try
+                {
+                    w.Show();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(
+                        w.Template.FindName("PART_WindowBorder", w));
+                    FrameworkElement child = Assert.IsAssignableFrom<FrameworkElement>(border.Child);
+                    _ = Assert.IsType<RectangleGeometry>(child.Clip);
+
+                    w.WindowState = WindowState.Maximized;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Equal(new CornerRadius(0), border.CornerRadius);
+                    Assert.Null(child.Clip);
+
+                    w.WindowState = WindowState.Normal;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    _ = Assert.IsType<RectangleGeometry>(child.Clip);
                 }
                 finally
                 {

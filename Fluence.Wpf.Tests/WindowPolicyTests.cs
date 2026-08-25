@@ -759,7 +759,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public void BuildFramePlan_Normal_Inactive_UsesCardStrokeKey()
+        public void BuildFramePlan_Normal_Inactive_UsesSurfaceStrokeKey()
         {
             FramePlan plan = WindowPolicy.BuildFramePlan(
                 WindowState.Normal,
@@ -767,7 +767,7 @@ namespace Fluence.Wpf.Tests
                 isAccentBorderEnabled: true,
                 capabilities: Caps(borderColor: true));
 
-            Assert.Equal("CardStrokeColorDefaultSolidBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
+            Assert.Equal("SurfaceStrokeColorDefaultBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
             Assert.Equal(new Thickness(1), plan.TemplateBorderThickness);
             Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
         }
@@ -781,7 +781,7 @@ namespace Fluence.Wpf.Tests
                 isAccentBorderEnabled: false,
                 capabilities: Caps(borderColor: true));
 
-            Assert.Equal("CardStrokeColorDefaultSolidBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
+            Assert.Equal("SurfaceStrokeColorDefaultBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
             Assert.Equal(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
         }
 
