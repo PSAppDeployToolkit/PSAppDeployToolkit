@@ -6,7 +6,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml;
-using PSADT.ProcessManagement;
 
 namespace PSADT.ClientServer
 {
@@ -114,7 +113,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="processResult">The process result containing the standard error output.</param>
         /// <returns>An <see cref="Exception"/> object if deserialization is successful; otherwise, <see langword="null"/>.</returns>
-        public static Exception? DeserializeExceptionFromStdErr(ProcessResult processResult)
+        public static Exception? DeserializeExceptionFromStdErr(ProcessManagement.ProcessResult processResult)
         {
             for (int i = processResult.StdErr.Count - 1; i >= 0; i--)
             {
