@@ -230,7 +230,7 @@ namespace Fluence.Wpf.Tests
                 supportsBorderColor: false);
 
             Color light = Color.FromRgb(0xFA, 0xFA, 0xFA);
-            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.None, ApplicationTheme.Light, caps, light);
+            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.None, ApplicationTheme.Light, caps, light, isTransparencyEnabled: false, legacyAcrylicTintColor: Colors.Transparent);
 
             Assert.False(plan.UseTransparentBackground,
                 "BackdropType.None must NOT use transparent background.");
@@ -248,7 +248,7 @@ namespace Fluence.Wpf.Tests
                 supportsBorderColor: true);
 
             Color fallback = Color.FromRgb(0xFA, 0xFA, 0xFA);
-            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Mica, ApplicationTheme.Light, caps, fallback);
+            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Mica, ApplicationTheme.Light, caps, fallback, isTransparencyEnabled: false, legacyAcrylicTintColor: Colors.Transparent);
 
             Assert.True(plan.UseTransparentBackground,
                 "Mica backdrop on a capable OS must use transparent background.");
@@ -258,7 +258,7 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public void BuildBackdropPlan_Acrylic_FallsBackToMica_WhenMicaEffectButNoSystemBackdrop()
         {
-            // Windows 10 21H2: supports DwmSetWindowAttribute(DWMWA_MICA_EFFECT) but NOT
+            // Windows 11 21H2: supports DwmSetWindowAttribute(DWMWA_MICA_EFFECT) but NOT
             // DWMWA_SYSTEMBACKDROP_TYPE. Acrylic request must downgrade to Mica.
             WindowCapabilities caps = new(
                 supportsSystemBackdropType: false,
@@ -267,7 +267,7 @@ namespace Fluence.Wpf.Tests
                 supportsCaptionColor: false);
 
             Color fallback = Color.FromRgb(0x20, 0x20, 0x20);
-            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Acrylic, ApplicationTheme.Dark, caps, fallback);
+            BackdropPlan plan = WindowPolicy.BuildBackdropPlan(BackdropType.Acrylic, ApplicationTheme.Dark, caps, fallback, isTransparencyEnabled: false, legacyAcrylicTintColor: Colors.Transparent);
 
             // Should fall back to Mica (legacy) and use transparent background.
             Assert.True(plan.UseTransparentBackground,
@@ -440,6 +440,135 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                     Color contentNone = ((SolidColorBrush)w.Background).Color;
                     Assert.Equal(contentNone, sourceCompositionTarget.BackgroundColor);
+                }
+                finally
+                {
+                    w.Close();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                }
+            });
+        }
+
+        // ---------------------------------------------------------------------------
+        // 8. Single-border wiring.
+        //
+        // DWM composites its own 1 px window border semi-transparently, so a COLORREF written to
+        // DWMWA_BORDER_COLOR can never resolve to the same on-screen colour as the opaque template
+        // border painted just inside the client area. The DWM border is therefore suppressed with
+        // the DWMWA_COLOR_NONE sentinel and WindowPolicy.BuildFramePlan owns the one border that
+        // remains: ApplyFrame writes its thickness to BorderThickness on every activation and
+        // state change, which is why the maximized template trigger no longer sets it.
+        // ---------------------------------------------------------------------------
+
+        [Fact]
+        public Task ShownWindow_BorderThickness_ComesFromFramePlanNotTemplateTriggerAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                ResetAndApply(ApplicationTheme.Light, app);
+
+                FluenceWindow w = new()
+                {
+                    Width = 320,
+                    Height = 240,
+                    ShowInTaskbar = false,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    Left = -10000,
+                    Top = -10000,
+                };
+                try
+                {
+                    w.Show();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    FramePlan plan = WindowPolicy.BuildFramePlan(
+                        w.WindowState,
+                        w.IsActive,
+                        ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
+                        WindowCapabilities.Current);
+
+                    Assert.Equal(new Thickness(1), plan.TemplateBorderThickness);
+                    Assert.Equal(plan.TemplateBorderThickness, w.BorderThickness);
+
+                    // ApplyFrame is the single writer: perturb the value and re-run it.
+                    w.SetCurrentValue(System.Windows.Controls.Control.BorderThicknessProperty, new Thickness(9));
+                    Assert.Equal(new Thickness(9), w.BorderThickness);
+
+                    MethodInfo applyFrame = Assert.IsAssignableFrom<MethodInfo>(
+                        typeof(FluenceWindow).GetMethod("ApplyFrame", BindingFlags.NonPublic | BindingFlags.Instance));
+                    _ = applyFrame.Invoke(w, parameters: null);
+                    Assert.Equal(plan.TemplateBorderThickness, w.BorderThickness);
+
+                    // The maximized trigger keeps the corner-radius reset and nothing else; a
+                    // BorderThickness setter there would fight the plan on every maximize.
+                    System.Windows.Controls.ControlTemplate template =
+                        Assert.IsAssignableFrom<System.Windows.Controls.ControlTemplate>(w.Template);
+                    Trigger maximized = Assert.Single(
+                        template.Triggers.OfType<Trigger>(),
+                        static trigger => trigger.Property == Window.WindowStateProperty
+                            && Equals(trigger.Value, WindowState.Maximized));
+
+                    Assert.DoesNotContain(
+                        maximized.Setters.OfType<Setter>(),
+                        static setter => setter.Property == System.Windows.Controls.Control.BorderThicknessProperty);
+                    Assert.Contains(
+                        maximized.Setters.OfType<Setter>(),
+                        static setter => setter.Property == System.Windows.Controls.Border.CornerRadiusProperty);
+                }
+                finally
+                {
+                    w.Close();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                }
+            });
+        }
+
+        [Fact]
+        public Task CornerStyle_DrivesTemplateBorderCornerRadiusAsync()
+        {
+            // The template border is the only outline the window draws, so its radius has to follow
+            // CornerStyle the way the DWM corner preference already does. Otherwise a DoNotRound or
+            // RoundSmall window keeps painting the default large radius inside squared-off or
+            // small-radius DWM corners.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                ResetAndApply(ApplicationTheme.Light, app);
+
+                FluenceWindow w = new()
+                {
+                    Width = 320,
+                    Height = 240,
+                    ShowInTaskbar = false,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    Left = -10000,
+                    Top = -10000,
+                };
+                try
+                {
+                    w.Show();
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(
+                        w.Template.FindName("WindowBorder", w));
+                    CornerRadius overlay = Assert.IsType<CornerRadius>(app.TryFindResource("OverlayCornerRadius"));
+                    CornerRadius small = Assert.IsType<CornerRadius>(app.TryFindResource("ControlCornerRadius"));
+
+                    Assert.Equal(CornerPreference.Round, w.CornerStyle);
+                    Assert.Equal(overlay, border.CornerRadius);
+
+                    w.CornerStyle = CornerPreference.DoNotRound;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Equal(new CornerRadius(0), border.CornerRadius);
+
+                    w.CornerStyle = CornerPreference.RoundSmall;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Equal(small, border.CornerRadius);
+
+                    w.CornerStyle = CornerPreference.Default;
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Equal(overlay, border.CornerRadius);
                 }
                 finally
                 {

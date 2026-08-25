@@ -6,6 +6,38 @@ maintainers.
 
 ## Current follow-ups (not defects)
 
+- **Windows 10 legacy acrylic is unverified on real hardware** - the
+  `SetWindowCompositionAttribute` acrylic path (`BackdropType.Acrylic` on
+  Windows 10 build 17063+) is covered by pure policy tests only. The resolution
+  rules, the plan values, and the `0xAABBGGRR` tint packing are pinned by
+  `WindowPolicyTests` and `NativeMethodsTests`, but nothing in the suite can
+  exercise the accent policy itself, because every CI and development machine
+  here runs Windows 11, where the path is deliberately unreachable. Three things
+  need a look on a real Windows 10 box before this is considered done: whether
+  the tint alpha taken straight from `AcrylicBackgroundFillColorDefault` reads
+  correctly (some reference implementations scale it by a further 0.8 to
+  compensate for the weaker legacy blur); whether the drag downgrade to
+  `ACCENT_ENABLE_BLURBEHIND` is enough on low-end hardware or whether the
+  opaque `ACCENT_ENABLE_GRADIENT` fallback documented in
+  `FluenceWindow.DowngradeLegacyAcrylicForDrag` is needed; and whether the
+  `-1` glass frame thickness that `WindowPolicy.GetGlassFrameThickness` returns
+  for a requested backdrop produces a visible artifact around an
+  accent-blurred window, in which case that method should be driven by the
+  effective backdrop instead of the requested one.
+
+- **Peeking at a password materializes it as a managed string** - the Fluent
+  `PasswordBox` chrome reads `PasswordBox.Password` in two places: to paint the
+  peek overlay while the reveal button is held or toggled, and to score the
+  strength meter after each change. Both allocate an immutable managed string
+  that cannot be zeroed on demand, so a revealed or scored password is
+  recoverable from a process dump until the garbage collector reclaims it. The
+  native `SecurePassword` store remains authoritative and is never replaced; the
+  overlay is emptied the moment the peek ends. An application handling
+  high-value secrets can avoid the exposure by setting
+  `PasswordBoxExtensions.RevealButtonEnabled` and
+  `PasswordBoxExtensions.ShowPasswordStrength` to `False`, which is the default
+  for the strength meter.
+
 - **`TabView` drag-to-reorder** - `TabView` / `TabViewItem` ship with closable
   tabs, an add-tab button, per-tab icons, overflow scroll, and width / overlay
   modes. Drag-and-drop tab reordering (including cross-window tear-off) is **not**
@@ -21,14 +53,16 @@ maintainers.
   `SolidBackgroundFillColorBaseBrush`. Automated capture of the full
   `FluenceWindow` chrome needs a different approach (e.g. `PrintWindow` /
   GDI screen capture).
-- **`DatePicker` / `TimePicker` selector flyouts** - the flyouts present plain
-  scrollable selector lists. They do **not** implement WinUI's infinitely
-  looping selectors, nor the WinUI centered accent highlight band with the
-  foreground flip over the selected row (`DatePicker_themeresources.xaml`
-  `HighlightRect` / `MonochromaticOverlayPresenter`). The highlight band is
-  coupled to the looping-selector interaction model, so both are deferred
-  together; the looping omission is already noted in code at `DatePicker.cs`
-  (around line 606) and `TimePicker.cs` (around line 511).
+- **`DatePicker` / `TimePicker` highlight band during a scroll** - the flyouts
+  now use WinUI's looping selector columns under a centered accent highlight
+  band (`DatePicker_themeresources.xaml` `HighlightRect`), but the band is a
+  plain `Border` painted behind the columns and the row on it flips its whole
+  foreground to `TextOnAccentFillColorPrimaryBrush`. WinUI instead draws the
+  row glyphs through a `MonochromaticOverlayPresenter`, which splits a glyph at
+  the band boundary so the part inside the band is painted on-accent and the
+  part outside it is not. WPF has no equivalent presenter, so mid-scroll a row
+  straddling the band edge flips as a whole glyph rather than pixel by pixel.
+  At rest the two are indistinguishable.
 - **`ColorPicker` spectrum permutations and layout options** - the picker now
   carries the WinUI gallery-default option surface (preview, color slider, hex,
   More/Less toggle, alpha slider/text, and the RGB/HSV channel text inputs),
@@ -47,19 +81,35 @@ maintainers.
   crumbs into an ellipsis (WinUI collapses them into an `E712` ellipsis item
   with a flyout). Long trails extend to their natural width and clip when
   constrained.
-- **`PipsPager` scrolling and nav-button scale** - the pager uses a centered
-  re-rendering window (already noted in code at `PipsPager.cs` around lines
-  65-70). It does **not** implement WinUI's edge-pip scale-down or the
-  stationary edge-scrolling viewport, and the navigation buttons do **not** use
-  WinUI's pressed `0.875` scale.
-- **`NavigationView` Top-overflow synchronous `UpdateLayout()`** - `NavigationView.cs`
-  (`UpdateTopOverflow`, around line 1796) calls `UpdateLayout()` synchronously to
-  force a fresh measure/arrange pass before measuring `_topItemsHost.ActualWidth`.
-  In `PaneDisplayMode="Top"` with a large item set this forces a full layout pass
-  on every resize. This is a jank-only cost, not a correctness defect, and is
-  deferred because reworking the layout path to avoid the forced pass risks
-  regressions in overflow placement for a gain that only shows up under heavy
-  resize with many top-level items.
+- **`PipsPager` edge-pip scale and nav-button scale** - the pager realizes every
+  pip and scrolls them inside the stationary edge-scrolling viewport WinUI
+  describes, but it does **not** scale the pips down as they approach the
+  viewport edges, and the navigation buttons do **not** use WinUI's pressed
+  `0.875` scale.
+- **`AutoSuggestBox` raises `TextChanged` per keystroke** - WinUI defers the
+  `TextChanged` event through a 150 ms `DispatcherTimer`
+  (`AutoSuggestBox_Partial.cpp`, `s_textChangedEventTimerDuration`), coalescing a
+  fast typing burst into one event. Fluence raises `TextChanged` synchronously on
+  every edit. For in-memory filtering (the demo, most consumers) the difference
+  is invisible; a consumer wiring `TextChanged` to an async or remote lookup gets
+  per-keystroke churn WinUI would coalesce and should debounce in the handler.
+  Adding the timer would change the event timing every existing `AutoSuggestBox`
+  test observes, so it is deferred until a consumer needs it.
+- **`NavigationView` Top-overflow fitting deviations** - the overflow pass
+  (`NavigationView.UpdateTopOverflow`) no longer forces a layout pass, caches each
+  item's measured width on the item, and applies a 5px recovery grace before an
+  item returns from the menu. Three deliberate deviations from WinUI's
+  `NavigationView` remain. The available width is the width
+  `PART_TopItemsHost` was last arranged at rather than a width computed inside a
+  measure override: the host is the star-sized column of the pane header grid, so
+  item visibility cannot change it, but a pass that runs before the host's first
+  arrange reads zero and bails, leaving the work to the pass that the following
+  arrange schedules. The cached width is evicted only on a non-zero
+  `SizeChanged` (a zero size is this control collapsing the item into the menu,
+  not a content change), so a content change made while an item is hidden in the
+  menu is not picked up until the item is shown again. Fitting stays first-fit
+  greedy, so a narrow item after a wide one keeps its place on the strip instead
+  of being pushed into the menu with everything that follows it.
 
 ## net472 accessibility API gaps
 

@@ -464,9 +464,23 @@ namespace Fluence.Wpf.Tests
 
                 Assert.NotNull(app.TryFindResource("ControlFillColorDefaultBrush"));
                 Assert.NotNull(app.TryFindResource("TextControlElevationBorderBrush"));
+                Assert.NotNull(app.TryFindResource("TextControlElevationBorderFocusedBrush"));
                 Assert.NotNull(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
                 Assert.NotNull(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
                 Assert.NotNull(app.TryFindResource("OverlayCornerRadius"));
+            });
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_MaxSuggestionListHeight_MatchesWinUiDefaultAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.AutoSuggestBox box = new();
+                Assert.Equal(374.0, box.MaxSuggestionListHeight, 0.01);
             });
         }
 

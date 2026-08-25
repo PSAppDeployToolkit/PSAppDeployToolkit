@@ -316,6 +316,9 @@
                     </Border>
                 </Grid>
 
+                <!--  CornerRadius 0,8,0,0 keeps the rail's fill inside SampleCard's rounded
+                      top-right arc: a WPF Border does not clip children, so a square rail
+                      corner would overpaint the card's 8px outline and stroke.  -->
                 <Border
                     x:Name="RightRailBorder"
                     Grid.Column="1"
@@ -323,7 +326,7 @@
                     Padding="{DynamicResource DemoSampleRightRailPadding}"
                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,1,1,1"
+                    BorderThickness="1,0,0,0"
                     CornerRadius="0,8,0,0">
                     <ContentPresenter x:Name="RightRailContentPresenter" Content="{Binding RightRailContent, ElementName=Root}" />
                 </Border>

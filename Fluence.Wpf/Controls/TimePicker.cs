@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -373,18 +374,6 @@ defaultValue: null,
             return hour >= 12 ? GetPmDesignator(culture) : GetAmDesignator(culture);
         }
 
-        /// <summary>
-        /// Scrolls the selector's current selection into view when it is a ListBox.
-        /// </summary>
-        /// <param name="selector">The selector whose selection should be scrolled into view.</param>
-        private static void ScrollSelectionIntoView(Selector? selector)
-        {
-            if (selector is System.Windows.Controls.ListBox listBox && listBox.SelectedItem is not null)
-            {
-                listBox.ScrollIntoView(listBox.SelectedItem);
-            }
-        }
-
         private void OnFlyoutButtonClick(object sender, RoutedEventArgs e)
         {
             if (_popup is null || IsWithinLightDismissReopenLockout())
@@ -514,9 +503,10 @@ defaultValue: null,
         /// <summary>
         /// Fills the selector columns from <see cref="SelectedTime"/> (or the current time
         /// of day when unset), snapping the minute down to the nearest
-        /// <see cref="MinuteIncrement"/> step, and highlights the matching items. The
-        /// columns are plain scrollable lists; WinUI's infinitely looping selectors are a
-        /// deliberate v1 omission.
+        /// <see cref="MinuteIncrement"/> step, and highlights the matching items. The hour and
+        /// minute columns wrap endlessly like WinUI's looping selectors; the AM/PM column has
+        /// only two values, so it is padded rather than repeated (see
+        /// <see cref="LoopingSelectorColumns"/>).
         /// </summary>
         private void PopulateSelectorColumns()
         {
@@ -536,7 +526,7 @@ defaultValue: null,
 
             if (_hourList is not null)
             {
-                List<string> hours = [];
+                List<object> hours = [];
                 int firstHour = twentyFourHour ? 0 : 1;
                 int lastHour = twentyFourHour ? 23 : 12;
                 for (int hourValue = firstHour; hourValue <= lastHour; hourValue++)
@@ -544,20 +534,21 @@ defaultValue: null,
                     hours.Add(hourValue.ToString(culture));
                 }
 
-                _hourList.ItemsSource = hours;
-                _hourList.SelectedIndex = twentyFourHour ? hour : GetTwelveHourDisplayHour(hour) - 1;
+                LoopingSelectorColumns.SetLoopingSource(
+                    _hourList,
+                    hours,
+                    twentyFourHour ? hour : GetTwelveHourDisplayHour(hour) - 1);
             }
 
             if (_minuteList is not null)
             {
-                List<string> minutes = [];
+                List<object> minutes = [];
                 for (int minuteValue = 0; minuteValue < 60; minuteValue += minuteIncrement)
                 {
                     minutes.Add(minuteValue.ToString("00", culture));
                 }
 
-                _minuteList.ItemsSource = minutes;
-                _minuteList.SelectedIndex = minute / minuteIncrement;
+                LoopingSelectorColumns.SetLoopingSource(_minuteList, minutes, minute / minuteIncrement);
             }
 
             if (_periodList is not null)
@@ -570,14 +561,17 @@ defaultValue: null,
                 }
                 else
                 {
-                    _periodList.ItemsSource = (List<string>)[GetAmDesignator(culture), GetPmDesignator(culture)];
-                    _periodList.SelectedIndex = hour >= 12 ? 1 : 0;
+                    // AM and PM must not repeat, so this column is padded instead of looped.
+                    LoopingSelectorColumns.SetPaddedSource(
+                        _periodList,
+                        (List<object>)[GetAmDesignator(culture), GetPmDesignator(culture)],
+                        hour >= 12 ? 1 : 0);
                 }
             }
 
-            ScrollSelectionIntoView(_hourList);
-            ScrollSelectionIntoView(_minuteList);
-            ScrollSelectionIntoView(_periodList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_hourList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_minuteList);
+            LoopingSelectorColumns.ScrollSelectionIntoView(_periodList);
         }
 
         /// <summary>
@@ -606,24 +600,26 @@ defaultValue: null,
         /// </summary>
         private int GetPendingHour()
         {
-            if (_hourList is null || _hourList.SelectedIndex < 0)
+            int hourIndex = LoopingSelectorColumns.GetSourceIndex(_hourList);
+            if (hourIndex < 0)
             {
                 return _flyoutBaseTime.Hours;
             }
 
             if (_populatedTwentyFourHourClock)
             {
-                return _hourList.SelectedIndex;
+                return hourIndex;
             }
 
-            int displayHour = _hourList.SelectedIndex + 1;
+            int displayHour = hourIndex + 1;
             return (displayHour % 12) + (GetPendingIsPm() ? 12 : 0);
         }
 
         private int GetPendingMinute()
         {
-            return _minuteList?.SelectedIndex >= 0
-                ? _minuteList.SelectedIndex * _populatedMinuteIncrement
+            int minuteIndex = LoopingSelectorColumns.GetSourceIndex(_minuteList);
+            return minuteIndex >= 0
+                ? minuteIndex * _populatedMinuteIncrement
                 : _flyoutBaseTime.Minutes;
         }
 
@@ -633,8 +629,9 @@ defaultValue: null,
         /// </summary>
         private bool GetPendingIsPm()
         {
-            return _periodList?.SelectedIndex >= 0
-                ? _periodList.SelectedIndex is 1
+            int periodIndex = LoopingSelectorColumns.GetPaddedSourceIndex(_periodList);
+            return periodIndex >= 0
+                ? periodIndex is 1
                 : _flyoutBaseTime.Hours >= 12;
         }
 

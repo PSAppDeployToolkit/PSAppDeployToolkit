@@ -142,6 +142,46 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
+        public Task DropDownButton_CloseFlyout_ClosesOpenPopupAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                MergeGeneric(app);
+                Window window = new();
+                Controls.DropDownButton btn = new() { Content = "Open", Width = 120, Flyout = new TextBlock { Text = "Flyout" } };
+                try
+                {
+                    window.Content = btn;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = btn.ApplyTemplate();
+
+                    System.Windows.Controls.Primitives.Popup popup = Assert.IsType<System.Windows.Controls.Primitives.Popup>(btn.Template.FindName("PART_Popup", btn));
+                    btn.IsChecked = true;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(popup.IsOpen, "Checking the button should open the dropdown popup.");
+
+                    // The application close path after handling a click on arbitrary flyout
+                    // content (WinUI parity: plain flyouts never dismiss themselves).
+                    btn.CloseFlyout();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Assert.False(popup.IsOpen, "CloseFlyout should close the dropdown popup.");
+                    Assert.False(btn.IsChecked is true, "CloseFlyout should uncheck the button.");
+
+                    // Closing an already-closed flyout is a no-op.
+                    btn.CloseFlyout();
+                    Assert.False(popup.IsOpen);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
         public Task DropDownButton_FlyoutPresenter_StretchesForLeftAlignedItemsAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>

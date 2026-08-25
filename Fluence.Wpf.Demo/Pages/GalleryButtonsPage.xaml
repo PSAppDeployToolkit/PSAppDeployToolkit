@@ -107,23 +107,29 @@
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <fluence:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="New">
+                    <fluence:DropDownButton
+                        x:Name="NewDropDownButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="New">
                         <fluence:DropDownButton.Flyout>
                             <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="NewItemButton_Click"
                                     Content="Document" />
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="NewItemButton_Click"
                                     Content="Spreadsheet" />
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="NewItemButton_Click"
                                     Content="Folder" />
                             </StackPanel>
                         </fluence:DropDownButton.Flyout>
@@ -155,28 +161,35 @@
 
             <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <WrapPanel VerticalAlignment="Center">
-                    <fluence:SplitButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Save">
+                    <fluence:SplitButton
+                        x:Name="SaveSplitButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Save">
                         <fluence:SplitButton.Flyout>
                             <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="SaveOptionButton_Click"
                                     Content="Save as" />
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="SaveOptionButton_Click"
                                     Content="Save a copy" />
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="SaveOptionButton_Click"
                                     Content="Export" />
                             </StackPanel>
                         </fluence:SplitButton.Flyout>
                     </fluence:SplitButton>
                     <fluence:SplitButton
+                        x:Name="PublishSplitButton"
                         Margin="{DynamicResource DemoControlGroupItemMargin}"
                         Appearance="Accent"
                         Content="Publish">
@@ -186,11 +199,13 @@
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="PublishOptionButton_Click"
                                     Content="Publish draft" />
                                 <fluence:Button
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Left"
                                     Appearance="Subtle"
+                                    Click="PublishOptionButton_Click"
                                     Content="Schedule publish" />
                             </StackPanel>
                         </fluence:SplitButton.Flyout>

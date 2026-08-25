@@ -27,7 +27,6 @@
  */
 
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -74,57 +73,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [Fact]
-        public Task PasswordBox_PlaceholderTextBlock_UsesTertiaryBrushAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Application app = WpfTestSta.EnsureApplication();
-                _ = MergeGenericDictionary(app);
 
-                Controls.PasswordBox pb = new() { PlaceholderText = "Password" };
-                Window w = new() { Content = pb, Width = 300, Height = 60 };
-                w.Show();
-                WpfTestSta.DrainDispatcher(w.Dispatcher);
-
-                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(pb, "PlaceholderTextBlock"));
-
-                SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
-
-                SolidColorBrush actual = Assert.IsType<SolidColorBrush>(placeholder.Foreground);
-                Assert.Equal(
-                    expected.Color,
-                    actual.Color);
-                w.Close();
-            });
-        }
-
-        [Fact]
-        public Task PasswordBox_Unloaded_StopsCapsLockPollingTimerAsync()
-        {
-            return WpfTestSta.RunOnStaAsync(static () =>
-            {
-                Application app = WpfTestSta.EnsureApplication();
-                _ = MergeGenericDictionary(app);
-
-                Controls.PasswordBox pb = new() { PlaceholderText = "Password" };
-                Window w = new() { Content = pb, Width = 300, Height = 60 };
-                w.Show();
-                WpfTestSta.DrainDispatcher(w.Dispatcher);
-
-                MethodInfo startCapsPoll = Assert.IsAssignableFrom<MethodInfo>(typeof(Controls.PasswordBox).GetMethod("StartCapsPoll", BindingFlags.Instance | BindingFlags.NonPublic));
-                FieldInfo capsPollTimer = Assert.IsAssignableFrom<FieldInfo>(typeof(Controls.PasswordBox).GetField("_capsPollTimer", BindingFlags.Instance | BindingFlags.NonPublic));
-
-                _ = startCapsPoll.Invoke(pb, parameters: null);
-                Assert.NotNull(capsPollTimer.GetValue(pb));
-
-                pb.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent, pb));
-                WpfTestSta.DrainDispatcher(w.Dispatcher);
-
-                Assert.Null(capsPollTimer.GetValue(pb));
-                w.Close();
-            });
-        }
 
         [Fact]
         public Task TextBox_PlaceholderTextBlock_ThemeCycle_StillTertiaryBrushAsync()

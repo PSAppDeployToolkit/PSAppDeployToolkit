@@ -396,7 +396,7 @@ namespace Fluence.Wpf.Demo.Pages
         {
             if (sender is FrameworkElement element)
             {
-                Fluence.Wpf.Controls.FlyoutBase.ShowAttachedFlyout(element);
+                Controls.FlyoutBase.ShowAttachedFlyout(element);
             }
         }
 
@@ -413,7 +413,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Content = "Roadmap.md will be permanently deleted. This cannot be undone.",
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel",
-                DefaultButton = Fluence.Wpf.ContentDialogButton.Close,
+                DefaultButton = ContentDialogButton.Close,
             };
 
             ContentDialogResult result = await dialog.ShowAsync();

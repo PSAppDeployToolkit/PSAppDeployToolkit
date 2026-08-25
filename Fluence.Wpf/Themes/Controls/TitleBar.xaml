@@ -189,7 +189,7 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Foreground="{TemplateBinding Foreground}"
-                            Style="{DynamicResource BodyTextBlockStyle}"
+                            Style="{DynamicResource CaptionTextBlockStyle}"
                             Text="{TemplateBinding Title}"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap" />

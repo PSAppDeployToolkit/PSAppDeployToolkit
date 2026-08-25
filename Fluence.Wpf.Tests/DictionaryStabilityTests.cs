@@ -75,6 +75,31 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
+        public Task ReInitialization_DropsThePreviouslyPublishedComputedDictionaryAsync()
+        {
+            // A computed dictionary has no Source, so it cannot be recognised by pack URI the way
+            // Typography and Generic are. Seeding the slots again (which every test isolation reset
+            // forces) used to insert a fresh one at [0] and leave the previous one further down the
+            // list, where WPF's last-wins merge order let it answer lookups the new one owned. On a
+            // machine that had published high contrast at some point, later Light applies then
+            // resolved opaque high contrast tokens.
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = Application.Current;
+
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.ResetForTesting();
+                ApplicationAccentColorManager.ResetForTesting();
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+
+                Assert.Equal(3, app.Resources.MergedDictionaries.Count);
+
+                Color acrylic = Assert.IsType<Color>(app.TryFindResource("AcrylicBackgroundFillColorDefault"));
+                Assert.NotEqual(byte.MaxValue, acrylic.A);
+            });
+        }
+
+        [Fact]
         public Task ThemeSlotIsReusedAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>

@@ -45,7 +45,7 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 | Window              | `FluenceWindow`, `TitleBar`                                                                                                         |
 | Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `RepeatButton`, `ToggleButton`                  |
 | Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`            |
-| Text                | `TextBox`, `PasswordBox`, `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions`                                                    |
+| Text                | `TextBox`, `PasswordBox` (native, styled via `PasswordBoxExtensions`), `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions` |
 | Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem` (stock container, restyled by the Fluence theme)                              |
 | Tabs                | `TabControl`, `TabItem`, `TabView`, `TabViewItem`                                                                                  |
 | Feedback            | `ProgressBar`, `ProgressRing`, `InfoBar`, `InfoBadge`, `RatingControl`                                                             |
@@ -59,6 +59,22 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 | Icons               | `FontIcon`                                                                                                                         |
 
 Tab strip and scroll bar styling are provided via merged themes (see `Themes/Generic.xaml`).
+
+### Relationship to the WPF types
+
+Most Fluence controls derive from the WPF control of the same name, so a `fluence:Button` is a
+`System.Windows.Controls.Button` and works anywhere one is expected. The four entries below do not follow that rule.
+
+| Fluence type | Base class | Consequence |
+| --- | --- | --- |
+| `PasswordBox` | none, the WPF type is used directly | `System.Windows.Controls.PasswordBox` is `sealed`. The library styles it implicitly and adds the Fluent extras through the `PasswordBoxExtensions` attached properties. Write `<PasswordBox />`, not `<fluence:PasswordBox />`. |
+| `TextBlock` | `ContentControl` | Carries `Text`, `TextWrapping`, and `TextTrimming` of its own. It has no `Inlines` collection and is not a `System.Windows.Controls.TextBlock`. |
+| `Image` | `Control` | Wraps a `System.Windows.Controls.Image` in a template so the bitmap can be clipped to `CornerRadius`. It is not a `System.Windows.Controls.Image`. |
+| `DatePicker` | `Control` | Follows the WinUI three-column picker rather than the WPF calendar drop-down, and registers its own `SelectedDate`. Bindings written against `System.Windows.Controls.DatePicker.SelectedDate` do not transfer. |
+
+`TextBlock` and `Image` cannot derive from their WPF namesakes and still carry a Fluent template,
+because both WPF types are `FrameworkElement`s with no `Template` property. Code that types a
+variable or a template part as the WPF class needs the WPF class, not the Fluence one.
 
 ## Control API
 
@@ -101,6 +117,8 @@ The action controls keep standard WPF command, content, and click patterns. Use 
 
 `ToggleSplitButton` derives from `SplitButton` and turns the primary half into a toggle: a primary click flips `IsChecked` and then raises `Click`, so handlers observe the already-toggled state, while the chevron half still opens the `Flyout`. Subscribe to `IsCheckedChanged` (carrying the new state in `ToggleSplitButtonIsCheckedChangedEventArgs`) for state updates from clicks, bindings, or the Toggle automation pattern. Checked renders both halves in the accent palette with the WinUI checked divider stroke. Use it when the primary half switches a mode on or off and the flyout chooses which variant of that mode applies, such as list formatting.
 
+The `Flyout` on `DropDownButton`, `SplitButton`, and `ToggleSplitButton` hosts arbitrary content and light-dismisses on an outside click, matching a WinUI `Flyout`; like WinUI, it does not dismiss itself when something inside it is clicked. Call `CloseFlyout()` from the item's click handler (the WinUI `Flyout.Hide()` pattern) to close it after handling the action.
+
 ### Selection
 
 Key API:
@@ -123,7 +141,7 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.Slider.html">Slider</a>
   <a href="../../api/Fluence.Wpf.Controls.NumberBox.html">NumberBox</a>
   <a href="../../api/Fluence.Wpf.Controls.TextBox.html">TextBox</a>
-  <a href="../../api/Fluence.Wpf.Controls.PasswordBox.html">PasswordBox</a>
+  <a href="../../api/Fluence.Wpf.Controls.PasswordBoxExtensions.html">PasswordBoxExtensions</a>
   <a href="../../api/Fluence.Wpf.Controls.AutoSuggestBox.html">AutoSuggestBox</a>
   <a href="../../api/Fluence.Wpf.SpinButtonPlacementMode.html">SpinButtonPlacementMode</a>
   <a href="../../api/Fluence.Wpf.NumberBoxValueChangedEventArgs.html">NumberBoxValueChangedEventArgs</a>
@@ -141,7 +159,7 @@ Key API:
 
 <div class="fluence-api-list">
   <a href="../../api/Fluence.Wpf.Controls.TextBox.html">TextBox</a>
-  <a href="../../api/Fluence.Wpf.Controls.PasswordBox.html">PasswordBox</a>
+  <a href="../../api/Fluence.Wpf.Controls.PasswordBoxExtensions.html">PasswordBoxExtensions</a>
   <a href="../../api/Fluence.Wpf.Controls.ComboBox.html">ComboBox</a>
   <a href="../../api/Fluence.Wpf.Controls.Button.html">Button</a>
   <a href="../../api/Fluence.Wpf.Controls.DatePicker.html">DatePicker</a>
@@ -236,7 +254,7 @@ Key API:
 <ui:BreadcrumbBar x:Name="Trail" ItemClicked="Trail_ItemClicked" />
 ```
 
-`PipsPager` is a compact page indicator for carousels and onboarding flows: a row (or column) of clickable pip dots with the selected page emphasized, optional previous/next chevron buttons (`PipsPagerButtonVisibility`), and a sliding window of at most `MaxVisiblePips` dots for large page counts. Handle `SelectedIndexChanged` to switch content:
+`PipsPager` is a compact page indicator for carousels and onboarding flows: a row (or column) of clickable pip dots with the selected page emphasized, optional previous/next chevron buttons (`PipsPagerButtonVisibility`), and a scrolling viewport at most `MaxVisiblePips` dots long for large page counts. Every page gets a dot; the viewport holds still while the selection moves inside it and slides only far enough to bring a selection that has left it back to the nearest edge. Handle `SelectedIndexChanged` to switch content:
 
 ```xml
 <ui:PipsPager
@@ -349,7 +367,6 @@ Key API:
   <a href="../../api/Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.html">ToggleSwitchAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.InfoBarAutomationPeer.html">InfoBarAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.RatingControlAutomationPeer.html">RatingControlAutomationPeer</a>
-  <a href="../../api/Fluence.Wpf.Automation.PasswordBoxAutomationPeer.html">PasswordBoxAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.PersonPictureAutomationPeer.html">PersonPictureAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.ImageAutomationPeer.html">ImageAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.html">HyperlinkButtonAutomationPeer</a>
@@ -390,7 +407,7 @@ flipping the OS setting mid-session takes effect at each animation's next natura
 | `Slider` | Slider | `AutomationProperties.Name` or labeled by adjacent `TextBlock` | RangeValue |
 | `NumberBox` | Spinner | `Header` via automation peer `GetNameCore` / `AutomationProperties.Name` | RangeValue |
 | `TextBox` | Edit | `Header` or `AutomationProperties.Name` | Value, Text |
-| `PasswordBox` | Edit | `AutomationProperties.Name` (app-provided label); reveal button announces its state | none |
+| `PasswordBox` (native control, WPF peer) | Edit | `AutomationProperties.Name` (app-provided label); reveal button announces its state | none |
 | `AutoSuggestBox` | Edit | `Header` via automation peer `GetNameCore` / `AutomationProperties.Name` | Value |
 | `NavigationView` | Navigation | `AutomationProperties.Name` on the control | Selection |
 | `NavigationViewItem` | ListItem | `Content` | SelectionItem |
@@ -761,6 +778,8 @@ Up and Down move through the suggestions, Enter raises `QuerySubmitted` (with `C
 ## Pickers
 
 `DatePicker` and `TimePicker` show a button-styled field that opens a light-dismiss selector flyout; the flyout's accept button commits the pending column selection and cancel discards it.
+
+The flyout columns are `LoopingSelectorList` primitives, the WinUI looping selector: nine 40px rows with the selected row always in the middle, sitting under a centred accent highlight band. Scrolling a column moves its selection, and setting the selection scrolls that row onto the band. The `DatePicker` day and month columns and the `TimePicker` hour and minute columns wrap endlessly, so scrolling past the last value continues at the first; the `DatePicker` year column and the two-value AM/PM column are padded and bounded instead, matching WinUI's non-looping year selector, so the year stops hard at `MinYear` and `MaxYear`. A wheel notch moves one row (sub-notch precision-touchpad deltas accumulate to whole notches), arrow keys and Page Up / Page Down scroll, and Home and End do nothing because a looping column has no first or last value.
 
 `DatePicker` binds `SelectedDate` (`DateTime?`, `null` until the user picks) and raises `SelectedDateChanged` with the old and new dates. The field orders its day, month, and year segments by the current culture's short date pattern; `MinYear` / `MaxYear` (defaults 1900 and 2100) bound the year column, `DayVisible` / `MonthVisible` / `YearVisible` hide individual segments, and the day column rebuilds for the pending month and year, so 29 February is offered only in leap years.
 

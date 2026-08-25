@@ -12,8 +12,10 @@
         ControlElevationBorderBrush); the flyout surface reuses the canonical flyout tokens
         from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
         SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
-        The selector columns are plain scrollable Fluence ListBoxes; WinUI's infinitely
-        looping selectors are a deliberate v1 omission (see TimePicker.cs).
+        The selector columns are LoopingSelectorList primitives: nine 40px rows with the
+        selected row centred under the accent HighlightRect band, matching WinUI's
+        TimePickerFlyoutPresenter. The hour and minute columns wrap endlessly; the AM/PM
+        column is padded instead (see TimePicker.cs and LoopingSelectorColumns.cs).
         Segment texts and column population are managed by TimePicker code-behind through
         the named optional elements below; the AM/PM segment, its divider, and the AM/PM
         selector column collapse through the 24HourClock trigger.
@@ -143,6 +145,7 @@
                                 BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                RenderOptions.ClearTypeHint="Enabled"
                                 UseLayoutRounding="True">
                                 <Border.RenderTransform>
                                     <TranslateTransform x:Name="FlyoutSurfaceTranslate" />
@@ -153,29 +156,45 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
+                                    <!--  Height is nine LoopingSelectorList rows of 40 (WinUI TimePickerFlyoutPresenter).  -->
                                     <Grid
                                         x:Name="SelectorsGrid"
                                         Grid.Row="0"
-                                        Height="272"
+                                        Height="360"
                                         Margin="4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="78*" />
                                             <ColumnDefinition Width="78*" />
                                             <ColumnDefinition x:Name="PeriodSelectorColumn" Width="78*" />
                                         </Grid.ColumnDefinitions>
-                                        <controls:ListBox
+                                        <!--
+                                            WinUI HighlightRect: one row tall, centred, behind every column, so the
+                                            selected row of each column reads as sitting on the accent band. The
+                                            columns paint no selected background of their own; they only flip the
+                                            selected row's foreground to TextOnAccentFillColorPrimaryBrush.
+                                        -->
+                                        <Border
+                                            x:Name="HighlightRect"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="3"
+                                            Height="{Binding ItemHeight, ElementName=PART_HourList}"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                                            IsHitTestVisible="False" />
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_HourList"
                                             Grid.Column="0"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
-                                        <controls:ListBox
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_MinuteList"
                                             Grid.Column="1"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
-                                        <controls:ListBox
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_PeriodList"
                                             Grid.Column="2"
                                             Background="Transparent"

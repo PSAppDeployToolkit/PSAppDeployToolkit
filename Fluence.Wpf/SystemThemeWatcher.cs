@@ -228,14 +228,16 @@ namespace Fluence.Wpf
             {
                 // Settings messages arrive on the HWND hook path. Re-enter through the
                 // Dispatcher so ResourceDictionary mutation stays on the WPF UI thread.
-                if (ApplicationThemeManager.CurrentTheme is not ApplicationTheme.Auto)
-                {
-                    ApplicationAccentColorManager.RefreshAccent();
-                }
-                else
-                {
-                    ApplicationThemeManager.ApplySystemTheme();
-                }
+                // Route through ApplicationThemeManager.Apply (not RefreshAccent) so a broadcast
+                // that publishes new output also raises Changed: the Settings "Transparency
+                // effects" toggle moves no computed color but is part of the publish fingerprint,
+                // and FluenceWindow re-reads it only from its Changed handler (ApplyBackdrop).
+                // RefreshAccent raises only AccentColorChanged, which drives ApplyFrame alone, so
+                // under a pinned (non-Auto) theme the toggle never reached the backdrop. The
+                // redundant-publish gate still swallows duplicate broadcasts entirely.
+                ApplicationThemeManager.Apply(
+                    ApplicationThemeManager.CurrentTheme,
+                    ApplicationThemeManager.CurrentBackdrop);
             }));
         }
 

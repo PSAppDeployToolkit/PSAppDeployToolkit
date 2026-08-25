@@ -84,6 +84,12 @@ namespace Fluence.Wpf.Native
         public const string ColorPrevalence = "ColorPrevalence";
 
         /// <summary>
+        /// <c>EnableTransparency</c>, the Settings "Transparency effects" toggle. Lives under
+        /// <see cref="PersonalizeRegistryPath"/> alongside the light-theme flags.
+        /// </summary>
+        public const string EnableTransparency = "EnableTransparency";
+
+        /// <summary>
         /// <c>AccentPalette</c>.
         /// </summary>
         public const string AccentPalette = "AccentPalette";

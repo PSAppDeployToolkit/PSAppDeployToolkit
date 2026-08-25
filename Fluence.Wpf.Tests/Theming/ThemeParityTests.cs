@@ -64,6 +64,7 @@ namespace Fluence.Wpf.Tests.Theming
             "SystemFillColorAttentionBackgroundBrush",
             "SystemFillColorAttentionBrush",
             "SystemFillColorSolidAttentionBackgroundBrush",
+            "TextControlElevationBorderFocusedBrush",
             "WindowCloseButtonBackgroundPointerOverBrush",
             "WindowCloseButtonBackgroundPressedBrush",
             "WindowCloseFillColorHoverBrush",
@@ -179,6 +180,60 @@ namespace Fluence.Wpf.Tests.Theming
                 await File.WriteAllLinesAsync(Path.Join(dir, theme + ".txt"), lines, TestContext.Current.CancellationToken).ConfigureAwait(true);
                 Assert.True(map.Count > 50, "Expected many resolved theme keys for " + theme);
             }
+        }
+
+        /// <summary>
+        /// Verifies the WinUI 3 text-control border gradients: the rest brush is an absolute
+        /// 0,0 to 0,2 flipped gradient whose 0.5 stop is the strong stroke (the visible bottom
+        /// underline) and whose 1.0 stop is the default stroke, and the focused brush shares the
+        /// geometry with both stops at 1.0 (a hard step to a solid accent bottom band). Matches
+        /// WinUI CommonStyles TextBox_themeresources.xaml for Light and Dark.
+        /// </summary>
+        /// <param name="theme">The theme to verify.</param>
+        [Theory]
+        [InlineData(ApplicationTheme.Light)]
+        [InlineData(ApplicationTheme.Dark)]
+        public Task TextControlElevationBorderBrushes_MatchWinUiGradientShapeAsync(ApplicationTheme theme)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                app.Resources.MergedDictionaries.Clear();
+                ApplicationThemeManager.ResetForTesting();
+                ApplicationAccentColorManager.ResetForTesting();
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
+                ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+
+                ResourceDictionary res = app.Resources;
+                Color strongStroke = Assert.IsType<Color>(res["ControlStrongStrokeColorDefault"]);
+                Color defaultStroke = Assert.IsType<Color>(res["ControlStrokeColorDefault"]);
+                Color accentPrimary = Assert.IsType<Color>(res["SystemAccentColorPrimary"]);
+
+                LinearGradientBrush rest = Assert.IsType<LinearGradientBrush>(res["TextControlElevationBorderBrush"]);
+                Assert.Equal(BrushMappingMode.Absolute, rest.MappingMode);
+                Assert.Equal(new Point(0, 0), rest.StartPoint);
+                Assert.Equal(new Point(0, 2), rest.EndPoint);
+                ScaleTransform restFlip = Assert.IsType<ScaleTransform>(rest.RelativeTransform);
+                Assert.Equal(-1.0, restFlip.ScaleY, 0.001);
+                Assert.Equal(0.5, restFlip.CenterY, 0.001);
+                Assert.Equal(2, rest.GradientStops.Count);
+                Assert.Equal(0.5, rest.GradientStops[0].Offset, 0.001);
+                Assert.Equal(strongStroke, rest.GradientStops[0].Color);
+                Assert.Equal(1.0, rest.GradientStops[1].Offset, 0.001);
+                Assert.Equal(defaultStroke, rest.GradientStops[1].Color);
+
+                LinearGradientBrush focused = Assert.IsType<LinearGradientBrush>(res["TextControlElevationBorderFocusedBrush"]);
+                Assert.Equal(BrushMappingMode.Absolute, focused.MappingMode);
+                Assert.Equal(new Point(0, 0), focused.StartPoint);
+                Assert.Equal(new Point(0, 2), focused.EndPoint);
+                ScaleTransform focusedFlip = Assert.IsType<ScaleTransform>(focused.RelativeTransform);
+                Assert.Equal(-1.0, focusedFlip.ScaleY, 0.001);
+                Assert.Equal(2, focused.GradientStops.Count);
+                Assert.Equal(1.0, focused.GradientStops[0].Offset, 0.001);
+                Assert.Equal(accentPrimary, focused.GradientStops[0].Color);
+                Assert.Equal(1.0, focused.GradientStops[1].Offset, 0.001);
+                Assert.Equal(defaultStroke, focused.GradientStops[1].Color);
+            });
         }
 
         /// <summary>

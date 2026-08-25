@@ -110,25 +110,25 @@ namespace Fluence.Wpf.Demo.Pages
         private static readonly string PasswordBoxInputXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Inputs.PasswordBoxInput",
                                                           "    <fluence:StackPanel Spacing=\"20\">\n" +
-                                                          "        <fluence:PasswordBox\n" +
+                                                          "        <PasswordBox\n" +
                                                           "            Width=\"480\"\n" +
                                                           "            HorizontalAlignment=\"Left\"\n" +
-                                                          "            PlaceholderText=\"Enter password...\"\n" +
-                                                          "            RevealButtonEnabled=\"True\"\n" +
-                                                          "            ShowCapsLockIndicator=\"True\"\n" +
-                                                          "            ShowPasswordStrength=\"True\" />\n" +
-                                                          "        <fluence:PasswordBox\n" +
+                                                          "            fluence:PasswordBoxExtensions.PlaceholderText=\"Enter password...\"\n" +
+                                                          "            fluence:PasswordBoxExtensions.RevealButtonEnabled=\"True\"\n" +
+                                                          "            fluence:PasswordBoxExtensions.ShowCapsLockIndicator=\"True\"\n" +
+                                                          "            fluence:PasswordBoxExtensions.ShowPasswordStrength=\"True\" />\n" +
+                                                          "        <PasswordBox\n" +
                                                           "            Width=\"480\"\n" +
                                                           "            HorizontalAlignment=\"Left\"\n" +
                                                           "            Password=\"CorrectHorse7!\"\n" +
-                                                          "            RevealButtonEnabled=\"True\"\n" +
-                                                          "            ShowCapsLockIndicator=\"True\"\n" +
-                                                          "            ShowPasswordStrength=\"True\" />\n" +
-                                                          "        <fluence:PasswordBox\n" +
+                                                          "            fluence:PasswordBoxExtensions.RevealButtonEnabled=\"True\"\n" +
+                                                          "            fluence:PasswordBoxExtensions.ShowCapsLockIndicator=\"True\"\n" +
+                                                          "            fluence:PasswordBoxExtensions.ShowPasswordStrength=\"True\" />\n" +
+                                                          "        <PasswordBox\n" +
                                                           "            Width=\"480\"\n" +
                                                           "            HorizontalAlignment=\"Left\"\n" +
                                                           "            IsEnabled=\"False\"\n" +
-                                                          "            PlaceholderText=\"Disabled\" />\n" +
+                                                          "            fluence:PasswordBoxExtensions.PlaceholderText=\"Disabled\" />\n" +
                                                           "    </fluence:StackPanel>\n");
 
         private const string PasswordBoxInputCSharpSource = "using System.Windows.Controls;\n" +

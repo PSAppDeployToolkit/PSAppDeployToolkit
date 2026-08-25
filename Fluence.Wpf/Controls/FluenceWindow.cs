@@ -608,6 +608,16 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <inheritdoc />
+        protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+        {
+            base.OnDpiChanged(oldDpi, newDpi);
+
+            // MarginMaximized is derived from device-pixel system metrics divided by the window
+            // scale factor, so moving to a monitor with a different scale invalidates it.
+            UpdateShellMetrics();
+        }
+
+        /// <inheritdoc />
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
@@ -794,7 +804,36 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void UpdateShellMetrics()
         {
-            MarginMaximized = WindowState is WindowState.Maximized ? new Thickness(6) : new Thickness(0);
+            if (WindowState is WindowState.Maximized)
+            {
+                // A maximized WindowChrome window still extends its invisible resize frame past the
+                // work area, so the content has to be inset by that frame. The frame is a live
+                // system metric in device pixels, not a constant, so read it and scale it here.
+                // Reading it from the handle keeps the metrics and the scale on the same monitor:
+                // under per-monitor v2 awareness the process-wide system metrics belong to a
+                // different DPI than this window's, and mixing the two misplaces the inset.
+                if (_handle != IntPtr.Zero)
+                {
+                    MarginMaximized = NativeMethods.GetMaximizedFrameMargin(_handle);
+                }
+                else
+                {
+                    // No handle yet, so there is no window DPI to ask for. Fall back to the
+                    // system-DPI metrics scaled by whatever the composition target reports.
+                    double dpiScaleX = 1.0, dpiScaleY = 1.0;
+                    if (_hwndSource?.CompositionTarget is not null)
+                    {
+                        Matrix transform = _hwndSource.CompositionTarget.TransformToDevice;
+                        dpiScaleX = transform.M11;
+                        dpiScaleY = transform.M22;
+                    }
+                    MarginMaximized = NativeMethods.GetMaximizedFrameMargin(dpiScaleX, dpiScaleY);
+                }
+            }
+            else
+            {
+                MarginMaximized = new Thickness(0);
+            }
             _windowChrome.ResizeBorderThickness = WindowPolicy.GetResizeBorderThickness(WindowState, ResizeMode);
         }
 
@@ -805,11 +844,20 @@ namespace Fluence.Wpf.Controls
         private void ApplyBackdrop()
         {
             WindowCapabilities capabilities = WindowCapabilities.Current;
+            // The transparency-effects toggle only gates the Windows 10 legacy acrylic path,
+            // which WindowPolicy selects solely when neither DWM backdrop attribute exists.
+            // Skip the registry read on OS builds where the flag cannot change the plan.
+            bool transparencyEffectsEnabled =
+                !capabilities.SupportsSystemBackdropType
+                && !capabilities.SupportsMicaEffect
+                && RegistryHelper.GetEnableTransparency();
             BackdropPlan plan = WindowPolicy.BuildBackdropPlan(
                 SystemBackdropType,
                 ApplicationThemeManager.GetResolvedTheme(),
                 capabilities,
-                GetFallbackBackgroundColor());
+                GetFallbackBackgroundColor(),
+                transparencyEffectsEnabled,
+                GetLegacyAcrylicTintColor());
 
             SolidColorBrush backgroundBrush = new(plan.BackgroundColor);
             backgroundBrush.Freeze();
@@ -853,12 +901,93 @@ namespace Fluence.Wpf.Controls
             {
                 _ = NativeMethods.SetMicaEffect(_handle, plan.UseLegacyMicaEffect);
             }
+            ApplyLegacyAcrylic(plan);
         }
 
         /// <summary>
-        /// Applies the template border brush and the DWM border color for the current activation and
-        /// window state. Called on activation, deactivation, state change, and accent change.
+        /// Applies or clears the Windows 10 legacy acrylic accent policy for the given plan.
         /// </summary>
+        /// <remarks>
+        /// The clear branch is guarded on <see cref="_legacyAcrylicActive"/> rather than run
+        /// unconditionally, because writing <c>ACCENT_DISABLED</c> to a window that never had an
+        /// accent policy is a pointless call on every apply, and on Windows 11 it would fight the
+        /// DWM system backdrop. It is the direct analogue of the explicit <c>DWMSBT_NONE</c> write
+        /// on 22H2+: the accent policy is sticky on the handle, so swapping away from Acrylic has
+        /// to remove it rather than simply stop setting it.
+        /// </remarks>
+        /// <param name="plan">The resolved backdrop plan.</param>
+        private void ApplyLegacyAcrylic(BackdropPlan plan)
+        {
+            if (plan.UseLegacyAcrylic)
+            {
+                _legacyAcrylicTintAbgr = NativeMethods.ColorToAbgr(plan.LegacyAcrylicTintColor);
+                _legacyAcrylicActive = true;
+
+                // A theme/accent/transparency broadcast can land mid-drag (dragging across
+                // monitors, Settings applying). Re-applying full acrylic here would stomp the
+                // drag-time Aero-blur downgrade and leave the rest of the drag running per-frame
+                // acrylic, so while a size/move loop is in flight keep the cheap blur and let
+                // WM_EXITSIZEMOVE restore the acrylic with the freshly cached tint.
+                if (_inSizeMove)
+                {
+                    _ = NativeMethods.SetAccentPolicy(_handle, NativeMethods.ACCENT_ENABLE_BLURBEHIND, 0);
+                    _legacyAcrylicDragDowngraded = true;
+                    return;
+                }
+
+                _ = NativeMethods.SetAccentPolicy(
+                    _handle,
+                    NativeMethods.ACCENT_ENABLE_ACRYLICBLURBEHIND,
+                    _legacyAcrylicTintAbgr);
+                _legacyAcrylicDragDowngraded = false;
+            }
+            else if (_legacyAcrylicActive)
+            {
+                _ = NativeMethods.SetAccentPolicy(_handle, NativeMethods.ACCENT_DISABLED, 0);
+                _legacyAcrylicActive = false;
+                _legacyAcrylicDragDowngraded = false;
+            }
+        }
+
+        /// <summary>
+        /// Resolves the tint color handed to the Windows 10 legacy acrylic accent policy from the
+        /// live theme resources, so a theme change re-tints the window through the ordinary
+        /// <see cref="ApplyBackdrop"/> re-run with no separate subscription.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the DWM system backdrops, the legacy accent policy supplies no tint of its own:
+        /// without one the window shows raw blurred desktop. The
+        /// <c>AcrylicBackgroundFillColorDefault</c> token carries the WinUI tint including its
+        /// alpha, and that alpha is used as-is. Some reference implementations scale the token's
+        /// alpha by a further constant (iNKORE uses 0.8) to compensate for the legacy blur being
+        /// weaker than DWM acrylic; Fluence does not, so a Windows 10 window matches the token that
+        /// every other acrylic surface in the library is drawn from. The theme fallback background
+        /// is used when the token is missing, which keeps the window opaque and legible rather than
+        /// letting a transparent-black default erase the tint entirely.
+        /// </remarks>
+        /// <returns>The tint color for the accent policy.</returns>
+        private Color GetLegacyAcrylicTintColor()
+        {
+            return TryFindResource("AcrylicBackgroundFillColorDefault") is Color tintColor
+                ? tintColor
+                : GetFallbackBackgroundColor();
+        }
+
+        /// <summary>
+        /// Applies the template border thickness and brush, and the DWM border color, for the
+        /// current activation and window state. Called on activation, deactivation, state change,
+        /// and accent change.
+        /// </summary>
+        /// <remarks>
+        /// While the frame plan is active the shell owns both <see cref="Control.BorderThickness"/>
+        /// and <see cref="Control.BorderBrush"/>: every re-apply supersedes whatever a consumer set,
+        /// exactly as the brush assignment already did. The thickness goes through
+        /// <see cref="DependencyObject.SetCurrentValue"/> rather than a plain assignment so the
+        /// property is not promoted to local-value precedence and the style system (and any
+        /// consumer binding on it) stays intact between applies, but the plan value is what shows
+        /// after each one. The maximized 0-thickness case comes from the plan rather than from a
+        /// template trigger, so the border has a single owner in every window state.
+        /// </remarks>
         private void ApplyFrame()
         {
             WindowCapabilities capabilities = WindowCapabilities.Current;
@@ -866,9 +995,9 @@ namespace Fluence.Wpf.Controls
                 WindowState,
                 IsActive,
                 ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
-                capabilities,
-                ApplicationAccentColorManager.SystemAccentColor);
+                capabilities);
 
+            SetCurrentValue(BorderThicknessProperty, plan.TemplateBorderThickness);
             BorderBrush = TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent;
             if (_handle != IntPtr.Zero && capabilities.SupportsBorderColor)
             {
@@ -933,20 +1062,21 @@ namespace Fluence.Wpf.Controls
         /// client size: the HWND (and <see cref="FrameworkElement.ActualWidth"/> /
         /// <see cref="FrameworkElement.ActualHeight"/>) already reflect the grown size while the
         /// template root <c>Border</c> is still arranged to the previous, smaller desired size. The
-        /// gap reads as a rounded accent border floating inside the DWM border (set via
-        /// <c>DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
-        /// longer coincide. An interactive resize hides it because it ends with a real <c>WM_SIZE</c>
-        /// that re-arranges the content; a SizeToContent first paint or auto-grow never produces that
+        /// gap reads as a rounded border floating inset from the true window edge on every side,
+        /// with the backdrop visible in the strip between the two, because the only border the
+        /// window draws is the template one and it is no longer flush with the client area. An
+        /// interactive resize hides it because it ends with a real <c>WM_SIZE</c> that re-arranges
+        /// the content; a SizeToContent first paint or auto-grow never produces that
         /// <c>WM_SIZE</c>.
         /// <para>
         /// The correction directly arranges the single visual child to a rect of the window's current
         /// <see cref="FrameworkElement.ActualWidth"/> x <see cref="FrameworkElement.ActualHeight"/>
         /// (which equal the client area in DIPs), reproducing the re-arrange a real <c>WM_SIZE</c>
         /// would trigger without freezing <see cref="Window.SizeToContent"/> - so the window still
-        /// grows when its content grows and stays single-bordered after growing. The
-        /// <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
-        /// render with the borders coincident, and a re-entrancy guard prevents the child arrange from
-        /// recursing through <see cref="FrameworkElement.SizeChanged"/>.
+        /// grows when its content grows and its border stays flush with the window edge after
+        /// growing. The <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size
+        /// windows, which already render flush, and a re-entrancy guard prevents the child arrange
+        /// from recursing through <see cref="FrameworkElement.SizeChanged"/>.
         /// </para>
         /// </remarks>
         private void FillClientAreaForSizeToContent()
@@ -983,8 +1113,8 @@ namespace Fluence.Wpf.Controls
             try
             {
                 // Re-arrange the root visual to the full client area. This mirrors the re-arrange a
-                // real WM_SIZE performs, collapsing the inset so the template border coincides with
-                // the DWM border. SizeToContent stays active for the next content change.
+                // real WM_SIZE performs, collapsing the inset so the template border sits flush
+                // with the window edge. SizeToContent stays active for the next content change.
                 child.Arrange(new Rect(0.0, 0.0, width, height));
             }
             finally
@@ -1204,7 +1334,59 @@ namespace Fluence.Wpf.Controls
             {
                 HandleMaxButtonClick(ref handled);
             }
+            else if (msg == PInvoke.WM_ENTERSIZEMOVE)
+            {
+                _inSizeMove = true;
+                DowngradeLegacyAcrylicForDrag();
+            }
+            else if (msg == PInvoke.WM_EXITSIZEMOVE)
+            {
+                _inSizeMove = false;
+                RestoreLegacyAcrylicAfterDrag();
+            }
             return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Swaps the Windows 10 legacy acrylic for the cheaper Aero blur while the window is being
+        /// moved or resized. No-op unless the acrylic is currently applied.
+        /// </summary>
+        /// <remarks>
+        /// Windows 10 acrylic is composited per-frame against the desktop behind the window, so a
+        /// drag makes the OS re-sample and re-blur continuously and the window visibly lags the
+        /// cursor. <c>ACCENT_ENABLE_BLURBEHIND</c> is the classic Aero blur: same shape, far cheaper
+        /// to composite, and close enough in appearance that the swap reads as a slight softening
+        /// rather than as a mode change. The cheaper-still option is
+        /// <c>ACCENT_ENABLE_GRADIENT</c> with the opaque theme color, which removes the blur cost
+        /// entirely but pops visibly at both ends of the drag; switch to it only if the blur still
+        /// lags on the target hardware. Neither this message nor its partner is marked handled: the
+        /// window still needs WPF's and <c>WindowChrome</c>'s ordinary move/size processing.
+        /// </remarks>
+        private void DowngradeLegacyAcrylicForDrag()
+        {
+            if (!_legacyAcrylicActive || _legacyAcrylicDragDowngraded)
+            {
+                return;
+            }
+            _ = NativeMethods.SetAccentPolicy(_handle, NativeMethods.ACCENT_ENABLE_BLURBEHIND, 0);
+            _legacyAcrylicDragDowngraded = true;
+        }
+
+        /// <summary>
+        /// Restores the Windows 10 legacy acrylic with the cached tint after a move or resize ends.
+        /// No-op unless <see cref="DowngradeLegacyAcrylicForDrag"/> actually downgraded.
+        /// </summary>
+        private void RestoreLegacyAcrylicAfterDrag()
+        {
+            if (!_legacyAcrylicDragDowngraded)
+            {
+                return;
+            }
+            _ = NativeMethods.SetAccentPolicy(
+                _handle,
+                NativeMethods.ACCENT_ENABLE_ACRYLICBLURBEHIND,
+                _legacyAcrylicTintAbgr);
+            _legacyAcrylicDragDowngraded = false;
         }
 
         /// <summary>
@@ -1658,6 +1840,34 @@ namespace Fluence.Wpf.Controls
         /// <see cref="OnClosed(EventArgs)"/>.
         /// </summary>
         private HwndSource? _hwndSource;
+
+        /// <summary>
+        /// <see langword="true"/> while the Windows 10 legacy acrylic accent policy is applied to
+        /// <see cref="_handle"/>. The accent policy is sticky on the handle, so this tracks whether
+        /// a clear is owed when the window swaps to another backdrop.
+        /// </summary>
+        private bool _legacyAcrylicActive;
+
+        /// <summary>
+        /// The tint last written to the legacy acrylic accent policy, packed as
+        /// <c>0xAABBGGRR</c>. Cached so the drag-lag mitigation can restore the exact tint without
+        /// re-resolving the theme resource on <c>WM_EXITSIZEMOVE</c>.
+        /// </summary>
+        private uint _legacyAcrylicTintAbgr;
+
+        /// <summary>
+        /// <see langword="true"/> while the legacy acrylic is temporarily downgraded to the cheaper
+        /// Aero blur for a move or resize, so the restore on <c>WM_EXITSIZEMOVE</c> only fires for a
+        /// downgrade this window actually performed.
+        /// </summary>
+        private bool _legacyAcrylicDragDowngraded;
+
+        /// <summary>
+        /// <see langword="true"/> between <c>WM_ENTERSIZEMOVE</c> and <c>WM_EXITSIZEMOVE</c>, so a
+        /// backdrop re-apply landing mid-drag (theme, accent, or transparency broadcast) keeps the
+        /// drag-time Aero-blur downgrade instead of re-applying full per-frame acrylic.
+        /// </summary>
+        private bool _inSizeMove;
 
         /// <summary>
         /// The caption button currently showing the synthetic snap-layout hover visual, or

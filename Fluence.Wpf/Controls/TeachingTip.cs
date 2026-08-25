@@ -454,8 +454,8 @@ namespace Fluence.Wpf.Controls
                 translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
                 translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
                 translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
-                tipRoot.BeginAnimation(UIElement.OpacityProperty, animation: null);
-                tipRoot.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                tipRoot.BeginAnimation(OpacityProperty, animation: null);
+                tipRoot.SetCurrentValue(OpacityProperty, 1.0);
                 return;
             }
 
@@ -492,14 +492,14 @@ namespace Fluence.Wpf.Controls
                 translate.BeginAnimation(slideProperty, slideAnimation);
             }
 
-            tipRoot.SetCurrentValue(UIElement.OpacityProperty, 0.0);
+            tipRoot.SetCurrentValue(OpacityProperty, 0.0);
             DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0, RevealFadeMilliseconds);
             fadeAnimation.Completed += (_, _) =>
             {
-                tipRoot.SetCurrentValue(UIElement.OpacityProperty, 1.0);
-                tipRoot.BeginAnimation(UIElement.OpacityProperty, animation: null);
+                tipRoot.SetCurrentValue(OpacityProperty, 1.0);
+                tipRoot.BeginAnimation(OpacityProperty, animation: null);
             };
-            tipRoot.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
+            tipRoot.BeginAnimation(OpacityProperty, fadeAnimation);
         }
 
         /// <summary>

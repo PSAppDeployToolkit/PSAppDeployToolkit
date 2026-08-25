@@ -149,23 +149,29 @@ namespace Fluence.Wpf.Demo.Pages
         private static readonly string DropDownButtonsXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Buttons.DropDownButtons",
                                                          "    <WrapPanel VerticalAlignment=\"Center\">\n" +
-                                                         "        <fluence:DropDownButton Margin=\"0,0,8,8\" Content=\"New\">\n" +
+                                                         "        <fluence:DropDownButton\n" +
+                                                         "            x:Name=\"NewDropDownButton\"\n" +
+                                                         "            Margin=\"0,0,8,8\"\n" +
+                                                         "            Content=\"New\">\n" +
                                                          "            <fluence:DropDownButton.Flyout>\n" +
                                                          "                <StackPanel MinWidth=\"180\" Margin=\"4\">\n" +
                                                          "                    <fluence:Button\n" +
                                                          "                        HorizontalAlignment=\"Stretch\"\n" +
                                                          "                        HorizontalContentAlignment=\"Left\"\n" +
                                                          "                        Appearance=\"Subtle\"\n" +
+                                                         "                        Click=\"NewItemButton_Click\"\n" +
                                                          "                        Content=\"Document\" />\n" +
                                                          "                    <fluence:Button\n" +
                                                          "                        HorizontalAlignment=\"Stretch\"\n" +
                                                          "                        HorizontalContentAlignment=\"Left\"\n" +
                                                          "                        Appearance=\"Subtle\"\n" +
+                                                         "                        Click=\"NewItemButton_Click\"\n" +
                                                          "                        Content=\"Spreadsheet\" />\n" +
                                                          "                    <fluence:Button\n" +
                                                          "                        HorizontalAlignment=\"Stretch\"\n" +
                                                          "                        HorizontalContentAlignment=\"Left\"\n" +
                                                          "                        Appearance=\"Subtle\"\n" +
+                                                         "                        Click=\"NewItemButton_Click\"\n" +
                                                          "                        Content=\"Folder\" />\n" +
                                                          "                </StackPanel>\n" +
                                                          "            </fluence:DropDownButton.Flyout>\n" +
@@ -194,7 +200,8 @@ namespace Fluence.Wpf.Demo.Pages
                                                          "        </fluence:DropDownButton>\n" +
                                                          "    </WrapPanel>\n");
 
-        private const string DropDownButtonsCSharpSource = "using System.Windows.Controls;\n" +
+        private const string DropDownButtonsCSharpSource = "using System.Windows;\n" +
+                                                           "using System.Windows.Controls;\n" +
                                                            "\n" +
                                                            "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
                                                            "{\n" +
@@ -204,33 +211,47 @@ namespace Fluence.Wpf.Demo.Pages
                                                            "        {\n" +
                                                            "            InitializeComponent();\n" +
                                                            "        }\n" +
+                                                           "\n" +
+                                                           "        // A flyout hosting arbitrary content never dismisses itself; close it\n" +
+                                                           "        // after handling the click (the WinUI Flyout.Hide() pattern).\n" +
+                                                           "        private void NewItemButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                           "        {\n" +
+                                                           "            NewDropDownButton.CloseFlyout();\n" +
+                                                           "        }\n" +
                                                            "    }\n" +
                                                            "}\n";
         private static readonly string SplitButtonsXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Buttons.SplitButtons",
                                                       "    <WrapPanel VerticalAlignment=\"Center\">\n" +
-                                                      "        <fluence:SplitButton Margin=\"0,0,8,8\" Content=\"Save\">\n" +
+                                                      "        <fluence:SplitButton\n" +
+                                                      "            x:Name=\"SaveSplitButton\"\n" +
+                                                      "            Margin=\"0,0,8,8\"\n" +
+                                                      "            Content=\"Save\">\n" +
                                                       "            <fluence:SplitButton.Flyout>\n" +
                                                       "                <StackPanel MinWidth=\"180\" Margin=\"4\">\n" +
                                                       "                    <fluence:Button\n" +
                                                       "                        HorizontalAlignment=\"Stretch\"\n" +
                                                       "                        HorizontalContentAlignment=\"Left\"\n" +
                                                       "                        Appearance=\"Subtle\"\n" +
+                                                      "                        Click=\"SaveOptionButton_Click\"\n" +
                                                       "                        Content=\"Save as\" />\n" +
                                                       "                    <fluence:Button\n" +
                                                       "                        HorizontalAlignment=\"Stretch\"\n" +
                                                       "                        HorizontalContentAlignment=\"Left\"\n" +
                                                       "                        Appearance=\"Subtle\"\n" +
+                                                      "                        Click=\"SaveOptionButton_Click\"\n" +
                                                       "                        Content=\"Save a copy\" />\n" +
                                                       "                    <fluence:Button\n" +
                                                       "                        HorizontalAlignment=\"Stretch\"\n" +
                                                       "                        HorizontalContentAlignment=\"Left\"\n" +
                                                       "                        Appearance=\"Subtle\"\n" +
+                                                      "                        Click=\"SaveOptionButton_Click\"\n" +
                                                       "                        Content=\"Export\" />\n" +
                                                       "                </StackPanel>\n" +
                                                       "            </fluence:SplitButton.Flyout>\n" +
                                                       "        </fluence:SplitButton>\n" +
                                                       "        <fluence:SplitButton\n" +
+                                                      "            x:Name=\"PublishSplitButton\"\n" +
                                                       "            Margin=\"0,0,8,8\"\n" +
                                                       "            Appearance=\"Accent\"\n" +
                                                       "            Content=\"Publish\">\n" +
@@ -240,11 +261,13 @@ namespace Fluence.Wpf.Demo.Pages
                                                       "                        HorizontalAlignment=\"Stretch\"\n" +
                                                       "                        HorizontalContentAlignment=\"Left\"\n" +
                                                       "                        Appearance=\"Subtle\"\n" +
+                                                      "                        Click=\"PublishOptionButton_Click\"\n" +
                                                       "                        Content=\"Publish draft\" />\n" +
                                                       "                    <fluence:Button\n" +
                                                       "                        HorizontalAlignment=\"Stretch\"\n" +
                                                       "                        HorizontalContentAlignment=\"Left\"\n" +
                                                       "                        Appearance=\"Subtle\"\n" +
+                                                      "                        Click=\"PublishOptionButton_Click\"\n" +
                                                       "                        Content=\"Schedule publish\" />\n" +
                                                       "                </StackPanel>\n" +
                                                       "            </fluence:SplitButton.Flyout>\n" +
@@ -259,7 +282,8 @@ namespace Fluence.Wpf.Demo.Pages
                                                       "        </fluence:SplitButton>\n" +
                                                       "    </WrapPanel>\n");
 
-        private const string SplitButtonsCSharpSource = "using System.Windows.Controls;\n" +
+        private const string SplitButtonsCSharpSource = "using System.Windows;\n" +
+                                                        "using System.Windows.Controls;\n" +
                                                         "\n" +
                                                         "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
                                                         "{\n" +
@@ -268,6 +292,18 @@ namespace Fluence.Wpf.Demo.Pages
                                                         "        public SplitButtons()\n" +
                                                         "        {\n" +
                                                         "            InitializeComponent();\n" +
+                                                        "        }\n" +
+                                                        "\n" +
+                                                        "        // A flyout hosting arbitrary content never dismisses itself; close it\n" +
+                                                        "        // after handling the click (the WinUI Flyout.Hide() pattern).\n" +
+                                                        "        private void SaveOptionButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                        "        {\n" +
+                                                        "            SaveSplitButton.CloseFlyout();\n" +
+                                                        "        }\n" +
+                                                        "\n" +
+                                                        "        private void PublishOptionButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                        "        {\n" +
+                                                        "            PublishSplitButton.CloseFlyout();\n" +
                                                         "        }\n" +
                                                         "    }\n" +
                                                         "}\n";
@@ -431,6 +467,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                               "                ListToggleSplitButton.Content = listStyle;\n" +
                                                               "                ListToggleSplitButton.IsChecked = true;\n" +
                                                               "                UpdateListFormattingText(isChecked: true);\n" +
+                                                              "                ListToggleSplitButton.CloseFlyout();\n" +
                                                               "            }\n" +
                                                               "        }\n" +
                                                               "\n" +
@@ -466,6 +503,23 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(8, ToggleSplitButtonsXamlSource, ToggleSplitButtonsCSharpSource));
         }
 
+        // A flyout hosting arbitrary content never dismisses itself (WinUI parity: the app
+        // calls Flyout.Hide() after handling the click); these handlers are that close call.
+        private void NewItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            NewDropDownButton.CloseFlyout();
+        }
+
+        private void SaveOptionButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveSplitButton.CloseFlyout();
+        }
+
+        private void PublishOptionButton_Click(object sender, RoutedEventArgs e)
+        {
+            PublishSplitButton.CloseFlyout();
+        }
+
         private void RepeatCounterButton_Click(object sender, RoutedEventArgs e)
         {
             _repeatButtonClickCount++;
@@ -494,6 +548,7 @@ namespace Fluence.Wpf.Demo.Pages
                 ListToggleSplitButton.Content = listStyle;
                 ListToggleSplitButton.IsChecked = true;
                 UpdateListFormattingText(isChecked: true);
+                ListToggleSplitButton.CloseFlyout();
             }
         }
 

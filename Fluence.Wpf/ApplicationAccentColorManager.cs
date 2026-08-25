@@ -156,7 +156,7 @@ namespace Fluence.Wpf
         public static void ApplySystemAccent()
         {
             FluenceThemeEngine.SetAccentIntent(AccentIntent.System);
-            FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
+            _ = FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Fluence.Wpf
         public static void ApplyCustomAccent(Color color)
         {
             FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(color));
-            FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
+            _ = FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
         }
 
         /// <summary>
@@ -187,12 +187,7 @@ namespace Fluence.Wpf
         public static void ApplyCustomAccent(Color lightThemeAccent, Color darkThemeAccent)
         {
             FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(lightThemeAccent, darkThemeAccent));
-            FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
-        }
-
-        internal static void RefreshAccent()
-        {
-            FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
+            _ = FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
         }
 
         internal static void ResetForTesting()

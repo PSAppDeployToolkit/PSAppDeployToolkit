@@ -44,6 +44,8 @@ namespace Fluence.Wpf.Helpers
     /// <param name="systemBackdropType">The <c>DWMSBT_*</c> value to write via <c>DWMWA_SYSTEMBACKDROP_TYPE</c>, or <see langword="null"/> when the OS does not expose that attribute.</param>
     /// <param name="useLegacyMicaEffect">Indicates whether the legacy 21H2 Mica effect should be applied.</param>
     /// <param name="useImmersiveDarkMode">Indicates whether immersive dark mode should be applied.</param>
+    /// <param name="useLegacyAcrylic">Indicates whether the legacy Windows 10 acrylic accent state should be applied.</param>
+    /// <param name="legacyAcrylicTintColor">The tint color to hand to the legacy acrylic accent policy.</param>
     internal sealed class BackdropPlan(
         BackdropType effectiveBackdrop,
         bool useTransparentBackground,
@@ -51,13 +53,16 @@ namespace Fluence.Wpf.Helpers
         uint captionColor,
         DWM_SYSTEMBACKDROP_TYPE? systemBackdropType,
         bool useLegacyMicaEffect,
-        bool useImmersiveDarkMode)
+        bool useImmersiveDarkMode,
+        bool useLegacyAcrylic,
+        Color legacyAcrylicTintColor)
     {
         /// <summary>
         /// Gets the backdrop type that will actually be applied after capability downgrade. For
-        /// example, <see cref="BackdropType.Acrylic"/> on a pre-22H2 build resolves to
-        /// <see cref="BackdropType.Mica"/>, and any transparent backdrop on Windows 10 resolves
-        /// to <see cref="BackdropType.None"/>.
+        /// example, <see cref="BackdropType.Acrylic"/> on a pre-22H2 Windows 11 build resolves to
+        /// <see cref="BackdropType.Mica"/>. On Windows 10, <see cref="BackdropType.Acrylic"/> can
+        /// survive as itself through the legacy accent path (see <see cref="UseLegacyAcrylic"/>);
+        /// every other transparent backdrop there resolves to <see cref="BackdropType.None"/>.
         /// </summary>
         internal BackdropType EffectiveBackdrop { get; } = effectiveBackdrop;
 
@@ -111,5 +116,28 @@ namespace Fluence.Wpf.Helpers
         /// <see cref="Native.NativeMethods.GetImmersiveDarkModeAttribute"/>.
         /// </summary>
         internal bool UseImmersiveDarkMode { get; } = useImmersiveDarkMode;
+
+        /// <summary>
+        /// Gets a value indicating whether the legacy Windows 10 acrylic accent state
+        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c> written through the undocumented
+        /// <c>SetWindowCompositionAttribute</c>) should be applied. <see langword="true"/> only on
+        /// a Windows 10 build that supports it, when the requested backdrop is
+        /// <see cref="BackdropType.Acrylic"/>, the OS transparency-effects toggle is on, and the
+        /// resolved theme is not high contrast. Mutually exclusive with both a non-null
+        /// <see cref="SystemBackdropType"/> and <see cref="UseLegacyMicaEffect"/>: the legacy
+        /// accent path is only reachable on builds that expose neither DWM attribute.
+        /// </summary>
+        internal bool UseLegacyAcrylic { get; } = useLegacyAcrylic;
+
+        /// <summary>
+        /// Gets the tint color to hand to the legacy acrylic accent policy, packed to the
+        /// <c>0xAABBGGRR</c> gradient color by
+        /// <see cref="Native.NativeMethods.ColorToAbgr"/> at apply time. Only meaningful when
+        /// <see cref="UseLegacyAcrylic"/> is <see langword="true"/>; every other plan records
+        /// <see cref="Colors.Transparent"/>. Unlike the DWM backdrops, the legacy accent policy has
+        /// no tint of its own, so the alpha channel of this color is what makes the blurred
+        /// desktop read as a Fluent surface rather than as raw blur.
+        /// </summary>
+        internal Color LegacyAcrylicTintColor { get; } = legacyAcrylicTintColor;
     }
 }

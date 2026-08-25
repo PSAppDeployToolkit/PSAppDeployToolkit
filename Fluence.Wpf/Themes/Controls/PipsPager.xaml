@@ -21,10 +21,18 @@
         E70E/E70D when vertical. Buttons default Collapsed per WinUI, show always for Visible,
         and show only while the pointer is over the pager for VisibleOnPointerOver.
         The pip ToggleButtons are generated in code into PART_PipsHost (see PipsPager.cs and
-        the RatingControl PART_StarsPanel precedent); WinUI's edge-pip scale-down animation
-        and edge-scrolling viewport are deliberate v1 omissions.
+        the RatingControl PART_StarsPanel precedent). Every page gets a pip; PART_PipsScrollViewer
+        clamps the run to MaxVisiblePips boxes along the orientation axis and PipsPager.cs drives
+        its offset, so a long page count scrolls at the viewport edges instead of re-rendering a
+        window. WinUI's edge-pip scale-down animation is a deliberate omission.
     -->
 
+    <!--
+        The 20x20 pip box below is mirrored in code by PipsPager.PipBoxSize, which the viewport
+        sizing and the scroll offsets are computed from. A style that replaces this key under the
+        same name has to keep the same box size, or the run scrolls by a stride that does not match
+        what it renders.
+    -->
     <Style x:Key="PipsPagerPipStyle" TargetType="{x:Type ToggleButton}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
@@ -216,8 +224,25 @@
                                     IconFontSize="8"
                                     IsHitTestVisible="False" />
                             </Button>
-                            <!--  Pip ToggleButtons are generated in code via UpdatePips() in OnApplyTemplate.  -->
-                            <StackPanel x:Name="PART_PipsHost" Orientation="{TemplateBinding Orientation}" />
+                            <!--
+                                Pip ToggleButtons are generated in code via UpdatePips() in
+                                OnApplyTemplate, one per page. The viewport keeps the run to
+                                MaxVisiblePips boxes: PipsPager.cs writes MaxWidth (horizontal) or
+                                MaxHeight (vertical) and owns the offset, so the scroll bars stay
+                                Hidden (Hidden still scrolls, Disabled would not) and pixel offsets
+                                need CanContentScroll=False. Focusable=False keeps the viewport out
+                                of the tab order; the pips and the chevrons are the focusable parts.
+                            -->
+                            <ScrollViewer
+                                x:Name="PART_PipsScrollViewer"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                CanContentScroll="False"
+                                Focusable="False"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden">
+                                <StackPanel x:Name="PART_PipsHost" Orientation="{TemplateBinding Orientation}" />
+                            </ScrollViewer>
                             <Button
                                 x:Name="PART_NextButton"
                                 AutomationProperties.Name="Next page"

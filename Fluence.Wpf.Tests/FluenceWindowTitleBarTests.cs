@@ -1261,7 +1261,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    PasswordBox passwordBox = new()
+                    System.Windows.Controls.PasswordBox passwordBox = new()
                     {
                         Password = "hidden",
                     };

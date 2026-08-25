@@ -12,7 +12,7 @@
 
 Slot 0 holds every canonical Color token and its frozen `SolidColorBrush` twin. It is built entirely in C# by `FluenceThemeEngine` each time `Apply` is called; replacing it causes all `DynamicResource` bindings to re-resolve with no promotion step. `Brushes.xaml` and `Accent.xaml` no longer exist; brushes are produced by `BrushFactory` (auto Color-to-Brush twins) and `SpecialBrushes` (gradient elevation borders, High Contrast SystemColors overrides, and brush-only exceptions). The per-theme XAML files (`Themes/Colors/Theme.*.xaml`) are Color-only tables read by C# at build time; they contain no brushes.
 
-Repeated `Apply` calls must not accumulate extra theme dictionaries (`DictionaryStabilityTests` enforces this).
+Repeated `Apply` calls must not accumulate extra theme dictionaries (`DictionaryStabilityTests` enforces this). Seeding the slots again, which happens when an application clears `Application.Resources` and applies a theme afresh, removes the dictionaries Fluence published before: `Typography.xaml` and `Generic.xaml` by their pack URI, and the computed dictionary by a marker key it carries, since a dictionary built in code has no `Source` to match on. This matters because WPF resolves merged dictionaries last-wins: a computed dictionary left behind past slot 0 would answer lookups that the freshly published one owns.
 
 `Typography.xaml` defines the Fluent type ramp as named `TextBlock` styles: `BodyTextBlockStyle`, `BodyStrongTextBlockStyle`, `TitleLargeTextBlockStyle`, and so on. `TextBlockExtensions.Typography` is the compatibility API; it resolves those styles rather than duplicating font metrics in code.
 
@@ -94,7 +94,16 @@ Caveats:
 
 `BackdropType`: `None`, `Auto`, `Mica`, `Acrylic`, `Tabbed`.
 
-Which backdrops work depends on OS support. Mica and Tabbed require Windows 11; Acrylic is available on Windows 10 1809+. Unsupported combinations fall back silently per `FluenceWindow` / `SystemBackdropType` logic.
+Which backdrops work depends on OS support, and unsupported combinations fall back silently per the `WindowPolicy` resolution rules.
+
+| Requested | Windows 11 22H2+ (build 22621) | Windows 11 21H2 (22000 to 22620) | Windows 10 17063+ | Windows 10 below 17063 |
+| --- | --- | --- | --- | --- |
+| `Auto`, `Mica` | Mica (`DWMSBT_MAINWINDOW`) | Mica (legacy `DWMWA_MICA_EFFECT`) | None | None |
+| `Acrylic` | Acrylic (`DWMSBT_TRANSIENTWINDOW`) | Mica | Legacy acrylic | None |
+| `Tabbed` | Tabbed (`DWMSBT_TABBEDWINDOW`) | Mica | None | None |
+| `None` | None | None | None | None |
+
+On Windows 10 build 17063 and later, `Acrylic` is applied through the undocumented `SetWindowCompositionAttribute` accent policy (`ACCENT_ENABLE_ACRYLICBLURBEHIND`) rather than through DWM, tinted with the `AcrylicBackgroundFillColorDefault` theme token including its alpha. That path is disabled, and the window falls back to an opaque `None`, in two cases: when the Windows "Transparency effects" setting is off, and under the high contrast theme. While the window is being moved or resized it drops to the cheaper Aero blur (`ACCENT_ENABLE_BLURBEHIND`) and restores the acrylic on release, because per-frame acrylic recomposition makes a Windows 10 drag visibly lag the cursor.
 
 ## System theme watcher
 

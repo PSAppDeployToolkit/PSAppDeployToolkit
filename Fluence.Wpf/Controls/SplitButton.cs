@@ -284,6 +284,28 @@ namespace Fluence.Wpf.Controls
 
         #endregion IsFlyoutOpen (read-only)
 
+        /// <summary>
+        /// Closes the secondary-half flyout popup if it is open. WinUI's <c>SplitButton</c>
+        /// hosts a <c>FlyoutBase</c> whose <c>Hide()</c> the application calls after handling
+        /// a click inside arbitrary flyout content (a plain flyout never dismisses itself);
+        /// this method is the equivalent close affordance for the <see cref="Flyout"/> object
+        /// content model, and the light-dismiss (click outside) path is unaffected.
+        /// </summary>
+        public void CloseFlyout()
+        {
+            // Unchecking the secondary toggle is the canonical close path: it closes the popup
+            // and clears IsFlyoutOpen through OnSecondaryButtonUnchecked. Fall back to the
+            // popup directly when the template carries no toggle part.
+            if (_secondaryButton?.IsChecked is true)
+            {
+                _secondaryButton.IsChecked = false;
+            }
+            else if (_popup?.IsOpen is true)
+            {
+                _popup.IsOpen = false;
+            }
+        }
+
         /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {

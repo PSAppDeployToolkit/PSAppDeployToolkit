@@ -281,9 +281,29 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <!--  Maximized: remove corner radius and border  -->
+                        <!--
+                            CornerStyle drives the template radius as well as the DWM corner
+                            preference. The template border is the only outline the window draws,
+                            so a DWMWCP_DONOTROUND or DWMWCP_ROUNDSMALL window would otherwise keep
+                            painting the default large radius inside square or small-radius DWM
+                            corners. Round and Default keep the OverlayCornerRadius default set on
+                            the Border itself. These triggers precede the Maximized one so a
+                            maximized window still flattens to 0 whatever CornerStyle asks for.
+                        -->
+                        <Trigger Property="CornerStyle" Value="DoNotRound">
+                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="0" />
+                        </Trigger>
+                        <Trigger Property="CornerStyle" Value="RoundSmall">
+                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+                        </Trigger>
+
+                        <!--
+                            Maximized: remove the corner radius. The border thickness is not set
+                            here; WindowPolicy.BuildFramePlan owns it and FluenceWindow.ApplyFrame
+                            writes it to BorderThickness (0 when maximized) on every state change,
+                            so the border has a single owner.
+                        -->
                         <Trigger Property="WindowState" Value="Maximized">
-                            <Setter TargetName="WindowBorder" Property="BorderThickness" Value="0" />
                             <Setter TargetName="WindowBorder" Property="CornerRadius" Value="0" />
                         </Trigger>
 

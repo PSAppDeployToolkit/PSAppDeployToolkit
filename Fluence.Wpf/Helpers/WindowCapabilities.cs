@@ -39,12 +39,14 @@ namespace Fluence.Wpf.Helpers
     /// <param name="supportsRoundedCorners">Whether the current OS build supports rounded corners.</param>
     /// <param name="supportsCaptionColor">Whether the current OS build supports setting the caption color.</param>
     /// <param name="supportsBorderColor">Whether the current OS build supports setting the border color.</param>
+    /// <param name="supportsLegacyAcrylic">Whether the current OS build supports the legacy Windows 10 acrylic accent state.</param>
     internal sealed class WindowCapabilities(
         bool supportsSystemBackdropType,
         bool supportsMicaEffect,
         bool supportsRoundedCorners,
         bool supportsCaptionColor,
-        bool supportsBorderColor = false)
+        bool supportsBorderColor = false,
+        bool supportsLegacyAcrylic = false)
     {
         /// <summary>
         /// Gets a value indicating whether the OS supports
@@ -87,16 +89,28 @@ namespace Fluence.Wpf.Helpers
         internal bool SupportsBorderColor { get; } = supportsBorderColor;
 
         /// <summary>
+        /// Gets a value indicating whether the OS supports the legacy acrylic accent state
+        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c> via the undocumented
+        /// <c>SetWindowCompositionAttribute</c>). <see langword="true"/> on Windows 10 build 17063
+        /// and later; <see langword="false"/> on earlier Windows 10 builds and on every Windows 11
+        /// build, which use the DWM system backdrops instead. Mutually exclusive with both
+        /// <see cref="SupportsSystemBackdropType"/> and <see cref="SupportsMicaEffect"/>.
+        /// </summary>
+        internal bool SupportsLegacyAcrylic { get; } = supportsLegacyAcrylic;
+
+        /// <summary>
         /// Gets a <see cref="WindowCapabilities"/> snapshot for the current OS build by
         /// delegating to <see cref="OsVersionHelper"/>, which caches the OS version after the
-        /// first probe. Always returns a non-null instance; Windows 10 builds get a snapshot
-        /// where all capability flags are <see langword="false"/>.
+        /// first probe. Always returns a non-null instance; on Windows 10 every DWM capability flag
+        /// is <see langword="false"/> and only <see cref="SupportsLegacyAcrylic"/> can be
+        /// <see langword="true"/>.
         /// </summary>
         internal static WindowCapabilities Current => new(
             OsVersionHelper.SupportsSystemBackdropType,
             OsVersionHelper.SupportsMicaEffect,
             OsVersionHelper.SupportsRoundedCorners,
             OsVersionHelper.SupportsCaptionColor,
-            OsVersionHelper.SupportsBorderColor);
+            OsVersionHelper.SupportsBorderColor,
+            OsVersionHelper.SupportsLegacyAcrylic);
     }
 }

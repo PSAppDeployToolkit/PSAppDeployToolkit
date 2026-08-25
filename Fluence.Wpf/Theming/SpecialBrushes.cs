@@ -177,12 +177,24 @@ namespace Fluence.Wpf.Theming
         /// <param name="colors">The computed color map for the resolved theme.</param>
         private static void AddElevationBorderBrushes(ResourceDictionary dict, IReadOnlyDictionary<string, Color> colors)
         {
-            // ControlElevationBorderBrush / TextControlElevationBorderBrush: identical absolute
-            // 0,0 -> 0,3 gradient (flipped vertically) from ControlStrokeColorSecondary -> Default.
+            // ControlElevationBorderBrush: absolute 0,0 -> 0,3 gradient (flipped vertically)
+            // from ControlStrokeColorSecondary -> Default.
             dict["ControlElevationBorderBrush"] = AbsoluteFlippedGradient(
                 colors["ControlStrokeColorSecondary"], colors["ControlStrokeColorDefault"]);
-            dict["TextControlElevationBorderBrush"] = AbsoluteFlippedGradient(
-                colors["ControlStrokeColorSecondary"], colors["ControlStrokeColorDefault"]);
+
+            // TextControlElevationBorderBrush: the WinUI 3 text-control rest border is a
+            // distinct absolute 0,0 -> 0,2 gradient whose 0.5 stop is the strong stroke,
+            // painting the visible bottom underline of every text field at rest
+            // (WinUI CommonStyles TextBox_themeresources.xaml).
+            dict["TextControlElevationBorderBrush"] = TextControlGradient(
+                colors["ControlStrongStrokeColorDefault"], colors["ControlStrokeColorDefault"]);
+
+            // TextControlElevationBorderFocusedBrush: same geometry with both stops at 1.0,
+            // a hard step to a 2px accent band at the bottom edge. WinUI seeds the accent stop
+            // with SystemAccentColorDark1 (Light) / SystemAccentColorLight2 (Dark), which is
+            // exactly what ColorMap computes as SystemAccentColorPrimary.
+            dict["TextControlElevationBorderFocusedBrush"] = TextControlFocusedGradient(
+                colors["SystemAccentColorPrimary"], colors["ControlStrokeColorDefault"]);
 
             // AccentControlElevationBorderBrush: same geometry, on-accent stroke stops.
             dict["AccentControlElevationBorderBrush"] = AbsoluteFlippedGradient(
@@ -224,6 +236,53 @@ namespace Fluence.Wpf.Theming
             b.GradientStops.Add(new GradientStop(stop100, 1.0));
             b.Freeze();
             return b;
+        }
+
+        /// <summary>
+        /// Builds the WinUI 3 text-control rest border gradient: absolute mapping, 0,0 -> 0,2,
+        /// flipped vertically about its centre, with stops at 0.5 (<paramref name="strong"/>, the
+        /// visible bottom underline) and 1.0 (<paramref name="stroke"/>, the hairline on the
+        /// remaining edges).
+        /// </summary>
+        /// <param name="strong">The strong stroke color for the 0.5 stop.</param>
+        /// <param name="stroke">The default stroke color for the 1.0 stop.</param>
+        private static LinearGradientBrush TextControlGradient(Color strong, Color stroke)
+        {
+            LinearGradientBrush b = NewTextControlGradientShell();
+            b.GradientStops.Add(new GradientStop(strong, 0.5));
+            b.GradientStops.Add(new GradientStop(stroke, 1.0));
+            b.Freeze();
+            return b;
+        }
+
+        /// <summary>
+        /// Builds the WinUI 3 text-control focused border gradient: the same absolute 0,0 -> 0,2
+        /// flipped geometry with both stops at offset 1.0, producing a hard step so the bottom
+        /// band is solid <paramref name="accent"/> and the remaining edges stay
+        /// <paramref name="stroke"/>.
+        /// </summary>
+        /// <param name="accent">The accent color for the bottom band.</param>
+        /// <param name="stroke">The default stroke color for the remaining edges.</param>
+        private static LinearGradientBrush TextControlFocusedGradient(Color accent, Color stroke)
+        {
+            LinearGradientBrush b = NewTextControlGradientShell();
+            b.GradientStops.Add(new GradientStop(accent, 1.0));
+            b.GradientStops.Add(new GradientStop(stroke, 1.0));
+            b.Freeze();
+            return b;
+        }
+
+        private static LinearGradientBrush NewTextControlGradientShell()
+        {
+            ScaleTransform flip = new() { CenterY = 0.5, ScaleY = -1 };
+            flip.Freeze();
+            return new LinearGradientBrush
+            {
+                MappingMode = BrushMappingMode.Absolute,
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 2),
+                RelativeTransform = flip,
+            };
         }
 
         /// <summary>
@@ -404,6 +463,7 @@ namespace Fluence.Wpf.Theming
             dict["CircleElevationBorderBrush"] = Solid(controlDark);
             dict["AccentControlElevationBorderBrush"] = Solid(highlight);
             dict["TextControlElevationBorderBrush"] = Solid(controlDark);
+            dict["TextControlElevationBorderFocusedBrush"] = Solid(highlight);
 
             // ToggleSwitch internal sub-layer base. HC omits the AccentFillBackdrop Color token, so
             // derive it from the live SystemColors window color (matching the brush twin below)

@@ -101,6 +101,13 @@ namespace Fluence.Wpf.Tests
             {
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
+                // Pin a seed that is deliberately not the Windows blue ApplyApplicationAccent uses,
+                // so the call under test is a genuine ramp transition on every host. Without this
+                // the fixture starts on the OS accent, and a machine with no HKCU accent palette
+                // falls back to the generated #0078D4 ramp: identical output, which the engine's
+                // redundant-publish gate correctly skips, and no event would be raised.
+                ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0xFF, 0x88, 0x00));
+
                 int eventCount = 0;
                 void OnAccentColorChanged(object? sender, EventArgs e)
                 {

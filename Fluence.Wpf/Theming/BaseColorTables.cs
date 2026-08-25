@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 
@@ -45,16 +46,44 @@ namespace Fluence.Wpf.Theming
         private const string PackBase = "pack://application:,,,/Fluence.Wpf;component/";
 
         /// <summary>
+        /// Parsed per-theme tables, keyed by theme file name. The Theme.*.xaml tables are compiled
+        /// Color-only resources and immutable at runtime, but parsing one is a BAML load on the UI
+        /// thread, and the redundant-publish gate needs the color map built before it can decide to
+        /// skip a duplicate broadcast - so without this cache every swallowed broadcast still paid
+        /// a full re-parse. Entries are parsed once per process and never invalidated.
+        /// </summary>
+        private static readonly Dictionary<string, Dictionary<string, Color>> _tableCache = new(StringComparer.Ordinal);
+        private static readonly Lock _cacheLock = new();
+
+        /// <summary>
         /// Returns a dictionary of Color keys for the given <paramref name="theme"/>,
-        /// combining shared tokens and per-theme overrides.
+        /// combining shared tokens and per-theme overrides. The returned dictionary is a fresh
+        /// copy on every call; callers may mutate it freely without touching the cached table.
         /// </summary>
         /// <param name="theme">The theme to load.</param>
         internal static Dictionary<string, Color> Load(ApplicationTheme theme)
         {
             Dictionary<string, Color> map = new(StringComparer.Ordinal);
             AddSharedColors(map);
-            ReadColors(PackBase + "Themes/Colors/Theme." + Name(theme) + ".xaml", map);
+            foreach (KeyValuePair<string, Color> entry in GetThemeTable(Name(theme)))
+            {
+                map[entry.Key] = entry.Value;
+            }
             return map;
+        }
+
+        private static Dictionary<string, Color> GetThemeTable(string name)
+        {
+            lock (_cacheLock)
+            {
+                if (!_tableCache.TryGetValue(name, out Dictionary<string, Color>? table))
+                {
+                    table = new(StringComparer.Ordinal);
+                    ReadColors(PackBase + "Themes/Colors/Theme." + name + ".xaml", table);
+                    _tableCache[name] = table;
+                }
+                return table;
+            }
         }
 
         /// <summary>

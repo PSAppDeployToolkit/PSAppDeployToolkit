@@ -144,8 +144,8 @@ namespace Fluence.Wpf.Controls
                 translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
                 translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
                 translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
-                surface.BeginAnimation(UIElement.OpacityProperty, animation: null);
-                surface.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                surface.BeginAnimation(OpacityProperty, animation: null);
+                surface.SetCurrentValue(OpacityProperty, 1.0);
                 return;
             }
 
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Controls
             // position: the offset on the chosen axis, 0 on the other, fully transparent.
             translate.SetCurrentValue(slideProperty, startOffset);
             translate.SetCurrentValue(restProperty, 0.0);
-            surface.SetCurrentValue(UIElement.OpacityProperty, 0.0);
+            surface.SetCurrentValue(OpacityProperty, 0.0);
 
             DoubleAnimationUsingKeyFrames slideAnimation = CreateRevealAnimation(startOffset, 0.0);
             slideAnimation.Completed += (_, _) =>
@@ -173,12 +173,12 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0);
             fadeAnimation.Completed += (_, _) =>
             {
-                surface.SetCurrentValue(UIElement.OpacityProperty, 1.0);
-                surface.BeginAnimation(UIElement.OpacityProperty, animation: null);
+                surface.SetCurrentValue(OpacityProperty, 1.0);
+                surface.BeginAnimation(OpacityProperty, animation: null);
             };
 
             translate.BeginAnimation(slideProperty, slideAnimation);
-            surface.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
+            surface.BeginAnimation(OpacityProperty, fadeAnimation);
         }
 
         /// <summary>

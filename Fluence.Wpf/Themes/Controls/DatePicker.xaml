@@ -12,8 +12,10 @@
         ControlElevationBorderBrush); the flyout surface reuses the canonical flyout tokens
         from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
         SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
-        The selector columns are plain scrollable Fluence ListBoxes; WinUI's infinitely
-        looping selectors are a deliberate v1 omission (see DatePicker.cs).
+        The selector columns are LoopingSelectorList primitives: nine 40px rows with the
+        selected row centred under the accent HighlightRect band, matching WinUI's
+        DatePickerFlyoutPresenter. All three columns wrap endlessly (see DatePicker.cs and
+        LoopingSelectorColumns.cs).
         Segment texts, divider visibility, and culture-driven column order are managed by
         DatePicker code-behind through the named optional elements below.
         No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
@@ -142,6 +144,7 @@
                                 BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                RenderOptions.ClearTypeHint="Enabled"
                                 UseLayoutRounding="True">
                                 <Border.RenderTransform>
                                     <TranslateTransform x:Name="FlyoutSurfaceTranslate" />
@@ -155,26 +158,41 @@
                                     <Grid
                                         x:Name="SelectorsGrid"
                                         Grid.Row="0"
-                                        Height="272"
+                                        Height="360"
                                         Margin="4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="132*" />
                                             <ColumnDefinition Width="78*" />
                                             <ColumnDefinition Width="78*" />
                                         </Grid.ColumnDefinitions>
-                                        <controls:ListBox
+                                        <!--
+                                            WinUI HighlightRect: one row tall, centred, behind every column, so the
+                                            selected row of each column reads as sitting on the accent band. The
+                                            columns paint no selected background of their own; they only flip the
+                                            selected row's foreground to TextOnAccentFillColorPrimaryBrush.
+                                        -->
+                                        <Border
+                                            x:Name="HighlightRect"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="3"
+                                            Height="{Binding ItemHeight, ElementName=PART_MonthList}"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                                            IsHitTestVisible="False" />
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_MonthList"
                                             Grid.Column="0"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             ItemTemplate="{StaticResource DatePickerColumnItemTemplate}" />
-                                        <controls:ListBox
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_DayList"
                                             Grid.Column="1"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             ItemTemplate="{StaticResource DatePickerColumnItemTemplate}" />
-                                        <controls:ListBox
+                                        <controls:LoopingSelectorList
                                             x:Name="PART_YearList"
                                             Grid.Column="2"
                                             Background="Transparent"
