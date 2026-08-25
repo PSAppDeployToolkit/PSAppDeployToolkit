@@ -46,7 +46,7 @@ namespace PSADT.Foundation
                 ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)
                 : (path) => FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions);
 
-            // Test each individual file and remediate ACLs as required, using the miminum read/execute we require.
+            // Test each individual file and remediate ACLs as required, using the minimum read/execute we require.
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
             foreach (FileInfo path in extraPaths?.Count > 0 ? _assemblies.Concat(extraPaths) : _assemblies)
             {
