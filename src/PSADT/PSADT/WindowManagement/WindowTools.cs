@@ -65,9 +65,9 @@ namespace PSADT.WindowManagement
                 _ = PInvoke.ShowWindow(hWnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
             }
 
-            // Bring the window to the foreground. AttachThreadInput fails with
-            // ERROR_INVALID_PARAMETER when the two threads are the same (a window we own, e.g. a
-            // dialog raising itself from its own Loaded handler), so only attach across threads.
+            // AttachThreadInput fails with ERROR_INVALID_PARAMETER when the two threads are the
+            // same (a window we own, e.g. a dialog raising itself from its own Loaded handler),
+            // so only attach across threads while bringing the window handle to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
             uint windowThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out _);
             bool attachInput = windowThreadId != 0 && windowThreadId != currentThreadId;
