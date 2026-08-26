@@ -132,10 +132,20 @@ function Invoke-ADTDotNetCompilation
                 {
                     throw "Failed to build solution [$($buildItem.SolutionPath -replace '^.+\\')] with exit code [$Global:LASTEXITCODE]."
                 }
-                & $dotnet test --solution $buildItem.SolutionPath --configuration $buildType --no-build --no-restore | Write-ADTDotNetOutputBuildLogEntry
-                if ($Global:LASTEXITCODE)
+
+                # We need to push the repository location so Microsoft.Testing.Platform can find our global.json file.
+                Push-Location -LiteralPath $Script:ModuleConstants.Paths.Repository
+                try
                 {
-                    throw "Unit testing solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
+                    & $dotnet test --solution $buildItem.SolutionPath --configuration $buildType --no-build --no-restore | Write-ADTDotNetOutputBuildLogEntry
+                    if ($Global:LASTEXITCODE)
+                    {
+                        throw "Unit testing solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
+                    }
+                }
+                finally
+                {
+                    Pop-Location
                 }
 
                 # Run any publish actions if present.
