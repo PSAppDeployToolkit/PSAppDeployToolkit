@@ -47,13 +47,13 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.8.17</VersionPrefix>
+    <VersionPrefix>0.8.18</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
-    <PackageVersion>0.8.17-preview</PackageVersion>
-    <AssemblyVersion>0.8.17.0</AssemblyVersion>
-    <FileVersion>0.8.17.0</FileVersion>
-    <InformationalVersion>0.8.17-preview</InformationalVersion>
-    <BuildDate>2026-08-25</BuildDate>
+    <PackageVersion>0.8.18-preview</PackageVersion>
+    <AssemblyVersion>0.8.18.0</AssemblyVersion>
+    <FileVersion>0.8.18.0</FileVersion>
+    <InformationalVersion>0.8.18-preview</InformationalVersion>
+    <BuildDate>2026-08-26</BuildDate>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
 

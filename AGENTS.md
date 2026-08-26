@@ -351,7 +351,7 @@ flowchart TD
 
 ### Fluence.Wpf.Demo (gallery, net472 + net10.0-windows10.0.26100.0)
 
-- `MainWindow` is a `FluenceWindow` with `ExtendsContentIntoTitleBar="False"` in source, `SystemBackdropType="Mica"`, and a custom `TitleBar` slot hosting the app icon, title, a `TextBox` **search** bound to filter menu items, and caption buttons.
+- `MainWindow` is a `FluenceWindow` with `ExtendsContentIntoTitleBar="True"` in source, `SystemBackdropType="Mica"`, and a custom `TitleBar` slot hosting the app icon, title, a `TextBox` **search** bound to filter menu items, and caption buttons.
 - `NavigationView` named `DemoNav`: default `PaneDisplayMode="Left"` in source and opens expanded with `IsPaneOpen="True"` to showcase the full pane.
 - Menu items carry `Tag` strings; `MainWindow.NavigateTo(string tag)` does a switch to the matching `Gallery*Page` inside the content frame. Navigation remains tag-driven, with a lightweight visited-page stack only for the shell Back button.
 - `GalleryHomePage` shows a theme-aware hero lockup (the `FluenceHeaderLightDrawingImage` vector on light themes, `FluenceHeaderDarkDrawingImage` on dark themes, swapped declaratively by a `ThemeDictionary` in the page resources; the `HighContrastBlack` / `HighContrastWhite` polarity tables pick by system window luminance, no code-behind subscription) and large **clickable `Card`** tiles that route through the same `NavigateTo` helper. Window controls and app-level theme/navigation/backdrop options live on the Settings page.

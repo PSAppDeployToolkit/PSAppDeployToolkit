@@ -39,7 +39,6 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shell;
-using System.Windows.Threading;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -64,7 +63,6 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_MaximizeButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplatePart(Name = PART_RestoreButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplatePart(Name = PART_CloseButton, Type = typeof(System.Windows.Controls.Button))]
-    [TemplatePart(Name = PART_WindowBorder, Type = typeof(System.Windows.Controls.Border))]
     public class FluenceWindow : Window
     {
         #region Constants
@@ -88,12 +86,6 @@ namespace Fluence.Wpf.Controls
         /// Template part name for the close caption button.
         /// </summary>
         private const string PART_CloseButton = "PART_CloseButton";
-
-        /// <summary>
-        /// Template part name for the template root border: the single border the window paints,
-        /// and the element whose corner radius the client content is clipped to.
-        /// </summary>
-        private const string PART_WindowBorder = "PART_WindowBorder";
 
         /// <summary>
         /// Default <see cref="TitleBarHeight"/>. Matches the WinUI 3 canonical expanded title-bar
@@ -579,97 +571,7 @@ namespace Fluence.Wpf.Controls
             _maximizeButton = GetTemplateChild(PART_MaximizeButton) as System.Windows.Controls.Button;
             _restoreButton = GetTemplateChild(PART_RestoreButton) as System.Windows.Controls.Button;
             _closeButton = GetTemplateChild(PART_CloseButton) as System.Windows.Controls.Button;
-
-            if (_windowBorder?.Child is FrameworkElement previousChild)
-            {
-                previousChild.SizeChanged -= OnWindowBorderChildSizeChanged;
-            }
-
-            _windowBorder = GetTemplateChild(PART_WindowBorder) as System.Windows.Controls.Border;
-            if (_windowBorder?.Child is FrameworkElement child)
-            {
-                child.SizeChanged += OnWindowBorderChildSizeChanged;
-            }
-
-            UpdateBorderClip();
             UpdateCaptionButtons();
-        }
-
-        /// <summary>
-        /// Re-clips the window content whenever the template root border's child is re-arranged.
-        /// </summary>
-        /// <param name="sender">The template root border's child.</param>
-        /// <param name="e">The size-change data.</param>
-        private void OnWindowBorderChildSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateBorderClip();
-        }
-
-        /// <summary>
-        /// Queues a <see cref="UpdateBorderClip"/> for after the template triggers have settled.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="CornerStyle"/> and <see cref="Window.WindowState"/> reach the border's
-        /// <see cref="System.Windows.Controls.Border.CornerRadius"/> through template triggers, and
-        /// a dependency-property changed callback runs before the trigger it fires has been
-        /// applied. Reading the radius from the callback would therefore clip to the outgoing
-        /// value: a window switching to <see cref="CornerPreference.DoNotRound"/> (or maximizing)
-        /// would keep its rounded clip and shave the corners off square content. Re-running at
-        /// <see cref="DispatcherPriority.Loaded"/> reads the radius the trigger actually applied.
-        /// </remarks>
-        private void ScheduleBorderClipUpdate()
-        {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(UpdateBorderClip));
-        }
-
-        /// <summary>
-        /// Clips the template root border's child to the border's rounded inner rect.
-        /// </summary>
-        /// <remarks>
-        /// A WPF <see cref="Border"/> paints a rounded outline but does not clip its child, and the
-        /// child is only inset by <see cref="Control.BorderThickness"/>, so its square corners
-        /// overlap the arc. Anything opaque drawn there paints over the outline: the caption close
-        /// button's pointer-over fill covers the top-right arc entirely, leaving a jagged red
-        /// corner where the border should be. DWM does not hide it either, because the rounded
-        /// corner it masks is the window's, not the border's. Clipping the child to the same
-        /// rounded rect (radius reduced by the border thickness, so the clip follows the inner edge
-        /// of the stroke) keeps the outline continuous and lets WPF anti-alias the caption fill
-        /// into the corner the way WinUI does. Square corners (a maximized window, or
-        /// <see cref="CornerPreference.DoNotRound"/>) need no clip at all and get none, which keeps
-        /// the common maximized case free of a per-arrange geometry.
-        /// </remarks>
-        private void UpdateBorderClip()
-        {
-            if (_windowBorder?.Child is not FrameworkElement child)
-            {
-                return;
-            }
-
-            double width = child.ActualWidth;
-            double height = child.ActualHeight;
-            CornerRadius corners = _windowBorder.CornerRadius;
-            Thickness thickness = _windowBorder.BorderThickness;
-
-            // The template only ever applies a uniform radius (OverlayCornerRadius,
-            // ControlCornerRadius, or 0), and RectangleGeometry cannot express a per-corner one,
-            // so the largest corner drives the clip.
-            double radius = Math.Max(
-                Math.Max(corners.TopLeft, corners.TopRight),
-                Math.Max(corners.BottomLeft, corners.BottomRight));
-            double inset = Math.Max(
-                Math.Max(thickness.Left, thickness.Top),
-                Math.Max(thickness.Right, thickness.Bottom));
-            double innerRadius = Math.Max(0d, radius - inset);
-
-            if (innerRadius <= 0d || width <= 0d || height <= 0d)
-            {
-                child.Clip = null;
-                return;
-            }
-
-            RectangleGeometry clip = new(new Rect(0d, 0d, width, height), innerRadius, innerRadius);
-            clip.Freeze();
-            child.Clip = clip;
         }
 
         /// <inheritdoc />
@@ -778,7 +680,6 @@ namespace Fluence.Wpf.Controls
             if (d is FluenceWindow window)
             {
                 window.ApplyCornerPreference();
-                window.ScheduleBorderClipUpdate();
             }
         }
 
@@ -1073,20 +974,9 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Applies the template border thickness and brush, and the DWM border color, for the
-        /// current activation and window state. Called on activation, deactivation, state change,
-        /// and accent change.
+        /// Applies the template border brush and the DWM border color for the current activation and
+        /// window state. Called on activation, deactivation, state change, and accent change.
         /// </summary>
-        /// <remarks>
-        /// While the frame plan is active the shell owns both <see cref="Control.BorderThickness"/>
-        /// and <see cref="Control.BorderBrush"/>: every re-apply supersedes whatever a consumer set,
-        /// exactly as the brush assignment already did. The thickness goes through
-        /// <see cref="DependencyObject.SetCurrentValue"/> rather than a plain assignment so the
-        /// property is not promoted to local-value precedence and the style system (and any
-        /// consumer binding on it) stays intact between applies, but the plan value is what shows
-        /// after each one. The maximized 0-thickness case comes from the plan rather than from a
-        /// template trigger, so the border has a single owner in every window state.
-        /// </remarks>
         private void ApplyFrame()
         {
             WindowCapabilities capabilities = WindowCapabilities.Current;
@@ -1097,15 +987,7 @@ namespace Fluence.Wpf.Controls
                 capabilities,
                 ApplicationAccentColorManager.SystemAccentColor);
 
-            SetCurrentValue(BorderThicknessProperty, plan.TemplateBorderThickness);
             BorderBrush = TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent;
-
-            // The clip follows the inner edge of the stroke, so it moves with the thickness the
-            // plan just wrote. The maximized state change that flattens the corner radius arrives
-            // through the same call, but through a template trigger that has not been applied yet,
-            // so the radius is re-read once it has.
-            UpdateBorderClip();
-            ScheduleBorderClipUpdate();
             if (_handle != IntPtr.Zero && capabilities.SupportsBorderColor)
             {
                 _ = NativeMethods.SetBorderColor(_handle, plan.DwmBorderColor);
@@ -1169,21 +1051,20 @@ namespace Fluence.Wpf.Controls
         /// client size: the HWND (and <see cref="FrameworkElement.ActualWidth"/> /
         /// <see cref="FrameworkElement.ActualHeight"/>) already reflect the grown size while the
         /// template root <c>Border</c> is still arranged to the previous, smaller desired size. The
-        /// gap reads as a rounded border floating inset from the true window edge on every side,
-        /// with the backdrop visible in the strip between the two, because the only border the
-        /// window draws is the template one and it is no longer flush with the client area. An
-        /// interactive resize hides it because it ends with a real <c>WM_SIZE</c> that re-arranges
-        /// the content; a SizeToContent first paint or auto-grow never produces that
+        /// gap reads as a rounded accent border floating inside the DWM border (set via
+        /// <c>DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
+        /// longer coincide. An interactive resize hides it because it ends with a real <c>WM_SIZE</c>
+        /// that re-arranges the content; a SizeToContent first paint or auto-grow never produces that
         /// <c>WM_SIZE</c>.
         /// <para>
         /// The correction directly arranges the single visual child to a rect of the window's current
         /// <see cref="FrameworkElement.ActualWidth"/> x <see cref="FrameworkElement.ActualHeight"/>
         /// (which equal the client area in DIPs), reproducing the re-arrange a real <c>WM_SIZE</c>
         /// would trigger without freezing <see cref="Window.SizeToContent"/> - so the window still
-        /// grows when its content grows and its border stays flush with the window edge after
-        /// growing. The <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size
-        /// windows, which already render flush, and a re-entrancy guard prevents the child arrange
-        /// from recursing through <see cref="FrameworkElement.SizeChanged"/>.
+        /// grows when its content grows and stays single-bordered after growing. The
+        /// <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
+        /// render with the borders coincident, and a re-entrancy guard prevents the child arrange from
+        /// recursing through <see cref="FrameworkElement.SizeChanged"/>.
         /// </para>
         /// </remarks>
         private void FillClientAreaForSizeToContent()
@@ -1220,8 +1101,8 @@ namespace Fluence.Wpf.Controls
             try
             {
                 // Re-arrange the root visual to the full client area. This mirrors the re-arrange a
-                // real WM_SIZE performs, collapsing the inset so the template border sits flush
-                // with the window edge. SizeToContent stays active for the next content change.
+                // real WM_SIZE performs, collapsing the inset so the template border coincides with
+                // the DWM border. SizeToContent stays active for the next content change.
                 child.Arrange(new Rect(0.0, 0.0, width, height));
             }
             finally
@@ -1940,13 +1821,6 @@ namespace Fluence.Wpf.Controls
         /// The close caption button template part, or <see langword="null"/> if absent.
         /// </summary>
         private System.Windows.Controls.Button? _closeButton;
-
-        /// <summary>
-        /// The template root border, or <see langword="null"/> if absent. Its corner radius is the
-        /// window's visible outline, so <see cref="UpdateBorderClip"/> clips the border's child to
-        /// the matching rounded rect.
-        /// </summary>
-        private System.Windows.Controls.Border? _windowBorder;
 
         /// <summary>
         /// The WPF-owned <see cref="HwndSource"/> for the realised window, used for the message hook,

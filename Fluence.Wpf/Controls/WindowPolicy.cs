@@ -160,38 +160,28 @@ namespace Fluence.Wpf.Controls
         /// Computes the <see cref="FramePlan"/> that governs the window border appearance.
         /// </summary>
         /// <remarks>
-        /// The plan has two halves, and DWM owns the outer one:
+        /// The plan has two independent halves:
         /// <list type="bullet">
         ///   <item>
         ///     <term>WPF-template border</term>
         ///     <description>
-        ///       An active window with accent borders enabled gets a 2 dp border keyed to
-        ///       <c>SystemAccentColorBrush</c>. Inactive windows, and windows whose accent borders
-        ///       are off, get <c>CardStrokeColorDefaultSolidBrush</c>, which is theme-matched to the
-        ///       window surface and so reads as part of it rather than as a second outline.
-        ///       Maximized windows get a 0-thick border in every state, because a border at the
-        ///       monitor edge would clip against the taskbar or an adjacent monitor.
+        ///       Active window with accent borders enabled gets a 2 dp border keyed to
+        ///       <c>SystemAccentColorBrush</c>. Inactive windows revert to
+        ///       <c>CardStrokeColorDefaultSolidBrush</c>. Maximized windows get a 0-thick border
+        ///       in every state.
         ///     </description>
         ///   </item>
         ///   <item>
         ///     <term>DWM border color</term>
         ///     <description>
-        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with accent
-        ///       borders, the COLORREF derived from <paramref name="accentColor"/> is emitted.
-        ///       Otherwise DWMWA_COLOR_DEFAULT is used, which tells DWM to draw its own border.
+        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with
+        ///       accent borders, the COLORREF derived from <paramref name="accentColor"/> is
+        ///       emitted. Otherwise
+        ///       DWMWA_COLOR_DEFAULT is used, which tells DWM to
+        ///       restore its own border.
         ///     </description>
         ///   </item>
         /// </list>
-        /// <para>
-        /// The DWM border is deliberately not suppressed with the DWMWA_COLOR_NONE sentinel. Doing
-        /// that leaves the template hairline as the only outline, and a brush painted inside the
-        /// client area composites over the window's own surface, never over what is behind the
-        /// window. In Light theme that reads as a bright ring around the window on a dark desktop
-        /// whatever stroke token is chosen, because no light-surface blend can be as dark as the
-        /// border Windows itself draws. The DWM border composites semi-transparently against the
-        /// desktop, which is exactly why it adapts, so Fluence lets it do that job and keeps the
-        /// template border theme-matched underneath it.
-        /// </para>
         /// </remarks>
         /// <param name="windowState">The current <see cref="WindowState"/>.</param>
         /// <param name="isActive">
@@ -211,15 +201,7 @@ namespace Fluence.Wpf.Controls
             WindowCapabilities capabilities,
             Color accentColor)
         {
-            // Where DWM can draw the border, it is the only border: it composites against the
-            // desktop, so it is the one outline that can look right over any backdrop. A template
-            // border underneath it paints inside the client area over the window's own surface, so
-            // whatever token it uses shows as a pale line between the system border and the
-            // content, which is the halo this window used to draw in Light theme. Windows 10 has no
-            // DWMWA_BORDER_COLOR, so there the template border is still the outline and keeps its
-            // 2 dp. The thickness does not vary with activation in either case: it feeds layout, and
-            // a per-state value would shift the content every time the window is focused.
-            Thickness templateBorderThickness = windowState is WindowState.Maximized || capabilities.SupportsBorderColor
+            Thickness templateBorderThickness = windowState is WindowState.Maximized
                 ? new Thickness(0)
                 : new Thickness(2);
 

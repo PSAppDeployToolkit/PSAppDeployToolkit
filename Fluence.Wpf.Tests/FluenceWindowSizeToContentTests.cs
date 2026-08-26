@@ -36,20 +36,19 @@ using Xunit;
 namespace Fluence.Wpf.Tests
 {
     /// <summary>
-    /// Regression tests for the SizeToContent inset-border fix in <see cref="Controls.FluenceWindow"/>.
+    /// Regression tests for the SizeToContent double-border fix in <see cref="Controls.FluenceWindow"/>.
     /// A <see cref="Window"/> with an active <see cref="Window.SizeToContent"/> sizes its HWND to the
-    /// latest content-desired size, but the template root <c>Border</c> (the window's only outline)
-    /// was left arranged one layout pass behind the realised client area, so it floated inset from
-    /// the true window edge on every side with the backdrop showing through the strip between them.
-    /// The fix re-arranges the root visual to the full client area whenever SizeToContent is active,
-    /// while keeping SizeToContent's auto-grow behavior.
+    /// latest content-desired size, but the template root <c>Border</c> (the accent-bordered window
+    /// chrome) was left arranged one layout pass behind the realised client area, so it floated
+    /// inside the DWM accent border on every edge. The fix re-arranges the root visual to the full
+    /// client area whenever SizeToContent is active, while keeping SizeToContent's auto-grow behavior.
     /// </summary>
     public class FluenceWindowSizeToContentTests
     {
         /// <summary>
         /// Tolerance (in DIPs) between the window's client size and the template root border's
         /// arranged size. Layout rounding can introduce a sub-pixel difference; anything larger is the
-        /// multi-DIP inset that floated the border away from the window edge.
+        /// multi-DIP inset that produced the double border.
         /// </summary>
         private const double FillTolerance = 1.0;
 
@@ -65,7 +64,7 @@ namespace Fluence.Wpf.Tests
         {
             Border? border = WpfTestSta
                 .FindVisualDescendants<Border>(window)
-                .FirstOrDefault(static b => string.Equals(b.Name, "PART_WindowBorder", StringComparison.Ordinal));
+                .FirstOrDefault(static b => string.Equals(b.Name, "WindowBorder", StringComparison.Ordinal));
             return border ?? throw new InvalidOperationException(
                 "Expected the template root Border named 'WindowBorder' to be present after Show().");
         }
@@ -84,9 +83,8 @@ namespace Fluence.Wpf.Tests
         /// <summary>
         /// A SizeToContent window must arrange its template root border to fill the realised client
         /// area (the window's ActualWidth/ActualHeight), exactly as a fixed-size window already does.
-        /// Before the fix the border was inset several DIPs on every edge, which read as the window
-        /// outline floating away from the window edge over the backdrop. This assertion fails on the
-        /// pre-fix code.
+        /// Before the fix the border was inset several DIPs on every edge, which read as a second
+        /// accent border floating inside the DWM border. This assertion fails on the pre-fix code.
         /// </summary>
         [Fact]
         public Task SizeToContentWindow_TemplateBorder_FillsClientAreaAsync()
@@ -119,7 +117,7 @@ namespace Fluence.Wpf.Tests
 
                     // The root border must coincide with the client area (window ActualWidth/Height
                     // equal the client area in DIPs). A larger gap is the inset that floated the
-                    // window outline away from the window edge, exposing the backdrop behind it.
+                    // template accent border inside the DWM accent border (the double-border bug).
                     Assert.Equal(window.ActualWidth, border.ActualWidth, FillTolerance);
                     Assert.Equal(window.ActualHeight, border.ActualHeight, FillTolerance);
                 }
