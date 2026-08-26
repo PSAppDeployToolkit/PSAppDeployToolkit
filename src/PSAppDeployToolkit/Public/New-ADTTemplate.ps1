@@ -22,6 +22,12 @@ function New-ADTTemplate
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
+    .PARAMETER LauncherName
+        The base name to use for the generated launcher files, without a file extension.
+
+    .PARAMETER ExcludeContent
+        Specifies one or more optional content categories to omit from the generated template. Valid values are Assets, Config, Extensions, Files, Module, Strings and SupportFiles. All content is included by default.  You cannot exclude Files, SupportFiles or Config if specifying those items as separate parameters. You can exclude Assets while specifying -Assets to omit the default assets. Excluding Module omits the bundled PSAppDeployToolkit module for deployments that provide it externally.
+
     .PARAMETER SessionProperties
         A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Only supported when -Version is 4.
 
@@ -56,7 +62,7 @@ function New-ADTTemplate
         A ScriptBlock whose content will replace the Post-Repair phase of the Repair-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
 
     .PARAMETER Assets
-        An array of file or folder paths to copy into the Assets folder of the generated template. Paths are passed to Copy-Item with -Recurse.
+        An array of file or folder paths to copy into the Assets folder of the generated template. Paths are passed to Copy-Item with -Recurse. Custom assets are copied even when Assets is specified in -ExcludeContent, allowing the default assets to be replaced entirely.
 
     .PARAMETER Files
         An array of file or folder paths to copy into the Files folder of the generated template. Paths are passed to Copy-Item with -Recurse.
@@ -102,6 +108,16 @@ function New-ADTTemplate
         Creates a new v3 compatibility mode template named PSAppDeployToolkitv3 under C:\Temp.
 
     .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -LauncherName 'Deploy-ContosoApp'
+
+        Creates a new v4 template whose launcher files are named Deploy-ContosoApp.exe and Deploy-ContosoApp.ps1.
+
+    .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -ExcludeContent Extensions, Strings, SupportFiles
+
+        Creates a new v4 template without the PSAppDeployToolkit.Extensions, Strings, or SupportFiles folders.
+
+    .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7'; RequireAdmin = $false; AppProcessesToClose = @('notepad', @{ Name = 'calc'; Description = 'Calculator' }) }
 
         Creates a new v4 template with the specified session properties pre-populated in the $adtSession hashtable.
@@ -145,6 +161,17 @@ function New-ADTTemplate
         [System.String]$Destination = $ExecutionContext.SessionState.Path.CurrentLocation.Path,
 
         [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ($_.IndexOfAny([System.IO.Path]::GetInvalidFileNameChars()) -ge 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Name -ProvidedValue $_ -ExceptionMessage 'The specified template folder name contains invalid file name characters.'))
+                }
+                if ($_ -in '.', '..')
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Name -ProvidedValue $_ -ExceptionMessage 'The specified template folder name is a relative directory alias.'))
+                }
+                return $true
+            })]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = "PSAppDeployToolkit_<ModuleVersion>")]
         [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
@@ -152,6 +179,27 @@ function New-ADTTemplate
         [Parameter(Mandatory = $false)]
         [ValidateRange(3, 4)]
         [System.Int32]$Version = 4,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ($_.IndexOfAny([System.IO.Path]::GetInvalidFileNameChars()) -ge 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LauncherName -ProvidedValue $_ -ExceptionMessage 'The specified launcher base name contains invalid file name characters.'))
+                }
+                if ($_ -match '\.(?:exe|ps1|pdb)$')
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LauncherName -ProvidedValue $_ -ExceptionMessage "The specified launcher base name should not contains a file extension."))
+                }
+                return $true
+            })]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$LauncherName,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Assets', 'Config', 'Extensions', 'Files', 'Module', 'Strings', 'SupportFiles')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String[]]$ExcludeContent = @(),
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
@@ -229,6 +277,19 @@ function New-ADTTemplate
     {
         # Initialize the function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Reject content inputs whose destination category has been excluded. Assets is allowed so custom assets can be provided while excluding the defaults.
+        if (($invalidParams = @('Config', 'Files', 'SupportFiles').Where({ ($_ -in $ExcludeContent) -and $PSBoundParameters.ContainsKey($_) })))
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The following parameters cannot be supplied when their content is excluded: $($invalidParams -join ', ').")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'InvalidParameter'
+                TargetObject = $invalidParams
+                RecommendedAction = "Please remove the -$($invalidParams -join ', -') parameter(s), or remove the corresponding value(s) from -ExcludeContent."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
 
         # Helper to convert objects to their PowerShell expression string representation.
         function ConvertTo-ADTExpression
@@ -553,42 +614,64 @@ function New-ADTTemplate
                     }
                     $null = Remove-Item -LiteralPath $templatePath -Recurse -Force
                 }
-                $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
-                $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
+                $null = New-Item -Path $templatePath -ItemType Directory -Force
+                foreach ($folder in 'Files', 'SupportFiles')
+                {
+                    if ($folder -notin $ExcludeContent)
+                    {
+                        $null = New-Item -Path (Join-Path -Path $templatePath -ChildPath $folder) -ItemType Directory -Force
+                    }
+                }
 
                 # Copy in the frontend files.
-                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\opt\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
+                Get-ChildItem -LiteralPath "$Script:PSScriptRoot\opt\Frontend\v$Version" -Force | & { process { if (!$_.Name.Equals('PSAppDeployToolkit.Extensions') -or ('Extensions' -notin $ExcludeContent)) { Copy-Item -LiteralPath $_.FullName -Destination $templatePath -Recurse -Force } } }
+
+                if (('Assets' -notin $ExcludeContent) -or ('Config' -notin $ExcludeContent))
+                {
+                    $defaultAssets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
+                    $banner = $defaultAssets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value
+                    $logo = $defaultAssets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value
+                }
 
                 # Export default module assets to disk.
-                $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
-                $defaultAssets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $defaultAssets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String(($logo = $defaultAssets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
-                $configText = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png')
-
-                # Override config values if specified.
-                if ($PSBoundParameters.ContainsKey('Config'))
+                if ('Assets' -notin $ExcludeContent -or $PSBoundParameters.ContainsKey('Assets'))
                 {
-                    $configReplacements = Get-ADTConfigReplacements -ConfigText $configText -Settings $Config
-                    $configText = Set-ADTTextReplacements -InputText $configText -Replacements $configReplacements
+                    $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
+                }
+                if ('Assets' -notin $ExcludeContent)
+                {
+                    [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String($banner))
+                    [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String($logo))
                 }
 
-                # Export the string data from the module to disk.
-                $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
-                Export-ADTScriptBlockToFile -ScriptBlock ([System.Management.Automation.ScriptBlock]::Create($configText)) -LiteralPath "$templatePath\Config\config.psd1"
-
-                # Export the string data from the module to disk.
-                $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
-                foreach ($stringData in $Script:ADT.ModuleDefaults.Strings.GetEnumerator())
+                # Export the configuration data from the module to disk.
+                if ('Config' -notin $ExcludeContent)
                 {
-                    if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
+                    $configText = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png')
+                    if ($PSBoundParameters.ContainsKey('Config'))
                     {
-                        continue
+                        $configReplacements = Get-ADTConfigReplacements -ConfigText $configText -Settings $Config
+                        $configText = Set-ADTTextReplacements -InputText $configText -Replacements $configReplacements
                     }
-                    $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
-                    Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
+                    $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
+                    Export-ADTScriptBlockToFile -ScriptBlock ([System.Management.Automation.ScriptBlock]::Create($configText)) -LiteralPath "$templatePath\Config\config.psd1"
                 }
-                Export-ADTScriptBlockToFile -ScriptBlock $Script:ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
+
+                # Export the string data from the module to disk.
+                if ('Strings' -notin $ExcludeContent)
+                {
+                    $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
+                    foreach ($stringData in $Script:ADT.ModuleDefaults.Strings.GetEnumerator())
+                    {
+                        if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
+                        {
+                            continue
+                        }
+                        $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
+                        Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
+                    }
+                    Export-ADTScriptBlockToFile -ScriptBlock $Script:ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
+                }
 
                 # Ensure all editable ps*1 files are not read-only and remove any digital signatures.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
@@ -607,18 +690,21 @@ function New-ADTTemplate
                     }
                 }
 
-                # Copy in the module files.
-                $null = New-Item -Path $templateModulePath -ItemType Directory -Force
-                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot"))\*" -Destination $templateModulePath -Recurse -Force
+                if ('Module' -notin $ExcludeContent)
+                {
+                    # Copy in the module files.
+                    $null = New-Item -Path $templateModulePath -ItemType Directory -Force
+                    Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot"))\*" -Destination $templateModulePath -Recurse -Force
 
-                # Make the shipped module and its files read-only.
-                $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
-                    process
-                    {
-                        $attributes = [System.IO.File]::GetAttributes($_.FullName)
-                        if (($attributes -band [System.IO.FileAttributes]::ReadOnly) -eq 0)
+                    # Make the shipped module and its files read-only.
+                    $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
+                        process
                         {
-                            [System.IO.File]::SetAttributes($_.FullName, ($attributes -bor [System.IO.FileAttributes]::ReadOnly))
+                            $attributes = [System.IO.File]::GetAttributes($_.FullName)
+                            if (($attributes -band [System.IO.FileAttributes]::ReadOnly) -eq 0)
+                            {
+                                [System.IO.File]::SetAttributes($_.FullName, ($attributes -bor [System.IO.FileAttributes]::ReadOnly))
+                            }
                         }
                     }
                 }
@@ -762,11 +848,25 @@ function New-ADTTemplate
                         $scriptContent = Set-ADTTextReplacements -InputText $scriptContent -Replacements $scriptReplacements
                     }
                     [System.IO.File]::WriteAllText($scriptPath, $scriptContent, $scriptEncoding)
+
+                    # Rename all v4 launcher artifacts to the requested base name.
+                    if ($PSBoundParameters.ContainsKey('LauncherName') -and $LauncherName -ne 'Invoke-AppDeployToolkit')
+                    {
+                        foreach ($extension in 'exe', 'ps1')
+                        {
+                            Move-Item -LiteralPath "$templatePath\Invoke-AppDeployToolkit.$extension" -Destination "$templatePath\$LauncherName.$extension"
+                        }
+                        if (Test-Path -LiteralPath "$templatePath\Invoke-AppDeployToolkit.pdb" -PathType Leaf)
+                        {
+                            Move-Item -LiteralPath "$templatePath\Invoke-AppDeployToolkit.pdb" -Destination "$templatePath\$LauncherName.pdb"
+                        }
+                    }
                 }
                 else
                 {
                     # Copy over Deploy-Application.exe from the v4 template.
-                    Copy-Item -LiteralPath $Script:PSScriptRoot\opt\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\Deploy-Application.exe"
+                    $v3LauncherName = if ($PSBoundParameters.ContainsKey('LauncherName')) { $LauncherName } else { 'Deploy-Application' }
+                    Copy-Item -LiteralPath $Script:PSScriptRoot\opt\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\$v3LauncherName.exe"
                 }
 
                 # Display the newly created folder in Windows Explorer.

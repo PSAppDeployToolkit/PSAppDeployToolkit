@@ -18,7 +18,8 @@ Describe 'New-ADTTemplate' {
             $Params.Force = $true
             $Params.PassThru = $true
             $template = New-ADTTemplate @Params
-            $scriptPath = Join-Path -Path $template.FullName -ChildPath 'Invoke-AppDeployToolkit.ps1'
+            $launcherName = if ($Params.ContainsKey('LauncherName')) { $Params.LauncherName } else { 'Invoke-AppDeployToolkit' }
+            $scriptPath = Join-Path -Path $template.FullName -ChildPath "$launcherName.ps1"
             $configPath = Join-Path -Path $template.FullName -ChildPath 'Config\config.psd1'
             $result = @{
                 Path = $template.FullName
@@ -407,6 +408,128 @@ Describe 'New-ADTTemplate' {
             $template = Get-ADTTemplateContent -Params @{ Files = "$TestDrive\SourceFiles\*.msi" }
             Join-Path $template.Path 'Files\setup.msi' | Should -Exist
         }
+
+        It 'Copies custom assets without defaults when Assets content is excluded' {
+            $template = Get-ADTTemplateContent -Params @{ ExcludeContent = 'Assets'; Assets = "$TestDrive\SourceAssets\custom.ico" }
+
+            Join-Path $template.Path 'Assets\custom.ico' | Should -Exist
+            Join-Path $template.Path 'Assets\Banner.Classic.png' | Should -Not -Exist
+            Join-Path $template.Path 'Assets\AppIcon.png' | Should -Not -Exist
+        }
+    }
+
+    Context 'LauncherName' {
+        It 'Renames all v4 launcher artifacts and preserves script processing' {
+            $template = Get-ADTTemplateContent -Params @{
+                LauncherName = 'Deploy.Contoso'
+                SessionProperties = @{ AppName = 'LauncherTest' }
+            }
+
+            foreach ($extension in 'exe', 'ps1', 'pdb')
+            {
+                Join-Path $template.Path "Deploy.Contoso.$extension" | Should -Exist
+                Join-Path $template.Path "Invoke-AppDeployToolkit.$extension" | Should -Not -Exist
+            }
+            $template.ScriptHasBom | Should -BeTrue
+            (Get-ADTSessionPropertiesFromScriptContent -Content $template.ScriptContent)['AppName'] | Should -Be "'LauncherTest'"
+        }
+
+        It 'Renames the v3 executable without adding a script or debug symbols' {
+            $template = Get-ADTTemplateContent -Params @{ Version = 3; LauncherName = 'Deploy-Contoso' }
+
+            Join-Path $template.Path 'Deploy-Contoso.exe' | Should -Exist
+            Join-Path $template.Path 'Deploy-Application.exe' | Should -Not -Exist
+            Join-Path $template.Path 'Deploy-Contoso.ps1' | Should -Not -Exist
+            Join-Path $template.Path 'Deploy-Contoso.pdb' | Should -Not -Exist
+        }
+    }
+
+    Context 'ExcludeContent' {
+        It 'Omits the <Category> category' -ForEach @(
+            @{ Category = 'Assets'; RelativePath = 'Assets' }
+            @{ Category = 'Config'; RelativePath = 'Config' }
+            @{ Category = 'Strings'; RelativePath = 'Strings' }
+            @{ Category = 'Extensions'; RelativePath = 'PSAppDeployToolkit.Extensions' }
+            @{ Category = 'Module'; RelativePath = 'PSAppDeployToolkit' }
+            @{ Category = 'Files'; RelativePath = 'Files' }
+            @{ Category = 'SupportFiles'; RelativePath = 'SupportFiles' }
+        ) {
+            $template = Get-ADTTemplateContent -Params @{ ExcludeContent = $Category }
+            Join-Path $template.Path $RelativePath | Should -Not -Exist
+        }
+
+        It 'Omits multiple categories together' {
+            $template = Get-ADTTemplateContent -Params @{ ExcludeContent = 'Assets', 'Extensions', 'SupportFiles' }
+
+            Join-Path $template.Path 'Assets' | Should -Not -Exist
+            Join-Path $template.Path 'PSAppDeployToolkit.Extensions' | Should -Not -Exist
+            Join-Path $template.Path 'SupportFiles' | Should -Not -Exist
+            Join-Path $template.Path 'Config\config.psd1' | Should -Exist
+        }
+
+        It 'Creates the template when all optional content is excluded' {
+            $template = Get-ADTTemplateContent -Params @{ ExcludeContent = 'Assets', 'Config', 'Strings', 'Extensions', 'Module', 'Files', 'SupportFiles' }
+
+            Test-Path -LiteralPath $template.Path -PathType Container | Should -BeTrue
+            Join-Path $template.Path 'Invoke-AppDeployToolkit.exe' | Should -Exist
+        }
+
+        It 'Includes every optional category by default' {
+            $template = Get-ADTTemplateContent
+
+            foreach ($relativePath in 'Assets', 'Config', 'Strings', 'PSAppDeployToolkit.Extensions', 'PSAppDeployToolkit', 'Files', 'SupportFiles')
+            {
+                Join-Path $template.Path $relativePath | Should -Exist
+            }
+        }
+
+        It 'Omits the module from v3 templates while preserving compatibility files' {
+            $template = Get-ADTTemplateContent -Params @{ Version = 3; ExcludeContent = 'Module' }
+
+            Join-Path $template.Path 'AppDeployToolkit\PSAppDeployToolkit' | Should -Not -Exist
+            Join-Path $template.Path 'AppDeployToolkit\AppDeployToolkitMain.ps1' | Should -Exist
+        }
+
+        It 'Accepts Extensions as a no-op for v3 templates' {
+            $template = Get-ADTTemplateContent -Params @{ Version = 3; ExcludeContent = 'Extensions' }
+            Join-Path $template.Path 'Deploy-Application.exe' | Should -Exist
+        }
+    }
+
+    Context 'New parameter validation' {
+        It 'Rejects -<Parameter> when its category is excluded' -ForEach @(
+            @{ Parameter = 'Config'; Value = @{ Toolkit = @{ LogPath = 'logs' } } }
+            @{ Parameter = 'Files'; Value = 'setup.msi' }
+            @{ Parameter = 'SupportFiles'; Value = 'settings.xml' }
+        ) {
+            $params = @{ Destination = $TestDrive; Force = $true; ExcludeContent = $Parameter }
+            $params[$Parameter] = $Value
+            { New-ADTTemplate @params } | Should -Throw -ErrorId 'InvalidParameter*'
+        }
+
+        It 'Rejects invalid filename characters in -<Parameter>' -ForEach @(
+            @{ Parameter = 'Name'; Value = 'Bad:Name'; ErrorId = 'InvalidNameParameterValue*' }
+            @{ Parameter = 'LauncherName'; Value = 'Bad/Name'; ErrorId = 'InvalidLauncherNameParameterValue*' }
+        ) {
+            $params = @{ Destination = $TestDrive; Force = $true }
+            $params[$Parameter] = $Value
+            { New-ADTTemplate @params } | Should -Throw -ErrorId $ErrorId
+        }
+
+        It 'Rejects relative directory aliases for Name' -ForEach @(
+            @{ Value = '.' }
+            @{ Value = '..' }
+        ) {
+            { New-ADTTemplate -Destination $TestDrive -Name $Value -Force } | Should -Throw -ErrorId 'InvalidNameParameterValue*'
+        }
+
+        It 'Rejects a file extension in LauncherName' -ForEach @(
+            @{ Value = 'Deploy.exe' }
+            @{ Value = 'Deploy.ps1' }
+            @{ Value = 'Deploy.pdb' }
+        ) {
+            { New-ADTTemplate -Destination $TestDrive -LauncherName $Value -Force } | Should -Throw -ErrorId 'InvalidLauncherNameParameterValue*'
+        }
     }
 
     Context 'Version 3 template creation' {
@@ -434,7 +557,7 @@ Describe 'New-ADTTemplate' {
         }
 
         It 'Accepts -Config with -Version 3' {
-            # Template created successfully in BeforeAll with -Config — reaching here proves no throw.
+            # Template created successfully in BeforeAll with -Config; reaching here proves no throw.
             $template.Path | Should -Not -BeNullOrEmpty
         }
     }
