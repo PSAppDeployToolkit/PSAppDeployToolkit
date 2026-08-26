@@ -1,1 +1,0 @@
-﻿M:System.String.IsNullOrEmpty(System.String);Use string.IsNullOrWhiteSpace() instead.
