@@ -165,6 +165,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             ApplicationThemeManager.Changed += ThemeManager_ActualThemeChanged;
             ApplicationThemeManager.Apply(ApplicationTheme.Auto);
 
+            // Fluence.Wpf gates Changed behind a redundant-publish check, so the Apply above only
+            // raises it for the first dialog in the process (a genuine transition). Later dialogs
+            // apply an identical theme, get no event, and would otherwise show no icon or accent.
+            // Initialize both directly from the resolved theme; the subscription stays for
+            // OS-driven changes while the dialog is open.
+            SetDialogAccent(ApplicationThemeManager.ResolvedTheme);
+            SetDialogIcon(ApplicationThemeManager.ResolvedTheme);
+
             // Set the expiry timer if specified.
             if (options.DialogExpiryDuration > TimeSpan.Zero)
             {
