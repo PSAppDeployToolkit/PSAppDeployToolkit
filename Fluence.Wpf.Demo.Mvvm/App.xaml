@@ -1,0 +1,11 @@
+﻿<Application
+    x:Class="Fluence.Wpf.Demo.Mvvm.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        No ResourceDictionary.MergedDictionaries here.
+        ApplicationThemeManager.Apply (called from App.xaml.cs OnStartup) seeds all
+        three theme-system merge slots in the correct order. Adding Generic.xaml here
+        would create a fourth stale copy and push the manager's slot indices out of range.
+    -->
+</Application>

@@ -1,0 +1,41 @@
+name: Feature request
+description: Propose a control, API, visual parity, or documentation improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to build, migrate, or verify?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the control, API, template change, or documentation change you want.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Link WinUI CommonStyles, .NET WPF theme sources, Microsoft Learn docs, screenshots, or in-tree precedent.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Controls
+        - Theme resources
+        - FluenceWindow or title bar
+        - Demo gallery
+        - Tests
+        - Documentation
+        - Packaging or CI
+        - Other
+    validations:
+      required: true

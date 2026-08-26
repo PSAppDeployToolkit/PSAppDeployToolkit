@@ -1,0 +1,230 @@
+﻿/*
+ * Copyright 2026 Dan Cunningham
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using System.Windows.Threading;
+using Fluence.Wpf.Helpers;
+
+namespace Fluence.Wpf.Tests
+{
+    /// <summary>
+    /// Shared single-threaded STA dispatcher for WPF tests so <see cref="Application.Current"/>
+    /// and all windows share one dispatcher (avoids cross-thread DynamicResource failures).
+    /// </summary>
+    internal static class WpfTestSta
+    {
+        private static Dispatcher? _dispatcher;
+        private static readonly Lock LockObj = new();
+
+        internal static Dispatcher Dispatcher => EnsureDispatcher();
+
+        internal static Application EnsureApplication()
+        {
+            // Callers are already executing on the STA dispatcher thread (inside a
+            // RunOnSta body), so the setup runs directly without marshaling.
+            // Headless CI runners report SystemParameters.ClientAreaAnimation as
+            // false, which legitimately gates every code-driven animation off and
+            // fails the tests that assert in-flight motion. Force motion on here,
+            // in the setup call every test makes first, so the suite is
+            // deterministic regardless of the host's accessibility state. The
+            // reduced-motion tests override this to false for their own scope and
+            // reset to null in their finally blocks; the next test's setup call
+            // restores this deterministic default.
+            MotionHelper.OverrideIsMotionEnabled = true;
+
+            if (Application.Current is null)
+            {
+                _ = new Application
+                {
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown,
+                };
+            }
+
+            return Application.Current!;
+        }
+
+        /// <summary>
+        /// Runs <paramref name="action"/> on the shared STA dispatcher and returns a task that
+        /// completes when the action has run. Exceptions thrown by the action propagate through
+        /// the returned task with their original stack traces, so test assertions surface where
+        /// the caller expects them. This is the single canonical implementation.
+        /// </summary>
+        /// <param name="action">The action to run on the STA dispatcher.</param>
+        internal static Task RunOnStaAsync(Action action)
+        {
+            return EnsureDispatcher().InvokeAsync(action).Task;
+        }
+
+        /// <summary>
+        /// Runs the asynchronous <paramref name="body"/> on the shared STA dispatcher and returns
+        /// a task that completes when the body (including all of its awaits) has finished. Awaits
+        /// inside the body resume on the dispatcher thread via its synchronization context, so UI
+        /// state stays single-threaded while the dispatcher keeps pumping between continuations.
+        /// </summary>
+        /// <param name="body">The asynchronous body to run on the STA dispatcher.</param>
+        internal static Task RunOnStaAsync(Func<Task> body)
+        {
+            return EnsureDispatcher().InvokeAsync(body).Task.Unwrap();
+        }
+
+        /// <summary>
+        /// Drains the dispatcher queue down to <see cref="DispatcherPriority.ApplicationIdle"/> so
+        /// any queued layout, render, and idle callbacks complete before the caller samples state.
+        /// </summary>
+        /// <param name="dispatcher">The dispatcher to drain.</param>
+        internal static void DrainDispatcher(Dispatcher dispatcher)
+        {
+            _ = dispatcher?.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
+        }
+
+        /// <summary>
+        /// Enumerates every descendant of <paramref name="root"/> of type <typeparamref name="T"/>
+        /// walking the <b>visual</b> tree only (depth-first, pre-order). This is the lightweight
+        /// variant used by control-template tests where the visual tree is the source of truth.
+        /// </summary>
+        /// <param name="root">The root element to start the search from.</param>
+        /// <typeparam name="T">The type of descendant to find.</typeparam>
+        internal static IEnumerable<T> FindVisualDescendants<T>(DependencyObject? root)
+            where T : DependencyObject
+        {
+            if (root is null)
+            {
+                yield break;
+            }
+
+            int childCount = VisualTreeHelper.GetChildrenCount(root);
+            for (int index = 0; index < childCount; index++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, index);
+                if (child is T match)
+                {
+                    yield return match;
+                }
+
+                foreach (T descendant in FindVisualDescendants<T>(child))
+                {
+                    yield return descendant;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enumerates every descendant of <paramref name="root"/> of type <typeparamref name="T"/>
+        /// walking <b>both the visual and logical</b> trees, guarding against revisiting a node so
+        /// shared subtrees and cycles do not loop. This broader variant is used by demo/full-window
+        /// tests where content can live in the logical tree before (or instead of) being realized in
+        /// the visual tree.
+        /// </summary>
+        /// <typeparam name="T">The type of descendant to find.</typeparam>
+        /// <param name="root">The root element to start the search from.</param>
+        internal static IEnumerable<T> FindLogicalAndVisualDescendants<T>(DependencyObject? root)
+            where T : DependencyObject
+        {
+            HashSet<DependencyObject> visited = [];
+            foreach (T item in FindLogicalAndVisualDescendants<T>(root, visited))
+            {
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<T> FindLogicalAndVisualDescendants<T>(
+            DependencyObject? root,
+            HashSet<DependencyObject> visited)
+            where T : DependencyObject
+        {
+            if (root is null || !visited.Add(root))
+            {
+                yield break;
+            }
+
+            if (root is T match)
+            {
+                yield return match;
+            }
+
+            int visualChildren = 0;
+            if (root is Visual or Visual3D)
+            {
+                visualChildren = VisualTreeHelper.GetChildrenCount(root);
+            }
+
+            for (int i = 0; i < visualChildren; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, i);
+                foreach (T item in FindLogicalAndVisualDescendants<T>(child, visited))
+                {
+                    yield return item;
+                }
+            }
+
+            foreach (object logicalChild in LogicalTreeHelper.GetChildren(root))
+            {
+                if (logicalChild is DependencyObject dependencyObject)
+                {
+                    foreach (T item in FindLogicalAndVisualDescendants<T>(dependencyObject, visited))
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
+
+        private static Dispatcher EnsureDispatcher()
+        {
+            lock (LockObj)
+            {
+                if (_dispatcher?.Thread.IsAlive is true)
+                {
+                    return _dispatcher;
+                }
+
+                Dispatcher? created = null;
+                using ManualResetEventSlim ready = new(initialState: false);
+                Thread thread = new(() =>
+                {
+                    created = Dispatcher.CurrentDispatcher;
+                    ready.Set();
+                    Dispatcher.Run();
+                });
+
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.IsBackground = true;
+                thread.Start();
+                ready.Wait(default(CancellationToken));
+                _dispatcher = created ?? throw new InvalidOperationException("STA dispatcher thread failed to initialize.");
+                return _dispatcher;
+            }
+        }
+    }
+}

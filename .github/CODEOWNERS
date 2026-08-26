@@ -1,0 +1,8 @@
+# Code owners for Fluence.Wpf.
+# These owners are requested for review automatically when someone opens a
+# pull request that changes matching files. Order matters: the last matching
+# pattern wins. See:
+# https://docs.github.com/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository.
+*       @sintaxasn

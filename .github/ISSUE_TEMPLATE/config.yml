@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/sintaxasn/Fluence.Wpf/tree/main/docs
+    about: Check the public documentation before opening an issue.
+  - name: Known issues
+    url: https://github.com/sintaxasn/Fluence.Wpf/blob/main/KNOWN_ISSUES.md
+    about: Check current known follow-ups and deliberate non-features.
