@@ -180,12 +180,15 @@ namespace PSADT.Security
                     }
                 }
             }
-            for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
+            else
             {
-                ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
-                if (PrivilegeValuesAreEqual(in attr.Luid, in luid))
+                for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
-                    return true;
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    if (PrivilegeValuesAreEqual(in attr.Luid, in luid))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
