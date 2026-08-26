@@ -269,7 +269,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
 
                 // #################################################################################
 
-                // Show CloseApps Dialog
+                // Show CloseApps Dialog.
 
                 CloseAppsDialogResult closeAppsResult = await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState).ConfigureAwait(false); // Pass the service as optional parameter
 
