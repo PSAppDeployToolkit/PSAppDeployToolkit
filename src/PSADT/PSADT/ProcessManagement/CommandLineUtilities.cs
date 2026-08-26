@@ -789,12 +789,14 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>This method ensures compatibility with parsers that handle quoted values in key-value
         /// pairs. If the value in a key-value pair is already quoted, it is assumed to be correctly formatted and
-        /// returned as-is. If the value is unquoted (even with spaces), it is preserved as-is to support tools
-        /// like NSIS that require unquoted paths. For all other cases, strict escaping is applied.</remarks>
+        /// returned as-is, as is NSIS's <c>/D=</c> parameter, which must never be quoted. All other key-value pairs
+        /// are escaped so that a value containing whitespace survives being parsed back out of the command line.
+        /// For all other cases, strict escaping is applied.</remarks>
         /// <param name="argument">The command-line argument to escape. Can be a key-value pair (e.g., "key=value") or a single value.</param>
         /// <returns>A string representing the escaped argument. If the argument is <see langword="null"/>, returns an empty
-        /// quoted string (<c>""</c>). If the argument is a key-value pair with a quoted value, the original argument is
-        /// returned unchanged. Otherwise, the argument is escaped using strict escaping rules.</returns>
+        /// quoted string (<c>""</c>). If the argument is a key-value pair with an already quoted value, or is NSIS's
+        /// <c>/D=</c> parameter, the original argument is returned unchanged. Otherwise, the argument is escaped using
+        /// strict escaping rules.</returns>
         private static string EscapeArgumentCompatible(string argument)
         {
             // Return empty quotes for a null argument.
@@ -803,12 +805,14 @@ namespace PSADT.ProcessManagement
                 return "\"\"";
             }
 
-            // Check if the argument is a key-value pair.
+            // Check whether the argument is a key-value pair that must be emitted verbatim.
             int equalsPos = argument.IndexOf('=', StringComparison.Ordinal);
-            if (equalsPos > 0 && equalsPos < argument.Length - 1)
+            if (equalsPos > 0 && equalsPos < argument.Length - 1 && (IsQuotedKeyValueValue(argument, equalsPos) || IsNsisDestinationArgument(argument, equalsPos)))
             {
-                // Return the argument irrespective of whether it's quoted or not to support
-                // tools like NSIS that require unquoted paths even when they contain spaces.
+                // The value is either already quoted, in which case it's assumed to be correctly formatted,
+                // or the argument is NSIS's /D= parameter, which must never be quoted even when the path it
+                // specifies contains spaces. Any other key-value pair falls through to the escaping below so
+                // that a value containing whitespace remains a single argument when it's parsed back out.
                 return argument;
             }
 
@@ -833,6 +837,35 @@ namespace PSADT.ProcessManagement
 
             // For all other cases, use the standard strict escaping.
             return EscapeArgumentStrict(argument);
+        }
+
+        /// <summary>
+        /// Determines whether the value of a key-value argument is already enclosed in quotes.
+        /// </summary>
+        /// <param name="argument">The key-value argument to test.</param>
+        /// <param name="equalsPos">The index of the equals sign separating the key from the value.</param>
+        /// <returns>True if the value is enclosed in quotes, otherwise false.</returns>
+        private static bool IsQuotedKeyValueValue(string argument, int equalsPos)
+        {
+            ReadOnlySpan<char> value = argument.AsSpan(equalsPos + 1);
+            return value.Length > 1 && value[0] == '"' && value[^1] == '"';
+        }
+
+        /// <summary>
+        /// Determines whether a key-value argument is NSIS's destination directory parameter.
+        /// </summary>
+        /// <param name="argument">The key-value argument to test.</param>
+        /// <param name="equalsPos">The index of the equals sign separating the key from the value.</param>
+        /// <returns>True if the argument is NSIS's /D= parameter with a fully qualified path, otherwise false.</returns>
+        /// <remarks>
+        /// https://nsis.sourceforge.io/Docs/Chapter3.html states of /D=: "It must be the last parameter used in the
+        /// command line and must not contain any quotes, even if the path contains spaces. Only absolute paths are
+        /// supported." As NSIS takes the remainder of the raw command line rather than parsing it into arguments,
+        /// the argument has to be emitted verbatim, which can only be safely assumed for this one documented case.
+        /// </remarks>
+        private static bool IsNsisDestinationArgument(string argument, int equalsPos)
+        {
+            return equalsPos is 2 && argument[0] is '-' or '/' && argument[1] is 'D' or 'd' && FileSystemUtilities.IsPathFullyQualified(argument.AsSpan(equalsPos + 1));
         }
 
         /// <summary>

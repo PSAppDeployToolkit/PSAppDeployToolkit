@@ -1552,9 +1552,69 @@ namespace PSADT.Tests.ProcessManagement
                    "C:\\Windows\\notepad.exe /D=C:\\Program Files\\NSIS")]
         [InlineData(new[] { "setup.exe", "/S", "/D=C:\\Program Files\\My App" },
                    "setup.exe /S /D=C:\\Program Files\\My App")]
-        [InlineData(new[] { "installer.exe", "TARGETDIR=C:\\Program Files\\App" },
-                   "installer.exe TARGETDIR=C:\\Program Files\\App")]
+        [InlineData(new[] { "setup.exe", "/S", "/d=C:\\Program Files\\My App" },
+                   "setup.exe /S /d=C:\\Program Files\\My App")]
+        [InlineData(new[] { "setup.exe", "/S", "-D=C:\\Program Files\\My App" },
+                   "setup.exe /S -D=C:\\Program Files\\My App")]
+        [InlineData(new[] { "setup.exe", "/D=\\\\server\\share\\My App" },
+                   "setup.exe /D=\\\\server\\share\\My App")]
         public void ArgumentListToCommandLine_NsisStyleKeyValue_PreservesUnquotedFormat(IReadOnlyList<string> args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that key=value arguments whose value contains whitespace are quoted in their entirety.
+        /// The NSIS /D= exception only applies to NSIS's own documented parameter, so every other key=value
+        /// pair must be quoted, otherwise the receiving process splits the value across multiple arguments.
+        /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
+        [Theory]
+        [InlineData(new[] { "installer.exe", "TARGETDIR=C:\\Program Files\\App" },
+                   "installer.exe \"TARGETDIR=C:\\Program Files\\App\"")]
+        [InlineData(new[] { "msiexec.exe", "TRANSFORMS=C:\\My Transforms\\a.mst" },
+                   "msiexec.exe \"TRANSFORMS=C:\\My Transforms\\a.mst\"")]
+        [InlineData(new[] { "-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe" },
+                   "\"-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe\"")]
+        [InlineData(new[] { "--config=C:\\My Config\\file.json" },
+                   "\"--config=C:\\My Config\\file.json\"")]
+        [InlineData(new[] { "key=value with spaces" },
+                   "\"key=value with spaces\"")]
+        [InlineData(new[] { "my key=value" },
+                   "\"my key=value\"")]
+        [InlineData(new[] { "/DP=C:\\Program Files\\App" },
+                   "\"/DP=C:\\Program Files\\App\"")]
+        [InlineData(new[] { "/D=Program Files\\App" },
+                   "\"/D=Program Files\\App\"")]
+        public void ArgumentListToCommandLine_KeyValueWithWhitespace_QuotesEntireArgument(IReadOnlyList<string> args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that key=value arguments that don't require quoting are emitted verbatim.
+        /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
+        [Theory]
+        [InlineData(new[] { "installer.exe", "TARGETDIR=C:\\Apps\\App" },
+                   "installer.exe TARGETDIR=C:\\Apps\\App")]
+        [InlineData(new[] { "-delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp" },
+                   "-delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp")]
+        [InlineData(new[] { "ALLUSERS=1", "REBOOT=ReallySuppress" },
+                   "ALLUSERS=1 REBOOT=ReallySuppress")]
+        [InlineData(new[] { "TARGETDIR=C:\\Program_Files\\App" },
+                   "TARGETDIR=C:\\Program_Files\\App")]
+        public void ArgumentListToCommandLine_KeyValueWithoutWhitespace_PreservesUnquotedFormat(IReadOnlyList<string> args, string expected)
         {
             // Act
             string result = CommandLineUtilities.ArgumentListToCommandLine(args);
@@ -1987,6 +2047,56 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests the real-world UninstallParam value of Bitvise SSH Client, where each argument is a key=value
+        /// pair that has been quoted in its entirety by the vendor. The first value contains spaces, so its
+        /// quoting must survive the trip back out to a command line string.
+        /// </summary>
+        [Fact]
+        public void BitviseUninstallParam_RoundTrip_PreservesQuotingOfValuesWithSpaces()
+        {
+            // Arrange - HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\BvSshClient.
+            const string commandLine = " \"-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe\" \"-delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp\"";
+            string[] expectedArgs =
+            [
+                "-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe",
+                "-delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp",
+            ];
+            const string expectedCommandLine = "\"-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe\" -delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp";
+
+            // Act
+            IReadOnlyList<string> parsedArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+            string recreatedCommandLine = CommandLineUtilities.ArgumentListToCommandLine(parsedArgs);
+            IReadOnlyList<string> reparsedArgs = CommandLineUtilities.CommandLineToArgumentList(recreatedCommandLine);
+
+            // Assert - the value with spaces stays quoted, and the argument list survives the round trip.
+            Assert.Equal(expectedArgs, parsedArgs);
+            Assert.Equal(expectedCommandLine, recreatedCommandLine);
+            Assert.Equal(parsedArgs, reparsedArgs);
+        }
+
+        /// <summary>
+        /// Tests that the Bitvise SSH Client UninstallParam value round-trips identically under strict rules,
+        /// which is what the receiving process itself uses to parse the command line it's given.
+        /// </summary>
+        [Fact]
+        public void BitviseUninstallParam_StrictRoundTrip_PreservesArguments()
+        {
+            // Arrange
+            string[] args =
+            [
+                "-uninstWinFsp=C:\\Program Files (x86)\\Bitvise SSH Client\\BvWinFsp\\BvWinFspMgr.exe",
+                "-delRegKey=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BvWinFsp",
+            ];
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+            IReadOnlyList<string> strictArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
+
+            // Assert
+            Assert.Equal(args, strictArgs);
         }
     }
 }
