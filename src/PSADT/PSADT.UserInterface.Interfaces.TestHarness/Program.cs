@@ -141,6 +141,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00CC6A) }, // Accent Color: Green #00CC6A
                     { "DialogTopMost", true },
                     { "DialogAllowMinimize", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
@@ -156,6 +157,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF0099BC) }, // Accent Color: Cyan #0099BC
                     { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
@@ -176,6 +178,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF4A5459) }, // Accent Color: Navy Blue #4A5459
                     { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
@@ -195,6 +198,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF7630C) }, // Accent Color: Orange #F7630C
                     { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
@@ -213,6 +217,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF600CE) }, // Accent Color: Purple #F600CE
                     { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
@@ -234,6 +239,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
                     { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
                     { "AppIconImage", appIconImage },
