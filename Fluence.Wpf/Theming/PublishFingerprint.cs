@@ -27,6 +27,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Helpers;
@@ -146,25 +147,7 @@ namespace Fluence.Wpf.Theming
         /// <param name="right">The second color map.</param>
         internal static bool ColorMapsEqual(IReadOnlyDictionary<string, Color> left, IReadOnlyDictionary<string, Color> right)
         {
-            if (ReferenceEquals(left, right))
-            {
-                return true;
-            }
-
-            if (left.Count != right.Count)
-            {
-                return false;
-            }
-
-            foreach (KeyValuePair<string, Color> entry in left)
-            {
-                if (!right.TryGetValue(entry.Key, out Color candidate) || candidate != entry.Value)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return ReferenceEquals(left, right) || (left.Count == right.Count && !left.Any(entry => !right.TryGetValue(entry.Key, out Color candidate) || candidate != entry.Value));
         }
 
         /// <summary>

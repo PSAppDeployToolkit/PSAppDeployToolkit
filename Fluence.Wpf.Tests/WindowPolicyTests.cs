@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
@@ -797,19 +798,9 @@ namespace Fluence.Wpf.Tests
         {
             // Regression guard: DWMWA_COLOR_NONE hides the one border that composites against the
             // desktop, which is what produced the Light-theme halo around an inactive window.
-            foreach (bool active in new[] { true, false })
+            foreach (FramePlan plan in new[] { true, false }.SelectMany(static active => new[] { true, false }.Select(accent => WindowPolicy.BuildFramePlan(WindowState.Normal, active, accent, Caps(borderColor: true), Color.FromRgb(0x00, 0x78, 0xD4)))))
             {
-                foreach (bool accent in new[] { true, false })
-                {
-                    FramePlan plan = WindowPolicy.BuildFramePlan(
-                        WindowState.Normal,
-                        active,
-                        accent,
-                        Caps(borderColor: true),
-                        Color.FromRgb(0x00, 0x78, 0xD4));
-
-                    Assert.NotEqual(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
-                }
+                Assert.NotEqual(PInvoke.DWMWA_COLOR_NONE, plan.DwmBorderColor);
             }
         }
 
@@ -831,19 +822,9 @@ namespace Fluence.Wpf.Tests
         {
             // Regression guard for the Light-theme halo: an inner border painted over the window's
             // own surface shows as a pale line inside the system border, whatever token it uses.
-            foreach (bool active in new[] { true, false })
+            foreach (FramePlan plan in new[] { true, false }.SelectMany(static active => new[] { true, false }.Select(accent => WindowPolicy.BuildFramePlan(WindowState.Normal, active, accent, Caps(borderColor: true), Color.FromRgb(0x00, 0x78, 0xD4)))))
             {
-                foreach (bool accent in new[] { true, false })
-                {
-                    FramePlan plan = WindowPolicy.BuildFramePlan(
-                        WindowState.Normal,
-                        active,
-                        accent,
-                        Caps(borderColor: true),
-                        Color.FromRgb(0x00, 0x78, 0xD4));
-
-                    Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
-                }
+                Assert.Equal(new Thickness(0), plan.TemplateBorderThickness);
             }
         }
 
