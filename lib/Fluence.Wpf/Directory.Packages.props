@@ -8,10 +8,10 @@
     <PackageVersion Include="Meziantou.Analyzer" Version="3.0.177" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Microsoft.Extensions.StaticAnalysis" Version="10.9.0" />
-    <PackageVersion Include="Roslynator.Analyzers" Version="4.16.1" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
     <!-- Fluence.Wpf -->
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.321" />
-    <PackageVersion Include="Meziantou.Polyfill" Version="1.0.161" />
+    <PackageVersion Include="Meziantou.Polyfill" Version="1.0.163" />
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.11" />
     <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
