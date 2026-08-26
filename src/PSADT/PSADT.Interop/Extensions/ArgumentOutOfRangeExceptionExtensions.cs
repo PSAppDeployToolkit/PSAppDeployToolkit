@@ -11,10 +11,6 @@ using Windows.Win32.Foundation;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0047:Declare types in namespaces", Justification = "Polyfills aren't meant to be part of a namespace.")]
 internal static class ArgumentOutOfRangeExceptionExtensions
 {
-    /// <summary>
-    /// Provides extension methods for validating argument values to ensure they are non-zero and not invalid,
-    /// throwing an ArgumentOutOfRangeException when validation fails.
-    /// </summary>
     extension(ArgumentOutOfRangeException)
     {
         /// <summary>

@@ -12,13 +12,6 @@ using Windows.Win32.Foundation;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0047:Declare types in namespaces", Justification = "Polyfills aren't meant to be part of a namespace.")]
 internal static class ArgumentExceptionExtensions
 {
-    /// <summary>
-    /// Provides extension methods for validating SafeHandle instances and throwing appropriate exceptions when
-    /// handles are null, closed, or invalid.
-    /// </summary>
-    /// <remarks>These extension methods help ensure that SafeHandle parameters are in a valid state
-    /// before use, simplifying error handling and improving code clarity. Use these methods to enforce
-    /// preconditions for APIs that require open and valid handles.</remarks>
     extension(ArgumentException)
     {
         /// <summary>

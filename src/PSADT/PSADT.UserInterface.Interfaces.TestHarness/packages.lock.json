@@ -32,9 +32,9 @@
       },
       "Roslynator.Analyzers": {
         "type": "Direct",
-        "requested": "[4.16.1, )",
-        "resolved": "4.16.1",
-        "contentHash": "AGzq3UZvIwTGSh9xyIna+Q9F666S8UaLlX/Pk3Iz21qIAWjL8iYporVCcX1k/oi5chrRZ8VJRahup4me4HZptw=="
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "+J5kR/naCd62IwY2BG9P0QoHnJM8liBUFFAk6jga1t9s61JC3M+ofb3AY3wc73/pdROyKFCURqctQh8WRCIT/w=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -198,7 +198,7 @@
       "psadt.userinterface.interfaces": {
         "type": "Project",
         "dependencies": {
-          "Fluence.Wpf": "[0.8.13-preview, )",
+          "Fluence.Wpf": "[0.8.17-preview, )",
           "PSADT": "[1.0.0, )",
           "PSADT.UserInterface": "[1.0.0, )",
           "PSAppDeployToolkit": "[1.0.0, )"
