@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.18-Preview] - 2026-08-26
+
+### Changed
+
+- `FluenceWindow` window-border handling is reverted to the pre-0.8.15-preview design. The single-source border introduced in 0.8.15-preview (`DWMWA_COLOR_NONE` suppression, plan-driven `BorderThickness`, `CornerStyle` template-radius triggers) and its follow-ups in 0.8.16-preview (rounded content clip, `PART_WindowBorder` template part, `SurfaceStrokeColorDefaultBrush` inactive key) and 0.8.17-preview (0 dp template border on Windows 11) are all withdrawn. The window again draws a 1 dp template border (`SystemAccentColorBrush` when active with accent borders enabled, `CardStrokeColorDefaultSolidBrush` otherwise) whose maximized 0-thickness case comes from the template trigger, and `WindowPolicy.BuildFramePlan` again writes the accent COLORREF to `DWMWA_BORDER_COLOR` for an active window with accent borders and `DWMWA_COLOR_DEFAULT` otherwise, on every OS that exposes the attribute. Tests added with the withdrawn design (single-border wiring, corner-radius triggers, and content-clip coverage in `FluenceWindowHardenTests`, plus the reworked `BuildFramePlan` rows in `WindowPolicyTests`) are removed with it, and the pre-0.8.15 `BuildFramePlan` rows are restored.
+- Light theme: `NavigationViewContentBackground` adjusted from 66% to 50% white (`#80FFFFFF`), letting more Mica through the content layer. Golden snapshots and the generated `DesignTime.Light.xaml` are updated to match.
+- Demo: the gallery shell extends its content into the title bar (`ExtendsContentIntoTitleBar="True"`) and opens at a fixed minimum size of 1170x880.
+
 ## [0.8.17-Preview] - 2026-08-25
 
 ### Fixed

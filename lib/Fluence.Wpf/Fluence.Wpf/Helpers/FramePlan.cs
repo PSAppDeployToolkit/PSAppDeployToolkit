@@ -36,28 +36,21 @@ namespace Fluence.Wpf.Helpers
     /// WPF-template border (driven by <see cref="TemplateBorderThickness"/> and
     /// <see cref="TemplateBorderBrushResourceKey"/>) from the DWM border color
     /// (<see cref="DwmBorderColor"/>), because only some OS builds support the DWM side.
-    /// DWM draws the outer border and the template border sits just inside it, theme-matched to
-    /// the window surface unless the window is active with accent borders enabled.
     /// </summary>
     /// <param name="templateBorderThickness">The thickness of the WPF-template border element.</param>
     /// <param name="templateBorderBrushResourceKey">The <c>DynamicResource</c> key for the border brush.</param>
-    /// <param name="dwmBorderColor">
-    ///   The value for <c>DWMWA_BORDER_COLOR</c>: the accent COLORREF for an active window with
-    ///   accent borders on a capable OS, otherwise DWMWA_COLOR_DEFAULT.
-    /// </param>
+    /// <param name="dwmBorderColor">The COLORREF (BGR, 24-bit) value for the DWM border color.</param>
     internal sealed class FramePlan(
         Thickness templateBorderThickness,
         string templateBorderBrushResourceKey,
         uint dwmBorderColor)
     {
         /// <summary>
-        /// Gets the thickness of the WPF-template border element. <c>Thickness(2)</c> in the
-        /// normal window state; <c>Thickness(0)</c> when maximized
-        /// (a border at the monitor edge would clip against the taskbar or other monitors).
-        /// This is the only border the window paints, so the value is applied to
-        /// <c>FluenceWindow.BorderThickness</c> rather than left to a template trigger.
+        /// Gets the thickness of the WPF-template border element. <c>Thickness(2)</c> when the
+        /// window is active and in normal state; <c>Thickness(0)</c> when maximized (a border at
+        /// the monitor edge would clip against the taskbar or other monitors).
         /// </summary>
-        internal Thickness TemplateBorderThickness { get; } = templateBorderThickness;
+        internal Thickness TemplateBorderThickness { get; private set; } = templateBorderThickness;
 
         /// <summary>
         /// Gets the <c>DynamicResource</c> key for the border brush to apply to the template
@@ -68,13 +61,12 @@ namespace Fluence.Wpf.Helpers
         internal string TemplateBorderBrushResourceKey { get; } = templateBorderBrushResourceKey;
 
         /// <summary>
-        /// Gets the value to write to <c>DWMWA_BORDER_COLOR</c>. The accent COLORREF when the OS
-        /// exposes the attribute and the window is active with accent borders enabled, so the DWM
-        /// border and the template border agree; DWMWA_COLOR_DEFAULT otherwise, which leaves DWM
-        /// drawing its own adaptive border. A caller must check
-        /// <see cref="WindowCapabilities.SupportsBorderColor"/> before writing this value to the
-        /// DWM attribute; the plan records the sentinel regardless so the caller does not need a
-        /// separate null check.
+        /// Gets the COLORREF (BGR, 24-bit) value to write to <c>DWMWA_BORDER_COLOR</c>, or
+        /// DWMWA_COLOR_DEFAULT when the OS
+        /// does not expose that attribute (Windows 10) or the window is inactive. A caller
+        /// must check <see cref="WindowCapabilities.SupportsBorderColor"/> before writing this
+        /// value to the DWM attribute; the plan records the sentinel regardless so the caller
+        /// does not need a separate null check.
         /// </summary>
         internal uint DwmBorderColor { get; } = dwmBorderColor;
     }

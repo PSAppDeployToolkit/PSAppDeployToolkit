@@ -163,7 +163,7 @@
         content area a calm, slightly tinted surface while still letting some Mica
         through so card lifts and brand colors stay visible.
     -->
-    <Color x:Key="NavigationViewContentBackground">#A9FFFFFF</Color>
+    <Color x:Key="NavigationViewContentBackground">#80FFFFFF</Color>
 
     <!--
         AccentFillBackdrop: opaque sub-layer sitting BEHIND the accent track inside the

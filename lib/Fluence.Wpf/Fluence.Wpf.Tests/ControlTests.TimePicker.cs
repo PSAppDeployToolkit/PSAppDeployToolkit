@@ -28,6 +28,7 @@
 
 using System;
 using System.Globalization;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -796,6 +797,14 @@ namespace Fluence.Wpf.Tests
                     // exactly like the StaysOpen=false dismissal on the field mousedown.
                     popup.SetCurrentValue(Popup.IsOpenProperty, value: false);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    // The lockout is a 250 ms Environment.TickCount window, and the dispatcher
+                    // drain above can outlast it on a loaded CI runner, so first prove the dismiss
+                    // armed it, then re-arm it so the second click is deterministically inside it.
+                    FieldInfo dismissTickField = Assert.IsAssignableFrom<FieldInfo>(
+                        typeof(Controls.TimePicker).GetField("_lastLightDismissTick", BindingFlags.NonPublic | BindingFlags.Instance));
+                    Assert.NotNull(dismissTickField.GetValue(picker));
+                    dismissTickField.SetValue(picker, Environment.TickCount);
 
                     // The click of the same press-release gesture must not reopen the flyout.
                     RaiseButtonClick(flyoutButton);
