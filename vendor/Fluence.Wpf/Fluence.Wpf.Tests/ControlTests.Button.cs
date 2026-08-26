@@ -1,0 +1,330 @@
+﻿/*
+ * Copyright 2026 Dan Cunningham
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Xunit;
+
+namespace Fluence.Wpf.Tests
+{
+    public partial class ControlTests
+    {
+        [Fact]
+        public Task Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokensAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+
+                try
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
+                    ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+
+                    AssertDisabledAccentButtonUsesDarkTokens();
+                }
+                finally
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [Fact]
+        public Task Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokensAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+
+                try
+                {
+                    ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+
+                    AssertDisabledAccentButtonUsesDarkTokens();
+                }
+                finally
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [Fact]
+        public Task Button_ExplicitToolTip_IsNotClearedByTruncationFallbackAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+                Controls.ToolTip toolTip = new() { Content = "Save changes" };
+                Controls.Button button = new()
+                {
+                    Width = 160,
+                    Content = "Save",
+                    ToolTip = toolTip,
+                };
+
+                try
+                {
+                    window.Content = button;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.Same(toolTip, button.ToolTip);
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [Fact]
+        public Task Button_IconOnly_CentersGlyphAndRestoresGapWithContentAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+                Controls.Button button = new()
+                {
+                    MinWidth = 32,
+                    Padding = new Thickness(8, 4, 8, 4),
+                    Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
+                };
+
+                try
+                {
+                    window.Content = button;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    ContentPresenter iconPresenter = FindVisualChildByName<ContentPresenter>(button, "IconPresenter")
+                        ?? throw new InvalidOperationException("IconPresenter must exist in the Button template.");
+                    Assert.Equal(new Thickness(0), iconPresenter.Margin);
+
+                    Point iconCenter = iconPresenter.TranslatePoint(
+                        new Point(iconPresenter.ActualWidth / 2.0, iconPresenter.ActualHeight / 2.0), button);
+                    Assert.Equal(button.ActualWidth / 2.0, iconCenter.X, 1.0);
+
+                    button.Content = "Copy";
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+                    Assert.Equal(new Thickness(0, 0, 8, 0), iconPresenter.Margin);
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [Fact]
+        public Task Button_Appearances_ApplyWinUiRestBrushesAndBordersAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+
+                Controls.Button standard = new() { Content = "Standard" };
+                Controls.Button accent = new() { Appearance = ControlAppearance.Accent, Content = "Accent" };
+                Controls.Button subtle = new() { Appearance = ControlAppearance.Subtle, Content = "Subtle" };
+                StackPanel panel = new();
+                _ = panel.Children.Add(standard);
+                _ = panel.Children.Add(accent);
+                _ = panel.Children.Add(subtle);
+
+                Window window = new()
+                {
+                    Content = panel,
+                };
+
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    AssertButtonChromeMatchesResources(
+                        standard,
+                        "ControlFillColorDefaultBrush",
+                        "TextFillColorPrimaryBrush",
+                        "ControlElevationBorderBrush");
+                    AssertButtonChromeMatchesResources(
+                        accent,
+                        "AccentFillColorDefaultBrush",
+                        "TextOnAccentFillColorPrimaryBrush",
+                        "AccentControlElevationBorderBrush");
+                    AssertButtonChromeMatchesResources(
+                        subtle,
+                        "SubtleFillColorTransparentBrush",
+                        "TextFillColorPrimaryBrush",
+                        "SubtleFillColorTransparentBrush");
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task Button_Template_UsesWinUiStateResourceMappingsAsync()
+        {
+            string xaml = await File.ReadAllTextAsync(DemoTestHost.GetRepositoryFilePath("Fluence.Wpf", "Themes", "Controls", "Button.xaml"), TestContext.Current.CancellationToken).ConfigureAwait(true);
+            string[] requiredStateResources =
+            [
+                "ControlFillColorSecondaryBrush",
+                "ControlFillColorTertiaryBrush",
+                "ControlFillColorDisabledBrush",
+                "AccentFillColorSecondaryBrush",
+                "AccentFillColorTertiaryBrush",
+                "AccentFillColorDisabledBrush",
+                "TextOnAccentFillColorSecondaryBrush",
+                "SubtleFillColorTransparentBrush",
+                "SubtleFillColorSecondaryBrush",
+                "SubtleFillColorTertiaryBrush",
+                "TextFillColorDisabledBrush",
+            ];
+
+            foreach (string resource in requiredStateResources)
+            {
+                Assert.True(
+                    xaml.Contains(resource, StringComparison.Ordinal),
+                    "Button template should include the WinUI state resource: " + resource);
+            }
+
+            string accentPressedBlock = GetTriggerBlock(
+                xaml,
+                "<Condition Property=\"IsPressed\" Value=\"True\" />",
+                "<Condition Property=\"Appearance\" Value=\"Accent\" />");
+            Assert.False(
+                accentPressedBlock.Contains("AccentFillColorDisabledBrush", StringComparison.Ordinal),
+                "Accent pressed state must not reuse the disabled accent fill as the button Background.");
+            Assert.False(
+                xaml.Contains("Value=\"Transparent\"", StringComparison.Ordinal),
+                "Button template should use theme resources rather than literal transparent brush values.");
+        }
+
+        private static void AssertDisabledAccentButtonUsesDarkTokens()
+        {
+            Window window = new();
+            Controls.Button button = new()
+            {
+                Width = 100,
+                Appearance = ControlAppearance.Accent,
+                Content = "Add",
+                IsEnabled = false,
+            };
+
+            try
+            {
+                window.Content = button;
+                window.Show();
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
+                window.UpdateLayout();
+
+                Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+
+                _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
+                _ = Assert.IsAssignableFrom<SolidColorBrush>(button.Foreground);
+                Assert.Equal(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)restFill.Background).Color);
+                Assert.Equal(Color.FromArgb(0x87, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)button.Foreground).Color);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        private static void AssertButtonChromeMatchesResources(
+            Controls.Button button,
+            string backgroundKey,
+            string foregroundKey,
+            string borderKey)
+        {
+            Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+            Border outerBorder = Assert.IsType<Border>(button.Template.FindName("OuterBorder", button));
+            Assert.Equal(new Thickness(1), outerBorder.BorderThickness);
+
+            AssertBrushMatchesResource(restFill.Background, backgroundKey);
+            AssertBrushMatchesResource(button.Foreground, foregroundKey);
+            AssertBrushMatchesResource(outerBorder.BorderBrush, borderKey);
+        }
+
+        private static void AssertBrushMatchesResource(Brush actual, string resourceKey)
+        {
+            Brush expected = Assert.IsAssignableFrom<Brush>(Application.Current.TryFindResource(resourceKey));
+
+            if (actual is SolidColorBrush actualSolid && expected is SolidColorBrush expectedSolid)
+            {
+                Assert.Equal(expectedSolid.Color, actualSolid.Color);
+                return;
+            }
+
+            if (actual is LinearGradientBrush actualGradient && expected is LinearGradientBrush expectedGradient)
+            {
+                Assert.Equal(expectedGradient.GradientStops.Count, actualGradient.GradientStops.Count);
+                return;
+            }
+
+            Assert.Same(expected, actual);
+        }
+
+        private static string GetTriggerBlock(string xaml, string firstCondition, string secondCondition)
+        {
+            int firstIndex = xaml.IndexOf(firstCondition, StringComparison.Ordinal);
+            Assert.True(firstIndex >= 0, "Button trigger should contain condition: " + firstCondition);
+            int secondIndex = xaml.IndexOf(secondCondition, firstIndex, StringComparison.Ordinal);
+            Assert.True(secondIndex >= 0, "Button trigger should contain condition: " + secondCondition);
+            int endIndex = xaml.IndexOf("</MultiTrigger>", secondIndex, StringComparison.Ordinal);
+            Assert.True(endIndex >= 0, "Button trigger should close after the requested conditions.");
+            return xaml[firstIndex..endIndex];
+        }
+    }
+}

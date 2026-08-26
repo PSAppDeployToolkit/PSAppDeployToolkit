@@ -1,0 +1,152 @@
+﻿/*
+ * Copyright 2026 Dan Cunningham
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System.Globalization;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Effects;
+using Fluence.Wpf.Controls;
+using Xunit;
+
+namespace Fluence.Wpf.Tests
+{
+    /// <summary>
+    /// WI-3 C21 tests: Card elevation shadow - Default variant has distinct drop shadow;
+    /// Subtle (and other flat variants) have no shadow.
+    /// Authority: WinUI 3 card elevation pattern (LayerFillColorDefaultBrush elevation context).
+    /// </summary>
+    public partial class ControlTests
+    {
+        // ---------------------------------------------------------------------------
+        // WI-3 C21  Card elevation shadow
+        // ---------------------------------------------------------------------------
+
+        [Fact]
+        public Task Card_DefaultVariant_HasElevationShadowOnOuterBorderAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Default, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                Assert.NotNull(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder")?.Effect as DropShadowEffect);
+                w.Close();
+            });
+        }
+
+        [Fact]
+        public Task Card_SubtleVariant_NoElevationShadowAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Subtle, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+
+                Assert.Null(outerBorder.Effect);
+                w.Close();
+            });
+        }
+
+        [Fact]
+        public Task Card_OutlinedVariant_NoElevationShadowAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Outlined, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+
+                Assert.Null(outerBorder.Effect);
+                w.Close();
+            });
+        }
+
+        [Fact]
+        public Task Card_FilledVariant_NoElevationShadowAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Filled, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+
+                Assert.Null(outerBorder.Effect);
+                w.Close();
+            });
+        }
+
+        [Fact]
+        public Task Card_DefaultVariant_ShadowHasCorrectProfileAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Default, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+                DropShadowEffect shadow = Assert.IsType<DropShadowEffect>(outerBorder.Effect);
+
+                // WI-3 C21: subtle elevation - soft blur, low opacity, downward direction
+                Assert.True(shadow.BlurRadius is >= 4 and <= 16,
+                    $"BlurRadius {shadow.BlurRadius.ToString(CultureInfo.InvariantCulture)} outside expected range [4,16].");
+                Assert.True(shadow.Opacity is > 0 and <= 0.2,
+                    $"Opacity {shadow.Opacity.ToString(CultureInfo.InvariantCulture)} outside expected range (0, 0.2].");
+                w.Close();
+            });
+        }
+    }
+}

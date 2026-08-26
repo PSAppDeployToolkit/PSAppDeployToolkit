@@ -1,0 +1,16 @@
+﻿
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  Design-Time Resources  -->
+    <!--  Complete Light colors + brushes (default accent #0078D4) + typography + control templates  -->
+    <!--  for the XAML designer / Blend preview. This mirrors the runtime 3-slot model:  -->
+    <!--  [0] DesignTime.Light.xaml (computed colors + brushes), [1] Typography, [2] Generic.  -->
+    <!--  To preview Dark, add a design-time-only merge of DesignTime.Dark.xaml on the window/page.  -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Properties/DesignTime.Light.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Typography/Typography.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Generic.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

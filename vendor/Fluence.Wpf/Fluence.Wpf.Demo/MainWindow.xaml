@@ -1,0 +1,71 @@
+﻿<fluence:FluenceWindow
+    x:Class="Fluence.Wpf.Demo.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    Title="Fluence.Wpf - Control Gallery"
+    Width="1170"
+    Height="880"
+    MinWidth="1170"
+    MinHeight="880"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    CornerStyle="Round"
+    ExtendsContentIntoTitleBar="True"
+    RenderOptions.BitmapScalingMode="HighQuality"
+    SystemBackdropType="Mica"
+    TitleBarHeight="42"
+    UseLayoutRounding="True">
+
+    <fluence:FluenceWindow.TitleBar>
+        <fluence:TitleBar
+            x:Name="ShellTitleBar"
+            Height="{Binding TitleBarHeight, RelativeSource={RelativeSource AncestorType=fluence:FluenceWindow}}"
+            BackRequested="ShellTitleBar_BackRequested"
+            PaneToggleRequested="ShellTitleBar_PaneToggleRequested"
+            SizeChanged="TitleBarLayout_SizeChanged">
+            <fluence:AutoSuggestBox
+                x:Name="NavSearchBox"
+                Width="300"
+                MinWidth="300"
+                MaxWidth="475"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                PlaceholderText="Search controls and samples..."
+                QuerySubmitted="NavSearchBox_QuerySubmitted"
+                TextChanged="NavSearchBox_TextChanged"
+                TextMemberPath="Title"
+                UpdateTextOnSelect="True"
+                WindowChrome.IsHitTestVisibleInChrome="True">
+                <fluence:AutoSuggestBox.QueryIcon>
+                    <fluence:FontIcon Glyph="&#xE721;" IconFontSize="12" />
+                </fluence:AutoSuggestBox.QueryIcon>
+            </fluence:AutoSuggestBox>
+        </fluence:TitleBar>
+    </fluence:FluenceWindow.TitleBar>
+
+    <Grid x:Name="ShellRoot" ClipToBounds="True">
+        <fluence:NavigationView
+            x:Name="DemoNav"
+            Background="Transparent"
+            IsBackButtonVisible="True"
+            IsBackEnabled="True"
+            IsPaneOpen="True"
+            IsPaneToggleButtonVisible="True"
+            PaneDisplayMode="Left"
+            SelectedIndex="0">
+            <fluence:NavigationView.FooterMenuItems>
+                <fluence:NavigationViewItem
+                    x:Name="SettingsNavigationItem"
+                    AutomationProperties.Name="Settings"
+                    Content="Settings"
+                    Tag="settings"
+                    ToolTip="Settings">
+                    <fluence:NavigationViewItem.Icon>
+                        <fluence:FontIcon Glyph="&#xE713;" IconFontSize="16" />
+                    </fluence:NavigationViewItem.Icon>
+                </fluence:NavigationViewItem>
+            </fluence:NavigationView.FooterMenuItems>
+        </fluence:NavigationView>
+    </Grid>
+</fluence:FluenceWindow>
