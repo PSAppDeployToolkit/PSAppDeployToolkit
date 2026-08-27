@@ -1,0 +1,42 @@
+﻿<Project>
+  <!--
+    MSBuild stops walking upward the moment it finds a Directory.Build.props, so this file would
+    otherwise shadow the one at the repository root. Import that one explicitly to keep the shared
+    analyzer set, BannedSymbols.txt, COPYING.Lesser, lock file settings and assembly metadata in
+    play. Everything it declares uses $(MSBuildThisFileDirectory), which is evaluated in the file
+    that declares it, so those paths still resolve against the repository root and not against this
+    directory.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove($(MSBuildThisFile), $(MSBuildThisFileDirectory)..))" />
+
+  <!-- Common properties for all PSADT test projects -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>false</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <!--
+    CA1707 fires on the underscores that separate scenario from expectation in test method names.
+    Projects append their own suppressions by prefixing $(NoWarn), the same way
+    Directory.Build.targets does.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    xunit.v3 with the Visual Studio runner, driven by Microsoft.NET.Test.Sdk. xunit.v3 needs
+    OutputType Exe, set above. Versions come from Directory.Packages.props at the repository root.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
