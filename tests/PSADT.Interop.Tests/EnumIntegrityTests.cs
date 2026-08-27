@@ -281,6 +281,61 @@ namespace PSADT.Interop.Tests
         }
 
         /// <summary>
+        /// Verifies that every process attribute carries the number of the same name, and that the pairing
+        /// is one to one. Each attribute is composed by hand from a number and a set of flags, so pairing a
+        /// name with the wrong number yields a value that still compiles and still looks plausible. The
+        /// names are the only oracle for which number belongs where.
+        /// </summary>
+        [Fact]
+        public void ProcThreadAttribute_EveryAttributeCarriesTheNumberOfTheSameName()
+        {
+            // Arrange
+            Dictionary<string, uint> numbers = typeof(PROC_THREAD_ATTRIBUTE_NUM).GetFields(BindingFlags.Public | BindingFlags.Static)
+                .ToDictionary(static f => WithoutSeparators(f.Name, "ProcThreadAttribute"), static f => Convert.ToUInt32(f.GetRawConstantValue(), CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase);
+            FieldInfo[] attributes = typeof(PROC_THREAD_ATTRIBUTE).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            // Assert
+            Assert.Equal(numbers.Count, attributes.Length);
+            foreach (FieldInfo attribute in attributes)
+            {
+                string name = WithoutSeparators(attribute.Name, "PROC_THREAD_ATTRIBUTE_");
+                Assert.True(numbers.TryGetValue(name, out uint number), $"{attribute.Name} has no PROC_THREAD_ATTRIBUTE_NUM member of the same name.");
+
+                uint value = Convert.ToUInt32(attribute.GetRawConstantValue(), CultureInfo.InvariantCulture);
+                Assert.Equal(number, value & Windows.Win32.PInvoke.PROC_THREAD_ATTRIBUTE_NUMBER);
+                Assert.Equal(Windows.Win32.PInvoke.PROC_THREAD_ATTRIBUTE_INPUT, value & Windows.Win32.PInvoke.PROC_THREAD_ATTRIBUTE_INPUT);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the attribute numbers are the documented sequence, including the gap at twenty and
+        /// twenty-one which the Windows headers leave unassigned. Seven of these twenty-eight values are
+        /// hand-typed because CsWin32 does not surface them, and they sit between compiler-checked
+        /// neighbours; a wrong one that happens not to collide with anything would otherwise pass unnoticed.
+        /// </summary>
+        [Fact]
+        public void ProcThreadAttributeNum_IsTheDocumentedSequenceWithItsGap()
+        {
+            // Arrange
+            long[] expected = [.. Enumerable.Range(0, 20).Select(static i => (long)i), .. Enumerable.Range(22, 8).Select(static i => (long)i)];
+
+            // Assert
+            AssertValuesAre(GetMembers(typeof(PROC_THREAD_ATTRIBUTE_NUM)), expected);
+        }
+
+        /// <summary>
+        /// Strips a known prefix and any underscores from a member name, so the two naming conventions used
+        /// by the attributes and their numbers can be compared to each other.
+        /// </summary>
+        /// <param name="name">The member name to reduce.</param>
+        /// <param name="prefix">The prefix to remove.</param>
+        /// <returns>The name without its prefix or separators.</returns>
+        private static string WithoutSeparators(string name, string prefix)
+        {
+            return name[prefix.Length..].Replace("_", string.Empty, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Enumerates the assembly's own non-flag enumerations, which are the ones a duplicate value
         /// would indicate a mistake in.
         /// </summary>
