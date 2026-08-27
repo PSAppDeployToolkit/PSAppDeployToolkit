@@ -1,0 +1,42 @@
+﻿#-----------------------------------------------------------------------------
+#
+# MARK: Invoke-ADTPesterUnitTesting
+#
+#-----------------------------------------------------------------------------
+
+function Invoke-ADTPesterUnitTesting
+{
+    # Initialise the module build function.
+    Initialize-ADTModuleBuildFunction
+    try
+    {
+        # Perform unit testing.
+        Write-ADTBuildLogEntry -Message "Commencing unit tests with Pester $((Get-Module -Name Pester).Version), this may take a while."
+        $pesterConfig = New-PesterConfiguration
+        $pesterConfig.Run.Path = $Script:ModuleConstants.Paths.UnitTests
+        $pesterConfig.Run.PassThru = $true
+        $pesterConfig.Run.Exit = $false
+        $pesterConfig.CodeCoverage.Enabled = $true
+        $pesterConfig.CodeCoverage.Path = "$($Script:ModuleConstants.Paths.ModuleSource)\*\*.ps1"
+        $pesterConfig.CodeCoverage.CoveragePercentTarget = 100
+        $pesterConfig.CodeCoverage.OutputPath = "$($Script:ModuleConstants.Paths.BuildOutput)\CodeCoverage.xml"
+        $pesterConfig.CodeCoverage.OutputFormat = 'JaCoCo'
+        $pesterConfig.TestResult.Enabled = $true
+        $pesterConfig.TestResult.OutputPath = "$($Script:ModuleConstants.Paths.BuildOutput)\PesterTests.xml"
+        $pesterConfig.TestResult.OutputFormat = 'NUnitXML'
+        $pesterConfig.Output.Verbosity = 'Detailed'
+        $results = Invoke-Pester -Configuration $pesterConfig 6>&1 | Invoke-ADTPesterOutputHandler
+
+        # Throw if any tests failed.
+        if (($results.FailedCount + $results.FailedBlocksCount + $results.FailedContainersCount) -gt 0)
+        {
+            throw "One or more unit tests failed which must be addressed."
+        }
+        Complete-ADTModuleBuildFunction
+    }
+    catch
+    {
+        Complete-ADTModuleBuildFunction -ErrorRecord $_
+        throw
+    }
+}

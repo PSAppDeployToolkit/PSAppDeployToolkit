@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PSADT.ClientServer</RootNamespace>
+    <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
+    <AssemblyTitle>PSAppDeployToolkit Client/Server Client Executable</AssemblyTitle>
+    <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
+    <ApplicationIcon>..\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <StartupObject>PSADT.ClientServer.ClientExecutable</StartupObject>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\PSADT.ClientServer.Client\ClientExecutable.cs" Link="ClientExecutable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
+    <ProjectReference Include="..\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
+    <ProjectReference Include="..\PSADT\PSADT.csproj" />
+  </ItemGroup>
+</Project>

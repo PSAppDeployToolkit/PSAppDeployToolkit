@@ -71,7 +71,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)src\BannedSymbols.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
   <PropertyGroup>
     <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
