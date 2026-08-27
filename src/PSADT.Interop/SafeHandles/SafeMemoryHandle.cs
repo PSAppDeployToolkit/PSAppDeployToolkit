@@ -39,11 +39,15 @@ namespace PSADT.Interop.SafeHandles
         /// </summary>
         /// <param name="offset">The byte offset from the start of the handle.</param>
         /// <returns>The string value at the specified offset.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the handle is invalid, or if <paramref name="offset"/>
+        /// leaves fewer than one whole character to read.</exception>
         internal string ToStringUni(int offset = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            return (handle + offset).ToStringUni((Length - offset) / sizeof(char));
+            return Length - offset < sizeof(char)
+                ? throw new InvalidOperationException("Offset leaves no complete character to read.")
+                : (handle + offset).ToStringUni((Length - offset) / sizeof(char));
         }
 
         /// <summary>
@@ -75,11 +79,15 @@ namespace PSADT.Interop.SafeHandles
         /// </summary>
         /// <param name="offset">The byte offset from the start of the handle.</param>
         /// <returns>The string value at the specified offset.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the handle is invalid, or if <paramref name="offset"/>
+        /// leaves fewer than one whole character to read.</exception>
         internal string? ReadNullTerminatedString(int offset = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            return (handle + offset).AsReadOnlySpan<char>((Length - offset) / sizeof(char)).ToStringUni();
+            return Length - offset < sizeof(char)
+                ? throw new InvalidOperationException("Offset leaves no complete character to read.")
+                : (handle + offset).AsReadOnlySpan<char>((Length - offset) / sizeof(char)).ToStringUni();
         }
 
         /// <summary>
@@ -209,23 +217,23 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Writes the specified byte array to the allocated memory starting at the given index.
+        /// Writes the specified byte array into the allocated memory at the given offset.
         /// </summary>
         /// <param name="data">The byte array containing the data to write. This array must not be null or empty.</param>
-        /// <param name="startIndex">The zero-based index in the byte array at which to begin writing data. The default value is 0.</param>
+        /// <param name="offset">The zero-based byte offset into the allocated memory at which to begin writing. The default value is 0.</param>
         /// <returns>The current instance of the class, enabling method chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="data"/> parameter is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="data"/> parameter is empty, or if the combined length of <paramref
-        /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
+        /// name="data"/> and <paramref name="offset"/> exceeds the allocated memory length.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
-        internal TSelf Write(byte[] data, int startIndex = 0)
+        internal TSelf Write(byte[] data, int offset = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentNullException.ThrowIfNull(data);
             ArgumentOutOfRangeException.ThrowIfZero(data.Length, nameof(data));
-            ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length, nameof(data));
-            Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + offset, Length, nameof(data));
+            Marshal.Copy(data, 0, handle + offset, data.Length);
             return (TSelf)this;
         }
 
@@ -244,12 +252,12 @@ namespace PSADT.Interop.SafeHandles
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
-            ArgumentOutOfRangeException.ThrowIfNegative(offset); int length = (Length - offset) / Unsafe.SizeOf<T>();
-            return length < 0
-                ? throw new InvalidOperationException("Offset exceeds the length of the memory region.")
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            return offset >= Length
+                ? throw new InvalidOperationException("Offset exceeds the readable length of the memory region.")
                 : (Length - offset) % Unsafe.SizeOf<T>() is not 0
                 ? throw new InvalidOperationException("Offset must be aligned to the size of the type T.")
-                : (handle + offset).AsReadOnlySpan<T>(length);
+                : (handle + offset).AsReadOnlySpan<T>((Length - offset) / Unsafe.SizeOf<T>());
         }
 
         /// <summary>
