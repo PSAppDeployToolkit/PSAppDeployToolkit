@@ -52,7 +52,7 @@ namespace PSADT.ProcessManagement
             if (workingDirectory is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                WorkingDirectory = new(workingDirectory);
+                WorkingDirectoryPath = new DirectoryInfo(workingDirectory).FullName;
             }
 
             // Handle remaining nullable parameters.
@@ -93,8 +93,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        [DataMember]
-        public readonly DirectoryInfo? WorkingDirectory;
+        [IgnoreDataMember]
+        public DirectoryInfo? WorkingDirectory => WorkingDirectoryPath is string workingDirectoryPath ? new(workingDirectoryPath) : null;
 
         /// <summary>
         /// Indicates whether environment variables in the input should be expanded.
@@ -137,6 +137,17 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [DataMember]
         public readonly ProcessPriorityClass? PriorityClass;
+
+        /// <summary>
+        /// The working directory's resolved path, which is what actually gets serialized.
+        /// </summary>
+        /// <remarks>
+        /// See the note on the equivalent member of <see cref="ProcessLaunchInfo"/>. A DataMember typed
+        /// as <see cref="DirectoryInfo"/> cannot be serialized on .NET, which matters here because these
+        /// options are serialized to reach the client process that performs the invocation.
+        /// </remarks>
+        [DataMember]
+        private readonly string? WorkingDirectoryPath;
 
         /// <summary>
         /// Generates the command-line string representation for the current configuration.

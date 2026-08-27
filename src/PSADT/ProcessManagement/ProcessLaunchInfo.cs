@@ -119,7 +119,7 @@ namespace PSADT.ProcessManagement
                 }
                 if (elevatedTokenType?.Equals(Security.ElevatedTokenType.None) is false)
                 {
-                    throw new NotSupportedException("Cannot specify ElevatedTokenType while specifying a RunAsActiveUser.");
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying an ElevatedTokenType.");
                 }
                 if (runAsInvoker)
                 {
@@ -178,7 +178,7 @@ namespace PSADT.ProcessManagement
                         if (workingDirectory is not null)
                         {
                             ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                            WorkingDirectory = new(ExpandEnvironmentVariables(workingDirectory));
+                            WorkingDirectoryPath = new DirectoryInfo(ExpandEnvironmentVariables(workingDirectory)).FullName;
                         }
                         ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
                         FilePath = ExpandEnvironmentVariables(FilePath);
@@ -189,7 +189,7 @@ namespace PSADT.ProcessManagement
                     if (workingDirectory is not null)
                     {
                         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                        WorkingDirectory = new(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory));
+                        WorkingDirectoryPath = new DirectoryInfo(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory)).FullName;
                     }
                     ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
                     FilePath = EnvironmentUtilities.ExpandEnvironmentVariables(FilePath);
@@ -206,10 +206,10 @@ namespace PSADT.ProcessManagement
             Arguments = ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(ArgumentList) : ArgumentList.Count > 0 ? ArgumentList[0] : null;
 
             // Set the WorkingDirectory if specified and not already set by environment variable expansion.
-            if (WorkingDirectory is null && workingDirectory is not null)
+            if (WorkingDirectoryPath is null && workingDirectory is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                WorkingDirectory = new(workingDirectory);
+                WorkingDirectoryPath = new DirectoryInfo(workingDirectory).FullName;
             }
 
             // Determine the type of file we're launching.
@@ -284,8 +284,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        [DataMember]
-        public readonly DirectoryInfo? WorkingDirectory;
+        [IgnoreDataMember]
+        public DirectoryInfo? WorkingDirectory => WorkingDirectoryPath is string workingDirectoryPath ? new(workingDirectoryPath) : null;
 
         /// <summary>
         /// Gets the username to use when starting the process.
@@ -454,6 +454,21 @@ namespace PSADT.ProcessManagement
         /// Gets an optional collection of handles that the child process should inherit.
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
+        /// <summary>
+        /// The working directory's resolved path, which is what actually gets serialized.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DirectoryInfo"/> is not a data contract, and unlike on .NET Framework it is no
+        /// longer serializable through <see cref="System.Runtime.Serialization.ISerializable"/> either,
+        /// so a DataMember of that type makes the whole class unserializable on .NET. The path is stored
+        /// instead and the directory rebuilt on access, the same way handles and the stream encoding are
+        /// stored in a serializable form here. It is resolved to a full path on the way in so that a
+        /// relative working directory still resolves against the directory current when the launch
+        /// information was created rather than whenever it is next read.
+        /// </remarks>
+        [DataMember]
+        private readonly string? WorkingDirectoryPath;
+
         [DataMember]
         private readonly ReadOnlyCollection<long>? HandlesToInheritValues;
 
