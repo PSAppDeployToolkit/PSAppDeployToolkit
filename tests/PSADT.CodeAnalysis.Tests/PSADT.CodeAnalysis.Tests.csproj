@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);MA0136;RS1029;RS1036;RS1041;RS2008</NoWarn>
+  </PropertyGroup>
+
+  <!-- PSADT.CodeAnalysis keeps Roslyn private, since the compiler supplies it. These tests host it. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <!-- .NET Framework declares the serialization attributes outside the default reference set. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.CodeAnalysis\PSADT.CodeAnalysis.csproj" />
+  </ItemGroup>
+
+</Project>
