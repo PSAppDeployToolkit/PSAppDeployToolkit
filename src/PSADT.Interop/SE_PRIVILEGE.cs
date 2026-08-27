@@ -184,6 +184,12 @@
         /// <summary>
         /// The right to generate input for the system.
         /// </summary>
+        /// <remarks>
+        /// Declared by the Windows headers but never implemented, so the local security authority holds
+        /// no entry for it. Resolving this member fails with ERROR_NO_SUCH_PRIVILEGE, which means
+        /// LookupPrivilegeValue throws for it; anything iterating this enumeration has to skip it. The
+        /// member is retained so the enumeration continues to match the header it mirrors.
+        /// </remarks>
         SeUnsolicitedInputPrivilege = 35,
     }
 }

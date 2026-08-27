@@ -10,6 +10,9 @@
         /// SMBIOS firmware table (System Management BIOS)
         /// Used with provider signature 'RSMB' (0x52534D42)
         /// </summary>
+        /// <remarks>Unlike every other member of this enumeration, this is not a FourCC. The RSMB provider
+        /// exposes a single table, so its identifier is provider-relative and zero rather than a packed
+        /// signature. Anything decoding these values as four ASCII bytes has to exempt this member.</remarks>
         SMBIOS = 0x0000,
 
         /// <summary>
