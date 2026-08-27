@@ -12,6 +12,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!--
+    net472 has no ICU, so it always collates with NLS. net8.0 would default to ICU, which makes the
+    two legs disagree on culture-sensitive comparisons for reasons that have nothing to do with the
+    polyfills. Pin net8.0 to NLS so the framework leg is a fair oracle.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <RuntimeHostConfigurationOption Include="System.Globalization.UseNls" Value="true" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\PSADT.Interop\PSADT.Interop.csproj" />
   </ItemGroup>
