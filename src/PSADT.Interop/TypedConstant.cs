@@ -67,7 +67,7 @@ namespace PSADT.Interop
         /// <returns>The signed byte representation of this constant's value.</returns>
         public sbyte ToSByte()
         {
-            return (sbyte)_value;
+            return checked((sbyte)_value);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace PSADT.Interop
         /// <returns>The unsigned byte representation of this constant's value.</returns>
         public byte ToByte()
         {
-            return (byte)_value;
+            return checked((byte)_value);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace PSADT.Interop
         /// <returns>The signed 16-bit integer representation of this constant's value.</returns>
         public short ToInt16()
         {
-            return (short)_value;
+            return checked((short)_value);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace PSADT.Interop
         /// <returns>The unsigned 16-bit integer representation of this constant's value.</returns>
         public ushort ToUInt16()
         {
-            return (ushort)_value;
+            return checked((ushort)_value);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace PSADT.Interop
         /// <returns>The signed 32-bit integer representation of this constant's value.</returns>
         public int ToInt32()
         {
-            return (int)_value;
+            return checked((int)_value);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace PSADT.Interop
         /// <returns>The unsigned 32-bit integer representation of this constant's value.</returns>
         public uint ToUInt32()
         {
-            return (uint)_value;
+            return checked((uint)_value);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace PSADT.Interop
         /// <returns>The unsigned 64-bit integer representation of this constant's value.</returns>
         public ulong ToUInt64()
         {
-            return (ulong)_value;
+            return checked((ulong)_value);
         }
 
         /// <summary>
@@ -186,9 +186,9 @@ namespace PSADT.Interop
                 int n => _value == n,
                 uint n => _value == n,
                 long n => _value == n,
-                ulong n => _value == (nint)n,
+                ulong n => _value >= 0 && (ulong)_value == n,
                 nint n => _value == n,
-                nuint n => _value == (nint)n,
+                nuint n => _value >= 0 && (nuint)_value == n,
                 _ => false,
             };
         }
