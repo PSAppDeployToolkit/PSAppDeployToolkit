@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <NoWarn>$(NoWarn);S4144</NoWarn>
   </PropertyGroup>
 
