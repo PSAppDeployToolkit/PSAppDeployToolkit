@@ -13,7 +13,7 @@ namespace PSADT.Interop
     /// direct, transactional, and read-only access, as well as support for patch files. Use the provided static fields
     /// to select the appropriate mode when working with MSI database operations. This type is intended for internal use
     /// and is not intended to be used directly in application code.</remarks>
-    internal sealed class MSI_PERSISTENCE_MODE : TypedConstant<MSI_PERSISTENCE_MODE>
+    internal sealed class MSI_PERSISTENCE_MODE : PointerTypedConstant<MSI_PERSISTENCE_MODE>
     {
         /// <summary>
         /// Open a database read-only, no persistent changes.

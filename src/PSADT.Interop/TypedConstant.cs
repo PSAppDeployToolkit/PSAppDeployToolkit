@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using Windows.Win32.Foundation;
 
 namespace PSADT.Interop
 {
@@ -44,21 +43,6 @@ namespace PSADT.Interop
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             _value = value;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TypedConstant{TSelf}"/> class with the specified <see cref="PCWSTR"/> value.
-        /// The name is automatically captured from the calling member.
-        /// </summary>
-        /// <param name="value">The PCWSTR value to be associated with this instance.</param>
-        /// <param name="name">The name of the constant.</param>
-        private protected TypedConstant(PCWSTR value, string? name)
-        {
-            _name = name ?? throw new ArgumentNullException(nameof(name));
-            unsafe
-            {
-                _value = (nint)value.Value;
-            }
         }
 
         /// <summary>
@@ -140,18 +124,6 @@ namespace PSADT.Interop
         public nint ToIntPtr()
         {
             return _value;
-        }
-
-        /// <summary>
-        /// Converts this instance to a <see cref="PCWSTR"/> value.
-        /// </summary>
-        /// <returns>The PCWSTR representation of this constant's value.</returns>
-        internal PCWSTR ToPCWSTR()
-        {
-            unsafe
-            {
-                return (PCWSTR)(char*)_value;
-            }
         }
 
         /// <summary>

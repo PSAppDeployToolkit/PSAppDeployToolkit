@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Windows.Win32.Foundation;
 using Xunit;
 
@@ -325,7 +326,7 @@ namespace PSADT.Interop.Tests
                 // Arrange
                 fixed (char* buffer = "value")
                 {
-                    TestConstant constant = new((PCWSTR)buffer, "Pointer");
+                    PointerTestConstant constant = new((PCWSTR)buffer, "Pointer");
 
                     // Act
                     PCWSTR result = constant.ToPCWSTR();
@@ -335,6 +336,23 @@ namespace PSADT.Interop.Tests
                     Assert.True(result.Value == buffer);
                 }
             }
+        }
+
+        /// <summary>
+        /// Verifies that the pointer conversion is reachable only from the pointer-valued base, so an
+        /// integer-valued family such as a dialog result cannot reinterpret its value as a string
+        /// pointer. That separation is the reason the intermediate type exists, and it is easy to undo
+        /// by accident.
+        /// </summary>
+        [Fact]
+        public void ToPCWSTR_IsDeclaredOnlyOnThePointerValuedBase()
+        {
+            // Arrange
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            // Assert
+            Assert.Null(typeof(TypedConstant<TestConstant>).GetMethod("ToPCWSTR", flags));
+            Assert.NotNull(typeof(PointerTypedConstant<PointerTestConstant>).GetMethod("ToPCWSTR", flags));
         }
 
         /// <summary>
@@ -366,13 +384,20 @@ namespace PSADT.Interop.Tests
                 : base(value, name)
             {
             }
+        }
 
+        /// <summary>
+        /// A pointer-valued constant family used only by these tests, mirroring the shape of the
+        /// resource and MSI families.
+        /// </summary>
+        private sealed class PointerTestConstant : PointerTypedConstant<PointerTestConstant>
+        {
             /// <summary>
             /// Creates a constant with the given string pointer value and name.
             /// </summary>
             /// <param name="value">The value to store.</param>
             /// <param name="name">The name to store.</param>
-            internal TestConstant(PCWSTR value, string? name)
+            internal PointerTestConstant(PCWSTR value, string? name)
                 : base(value, name)
             {
             }

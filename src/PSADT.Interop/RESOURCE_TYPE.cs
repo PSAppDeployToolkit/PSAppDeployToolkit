@@ -9,7 +9,7 @@ namespace PSADT.Interop
     /// <remarks>This class provides a set of predefined resource types that correspond to standard Windows
     /// resource types.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
-    internal sealed class RESOURCE_TYPE : TypedConstant<RESOURCE_TYPE>
+    internal sealed class RESOURCE_TYPE : PointerTypedConstant<RESOURCE_TYPE>
     {
         /// <summary>
         /// Accelerator table.

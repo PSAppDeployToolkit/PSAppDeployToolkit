@@ -7,7 +7,7 @@ namespace PSADT.Interop
     /// Specifies predefined icons that can be used in task dialog configurations.
     /// </summary>
     /// <remarks>The <see cref="TASKDIALOG_ICON"/> class provides constants for commonly used system icons in task dialogs, such as error, information, warning, and shield icons. These icons are typically used to visually convey the purpose or severity of a message displayed in a task dialog.</remarks>
-    internal sealed class TASKDIALOG_ICON : TypedConstant<TASKDIALOG_ICON>
+    internal sealed class TASKDIALOG_ICON : PointerTypedConstant<TASKDIALOG_ICON>
     {
         /// <summary>
         /// Represents the error icon used in task dialog configurations.
