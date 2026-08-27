@@ -79,12 +79,20 @@ namespace PSADT.Utilities
         /// the specified value into the target register.</returns>
         internal static IReadOnlyList<uint> Load64(int reg, ulong value)
         {
-            return [
-                EncodeMovZ(reg, (ushort)(value >> 0), 0),
-                EncodeMovK(reg, (ushort)(value >> 16), 1),
-                EncodeMovK(reg, (ushort)(value >> 32), 2),
-                EncodeMovK(reg, (ushort)(value >> 48), 3),
-            ];
+            // Each cast truncates to the 16 bits that quarter of the value contributes, which is the
+            // whole point of splitting it across four instructions. This repository builds with
+            // CheckForOverflowUnderflow, so the truncation has to be marked unchecked: otherwise every
+            // value wider than 16 bits throws an OverflowException here, and that includes every real
+            // address this is called with.
+            unchecked
+            {
+                return [
+                    EncodeMovZ(reg, (ushort)(value >> 0), 0),
+                    EncodeMovK(reg, (ushort)(value >> 16), 1),
+                    EncodeMovK(reg, (ushort)(value >> 32), 2),
+                    EncodeMovK(reg, (ushort)(value >> 48), 3),
+                ];
+            }
         }
     }
 }
