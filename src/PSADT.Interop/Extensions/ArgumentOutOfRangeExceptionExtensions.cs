@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Windows.Win32.Foundation;
 
 /// <summary>
 /// Additional ArgumentOutOfRangeException extensions for handle validation.
@@ -37,7 +36,7 @@ internal static class ArgumentOutOfRangeExceptionExtensions
         [StackTraceHidden]
         public static void ThrowIfZeroOrInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
         {
-            if (value == 0 || value == (nuint)(nint)HANDLE.INVALID_HANDLE_VALUE)
+            if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
             {
                 throw new ArgumentOutOfRangeException(paramName, value, $"'{paramName}' must be a non-zero, valid value.");
             }

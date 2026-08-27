@@ -14,7 +14,9 @@ internal static class NullableExtensions
     /// <typeparam name="T">The type of the nullable value.</typeparam>
     /// <param name="value">The nullable value.</param>
     /// <returns>A pointer to the underlying value if it exists; otherwise, null.</returns>
-    internal static unsafe T* ToPointer<T>(this T? value) where T : unmanaged
+    // Taken by readonly reference so the pointer refers to the caller's storage. By value the
+    // compiler copies the nullable into this frame, and the returned pointer dangles on return.
+    internal static unsafe T* ToPointer<T>(in this T? value) where T : unmanaged
     {
         return value is not null
             ? (T*)Unsafe.AsPointer(ref Unsafe.AsRef(in Nullable.GetValueRefOrDefaultRef(in value)))
