@@ -42,30 +42,36 @@
 
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
-      M:System.ArgumentException.Throw|
-      M:System.ArgumentNullException.Throw|
-      M:System.ArgumentOutOfRangeException.Throw|
+      M:System.ArgumentException.ThrowIfNullOrWhiteSpace|
+      M:System.ArgumentNullException.ThrowIfNull(System.Object,|
+      M:System.ArgumentNullException.ThrowIfNull(System.Void|
+      M:System.ArgumentOutOfRangeException.ThrowIfGreaterThan`|
+      M:System.ArgumentOutOfRangeException.ThrowIfLessThan`|
+      M:System.ArgumentOutOfRangeException.ThrowIfNegative`|
+      M:System.ArgumentOutOfRangeException.ThrowIfNegativeOrZero`|
+      M:System.ArgumentOutOfRangeException.ThrowIfNotEqual`|
+      M:System.ArgumentOutOfRangeException.ThrowIfZero`|
       M:System.Diagnostics.Process.WaitForExitAsync|
-      M:System.Int32.TryParse|
+      M:System.Int32.TryParse(System.ReadOnlySpan{System.Char},System.IFormatProvider,|
       M:System.IO.Path.IsPathFullyQualified|
       M:System.IO.Path.Join|
       M:System.IO.StreamReader.ReadLineAsync|
       M:System.Nullable.GetValueRefOrDefaultRef|
-      M:System.ObjectDisposedException.Throw|
-      M:System.String.Create|
-      M:System.String.Contains|
+      M:System.ObjectDisposedException.ThrowIf(System.Boolean,System.Object)|
+      M:System.String.Contains(System.Char,System.StringComparison)|
       M:System.String.CopyTo|
-      M:System.String.EndsWith|
-      M:System.String.GetHashCode|
-      M:System.String.IndexOf|
-      M:System.String.Join|
-      M:System.String.Replace|
-      M:System.String.StartsWith|
+      M:System.String.Create|
+      M:System.String.EndsWith(System.Char)|
+      M:System.String.GetHashCode(System.StringComparison)|
+      M:System.String.IndexOf(System.Char,System.StringComparison)|
+      M:System.String.Join(System.Char,System.String[])|
+      M:System.String.Join`|
+      M:System.String.Replace(System.String,System.String,System.StringComparison)|
+      M:System.String.StartsWith(System.Char)|
       M:System.String.TryCopyTo|
       M:System.StringComparer.FromComparison|
-      M:System.Text.Encoding.GetString|
       M:System.Threading.CancellationTokenSource.CancelAsync|
-      M:System.Threading.Tasks.Task.WaitAsync|
+      M:System.Threading.Tasks.Task.WaitAsync(System.Threading.CancellationToken)|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute|
       T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
