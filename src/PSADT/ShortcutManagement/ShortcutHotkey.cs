@@ -20,7 +20,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using PSADT.Interop;
 
@@ -139,32 +138,68 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when the hotkey string format is invalid.</exception>
         public static ShortcutHotkey Parse(string hotkeyString)
         {
+            // Strip modifier prefixes from the front rather than splitting on the separator. The plus
+            // sign is a key in its own right, both as the OEM plus and as the one on the numeric keypad,
+            // and splitting on it discards exactly that key.
             ArgumentNullException.ThrowIfNull(hotkeyString);
-            string[] parts = hotkeyString.Split(['+'], StringSplitOptions.RemoveEmptyEntries);
-            bool control = false, shift = false, alt = false; byte keyCode = 0;
-            foreach (string part in parts.Select(static part => part.Trim()))
+            ReadOnlySpan<char> remaining = hotkeyString.AsSpan().Trim();
+            bool control = false, shift = false, alt = false, extended = false;
+            while (TryStripModifier(ref remaining, ref control, ref shift, ref alt, ref extended))
             {
-                if (part.Equals("Ctrl", StringComparison.OrdinalIgnoreCase) || part.Equals("Control", StringComparison.OrdinalIgnoreCase))
-                {
-                    control = true;
-                }
-                else if (part.Equals("Shift", StringComparison.OrdinalIgnoreCase))
-                {
-                    shift = true;
-                }
-                else if (part.Equals("Alt", StringComparison.OrdinalIgnoreCase))
-                {
-                    alt = true;
-                }
-                else
-                {
-                    // This should be the key.
-                    keyCode = ParseKeyCode(part);
-                }
+                // Each successful strip consumes one modifier and its separator.
             }
-            return keyCode is 0
+
+            // Whatever survives naming the key. An empty remainder means the string was modifiers only.
+            remaining = remaining.Trim();
+            return remaining.IsEmpty
                 ? throw new ArgumentException($"No valid key found in hotkey string: '{hotkeyString}'", nameof(hotkeyString))
-                : new(keyCode, control, shift, alt);
+                : new(ParseKeyCode(remaining.ToString()), control, shift, alt, extended);
+        }
+
+        /// <summary>
+        /// Removes one leading modifier and its separator from the given span, if one is present.
+        /// </summary>
+        /// <remarks>
+        /// A separator only separates when what precedes it names a modifier. That is what keeps a
+        /// trailing key of "+" or "Num+" intact: the text before its separator is either empty or a key
+        /// name, neither of which is a modifier, so stripping stops and the remainder is taken whole.
+        /// </remarks>
+        /// <param name="remaining">The text still to be parsed, advanced past the modifier on success.</param>
+        /// <param name="control">Set to <see langword="true"/> if the modifier was control.</param>
+        /// <param name="shift">Set to <see langword="true"/> if the modifier was shift.</param>
+        /// <param name="alt">Set to <see langword="true"/> if the modifier was alt.</param>
+        /// <param name="extended">Set to <see langword="true"/> if the modifier was the extended flag.</param>
+        /// <returns><see langword="true"/> if a modifier was consumed; otherwise, <see langword="false"/>.</returns>
+        private static bool TryStripModifier(ref ReadOnlySpan<char> remaining, ref bool control, ref bool shift, ref bool alt, ref bool extended)
+        {
+            int separator = remaining.IndexOf('+');
+            if (separator < 0)
+            {
+                return false;
+            }
+            ReadOnlySpan<char> candidate = remaining[..separator].Trim();
+            if (candidate.Equals("Ctrl".AsSpan(), StringComparison.OrdinalIgnoreCase) || candidate.Equals("Control".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                control = true;
+            }
+            else if (candidate.Equals("Shift".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                shift = true;
+            }
+            else if (candidate.Equals("Alt".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                alt = true;
+            }
+            else if (candidate.Equals("Ext".AsSpan(), StringComparison.OrdinalIgnoreCase) || candidate.Equals("Extended".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                extended = true;
+            }
+            else
+            {
+                return false;
+            }
+            remaining = remaining[(separator + 1)..];
+            return true;
         }
 
         /// <summary>
@@ -175,7 +210,8 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when the key name is not recognized.</exception>
         private static byte ParseKeyCode(string keyName)
         {
-            // Single character (A-Z, 0-9).
+            // Single character (A-Z, 0-9), or one of the OEM punctuation keys GetKeyName spells out as
+            // the character itself.
             string upper = keyName.ToUpperInvariant();
             if (upper.Length is 1)
             {
@@ -184,6 +220,10 @@ namespace PSADT.ShortcutManagement
                 {
                     >= 'A' and <= 'Z' => (byte)c,
                     >= '0' and <= '9' => (byte)c,
+                    '+' => 0xBB,
+                    ',' => 0xBC,
+                    '-' => 0xBD,
+                    '.' => 0xBE,
                     _ => throw new ArgumentException("Unknown key.", nameof(keyName)),
                 };
             }
@@ -192,6 +232,30 @@ namespace PSADT.ShortcutManagement
             if (upper.Length >= 2 && upper.Length <= 3 && upper[0] == 'F' && int.TryParse(upper.AsSpan(1), CultureInfo.InvariantCulture, out int fNum) && fNum >= 1 && fNum <= 24)
             {
                 return (byte)(0x70 + fNum - 1);
+            }
+
+            // Numeric keypad keys, which GetKeyName prefixes with "Num".
+            if (upper.Length is 4 && upper.StartsWith("NUM", StringComparison.Ordinal))
+            {
+                char c = upper[3];
+                return c switch
+                {
+                    >= '0' and <= '9' => (byte)(0x60 + (c - '0')),
+                    '*' => 0x6A,
+                    '+' => 0x6B,
+                    '-' => 0x6D,
+                    '.' => 0x6E,
+                    '/' => 0x6F,
+                    _ => throw new ArgumentException("Unknown key.", nameof(keyName)),
+                };
+            }
+
+            // The hexadecimal form GetKeyName falls back to for any code it has no name for.
+            if (upper.Length is 3 or 4 && upper.StartsWith("0X", StringComparison.Ordinal))
+            {
+                return byte.TryParse(upper[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte parsed)
+                    ? parsed
+                    : throw new ArgumentException("Unknown key.", nameof(keyName));
             }
 
             // Special keys.
@@ -295,6 +359,12 @@ namespace PSADT.ShortcutManagement
             if (Alt)
             {
                 _ = sb.Append("Alt+");
+            }
+            if (Extended)
+            {
+                // Emitted so the string form carries the whole modifier byte. Without it a shortcut read
+                // through this and written back loses the flag the shell stored.
+                _ = sb.Append("Ext+");
             }
             _ = sb.Append(GetKeyName(KeyCode));
             return sb.ToString();
