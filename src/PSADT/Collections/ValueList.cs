@@ -118,24 +118,6 @@ namespace PSADT.Collections
         /// </summary>
         /// <remarks>An element that is itself an array is compared by its contents, since an array compares by
         /// reference and a list of arrays would otherwise be no better off than the list this type replaces.</remarks>
-        private static readonly IEqualityComparer<T> ElementComparer = typeof(T).IsArray ? new StructuralElementComparer() : EqualityComparer<T>.Default;
-
-        /// <summary>
-        /// Compares elements by their structure, for elements that are themselves collections.
-        /// </summary>
-        private sealed class StructuralElementComparer : IEqualityComparer<T>
-        {
-            /// <inheritdoc/>
-            public bool Equals(T? x, T? y)
-            {
-                return StructuralComparisons.StructuralEqualityComparer.Equals(x, y);
-            }
-
-            /// <inheritdoc/>
-            public int GetHashCode(T obj)
-            {
-                return obj is not null ? StructuralComparisons.StructuralEqualityComparer.GetHashCode(obj) : 0;
-            }
-        }
+        private static readonly IEqualityComparer<T> ElementComparer = ValueEqualityComparer<T>.Default;
     }
 }
