@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using PSADT.Collections;
 using PSADT.ProcessManagement;
 
 namespace PSADT.AppManagement
@@ -101,7 +102,7 @@ namespace PSADT.AppManagement
                 UninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
                 if (argumentList.Count > 1)
                 {
-                    UninstallStringArgumentList = new ReadOnlyCollection<string>([.. argumentList.Skip(1)]);
+                    UninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
                 }
             }
             if (QuietUninstallString is not null)
@@ -110,7 +111,7 @@ namespace PSADT.AppManagement
                 QuietUninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
                 if (argumentList.Count > 1)
                 {
-                    QuietUninstallStringArgumentList = new ReadOnlyCollection<string>([.. argumentList.Skip(1)]);
+                    QuietUninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
                 }
             }
         }
@@ -184,7 +185,10 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
         /// </summary>
-        public IReadOnlyList<string> UninstallStringArgumentList { get; } = new ReadOnlyCollection<string>([]);
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// framework offers compares by reference, so holding one directly would make two descriptions of the same
+        /// thing unequal however alike they were.</remarks>
+        public IReadOnlyList<string> UninstallStringArgumentList => new ReadOnlyCollection<string>([.. UninstallStringArgumentListValue]);
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
@@ -199,7 +203,7 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
         /// </summary>
-        public IReadOnlyList<string> QuietUninstallStringArgumentList { get; } = new ReadOnlyCollection<string>([]);
+        public IReadOnlyList<string> QuietUninstallStringArgumentList => new ReadOnlyCollection<string>([.. QuietUninstallStringArgumentListValue]);
 
         /// <summary>
         /// Gets the source from which the application was installed.
@@ -270,5 +274,15 @@ namespace PSADT.AppManagement
         /// The path recorded for <see cref="InstallLocation"/>.
         /// </summary>
         private readonly string? InstallLocationValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="UninstallStringArgumentList"/>.
+        /// </summary>
+        private readonly ValueList<string> UninstallStringArgumentListValue = new([]);
+
+        /// <summary>
+        /// The list recorded for <see cref="QuietUninstallStringArgumentList"/>.
+        /// </summary>
+        private readonly ValueList<string> QuietUninstallStringArgumentListValue = new([]);
     }
 }

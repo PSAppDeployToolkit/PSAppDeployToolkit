@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Security.Principal;
+using PSADT.Collections;
 using PSADT.FileSystem;
 using PSADT.Interop;
 using PSADT.Security;
@@ -230,7 +231,7 @@ namespace PSADT.ProcessManagement
             Process = process;
             Description = description;
             FileNameValue = new FileInfo(fileName).FullName;
-            ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
+            ArgumentListValue = new ValueList<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             SID = sid;
         }
 
@@ -255,7 +256,10 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments passed to the running process.
         /// </summary>
-        public IReadOnlyList<string> ArgumentList { get; }
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// framework offers compares by reference, so holding one directly would make two descriptions of the same
+        /// thing unequal however alike they were.</remarks>
+        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
 
         /// <summary>
         /// Gets the security identifier (SID) associated with the object.
@@ -268,5 +272,10 @@ namespace PSADT.ProcessManagement
         /// The path recorded for <see cref="FileName"/>.
         /// </summary>
         private readonly string FileNameValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="ArgumentList"/>.
+        /// </summary>
+        private readonly ValueList<string> ArgumentListValue;
     }
 }

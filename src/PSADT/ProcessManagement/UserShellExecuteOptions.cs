@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
+using PSADT.Collections;
 
 namespace PSADT.ProcessManagement
 {
@@ -42,7 +43,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentList = new ReadOnlyCollection<string>(argumentList is not null ? [.. argumentList] : []);
+            ArgumentListValue = new ValueList<string>(argumentList is not null ? [.. argumentList] : []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Create an arguments string out of our ArgumentList (ShellExecute needs this).
@@ -87,8 +88,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        [DataMember]
-        public readonly IReadOnlyList<string> ArgumentList;
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// collection the framework offers compares by reference, so holding one directly would make two of these
+        /// unequal however alike they were.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
 
         /// <summary>
         /// Gets the working directory of the process.
@@ -195,5 +199,11 @@ namespace PSADT.ProcessManagement
                 windowStyle: WindowStyle,
                 priorityClass: PriorityClass);
         }
+
+        /// <summary>
+        /// The list recorded for <see cref="ArgumentList"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> ArgumentListValue;
     }
 }

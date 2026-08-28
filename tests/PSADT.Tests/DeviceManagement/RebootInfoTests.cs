@@ -203,5 +203,31 @@ namespace PSADT.Tests.DeviceManagement
                 pendingFileRenameOperations: pendingFileRenameOperations,
                 errorMsg: errorMsg ?? []);
         }
+
+        /// <summary>
+        /// Verifies that two summaries of the same machine are equal, and that a difference in either of
+        /// the lists makes them unequal.
+        /// </summary>
+        /// <remarks>
+        /// The lists are the part worth asserting. A collection compares by reference, so a record
+        /// holding one directly never equals another built the same way - and this one is compared
+        /// against an earlier reading to decide whether anything has changed since. They are held in a
+        /// list that compares by its contents instead.
+        /// </remarks>
+        [Fact]
+        public void Equality_IsByValueIncludingTheLists()
+        {
+            // Arrange
+            RebootInfo left = Create(system: true, pendingFileRenameOperations: [@"C:\old.dll", @"C:\new.dll"], errorMsg: ["something went wrong"]);
+            RebootInfo right = Create(system: true, pendingFileRenameOperations: [@"C:\old.dll", @"C:\new.dll"], errorMsg: ["something went wrong"]);
+
+            // Assert
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+
+            // Assert: and a difference in either list is a difference
+            Assert.NotEqual(left, Create(system: true, pendingFileRenameOperations: [@"C:\old.dll"], errorMsg: ["something went wrong"]));
+            Assert.NotEqual(left, Create(system: true, pendingFileRenameOperations: [@"C:\old.dll", @"C:\new.dll"], errorMsg: []));
+        }
     }
 }

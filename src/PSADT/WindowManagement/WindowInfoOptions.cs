@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using PSADT.Collections;
 
 namespace PSADT.WindowManagement
 {
@@ -56,10 +57,10 @@ namespace PSADT.WindowManagement
 
             // Assign read-only collections or null based on input.
             WindowTitleRegex = windowTitleRegex;
-            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new([.. windowHandleFilter.Select(static h => (long)h)]) : null;
-            ParentProcessFilter = parentProcessFilter;
-            ParentProcessIdFilter = parentProcessIdFilter;
-            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
+            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new ValueList<long>([.. windowHandleFilter.Select(static h => (long)h)]) : null;
+            ParentProcessFilterValues = parentProcessFilter is not null ? new ValueList<string>([.. parentProcessFilter]) : null;
+            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new ValueList<int>([.. parentProcessIdFilter]) : null;
+            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new ValueList<long>([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
         }
 
         /// <summary>
@@ -82,16 +83,19 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
-        [DataMember]
-        public readonly IReadOnlyList<string>? ParentProcessFilter;
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// collection the framework offers compares by reference, so holding one directly would make two of these
+        /// unequal however alike they were.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string>? ParentProcessFilter => ParentProcessFilterValues is not null ? new ReadOnlyCollection<string>([.. ParentProcessFilterValues]) : null;
 
         /// <summary>
         /// Gets the list of parent process IDs to use as a filter when selecting processes.
         /// </summary>
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
-        [DataMember]
-        public readonly IReadOnlyList<int>? ParentProcessIdFilter;
+        [IgnoreDataMember]
+        public IReadOnlyList<int>? ParentProcessIdFilter => ParentProcessIdFilterValues is not null ? new ReadOnlyCollection<int>([.. ParentProcessIdFilterValues]) : null;
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.
@@ -106,12 +110,24 @@ namespace PSADT.WindowManagement
         /// Gets the window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly ReadOnlyCollection<long>? WindowHandleFilterValues;
+        private readonly ValueList<long>? WindowHandleFilterValues;
 
         /// <summary>
         /// Gets the parent process main window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly ReadOnlyCollection<long>? ParentProcessMainWindowHandleFilterValues;
+        private readonly ValueList<long>? ParentProcessMainWindowHandleFilterValues;
+
+        /// <summary>
+        /// The list recorded for <see cref="ParentProcessFilter"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string>? ParentProcessFilterValues;
+
+        /// <summary>
+        /// The list recorded for <see cref="ParentProcessIdFilter"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<int>? ParentProcessIdFilterValues;
     }
 }

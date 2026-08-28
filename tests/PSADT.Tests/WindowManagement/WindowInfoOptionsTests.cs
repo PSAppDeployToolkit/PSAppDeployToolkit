@@ -249,5 +249,33 @@ namespace PSADT.Tests.WindowManagement
             Assert.Equal(original.WindowHandle, restored.WindowHandle);
             Assert.Equal(original.ParentProcessMainWindowHandle, restored.ParentProcessMainWindowHandle);
         }
+
+        /// <summary>
+        /// Verifies that two sets of filters asking for the same thing are equal, and that a difference
+        /// in any one of the four lists makes them unequal.
+        /// </summary>
+        /// <remarks>
+        /// The lists are the part worth asserting. A collection compares by reference, so a record
+        /// holding one directly never equals another built the same way - and this one is built twice
+        /// from the same request routinely, once on either side of the boundary it is sent across. They
+        /// are held in a list that compares by its contents instead.
+        /// </remarks>
+        [Fact]
+        public void Equality_IsByValueIncludingTheFilters()
+        {
+            // Arrange
+            WindowInfoOptions left = new("^Setup", new([0x1234]), new(["setup"]), new([4321]), new([0x5678]));
+            WindowInfoOptions right = new("^Setup", new([0x1234]), new(["setup"]), new([4321]), new([0x5678]));
+
+            // Assert
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+
+            // Assert: and a difference in any one of the filters is a difference
+            Assert.NotEqual(left, new WindowInfoOptions("^Setup", new([0x9999]), new(["setup"]), new([4321]), new([0x5678])));
+            Assert.NotEqual(left, new WindowInfoOptions("^Setup", new([0x1234]), new(["other"]), new([4321]), new([0x5678])));
+            Assert.NotEqual(left, new WindowInfoOptions("^Setup", new([0x1234]), new(["setup"]), new([9999]), new([0x5678])));
+            Assert.NotEqual(left, new WindowInfoOptions("^Setup", new([0x1234]), new(["setup"]), new([4321]), new([0x9999])));
+        }
     }
 }

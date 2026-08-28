@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
+using PSADT.Collections;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.FileSystem;
@@ -132,7 +133,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentList = new ReadOnlyCollection<string>(argumentList is not null ? [.. argumentList] : []);
+            ArgumentListValue = new ValueList<string>(argumentList is not null ? [.. argumentList] : []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
@@ -180,7 +181,7 @@ namespace PSADT.ProcessManagement
                             ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                             WorkingDirectoryPath = new DirectoryInfo(ExpandEnvironmentVariables(workingDirectory)).FullName;
                         }
-                        ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
+                        ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
                         FilePath = ExpandEnvironmentVariables(FilePath);
                     }
                 }
@@ -191,7 +192,7 @@ namespace PSADT.ProcessManagement
                         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                         WorkingDirectoryPath = new DirectoryInfo(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory)).FullName;
                     }
-                    ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
+                    ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
                     FilePath = EnvironmentUtilities.ExpandEnvironmentVariables(FilePath);
                 }
             }
@@ -256,8 +257,8 @@ namespace PSADT.ProcessManagement
             // Set remaining parameters.
             DenyUserTermination = denyUserTermination;
             RunAsInvoker = runAsInvoker;
-            StandardInput = new ReadOnlyCollection<string>(standardInput is not null ? [.. standardInput] : []);
-            HandlesToInheritValues = new ReadOnlyCollection<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
+            StandardInputValue = new ValueList<string>(standardInput is not null ? [.. standardInput] : []);
+            HandlesToInheritValues = new ValueList<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
@@ -278,8 +279,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        [DataMember]
-        public readonly IReadOnlyList<string> ArgumentList;
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// collection the framework offers compares by reference, so holding one directly would make two of these
+        /// unequal however alike they were.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
 
         /// <summary>
         /// Gets the working directory of the process.
@@ -342,8 +346,8 @@ namespace PSADT.ProcessManagement
         /// Gets the lines to write to the process's standard input stream.
         /// </summary>
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
-        [DataMember]
-        public readonly IReadOnlyList<string> StandardInput;
+        [IgnoreDataMember]
+        public IReadOnlyList<string> StandardInput => new ReadOnlyCollection<string>([.. StandardInputValue]);
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
@@ -470,12 +474,24 @@ namespace PSADT.ProcessManagement
         private readonly string? WorkingDirectoryPath;
 
         [DataMember]
-        private readonly ReadOnlyCollection<long>? HandlesToInheritValues;
+        private readonly ValueList<long>? HandlesToInheritValues;
 
         /// <summary>
         /// Gets the encoding web name string for serialization.
         /// </summary>
         [DataMember]
         private readonly string StreamEncodingWebName = Encoding.Default.WebName;
+
+        /// <summary>
+        /// The list recorded for <see cref="ArgumentList"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> ArgumentListValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="StandardInput"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> StandardInputValue;
     }
 }

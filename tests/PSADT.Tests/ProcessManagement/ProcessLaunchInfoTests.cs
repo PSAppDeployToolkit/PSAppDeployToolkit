@@ -357,5 +357,32 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal(["first", "second"], launchInfo.StandardInput);
             Assert.Empty(new ProcessLaunchInfo(@"C:\app.exe").StandardInput);
         }
+
+        /// <summary>
+        /// Verifies that two launches asking for the same thing are equal, and that a difference in any
+        /// of the lists makes them unequal.
+        /// </summary>
+        /// <remarks>
+        /// The lists are the part worth asserting. A collection compares by reference, so a record
+        /// holding one directly never equals another built the same way - and this record is built twice
+        /// from the same request routinely, once on either side of the boundary a client is launched
+        /// across. They are held in a list that compares by its contents instead.
+        /// </remarks>
+        [Fact]
+        public void Equality_IsByValueIncludingTheLists()
+        {
+            // Arrange
+            ProcessLaunchInfo left = new(@"C:\app.exe", ["/quiet", "/norestart"], standardInput: ["first", "second"]);
+            ProcessLaunchInfo right = new(@"C:\app.exe", ["/quiet", "/norestart"], standardInput: ["first", "second"]);
+
+            // Assert
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+
+            // Assert: and a difference in either list is a difference
+            Assert.NotEqual(left, new ProcessLaunchInfo(@"C:\app.exe", ["/quiet"], standardInput: ["first", "second"]));
+            Assert.NotEqual(left, new ProcessLaunchInfo(@"C:\app.exe", ["/quiet", "/norestart"], standardInput: ["first"]));
+            Assert.NotEqual(left, new ProcessLaunchInfo(@"C:\app.exe", ["/norestart", "/quiet"], standardInput: ["first", "second"]));
+        }
     }
 }

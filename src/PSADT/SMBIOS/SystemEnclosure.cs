@@ -21,6 +21,8 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using PSADT.Collections;
 
 namespace PSADT.SMBIOS
 {
@@ -256,12 +258,15 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Gets the contained element records (raw bytes per record, length equals ContainedElementRecordLength).
         /// </summary>
-        public IReadOnlyList<byte[]> ContainedElementRecords { get; }
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// framework offers compares by reference, so holding one directly would make two descriptions of the same
+        /// thing unequal however alike they were.</remarks>
+        public IReadOnlyList<byte[]> ContainedElementRecords => new ReadOnlyCollection<byte[]>([.. ContainedElementRecordsValue]);
 
         /// <summary>
         /// Gets the contained elements (typed records when record length >= 3).
         /// </summary>
-        public IReadOnlyList<SystemEnclosureContainedElement> ContainedElements { get; }
+        public IReadOnlyList<SystemEnclosureContainedElement> ContainedElements => new ReadOnlyCollection<SystemEnclosureContainedElement>([.. ContainedElementsValue]);
 
         /// <summary>
         /// Gets the SKU number.
@@ -341,8 +346,8 @@ namespace PSADT.SMBIOS
             NumberOfPowerCords = numberOfPowerCords;
             ContainedElementCount = containedElementCount;
             ContainedElementRecordLength = containedElementRecordLength;
-            ContainedElementRecords = containedElementRecords ?? [];
-            ContainedElements = containedElements ?? [];
+            ContainedElementRecordsValue = new ValueList<byte[]>([.. containedElementRecords ?? []]);
+            ContainedElementsValue = new ValueList<SystemEnclosureContainedElement>([.. containedElements ?? []]);
             SkuNumber = !string.IsNullOrWhiteSpace(skuNumber) ? skuNumber : null;
             RackType = rackType;
             RackHeight = rackHeight;
@@ -391,5 +396,15 @@ namespace PSADT.SMBIOS
         {
             return $"{Manufacturer} {TypeAndLock.Type} ({SerialNumber})";
         }
+
+        /// <summary>
+        /// The list recorded for <see cref="ContainedElementRecords"/>.
+        /// </summary>
+        private readonly ValueList<byte[]> ContainedElementRecordsValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="ContainedElements"/>.
+        /// </summary>
+        private readonly ValueList<SystemEnclosureContainedElement> ContainedElementsValue;
     }
 }

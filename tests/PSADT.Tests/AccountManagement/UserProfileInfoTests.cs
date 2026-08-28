@@ -86,20 +86,28 @@ namespace PSADT.Tests.AccountManagement
         /// Verifies that two profiles describing the same account are equal, since profiles are collected
         /// into lists that are compared and deduplicated as a whole.
         /// </summary>
+        /// <remarks>
+        /// Each is built from its own <see cref="DirectoryInfo"/> naming the same directory rather than
+        /// from one shared between them, which is the whole point: that type does not override equality,
+        /// so a profile holding one directly compared by reference and two descriptions of one account
+        /// never matched. The paths are recorded and rebuilt on read instead.
+        /// </remarks>
         [Fact]
         public void Equality_IsByValue()
         {
             // Arrange
             NTAccount account = new(@"TESTHOST\user");
-            DirectoryInfo profilePath = new(@"C:\Users\user");
 
-            // Act
-            UserProfileInfo left = new(account, WellKnownSid, profilePath, userLocale: CultureInfo.InvariantCulture);
-            UserProfileInfo right = new(account, WellKnownSid, profilePath, userLocale: CultureInfo.InvariantCulture);
+            // Act: separate objects throughout, naming the same account and the same directories
+            UserProfileInfo left = new(account, WellKnownSid, new(@"C:\Users\user"), new(@"C:\Users\user\AppData\Roaming"), userLocale: CultureInfo.InvariantCulture);
+            UserProfileInfo right = new(account, WellKnownSid, new(@"C:\Users\user"), new(@"C:\Users\user\AppData\Roaming"), userLocale: CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(left, right);
             Assert.Equal(left.GetHashCode(), right.GetHashCode());
+
+            // Assert: and a profile naming a different directory is not equal to either
+            Assert.NotEqual(left, new UserProfileInfo(account, WellKnownSid, new(@"C:\Users\other"), userLocale: CultureInfo.InvariantCulture));
         }
 
         /// <summary>

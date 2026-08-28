@@ -231,5 +231,33 @@ namespace PSADT.Tests.AppManagement
                 noRemove: false,
                 is64BitApplication: null);
         }
+
+        /// <summary>
+        /// Verifies that two records describing the same installed application are equal, and that a
+        /// difference in the uninstall command line - which the argument list is split out of - makes
+        /// them unequal.
+        /// </summary>
+        /// <remarks>
+        /// Applications are collected into lists that are compared and deduplicated as a whole, so this
+        /// has to hold. It did not for a long while: the record carried the uninstaller's path as a
+        /// <see cref="System.IO.FileInfo"/> and its arguments as a collection, and neither of those
+        /// compares by value, so no two records ever matched however alike they were. Both are recorded
+        /// in forms that compare by their contents instead.
+        /// </remarks>
+        [Fact]
+        public void Equality_IsByValueIncludingTheUninstallerAndItsArguments()
+        {
+            // Arrange
+            InstalledApplication left = Create(uninstallString: @"""C:\Program Files\App\uninstall.exe"" /quiet /norestart");
+            InstalledApplication right = Create(uninstallString: @"""C:\Program Files\App\uninstall.exe"" /quiet /norestart");
+
+            // Assert
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+
+            // Assert: and both the path and the arguments count towards the comparison
+            Assert.NotEqual(left, Create(uninstallString: @"""C:\Program Files\Other\uninstall.exe"" /quiet /norestart"));
+            Assert.NotEqual(left, Create(uninstallString: @"""C:\Program Files\App\uninstall.exe"" /quiet"));
+        }
     }
 }

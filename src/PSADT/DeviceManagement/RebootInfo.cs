@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.Collections;
 
 namespace PSADT.DeviceManagement
 {
@@ -46,8 +47,8 @@ namespace PSADT.DeviceManagement
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
-            ErrorMsg = new ReadOnlyCollection<string>([.. errorMsg]);
+            PendingFileRenameOperationsValue = new ValueList<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
+            ErrorMsgValue = new ValueList<string>([.. errorMsg]);
         }
 
         /// <summary>
@@ -107,11 +108,24 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets the list of pending file rename operations.
         /// </summary>
-        public IReadOnlyList<string> PendingFileRenameOperations { get; }
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// framework offers compares by reference, so holding one directly would make two descriptions of the same
+        /// thing unequal however alike they were.</remarks>
+        public IReadOnlyList<string> PendingFileRenameOperations => new ReadOnlyCollection<string>([.. PendingFileRenameOperationsValue]);
 
         /// <summary>
         /// Gets the error messages related to reboot operations.
         /// </summary>
-        public IReadOnlyList<string> ErrorMsg { get; }
+        public IReadOnlyList<string> ErrorMsg => new ReadOnlyCollection<string>([.. ErrorMsgValue]);
+
+        /// <summary>
+        /// The list recorded for <see cref="PendingFileRenameOperations"/>.
+        /// </summary>
+        private readonly ValueList<string> PendingFileRenameOperationsValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="ErrorMsg"/>.
+        /// </summary>
+        private readonly ValueList<string> ErrorMsgValue;
     }
 }
