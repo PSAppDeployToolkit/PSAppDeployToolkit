@@ -494,7 +494,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{DefaultLogNamePlaceholder}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -1310,11 +1310,15 @@ namespace PSAppDeployToolkit.Foundation
         /// for the log file. Cannot be null.</param>
         /// <param name="fileNameOnly">Indicates whether to return only the file name without the full path.</param>
         /// <returns>A string containing the formatted log file name that incorporates the specified discriminator.</returns>
+        /// <remarks>The placeholder is substituted rather than formatted. Braces are legal in a file name and so
+        /// survive into the install name that this template is built from, and formatting would read them as format
+        /// items.</remarks>
         public string NewLogFileName(string discriminator, bool fileNameOnly)
         {
+            string logFileName = DefaultLogName.Replace(DefaultLogNamePlaceholder, discriminator, StringComparison.Ordinal);
             return !fileNameOnly
-                ? Path.Join(LogPath.FullName, string.Format(CultureInfo.InvariantCulture, DefaultLogName, discriminator))
-                : string.Format(CultureInfo.InvariantCulture, DefaultLogName, discriminator);
+                ? Path.Join(LogPath.FullName, logFileName)
+                : logFileName;
         }
 
         /// <summary>
@@ -1836,6 +1840,11 @@ namespace PSAppDeployToolkit.Foundation
         /// Formats the InstallName property when closing out of the active DeploymentSession.
         /// </summary>
         private static readonly Regex InstallNameFormatterRegex = new(@"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The part of the default log file name that a discriminator takes the place of.
+        /// </summary>
+        private const string DefaultLogNamePlaceholder = "{0}";
 
 
         #endregion Private fields.
