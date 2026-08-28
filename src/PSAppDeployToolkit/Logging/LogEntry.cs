@@ -44,7 +44,7 @@ namespace PSAppDeployToolkit.Logging
             Source = source;
             ScriptSection = scriptSection;
             DebugMessage = debugMessage;
-            CallerFileName = !callerFileName.StartsWith('<') ? new(callerFileName) : null;
+            CallerFileNameValue = !callerFileName.StartsWith('<') ? new FileInfo(callerFileName).FullName : null;
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp:O}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
             CMTraceLogLine = string.Create(CultureInfo.InvariantCulture, $"<![LOG[{(scriptSection is not null && !Message.Equals(LogUtilities.LogDivider, StringComparison.Ordinal) ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n', StringComparison.Ordinal) ? (string.Join(Environment.NewLine, Message.Split(["\r\n", "\n"], StringSplitOptions.None).Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m[start..]) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp:HH\\:mm\\:ss.fff}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? '+' : null)}{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}\" date=\"{timeStamp:M-dd-yyyy}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">");
@@ -83,7 +83,10 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the log entry's caller file name.
         /// </summary>
-        public FileInfo? CallerFileName { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override equality,
+        /// so holding one directly made this record compare by reference: two entries built from identical arguments
+        /// came out unequal and hashed differently, which is the opposite of what a record advertises.</remarks>
+        public FileInfo? CallerFileName => CallerFileNameValue is string callerFileName ? new(callerFileName) : null;
 
         /// <summary>
         /// Gets the log entry's caller source.
@@ -108,6 +111,11 @@ namespace PSAppDeployToolkit.Logging
         {
             return LegacyLogLine;
         }
+
+        /// <summary>
+        /// The path recorded for <see cref="CallerFileName"/>, or <see langword="null"/> where the caller had no file.
+        /// </summary>
+        private readonly string? CallerFileNameValue;
 
         /// <summary>
         /// Represents a compiled regular expression that matches the first non-whitespace character in a string.
