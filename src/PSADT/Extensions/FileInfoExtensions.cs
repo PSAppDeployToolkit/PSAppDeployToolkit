@@ -24,12 +24,13 @@ internal static class FileInfoExtensions
     /// process.</remarks>
     /// <param name="fileInfo">The FileInfo object representing the file to be verified. This parameter cannot be null, and the file must exist.</param>
     /// <returns>true if the file is trusted; otherwise, false.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileInfo"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileInfo"/> is null.</exception>
     /// <exception cref="FileNotFoundException">Thrown if the specified file does not exist.</exception>
     internal static bool IsAuthenticodeTrusted(this FileInfo fileInfo)
     {
         // Load up everything we need for WinVerifyTrust. The CsWin32 projects this
         // all using pointers, so we must follow suite as well or roll our own setup.
+        ArgumentNullException.ThrowIfNull(fileInfo);
         unsafe
         {
             fixed (char* pFilePath = fileInfo.FullName.ThrowIfFileDoesNotExist())

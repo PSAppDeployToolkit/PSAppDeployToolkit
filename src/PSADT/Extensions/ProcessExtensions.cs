@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using PSADT.ProcessManagement;
@@ -21,8 +22,10 @@ internal static class ProcessExtensions
     /// table is used.</param>
     /// <returns>A string containing the full file system path of the process's executable. Returns an empty string if the
     /// path cannot be determined.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
     internal static FileInfo GetFilePath(this Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
     {
+        ArgumentNullException.ThrowIfNull(process);
         try
         {
             return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);

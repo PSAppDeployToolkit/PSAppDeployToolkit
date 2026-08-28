@@ -18,9 +18,11 @@ namespace PSADT.AppManagement
         /// </summary>
         /// <param name="packageUri">The URI to the package file.</param>
         /// <returns>The manifest information.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageUri"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the package file is not a valid Appx/Msix package or bundle.</exception>
         public static AppxManifestInfo Get(Uri packageUri)
         {
+            ArgumentNullException.ThrowIfNull(packageUri);
             return DeterminePackageType(packageUri) switch
             {
                 AppxPackageType.Package => GetPackageManifestInformation(packageUri),

@@ -453,11 +453,13 @@ namespace PSADT.FileSystem
         /// default permission inheritance behavior for a directory and its contents.</remarks>
         /// <param name="path">The absolute path of the directory for which permissions will be reset. The path must exist and cannot be
         /// null, empty, or whitespace.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is null, empty, or consists only of whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="path"/> is empty or consists only of whitespace.</exception>
         /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified by <paramref name="path"/> does not exist.</exception>
         public static void ResetPermissionsForPath(string path)
         {
             // Define the flags for setting and getting security information.
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
             const OBJECT_SECURITY_INFORMATION getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
             const OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
