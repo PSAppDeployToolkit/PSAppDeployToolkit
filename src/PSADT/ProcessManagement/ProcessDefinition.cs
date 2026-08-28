@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -26,8 +27,9 @@ namespace PSADT.ProcessManagement
             }
             Name = name;
 
-            // Set all calculated fields based on the name.
-            SetCalculatedFields();
+            // Compile the matchers the name implies. Assigned here rather than through a helper so that the
+            // compiler can see it happen; deserialization does the same thing again once the name is restored.
+            Calculated = new CalculatedFields(name);
         }
 
         /// <summary>
@@ -55,24 +57,6 @@ namespace PSADT.ProcessManagement
         {
         }
 
-        /// <summary>
-        /// Sets all calculated fields based on the name.
-        /// </summary>
-        private void SetCalculatedFields()
-        {
-            if (NameIsFullyQualifiedPath())
-            {
-                ProcessName = Path.GetFileNameWithoutExtension(Name);
-            }
-            if (Name.Contains('*', StringComparison.Ordinal))
-            {
-                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                if (ProcessName is not null)
-                {
-                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                }
-            }
-        }
 
         /// <summary>
         /// Sets all calculated fields after deserialization.
@@ -81,7 +65,7 @@ namespace PSADT.ProcessManagement
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            SetCalculatedFields();
+            Calculated = new CalculatedFields(Name);
         }
 
         /// <summary>
@@ -101,7 +85,7 @@ namespace PSADT.ProcessManagement
         public bool IsNameMatch(string input)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(input);
-            return NameRegex is null ? Name.Equals(input, StringComparison.OrdinalIgnoreCase) : NameRegex.IsMatch(input);
+            return Calculated.NameRegex is null ? Name.Equals(input, StringComparison.OrdinalIgnoreCase) : Calculated.NameRegex.IsMatch(input);
         }
 
         /// <summary>
@@ -112,9 +96,9 @@ namespace PSADT.ProcessManagement
         public bool ProcessNameIsMatch(string processName)
         {
             ArgumentNullException.ThrowIfNull(processName);
-            return ProcessNameRegex?.IsMatch(processName)
-                ?? NameRegex?.IsMatch(processName)
-                ?? ProcessName?.Equals(processName, StringComparison.OrdinalIgnoreCase)
+            return Calculated.ProcessNameRegex?.IsMatch(processName)
+                ?? Calculated.NameRegex?.IsMatch(processName)
+                ?? Calculated.ProcessName?.Equals(processName, StringComparison.OrdinalIgnoreCase)
                 ?? Name.Equals(processName, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -125,33 +109,83 @@ namespace PSADT.ProcessManagement
         public readonly string Name;
 
         /// <summary>
-        /// Gets the process name without the path component, if the process definition's name is a fully qualified path.
-        /// </summary>
-        [IgnoreDataMember]
-        private string? ProcessName;
-
-        /// <summary>
         /// Gets the description of the process.
         /// </summary>
         [DataMember]
         public readonly string? Description;
 
         /// <summary>
-        /// Gets the regular expression for the process name, if the name contains wildcard characters.
+        /// The matchers worked out from <see cref="Name"/>.
         /// </summary>
         [IgnoreDataMember]
-        private Regex? NameRegex;
-
-        /// <summary>
-        /// Gets the regular expression for the process name without the path component, if the process definition's name is a fully qualified path and contains wildcard characters.
-        /// </summary>
-        [IgnoreDataMember]
-        private Regex? ProcessNameRegex;
+        private CalculatedFields Calculated;
 
         /// <summary>
         /// Gets the regular expression to determine if the process definition's name is a wildcard character only, which is not allowed for process definitions and can be used to validate input when creating process definitions from external sources.
         /// </summary>
         [IgnoreDataMember]
         private static readonly Regex WildcardOnlyRegex = new(@"^\*+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// The matchers a definition's name is compiled into, held together so that they stay out of the definition's
+        /// comparison.
+        /// </summary>
+        /// <remarks>A <see cref="Regex"/> compares by reference, so a definition holding one directly never equalled
+        /// another built from the same name - two definitions for <c>note*</c> came out unequal while the generated
+        /// <c>ToString</c> rendered them identically. Everything here is worked out from the name alone, which the
+        /// definition already compares, so the right answer is for none of it to count towards the comparison: hence
+        /// comparing by the name it was built from, which always agrees with the definition's own comparison of that
+        /// name. <para> They are still compiled once and kept, as they were: the alternative of building them on each
+        /// call would compile a pattern for every process on the machine, on every poll. </para></remarks>
+        /// <param name="name">The name to compile.</param>
+        private sealed class CalculatedFields(string name) : IEquatable<CalculatedFields>
+        {
+            /// <summary>
+            /// Gets the process name without the path component, if the name is a fully qualified path.
+            /// </summary>
+            internal string? ProcessName { get; } = Path.IsPathFullyQualified(name) ? Path.GetFileNameWithoutExtension(name) : null;
+
+            /// <summary>
+            /// Gets the regular expression for the name, if it contains wildcard characters.
+            /// </summary>
+            internal Regex? NameRegex { get; } = name.Contains('*', StringComparison.Ordinal)
+                ? new($"^{Regex.Escape(name).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase)
+                : null;
+
+            /// <summary>
+            /// Gets the regular expression for the process name without the path component, if the name is a fully
+            /// qualified path and contains wildcard characters.
+            /// </summary>
+            internal Regex? ProcessNameRegex { get; } = name.Contains('*', StringComparison.Ordinal) && Path.IsPathFullyQualified(name)
+                ? new($"^{Regex.Escape(Path.GetFileNameWithoutExtension(name)).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase)
+                : null;
+
+            /// <summary>
+            /// Determines whether these were compiled from the same name as another.
+            /// </summary>
+            /// <param name="other">The matchers to compare against.</param>
+            /// <returns><see langword="true"/> if both were compiled from the same name; otherwise, <see langword="false"/>.</returns>
+            public bool Equals([NotNullWhen(true)] CalculatedFields? other)
+            {
+                return ReferenceEquals(this, other) || (other is not null && _name.Equals(other._name, StringComparison.Ordinal));
+            }
+
+            /// <inheritdoc/>
+            public override bool Equals([NotNullWhen(true)] object? obj)
+            {
+                return Equals(obj as CalculatedFields);
+            }
+
+            /// <inheritdoc/>
+            public override int GetHashCode()
+            {
+                return StringComparer.Ordinal.GetHashCode(_name);
+            }
+
+            /// <summary>
+            /// The name these were compiled from.
+            /// </summary>
+            private readonly string _name = name;
+        }
     }
 }

@@ -387,12 +387,28 @@ namespace PSADT.Tests.ProcessManagement
         /// Verifies that equality is by name and description, since definitions are collected into lists
         /// that are compared as a whole.
         /// </summary>
+        /// <remarks>
+        /// The wildcard cases are the ones worth having. A name containing one is compiled into a pattern
+        /// and the pattern kept, and a compiled pattern compares by reference - so two definitions for
+        /// the same wildcard name used to come out unequal while the generated description rendered them
+        /// identically. The compiled state is held apart from the comparison now.
+        /// </remarks>
         [Fact]
         public void Equality_IsByNameAndDescription()
         {
+            // Assert: a plain name, which is compared directly rather than compiled
             Assert.Equal(new ProcessDefinition("notepad", "Editor"), new ProcessDefinition("notepad", "Editor"));
             Assert.NotEqual(new ProcessDefinition("notepad", "Editor"), new ProcessDefinition("notepad", "Other"));
             Assert.NotEqual(new ProcessDefinition("notepad", "Editor"), new ProcessDefinition("wordpad", "Editor"));
+
+            // Assert: a wildcard name, which is compiled into a pattern that is kept
+            Assert.Equal(new ProcessDefinition("note*", "Editor"), new ProcessDefinition("note*", "Editor"));
+            Assert.Equal(new ProcessDefinition("note*", "Editor").GetHashCode(), new ProcessDefinition("note*", "Editor").GetHashCode());
+            Assert.NotEqual(new ProcessDefinition("note*", "Editor"), new ProcessDefinition("word*", "Editor"));
+
+            // Assert: a fully qualified path with a wildcard, which is compiled into two patterns
+            Assert.Equal(new ProcessDefinition(@"C:\Windows\note*.exe", "Editor"), new ProcessDefinition(@"C:\Windows\note*.exe", "Editor"));
+            Assert.NotEqual(new ProcessDefinition(@"C:\Windows\note*.exe", "Editor"), new ProcessDefinition(@"C:\Windows\word*.exe", "Editor"));
         }
     }
 }
