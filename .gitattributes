@@ -1,4 +1,4 @@
-# Auto detect text files and perform LF normalization
+﻿# Auto detect text files and perform LF normalization
 * text=auto
 
 # Custom for Visual Studio
@@ -26,3 +26,6 @@
 *.jpg binary
 *.ico binary
 *.gif binary
+*.msix binary
+*.msi binary
+*.msp binary

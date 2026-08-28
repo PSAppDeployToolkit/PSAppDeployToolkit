@@ -10,6 +10,15 @@
   </ItemGroup>
 
   <!--
+    Fixtures the tests read but never install or execute. They are copied rather than embedded because
+    the code under test takes a path and opens the file itself, so a stream would not exercise it, and
+    they land in a folder of the same name beside the assembly so that TestEnvironment can find them.
+  -->
+  <ItemGroup>
+    <Content Include="TestAssets\**" CopyToOutputDirectory="PreserveNewest" LinkBase="TestAssets" />
+  </ItemGroup>
+
+  <!--
     ClientServerUtilities' static constructor calls IsAuthenticodeTrusted() on each client/server
     executable, which throws when the file is missing. That is deliberate: the type is a setup
     component of the PowerShell module and a missing client is meant to fail loudly. It does mean the

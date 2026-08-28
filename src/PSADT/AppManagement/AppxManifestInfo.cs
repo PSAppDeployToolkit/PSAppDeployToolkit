@@ -43,7 +43,7 @@ namespace PSADT.AppManagement
             Publisher = packageId.GetPublisher().ToString();
             ulong versionValue = packageId.GetVersion();
             Version = new((int)(versionValue >> 48), (int)((versionValue >> 32) & 0xFFFF), (int)((versionValue >> 16) & 0xFFFF), (int)(versionValue & 0xFFFF));
-            ResourceId = packageId.GetResourceId().ToString();
+            ResourceId = packageId.GetResourceId().ToString() is string resourceId && !string.IsNullOrWhiteSpace(resourceId) ? resourceId : null;
             PackageFullName = packageId.GetPackageFullName().ToString();
             PackageFamilyName = packageId.GetPackageFamilyName().ToString();
             PackageType = packageType;
@@ -72,7 +72,9 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the package resource identifier as defined in the manifest.
         /// </summary>
-        public string ResourceId { get; }
+        /// <remarks>Only a resource package carries one, so this is <see langword="null"/> for an ordinary package -
+        /// which is what the packaging API reports for one, rather than an empty string.</remarks>
+        public string? ResourceId { get; }
 
         /// <summary>
         /// Gets the package full name.

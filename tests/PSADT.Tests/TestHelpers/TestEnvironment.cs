@@ -23,6 +23,26 @@ namespace PSADT.Tests.TestHelpers
     public static class TestEnvironment
     {
         /// <summary>
+        /// A packaged application shipped alongside the tests, for the members that read one.
+        /// </summary>
+        /// <remarks>
+        /// A real signed package rather than one synthesised here, because the code under test hands the
+        /// file to the packaging API and that API is the thing being exercised - a hand-built archive
+        /// would only prove that the API rejects hand-built archives. It is never installed, registered
+        /// or run: the tests open it, read its manifest and close it.
+        /// <para>
+        /// Unlike the other members here this one is not a probe. The package is committed beside the
+        /// tests and copied to the output directory by the project, so it is always there; a test finding
+        /// it missing has a broken build rather than a machine that cannot support it, and should say so
+        /// rather than skip.
+        /// </para>
+        /// </remarks>
+        public static FileInfo TestPackage { get; } = new(Path.Join(
+            Path.GetDirectoryName(typeof(TestEnvironment).Assembly.Location),
+            "TestAssets",
+            "testPackage.msix"));
+
+        /// <summary>
         /// The directory holding the machine's installed fonts.
         /// </summary>
         private static string FontsDirectory { get; } = Path.Join(
