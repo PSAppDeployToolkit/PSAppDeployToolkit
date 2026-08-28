@@ -64,6 +64,24 @@ namespace PSADT.Tests.TestHelpers
         public static bool IsLocalSystem { get; } = GetIsLocalSystem();
 
         /// <summary>
+        /// Whether the caller holds the privilege needed to read another process's memory, which is what
+        /// reading version information out of a running process actually requires.
+        /// </summary>
+        /// <remarks>
+        /// Asked directly rather than inferred from elevation. The two normally agree - an elevated
+        /// administrator holds it and an ordinary user does not - but the code under test tests for the
+        /// privilege, so a gate that tested for elevation instead would be asserting a different thing
+        /// and would be wrong on a machine whose policy has been changed.
+        /// </remarks>
+        public static bool HasDebugPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(PSADT.Interop.SE_PRIVILEGE.SeDebugPrivilege);
+
+        /// <summary>
+        /// Whether the caller holds the privilege needed to reassign ownership of a file or directory,
+        /// which is what changing an owner actually requires.
+        /// </summary>
+        public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(PSADT.Interop.SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+
+        /// <summary>
         /// Whether the client/server executables are present where <c>ClientServerUtilities</c> looks
         /// for them, which decides whether that type can be touched at all.
         /// </summary>
