@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Reflection;
-using Windows.Win32.Foundation;
+using PSADT.Interop.Tests.TestHelpers;
 using Xunit;
 
 namespace PSADT.Interop.Tests
@@ -315,47 +314,6 @@ namespace PSADT.Interop.Tests
         }
 
         /// <summary>
-        /// Verifies that a constant built from a PCWSTR keeps the pointer intact in both directions,
-        /// which is how the resource and MSI constant families carry their values.
-        /// </summary>
-        [Fact]
-        public void PcwstrRoundTrip_PreservesThePointer()
-        {
-            unsafe
-            {
-                // Arrange
-                fixed (char* buffer = "value")
-                {
-                    PointerTestConstant constant = new((PCWSTR)buffer, "Pointer");
-
-                    // Act
-                    PCWSTR result = constant.ToPCWSTR();
-
-                    // Assert
-                    Assert.Equal((nint)buffer, constant.ToIntPtr());
-                    Assert.True(result.Value == buffer);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Verifies that the pointer conversion is reachable only from the pointer-valued base, so an
-        /// integer-valued family such as a dialog result cannot reinterpret its value as a string
-        /// pointer. That separation is the reason the intermediate type exists, and it is easy to undo
-        /// by accident.
-        /// </summary>
-        [Fact]
-        public void ToPCWSTR_IsDeclaredOnlyOnThePointerValuedBase()
-        {
-            // Arrange
-            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-            // Assert
-            Assert.Null(typeof(TypedConstant<TestConstant>).GetMethod("ToPCWSTR", flags));
-            Assert.NotNull(typeof(PointerTypedConstant<PointerTestConstant>).GetMethod("ToPCWSTR", flags));
-        }
-
-        /// <summary>
         /// Verifies the behaviour against a real production constant family, so the base class is proven
         /// through the shape the toolkit actually uses rather than only through a test double.
         /// </summary>
@@ -368,40 +326,5 @@ namespace PSADT.Interop.Tests
             Assert.True(RESOURCE_TYPE.RT_ICON.Equals(nameof(RESOURCE_TYPE.RT_ICON)));
             Assert.False(RESOURCE_TYPE.RT_ICON.Equals(RESOURCE_TYPE.RT_MANIFEST));
         }
-
-        /// <summary>
-        /// A constant family used only by these tests, so values that the production families never hold
-        /// can still be exercised.
-        /// </summary>
-        private sealed class TestConstant : TypedConstant<TestConstant>
-        {
-            /// <summary>
-            /// Creates a constant with the given native integer value and name.
-            /// </summary>
-            /// <param name="value">The value to store.</param>
-            /// <param name="name">The name to store.</param>
-            internal TestConstant(nint value, string? name)
-                : base(value, name)
-            {
-            }
-        }
-
-        /// <summary>
-        /// A pointer-valued constant family used only by these tests, mirroring the shape of the
-        /// resource and MSI families.
-        /// </summary>
-        private sealed class PointerTestConstant : PointerTypedConstant<PointerTestConstant>
-        {
-            /// <summary>
-            /// Creates a constant with the given string pointer value and name.
-            /// </summary>
-            /// <param name="value">The value to store.</param>
-            /// <param name="name">The name to store.</param>
-            internal PointerTestConstant(PCWSTR value, string? name)
-                : base(value, name)
-            {
-            }
-        }
-
     }
 }
