@@ -122,6 +122,21 @@ namespace PSADT.PowerShellTestFixture
         }
 
         /// <summary>
+        /// Seats a module database for the lifetime of the returned scope.
+        /// </summary>
+        /// <remarks>
+        /// The session state is this fixture's module, so script blocks the code under test builds resolve
+        /// <c>$Script:CommandTable</c> against it.
+        /// </remarks>
+        /// <param name="configuration">The configuration the types under test should read.</param>
+        /// <param name="environment">The environment table, where the test needs one.</param>
+        /// <returns>A scope that puts back whatever database was seated before.</returns>
+        public ModuleDatabaseScope SeatModuleDatabase(ModuleConfiguration configuration, EnvironmentTable? environment = null)
+        {
+            return new ModuleDatabaseScope(configuration, ModuleSessionState, environment);
+        }
+
+        /// <summary>
         /// Runs a script in this fixture's runspace and returns what it wrote to the pipeline.
         /// </summary>
         /// <param name="script">The script to run.</param>
