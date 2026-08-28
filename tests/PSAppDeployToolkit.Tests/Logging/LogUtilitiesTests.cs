@@ -457,9 +457,10 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// Verifies that the log file name pattern matches the extensions a log may carry, and nothing else.
         /// </summary>
         /// <remarks>
-        /// Used when rotating a log, to split the name from its extension. A name whose extension it does not recognise
-        /// rotates to a file with no extension at all, so the set matters. The pattern is case-sensitive, which is why
-        /// an upper-case extension does not match - worth knowing rather than assuming.
+        /// Used in two places, and it has to agree with itself in both: the module validates a supplied log name
+        /// against it, and a session splits a name from its extension with it when rotating. A name whose extension
+        /// it did not recognise would rotate to a file with no extension at all, so capitalisation is ignored - an
+        /// extension is an extension however it was typed.
         /// </remarks>
         /// <param name="name">The log file name to test.</param>
         /// <param name="expected">Whether the pattern should match it.</param>
@@ -468,7 +469,9 @@ namespace PSAppDeployToolkit.Tests.Logging
         [InlineData("deploy.logx", true)]
         [InlineData("deploy.txt", true)]
         [InlineData("deploy.out", true)]
-        [InlineData("deploy.LOG", false)]
+        [InlineData("deploy.LOG", true)]
+        [InlineData("deploy.Log", true)]
+        [InlineData("deploy.LogX", true)]
         [InlineData("deploy.zip", false)]
         [InlineData("deploy", false)]
         [InlineData("deploy.log.zip", false)]

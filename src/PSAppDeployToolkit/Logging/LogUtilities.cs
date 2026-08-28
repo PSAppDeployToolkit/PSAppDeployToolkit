@@ -187,8 +187,9 @@ namespace PSAppDeployToolkit.Logging
         /// .logx, .txt, or .out.
         /// </summary>
         /// <remarks>This regular expression can be used to identify or filter files commonly used for
-        /// logging purposes based on their extensions. The match is case-sensitive by default.</remarks>
-        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+        /// logging purposes based on their extensions. The match ignores case, so an extension is recognised however
+        /// it is capitalised.</remarks>
+        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Gets the session's default log file encoding.
