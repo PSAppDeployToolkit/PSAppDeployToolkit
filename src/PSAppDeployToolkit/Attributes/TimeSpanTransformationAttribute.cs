@@ -47,17 +47,16 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (inputData is string valueAsString)
             {
+                // A plain number means seconds, and is read before TimeSpan.TryParse because that reads a bare
+                // integer as whole days: "90" meant ninety days while 90 meant ninety seconds. Invariant, so the
+                // same string means the same thing on every machine.
+                if (double.TryParse(valueAsString, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedNumericalSeconds))
+                {
+                    return TimeSpan.FromSeconds(parsedNumericalSeconds);
+                }
                 if (TimeSpan.TryParse(valueAsString, FormatProvider, out TimeSpan parsedTimeSpan))
                 {
                     return parsedTimeSpan;
-                }
-                if (long.TryParse(valueAsString, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedIntegerSeconds))
-                {
-                    return TimeSpan.FromSeconds(parsedIntegerSeconds);
-                }
-                if (double.TryParse(valueAsString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double parsedNumericalSeconds))
-                {
-                    return TimeSpan.FromSeconds(parsedNumericalSeconds);
                 }
             }
             return !TryGetNumericalSeconds(inputData, out double seconds)
