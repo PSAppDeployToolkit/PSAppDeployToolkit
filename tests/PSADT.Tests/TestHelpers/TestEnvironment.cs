@@ -58,6 +58,12 @@ namespace PSADT.Tests.TestHelpers
         public static bool IsElevated { get; } = GetIsElevated();
 
         /// <summary>
+        /// Whether the caller is the local system account, which holds privileges no other account does
+        /// and therefore is not refused where every other account is.
+        /// </summary>
+        public static bool IsLocalSystem { get; } = GetIsLocalSystem();
+
+        /// <summary>
         /// Whether the client/server executables are present where <c>ClientServerUtilities</c> looks
         /// for them, which decides whether that type can be touched at all.
         /// </summary>
@@ -196,6 +202,16 @@ namespace PSADT.Tests.TestHelpers
         {
             using WindowsIdentity identity = WindowsIdentity.GetCurrent();
             return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        /// <summary>
+        /// Determines whether the caller is the local system account.
+        /// </summary>
+        /// <returns><see langword="true"/> if it is; otherwise, <see langword="false"/>.</returns>
+        private static bool GetIsLocalSystem()
+        {
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            return identity.User?.IsWellKnown(WellKnownSidType.LocalSystemSid) is true;
         }
 
         /// <summary>
