@@ -435,7 +435,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallTitle = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor} " : null)}{AppName} {AppVersion}".Trim();
                 }
-                InstallTitle = DoubleSpaceRegex.Replace(InstallTitle, string.Empty);
+                InstallTitle = DoubleSpaceRegex.Replace(InstallTitle, " ");
 
                 // Build the Installation Name.
                 if (InstallName is null || string.IsNullOrWhiteSpace(InstallName))
