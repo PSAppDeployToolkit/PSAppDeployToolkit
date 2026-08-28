@@ -725,10 +725,7 @@ namespace PSAppDeployToolkit.Foundation
                 bool deployModeChanged = false;
                 if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
                 {
-                    if (deployModeChanged)
-                    {
-                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{DeployMode}]");
-                    }
+                    // No "deployment has already been changed" branch here, unlike the checks below.
                     if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment mode was explicitly set to [{DeployMode}].");
