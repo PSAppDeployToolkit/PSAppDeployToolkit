@@ -25,6 +25,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
@@ -101,6 +102,11 @@ namespace PSADT.ShortcutManagement
                 ((IPersistFile)internetShortcut).Load(filePath, (Windows.Win32.System.Com.STGM)storageMode);
                 _internetShortcut = internetShortcut;
                 _storageMode = storageMode;
+
+                // Read the show command out of the file now, while the path is in hand and the file is known to
+                // be there. The shell will not report it back, so this is the only opportunity to learn what the
+                // shortcut was saved with - see the remarks on ShowCommand.
+                ShowCommandValue = GetShowCommandFromFile(filePath);
             }
             catch (Exception ex)
             {
@@ -260,17 +266,25 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the show command value for the Internet shortcut.
         /// </summary>
+        /// <remarks>The shell writes this into the shortcut file but does not hand it back through the property
+        /// storage, which answers for it as though it had never been set. So the instance keeps track of it: a
+        /// shortcut that was loaded starts from what the file records, and assigning to it updates that. Without
+        /// this a caller would set a window style, save, load, and be told there was none. <para> The shell is still
+        /// asked first. It answers with nothing on every release this has been tried against, but that is its
+        /// behaviour rather than a rule, and if a future one starts reporting the value then that is the
+        /// authoritative answer and it wins. </para></remarks>
         public ShortcutWindowStyle? ShowCommand
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                return (ShortcutWindowStyle?)GetInt32Property(PID_IS.PID_IS_SHOWCMD);
+                return (ShortcutWindowStyle?)GetInt32Property(PID_IS.PID_IS_SHOWCMD) ?? ShowCommandValue;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 SetInt32Property(PID_IS.PID_IS_SHOWCMD, (int?)value);
+                ShowCommandValue = value;
             }
         }
 
@@ -291,6 +305,24 @@ namespace PSADT.ShortcutManagement
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 SetStringProperty(PID_IS.PID_IS_ICONFILE, value);
             }
+        }
+
+        /// <summary>
+        /// Reads the show command out of a shortcut file, where the shell records it.
+        /// </summary>
+        /// <remarks>Called once, as a shortcut is loaded, rather than on each read of the property. Reading it per
+        /// read would mean a call into the shell for the path and a read of the file every time somebody asked, and
+        /// would have to be undone the moment the property was assigned to - a shortcut whose show command is
+        /// cleared still has the old value sitting in its file until it is saved, so a stale read would hand back
+        /// the value that had just been cleared.</remarks>
+        /// <param name="filePath">The shortcut file to read.</param>
+        /// <returns>The recorded window style, or <see langword="null"/> if the file records none.</returns>
+        private static ShortcutWindowStyle? GetShowCommandFromFile(string filePath)
+        {
+            return IniUtilities.GetSectionKeyValue(filePath, "InternetShortcut", "ShowCommand") is string showCommand
+                && int.TryParse(showCommand, NumberStyles.Integer, CultureInfo.InvariantCulture, out int showCommandValue)
+                ? (ShortcutWindowStyle)showCommandValue
+                : null;
         }
 
         /// <summary>
@@ -856,6 +888,14 @@ namespace PSADT.ShortcutManagement
         /// Gets a value indicating whether the current storage mode is read-only, preventing any write operations.
         /// </summary>
         private bool IsReadOnly => (_storageMode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) is Interop.STGM.STGM_DIRECT;
+
+        /// <summary>
+        /// The show command this instance holds, which the shell will not report back.
+        /// </summary>
+        /// <remarks>Set from the file as a shortcut is loaded and updated by every assignment, so it is what the
+        /// shortcut would be saved with rather than only what somebody last asked for. A shortcut that was built
+        /// rather than loaded starts with none, which is correct: there is no file for it to have come from.</remarks>
+        private ShortcutWindowStyle? ShowCommandValue { get; set; }
 
         /// <summary>
         /// Indicates whether the object has been disposed.

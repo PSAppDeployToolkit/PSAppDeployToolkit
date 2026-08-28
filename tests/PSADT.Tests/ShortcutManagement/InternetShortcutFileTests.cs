@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using PSADT.ShortcutManagement;
 using PSADT.Tests.TestHelpers;
+using PSADT.Utilities;
 using Xunit;
 
 namespace PSADT.Tests.ShortcutManagement
@@ -226,15 +228,13 @@ namespace PSADT.Tests.ShortcutManagement
         /// Verifies that the show command survives a save and load.
         /// </summary>
         /// <remarks>
-        /// Skipped: it does not. The setter writes the value into the file, as the test above shows, but
-        /// the getter reads back nothing at all - and reads back nothing even on the same instance, before
-        /// any save, so the property is effectively write-only. That also means
-        /// <c>InternetShortcutInfo.ShowCommand</c> is always null regardless of what the shortcut holds.
-        /// Unskip once the getter can read the value the setter stores.
+        /// The shell writes this into the file but will not hand it back through the property storage it
+        /// was written to, so the value is remembered on the instance and read back out of the file for a
+        /// shortcut that was loaded. Both routes are covered here: the value is read on the instance that
+        /// set it, and again on one loaded from the saved file.
         /// </remarks>
         /// <param name="showCommand">The show command to write and read back.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "The assertion is the behaviour we want; the skip reason names the defect that has to be fixed first.")]
-        [Theory(Skip = "The ShowCommand getter always returns null, even for a value just assigned on the same instance, so the property is write-only in practice. See the remarks.")]
+        [Theory]
         [InlineData(ShortcutWindowStyle.Normal)]
         [InlineData(ShortcutWindowStyle.Maximized)]
         [InlineData(ShortcutWindowStyle.MinimizedNoActivate)]
@@ -250,12 +250,88 @@ namespace PSADT.Tests.ShortcutManagement
                 using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
                 {
                     created.ShowCommand = showCommand;
+
+                    // Assert: readable on the instance that set it, before anything is saved
+                    Assert.Equal(showCommand, created.ShowCommand);
                     created.Save(shortcutPath);
                 }
 
-                // Assert
+                // Assert: and on one loaded back from the saved file
                 using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
                 Assert.Equal(showCommand, loaded.ShowCommand);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that the show command is read out of the file once, as the shortcut is loaded, rather
+        /// than on every read of the property.
+        /// </summary>
+        /// <remarks>
+        /// Demonstrated by changing the file underneath a loaded shortcut and asking again: an instance
+        /// that re-read the file would report the new value, and one that read it at load reports what it
+        /// was opened with. The behaviour is the same either way for any caller doing something sensible
+        /// - this pins which of the two is happening, so that reading it stops costing a call into the
+        /// shell and a read of the file every time somebody asks.
+        /// </remarks>
+        [Fact]
+        public void ShowCommand_IsReadFromTheFileOnceAtLoad()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange: a saved shortcut holding a show command
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("cached.url");
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    created.ShowCommand = ShortcutWindowStyle.Maximized;
+                    created.Save(shortcutPath);
+                }
+
+                // Act
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
+                IniUtilities.WriteSectionKeyValue(shortcutPath, "InternetShortcut", "ShowCommand", ((int)ShortcutWindowStyle.MinimizedNoActivate).ToString(CultureInfo.InvariantCulture));
+
+                // Assert: the file now says otherwise, and the loaded shortcut still reports what it opened with
+                Assert.Equal(
+                    ((int)ShortcutWindowStyle.MinimizedNoActivate).ToString(CultureInfo.InvariantCulture),
+                    IniUtilities.GetSectionKeyValue(shortcutPath, "InternetShortcut", "ShowCommand"),
+                    StringComparer.Ordinal);
+                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that clearing the show command reports it as cleared, rather than falling back to
+        /// the value still sitting in the file.
+        /// </summary>
+        /// <remarks>
+        /// The value has to be read back out of the file for a shortcut that was loaded, because the
+        /// shell will not report it. That makes "never set" and "set to nothing" look alike unless they
+        /// are told apart deliberately - and getting it wrong means a caller clears the window style,
+        /// reads it back, and is handed the value it just cleared.
+        /// </remarks>
+        [Fact]
+        public void ShowCommand_ClearingItIsNotOverriddenByTheSavedFile()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange: a saved shortcut that holds a show command
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("cleared.url");
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    created.ShowCommand = ShortcutWindowStyle.Maximized;
+                    created.Save(shortcutPath);
+                }
+
+                // Act
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath, Interop.STGM.STGM_READWRITE);
+                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
+                loaded.ShowCommand = null;
+
+                // Assert
+                Assert.Null(loaded.ShowCommand);
             });
         }
 
