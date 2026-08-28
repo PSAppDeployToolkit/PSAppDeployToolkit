@@ -494,7 +494,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{DefaultLogNamePlaceholder}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -1034,19 +1034,19 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = string.Create(CultureInfo.InvariantCulture, $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallNameFormatterRegex.Replace(InstallName, "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}]{(exitMessage is not null && !string.IsNullOrWhiteSpace(exitMessage) ? $": {exitMessage.TrimEnd('.')}" : null)}.");
+            string deployString = string.Create(CultureInfo.InvariantCulture, $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {SubstitutionPlaceholder} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}]{(exitMessage is not null && !string.IsNullOrWhiteSpace(exitMessage) ? $": {exitMessage.TrimEnd('.')}" : null)}.");
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
                     {
-                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred"), LogSeverity.Warning);
+                        WriteLogEntry(deployString.Replace(SubstitutionPlaceholder, "was deferred", StringComparison.Ordinal), LogSeverity.Warning);
                         break;
                     }
 
                 case DeploymentStatus.Error:
                     {
-                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed"), LogSeverity.Error);
+                        WriteLogEntry(deployString.Replace(SubstitutionPlaceholder, "failed", StringComparison.Ordinal), LogSeverity.Error);
                         break;
                     }
 
@@ -1058,7 +1058,7 @@ namespace PSAppDeployToolkit.Foundation
                         {
                             ExitCode = deploymentStatus is DeploymentStatus.RestartRequired ? 3010 : 0;
                         }
-                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed"), LogSeverity.Success);
+                        WriteLogEntry(deployString.Replace(SubstitutionPlaceholder, "completed", StringComparison.Ordinal), LogSeverity.Success);
                         if (deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                         {
                             WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
@@ -1088,13 +1088,13 @@ namespace PSAppDeployToolkit.Foundation
             if (CompressLogs)
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
-                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
+                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{SubstitutionPlaceholder}.zip";
                 DirectoryInfo destArchiveFilePath = new(Directory.CreateDirectory(ConfigLogPath.FullName).FullName);
                 try
                 {
                     // Get all archive files sorted by last write time.
-                    FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
-                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.Ordinal));
+                    FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(destArchiveFileName.Replace(SubstitutionPlaceholder, "*", StringComparison.Ordinal)).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
+                    destArchiveFileName = destArchiveFileName.Replace(SubstitutionPlaceholder, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.Ordinal), StringComparison.Ordinal);
 
                     // Keep only the max number of archive files.
                     int archiveFilesCount = archiveFiles.Length;
@@ -1315,7 +1315,7 @@ namespace PSAppDeployToolkit.Foundation
         /// items.</remarks>
         public string NewLogFileName(string discriminator, bool fileNameOnly)
         {
-            string logFileName = DefaultLogName.Replace(DefaultLogNamePlaceholder, discriminator, StringComparison.Ordinal);
+            string logFileName = DefaultLogName.Replace(SubstitutionPlaceholder, discriminator, StringComparison.Ordinal);
             return !fileNameOnly
                 ? Path.Join(LogPath.FullName, logFileName)
                 : logFileName;
@@ -1837,14 +1837,12 @@ namespace PSAppDeployToolkit.Foundation
         private static readonly Regex DoubleUnderscoreRegex = new("_+", RegexOptions.Compiled);
 
         /// <summary>
-        /// Formats the InstallName property when closing out of the active DeploymentSession.
+        /// The part of a name or message that a value is later substituted into.
         /// </summary>
-        private static readonly Regex InstallNameFormatterRegex = new(@"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", RegexOptions.Compiled);
-
-        /// <summary>
-        /// The part of the default log file name that a discriminator takes the place of.
-        /// </summary>
-        private const string DefaultLogNamePlaceholder = "{0}";
+        /// <remarks>Substituted rather than formatted wherever it is used. Each of the strings carrying this is
+        /// built by interpolating an install name or an exit message into it, and braces are legal in both, so
+        /// formatting would read a caller's text as format items.</remarks>
+        private const string SubstitutionPlaceholder = "{0}";
 
 
         #endregion Private fields.
