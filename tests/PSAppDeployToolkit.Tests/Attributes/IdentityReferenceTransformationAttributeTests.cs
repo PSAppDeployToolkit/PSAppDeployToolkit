@@ -190,18 +190,33 @@ namespace PSAppDeployToolkit.Tests.Attributes
         }
 
         /// <summary>
-        /// Verifies that a numeric string is read as a well-known type rather than as an account name.
+        /// Verifies that a numeric string is read as an account name rather than as a well-known type.
         /// </summary>
         /// <remarks>
-        /// A consequence of <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> accepting the numeric form of an
-        /// enumeration as well as its name, and it happens before the account-name reading. So <c>"1"</c> is the
-        /// Everyone SID, not an account called "1". Pinned as the current behaviour rather than endorsed - an account
-        /// genuinely named with digits would be misread.
+        /// <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> accepts the numeric form of an enumeration as
+        /// well as its name, and that reading ran before the account-name one - so <c>"1"</c> came back as the Everyone
+        /// SID rather than an account called "1". Leading white space and a sign are covered too, since
+        /// <c>Enum.TryParse</c> tolerates both and a first-character check would not have.
         /// </remarks>
-        [Fact]
-        public void Transform_ReadsANumericStringAsAWellKnownType()
+        /// <param name="digits">A name made of digits.</param>
+        [Theory]
+        [InlineData("1")]
+        [InlineData("0")]
+        [InlineData("22")]
+        [InlineData(" 1")]
+        [InlineData("+1")]
+        public void Transform_ReadsANumericStringAsAnAccountName(string digits)
         {
-            Assert.Equal(new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null), Transform("1"));
+            Assert.Equal(new NTAccount(digits), Transform(digits));
+        }
+
+        /// <summary>
+        /// Verifies that a well-known type named properly still works after numeric forms were excluded.
+        /// </summary>
+        [Fact]
+        public void Transform_StillAcceptsAWellKnownTypeByName()
+        {
+            Assert.Equal(new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null), Transform("WorldSid"));
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Management.Automation;
 using System.Reflection;
 using System.Security.Principal;
@@ -70,7 +71,10 @@ namespace PSAppDeployToolkit.Attributes
                 identity = null;
                 return false;
             }
-            if (Enum.TryParse(identityString, ignoreCase: true, out WellKnownSidType wellKnownSidType))
+            // Enum.TryParse accepts a value's numeric form as well as its name, which read an account named
+            // with digits as a well-known type: "1" came back as the Everyone SID.
+            if (!long.TryParse(identityString, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
+                && Enum.TryParse(identityString, ignoreCase: true, out WellKnownSidType wellKnownSidType))
             {
                 identity = new SecurityIdentifier(wellKnownSidType, domainSid: null);
                 return true;
