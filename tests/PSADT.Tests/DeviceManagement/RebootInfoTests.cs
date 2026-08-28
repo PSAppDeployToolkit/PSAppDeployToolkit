@@ -46,28 +46,23 @@ namespace PSADT.Tests.DeviceManagement
         }
 
         /// <summary>
-        /// Verifies that the Intune client's indicator is collected but does not contribute to the
-        /// summary.
+        /// Verifies that the Intune client's indicator contributes to the summary, as the Configuration
+        /// Manager equivalent beside it does.
         /// </summary>
         /// <remarks>
-        /// This is the one asymmetry in the type: <see cref="RebootInfo.IsIntuneClientRebootPending"/> is
-        /// gathered and exposed like the others, and the Configuration Manager equivalent beside it does
-        /// contribute, but this one is absent from <see cref="RebootInfo.HasPendingReboot"/>. The test
-        /// pins the behaviour as it stands rather than asserting what it ought to be, so that changing it
-        /// is a decision taken deliberately.
+        /// Worth its own test because the two management clients are gathered the same way and shown the
+        /// same way, and for a while only one of them counted. A machine managed through Intune alone
+        /// would have been told no reboot was pending while its own management client was saying one was.
         /// </remarks>
         [Fact]
-        public void HasPendingReboot_IgnoresTheIntuneClientIndicator()
+        public void HasPendingReboot_CountsBothManagementClients()
         {
-            // Arrange
-            RebootInfo intuneOnly = Create(intune: true);
-
-            // Assert: the value is kept
-            Assert.True(intuneOnly.IsIntuneClientRebootPending);
-
-            // Assert: but it does not make a reboot pending, unlike the Configuration Manager equivalent
-            Assert.False(intuneOnly.HasPendingReboot());
+            Assert.True(Create(intune: true).IsIntuneClientRebootPending);
+            Assert.True(Create(intune: true).HasPendingReboot());
             Assert.True(Create(sccm: true).HasPendingReboot());
+
+            // Assert: and an explicit negative from either is not a positive
+            Assert.False(Create(sccm: false, intune: false).HasPendingReboot());
         }
 
         /// <summary>

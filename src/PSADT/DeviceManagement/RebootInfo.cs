@@ -54,10 +54,14 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Returns a value indicating whether any reboot is pending.
         /// </summary>
+        /// <remarks>Every source this type reads is taken into account, including both management clients. A source
+        /// that could not be read reports <see langword="null"/> rather than <see langword="false"/>, and an unread
+        /// source is not a reason to say no reboot is pending - so those are treated as no answer and the remaining
+        /// sources decide.</remarks>
         /// <returns>True if any reboot is pending; otherwise false.</returns>
         public bool HasPendingReboot()
         {
-            return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending is true || IsAppVRebootPending || IsFileRenameRebootPending is true;
+            return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending is true || IsIntuneClientRebootPending is true || IsAppVRebootPending || IsFileRenameRebootPending is true;
         }
 
         /// <summary>
