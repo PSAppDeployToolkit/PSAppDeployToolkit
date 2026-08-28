@@ -33,6 +33,12 @@
           "Microsoft.CodeCoverage": "18.9.0"
         }
       },
+      "PowerShellStandard.Library": {
+        "type": "Direct",
+        "requested": "[5.1.1, )",
+        "resolved": "5.1.1",
+        "contentHash": "e31xJjG+Kjbv6YF3Yq6D4Dl3or8v7LrNF41k3CXrWozW6hR1zcOe5KYuZJaGSiAgLnwP8wcW+I3+IWEzMPZKXQ=="
+      },
       "Roslynator.Analyzers": {
         "type": "Direct",
         "requested": "[5.0.0, )",
@@ -401,6 +407,40 @@
         "dependencies": {
           "Microsoft.CodeCoverage": "18.9.0",
           "Microsoft.TestPlatform.TestHost": "18.9.0"
+        }
+      },
+      "Microsoft.PowerShell.SDK": {
+        "type": "Direct",
+        "requested": "[7.4.13, )",
+        "resolved": "7.4.13",
+        "contentHash": "qGDB474ZfeP9ho57GW2DB/6KaUpy6i/xli+ldvYhA1tv7+sRI5ZG1DlXu3a5nONzxQYmIH46n2m9yo2733EY+Q==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+          "Microsoft.Extensions.ObjectPool": "8.0.21",
+          "Microsoft.Management.Infrastructure.CimCmdlets": "7.4.13",
+          "Microsoft.PowerShell.Commands.Diagnostics": "7.4.13",
+          "Microsoft.PowerShell.Commands.Management": "7.4.13",
+          "Microsoft.PowerShell.Commands.Utility": "7.4.13",
+          "Microsoft.PowerShell.ConsoleHost": "7.4.13",
+          "Microsoft.PowerShell.Security": "7.4.13",
+          "Microsoft.WSMan.Management": "7.4.13",
+          "Microsoft.Windows.Compatibility": "8.0.21",
+          "System.Data.SqlClient": "4.9.0",
+          "System.Diagnostics.EventLog": "8.0.2",
+          "System.DirectoryServices.Protocols": "8.0.2",
+          "System.Drawing.Common": "8.0.21",
+          "System.IO.Packaging": "8.0.1",
+          "System.Management.Automation": "7.4.13",
+          "System.Net.Http.WinHttpHandler": "8.0.3",
+          "System.Private.ServiceModel": "4.10.3",
+          "System.Runtime.Caching": "8.0.1",
+          "System.ServiceModel.Duplex": "4.10.3",
+          "System.ServiceModel.Http": "4.10.3",
+          "System.ServiceModel.NetTcp": "4.10.3",
+          "System.ServiceModel.Primitives": "4.10.3",
+          "System.ServiceModel.Security": "4.10.3",
+          "System.Text.Encodings.Web": "8.0.0",
+          "System.Web.Services.Description": "4.10.3"
         }
       },
       "Roslynator.Analyzers": {
@@ -1197,40 +1237,6 @@
           "Microsoft.CodeAnalysis.Common": "[4.9.2]"
         }
       },
-      "Microsoft.PowerShell.SDK": {
-        "type": "CentralTransitive",
-        "requested": "[7.4.13, )",
-        "resolved": "7.4.13",
-        "contentHash": "qGDB474ZfeP9ho57GW2DB/6KaUpy6i/xli+ldvYhA1tv7+sRI5ZG1DlXu3a5nONzxQYmIH46n2m9yo2733EY+Q==",
-        "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
-          "Microsoft.Extensions.ObjectPool": "8.0.21",
-          "Microsoft.Management.Infrastructure.CimCmdlets": "7.4.13",
-          "Microsoft.PowerShell.Commands.Diagnostics": "7.4.13",
-          "Microsoft.PowerShell.Commands.Management": "7.4.13",
-          "Microsoft.PowerShell.Commands.Utility": "7.4.13",
-          "Microsoft.PowerShell.ConsoleHost": "7.4.13",
-          "Microsoft.PowerShell.Security": "7.4.13",
-          "Microsoft.WSMan.Management": "7.4.13",
-          "Microsoft.Windows.Compatibility": "8.0.21",
-          "System.Data.SqlClient": "4.9.0",
-          "System.Diagnostics.EventLog": "8.0.2",
-          "System.DirectoryServices.Protocols": "8.0.2",
-          "System.Drawing.Common": "8.0.21",
-          "System.IO.Packaging": "8.0.1",
-          "System.Management.Automation": "7.4.13",
-          "System.Net.Http.WinHttpHandler": "8.0.3",
-          "System.Private.ServiceModel": "4.10.3",
-          "System.Runtime.Caching": "8.0.1",
-          "System.ServiceModel.Duplex": "4.10.3",
-          "System.ServiceModel.Http": "4.10.3",
-          "System.ServiceModel.NetTcp": "4.10.3",
-          "System.ServiceModel.Primitives": "4.10.3",
-          "System.ServiceModel.Security": "4.10.3",
-          "System.Text.Encodings.Web": "8.0.0",
-          "System.Web.Services.Description": "4.10.3"
-        }
-      },
       "System.Collections.Immutable": {
         "type": "CentralTransitive",
         "requested": "[10.0.11, )",
@@ -1275,6 +1281,40 @@
       }
     },
     "net8.0/win-x64": {
+      "Microsoft.PowerShell.SDK": {
+        "type": "Direct",
+        "requested": "[7.4.13, )",
+        "resolved": "7.4.13",
+        "contentHash": "qGDB474ZfeP9ho57GW2DB/6KaUpy6i/xli+ldvYhA1tv7+sRI5ZG1DlXu3a5nONzxQYmIH46n2m9yo2733EY+Q==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+          "Microsoft.Extensions.ObjectPool": "8.0.21",
+          "Microsoft.Management.Infrastructure.CimCmdlets": "7.4.13",
+          "Microsoft.PowerShell.Commands.Diagnostics": "7.4.13",
+          "Microsoft.PowerShell.Commands.Management": "7.4.13",
+          "Microsoft.PowerShell.Commands.Utility": "7.4.13",
+          "Microsoft.PowerShell.ConsoleHost": "7.4.13",
+          "Microsoft.PowerShell.Security": "7.4.13",
+          "Microsoft.WSMan.Management": "7.4.13",
+          "Microsoft.Windows.Compatibility": "8.0.21",
+          "System.Data.SqlClient": "4.9.0",
+          "System.Diagnostics.EventLog": "8.0.2",
+          "System.DirectoryServices.Protocols": "8.0.2",
+          "System.Drawing.Common": "8.0.21",
+          "System.IO.Packaging": "8.0.1",
+          "System.Management.Automation": "7.4.13",
+          "System.Net.Http.WinHttpHandler": "8.0.3",
+          "System.Private.ServiceModel": "4.10.3",
+          "System.Runtime.Caching": "8.0.1",
+          "System.ServiceModel.Duplex": "4.10.3",
+          "System.ServiceModel.Http": "4.10.3",
+          "System.ServiceModel.NetTcp": "4.10.3",
+          "System.ServiceModel.Primitives": "4.10.3",
+          "System.ServiceModel.Security": "4.10.3",
+          "System.Text.Encodings.Web": "8.0.0",
+          "System.Web.Services.Description": "4.10.3"
+        }
+      },
       "Microsoft.Management.Infrastructure.CimCmdlets": {
         "type": "Transitive",
         "resolved": "7.4.13",
@@ -1583,40 +1623,6 @@
         "type": "Transitive",
         "resolved": "8.0.0",
         "contentHash": "Obg3a90MkOw9mYKxrardLpY2u0axDMrSmy4JCdq2cYbelM2cUwmUir5Bomvd1yxmPL9h5LVHU1tuKBZpUjfASg=="
-      },
-      "Microsoft.PowerShell.SDK": {
-        "type": "CentralTransitive",
-        "requested": "[7.4.13, )",
-        "resolved": "7.4.13",
-        "contentHash": "qGDB474ZfeP9ho57GW2DB/6KaUpy6i/xli+ldvYhA1tv7+sRI5ZG1DlXu3a5nONzxQYmIH46n2m9yo2733EY+Q==",
-        "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
-          "Microsoft.Extensions.ObjectPool": "8.0.21",
-          "Microsoft.Management.Infrastructure.CimCmdlets": "7.4.13",
-          "Microsoft.PowerShell.Commands.Diagnostics": "7.4.13",
-          "Microsoft.PowerShell.Commands.Management": "7.4.13",
-          "Microsoft.PowerShell.Commands.Utility": "7.4.13",
-          "Microsoft.PowerShell.ConsoleHost": "7.4.13",
-          "Microsoft.PowerShell.Security": "7.4.13",
-          "Microsoft.WSMan.Management": "7.4.13",
-          "Microsoft.Windows.Compatibility": "8.0.21",
-          "System.Data.SqlClient": "4.9.0",
-          "System.Diagnostics.EventLog": "8.0.2",
-          "System.DirectoryServices.Protocols": "8.0.2",
-          "System.Drawing.Common": "8.0.21",
-          "System.IO.Packaging": "8.0.1",
-          "System.Management.Automation": "7.4.13",
-          "System.Net.Http.WinHttpHandler": "8.0.3",
-          "System.Private.ServiceModel": "4.10.3",
-          "System.Runtime.Caching": "8.0.1",
-          "System.ServiceModel.Duplex": "4.10.3",
-          "System.ServiceModel.Http": "4.10.3",
-          "System.ServiceModel.NetTcp": "4.10.3",
-          "System.ServiceModel.Primitives": "4.10.3",
-          "System.ServiceModel.Security": "4.10.3",
-          "System.Text.Encodings.Web": "8.0.0",
-          "System.Web.Services.Description": "4.10.3"
-        }
       },
       "System.ServiceProcess.ServiceController": {
         "type": "CentralTransitive",
