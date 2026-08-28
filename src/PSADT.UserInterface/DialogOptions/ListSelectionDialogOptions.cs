@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.Serialization;
+using PSADT.Collections;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -102,7 +103,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), selectedIndex, "SelectedIndex must be a valid index within ListItems.");
             }
-            ListItems = new ReadOnlyCollection<string>([.. listItems]);
+            ListItemsValue = new ValueList<string>([.. listItems]);
             SelectedIndex = selectedIndex;
             Strings = strings;
         }
@@ -110,8 +111,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The list of items to display for user selection.
         /// </summary>
-        [DataMember]
-        public readonly IReadOnlyList<string> ListItems;
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// collection the framework offers compares by reference, so holding one directly would make two dialogs
+        /// offering the same choices unequal however alike they were.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string> ListItems => new ReadOnlyCollection<string>([.. ListItemsValue]);
 
         /// <summary>
         /// The item that should be selected by default.
@@ -124,6 +128,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly ListSelectionDialogStrings Strings;
+
+        /// <summary>
+        /// The items recorded for <see cref="ListItems"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> ListItemsValue;
 
         /// <summary>
         /// Localized strings for the ListSelectionDialog.

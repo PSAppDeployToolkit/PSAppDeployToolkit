@@ -360,7 +360,9 @@ namespace PSADT.ClientServer
                 typeof(Payloads.ShellExecuteProcessPayload),
                 typeof(Payloads.ShowBalloonTipPayload),
                 typeof(Payloads.ShowModalDialogPayload),
+                typeof(Payloads.ShowNotifyIconPayload),
                 typeof(Payloads.ShowProgressDialogPayload),
+                typeof(Payloads.UpdateNotifyIconPayload),
                 typeof(Payloads.UpdateProgressDialogPayload),
 
                 // Dialog options types
@@ -400,10 +402,7 @@ namespace PSADT.ClientServer
                 typeof(WindowManagement.WindowInfoOptions),
 
                 // Used within the following classes:
-                // * ProcessManagement.ProcessLaunchInfo
                 // * ProcessManagement.ProcessResult
-                // * WindowManagement.WindowInfoOptions
-                // * UserInterface.DialogOptions.ListSelectionDialogOptions
                 typeof(ReadOnlyCollection<string>),
 
                 // Used within WindowManagement.WindowInfoOptions class.
@@ -413,11 +412,10 @@ namespace PSADT.ClientServer
                 typeof(ReadOnlyCollection<int>),
 
                 // Used within Payloads.InitCloseAppsDialogPayload class.
-                typeof(ReadOnlyCollection<ProcessManagement.ProcessDefinition>),
+                typeof(Collections.ValueList<ProcessManagement.ProcessDefinition>),
 
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
-                typeof(ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
-                typeof(ReadOnlyDictionary<string, string>),
+                typeof(Collections.ValueDictionary<string, Collections.ValueDictionary<string, string>>),
             ]),
         };
 

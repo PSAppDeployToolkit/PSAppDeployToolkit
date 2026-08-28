@@ -1092,7 +1092,7 @@ namespace PSADT.ClientServer
             /// </summary>
             /// <param name="processDefinitions">The process definitions to track for close applications dialogs.</param>
             /// <param name="logAction">The delegate used to write log messages to the server.</param>
-            internal async ValueTask ResetAsync(ReadOnlyCollection<ProcessDefinition>? processDefinitions, Func<string, LogSeverity, string, ValueTask> logAction)
+            internal async ValueTask ResetAsync(IReadOnlyList<ProcessDefinition>? processDefinitions, Func<string, LogSeverity, string, ValueTask> logAction)
             {
                 if (State is not null)
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -22,12 +23,14 @@ namespace PSADT.UserInterface.DialogState
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
         /// <param name="logAction">An optional delegate for logging messages with severity. If null, logging is disabled.</param>
-        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, Func<string, LogSeverity, string, ValueTask> logAction)
+        internal CloseAppsDialogState(IReadOnlyList<ProcessDefinition>? closeProcesses, Func<string, LogSeverity, string, ValueTask> logAction)
         {
-            // Only initialise these variables if they're not null.
+            // Only initialise these variables if they're not null. The definitions are copied into the
+            // collection the process service holds them in, which is narrower than what arrives here: the
+            // payload carrying them compares by their contents and so keeps them in a list that does too.
             if (closeProcesses?.Count > 0)
             {
-                RunningProcessService = new(closeProcesses);
+                RunningProcessService = new(new ReadOnlyCollection<ProcessDefinition>([.. closeProcesses]));
             }
             LogAction = (message, severity) => logAction(message, severity, "Show-ADTInstallationWelcome");
         }
