@@ -481,6 +481,28 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Gets an equivalent encoding that emits no byte-order mark.
+        /// </summary>
+        /// <remarks>A <see cref="StreamWriter"/> writes its encoding's preamble ahead of its first write to a stream
+        /// it cannot seek, which an anonymous pipe is. A byte-order mark at the head of a process's standard input is
+        /// not skipped by the process reading it: it arrives as part of the first line and corrupts it. <para> This is
+        /// reached more readily than it looks. The default stream encoding is recorded by name so that it survives
+        /// being serialised to a client, and resolving <c>utf-8</c> by name yields the variant that does emit a mark
+        /// even where the encoding it was recorded from did not. </para></remarks>
+        /// <param name="encoding">The encoding to strip the preamble from.</param>
+        /// <returns>The same encoding where it has no preamble; otherwise, an equivalent one that emits none.</returns>
+        private static Encoding WithoutPreamble(Encoding encoding)
+        {
+            return encoding.GetPreamble().Length is 0 ? encoding : encoding switch
+            {
+                UTF8Encoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                UnicodeEncoding => new UnicodeEncoding(bigEndian: encoding.CodePage is 1201, byteOrderMark: false),
+                UTF32Encoding => new UTF32Encoding(bigEndian: encoding.CodePage is 12001, byteOrderMark: false),
+                _ => encoding,
+            };
+        }
+
+        /// <summary>
         /// Creates a write pipe server stream and a corresponding task that writes stdin data to the child process.
         /// </summary>
         /// <param name="input">The input lines to write.</param>
@@ -495,7 +517,7 @@ namespace PSADT.ProcessManagement
                 {
                     try
                     {
-                        using StreamWriter writer = new(stream, encoding);
+                        using StreamWriter writer = new(stream, WithoutPreamble(encoding));
                         foreach (string line in input)
                         {
                             await writer.WriteLineAsync(line).ConfigureAwait(false);
