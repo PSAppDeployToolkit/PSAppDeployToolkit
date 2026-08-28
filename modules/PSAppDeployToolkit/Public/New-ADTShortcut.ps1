@@ -122,7 +122,7 @@ function New-ADTShortcut
         [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [PSADT.ShortcutManagement.ShortcutWindowStyle]$WindowStyle = [PSADT.ShortcutManagement.ShortcutWindowStyle]::Normal,
 
         [Parameter(Mandatory = $false)]

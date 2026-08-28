@@ -166,7 +166,7 @@ function Show-ADTInstallationPrompt
         [System.String]$ButtonMiddleText,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogDefaultButton]$DefaultButton,
 
         [Parameter(Mandatory = $false)]
