@@ -27,6 +27,27 @@ namespace PSADT.PowerShellTestFixture
     public sealed class NewTestEnvironmentTableCommand : PSCmdlet
     {
         /// <summary>
+        /// The engine version to hand the table, or nothing to use whatever the runspace reports.
+        /// </summary>
+        /// <remarks>
+        /// Lets a test choose a version with a zero or absent build and revision, which the engine's own version
+        /// will not always have, so the table's rule for reporting those parts can be exercised rather than
+        /// happened upon.
+        /// </remarks>
+        [Parameter]
+        public Version? PSVersion { get; set; }
+
+        /// <summary>
+        /// The CLR version to record in the version table. Passing nothing removes it.
+        /// </summary>
+        /// <remarks>
+        /// Both cases matter and neither is reachable on both frameworks otherwise: Windows PowerShell always
+        /// reports a CLR version and PowerShell 7 never does.
+        /// </remarks>
+        [Parameter]
+        public Version? CLRVersion { get; set; }
+
+        /// <summary>
         /// Builds the table and writes it out.
         /// </summary>
         protected override void EndProcessing()
@@ -35,7 +56,21 @@ namespace PSADT.PowerShellTestFixture
             // and one of the values read out of it - PSVersion - is a SemanticVersion on PowerShell 7 rather
             // than a Version, which is a difference worth carrying into the test rather than papering over.
             Hashtable psVersionTable = (Hashtable)SessionState.PSVariable.GetValue("PSVersionTable");
-            WriteObject(new EnvironmentTable(this, psVersionTable, GetPSVersion(psVersionTable)));
+            if (MyInvocation.BoundParameters.ContainsKey(nameof(CLRVersion)))
+            {
+                // Cloned rather than edited in place. The runspace's own $PSVersionTable is shared with every
+                // other test in the collection, and these tests are not allowed to change what they observe.
+                psVersionTable = (Hashtable)psVersionTable.Clone();
+                if (CLRVersion is null)
+                {
+                    psVersionTable.Remove(nameof(CLRVersion));
+                }
+                else
+                {
+                    psVersionTable[nameof(CLRVersion)] = CLRVersion;
+                }
+            }
+            WriteObject(new EnvironmentTable(this, psVersionTable, PSVersion ?? GetPSVersion(psVersionTable)));
         }
 
         /// <summary>

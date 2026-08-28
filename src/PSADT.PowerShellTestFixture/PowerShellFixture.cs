@@ -122,6 +122,22 @@ namespace PSADT.PowerShellTestFixture
         }
 
         /// <summary>
+        /// Builds an <see cref="EnvironmentTable"/> from chosen version information rather than the runspace's own.
+        /// </summary>
+        /// <remarks>
+        /// The two versions a caller can supply to the real constructor, so a test can exercise the table's
+        /// treatment of absent, zero and missing version parts instead of only whatever this machine reports.
+        /// </remarks>
+        /// <param name="psVersion">The engine version to hand the table.</param>
+        /// <param name="clrVersion">The CLR version to record, or <see langword="null"/> to record none.</param>
+        /// <returns>A new environment table carrying those versions.</returns>
+        public EnvironmentTable NewEnvironmentTable(Version psVersion, Version? clrVersion)
+        {
+            ArgumentNullException.ThrowIfNull(psVersion);
+            return Unwrap<EnvironmentTable>(InvokeInRunspace($"New-TestEnvironmentTable -PSVersion '{psVersion}' -CLRVersion {(clrVersion is null ? "$null" : $"'{clrVersion}'")}"));
+        }
+
+        /// <summary>
         /// Seats a module database for the lifetime of the returned scope.
         /// </summary>
         /// <remarks>
