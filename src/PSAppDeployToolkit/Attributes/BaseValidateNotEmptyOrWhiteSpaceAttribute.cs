@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
 using System.Security.Principal;
@@ -44,28 +45,9 @@ namespace PSAppDeployToolkit.Attributes
             }
 
             // Handle varying type checks.
-            if (arguments is string str)
+            if (TryGetText(arguments, out string? text))
             {
-                if (allowEmpty ? IsWhiteSpaceOnly(str) : string.IsNullOrWhiteSpace(str))
-                {
-                    throw new ArgumentException(allowEmpty
-                        ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
-                        : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
-                }
-            }
-            else if (arguments is ScriptBlock script)
-            {
-                string scriptStr = script.ToString();
-                if (allowEmpty ? IsWhiteSpaceOnly(scriptStr) : string.IsNullOrWhiteSpace(scriptStr))
-                {
-                    throw new ArgumentException(allowEmpty
-                        ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
-                        : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
-                }
-            }
-            else if (arguments is NTAccount ntAccount)
-            {
-                if (allowEmpty ? IsWhiteSpaceOnly(ntAccount.Value) : string.IsNullOrWhiteSpace(ntAccount.Value))
+                if (allowEmpty ? IsWhiteSpaceOnly(text) : string.IsNullOrWhiteSpace(text))
                 {
                     throw new ArgumentException(allowEmpty
                         ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
@@ -103,7 +85,7 @@ namespace PSAppDeployToolkit.Attributes
                             {
                                 throw new ArgumentException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
                             }
-                            if (element is string elementStr && (allowEmpty ? IsWhiteSpaceOnly(elementStr) : string.IsNullOrWhiteSpace(elementStr)))
+                            if (TryGetText(element, out string? elementText) && (allowEmpty ? IsWhiteSpaceOnly(elementText) : string.IsNullOrWhiteSpace(elementText)))
                             {
                                 throw new ArgumentException(allowEmpty
                                     ? "The argument collection contains an element that is white space. Provide a collection that does not contain white space elements, and then try running the command again."
@@ -140,13 +122,34 @@ namespace PSAppDeployToolkit.Attributes
                 {
                     throw new ArgumentException("The argument dictionary contains a null value. Provide a dictionary that does not contain null values, and then try running the command again.");
                 }
-                if (element is string elementStr && (allowEmpty ? IsWhiteSpaceOnly(elementStr) : string.IsNullOrWhiteSpace(elementStr)))
+                if (TryGetText(element, out string? elementText) && (allowEmpty ? IsWhiteSpaceOnly(elementText) : string.IsNullOrWhiteSpace(elementText)))
                 {
                     throw new ArgumentException(allowEmpty
                         ? "The argument dictionary contains a value that is white space. Provide a dictionary that does not contain white space values, and then try running the command again."
                         : "The argument dictionary contains a value that is empty or white space. Provide a dictionary that does not contain empty or white space values, and then try running the command again.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the text an argument carries, where it carries any.
+        /// </summary>
+        /// <remarks>Declared once and used at all three levels - the argument itself, a collection's elements and a
+        /// dictionary's values - so that the shapes judged for content cannot drift apart. The element scan previously
+        /// recognised strings alone, so an array of empty script blocks passed where a single empty one was refused.</remarks>
+        /// <param name="value">The value to read.</param>
+        /// <param name="text">When this method returns, contains the text the value carries, or <see langword="null"/> where it carries none.</param>
+        /// <returns><see langword="true"/> if the value carries text; otherwise, <see langword="false"/>.</returns>
+        private static bool TryGetText(object? value, [NotNullWhen(true)] out string? text)
+        {
+            text = value switch
+            {
+                string str => str,
+                ScriptBlock script => script.ToString(),
+                NTAccount ntAccount => ntAccount.Value,
+                _ => null,
+            };
+            return text is not null;
         }
 
         /// <summary>

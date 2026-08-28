@@ -265,6 +265,90 @@ namespace PSAppDeployToolkit.Tests.Attributes
         }
 
         /// <summary>
+        /// Verifies that a collection's script block elements are judged by the text they carry.
+        /// </summary>
+        /// <remarks>
+        /// The element scan recognised strings alone, so an array of empty script blocks passed where a single empty one
+        /// was refused. Reachable in the module: Invoke-ADTAllUsersRegistryAction takes a script block array.
+        /// </remarks>
+        [Fact]
+        public void Validate_JudgesScriptBlockElementsByTheirText()
+        {
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { ScriptBlock.Create("Write-Host 'first'"), ScriptBlock.Create("Write-Host 'second'") });
+            Assert.Contains(
+                "empty or white space elements",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
+                    NotNullOrWhiteSpace(),
+                    new[] { ScriptBlock.Create("Write-Host 'first'"), ScriptBlock.Create(string.Empty) })).Message,
+                StringComparison.Ordinal);
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
+                NotNullOrWhiteSpace(),
+                new[] { ScriptBlock.Create("   ") }));
+        }
+
+        /// <summary>
+        /// Verifies that a collection's account elements are judged by their names.
+        /// </summary>
+        [Fact]
+        public void Validate_JudgesAccountElementsByTheirNames()
+        {
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { new NTAccount("BUILTIN\\Administrators"), new NTAccount("BUILTIN\\Users") });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
+                NotNullOrWhiteSpace(),
+                new[] { new NTAccount("BUILTIN\\Administrators"), new NTAccount("   ") }));
+        }
+
+        /// <summary>
+        /// Verifies that a collection element carrying no text at all is left alone.
+        /// </summary>
+        /// <remarks>
+        /// Only the shapes that carry text are judged. An element with none - a number, a date - is accepted, which is
+        /// the same stance the attribute takes on such a value passed on its own.
+        /// </remarks>
+        [Fact]
+        public void Validate_LeavesCollectionElementsCarryingNoTextAlone()
+        {
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new object[] { 42, Guid.Empty, DateTime.MinValue });
+        }
+
+        /// <summary>
+        /// Verifies that a dictionary's script block and account values are judged the same way.
+        /// </summary>
+        /// <remarks>
+        /// The third level of the same rule. All three - the argument, a collection's elements, a dictionary's values -
+        /// now read text from the same set of shapes, so none can drift from the others.
+        /// </remarks>
+        [Fact]
+        public void Validate_JudgesDictionaryValuesOfEveryTextCarryingShape()
+        {
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", ScriptBlock.Create("Write-Host 'hello'") } });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", ScriptBlock.Create("   ") } }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "account", new NTAccount("   ") } }));
+        }
+
+        /// <summary>
+        /// Verifies that the empty flag reaches every text-carrying shape, at every level.
+        /// </summary>
+        /// <remarks>
+        /// What the shared reading is for: an empty script block is permitted where empty is permitted, and refused
+        /// where it is not, and the answer does not depend on whether it arrived on its own, in a list or in a
+        /// dictionary.
+        /// </remarks>
+        [Fact]
+        public void Validate_HonoursTheEmptyFlagForEveryShapeAtEveryLevel()
+        {
+            foreach (object empty in new object[] { ScriptBlock.Create(string.Empty), string.Empty })
+            {
+                _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), empty));
+                ArgumentAttributes.Validate(AllowEmpty(), empty);
+                _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { empty }));
+                ArgumentAttributes.Validate(AllowEmpty(), new[] { empty });
+                _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", empty } }));
+                ArgumentAttributes.Validate(AllowEmpty(), new Hashtable { { "key", empty } });
+            }
+        }
+
+        /// <summary>
         /// Verifies that a collection of non-nullable value types is not scanned element by element.
         /// </summary>
         /// <remarks>
