@@ -9,11 +9,26 @@
   -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove($(MSBuildThisFile), $(MSBuildThisFileDirectory)..))" />
 
-  <!-- Common properties for all PSADT test projects -->
+  <!-- Common properties for everything under tests, harness and support library alike -->
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <ImplicitUsings>false</ImplicitUsings>
     <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!--
+    Not everything under this directory is a test project. A support library shared between test
+    projects - PSAppDeployToolkit.Tests.Fixture, which stands up the PowerShell runspace the
+    PSAppDeployToolkit tests need - belongs here alongside them but must not be handed an entry
+    point, a test runner or IsTestProject, or the test platform tries to run it as a suite of its
+    own and finds nothing.
+
+    The split is on the project name rather than a property the project sets, because this file is
+    imported before the project body and cannot read anything the project declares. Every test
+    project here is named for the assembly it covers with a .Tests suffix, so that suffix is the
+    condition; a support library is anything else.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
@@ -30,7 +45,7 @@
     xunit.v3 with the Visual Studio runner, driven by Microsoft.NET.Test.Sdk. xunit.v3 needs
     OutputType Exe, set above. Versions come from Directory.Packages.props at the repository root.
   -->
-  <ItemGroup>
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio">

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <RootNamespace>PSAppDeployToolkit.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit.Tests.Fixture\PSAppDeployToolkit.Tests.Fixture.csproj" />
+  </ItemGroup>
+
+  <!--
+    The fixture's script module has to sit beside this assembly, not just beside the fixture's own. A
+    ProjectReference copies the referenced assembly and its package assets, but not its Content, and
+    PowerShellFixture looks for the module in the directory its own assembly was loaded from - which, once
+    copied here, is this one.
+  -->
+  <ItemGroup>
+    <Content Include="..\PSAppDeployToolkit.Tests.Fixture\PSAppDeployToolkit.Tests.Fixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+  </ItemGroup>
+
+</Project>

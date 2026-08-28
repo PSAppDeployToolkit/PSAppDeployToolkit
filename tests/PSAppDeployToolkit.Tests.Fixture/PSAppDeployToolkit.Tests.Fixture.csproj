@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PSAppDeployToolkit.Tests.Fixture</RootNamespace>
+    <Product>PSAppDeployToolkit Test Fixture Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit Test Fixture Library</AssemblyTitle>
+    <AssemblyDescription>This assembly hosts a PowerShell runspace so that the PowerShell-dependent types in PSAppDeployToolkit can be exercised through their real constructors.</AssemblyDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <!--
+    Nothing in PSAppDeployToolkit can be reached without a PowerShell engine: EnvironmentTable's only
+    constructor takes a live PSCmdlet, ModuleDatabase holds a PSObject, and LogUtilities evaluates
+    script blocks. A test process is not PowerShell, so unlike the assembly under test - which takes
+    PowerShellStandard.Library with ExcludeAssets="runtime" and lets its host supply the engine - this
+    one has to carry an engine of its own on .NET.
+
+    On .NET Framework it does not. Windows PowerShell 5.1 is part of the operating system and its
+    System.Management.Automation sits in the GAC as assembly version 3.0.0.0, which is exactly the
+    version PowerShellStandard.Library's reference assembly declares. So the compile-time reference
+    binds against the reference assembly and the runtime resolves the real engine, with no package
+    and no binding redirect.
+
+    On .NET it has to be Microsoft.PowerShell.SDK, and the two lighter options were both tried and
+    rejected. PowerShellStandard.Library alone is reference-only and ships no implementation at all.
+    The System.Management.Automation package opens a runspace but has no commands: it resolves
+    Get-PSCallStack, Out-String, Write-Host, Write-Warning and Write-Verbose to whichever
+    Microsoft.PowerShell.Utility the machine happens to have installed and then fails to load it
+    against the package's own engine, with "Could not load type
+    'System.Management.Automation.PSSnapIn'". Every one of those commands is on a path under test, so
+    the full SDK is the only option that runs.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="PowerShellStandard.Library" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.PowerShell.SDK" />
+  </ItemGroup>
+
+  <!--
+    The script module half of the fixture. Copied rather than embedded because Import-Module takes a
+    path and reads the file itself, so a stream would not exercise it, and because the session state
+    the tests hand to ModuleDatabase has to be a real module's session state for
+    $Script:CommandTable to resolve at all.
+  -->
+  <ItemGroup>
+    <Content Include="PSAppDeployToolkit.Tests.Fixture.psm1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

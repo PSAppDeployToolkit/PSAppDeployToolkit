@@ -23,6 +23,8 @@
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
     <InternalsVisibleTo Include="PSADT.WindowsRuntime" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
+    <InternalsVisibleTo Include="PSAppDeployToolkit.Tests" />
+    <InternalsVisibleTo Include="PSAppDeployToolkit.Tests.Fixture" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

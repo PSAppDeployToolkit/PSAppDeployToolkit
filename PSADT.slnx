@@ -20,6 +20,8 @@
     <Project Path="tests/PSADT.CodeAnalysis.Tests/PSADT.CodeAnalysis.Tests.csproj" />
     <Project Path="tests/PSADT.Interop.Tests/PSADT.Interop.Tests.csproj" />
     <Project Path="tests/PSADT.Tests/PSADT.Tests.csproj" />
+    <Project Path="tests/PSAppDeployToolkit.Tests/PSAppDeployToolkit.Tests.csproj" />
+    <Project Path="tests/PSAppDeployToolkit.Tests.Fixture/PSAppDeployToolkit.Tests.Fixture.csproj" />
   </Folder>
   <Folder Name="/vendor/Fluence.Wpf/">
     <Project Path="vendor/Fluence.Wpf/Fluence.Wpf/Fluence.Wpf.csproj" />

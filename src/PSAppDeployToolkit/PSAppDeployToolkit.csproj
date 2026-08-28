@@ -13,6 +13,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSAppDeployToolkit.Tests" />
   </ItemGroup>
 
   <ItemGroup>
