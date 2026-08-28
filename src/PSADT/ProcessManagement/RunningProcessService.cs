@@ -18,10 +18,12 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processDefinitions">A read-only collection of process definitions to be managed by the service. Must contain at least one
         /// element.</param>
-        /// <exception cref="ArgumentNullException">Thrown if processDefinitions is null or contains no elements.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if processDefinitions is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if processDefinitions contains no elements.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions)
         {
+            ArgumentNullException.ThrowIfNull(processDefinitions);
             ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count, nameof(processDefinitions));
             _processDefinitions = processDefinitions;
         }

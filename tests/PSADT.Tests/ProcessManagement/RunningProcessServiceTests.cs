@@ -221,6 +221,17 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a null definition list is refused as null, rather than failing on the attempt to
+        /// count it and leaving the caller to work out which argument was at fault.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
+        [Fact]
+        public void RunningProcessService_RefusesANullDefinitionList()
+        {
+            _ = Assert.Throws<ArgumentNullException>(static () => new RunningProcessService(null!));
+        }
+
+        /// <summary>
         /// Builds a service watching for a single named process.
         /// </summary>
         /// <param name="processName">The process to watch for.</param>
