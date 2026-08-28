@@ -159,7 +159,8 @@ namespace PSADT.ClientServer
         {
             ArgumentNullException.ThrowIfNull(bytes);
             ArgumentOutOfRangeException.ThrowIfZero(bytes.Length, nameof(bytes));
-            if (((uint)offset > (uint)bytes.Length) || (offset == bytes.Length))
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            if (offset >= bytes.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset points past the end of the buffer.");
             }

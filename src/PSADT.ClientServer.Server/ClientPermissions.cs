@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using PSADT.Foundation;
@@ -24,8 +25,11 @@ namespace PSADT.ClientServer
         /// langword="null"/>.</param>
         /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
         /// and point to existing files.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         public static ValueTask RemediateAsync(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
+            // Check for null before calling an async method.
+            ArgumentNullException.ThrowIfNull(runAsActiveUser);
             return ClientServerPermissions.RemediateAsync(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType);
         }
     }
