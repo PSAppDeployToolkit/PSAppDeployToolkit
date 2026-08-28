@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -228,7 +229,7 @@ namespace PSADT.ProcessManagement
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(description);
             ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
-            Process = process;
+            ProcessValue = new ProcessIdentity(process);
             Description = description;
             FileNameValue = new FileInfo(fileName).FullName;
             ArgumentListValue = new ValueList<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
@@ -238,7 +239,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the process associated with the running process.
         /// </summary>
-        public Process Process { get; }
+        /// <remarks>Held through <see cref="ProcessIdentity"/>, which compares by the process's identifier. A
+        /// <see cref="Process"/> is a live handle rather than a value: two of them for the same running process hold
+        /// different handles and compare unequal, so holding one directly would mean no two descriptions of one
+        /// process ever matched.</remarks>
+        public Process Process => ProcessValue.Process;
 
         /// <summary>
         /// Gets the description of the running process.
@@ -277,5 +282,52 @@ namespace PSADT.ProcessManagement
         /// The list recorded for <see cref="ArgumentList"/>.
         /// </summary>
         private readonly ValueList<string> ArgumentListValue;
+
+        /// <summary>
+        /// The process recorded for <see cref="Process"/>.
+        /// </summary>
+        private readonly ProcessIdentity ProcessValue;
+
+        /// <summary>
+        /// Holds a process and compares it by its identifier.
+        /// </summary>
+        /// <remarks>Windows reuses process identifiers once a process has ended, so an identifier is not an identity
+        /// on its own. It is enough here: two of these are only ever compared as part of the record holding them, and
+        /// that comparison already requires the image, the arguments, the description and the owning account to match
+        /// as well. A reused identifier could only be mistaken for the original by a process indistinguishable from it
+        /// in every one of those respects. <para> The alternative - pairing the identifier with the process's start
+        /// time, which is the textbook identity - was not taken. Reading a start time costs a call into the kernel per
+        /// process and fails outright for one this caller cannot open, and the enumeration this record is built by is
+        /// deliberately written to pass over processes it cannot read rather than fail on them. </para></remarks>
+        /// <param name="process">The process to hold.</param>
+        private sealed class ProcessIdentity(Process process) : IEquatable<ProcessIdentity>
+        {
+            /// <summary>
+            /// Gets the process held.
+            /// </summary>
+            internal Process Process { get; } = process;
+
+            /// <summary>
+            /// Determines whether this holds the same process as another.
+            /// </summary>
+            /// <param name="other">The process to compare against.</param>
+            /// <returns><see langword="true"/> if the two name the same process; otherwise, <see langword="false"/>.</returns>
+            public bool Equals([NotNullWhen(true)] ProcessIdentity? other)
+            {
+                return ReferenceEquals(this, other) || (other is not null && Process.Id == other.Process.Id);
+            }
+
+            /// <inheritdoc/>
+            public override bool Equals([NotNullWhen(true)] object? obj)
+            {
+                return Equals(obj as ProcessIdentity);
+            }
+
+            /// <inheritdoc/>
+            public override int GetHashCode()
+            {
+                return Process.Id;
+            }
+        }
     }
 }

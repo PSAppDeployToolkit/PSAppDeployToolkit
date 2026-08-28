@@ -196,5 +196,59 @@ namespace PSADT.Tests.ProcessManagement
         {
             _ = Assert.Throws<ArgumentNullException>(static () => RunningProcessInfo.Get(null!));
         }
+
+        /// <summary>
+        /// Verifies that two descriptions of the same running process are equal, which is what the type
+        /// being a record promises anything comparing one reading against the next.
+        /// </summary>
+        /// <remarks>
+        /// The two are taken by separate calls, so nothing is shared between them: each holds its own
+        /// <see cref="Process"/>, its own path and its own argument list. That is the case worth pinning.
+        /// A <see cref="Process"/> is a live handle rather than a value - each one is opened separately
+        /// and holds a different handle value - and a collection compares by reference, so a record
+        /// holding either directly never equalled another describing the same process.
+        /// </remarks>
+        [Fact]
+        public void Equality_IsByValue()
+        {
+            // Arrange
+            using Process current = Process.GetCurrentProcess();
+
+            // Act: two separate readings of the same process
+            RunningProcessInfo? first = RunningProcessInfo.Get([new(current.ProcessName)]).FirstOrDefault(info => info.Process.Id == current.Id);
+            RunningProcessInfo? second = RunningProcessInfo.Get([new(current.ProcessName)]).FirstOrDefault(info => info.Process.Id == current.Id);
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+
+            // Assert: nothing is shared between them, and they are equal all the same
+            Assert.NotSame(first.Process, second.Process);
+            Assert.Equal(first, second);
+            Assert.Equal(first.GetHashCode(), second.GetHashCode());
+        }
+
+        /// <summary>
+        /// Verifies that descriptions of two different processes are not equal, so the comparison is
+        /// doing work rather than matching everything.
+        /// </summary>
+        [Fact]
+        public void Equality_DistinguishesDifferentProcesses()
+        {
+            // Arrange: every process on the machine that this caller can describe
+            using Process current = Process.GetCurrentProcess();
+            IReadOnlyList<RunningProcessInfo> running = RunningProcessInfo.Get([new("*s*")]);
+            RunningProcessInfo? other = running.FirstOrDefault(info => info.Process.Id != current.Id);
+            if (other is null)
+            {
+                // Nothing else on the machine was describable, so there is nothing to distinguish from.
+                return;
+            }
+
+            // Act
+            RunningProcessInfo? host = RunningProcessInfo.Get([new(current.ProcessName)]).FirstOrDefault(info => info.Process.Id == current.Id);
+
+            // Assert
+            Assert.NotNull(host);
+            Assert.NotEqual(host, other);
+        }
     }
 }
