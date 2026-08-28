@@ -140,6 +140,7 @@ IShellLinkDataList
 IShellLinkW
 IsIconic
 IsProcessInJob
+IsWindow
 IsWindowEnabled
 IsWindowVisible
 ITaskService

@@ -28,6 +28,20 @@ namespace PSADT.WindowManagement
         }
 
         /// <summary>
+        /// Determines whether the specified handle still identifies an existing window.
+        /// </summary>
+        /// <remarks>A window can be destroyed at any moment, including between being enumerated and being
+        /// asked about, so a handle obtained a moment ago is not necessarily one any more. Unlike the other members
+        /// here this one does not refuse a handle of nothing: not being a window is precisely the answer it exists to
+        /// give, and a caller checking a handle before using it has no reason to check it for null first.</remarks>
+        /// <param name="hWnd">A handle to test.</param>
+        /// <returns><see langword="true"/> if the handle identifies an existing window; otherwise, <see langword="false"/>.</returns>
+        internal static bool IsWindow(HWND hWnd)
+        {
+            return PInvoke.IsWindow(hWnd);
+        }
+
+        /// <summary>
         /// Retrieves the text of the specified window.
         /// </summary>
         /// <param name="hWnd">A handle to the window.</param>

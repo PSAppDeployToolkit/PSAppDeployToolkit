@@ -41,6 +41,39 @@ namespace PSADT.Tests.WindowManagement
         }
 
         /// <summary>
+        /// Verifies that a handle naming no window is reported as such rather than refused, since
+        /// answering that is the whole point of the test - it is what lets a caller pass over a window
+        /// that has closed since it was enumerated.
+        /// </summary>
+        [Fact]
+        public void IsWindow_ReportsAHandleThatNamesNoWindow()
+        {
+            Assert.False(WindowTools.IsWindow(InvalidWindowHandle));
+            Assert.False(WindowTools.IsWindow(HWND.Null));
+        }
+
+        /// <summary>
+        /// Verifies that the handles the enumeration yields are windows, since a caller checking one
+        /// before using it would otherwise pass over every window on the machine.
+        /// </summary>
+        /// <remarks>
+        /// Asserted of the set rather than of every handle: a window enumerated a moment ago may have
+        /// closed by the time it is asked about, and that is exactly the case being catered for.
+        /// </remarks>
+        [Fact]
+        public void IsWindow_ConfirmsEnumeratedWindows()
+        {
+            // Act
+            ReadOnlyCollection<HWND> windows = WindowTools.EnumWindows();
+
+            // Assert
+            if (windows.Count > 0)
+            {
+                Assert.Contains(windows, static window => WindowTools.IsWindow(window));
+            }
+        }
+
+        /// <summary>
         /// Verifies that a handle of nothing at all is refused rather than being asked about, since it
         /// cannot name a window and a caller passing one has lost track of what it holds.
         /// </summary>

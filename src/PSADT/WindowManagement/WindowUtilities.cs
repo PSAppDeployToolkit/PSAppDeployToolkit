@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 using PSADT.Interop;
 using Windows.Win32.Foundation;
@@ -34,7 +35,10 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <remarks>This method enumerates all visible windows and filters them based on the provided
         /// criteria. If multiple filters are specified, windows must satisfy all filters to be included in the
-        /// results. The method returns an empty list if no windows match the specified filters.</remarks>
+        /// results. The method returns an empty list if no windows match the specified filters. <para> A window closed
+        /// between being enumerated and being asked about is passed over rather than reported as a failure. That
+        /// happens routinely - the machine's windows come and go while this runs - and it is not a fault: the window is
+        /// simply no longer anything to report. Any other failure is still raised. </para></remarks>
         /// <param name="parentProcesses">An optional array of <see cref="Process"/> objects to limit the search to specific parent processes.</param>
         /// <param name="parentProcessFilter">An optional array of process names to filter the results. Only windows associated with processes whose
         /// names match one or more of the specified names will be included.</param>
@@ -61,14 +65,17 @@ namespace PSADT.WindowManagement
                 foreach (HWND windowHandle in windowHandleFilter is not null ? WindowTools.EnumWindows().Where(w => windowHandleFilter.Contains(w) && NativeMethods.IsWindowVisible(w)) : WindowTools.EnumWindows().Where(static w => NativeMethods.IsWindowVisible(w)))
                 {
                     // Return early if we can't find a process for this window.
-                    uint parentProcessId = WindowTools.GetWindowThreadProcessId(windowHandle);
+                    if (GetWindowThreadProcessIdIfOpen(windowHandle) is not uint parentProcessId)
+                    {
+                        continue;
+                    }
                     if (processes.FirstOrDefault(p => p.Id == parentProcessId) is not Process parentProcess)
                     {
                         continue;
                     }
 
                     // Continue if the window doesn't have any text.
-                    if (WindowTools.GetWindowText(windowHandle) is not string windowTitle)
+                    if (GetWindowTextIfOpen(windowHandle) is not string windowTitle)
                     {
                         continue;
                     }
@@ -108,6 +115,58 @@ namespace PSADT.WindowManagement
                 ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count, nameof(windowHandleFilter));
             }
             return GetProcessWindowInfoImpl();
+        }
+
+        /// <summary>
+        /// Gets the process that owns the specified window, or null if the window has since been closed.
+        /// </summary>
+        /// <param name="windowHandle">A handle to the window, obtained from an enumeration that may since have gone stale.</param>
+        /// <returns>The owning process's identifier, or <see langword="null"/> if the window no longer exists.</returns>
+        private static uint? GetWindowThreadProcessIdIfOpen(HWND windowHandle)
+        {
+            if (!WindowTools.IsWindow(windowHandle))
+            {
+                return null;
+            }
+            try
+            {
+                return WindowTools.GetWindowThreadProcessId(windowHandle);
+            }
+            catch (Exception ex)
+            {
+                if (WindowTools.IsWindow(windowHandle))
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                }
+                return null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Gets the text of the specified window, or null if it has none or has since been closed.
+        /// </summary>
+        /// <param name="windowHandle">A handle to the window, obtained from an enumeration that may since have gone stale.</param>
+        /// <returns>The window's text, or <see langword="null"/> if it has none or no longer exists.</returns>
+        private static string? GetWindowTextIfOpen(HWND windowHandle)
+        {
+            if (!WindowTools.IsWindow(windowHandle))
+            {
+                return null;
+            }
+            try
+            {
+                return WindowTools.GetWindowText(windowHandle);
+            }
+            catch (Exception ex)
+            {
+                if (WindowTools.IsWindow(windowHandle))
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                }
+                return null;
+                throw;
+            }
         }
     }
 }
