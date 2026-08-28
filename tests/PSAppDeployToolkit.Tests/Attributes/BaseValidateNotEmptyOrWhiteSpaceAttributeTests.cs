@@ -165,21 +165,65 @@ namespace PSAppDeployToolkit.Tests.Attributes
         public void Validate_RefusesAnEmptyDictionary()
         {
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable()));
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new ReadOnlyDictionaryOnly(0)));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new ReadOnlyDictionaryOnly(0, "content")));
         }
 
         /// <summary>
-        /// Verifies that a dictionary with entries is accepted without its values being inspected.
+        /// Verifies that a dictionary's values are judged by the same rules as a collection's elements.
         /// </summary>
         /// <remarks>
-        /// Only the count is checked, so a dictionary holding a blank value passes. Recorded because it is a real
-        /// difference from how a collection is treated, not because it is obviously right.
+        /// Previously only the count was checked, so a dictionary holding a blank value passed where the same value in
+        /// a list was refused. Both dictionary branches are covered, since each walks its values a different way.
         /// </remarks>
         [Fact]
-        public void Validate_AcceptsANonEmptyDictionaryWithoutInspectingItsValues()
+        public void Validate_InspectsADictionaryValues()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", "   " } });
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new ReadOnlyDictionaryOnly(1));
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", "content" } });
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new ReadOnlyDictionaryOnly(1, "content"));
+            Assert.Contains(
+                "empty or white space values",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", "   " } })).Message,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "empty or white space values",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new ReadOnlyDictionaryOnly(1, "   "))).Message,
+                StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that a dictionary carrying a null value is refused.
+        /// </summary>
+        [Fact]
+        public void Validate_RefusesADictionaryCarryingANullValue()
+        {
+            Assert.Contains(
+                "contains a null value",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", null } })).Message,
+                StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that the empty flag reaches a dictionary's values too.
+        /// </summary>
+        [Fact]
+        public void Validate_HonoursTheEmptyFlagForDictionaryValues()
+        {
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "key", string.Empty } }));
+            ArgumentAttributes.Validate(AllowEmpty(), new Hashtable { { "key", string.Empty } });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(AllowEmpty(), new Hashtable { { "key", "   " } }));
+        }
+
+        /// <summary>
+        /// Verifies that a dictionary's keys are not judged.
+        /// </summary>
+        /// <remarks>
+        /// Only values are inspected. A blank key is a different kind of mistake and no parameter in the module takes a
+        /// dictionary whose keys come from a caller, so it is left alone rather than guessed at.
+        /// </remarks>
+        [Fact]
+        public void Validate_DoesNotJudgeADictionaryKeys()
+        {
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "   ", "content" } });
         }
 
         /// <summary>
@@ -348,7 +392,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// earlier test. Only <c>Count</c> is ever read, so the rest is the minimum the interface demands.
         /// </remarks>
         /// <param name="count">How many entries to claim.</param>
-        private sealed class ReadOnlyDictionaryOnly(int count) : IReadOnlyDictionary<string, string>
+        /// <param name="value">The single value to report, however many entries are claimed.</param>
+        private sealed class ReadOnlyDictionaryOnly(int count, string value) : IReadOnlyDictionary<string, string>
         {
             /// <inheritdoc/>
             public int Count { get; } = count;
@@ -357,7 +402,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
             public IEnumerable<string> Keys => throw new NotSupportedException();
 
             /// <inheritdoc/>
-            public IEnumerable<string> Values => throw new NotSupportedException();
+            public IEnumerable<string> Values { get; } = count > 0 ? [value] : [];
 
             /// <inheritdoc/>
             public string this[string key] => throw new NotSupportedException();

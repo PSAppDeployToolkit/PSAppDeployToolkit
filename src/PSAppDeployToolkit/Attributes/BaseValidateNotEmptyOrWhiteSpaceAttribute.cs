@@ -78,13 +78,15 @@ namespace PSAppDeployToolkit.Attributes
                 {
                     throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
+                ValidateDictionaryValues(dict.Values);
             }
-            else if (IsReadOnlyDictionary(arguments, out int count))
+            else if (IsReadOnlyDictionary(arguments, out int count, out IEnumerable? readOnlyValues))
             {
                 if (count is 0)
                 {
                     throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
+                ValidateDictionaryValues(readOnlyValues);
             }
             else if (IsCollection(arguments.GetType(), out bool isElementValueType))
             {
@@ -118,6 +120,34 @@ namespace PSAppDeployToolkit.Attributes
             }
         }
 
+
+        /// <summary>
+        /// Validates a dictionary's values by the same rules as a collection's elements.
+        /// </summary>
+        /// <param name="entries">The values to validate.</param>
+        /// <exception cref="ArgumentException">Thrown when a value is null, empty or white space.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0038:Make method static (deprecated, use CA1822 instead)", Justification = "Reads allowEmpty, which this rule does not recognise as instance state on a primary constructor parameter.")]
+        private void ValidateDictionaryValues(IEnumerable? entries)
+        {
+            if (entries is null)
+            {
+                return;
+            }
+            foreach (object? entry in entries)
+            {
+                if (!PowerShellUtilities.TryGetBaseObject(entry, out object? element))
+                {
+                    throw new ArgumentException("The argument dictionary contains a null value. Provide a dictionary that does not contain null values, and then try running the command again.");
+                }
+                if (element is string elementStr && (allowEmpty ? IsWhiteSpaceOnly(elementStr) : string.IsNullOrWhiteSpace(elementStr)))
+                {
+                    throw new ArgumentException(allowEmpty
+                        ? "The argument dictionary contains a value that is white space. Provide a dictionary that does not contain white space values, and then try running the command again."
+                        : "The argument dictionary contains a value that is empty or white space. Provide a dictionary that does not contain empty or white space values, and then try running the command again.");
+                }
+            }
+        }
 
         /// <summary>
         /// Determines whether the specified string consists only of white-space characters (but is not empty).
@@ -173,8 +203,9 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="value">The object to check.</param>
         /// <param name="count">When this method returns, contains the count of elements if the object is a read-only dictionary; otherwise, 0.</param>
+        /// <param name="entries">When this method returns, contains the dictionary's values if the object is a read-only dictionary; otherwise, <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if the object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>; otherwise, <see langword="false"/>.</returns>
-        private static bool IsReadOnlyDictionary(object value, out int count)
+        private static bool IsReadOnlyDictionary(object value, out int count, out IEnumerable? entries)
         {
             if (value.GetType().GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)) is Type iface)
             {
@@ -184,9 +215,11 @@ namespace PSAppDeployToolkit.Attributes
                 count = typeof(IReadOnlyCollection<>)
                     .MakeGenericType(typeof(KeyValuePair<,>).MakeGenericType(iface.GetGenericArguments()))
                     .GetProperty("Count")?.GetValue(value) as int? ?? 0;
+                entries = iface.GetProperty("Values")?.GetValue(value) as IEnumerable;
                 return true;
             }
             count = 0;
+            entries = null;
             return false;
         }
     }
