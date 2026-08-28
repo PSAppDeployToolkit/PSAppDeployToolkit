@@ -38,7 +38,7 @@ namespace PSAppDeployToolkit.Utilities
         /// <returns>true if the underlying object of type T was successfully retrieved; otherwise, false.</returns>
         public static bool TryGetBaseObject<T>(object? obj, [NotNullWhen(true)] out T? baseObject) where T : notnull
         {
-            while (obj is PSObject psObj)
+            while (!ObjectIsNull(obj) && obj is PSObject psObj)
             {
                 obj = psObj.BaseObject;
             }
