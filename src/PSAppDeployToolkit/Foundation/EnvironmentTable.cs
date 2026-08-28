@@ -27,14 +27,14 @@ namespace PSAppDeployToolkit.Foundation
     /// session, including system paths, user and domain context, operating system details, PowerShell and CLR versions,
     /// and other relevant runtime properties.
     /// </summary>
-    /// <remarks>The EnvironmentTable record is designed to centralize access to a wide range of environment
+    /// <remarks>The EnvironmentTable type is designed to centralize access to a wide range of environment
     /// data, making it easier for applications and scripts to query system, user, and runtime context in a consistent
     /// manner. It exposes properties for common environment variables, file system locations, user session details,
     /// domain membership, process and OS architecture, and PowerShell execution context. This type is particularly
     /// useful for deployment automation, diagnostics, and scripts that need to adapt their behavior based on the
     /// current environment. All properties are read-only and reflect the state of the environment at the time the
     /// instance is created.</remarks>
-    public sealed record class EnvironmentTable
+    public sealed class EnvironmentTable
     {
         /// <summary>
         /// Initializes a new instance of the EnvironmentTable class, providing access to various environment-related
