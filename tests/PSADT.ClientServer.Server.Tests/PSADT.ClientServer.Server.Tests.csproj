@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <RootNamespace>PSADT.ClientServer.Server.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
+  </ItemGroup>
+
+  <!--
+    ClientServerUtilities' static constructor calls IsAuthenticodeTrusted() on each client/server
+    executable, which throws when the file is missing. Anything that reads it - which for this project
+    means ServerInstance itself - then fails with a TypeInitializationException instead. The four
+    executables therefore have to sit beside the test assembly, exactly as they do for PSADT.Tests.
+
+    The lookup resolves to the net472 directory beside PSADT.dll, so both of this project's target
+    frameworks land on the same folder: net472 is its own output directory, and net8.0 walks up one
+    level and back down into net472. Building the four projects and copying their executables there
+    once therefore satisfies both runs.
+
+    Ordering is expressed as a ProjectReference rather than by invoking the Build target imperatively.
+    An MSBuild task asking for Build races the solution's own build of the same project and the two
+    collide writing its output; a ProjectReference goes through MSBuild's project instance cache and
+    builds once. GetTargetPath below only reads a property, so it adds no second builder.
+
+    UndefineProperties drops TargetFramework from what the reference passes down, and it has to. These
+    four projects are single-targeted, so a solution build builds them with no TargetFramework global
+    property at all. Handing them one - which is what SetTargetFramework does - produces a second,
+    differently-keyed project instance that the instance cache cannot match against the first, and the
+    two then build concurrently into the same output. Undefining it makes both requests the same
+    instance.
+
+    Tests that need these executables still gate on TestEnvironment.ClientServerExecutablesPresent, so
+    a build that skips this - "dotnet build -f net8.0" addresses the other inner build and never runs
+    it - reports the gap rather than failing on type initialization.
+  -->
+  <ItemGroup>
+    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
+    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
+    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Launcher.Compatible\PSADT.ClientServer.Client.Launcher.Compatible.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <ProjectReference Include="@(ClientServerProject)" ReferenceOutputAssembly="false" UndefineProperties="TargetFramework" />
+  </ItemGroup>
+
+  <Target Name="CopyClientServerExecutables" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net472'">
+    <MSBuild Projects="@(ClientServerProject)" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerTargetPath" />
+    </MSBuild>
+    <Copy SourceFiles="@(_ClientServerTargetPath)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
