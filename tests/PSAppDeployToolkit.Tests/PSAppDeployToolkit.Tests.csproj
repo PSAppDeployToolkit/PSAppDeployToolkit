@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <RootNamespace>PSAppDeployToolkit.Tests</RootNamespace>
-    <NoWarn>$(NoWarn);MA0191</NoWarn>
+    <NoWarn>$(NoWarn);MA0191;xUnit1045</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
