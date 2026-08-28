@@ -56,19 +56,15 @@ namespace PSAppDeployToolkit.Attributes
                 return;
             }
 
-            // Determine the type of the first element to select an appropriate equality comparer.
+            // Check the first element before anything else, since a collection carrying nothing cannot be a
+            // collection of unique things.
             if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? firstValue))
             {
                 throw new ArgumentException("The argument collection contains null elements. Provide a collection in which each element has a value, and then try running the command again.");
             }
 
-            // Create a typed equality comparer for the inferred type of the first element, or use a string comparer if the first element is a string.
-            Type inferredType = firstValue.GetType(); IEqualityComparer<object?> comparer = inferredType != typeof(string)
-                ? Activator.CreateInstance(typeof(TypedDefaultEqualityComparer<>).MakeGenericType(inferredType)) as IEqualityComparer<object?> ?? throw new InvalidOperationException($"Unable to create a typed equality comparer for type '{inferredType.FullName}'.")
-                : new TypedDefaultEqualityComparer<string>(StringComparer.FromComparison(StringComparison));
-
             // Use a HashSet to track seen elements and detect duplicates efficiently.
-            HashSet<object?> seen = new(comparer) { firstValue };
+            HashSet<object?> seen = new(new ElementEqualityComparer(StringComparison)) { firstValue };
             while (enumerator.MoveNext())
             {
                 if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? value))
@@ -83,70 +79,44 @@ namespace PSAppDeployToolkit.Attributes
         }
 
         /// <summary>
-        /// Provides an equality comparer for objects that compares values of type T using the default equality comparer
-        /// for T, and falls back to object equality for other types.
+        /// Compares two elements, applying the configured <see cref="StringComparison"/> where both are strings and
+        /// each type's own equality otherwise.
         /// </summary>
-        /// <remarks>This comparer is useful when working with collections or APIs that operate on objects
-        /// but require type-specific equality logic for a particular type T. If both objects are of type T, their
-        /// equality and hash code are determined using EqualityComparer&lt;T&gt;.Default; otherwise, object equality is
-        /// used.</remarks>
-        /// <typeparam name="T">The type to compare when evaluating equality and hash codes.</typeparam>
-        private sealed class TypedDefaultEqualityComparer<T> : IEqualityComparer<object?>
+        /// <remarks>The comparison is decided per pair rather than from the type of the collection's first element.
+        /// Taking it from the first element made the answer depend on ordering: two strings differing only in case were
+        /// duplicates on their own but distinct when an integer preceded them, because the comparer had been typed for
+        /// an integer and the strings then fell back to case-sensitive object equality.</remarks>
+        /// <param name="stringComparison">The comparison to apply to strings.</param>
+        private sealed class ElementEqualityComparer(StringComparison stringComparison) : IEqualityComparer<object?>
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="TypedDefaultEqualityComparer{T}"/> class.
+            /// Determines whether two elements are the same element.
             /// </summary>
-            public TypedDefaultEqualityComparer()
+            /// <param name="x">The first element to compare.</param>
+            /// <param name="y">The second element to compare.</param>
+            /// <returns><see langword="true"/> if they are the same; otherwise, <see langword="false"/>.</returns>
+            public new bool Equals(object? x, object? y)
             {
-                Comparer = EqualityComparer<T>.Default;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="TypedDefaultEqualityComparer{T}"/> class with the specified comparer.
-            /// </summary>
-            /// <param name="comparer">The comparer to use. If null, <see cref="EqualityComparer{T}.Default"/> is used.</param>
-            public TypedDefaultEqualityComparer(IEqualityComparer<T>? comparer)
-            {
-                Comparer = comparer ?? EqualityComparer<T>.Default;
-            }
-
-            /// <summary>
-            /// Gets the equality comparer used to determine whether objects of type T are equal.
-            /// </summary>
-            /// <remarks>If no comparer is provided, the default equality comparer for the type is
-            /// used.</remarks>
-            private readonly IEqualityComparer<T> Comparer;
-
-            /// <summary>
-            /// Determines whether the specified objects are equal according to the equality logic for type T, or by
-            /// default object equality if the objects are not of type T.
-            /// </summary>
-            /// <remarks>If both objects are of type T, the comparison uses the default equality
-            /// comparer for T. If either object is not of type T, the comparison falls back to the default object
-            /// equality comparer.</remarks>
-            /// <param name="x">The first object to compare.</param>
-            /// <param name="y">The second object to compare.</param>
-            /// <returns>true if the specified objects are considered equal; otherwise, false.</returns>
-            bool IEqualityComparer<object?>.Equals(object? x, object? y)
-            {
-                return x is T typedX && y is T typedY
-                    ? Comparer.Equals(typedX, typedY)
+                return x is string first && y is string second
+                    ? string.Equals(first, second, stringComparison)
                     : EqualityComparer<object?>.Default.Equals(x, y);
             }
 
             /// <summary>
-            /// Returns a hash code for the specified object.
+            /// Returns a hash code for an element, consistent with how it is compared.
             /// </summary>
-            /// <remarks>If the object is of type T, the default equality comparer for T is used to
-            /// compute the hash code. Otherwise, the object's own GetHashCode method is used.</remarks>
-            /// <param name="obj">The object for which to get a hash code. Can be null.</param>
-            /// <returns>A hash code for the specified object. Returns 0 if the object is null.</returns>
+            /// <param name="obj">The element to hash.</param>
+            /// <returns>Its hash code, or zero where it has none.</returns>
             public int GetHashCode(object? obj)
             {
-                return obj is T typedValue
-                    ? Comparer.GetHashCode(typedValue)
-                    : obj?.GetHashCode() ?? 0;
+                return obj is string value ? _stringComparer.GetHashCode(value) : obj?.GetHashCode() ?? 0;
             }
+
+            /// <summary>
+            /// The comparer matching the configured comparison, resolved once so an unrecognised comparison is refused
+            /// when validation starts rather than at the first hash.
+            /// </summary>
+            private readonly StringComparer _stringComparer = StringComparer.FromComparison(stringComparison);
         }
     }
 }

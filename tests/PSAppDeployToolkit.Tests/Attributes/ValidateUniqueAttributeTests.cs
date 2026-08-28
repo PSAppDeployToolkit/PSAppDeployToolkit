@@ -133,34 +133,37 @@ namespace PSAppDeployToolkit.Tests.Attributes
         }
 
         /// <summary>
-        /// Verifies that a collection of mixed types falls back to plain object equality.
+        /// Verifies that elements of unlike types are never duplicates of one another.
         /// </summary>
         /// <remarks>
-        /// The comparer is typed from the first element, so a later element of another type cannot be compared through
-        /// it and falls back. The consequence is that <c>1</c> and <c>"1"</c> are distinct here - correct, but it means
-        /// the validator's strictness depends on which element came first, which is worth knowing rather than
-        /// discovering.
+        /// A string and a number that render alike are still different values, so <c>1</c> and <c>"1"</c> coexist. What
+        /// matters is that this holds in either order.
         /// </remarks>
         [Fact]
         public void Validate_FallsBackToObjectEqualityForMixedTypes()
         {
             ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "1" });
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { "1", 1 });
             ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", 2 });
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", 1 }));
         }
 
         /// <summary>
-        /// Verifies that case-insensitivity applies only when the first element is a string.
+        /// Verifies that the string comparison applies wherever two strings meet, whatever preceded them.
         /// </summary>
         /// <remarks>
-        /// The direct consequence of typing the comparer from the first element: the same two strings are duplicates in
-        /// one collection and distinct in another, depending on what preceded them.
+        /// Previously the comparer was typed from the collection's first element, so these two answers disagreed: the
+        /// pair on its own was a duplicate, but the same pair behind an integer was not, because the comparer had been
+        /// typed for an integer and the strings fell back to case-sensitive equality. The comparison is now decided per
+        /// pair, so ordering cannot change the answer.
         /// </remarks>
         [Fact]
-        public void Validate_AppliesTheStringComparisonOnlyWhenTheFirstElementIsAString()
+        public void Validate_AppliesTheStringComparisonWhateverTheElementOrder()
         {
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { "alpha", "ALPHA" }));
-            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", "ALPHA" });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", "ALPHA" }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { new Named("x"), "alpha", "ALPHA" }));
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(StringComparison.Ordinal), new object[] { 1, "alpha", "ALPHA" });
         }
 
         /// <summary>
