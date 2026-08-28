@@ -106,12 +106,12 @@ namespace PSADT.ProcessManagement
             // Set the FileName property before trying to read memory.
             if (filePath is null)
             {
-                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
+                FileNameValue = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable()).FullName;
             }
             else
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-                FileName = new(filePath);
+                FileNameValue = new FileInfo(filePath).FullName;
             }
 
             // Get the main module base address and read the version resource from memory.
@@ -506,7 +506,10 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the file that this object instance describes.
         /// </summary>
-        public FileInfo FileName { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same image would never match.</remarks>
+        public FileInfo FileName => new(FileNameValue);
 
         /// <summary>
         /// Gets the file private part number.
@@ -616,5 +619,10 @@ namespace PSADT.ProcessManagement
         /// is typically used in scenarios where the directory flag needs to be cleared to obtain the actual
         /// RVA.</remarks>
         private const uint IMAGE_RESOURCE_RVA_MASK = ~PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY;
+
+        /// <summary>
+        /// The path recorded for <see cref="FileName"/>.
+        /// </summary>
+        private readonly string FileNameValue;
     }
 }

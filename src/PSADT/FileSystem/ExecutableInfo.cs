@@ -88,7 +88,7 @@ namespace PSADT.FileSystem
         private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-            FileInfo = new(filePath);
+            FileInfoValue = new FileInfo(filePath).FullName;
             Machine = (Interop.IMAGE_FILE_MACHINE)machine;
             Subsystem = (Interop.IMAGE_SUBSYSTEM)subsystem;
             IsDotNetExecutable = isDotNetExecutable;
@@ -99,7 +99,15 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The FileInfo object for the executable.
         /// </summary>
-        public FileInfo FileInfo { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same thing would never match.</remarks>
+        public FileInfo FileInfo => new(FileInfoValue);
+
+        /// <summary>
+        /// The path recorded for <see cref="FileInfo"/>.
+        /// </summary>
+        private readonly string FileInfoValue;
 
         /// <summary>
         /// The machine type of the executable.

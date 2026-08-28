@@ -288,7 +288,7 @@ namespace PSADT.TerminalServices
             if (clientDirectory is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(clientDirectory);
-                ClientDirectory = new(clientDirectory);
+                ClientDirectoryValue = new FileInfo(clientDirectory).FullName;
             }
             NTAccount = ntAccount;
             SID = sid;
@@ -419,7 +419,10 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The directory service providing the session.
         /// </summary>
-        public FileInfo? ClientDirectory { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same session would never match.</remarks>
+        public FileInfo? ClientDirectory => ClientDirectoryValue is string clientDirectory ? new(clientDirectory) : null;
 
         /// <summary>
         /// The Windows NT build number of the client.
@@ -440,5 +443,10 @@ namespace PSADT.TerminalServices
         {
             return string.Create(CultureInfo.InvariantCulture, $"NTAccount           : {NTAccount}{Environment.NewLine}SID                 : {SID}{Environment.NewLine}UserName            : {UserName}{Environment.NewLine}DomainName          : {DomainName}{Environment.NewLine}SessionId           : {SessionId}{Environment.NewLine}SessionName         : {SessionName}{Environment.NewLine}ConnectState        : {ConnectState}{Environment.NewLine}IsCurrentSession    : {IsCurrentSession}{Environment.NewLine}IsConsoleSession    : {IsConsoleSession}{Environment.NewLine}IsActiveUserSession : {IsActiveUserSession}{Environment.NewLine}IsValidUserSession  : {IsValidUserSession}{Environment.NewLine}IsUserSession       : {IsUserSession}{Environment.NewLine}IsRdpSession        : {IsRdpSession}{Environment.NewLine}IsLocalAdmin        : {IsLocalAdmin}{Environment.NewLine}LogonTime           : {LogonTime}{Environment.NewLine}IdleTime            : {IdleTime}{Environment.NewLine}DisconnectTime      : {DisconnectTime}{Environment.NewLine}ClientName          : {ClientName}{Environment.NewLine}ClientProtocolType  : {ClientProtocolType}{Environment.NewLine}ClientDirectory     : {ClientDirectory}{Environment.NewLine}ClientBuildNumber   : {ClientBuildNumber}");
         }
+
+        /// <summary>
+        /// The path recorded for <see cref="ClientDirectory"/>.
+        /// </summary>
+        private readonly string? ClientDirectoryValue;
     }
 }

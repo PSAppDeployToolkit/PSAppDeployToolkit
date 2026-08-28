@@ -47,15 +47,15 @@ namespace PSADT.AccountManagement
             ArgumentNullException.ThrowIfNull(sid);
             NTAccount = ntAccount;
             SID = sid;
-            ProfilePath = profilePath;
-            AppDataPath = appDataPath;
-            LocalAppDataPath = localAppDataPath;
-            DesktopPath = desktopPath;
-            DocumentsPath = documentsPath;
-            StartMenuPath = startMenuPath;
-            TempPath = tempPath;
-            OneDrivePath = oneDrivePath;
-            OneDriveCommercialPath = oneDriveCommercialPath;
+            ProfilePathValue = profilePath.FullName;
+            AppDataPathValue = appDataPath?.FullName;
+            LocalAppDataPathValue = localAppDataPath?.FullName;
+            DesktopPathValue = desktopPath?.FullName;
+            DocumentsPathValue = documentsPath?.FullName;
+            StartMenuPathValue = startMenuPath?.FullName;
+            TempPathValue = tempPath?.FullName;
+            OneDrivePathValue = oneDrivePath?.FullName;
+            OneDriveCommercialPathValue = oneDriveCommercialPath?.FullName;
             UserLocale = userLocale;
         }
 
@@ -72,51 +72,99 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Gets the path to the user's profile directory.
         /// </summary>
-        public DirectoryInfo ProfilePath { get; }
+        /// <remarks>Rebuilt on each read from the path it was recorded under. A <see cref="DirectoryInfo"/> compares
+        /// by reference, so holding one directly would make two descriptions of the same profile unequal - and these
+        /// are compared, to tell whether the set of profiles on a machine has changed.</remarks>
+        public DirectoryInfo ProfilePath => new(ProfilePathValue);
         /// <summary>
         /// Gets the path to the user's AppData directory.
         /// </summary>
 
-        public DirectoryInfo? AppDataPath { get; }
+        public DirectoryInfo? AppDataPath => AppDataPathValue is string appDataPath ? new(appDataPath) : null;
 
         /// <summary>
         /// Gets the path to the user's LocalAppData directory.
         /// </summary>
-        public DirectoryInfo? LocalAppDataPath { get; }
+        public DirectoryInfo? LocalAppDataPath => LocalAppDataPathValue is string localAppDataPath ? new(localAppDataPath) : null;
 
         /// <summary>
         /// Gets the path to the user's Desktop directory.
         /// </summary>
-        public DirectoryInfo? DesktopPath { get; }
+        public DirectoryInfo? DesktopPath => DesktopPathValue is string desktopPath ? new(desktopPath) : null;
 
         /// <summary>
         /// Gets the path to the user's Documents directory.
         /// </summary>
-        public DirectoryInfo? DocumentsPath { get; }
+        public DirectoryInfo? DocumentsPath => DocumentsPathValue is string documentsPath ? new(documentsPath) : null;
 
         /// <summary>
         /// Gets the path to the user's Start Menu directory.
         /// </summary>
-        public DirectoryInfo? StartMenuPath { get; }
+        public DirectoryInfo? StartMenuPath => StartMenuPathValue is string startMenuPath ? new(startMenuPath) : null;
 
         /// <summary>
         /// Gets the path to the user's Temp directory.
         /// </summary>
-        public DirectoryInfo? TempPath { get; }
+        public DirectoryInfo? TempPath => TempPathValue is string tempPath ? new(tempPath) : null;
 
         /// <summary>
         /// Gets the path to the user's OneDrive directory.
         /// </summary>
-        public DirectoryInfo? OneDrivePath { get; }
+        public DirectoryInfo? OneDrivePath => OneDrivePathValue is string oneDrivePath ? new(oneDrivePath) : null;
 
         /// <summary>
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
-        public DirectoryInfo? OneDriveCommercialPath { get; }
+        public DirectoryInfo? OneDriveCommercialPath => OneDriveCommercialPathValue is string oneDriveCommercialPath ? new(oneDriveCommercialPath) : null;
 
         /// <summary>
         /// Gets the locale information for the user.
         /// </summary>
         public CultureInfo? UserLocale { get; }
+
+        /// <summary>
+        /// The path recorded for <see cref="ProfilePath"/>.
+        /// </summary>
+        private readonly string ProfilePathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="AppDataPath"/>.
+        /// </summary>
+        private readonly string? AppDataPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="LocalAppDataPath"/>.
+        /// </summary>
+        private readonly string? LocalAppDataPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="DesktopPath"/>.
+        /// </summary>
+        private readonly string? DesktopPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="DocumentsPath"/>.
+        /// </summary>
+        private readonly string? DocumentsPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="StartMenuPath"/>.
+        /// </summary>
+        private readonly string? StartMenuPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="TempPath"/>.
+        /// </summary>
+        private readonly string? TempPathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="OneDrivePath"/>.
+        /// </summary>
+        private readonly string? OneDrivePathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="OneDriveCommercialPath"/>.
+        /// </summary>
+        private readonly string? OneDriveCommercialPathValue;
     }
 }

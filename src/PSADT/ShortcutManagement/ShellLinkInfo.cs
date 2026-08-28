@@ -50,14 +50,14 @@ namespace PSADT.ShortcutManagement
         internal ShellLinkInfo(ShellLinkFile shellLink)
         {
             ArgumentNullException.ThrowIfNull(shellLink);
-            FilePath = shellLink.FilePath ?? throw new ArgumentNullException(nameof(shellLink), "The provided Shell Link does not have a valid file path.");
+            FilePathValue = (shellLink.FilePath ?? throw new ArgumentNullException(nameof(shellLink), "The provided Shell Link does not have a valid file path.")).FullName;
             TargetPath = shellLink.TargetPath;
             Description = shellLink.Description;
             WorkingDirectory = shellLink.WorkingDirectory;
             Arguments = shellLink.Arguments;
             Hotkey = shellLink.Hotkey;
             WindowStyle = shellLink.WindowStyle;
-            IconLocation = shellLink.IconLocation;
+            IconLocationValue = shellLink.IconLocation?.FullName;
             IconIndex = shellLink.IconIndex;
             AppUserModelId = shellLink.AppUserModelId;
             AppUserModelExcludeFromShowInNewInstall = shellLink.AppUserModelExcludeFromShowInNewInstall;
@@ -100,7 +100,10 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
-        public FileInfo FilePath { get; }
+        /// <remarks>Rebuilt on each read from the path it was recorded under. A <see cref="FileInfo"/> compares by
+        /// reference, so holding one directly would make two snapshots of the same shortcut unequal and leave a caller
+        /// unable to tell whether anything had changed.</remarks>
+        public FileInfo FilePath => new(FilePathValue);
 
         /// <summary>
         /// Gets the target path of the shortcut.
@@ -135,7 +138,9 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the icon location for the shortcut.
         /// </summary>
-        public FileInfo? IconLocation { get; }
+        /// <remarks>Rebuilt on each read from the path it was recorded under, for the same reason as
+        /// <see cref="FilePath"/>.</remarks>
+        public FileInfo? IconLocation => IconLocationValue is string iconLocation ? new(iconLocation) : null;
 
         /// <summary>
         /// Gets the icon index in the icon location file.
@@ -321,5 +326,15 @@ namespace PSADT.ShortcutManagement
         /// Gets a value indicating whether local ID lists are kept for UNC targets.
         /// </summary>
         public bool KeepLocalIdListForUncTarget { get; }
+
+        /// <summary>
+        /// The path of the currently loaded shortcut file, as recorded.
+        /// </summary>
+        private readonly string FilePathValue;
+
+        /// <summary>
+        /// The icon location for the shortcut, as recorded.
+        /// </summary>
+        private readonly string? IconLocationValue;
     }
 }

@@ -415,23 +415,18 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
-        /// Verifies that two snapshots of one unchanged shortcut do not compare equal, despite the type
-        /// being a record.
+        /// Verifies that two snapshots of one unchanged shortcut compare equal, which is what the type
+        /// being a record promises a caller.
         /// </summary>
         /// <remarks>
-        /// <see cref="ShellLinkInfo"/> is a record, so two snapshots of the same shortcut ought to be
-        /// equal. They are not. The generated comparison includes the <see cref="FileInfo"/> members, and
-        /// <see cref="FileInfo"/> does not override equality, so those compare by reference and no two
-        /// snapshots ever match. The record's generated <c>ToString</c> renders the two identically, which
-        /// makes the inequality especially confusing to run into.
-        /// <para>
-        /// Pinned rather than repaired. Fixing it means overriding equality or storing the paths as
-        /// strings, and <c>InternetShortcutInfo</c> and <c>UserProfileInfo</c> have the same shape, so it
-        /// is a decision about several public records rather than a local change.
-        /// </para>
+        /// Worth its own test because it used not to hold. The paths a snapshot carries are exposed as
+        /// <see cref="FileInfo"/>, which does not override equality, so holding them directly made the
+        /// generated comparison a reference comparison and no two snapshots ever matched - while the
+        /// generated <c>ToString</c> rendered them identically, which made it thoroughly confusing to run
+        /// into. They are recorded as paths and rebuilt on read instead.
         /// </remarks>
         [Fact]
-        public void ShellLinkInfo_RecordEqualityDoesNotCompareByValue()
+        public void ShellLinkInfo_ComparesByValue()
         {
             // Arrange
             using TempDirectory temp = new();
@@ -445,9 +440,10 @@ namespace PSADT.Tests.ShortcutManagement
             ShellLinkInfo first = ShellLinkInfo.Get(linkPath);
             ShellLinkInfo second = ShellLinkInfo.Get(linkPath);
 
-            // Assert: identical content, identical when printed, and still not equal
+            // Assert: identical content, identical when printed, and equal
             Assert.Equal(first.ToString(), second.ToString());
-            Assert.NotEqual(first, second);
+            Assert.Equal(first, second);
+            Assert.Equal(first.GetHashCode(), second.GetHashCode());
         }
 
         /// <summary>

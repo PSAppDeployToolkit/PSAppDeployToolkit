@@ -21,7 +21,7 @@ namespace PSADT.ProcessManagement
             ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.Description, nameof(runningProcessInfo));
             ArgumentNullException.ThrowIfNull(runningProcessInfo.FileName, nameof(runningProcessInfo));
             Name = runningProcessInfo.Process.ProcessName;
-            Path = runningProcessInfo.FileName;
+            PathValue = runningProcessInfo.FileName.FullName;
             Description = runningProcessInfo.Description;
         }
 
@@ -33,11 +33,19 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the path of the process.
         /// </summary>
-        public FileInfo Path { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same process would never match.</remarks>
+        public FileInfo Path => new(PathValue);
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
         public string Description { get; }
+
+        /// <summary>
+        /// The path recorded for <see cref="Path"/>.
+        /// </summary>
+        private readonly string PathValue;
     }
 }

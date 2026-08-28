@@ -229,7 +229,7 @@ namespace PSADT.ProcessManagement
             ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
             Process = process;
             Description = description;
-            FileName = new(fileName);
+            FileNameValue = new FileInfo(fileName).FullName;
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             SID = sid;
         }
@@ -247,7 +247,10 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the file path of the running process.
         /// </summary>
-        public FileInfo FileName { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same process would never match.</remarks>
+        public FileInfo FileName => new(FileNameValue);
 
         /// <summary>
         /// Gets the arguments passed to the running process.
@@ -260,5 +263,10 @@ namespace PSADT.ProcessManagement
         /// <remarks>The SID uniquely identifies a security principal, such as a user or group, for
         /// security-related operations. This property returns null if no SID is associated with the object.</remarks>
         public SecurityIdentifier? SID { get; }
+
+        /// <summary>
+        /// The path recorded for <see cref="FileName"/>.
+        /// </summary>
+        private readonly string FileNameValue;
     }
 }

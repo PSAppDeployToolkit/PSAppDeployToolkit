@@ -47,7 +47,7 @@ namespace PSADT.ShortcutManagement
         internal InternetShortcutInfo(InternetShortcutFile internetShortcut)
         {
             ArgumentNullException.ThrowIfNull(internetShortcut);
-            FilePath = internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.");
+            FilePathValue = (internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.")).FullName;
             Url = internetShortcut.Url;
             Name = internetShortcut.Name;
             WorkingDirectory = internetShortcut.WorkingDirectory;
@@ -65,7 +65,15 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
-        public FileInfo FilePath { get; }
+        /// <remarks>Rebuilt on each read from the path it was recorded under. A <see cref="FileInfo"/> compares by
+        /// reference, so holding one directly would make two snapshots of the same shortcut unequal and leave a caller
+        /// unable to tell whether anything had changed.</remarks>
+        public FileInfo FilePath => new(FilePathValue);
+
+        /// <summary>
+        /// The path of the currently loaded shortcut file, as recorded.
+        /// </summary>
+        private readonly string FilePathValue;
 
         /// <summary>
         /// Gets the URL of the internet shortcut.

@@ -85,8 +85,8 @@ namespace PSADT.AppManagement
             DisplayVersion = displayVersion;
             UninstallString = uninstallString;
             QuietUninstallString = quietUninstallString;
-            InstallSource = installSource;
-            InstallLocation = installLocation;
+            InstallSourceValue = installSource?.FullName;
+            InstallLocationValue = installLocation?.FullName;
             InstallDate = installDate;
             Publisher = publisher;
             HelpLink = helpLink;
@@ -98,7 +98,7 @@ namespace PSADT.AppManagement
             if (UninstallString is not null)
             {
                 IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
-                UninstallStringFilePath = new(argumentList[0]);
+                UninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
                 if (argumentList.Count > 1)
                 {
                     UninstallStringArgumentList = new ReadOnlyCollection<string>([.. argumentList.Skip(1)]);
@@ -107,7 +107,7 @@ namespace PSADT.AppManagement
             if (QuietUninstallString is not null)
             {
                 IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
-                QuietUninstallStringFilePath = new(argumentList[0]);
+                QuietUninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
                 if (argumentList.Count > 1)
                 {
                     QuietUninstallStringArgumentList = new ReadOnlyCollection<string>([.. argumentList.Skip(1)]);
@@ -176,7 +176,10 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        public FileInfo? UninstallStringFilePath { get; }
+        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
+        /// equality, so holding one directly would make this record compare by reference and two descriptions of
+        /// the same application would never match.</remarks>
+        public FileInfo? UninstallStringFilePath => UninstallStringFilePathValue is string uninstallStringFilePath ? new(uninstallStringFilePath) : null;
 
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
@@ -191,7 +194,7 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
-        public FileInfo? QuietUninstallStringFilePath { get; }
+        public FileInfo? QuietUninstallStringFilePath => QuietUninstallStringFilePathValue is string quietUninstallStringFilePath ? new(quietUninstallStringFilePath) : null;
 
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
@@ -201,12 +204,12 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public DirectoryInfo? InstallSource { get; }
+        public DirectoryInfo? InstallSource => InstallSourceValue is string installSource ? new(installSource) : null;
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public DirectoryInfo? InstallLocation { get; }
+        public DirectoryInfo? InstallLocation => InstallLocationValue is string installLocation ? new(installLocation) : null;
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
@@ -247,5 +250,25 @@ namespace PSADT.AppManagement
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
         public bool? Is64BitApplication { get; }
+
+        /// <summary>
+        /// The path recorded for <see cref="UninstallStringFilePath"/>.
+        /// </summary>
+        private readonly string? UninstallStringFilePathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="QuietUninstallStringFilePath"/>.
+        /// </summary>
+        private readonly string? QuietUninstallStringFilePathValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="InstallSource"/>.
+        /// </summary>
+        private readonly string? InstallSourceValue;
+
+        /// <summary>
+        /// The path recorded for <see cref="InstallLocation"/>.
+        /// </summary>
+        private readonly string? InstallLocationValue;
     }
 }
