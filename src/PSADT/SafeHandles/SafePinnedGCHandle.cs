@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop.SafeHandles;
 
@@ -19,8 +20,11 @@ namespace PSADT.SafeHandles
         /// <typeparam name="T">The type of the elements in the array being pinned.</typeparam>
         /// <param name="value">The array of type T to be pinned in memory. This array cannot be null.</param>
         /// <returns>A SafePinnedGCHandle that represents the pinned handle for the specified array.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is empty, since there is nothing to pin.</exception>
         internal static SafePinnedGCHandle Alloc<T>(T[] value) where T : unmanaged
         {
+            ArgumentNullException.ThrowIfNull(value);
             return new(GCHandle.Alloc(value, GCHandleType.Pinned), Unsafe.SizeOf<T>() * value.Length, ownsHandle: true);
         }
 

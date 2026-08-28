@@ -17,11 +17,17 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <remarks>The returned handle encapsulates a BSTR allocated using Marshal.StringToBSTR. Use
         /// this method when interoperating with COM components that require BSTR strings.</remarks>
-        /// <param name="str">The string to be copied into the allocated BSTR. Can be null, in which case an empty BSTR is allocated.</param>
+        /// <param name="str">The string to be copied into the allocated BSTR. Cannot be null; an empty string is allowed and allocates
+        /// an empty BSTR.</param>
         /// <returns>A SafeFreeBSTRHandle representing the allocated BSTR. The caller is responsible for releasing the handle
         /// when it is no longer needed.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="str"/> is null.</exception>
         internal static SafeFreeBSTRHandle Alloc(string str)
         {
+            // Refused here rather than left to the allocation. Allocating a BSTR for a null string hands back a null
+            // pointer, which the constructor then reports as an invalid handle - which is true, but tells the caller
+            // nothing about the string it actually passed.
+            ArgumentNullException.ThrowIfNull(str);
             return new(Marshal.StringToBSTR(str), ownsHandle: true);
         }
 
