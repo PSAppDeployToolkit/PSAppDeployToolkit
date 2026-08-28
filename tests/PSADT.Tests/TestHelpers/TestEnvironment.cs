@@ -14,9 +14,10 @@ namespace PSADT.Tests.TestHelpers
     /// <c>SkipType</c> pointing at this class, which keeps a single copy of the probe rather than one
     /// per test class.
     /// <para>
-    /// Declaration order matters. Static property initialisers run in textual order, so the directory
-    /// properties the fixtures are built from are declared first; moving them below would leave the
-    /// fixtures composing paths from null.
+    /// Declaration order matters, and not only for the members that read each other directly. Static
+    /// initialisers run in textual order, so anything a probe reads - including a table it reaches through
+    /// a helper method - has to be declared above the member whose initialiser calls it, or the probe runs
+    /// against a null and the whole class fails to initialise.
     /// </para>
     /// </remarks>
     public static class TestEnvironment
@@ -39,6 +40,17 @@ namespace PSADT.Tests.TestHelpers
         private static string InstallerCacheDirectory { get; } = Path.Join(
             Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             "Installer");
+
+        /// <summary>
+        /// The executables <c>ClientServerUtilities</c> expects to find beside the assembly.
+        /// </summary>
+        private static readonly string[] ClientServerExecutableNames =
+        [
+            "PSADT.ClientServer.Client.exe",
+            "PSADT.ClientServer.Client.Compatible.exe",
+            "PSADT.ClientServer.Client.Launcher.exe",
+            "PSADT.ClientServer.Client.Launcher.Compatible.exe",
+        ];
 
         /// <summary>
         /// Whether the caller is running elevated, which gates the tests that cannot succeed otherwise.
@@ -94,6 +106,31 @@ namespace PSADT.Tests.TestHelpers
             Path.Join(ProgramFilesDirectory, "PowerShell", "7", "pwsh.exe"),
             Path.Join(ProgramFilesDirectory, "dotnet", "dotnet.exe"),
             Path.Join(ProgramFilesDirectory, "Git", "cmd", "git.exe"));
+
+        /// <summary>
+        /// Whether a binary with an embedded signature was found, which gates the tests needing one.
+        /// </summary>
+        public static bool HasEmbeddedSignedExecutable => EmbeddedSignedExecutable is not null;
+
+        /// <summary>
+        /// Whether a font to read a title from was found, which gates the tests needing one.
+        /// </summary>
+        public static bool HasArialFont => ArialFont is not null;
+
+        /// <summary>
+        /// Whether a font collection was found, which gates the tests needing one.
+        /// </summary>
+        public static bool HasFontCollection => FontCollection is not null;
+
+        /// <summary>
+        /// Whether a cached installer was found, which gates the tests needing a real database.
+        /// </summary>
+        public static bool HasCachedMsiPackage => CachedMsiPackage is not null;
+
+        /// <summary>
+        /// Whether a cached patch was found, which gates the tests needing one.
+        /// </summary>
+        public static bool HasCachedMspPackage => CachedMspPackage is not null;
 
         /// <summary>
         /// An installer cached by Windows Installer, or <see langword="null"/> when the store is empty
@@ -218,15 +255,5 @@ namespace PSADT.Tests.TestHelpers
                 return false;
             }
         }
-        /// <summary>
-        /// The executables <c>ClientServerUtilities</c> expects to find beside the assembly.
-        /// </summary>
-        private static readonly string[] ClientServerExecutableNames =
-        [
-            "PSADT.ClientServer.Client.exe",
-            "PSADT.ClientServer.Client.Compatible.exe",
-            "PSADT.ClientServer.Client.Launcher.exe",
-            "PSADT.ClientServer.Client.Launcher.Compatible.exe",
-        ];
     }
 }
