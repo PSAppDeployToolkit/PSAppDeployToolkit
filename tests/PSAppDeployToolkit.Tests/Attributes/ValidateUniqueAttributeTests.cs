@@ -1,0 +1,193 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Management.Automation;
+using PSAppDeployToolkit.Attributes;
+using PSAppDeployToolkit.Tests.TestHelpers;
+using Xunit;
+
+namespace PSAppDeployToolkit.Tests.Attributes
+{
+    /// <summary>
+    /// Tests the validator that insists a collection holds no duplicates.
+    /// </summary>
+    /// <remarks>
+    /// How elements are compared is decided from the type of the <em>first</em> one, which is the part worth pinning:
+    /// strings go through the configured <see cref="StringComparison"/> and everything else through its own equality,
+    /// with a fallback for a collection whose elements are not all alike.
+    /// </remarks>
+    public sealed class ValidateUniqueAttributeTests
+    {
+        /// <summary>
+        /// Verifies that a collection of distinct elements is accepted.
+        /// </summary>
+        [Fact]
+        public void Validate_AcceptsDistinctElements()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "bravo", "charlie" });
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { 1, 2, 3 });
+        }
+
+        /// <summary>
+        /// Verifies that a repeated element is refused.
+        /// </summary>
+        [Fact]
+        public void Validate_RefusesADuplicate()
+        {
+            Assert.Contains(
+                "contains duplicate elements",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "bravo", "alpha" })).Message,
+                StringComparison.Ordinal);
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { 1, 2, 1 }));
+        }
+
+        /// <summary>
+        /// Verifies that strings are compared without regard to case by default.
+        /// </summary>
+        /// <remarks>
+        /// The default suits what these parameters name - processes, file extensions, account names - where two
+        /// spellings differing only in case mean one thing.
+        /// </remarks>
+        [Fact]
+        public void Validate_IgnoresCaseByDefault()
+        {
+            Assert.Equal(StringComparison.OrdinalIgnoreCase, new ValidateUniqueAttribute().StringComparison);
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "ALPHA" }));
+        }
+
+        /// <summary>
+        /// Verifies that an explicit comparison is honoured.
+        /// </summary>
+        [Fact]
+        public void Validate_HonoursAnExplicitStringComparison()
+        {
+            // Arrange
+            ValidateUniqueAttribute ordinal = new(StringComparison.Ordinal);
+
+            // Assert
+            Assert.Equal(StringComparison.Ordinal, ordinal.StringComparison);
+            ArgumentAttributes.Validate(ordinal, new[] { "alpha", "ALPHA" });
+            _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(ordinal, new[] { "alpha", "alpha" }));
+        }
+
+        /// <summary>
+        /// Verifies that anything which is not a collection is accepted.
+        /// </summary>
+        /// <remarks>
+        /// Including nothing at all. Uniqueness is meaningless for a single value, so the validator declines to have an
+        /// opinion rather than refusing - which means it can sit on a parameter that accepts either one value or many.
+        /// </remarks>
+        [Fact]
+        public void Validate_AcceptsAnythingThatIsNotACollection()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), 42);
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), "a string is not a collection here");
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), arguments: null);
+        }
+
+        /// <summary>
+        /// Verifies that an empty collection is accepted.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the not-empty validators, this one has nothing to say about emptiness - an empty collection trivially
+        /// holds no duplicates. Worth stating because the two families sit side by side on the same parameters.
+        /// </remarks>
+        [Fact]
+        public void Validate_AcceptsAnEmptyCollection()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), Array.Empty<string>());
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new List<int>());
+        }
+
+        /// <summary>
+        /// Verifies that a collection carrying nothing at all is refused.
+        /// </summary>
+        /// <remarks>
+        /// Both positions matter: the first element decides the comparer, so it is checked before one is built, and
+        /// every later element is checked as it is read.
+        /// </remarks>
+        [Fact]
+        public void Validate_RefusesACollectionCarryingNothing()
+        {
+            Assert.Contains(
+                "contains null elements",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object?[] { null, "bravo" })).Message,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "contains null elements",
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object?[] { "alpha", null })).Message,
+                StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that elements of a type other than string are compared by their own equality.
+        /// </summary>
+        /// <remarks>
+        /// Exercised with a record, since that is what these collections actually hold - a list of process definitions,
+        /// for instance - and a record compares by its contents, so two built alike are duplicates.
+        /// </remarks>
+        [Fact]
+        public void Validate_ComparesNonStringElementsByTheirOwnEquality()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new Named("alpha"), new Named("bravo") });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new Named("alpha"), new Named("alpha") }));
+        }
+
+        /// <summary>
+        /// Verifies that a collection of mixed types falls back to plain object equality.
+        /// </summary>
+        /// <remarks>
+        /// The comparer is typed from the first element, so a later element of another type cannot be compared through
+        /// it and falls back. The consequence is that <c>1</c> and <c>"1"</c> are distinct here - correct, but it means
+        /// the validator's strictness depends on which element came first, which is worth knowing rather than
+        /// discovering.
+        /// </remarks>
+        [Fact]
+        public void Validate_FallsBackToObjectEqualityForMixedTypes()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "1" });
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", 2 });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", 1 }));
+        }
+
+        /// <summary>
+        /// Verifies that case-insensitivity applies only when the first element is a string.
+        /// </summary>
+        /// <remarks>
+        /// The direct consequence of typing the comparer from the first element: the same two strings are duplicates in
+        /// one collection and distinct in another, depending on what preceded them.
+        /// </remarks>
+        [Fact]
+        public void Validate_AppliesTheStringComparisonOnlyWhenTheFirstElementIsAString()
+        {
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { "alpha", "ALPHA" }));
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", "ALPHA" });
+        }
+
+        /// <summary>
+        /// Verifies that wrapped elements are unwrapped before being compared.
+        /// </summary>
+        [Fact]
+        public void Validate_UnwrapsElements()
+        {
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
+                new ValidateUniqueAttribute(),
+                new object[] { PSObject.AsPSObject("alpha"), PSObject.AsPSObject("alpha") }));
+        }
+
+        /// <summary>
+        /// A record standing in for the kind of element these collections hold.
+        /// </summary>
+        /// <param name="Name">The name it carries.</param>
+        private sealed record class Named(string Name)
+        {
+            /// <summary>
+            /// The name it carries.
+            /// </summary>
+            /// <remarks>
+            /// Redeclared rather than left to the positional parameter, because a synthesised init accessor needs
+            /// IsExternalInit and that is not among the polyfills this solution generates for .NET Framework.
+            /// </remarks>
+            public string Name { get; } = Name;
+        }
+    }
+}
