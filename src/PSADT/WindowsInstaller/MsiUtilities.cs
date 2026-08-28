@@ -596,11 +596,13 @@ namespace PSADT.WindowsInstaller
                 using MsiCloseHandleSafeHandle hRecord = NativeMethods.MsiCreateRecord(1);
                 _ = NativeMethods.MsiRecordSetString(hRecord, 1, table);
                 _ = NativeMethods.MsiViewExecute(hView, hRecord);
-                _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle phRecord);
-                using (phRecord)
-                {
-                    return GetRecordString(phRecord, 1);
-                }
+
+                // Through ViewFetch rather than the native call directly: a query that matched nothing
+                // reports ERROR_NO_MORE_ITEMS, which the native wrapper raises as an exception. Fetching
+                // that way turns it back into an absent row, which is what the caller has to see for its
+                // own "table was not found" error to be reachable at all.
+                using MsiCloseHandleSafeHandle? phRecord = ViewFetch(hView);
+                return phRecord is not null ? GetRecordString(phRecord, 1) : null;
             }
         }
 
@@ -623,11 +625,13 @@ namespace PSADT.WindowsInstaller
                 _ = NativeMethods.MsiRecordSetString(hRecord, 1, table);
                 _ = NativeMethods.MsiRecordSetInteger(hRecord, 2, columnNumber);
                 _ = NativeMethods.MsiViewExecute(hView, hRecord);
-                _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle phRecord);
-                using (phRecord)
-                {
-                    return GetRecordString(phRecord, 1);
-                }
+
+                // Through ViewFetch rather than the native call directly: a query that matched nothing
+                // reports ERROR_NO_MORE_ITEMS, which the native wrapper raises as an exception. Fetching
+                // that way turns it back into an absent row, which is what the caller has to see for its
+                // own "table was not found" error to be reachable at all.
+                using MsiCloseHandleSafeHandle? phRecord = ViewFetch(hView);
+                return phRecord is not null ? GetRecordString(phRecord, 1) : null;
             }
         }
 
