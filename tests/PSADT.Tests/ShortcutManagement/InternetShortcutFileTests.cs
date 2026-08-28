@@ -121,14 +121,13 @@ namespace PSADT.Tests.ShortcutManagement
         /// when a file is present.
         /// </summary>
         /// <remarks>
-        /// Skipped: the setter writes the path correctly - the saved file holds
-        /// <c>IconFile=C:\Windows\System32\shell32.dll</c> - but the getter reads it back as
-        /// <c>file:///C:/Windows/System32/shell32.dll</c>. So reading a shortcut and writing it back
-        /// rewrites the icon as a URI, and a caller comparing the value it set against the value it reads
-        /// never sees a match. Unskip once the getter converts the URI form back to a path.
+        /// The path form is what is asserted, in both directions. The shell stores the path as given - the
+        /// saved file holds <c>IconFile=C:\Windows\System32\shell32.dll</c> - but hands it back as
+        /// <c>file:///C:/Windows/System32/shell32.dll</c>, so the getter translates it back. Without that a
+        /// caller could not pass what it read straight back in, and reading a shortcut and writing it out
+        /// again would rewrite the icon as a URI.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "The assertion is the behaviour we want; the skip reason names the defect that has to be fixed first.")]
-        [Fact(Skip = "The IconFile getter returns a file:// URI where the setter takes and stores a path, so the property does not round-trip. See the remarks.")]
+        [Fact]
         public void Save_RoundTripsTheIcon()
         {
             StaThread.Run(static () =>
