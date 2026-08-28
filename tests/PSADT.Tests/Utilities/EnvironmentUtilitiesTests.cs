@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using PSADT.Utilities;
 using Xunit;
 
@@ -22,7 +21,9 @@ namespace PSADT.Tests.Utilities
     /// </para>
     /// <para>
     /// The oracle throughout is <see cref="Environment.GetEnvironmentVariables()"/> rather than the
-    /// single-variable accessor, which this repository bans in favour of the wrapper under test.
+    /// single-variable accessor, which this repository bans in favour of the wrapper under test. Where
+    /// that oracle is used to confirm a variable's absence the name is one generated for the test, so the
+    /// two runtimes disagreeing about how it compares names cannot affect the answer.
     /// </para>
     /// </remarks>
     public sealed class EnvironmentUtilitiesTests
@@ -68,6 +69,11 @@ namespace PSADT.Tests.Utilities
         /// The wrapper exists for this. The framework reports a whitespace-valued variable as a string of
         /// spaces, which reads as set; the wrapper reports it as absent, which is what a caller deciding
         /// whether a variable is configured actually wants to know.
+        /// <para>
+        /// The bulk read is asserted alongside the single one, since a caller may reach a variable either
+        /// way and the two answering differently about the same variable would be worse than either
+        /// answer on its own.
+        /// </para>
         /// </remarks>
         [Fact]
         public void GetEnvironmentVariable_TreatsABlankValueAsAbsent()
@@ -82,6 +88,7 @@ namespace PSADT.Tests.Utilities
                 // Assert: the framework sees it, the wrapper reports it as unset
                 Assert.Equal("   ", Environment.GetEnvironmentVariables()[name]);
                 Assert.Null(EnvironmentUtilities.GetEnvironmentVariable(name));
+                Assert.Null(EnvironmentUtilities.GetEnvironmentVariables()[name]);
             }
             finally
             {
@@ -323,23 +330,109 @@ namespace PSADT.Tests.Utilities
         /// <summary>
         /// Verifies that the whole environment is readable, and holds the variables every process has.
         /// </summary>
-        /// <remarks>
-        /// The name is matched without regard to case rather than looked up directly. Windows treats
-        /// environment variable names case-insensitively, but the dictionary handed back does not agree
-        /// across the two target frameworks: under .NET Framework it compares keys without regard to case,
-        /// and under .NET it compares them exactly. A process inherits whatever casing its parent used -
-        /// a shell that spells it <c>SYSTEMROOT</c> passes that on - so a direct lookup would be asserting
-        /// the casing of whatever launched the run.
-        /// </remarks>
         [Fact]
         public void GetEnvironmentVariables_ReadsTheProcessEnvironment()
         {
             // Act
-            IDictionary variables = EnvironmentUtilities.GetEnvironmentVariables();
+            IReadOnlyDictionary<string, string?> variables = EnvironmentUtilities.GetEnvironmentVariables();
 
             // Assert
             Assert.NotEmpty(variables);
-            Assert.Contains(variables.Keys.Cast<string>(), static name => name.Equals("SystemRoot", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(variables.Keys, static name => name.Equals("SystemRoot", StringComparison.OrdinalIgnoreCase));
+
+            // Assert: and every entry is either a real value or nothing, never blank
+            Assert.All(variables, static variable =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(variable.Key));
+                if (variable.Value is string value)
+                {
+                    Assert.False(string.IsNullOrWhiteSpace(value));
+                }
+            });
+        }
+
+        /// <summary>
+        /// Verifies that a variable can be found by name whatever case it was stored under, which is how
+        /// Windows itself treats environment variable names.
+        /// </summary>
+        /// <remarks>
+        /// This is the whole reason the wrapper rebuilds the dictionary rather than handing back the one
+        /// the runtime supplies. The two runtimes disagree: .NET Framework compares names without regard
+        /// to case and .NET compares them exactly, and a process inherits whatever casing its parent used
+        /// - a shell that spells it <c>SYSTEMROOT</c> passes that on. Without this, the same lookup would
+        /// find a variable under Windows PowerShell and miss it under PowerShell 7.
+        /// </remarks>
+        [Fact]
+        public void GetEnvironmentVariables_MatchesNamesWithoutRegardToCase()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                EnvironmentUtilities.SetEnvironmentVariable(name, "a value");
+
+                // Act
+                IReadOnlyDictionary<string, string?> variables = EnvironmentUtilities.GetEnvironmentVariables();
+
+                // Assert: found under the casing it was set with, and under any other
+                Assert.Equal("a value", variables[name]);
+                Assert.Equal("a value", variables[name.ToUpperInvariant()]);
+                Assert.Equal("a value", variables[name.ToLowerInvariant()]);
+                Assert.True(variables.ContainsKey(name.ToUpperInvariant()));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the dictionary handed back is a snapshot rather than a live view, so a caller
+        /// holding one is not silently reading a moving target.
+        /// </summary>
+        [Fact]
+        public void GetEnvironmentVariables_IsASnapshot()
+        {
+            // Arrange
+            string name = NewVariableName();
+            IReadOnlyDictionary<string, string?> before = EnvironmentUtilities.GetEnvironmentVariables();
+            try
+            {
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "a value");
+
+                // Assert: the dictionary taken beforehand does not gain the variable, but a fresh one has it
+                Assert.False(before.ContainsKey(name));
+                Assert.True(EnvironmentUtilities.GetEnvironmentVariables().ContainsKey(name));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a name that is not set is reported as absent rather than as an empty value, and
+        /// that reading it through the indexer fails loudly the way any typed dictionary's does.
+        /// </summary>
+        /// <remarks>
+        /// Worth stating because the previous shape of this - an untyped dictionary - answered a missing
+        /// name with null. A caller that had come to rely on that gets an exception now instead, and the
+        /// single-variable accessor is what it should be using.
+        /// </remarks>
+        [Fact]
+        public void GetEnvironmentVariables_ReportsAnUnsetNameAsAbsent()
+        {
+            // Arrange
+            string name = NewVariableName();
+
+            // Act
+            IReadOnlyDictionary<string, string?> variables = EnvironmentUtilities.GetEnvironmentVariables();
+
+            // Assert
+            Assert.False(variables.ContainsKey(name));
+            _ = Assert.Throws<KeyNotFoundException>(() => variables[name]);
+            Assert.Null(EnvironmentUtilities.GetEnvironmentVariable(name));
         }
 
         /// <summary>

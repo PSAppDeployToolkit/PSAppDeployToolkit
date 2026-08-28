@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
@@ -52,13 +54,31 @@ namespace PSADT.Utilities
         /// <summary>
         /// Retrieves all environment variable names and their values from the current process.
         /// </summary>
-        /// <remarks>The returned dictionary contains environment variables for the current process only.
-        /// The set of variables may differ between operating systems and user contexts.</remarks>
-        /// <returns>An <see cref="IDictionary"/> containing the environment variable names and their values. Each entry's key is
-        /// the variable name, and the value is the variable's value as a string.</returns>
-        public static IDictionary GetEnvironmentVariables()
+        /// <remarks>The returned dictionary is a snapshot of the current process's environment taken when this is
+        /// called; later changes to the process environment are not reflected in it, and it cannot itself be written to.
+        /// The set of variables may differ between operating systems and user contexts. <para> Names are matched without
+        /// regard to case, which is how Windows itself treats them. The dictionary is rebuilt rather than handed back
+        /// as the runtime supplies it because the two runtimes do not agree: .NET Framework returns one that compares
+        /// names without regard to case, and .NET returns one that compares them exactly. A process inherits whatever
+        /// casing its parent used, so a caller reading a variable by name would otherwise find it under one runtime and
+        /// miss it under the other. </para><para> Each name is added rather than assigned, so a name arriving twice fails
+        /// loudly instead of one value quietly replacing the other. Windows maintains the environment block without regard
+        /// to case, so that cannot happen for a process's own environment; if it ever does, the caller needs to know rather
+        /// than be handed whichever value happened to come last. </para><para> Note that the indexer throws for a name that
+        /// is not set, as any typed dictionary's does. Use <see cref="GetEnvironmentVariable(string)"/> to read a single
+        /// variable that may not be there. </para></remarks>
+        /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing the environment variable names and their values.
+        /// Each entry's key is the variable name, and the value is the variable's value, or <see langword="null"/> where that
+        /// value holds nothing but whitespace - the same rule <see cref="GetEnvironmentVariable(string)"/> applies, so the
+        /// two cannot disagree about whether a variable is configured.</returns>
+        public static IReadOnlyDictionary<string, string?> GetEnvironmentVariables()
         {
-            return Environment.GetEnvironmentVariables();
+            Dictionary<string, string?> variables = new(StringComparer.OrdinalIgnoreCase);
+            foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables())
+            {
+                variables.Add((string)variable.Key, variable.Value is string value && !string.IsNullOrWhiteSpace(value) ? value : null);
+            }
+            return new ReadOnlyDictionary<string, string?>(variables);
         }
 
         /// <summary>
