@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32.Foundation;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using PSADT.Interop.Tests.TestHelpers;
 using Windows.Win32.Foundation;
 using Xunit;

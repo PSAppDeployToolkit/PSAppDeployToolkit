@@ -1,4 +1,4 @@
-using PSADT.Interop.Tests.TestHelpers;
+﻿using PSADT.Interop.Tests.TestHelpers;
 using Xunit;
 
 namespace PSADT.Interop.Tests

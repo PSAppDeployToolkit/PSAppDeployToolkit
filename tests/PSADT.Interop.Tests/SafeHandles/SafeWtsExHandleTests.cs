@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32.System.RemoteDesktop;
 using Xunit;
