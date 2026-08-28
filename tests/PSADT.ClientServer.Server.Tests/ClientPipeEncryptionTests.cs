@@ -153,6 +153,40 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a correctly encrypted proof too short to be the challenge is refused rather than
+        /// compared against as far as it goes.
+        /// </summary>
+        /// <remarks>
+        /// The comparison behind this is written to answer no when the two are different lengths, before it
+        /// looks at a single byte, and this is the only place that answer can be reached. The server's own
+        /// use of it is preceded by a length check of its own, so what it compares is always the size it
+        /// expects; the client has no such check, and takes the proof at whatever length it arrives.
+        /// <para>
+        /// Worth its own test despite reporting the same failure as a proof of the right length that says
+        /// the wrong thing. Without the length being answered first, comparing a 32-byte challenge against
+        /// a shorter proof would read off the end of it - so what is being asserted is that a short proof is
+        /// refused, and not that it happens to crash.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_RefusesAProofTooShortToBeItsChallenge()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ClientPipeEncryption client = new();
+            using ProtocolReplica server = new();
+
+            // Act
+            CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
+                async () => await server.RunAsServerAsync(pipes.ServerOutput, pipes.ServerInput, ProtocolReplica.ServerBehaviour.ProofOfTheWrongLength).ConfigureAwait(false),
+                async () => await client.PerformKeyExchangeAsync(pipes.ClientOutput, pipes.ClientInput).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert
+            Assert.Contains("server proof mismatch", failure.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that nothing at all is refused for either stream.
         /// </summary>
         /// <returns>A task that represents the asynchronous test.</returns>

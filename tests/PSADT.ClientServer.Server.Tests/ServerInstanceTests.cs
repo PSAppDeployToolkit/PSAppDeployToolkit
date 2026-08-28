@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
 using PSADT.ClientServer.Server.Tests.TestHelpers;
 using PSADT.Foundation;
+using PSADT.Interop;
 using PSADT.Utilities;
+using PSADT.WindowManagement;
 using Xunit;
 
 namespace PSADT.ClientServer.Server.Tests
@@ -255,6 +258,51 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             _ = await Assert.ThrowsAsync<InvalidOperationException>(async () => await instance.OpenAsync().ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that every command a client can answer by reading the machine is answered.
+        /// </summary>
+        /// <remarks>
+        /// One session for the lot, since starting a client is the expensive part. What is asserted differs
+        /// by command, and deliberately so: where the answer is knowable it is checked, and where it depends
+        /// on what the user happens to have on screen, what is being asserted is that the client understood
+        /// the command and answered in the shape the server expected. A command the client did not
+        /// understand comes back as a failure rather than a value, so completing at all is the assertion
+        /// those ones can carry - and it is the one that matters, since each is a distinct byte on the wire
+        /// with a distinct return type to deserialise.
+        /// <para>
+        /// Refreshing the desktop is left out even though it changes nothing, since what it does is
+        /// broadcast a settings change to every top-level window on the machine and there is no telling
+        /// what some of them will do about it.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ServerInstance_AnswersEveryCommandThatOnlyReads()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+
+            // Act: a filter nothing can match, and no filter at all
+            ReadOnlyCollection<WindowInfo> noWindows = await instance.GetProcessWindowInfoAsync(SampleOptions.WindowInfo("^NoWindowIsCalledThis$")).ConfigureAwait(true);
+            ReadOnlyCollection<WindowInfo> allWindows = await instance.GetProcessWindowInfoAsync(SampleOptions.WindowInfo(windowTitleRegex: null)).ConfigureAwait(true);
+
+            // Assert: a filter matching nothing finds nothing, and whatever the other one finds is well formed
+            Assert.Empty(noWindows);
+            Assert.All(allWindows, static window =>
+            {
+                Assert.NotEqual(0, window.WindowHandle);
+                Assert.NotEmpty(window.ParentProcess);
+            });
+
+            // Assert: the rest answer in the shape the server expects, whatever the machine has to say
+            Assert.True(Enum.IsDefined(typeof(QUERY_USER_NOTIFICATION_STATE), (int)await instance.GetUserNotificationStateAsync().ConfigureAwait(true)));
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.GetForegroundWindowProcessIdAsync().ConfigureAwait(true)).ConfigureAwait(true));
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserFocusModeStateAsync().ConfigureAwait(true)).ConfigureAwait(true));
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserToastNotificationModeAsync().ConfigureAwait(true)).ConfigureAwait(true));
+            Assert.Null(instance.GetLogWriterException());
         }
 
         /// <summary>

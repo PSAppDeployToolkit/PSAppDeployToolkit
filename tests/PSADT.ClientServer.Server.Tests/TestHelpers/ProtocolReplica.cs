@@ -87,8 +87,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
             Assert.Equal(serverChallenge, Slice(response, 0, ChallengeSize));
 
             // Prove we hold the same key by returning the client's own challenge, or fail to.
-            byte[] clientChallenge = Slice(response, ChallengeSize, ChallengeSize);
-            await WriteFrameAsync(output, Encrypt(behaviour is ServerBehaviour.ProofThatDoesNotMatch ? Corrupt(clientChallenge) : clientChallenge)).ConfigureAwait(false);
+            await WriteFrameAsync(output, Encrypt(BuildProof(behaviour, Slice(response, ChallengeSize, ChallengeSize)))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -120,6 +119,29 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
                 // The right length, but not carrying back the challenge that was sent.
                 ClientBehaviour.ChallengeThatDoesNotMatch => Concat(Corrupt(serverChallenge), clientChallenge),
                 _ => throw new ArgumentOutOfRangeException(nameof(behaviour), behaviour, "Unknown client behaviour."),
+            };
+        }
+
+        /// <summary>
+        /// Builds the proof that the key is shared, well-formed or otherwise.
+        /// </summary>
+        /// <param name="behaviour">What sort of server to be.</param>
+        /// <param name="clientChallenge">The challenge the client asked to have returned.</param>
+        /// <returns>The plaintext to encrypt and send.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="behaviour"/> is not one of the declared behaviours.</exception>
+        private static byte[] BuildProof(ServerBehaviour behaviour, byte[] clientChallenge)
+        {
+            return behaviour switch
+            {
+                // The challenge that was sent, returned as the protocol asks for.
+                ServerBehaviour.Faithful => clientChallenge,
+
+                // The right length, but not the challenge that was sent.
+                ServerBehaviour.ProofThatDoesNotMatch => Corrupt(clientChallenge),
+
+                // Half the length, so that it cannot be the challenge whatever it holds.
+                ServerBehaviour.ProofOfTheWrongLength => Slice(clientChallenge, 0, ChallengeSize / 2),
+                _ => throw new ArgumentOutOfRangeException(nameof(behaviour), behaviour, "Unknown server behaviour."),
             };
         }
 
@@ -372,6 +394,11 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
             /// Returns something correctly encrypted that is not the challenge it was asked to return.
             /// </summary>
             ProofThatDoesNotMatch = 1,
+
+            /// <summary>
+            /// Returns something correctly encrypted that is too short to be the challenge at all.
+            /// </summary>
+            ProofOfTheWrongLength = 2,
         }
 
         /// <summary>

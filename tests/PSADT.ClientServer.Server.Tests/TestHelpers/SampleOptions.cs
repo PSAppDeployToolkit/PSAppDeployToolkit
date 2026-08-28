@@ -38,9 +38,10 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// <summary>
         /// Builds window information options.
         /// </summary>
-        /// <param name="windowTitleRegex">The title pattern, varied to tell two instances apart.</param>
+        /// <param name="windowTitleRegex">The title pattern, varied to tell two instances apart, or nothing at all
+        /// to match every window.</param>
         /// <returns>The options.</returns>
-        internal static WindowInfoOptions WindowInfo(string windowTitleRegex = "^Untitled")
+        internal static WindowInfoOptions WindowInfo(string? windowTitleRegex = "^Untitled")
         {
             return new(windowTitleRegex, windowHandleFilter: null, parentProcessFilter: null, parentProcessIdFilter: null, parentProcessMainWindowHandleFilter: null);
         }
