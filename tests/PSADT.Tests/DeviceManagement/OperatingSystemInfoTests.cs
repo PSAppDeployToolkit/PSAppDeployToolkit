@@ -131,6 +131,70 @@ namespace PSADT.Tests.DeviceManagement
         }
 
         /// <summary>
+        /// Verifies that the release the machine is on is reported and matches what it records, since
+        /// that is what distinguishes one Windows 11 build from another to a person reading a log.
+        /// </summary>
+        /// <remarks>
+        /// The registry is the oracle again, and the value is optional there: a release predating the
+        /// name being recorded has none. So a machine that records one has to agree, and one that does
+        /// not has to report nothing rather than an empty string.
+        /// </remarks>
+        [Fact]
+        public void DisplayVersion_MatchesWhatTheMachineRecords()
+        {
+            // Arrange
+            using RegistryKey? key = Registry.LocalMachine.OpenSubKey(CurrentVersionKey);
+            Assert.NotNull(key);
+
+            // Act & Assert
+            Assert.Equal(key.GetValue("DisplayVersion") as string, OperatingSystemInfo.Current.DisplayVersion);
+        }
+
+        /// <summary>
+        /// Verifies that the product type reported is the one the mutually exclusive kinds are derived
+        /// from, so the two ways of asking cannot drift apart.
+        /// </summary>
+        [Fact]
+        public void ProductType_AgreesWithTheDerivedKinds()
+        {
+            // Act
+            OperatingSystemInfo current = OperatingSystemInfo.Current;
+
+            // Assert
+            Assert.Equal(current.ProductType is Interop.PRODUCT_TYPE.VER_NT_WORKSTATION, current.IsWorkstation);
+            Assert.Equal(current.ProductType is Interop.PRODUCT_TYPE.VER_NT_SERVER, current.IsServer);
+            Assert.Equal(current.ProductType is Interop.PRODUCT_TYPE.VER_NT_DOMAIN_CONTROLLER, current.IsDomainController);
+        }
+
+        /// <summary>
+        /// Verifies that a machine reporting itself as hosting sessions for other people is a machine
+        /// that could be one, and that the multi-session edition is only ever a workstation.
+        /// </summary>
+        /// <remarks>
+        /// Nothing asserts which of these the machine actually is, since a run may land on a desktop, a
+        /// server or a session host and all three are valid. What is asserted is that the two cannot
+        /// contradict the product type beside them - a domain controller reporting itself as the
+        /// multi-session workstation edition would be nonsense a caller might act on.
+        /// </remarks>
+        [Fact]
+        public void SessionHostFlags_CannotContradictTheProductType()
+        {
+            // Act
+            OperatingSystemInfo current = OperatingSystemInfo.Current;
+
+            // Assert
+            if (current.IsWorkstationEnterpriseMultiSessionOS)
+            {
+                Assert.True(current.IsWorkstation);
+                Assert.True(current.IsTerminalServer);
+            }
+            if (current.IsTerminalServer)
+            {
+                Assert.False(current.IsDomainController);
+            }
+        }
+
+        /// <summary>
         /// Where Windows records what it is.
         /// </summary>
         private const string CurrentVersionKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";

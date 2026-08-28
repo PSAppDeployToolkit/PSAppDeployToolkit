@@ -447,6 +447,297 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that every link flag a caller can set survives a save and a load.
+        /// </summary>
+        /// <remarks>
+        /// These are single bits in one word rather than separate values, so the failure worth guarding
+        /// against is a mask that overlaps another - setting one and finding a second has come on with
+        /// it, or setting several and finding the last write cleared the earlier ones. Asserting them
+        /// together is what catches that; asserting them one at a time would not.
+        /// <para>
+        /// The flags are set in one pass and read back after a round trip, so both the writing side and
+        /// the shell's own persistence of the word are covered.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void Save_RoundTripsEverySettableLinkFlag()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("flags.lnk");
+
+            // Act
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.ForceNoLinkInfo = true;
+                created.RunInSeparate = true;
+                created.RunAsAdmin = true;
+                created.NoPidlAlias = true;
+                created.ForceUncName = true;
+                created.RunWithShimLayer = true;
+                created.ForceNoLinkTrack = true;
+                created.EnableTargetMetadata = true;
+                created.DisableLinkPathTracking = true;
+                created.DisableKnownFolderRelativeTracking = true;
+                created.NoKnownFolderAlias = true;
+                created.AllowLinkToLink = true;
+                created.UnaliasOnSave = true;
+                created.PreferEnvironmentPath = true;
+                created.KeepLocalIdListForUncTarget = true;
+                created.Save(linkPath);
+            }
+
+            // Assert
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            Assert.True(loaded.ForceNoLinkInfo);
+            Assert.True(loaded.RunInSeparate);
+            Assert.True(loaded.RunAsAdmin);
+            Assert.True(loaded.NoPidlAlias);
+            Assert.True(loaded.ForceUncName);
+            Assert.True(loaded.RunWithShimLayer);
+            Assert.True(loaded.ForceNoLinkTrack);
+            Assert.True(loaded.EnableTargetMetadata);
+            Assert.True(loaded.DisableLinkPathTracking);
+            Assert.True(loaded.DisableKnownFolderRelativeTracking);
+            Assert.True(loaded.NoKnownFolderAlias);
+            Assert.True(loaded.AllowLinkToLink);
+            Assert.True(loaded.UnaliasOnSave);
+            Assert.True(loaded.PreferEnvironmentPath);
+            Assert.True(loaded.KeepLocalIdListForUncTarget);
+        }
+
+        /// <summary>
+        /// Verifies that a link with none of those flags set reports none of them, so the reading side
+        /// is not simply answering yes.
+        /// </summary>
+        [Fact]
+        public void Save_LeavesEverySettableLinkFlagOffWhenItWasNotSet()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("noflags.lnk");
+
+            // Act
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.Save(linkPath);
+            }
+
+            // Assert
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            Assert.False(loaded.ForceNoLinkInfo);
+            Assert.False(loaded.RunInSeparate);
+            Assert.False(loaded.RunAsAdmin);
+            Assert.False(loaded.NoPidlAlias);
+            Assert.False(loaded.ForceUncName);
+            Assert.False(loaded.RunWithShimLayer);
+            Assert.False(loaded.ForceNoLinkTrack);
+            Assert.False(loaded.EnableTargetMetadata);
+            Assert.False(loaded.DisableLinkPathTracking);
+            Assert.False(loaded.DisableKnownFolderRelativeTracking);
+            Assert.False(loaded.NoKnownFolderAlias);
+            Assert.False(loaded.AllowLinkToLink);
+            Assert.False(loaded.UnaliasOnSave);
+            Assert.False(loaded.PreferEnvironmentPath);
+            Assert.False(loaded.KeepLocalIdListForUncTarget);
+        }
+
+        /// <summary>
+        /// Verifies that setting one flag does not set any of the others, which is what a mistaken mask
+        /// would look like.
+        /// </summary>
+        [Fact]
+        public void LinkFlags_AreIndependentOfOneAnother()
+        {
+            // Act
+            using ShellLinkFile link = ShellLinkFile.Create(TargetPath);
+            link.RunAsAdmin = true;
+
+            // Assert
+            Assert.True(link.RunAsAdmin);
+            Assert.False(link.RunInSeparate);
+            Assert.False(link.ForceNoLinkInfo);
+            Assert.False(link.NoPidlAlias);
+            Assert.False(link.PreferEnvironmentPath);
+
+            // Assert: and clearing it leaves the others where they were
+            link.RunInSeparate = true;
+            link.RunAsAdmin = false;
+            Assert.False(link.RunAsAdmin);
+            Assert.True(link.RunInSeparate);
+        }
+
+        /// <summary>
+        /// Verifies that the flags describing what a link carries agree with what it reports, since a
+        /// caller deciding whether to read a value consults them first.
+        /// </summary>
+        [Fact]
+        public void ContentFlags_AgreeWithTheValuesTheyDescribe()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("content.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.Arguments = "/a /b";
+                created.WorkingDirectory = WorkingDirectory;
+                created.Save(linkPath);
+            }
+
+            // Act
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+
+            // Assert: what was written is reported as present
+            Assert.True(loaded.HasArguments);
+            Assert.True(loaded.HasWorkingDirectory);
+
+            // Assert: and the remaining descriptions agree with the values beside them
+            Assert.Equal(loaded.HasIconLocation, loaded.IconLocation is not null);
+            Assert.Equal(loaded.HasName, !string.IsNullOrWhiteSpace(loaded.Description));
+
+            // Assert: a link the shell wrote is a Unicode one and carries an identifier list for its target
+            Assert.True(loaded.IsUnicode);
+            Assert.True(loaded.HasIdList);
+
+            // Assert: nothing here asked for any of these, so none of them should be reported
+            Assert.False(loaded.HasDarwinId);
+            Assert.False(loaded.HasExpandedIconSize);
+            Assert.False(loaded.HasExpandableStrings);
+        }
+
+        /// <summary>
+        /// Verifies that the application identity properties round-trip, since these are what place a
+        /// shortcut correctly on the start menu and in a jump list.
+        /// </summary>
+        /// <remarks>
+        /// Read back on the instance that set them rather than after a save. They live in the link's
+        /// property store rather than in the link structure itself, and the store is what is being
+        /// exercised - a value that goes in and comes out again has been through both halves of it.
+        /// </remarks>
+        [Fact]
+        public void AppUserModelProperties_RoundTripThroughThePropertyStore()
+        {
+            // Arrange
+            Guid toastActivator = new(0x6C4B96B4, 0x4C88, 0x4B9B, 0x9F, 0x1C, 0x5B, 0x9E, 0x1E, 0x5B, 0x9E, 0x1C);
+
+            // Act
+            using ShellLinkFile link = ShellLinkFile.Create(TargetPath);
+            link.AppUserModelId = "Contoso.App";
+            link.AppUserModelExcludeFromShowInNewInstall = true;
+            link.AppUserModelIsDestListSeparator = true;
+            link.AppUserModelIsDualMode = true;
+            link.AppUserModelPreventPinning = true;
+            link.AppUserModelRelaunchCommand = @"C:\Program Files\App\app.exe /relaunch";
+            link.AppUserModelRelaunchDisplayNameResource = "Contoso Application";
+            link.AppUserModelRelaunchIconResource = @"C:\Program Files\App\app.exe,0";
+            link.AppUserModelStartPinOption = 1;
+            link.AppUserModelToastActivatorClsid = toastActivator;
+
+            // Assert
+            Assert.Equal("Contoso.App", link.AppUserModelId);
+            Assert.True(link.AppUserModelExcludeFromShowInNewInstall);
+            Assert.True(link.AppUserModelIsDestListSeparator);
+            Assert.True(link.AppUserModelIsDualMode);
+            Assert.True(link.AppUserModelPreventPinning);
+            Assert.Equal(@"C:\Program Files\App\app.exe /relaunch", link.AppUserModelRelaunchCommand);
+            Assert.Equal("Contoso Application", link.AppUserModelRelaunchDisplayNameResource);
+            Assert.Equal(@"C:\Program Files\App\app.exe,0", link.AppUserModelRelaunchIconResource);
+            Assert.Equal(1u, link.AppUserModelStartPinOption);
+            Assert.Equal(toastActivator, link.AppUserModelToastActivatorClsid);
+        }
+
+        /// <summary>
+        /// Verifies that a link carrying no application identity reports none, rather than empty values
+        /// a caller would take for a configured one.
+        /// </summary>
+        [Fact]
+        public void AppUserModelProperties_AreAbsentWhenNotSet()
+        {
+            // Act
+            using ShellLinkFile link = ShellLinkFile.Create(TargetPath);
+
+            // Assert
+            Assert.Null(link.AppUserModelId);
+            Assert.Null(link.AppUserModelRelaunchCommand);
+            Assert.Null(link.AppUserModelRelaunchDisplayNameResource);
+            Assert.Null(link.AppUserModelRelaunchIconResource);
+        }
+
+        /// <summary>
+        /// Verifies that a relative path can be recorded, which is what lets a shortcut on removable
+        /// media find its target after the drive letter has changed.
+        /// </summary>
+        [Fact]
+        public void SetRelativePath_IsRecordedOnTheLink()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("relative.lnk");
+
+            // Act
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.SetRelativePath(TargetPath);
+                created.Save(linkPath);
+            }
+
+            // Assert
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            Assert.True(loaded.HasRelativePath);
+        }
+
+        /// <summary>
+        /// Verifies that resolving a link whose target is where it was left changes nothing about it.
+        /// </summary>
+        /// <remarks>
+        /// Asked for without any interface and without searching, so the shell answers from what the
+        /// link already holds rather than going looking - which is what a deployment wants when it is
+        /// reading a shortcut rather than repairing one.
+        /// </remarks>
+        [Fact]
+        public void Resolve_LeavesAnIntactLinkAlone()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("resolve.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.Save(linkPath);
+            }
+
+            // Act
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            loaded.Resolve();
+
+            // Assert
+            Assert.Equal(TargetPath, loaded.TargetPath, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that a link opened read-only says it cannot be saved, and one opened for writing
+        /// says it can.
+        /// </summary>
+        [Fact]
+        public void CanSave_ReflectsTheStorageModeItWasOpenedWith()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("cansave.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.Save(linkPath);
+            }
+
+            // Act & Assert
+            using (ShellLinkFile readOnly = ShellLinkFile.Load(linkPath))
+            {
+                Assert.False(readOnly.CanSave);
+            }
+            using ShellLinkFile writable = ShellLinkFile.Load(linkPath, Interop.STGM.STGM_READWRITE);
+            Assert.True(writable.CanSave);
+        }
+
+        /// <summary>
         /// An executable that exists on every Windows installation, used as a link target so the shell
         /// has something real to resolve.
         /// </summary>

@@ -118,6 +118,68 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
+        /// Verifies that the token linked to the caller's own is the other half of the same account,
+        /// where user account control split it into two.
+        /// </summary>
+        /// <remarks>
+        /// A token has a linked counterpart only where it was split: an elevated process is linked to its
+        /// filtered token and an unelevated member of the administrators group to its elevated one. A
+        /// process running as an account that was never split has none at all, and asking throws - which
+        /// is why this reports rather than fails when there is no link, and why
+        /// <see cref="TokenManager.GetHighestPrimaryToken"/> exists to paper over the difference.
+        /// <para>
+        /// The two halves belong to the same account, so the identifier is what ties them together; what
+        /// differs between them is whether they are administrative, which is the whole point of the split.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void GetLinkedToken_IsTheOtherHalfOfASplitToken()
+        {
+            // Arrange
+            using SafeFileHandle token = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE);
+            SafeFileHandle? linked = null;
+            if (Record.Exception(() => linked = TokenManager.GetLinkedToken(token)) is not null)
+            {
+                // This account's token was never split, so there is no other half to compare against.
+                return;
+            }
+
+            // Assert
+            using (linked)
+            {
+                Assert.NotNull(linked);
+                Assert.False(linked.IsInvalid);
+                Assert.Equal(TokenUtilities.GetTokenSid(token), TokenUtilities.GetTokenSid(linked));
+                Assert.Equal(TokenUtilities.GetTokenSessionId(token), TokenUtilities.GetTokenSessionId(linked));
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the linked token can be turned into a usable primary one, which is the form a
+        /// process is actually started with.
+        /// </summary>
+        [Fact]
+        public void GetLinkedPrimaryToken_ProducesAUsableTokenForTheSameAccount()
+        {
+            // Arrange
+            using SafeFileHandle token = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE);
+            SafeFileHandle? primary = null;
+            if (Record.Exception(() => primary = TokenManager.GetLinkedPrimaryToken(token)) is not null)
+            {
+                // This account's token was never split, which the fallback above covers instead.
+                return;
+            }
+
+            // Assert
+            using (primary)
+            {
+                Assert.NotNull(primary);
+                Assert.False(primary.IsInvalid);
+                Assert.Equal(TokenUtilities.GetTokenSid(token), TokenUtilities.GetTokenSid(primary));
+            }
+        }
+
+        /// <summary>
         /// Verifies that an unelevated caller is reported as unable to broker another user's token, since
         /// it has no way to obtain one.
         /// </summary>

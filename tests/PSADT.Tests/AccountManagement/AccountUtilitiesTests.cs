@@ -88,6 +88,24 @@ namespace PSADT.Tests.AccountManagement
         }
 
         /// <summary>
+        /// Verifies that whether the caller is running as a service agrees with the group its token
+        /// carries, which is the only thing that decides it.
+        /// </summary>
+        /// <remarks>
+        /// The service group is placed on a token by the service control manager when it starts a
+        /// process, so it is present exactly when the caller is running under a service and never
+        /// otherwise. Nothing asserts which of those this run is, since either is a valid way to be
+        /// running the tests.
+        /// </remarks>
+        [Fact]
+        public void CallerIsServiceAccount_AgreesWithTheGroupOnTheToken()
+        {
+            Assert.Equal(
+                AccountUtilities.CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, domainSid: null)),
+                AccountUtilities.CallerIsServiceAccount);
+        }
+
+        /// <summary>
         /// Verifies that whether the caller can interact with a desktop agrees with the framework.
         /// </summary>
         [Fact]

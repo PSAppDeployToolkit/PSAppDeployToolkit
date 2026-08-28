@@ -258,8 +258,7 @@ namespace PSADT.WindowsInstaller
                 _ = NativeMethods.MsiDatabaseGenerateTransform(hDatabaseTempRo, hDatabaseOrig, newTransformPath);
 
                 // Create summary info for the transform (equivalent to CreateTransformSummaryInfo)
-                MSITRANSFORM_VALIDATE validateFlags = (MSITRANSFORM_VALIDATE)((Enum.GetValues(typeof(MSITRANSFORM_VALIDATE)).Cast<MSITRANSFORM_VALIDATE>().Max(static v => Convert.ToUInt32(v, CultureInfo.InvariantCulture)) << 1) - 1);
-                _ = NativeMethods.MsiCreateTransformSummaryInfo(hDatabaseTempRo, hDatabaseOrig, newTransformPath, MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE, validateFlags);
+                _ = NativeMethods.MsiCreateTransformSummaryInfo(hDatabaseTempRo, hDatabaseOrig, newTransformPath, MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE, MsiTransformValidateFlags);
             }
             finally
             {
@@ -686,5 +685,21 @@ namespace PSADT.WindowsInstaller
                 ? resSpan.ToString()
                 : null;
         }
+
+        /// <summary>
+        /// Defines the default validation flags used when creating a transform summary information for a Windows Installer transform.
+        /// </summary>
+        /// <remarks>Only the package's identity is validated. A property transform is meant to apply to the product
+        /// wherever it is found, and constraining it to a version would make it useless the moment that product was
+        /// updated. <para> These are not all independent switches, and asking for every one of them does not mean
+        /// "validate everything". The five NEWxxxBASEVERSION values are alternative comparison operators - newer than
+        /// the base, newer or equal, equal, and so on - so a combination naming more than one of them describes a
+        /// contradiction, and the installer refuses the whole call as a bad parameter rather than picking one. Each
+        /// value is spelled out here for that reason. </para></remarks>
+        private const MSITRANSFORM_VALIDATE MsiTransformValidateFlags = (MSITRANSFORM_VALIDATE)(
+            (uint)MSITRANSFORM_VALIDATE.MSITRANSFORM_VALIDATE_LANGUAGE |
+            (uint)MSITRANSFORM_VALIDATE.MSITRANSFORM_VALIDATE_PRODUCT |
+            (uint)MSITRANSFORM_VALIDATE.MSITRANSFORM_VALIDATE_PLATFORM |
+            (uint)MSITRANSFORM_VALIDATE.MSITRANSFORM_VALIDATE_UPGRADECODE);
     }
 }

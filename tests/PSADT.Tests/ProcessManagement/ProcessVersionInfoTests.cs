@@ -77,6 +77,14 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal(expected.ProductBuildPart, actual.ProductBuildPart);
             Assert.Equal(expected.ProductPrivatePart, actual.ProductPrivatePart);
 
+            // Assert: the strings a build only sometimes carries, which are absent far more often than not
+            // and so are the ones most likely to be read from the wrong place without anybody noticing
+            Assert.Equal(expected.Comments, actual.Comments);
+            Assert.Equal(expected.LegalTrademarks, actual.LegalTrademarks);
+            Assert.Equal(expected.PrivateBuild, actual.PrivateBuild);
+            Assert.Equal(expected.SpecialBuild, actual.SpecialBuild);
+            Assert.Equal(expected.Language, actual.Language);
+
             // Assert: the flags
             Assert.Equal(expected.IsDebug, actual.IsDebug);
             Assert.Equal(expected.IsPatched, actual.IsPatched);

@@ -93,6 +93,14 @@ namespace PSADT.Tests.SMBIOS
             Assert.Equal(new Version(1, 2), info.GetSystemBiosVersion());
             Assert.Equal(new Version(3, 4), info.GetEmbeddedControllerVersion());
 
+            // The four release bytes are read individually as well as assembled, and they sit next to each
+            // other in the structure - so a reader off by one field would still produce plausible versions.
+            // Asserting the parts separately is what distinguishes that from having read them correctly.
+            Assert.Equal((byte)1, info.SystemBiosMajorRelease);
+            Assert.Equal((byte)2, info.SystemBiosMinorRelease);
+            Assert.Equal((byte)3, info.EmbeddedControllerMajorRelease);
+            Assert.Equal((byte)4, info.EmbeddedControllerMinorRelease);
+
             double? age = info.GetBiosAgeInDays();
             _ = Assert.NotNull(age);
             Assert.True(age.Value > 1800); // Expected to be well over 1800 days when running these tests in 2025

@@ -157,6 +157,73 @@ namespace PSADT.Tests.DeviceManagement
         }
 
         /// <summary>
+        /// Verifies that every indicator handed in is the indicator read back, so a summary cannot
+        /// report one source's answer under another's name.
+        /// </summary>
+        /// <remarks>
+        /// There are seven of these and they are all passed positionally through one constructor. Two
+        /// transposed there would be invisible - the summary would still be a valid summary, just of a
+        /// different machine - so each is set apart from the rest and read back.
+        /// </remarks>
+        [Fact]
+        public void RebootInfo_KeepsEveryIndicatorSeparately()
+        {
+            // Assert: each indicator, set on its own, is reported
+            Assert.True(Create(system: true).IsSystemRebootPending);
+            Assert.True(Create(cbServicing: true).IsCBServicingRebootPending);
+            Assert.True(Create(windowsUpdate: true).IsWindowsUpdateRebootPending);
+            Assert.True(Create(sccm: true).IsSCCMClientRebootPending);
+            Assert.True(Create(intune: true).IsIntuneClientRebootPending);
+            Assert.True(Create(appV: true).IsAppVRebootPending);
+            Assert.True(Create(fileRename: true).IsFileRenameRebootPending);
+
+            // Assert: and setting one leaves the rest where they were
+            RebootInfo systemOnly = Create(system: true);
+            Assert.False(systemOnly.IsCBServicingRebootPending);
+            Assert.False(systemOnly.IsWindowsUpdateRebootPending);
+            Assert.Null(systemOnly.IsSCCMClientRebootPending);
+            Assert.Null(systemOnly.IsIntuneClientRebootPending);
+            Assert.False(systemOnly.IsAppVRebootPending);
+            Assert.Null(systemOnly.IsFileRenameRebootPending);
+        }
+
+        /// <summary>
+        /// Verifies that the machine the summary describes, and when it last started, are carried
+        /// through - since a summary naming the wrong machine would be acted on all the same.
+        /// </summary>
+        [Fact]
+        public void RebootInfo_NamesTheMachineAndWhenItStarted()
+        {
+            // Arrange
+            DateTime bootTime = new(2026, 8, 27, 9, 30, 0, DateTimeKind.Local);
+
+            // Act
+            RebootInfo info = Create(computerName: "TESTHOST", lastBootUpTime: bootTime);
+
+            // Assert
+            Assert.Equal("TESTHOST", info.ComputerName, StringComparer.Ordinal);
+            Assert.Equal(bootTime, info.LastBootUpTime);
+        }
+
+        /// <summary>
+        /// Verifies that the lists carried on a summary are the ones handed in, and that a summary built
+        /// without them reports empty lists rather than nothing at all.
+        /// </summary>
+        [Fact]
+        public void RebootInfo_CarriesTheListsItWasGiven()
+        {
+            // Act
+            RebootInfo populated = Create(pendingFileRenameOperations: [@"C:\old.dll", @"C:\new.dll"], errorMsg: ["something went wrong"]);
+            RebootInfo empty = Create();
+
+            // Assert
+            Assert.Equal([@"C:\old.dll", @"C:\new.dll"], populated.PendingFileRenameOperations);
+            Assert.Equal(["something went wrong"], populated.ErrorMsg);
+            Assert.Empty(empty.PendingFileRenameOperations);
+            Assert.Empty(empty.ErrorMsg);
+        }
+
+        /// <summary>
         /// Builds a summary, naming every constructor argument once so the tests above can vary only what
         /// they care about.
         /// </summary>

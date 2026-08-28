@@ -67,5 +67,58 @@ namespace PSADT.Tests.SMBIOS
             Assert.Null(element.Maximum);
             Assert.False(element.IsRangeValid);
         }
+
+        /// <summary>
+        /// Verifies that the raw bytes are kept exactly as the firmware wrote them, alongside the
+        /// interpretations built from them.
+        /// </summary>
+        /// <remarks>
+        /// The interpreted values throw information away deliberately - a minimum of 0xFF means "not
+        /// specified" and is reported as nothing, and the top bit of the type is stripped to leave the
+        /// code. Keeping the raw bytes is what lets a caller looking at an unfamiliar machine see what
+        /// the firmware actually said rather than only what was made of it.
+        /// </remarks>
+        [Fact]
+        public void RawValues_AreKeptExactlyAsTheFirmwareWroteThem()
+        {
+            // Act: the top bit set marks a baseboard type rather than an SMBIOS one
+            SystemEnclosureContainedElement element = new(0x83, 0xFF, 0x00);
+
+            // Assert: the raw bytes survive untouched
+            Assert.Equal(0x83, element.RawType);
+            Assert.Equal(0xFF, element.RawMinimum);
+            Assert.Equal(0x00, element.RawMaximum);
+
+            // Assert: while the interpretations drop what they are meant to
+            Assert.Equal(0x03, element.TypeCode);
+            Assert.False(element.IsType);
+            Assert.Null(element.Minimum);
+            Assert.Null(element.Maximum);
+        }
+
+        /// <summary>
+        /// Verifies that the type code is the raw type with its top bit removed, since that bit says
+        /// which of the two enumerations the code should be read against rather than being part of it.
+        /// </summary>
+        /// <param name="rawType">The byte the firmware wrote.</param>
+        /// <param name="expectedTypeCode">The code it carries.</param>
+        /// <param name="expectedIsType">Whether it names an SMBIOS type rather than a baseboard one.</param>
+        [Theory]
+        [InlineData(0x00, 0x00, true)]
+        [InlineData(0x03, 0x03, true)]
+        [InlineData(0x7F, 0x7F, true)]
+        [InlineData(0x80, 0x00, false)]
+        [InlineData(0x83, 0x03, false)]
+        [InlineData(0xFF, 0x7F, false)]
+        public void TypeCode_StripsTheFlagBitFromTheRawType(byte rawType, byte expectedTypeCode, bool expectedIsType)
+        {
+            // Act
+            SystemEnclosureContainedElement element = new(rawType, 0x01, 0x02);
+
+            // Assert
+            Assert.Equal(rawType, element.RawType);
+            Assert.Equal(expectedTypeCode, element.TypeCode);
+            Assert.Equal(expectedIsType, element.IsType);
+        }
     }
 }

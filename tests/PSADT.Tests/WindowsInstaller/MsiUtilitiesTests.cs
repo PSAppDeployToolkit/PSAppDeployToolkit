@@ -432,5 +432,85 @@ namespace PSADT.Tests.WindowsInstaller
             // Act & Assert
             _ = Assert.Throws<ArgumentOutOfRangeException>(() => MsiUtilities.GetMsiTableDictionary(package.FullName, "Property", 1, 2, []));
         }
+
+        /// <summary>
+        /// Verifies that a transform is written for the properties it was given, and that it is a real
+        /// one rather than an empty file.
+        /// </summary>
+        /// <remarks>
+        /// Written into a temporary directory that is removed afterwards; the cached package it is
+        /// derived from is only read. A transform is how a deployment overrides an installer's properties
+        /// without editing it, so the file being produced at all is the part worth asserting - what it
+        /// contains is the installer's own format rather than anything this library composes.
+        /// <para>
+        /// The property is one no real package carries, and that matters: the installer reports "no data"
+        /// rather than writing a transform when the two databases turn out to be identical, so a property
+        /// whose value the package already held would produce nothing and read as a failure.
+        /// </para>
+        /// </remarks>
+        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        public void CreatePropertyTransformFile_WritesATransform()
+        {
+            // Arrange
+            FileInfo? package = TestEnvironment.CachedMsiPackage;
+            Assert.NotNull(package);
+            using TempDirectory temp = new();
+            string transformPath = temp.GetPath("properties.mst");
+
+            // Act
+            MsiUtilities.CreatePropertyTransformFile(package.FullName, transformPath, new Dictionary<string, string>(StringComparer.Ordinal) { ["PSADTTESTSPROPERTY"] = "1" });
+
+            // Assert
+            FileInfo transform = new(transformPath);
+            Assert.True(transform.Exists, $"No transform was written to {transformPath}.");
+            Assert.True(transform.Length > 0, "The transform written was empty.");
+        }
+
+        /// <summary>
+        /// Verifies that a transform asked for with no properties is refused, since it would describe no
+        /// change at all.
+        /// </summary>
+        [Fact]
+        public void CreatePropertyTransformFile_RefusesAnEmptyPropertySet()
+        {
+            using TempDirectory temp = new();
+            _ = Assert.Throws<ArgumentOutOfRangeException>(() => MsiUtilities.CreatePropertyTransformFile(
+                temp.WriteFile("package.msi", "not a database"),
+                temp.GetPath("properties.mst"),
+                new Dictionary<string, string>(StringComparer.Ordinal)));
+        }
+
+        /// <summary>
+        /// Verifies that a transform asked for against a package that is not there is reported before
+        /// anything is written.
+        /// </summary>
+        [Fact]
+        public void CreatePropertyTransformFile_ReportsAPackageThatIsNotThere()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string transformPath = temp.GetPath("properties.mst");
+
+            // Act & Assert
+            _ = Assert.Throws<FileNotFoundException>(() => MsiUtilities.CreatePropertyTransformFile(
+                temp.GetPath("absent.msi"),
+                transformPath,
+                new Dictionary<string, string>(StringComparer.Ordinal) { ["PSADTTESTSPROPERTY"] = "1" }));
+            Assert.False(File.Exists(transformPath), "A transform was written for a package that does not exist.");
+        }
+
+        /// <summary>
+        /// Verifies that no properties at all is refused as a null argument.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
+        [Fact]
+        public void CreatePropertyTransformFile_RefusesNoPropertiesAtAll()
+        {
+            using TempDirectory temp = new();
+            _ = Assert.Throws<ArgumentNullException>(() => MsiUtilities.CreatePropertyTransformFile(
+                temp.WriteFile("package.msi", "not a database"),
+                temp.GetPath("properties.mst"),
+                null!));
+        }
     }
 }

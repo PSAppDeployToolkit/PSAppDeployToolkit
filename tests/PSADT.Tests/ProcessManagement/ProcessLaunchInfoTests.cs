@@ -359,6 +359,81 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that every option a launch carries is the option read back, since they are passed
+        /// positionally through a constructor with more than twenty parameters.
+        /// </summary>
+        /// <remarks>
+        /// Two transposed there would produce a launch that is entirely valid and does the wrong thing -
+        /// running without elevation where elevation was asked for, or showing a window meant to be
+        /// hidden. Each is set apart from the rest, so a transposition shows up as the wrong one being
+        /// reported rather than as a plausible whole.
+        /// </remarks>
+        [Fact]
+        public void ProcessLaunchInfo_KeepsEveryOptionSeparately()
+        {
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", inheritEnvironmentVariables: true).InheritEnvironmentVariables);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", expandEnvironmentVariables: true).ExpandEnvironmentVariables);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", denyUserTermination: true).DenyUserTermination);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", runAsInvoker: true).RunAsInvoker);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", bypassIfeo: true).BypassIfeo);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", createNoWindow: true).CreateNoWindow);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", waitForChildProcesses: true).WaitForChildProcesses);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", killChildProcessesWithParent: true).KillChildProcessesWithParent);
+            Assert.True(new ProcessLaunchInfo(@"C:\app.exe", noTerminateOnTimeout: true).NoTerminateOnTimeout);
+        }
+
+        /// <summary>
+        /// Verifies that a launch asking for nothing in particular has none of those options set.
+        /// </summary>
+        [Fact]
+        public void ProcessLaunchInfo_LeavesEveryOptionOffByDefault()
+        {
+            // Act
+            ProcessLaunchInfo launchInfo = new(@"C:\app.exe");
+
+            // Assert
+            Assert.False(launchInfo.InheritEnvironmentVariables);
+            Assert.False(launchInfo.ExpandEnvironmentVariables);
+            Assert.False(launchInfo.DenyUserTermination);
+            Assert.False(launchInfo.RunAsInvoker);
+            Assert.False(launchInfo.UIAccess);
+            Assert.False(launchInfo.BypassIfeo);
+            Assert.False(launchInfo.CreateNoWindow);
+            Assert.False(launchInfo.WaitForChildProcesses);
+            Assert.False(launchInfo.KillChildProcessesWithParent);
+            Assert.False(launchInfo.NoTerminateOnTimeout);
+        }
+
+        /// <summary>
+        /// Verifies that the kind of executable being launched is read from the file itself, since it
+        /// decides whether a console is created and whether the streams can be captured at all.
+        /// </summary>
+        [Fact]
+        public void ImageSubsystem_IsReadFromTheExecutable()
+        {
+            // Act
+            ProcessLaunchInfo launchInfo = new(Path.Join(Environment.SystemDirectory, "cmd.exe"));
+
+            // Assert: the interpreter is a console application, and the launch agrees
+            Assert.Equal(PSADT.Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, launchInfo.ImageSubsystem);
+            Assert.True(launchInfo.IsCliApplication());
+        }
+
+        /// <summary>
+        /// Verifies that a file whose header cannot be read is still given a subsystem, since a launch
+        /// has to decide about a window one way or the other.
+        /// </summary>
+        /// <remarks>
+        /// A batch file has no header to read, so the extension is what settles it - and it settles it as
+        /// a console application, which is what one is.
+        /// </remarks>
+        [Fact]
+        public void ImageSubsystem_FallsBackToTheExtension()
+        {
+            Assert.Equal(PSADT.Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, new ProcessLaunchInfo(@"C:\does-not-exist\script.bat").ImageSubsystem);
+        }
+
+        /// <summary>
         /// Verifies that two launches asking for the same thing are equal, and that a difference in any
         /// of the lists makes them unequal.
         /// </summary>

@@ -154,6 +154,102 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that every link flag the snapshot exposes reports what the shortcut it was taken
+        /// from reports, since the snapshot is the form a caller reading a shortcut actually receives.
+        /// </summary>
+        /// <remarks>
+        /// Compared against the editable form rather than against literals, because the point is that
+        /// nothing is dropped or transposed on the way across - there are more than thirty of these and
+        /// a snapshot that read one bit into a neighbouring property would look entirely plausible.
+        /// </remarks>
+        [Fact]
+        public void Get_CarriesEveryLinkFlagOver()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("flags.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.RunAsAdmin = true;
+                created.PreferEnvironmentPath = true;
+                created.AllowLinkToLink = true;
+                created.Arguments = "/a /b";
+                created.Save(linkPath);
+            }
+
+            // Act
+            ShellLinkInfo info = ShellLinkInfo.Get(linkPath);
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+
+            // Assert: the ones this test asked for
+            Assert.True(info.RunAsAdmin);
+            Assert.True(info.PreferEnvironmentPath);
+            Assert.True(info.AllowLinkToLink);
+
+            // Assert: and every one of them agrees with the shortcut itself
+            Assert.Equal(loaded.HasIdList, info.HasIdList);
+            Assert.Equal(loaded.HasLinkInfo, info.HasLinkInfo);
+            Assert.Equal(loaded.HasName, info.HasName);
+            Assert.Equal(loaded.HasRelativePath, info.HasRelativePath);
+            Assert.Equal(loaded.HasWorkingDirectory, info.HasWorkingDirectory);
+            Assert.Equal(loaded.HasArguments, info.HasArguments);
+            Assert.Equal(loaded.HasIconLocation, info.HasIconLocation);
+            Assert.Equal(loaded.IsUnicode, info.IsUnicode);
+            Assert.Equal(loaded.ForceNoLinkInfo, info.ForceNoLinkInfo);
+            Assert.Equal(loaded.HasExpandableStrings, info.HasExpandableStrings);
+            Assert.Equal(loaded.RunInSeparate, info.RunInSeparate);
+            Assert.Equal(loaded.HasDarwinId, info.HasDarwinId);
+            Assert.Equal(loaded.RunAsAdmin, info.RunAsAdmin);
+            Assert.Equal(loaded.HasExpandedIconSize, info.HasExpandedIconSize);
+            Assert.Equal(loaded.NoPidlAlias, info.NoPidlAlias);
+            Assert.Equal(loaded.ForceUncName, info.ForceUncName);
+            Assert.Equal(loaded.RunWithShimLayer, info.RunWithShimLayer);
+            Assert.Equal(loaded.ForceNoLinkTrack, info.ForceNoLinkTrack);
+            Assert.Equal(loaded.EnableTargetMetadata, info.EnableTargetMetadata);
+            Assert.Equal(loaded.DisableLinkPathTracking, info.DisableLinkPathTracking);
+            Assert.Equal(loaded.DisableKnownFolderRelativeTracking, info.DisableKnownFolderRelativeTracking);
+            Assert.Equal(loaded.NoKnownFolderAlias, info.NoKnownFolderAlias);
+            Assert.Equal(loaded.AllowLinkToLink, info.AllowLinkToLink);
+            Assert.Equal(loaded.UnaliasOnSave, info.UnaliasOnSave);
+            Assert.Equal(loaded.PreferEnvironmentPath, info.PreferEnvironmentPath);
+            Assert.Equal(loaded.KeepLocalIdListForUncTarget, info.KeepLocalIdListForUncTarget);
+        }
+
+        /// <summary>
+        /// Verifies that the application identity carries over into the snapshot, since that is what a
+        /// caller inspecting a start menu shortcut reads it for.
+        /// </summary>
+        [Fact]
+        public void Get_CarriesTheAppUserModelPropertiesOver()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("identity.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.AppUserModelId = "Contoso.App";
+                created.AppUserModelPreventPinning = true;
+                created.Save(linkPath);
+            }
+
+            // Act
+            ShellLinkInfo info = ShellLinkInfo.Get(linkPath);
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+
+            // Assert
+            Assert.Equal(loaded.AppUserModelId, info.AppUserModelId);
+            Assert.Equal(loaded.AppUserModelExcludeFromShowInNewInstall, info.AppUserModelExcludeFromShowInNewInstall);
+            Assert.Equal(loaded.AppUserModelIsDestListSeparator, info.AppUserModelIsDestListSeparator);
+            Assert.Equal(loaded.AppUserModelIsDualMode, info.AppUserModelIsDualMode);
+            Assert.Equal(loaded.AppUserModelPreventPinning, info.AppUserModelPreventPinning);
+            Assert.Equal(loaded.AppUserModelRelaunchCommand, info.AppUserModelRelaunchCommand);
+            Assert.Equal(loaded.AppUserModelRelaunchDisplayNameResource, info.AppUserModelRelaunchDisplayNameResource);
+            Assert.Equal(loaded.AppUserModelRelaunchIconResource, info.AppUserModelRelaunchIconResource);
+            Assert.Equal(loaded.AppUserModelStartPinOption, info.AppUserModelStartPinOption);
+            Assert.Equal(loaded.AppUserModelToastActivatorClsid, info.AppUserModelToastActivatorClsid);
+        }
+
+        /// <summary>
         /// A target that is certain to exist on any machine the tests land on.
         /// </summary>
         private static readonly string TargetPath = Path.Join(Environment.SystemDirectory, "cmd.exe");

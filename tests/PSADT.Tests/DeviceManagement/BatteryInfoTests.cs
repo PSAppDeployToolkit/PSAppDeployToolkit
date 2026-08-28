@@ -86,6 +86,45 @@ namespace PSADT.Tests.DeviceManagement
         }
 
         /// <summary>
+        /// Verifies that the charge status reported is one the enumeration defines, and that it agrees
+        /// with whether the battery is usable at all.
+        /// </summary>
+        /// <remarks>
+        /// The status is a set of flags rather than a single value, so a machine on mains power with a
+        /// charging battery reports two of them at once. What can be asserted on any machine is the
+        /// relationship it has with the usability check beside it, which is derived from it: the two are
+        /// read separately by callers and must not disagree.
+        /// </remarks>
+        [Fact]
+        public void BatteryChargeStatus_AgreesWithWhetherThereIsABattery()
+        {
+            // Act
+            BatteryInfo battery = BatteryInfo.Get();
+
+            // Assert
+            Assert.Equal(
+                battery.BatteryChargeStatus is BatteryChargeStatus.NoSystemBattery or BatteryChargeStatus.Unknown,
+                battery.IsBatteryInvalid());
+        }
+
+        /// <summary>
+        /// Verifies that asking whether battery saver is on answers rather than failing, and that a
+        /// machine with no usable battery is never reported as saving it.
+        /// </summary>
+        [Fact]
+        public void BatterySaverEnabled_AnswersConsistently()
+        {
+            // Act
+            BatteryInfo battery = BatteryInfo.Get();
+
+            // Assert
+            if (battery.IsBatteryInvalid())
+            {
+                Assert.False(battery.BatterySaverEnabled);
+            }
+        }
+
+        /// <summary>
         /// Verifies that whether the machine is a laptop agrees with what the firmware says about its
         /// enclosure, since that is where the answer comes from.
         /// </summary>

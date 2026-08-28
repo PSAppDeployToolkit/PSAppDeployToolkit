@@ -301,6 +301,68 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that a shortcut opened read-only says it cannot be saved, and one opened for writing
+        /// says it can.
+        /// </summary>
+        /// <remarks>
+        /// Asked rather than attempted. Saving a shortcut opened read-only fails part way through the
+        /// shell's own write, which can leave the file in a worse state than not having tried.
+        /// </remarks>
+        [Fact]
+        public void CanSave_ReflectsTheStorageModeItWasOpenedWith()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("cansave.url");
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    // Assert: one that was built rather than loaded has nothing stopping it
+                    Assert.True(created.CanSave);
+                    created.Save(shortcutPath);
+                }
+
+                // Assert
+                using (InternetShortcutFile readOnly = InternetShortcutFile.Load(shortcutPath))
+                {
+                    Assert.False(readOnly.CanSave);
+                }
+                using InternetShortcutFile writable = InternetShortcutFile.Load(shortcutPath, Interop.STGM.STGM_READWRITE);
+                Assert.True(writable.CanSave);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that whether the shortcut has roamed between machines round-trips, since it is the
+        /// one boolean the property set carries.
+        /// </summary>
+        [Fact]
+        public void Save_RoundTripsWhetherItHasRoamed()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("roamed.url");
+
+                // Act
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    // Assert: absent until it is set, rather than reported as not having roamed
+                    Assert.Null(created.Roamed);
+                    created.Roamed = true;
+                    Assert.True(created.Roamed);
+                    created.Save(shortcutPath);
+                }
+
+                // Assert
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.True(loaded.Roamed);
+            });
+        }
+
+        /// <summary>
         /// Verifies that clearing the show command reports it as cleared, rather than falling back to
         /// the value still sitting in the file.
         /// </summary>

@@ -149,6 +149,41 @@ namespace PSADT.Tests.TerminalServices
         }
 
         /// <summary>
+        /// Verifies that how the session is being reached is described consistently, since a deployment
+        /// decides whether it may show something to a person based on it.
+        /// </summary>
+        /// <remarks>
+        /// Nothing asserts which of these the run landed on: a session may be at the machine's own
+        /// console, arriving over a remote connection, or neither, and all are valid. What is asserted is
+        /// that the descriptions cannot contradict each other - a session cannot be at the console and
+        /// reached remotely at the same time, and one reached remotely has a protocol to say so.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task GetAsync_DescribesHowTheSessionIsReachedAsync()
+        {
+            // Arrange
+            SessionInfo? session = await SessionInfo.GetAsync(AccountUtilities.CallerSessionId).ConfigureAwait(true);
+            if (session is null)
+            {
+                return;
+            }
+
+            // Assert: the two cannot both be true
+            Assert.False(session.IsConsoleSession && session.IsRdpSession);
+
+            // Assert: a session reached remotely reports a protocol other than the console's
+            Assert.Equal(session.ClientProtocolType is not PSADT.Interop.WTS_PROTOCOL_TYPE.Console, session.IsRdpSession);
+
+            // Assert: and a client directory is only reported alongside a client that has one
+            if (session.ClientDirectory is not null)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(session.ClientDirectory.FullName));
+                Assert.NotNull(session.ClientName);
+            }
+        }
+
+        /// <summary>
         /// Verifies that a session identifier nothing is using reports nothing rather than failing.
         /// </summary>
         /// <returns>A task that represents the asynchronous test.</returns>

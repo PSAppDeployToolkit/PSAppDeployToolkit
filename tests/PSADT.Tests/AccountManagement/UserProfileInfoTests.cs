@@ -83,6 +83,70 @@ namespace PSADT.Tests.AccountManagement
         }
 
         /// <summary>
+        /// Verifies that every directory handed in is the directory read back, since they are passed
+        /// positionally through a constructor with a run of nine of the same type.
+        /// </summary>
+        /// <remarks>
+        /// Nine consecutive parameters that all take the same kind of value are the easiest place in this
+        /// library to transpose two arguments, and a profile describing somebody's desktop as their
+        /// documents folder is one a deployment would act on quite happily. The paths are distinct here so
+        /// a transposition surfaces as the wrong one being reported.
+        /// </remarks>
+        [Fact]
+        public void UserProfileInfo_KeepsEveryDirectorySeparately()
+        {
+            // Act
+            UserProfileInfo profile = new(
+                new NTAccount(@"TESTHOST\user"),
+                WellKnownSid,
+                new DirectoryInfo(@"C:\Users\user"),
+                new DirectoryInfo(@"C:\Users\user\AppData\Roaming"),
+                new DirectoryInfo(@"C:\Users\user\AppData\Local"),
+                new DirectoryInfo(@"C:\Users\user\Desktop"),
+                new DirectoryInfo(@"C:\Users\user\Documents"),
+                new DirectoryInfo(@"C:\Users\user\Start Menu"),
+                new DirectoryInfo(@"C:\Users\user\AppData\Local\Temp"),
+                new DirectoryInfo(@"C:\Users\user\OneDrive"),
+                new DirectoryInfo(@"C:\Users\user\OneDrive - Contoso"),
+                CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.Equal(@"C:\Users\user", profile.ProfilePath.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\AppData\Roaming", profile.AppDataPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\AppData\Local", profile.LocalAppDataPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\Desktop", profile.DesktopPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\Documents", profile.DocumentsPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\Start Menu", profile.StartMenuPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\AppData\Local\Temp", profile.TempPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\OneDrive", profile.OneDrivePath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(@"C:\Users\user\OneDrive - Contoso", profile.OneDriveCommercialPath?.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(CultureInfo.InvariantCulture, profile.UserLocale);
+        }
+
+        /// <summary>
+        /// Verifies that a profile built with only the directory it must have reports nothing for the
+        /// rest, so a caller can tell a folder that was not found from one that is not there.
+        /// </summary>
+        [Fact]
+        public void UserProfileInfo_ReportsAbsentDirectoriesAsAbsent()
+        {
+            // Act
+            UserProfileInfo profile = new(new NTAccount(@"TESTHOST\user"), WellKnownSid, new DirectoryInfo(@"C:\Users\user"));
+
+            // Assert
+            Assert.Equal(@"C:\Users\user", profile.ProfilePath.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Null(profile.AppDataPath);
+            Assert.Null(profile.LocalAppDataPath);
+            Assert.Null(profile.DesktopPath);
+            Assert.Null(profile.DocumentsPath);
+            Assert.Null(profile.StartMenuPath);
+            Assert.Null(profile.TempPath);
+            Assert.Null(profile.OneDrivePath);
+            Assert.Null(profile.OneDriveCommercialPath);
+            Assert.Null(profile.UserLocale);
+        }
+
+        /// <summary>
         /// Verifies that two profiles describing the same account are equal, since profiles are collected
         /// into lists that are compared and deduplicated as a whole.
         /// </summary>

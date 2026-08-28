@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Principal;
+using System.ServiceProcess;
+using Microsoft.Win32.SafeHandles;
 using PSADT.ProcessManagement;
+using Windows.Win32.System.Threading;
 using Xunit;
 
 namespace PSADT.Tests.ProcessManagement
@@ -232,6 +235,58 @@ namespace PSADT.Tests.ProcessManagement
             _ = Assert.Throws<ArgumentNullException>(static () => ProcessUtilities.HasProcessExited(null!));
             _ = Assert.Throws<ArgumentNullException>(static () => ProcessUtilities.GetProcessSid(null!));
             _ = Assert.Throws<ArgumentNullException>(static () => ProcessUtilities.GetProcessImageName(null!));
+        }
+
+        /// <summary>
+        /// Verifies that the rights a handle was opened with are the rights reported back for it.
+        /// </summary>
+        /// <remarks>
+        /// Asked of the kernel rather than remembered from the open, which is the point: a caller handed
+        /// a handle by somebody else has no other way to find out what it may do with it, and attempting
+        /// an operation to find out is the thing this exists to avoid.
+        /// </remarks>
+        [Fact]
+        public void GetProcessAccessRights_ReportsWhatTheHandleWasOpenedWith()
+        {
+            // Arrange
+            using Process current = Process.GetCurrentProcess();
+            using SafeProcessHandle handle = current.SafeHandle;
+
+            // Act
+            PROCESS_ACCESS_RIGHTS rights = ProcessUtilities.GetProcessAccessRights(handle);
+
+            // Assert: the framework opens its own process handle for everything, so querying is included
+            Assert.NotEqual(default, rights);
+            Assert.True(rights.HasFlag(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION));
+        }
+
+        /// <summary>
+        /// Verifies that the process behind a running service is found, and is a process that exists.
+        /// </summary>
+        /// <remarks>
+        /// The event log service is used because it runs on every Windows installation and cannot be
+        /// stopped in normal operation, so the test needs nothing set up and starts nothing itself.
+        /// <para>
+        /// Whether the host has exited is deliberately not asked. A service runs as the local system
+        /// account, and <see cref="ProcessUtilities.HasProcessExited(int)"/> reports a process it cannot
+        /// open as gone - which for an unelevated caller is every one of them. Resolving the identifier
+        /// through the framework is the stronger check regardless: it throws for an identifier no live
+        /// process holds, so it succeeding is the proof the lookup found a real one.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void GetServiceProcessId_FindsTheProcessBehindARunningService()
+        {
+            // Arrange
+            using ServiceController service = new("EventLog");
+
+            // Act
+            uint processId = ProcessUtilities.GetServiceProcessId(service);
+
+            // Assert
+            Assert.True(processId > 0, "The event log service reported no process.");
+            using Process host = Process.GetProcessById((int)processId);
+            Assert.False(string.IsNullOrWhiteSpace(host.ProcessName));
         }
     }
 }

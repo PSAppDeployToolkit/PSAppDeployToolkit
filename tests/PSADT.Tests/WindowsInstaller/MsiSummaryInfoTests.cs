@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using PSADT.Tests.TestHelpers;
 using PSADT.WindowsInstaller;
 using Xunit;
@@ -60,6 +61,77 @@ namespace PSADT.Tests.WindowsInstaller
             // Assert
             Assert.NotNull(summary.RevisionNumber);
             Assert.True(Guid.TryParse(summary.RevisionNumber, out _), $"Expected a package code, got '{summary.RevisionNumber}'.");
+        }
+
+        /// <summary>
+        /// Verifies that every field of the summary stream is read, and that each is either a real value
+        /// or absent rather than a blank one.
+        /// </summary>
+        /// <remarks>
+        /// The summary stream is a numbered property set, so every field here is read by its number out
+        /// of one call - which means a number off by one reads a neighbouring field and reports it under
+        /// the wrong name. Nothing can assert a particular product's values, but the types can be checked
+        /// against the numbers they are meant to be: the three counts are numbers, the three times are
+        /// times, and the strings are either something or nothing.
+        /// </remarks>
+        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        public void MsiSummaryInfo_ReadsEveryFieldOfTheStream()
+        {
+            // Arrange
+            FileInfo? package = TestEnvironment.CachedMsiPackage;
+            Assert.NotNull(package);
+
+            // Act
+            MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);
+
+            // Assert: the strings are either a value or nothing, never blank
+            Assert.All(
+                [summary.Title, summary.Subject, summary.Author, summary.Keywords, summary.Comments, summary.LastSavedBy, summary.CreatingApplication],
+                static value => Assert.True(value is null || !string.IsNullOrWhiteSpace(value), "A summary field came back blank rather than absent."));
+
+            // Assert: the counts, where present, are counts
+            Assert.All(
+                new int?[] { summary.PageCount, summary.WordCount, summary.CharacterCount, summary.Security }.AsEnumerable(),
+                static value => Assert.True(value is null or >= 0, "A summary count came back negative."));
+
+            // Assert: the times, where present, are in the past - a package cannot have been authored ahead of now
+            Assert.All(
+                new DateTime?[] { summary.CreateTimeDate, summary.LastSaveTimeDate, summary.LastPrinted }.AsEnumerable(),
+                static value => Assert.True(value is null || value <= DateTime.Now, "A summary time is in the future."));
+
+            // Assert: a package that was saved was created first
+            if (summary.CreateTimeDate is DateTime created && summary.LastSaveTimeDate is DateTime saved)
+            {
+                Assert.True(saved >= created, "The package reports being saved before it was created.");
+            }
+
+            // Assert: and the application that wrote it named itself, which every authoring tool does
+            Assert.NotNull(summary.CreatingApplication);
+        }
+
+        /// <summary>
+        /// Verifies that the code page the strings were read with is reported, since it is what makes
+        /// them readable at all.
+        /// </summary>
+        /// <remarks>
+        /// Worth asserting separately because it is the field this whole file is gated on. An installer
+        /// authored before Unicode records its strings in a legacy code page, and the .NET runtime does
+        /// not register those by default - PowerShell does, which is why the module is unaffected and a
+        /// bare test host is not.
+        /// </remarks>
+        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        public void MsiSummaryInfo_ReportsTheCodePageItsStringsWereReadWith()
+        {
+            // Arrange
+            FileInfo? package = TestEnvironment.CachedMsiPackage;
+            Assert.NotNull(package);
+
+            // Act
+            MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);
+
+            // Assert
+            Assert.NotNull(summary.CodePage);
+            Assert.True(summary.CodePage.CodePage > 0, "The package reports a code page of zero.");
         }
 
         /// <summary>

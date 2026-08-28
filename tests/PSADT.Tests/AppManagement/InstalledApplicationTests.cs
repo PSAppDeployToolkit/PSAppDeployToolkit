@@ -233,6 +233,100 @@ namespace PSADT.Tests.AppManagement
         }
 
         /// <summary>
+        /// Verifies that every value handed in is the value read back, since they are passed positionally
+        /// through a constructor with nineteen parameters.
+        /// </summary>
+        /// <remarks>
+        /// Nothing here is computed - it is all carried straight through from the registry - which is
+        /// exactly why it is worth asserting. Two arguments transposed at the call site would produce a
+        /// record that looks entirely reasonable and describes the wrong thing, and the values are
+        /// distinct here so that a transposition surfaces as the wrong one being reported.
+        /// </remarks>
+        [Fact]
+        public void InstalledApplication_KeepsEveryValueItIsGiven()
+        {
+            // Arrange
+            Guid productCode = new(0x11111111, 0x1111, 0x1111, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11);
+            Guid upgradeCode = new(0x22222222, 0x2222, 0x2222, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22);
+            DateTime installDate = new(2026, 8, 27, 0, 0, 0, DateTimeKind.Local);
+
+            // Act
+            InstalledApplication application = new(
+                psPath: @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Contoso",
+                psParentPath: @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE",
+                psChildName: "Contoso",
+                productCode: productCode,
+                upgradeCode: upgradeCode,
+                displayName: "Contoso Application",
+                displayVersion: "1.2.3",
+                uninstallString: @"""C:\Program Files\Contoso\uninstall.exe"" /quiet",
+                quietUninstallString: @"""C:\Program Files\Contoso\uninstall.exe"" /silent",
+                installSource: new DirectoryInfo(@"C:\Sources\Contoso"),
+                installLocation: new DirectoryInfo(@"C:\Program Files\Contoso"),
+                installDate: installDate,
+                publisher: "Contoso Ltd",
+                helpLink: new Uri("https://contoso.example/support"),
+                estimatedSize: 4096,
+                systemComponent: true,
+                windowsInstaller: true,
+                noRemove: true,
+                is64BitApplication: true);
+
+            // Assert: where it came from in the registry
+            Assert.Equal(@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Contoso", application.PSPath, StringComparer.Ordinal);
+            Assert.Equal(@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE", application.PSParentPath, StringComparer.Ordinal);
+            Assert.Equal("Contoso", application.PSChildName, StringComparer.Ordinal);
+
+            // Assert: what it is
+            Assert.Equal(productCode, application.ProductCode);
+            Assert.Equal(upgradeCode, application.UpgradeCode);
+            Assert.Equal("Contoso Application", application.DisplayName, StringComparer.Ordinal);
+            Assert.Equal("1.2.3", application.DisplayVersion, StringComparer.Ordinal);
+            Assert.Equal("Contoso Ltd", application.Publisher, StringComparer.Ordinal);
+            Assert.Equal(new Uri("https://contoso.example/support"), application.HelpLink);
+
+            // Assert: where it lives
+            Assert.NotNull(application.InstallSource);
+            Assert.Equal(@"C:\Sources\Contoso", application.InstallSource.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.NotNull(application.InstallLocation);
+            Assert.Equal(@"C:\Program Files\Contoso", application.InstallLocation.FullName, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(installDate, application.InstallDate);
+            Assert.Equal(4096u, application.EstimatedSize);
+
+            // Assert: and the flags, which are the ones a transposition would hide in
+            Assert.True(application.SystemComponent);
+            Assert.True(application.WindowsInstaller);
+            Assert.True(application.NoRemove);
+            Assert.True(application.Is64BitApplication);
+        }
+
+        /// <summary>
+        /// Verifies that everything optional is reported as absent when it was not supplied, so a caller
+        /// can tell an application that declared nothing from one that declared nothing useful.
+        /// </summary>
+        [Fact]
+        public void InstalledApplication_ReportsAbsentValuesAsAbsent()
+        {
+            // Act
+            InstalledApplication application = Create();
+
+            // Assert
+            Assert.Null(application.ProductCode);
+            Assert.Null(application.UpgradeCode);
+            Assert.Null(application.DisplayVersion);
+            Assert.Null(application.InstallSource);
+            Assert.Null(application.InstallLocation);
+            Assert.Null(application.InstallDate);
+            Assert.Null(application.Publisher);
+            Assert.Null(application.HelpLink);
+            Assert.Null(application.EstimatedSize);
+            Assert.Null(application.Is64BitApplication);
+            Assert.False(application.SystemComponent);
+            Assert.False(application.WindowsInstaller);
+            Assert.False(application.NoRemove);
+        }
+
+        /// <summary>
         /// Verifies that two records describing the same installed application are equal, and that a
         /// difference in the uninstall command line - which the argument list is split out of - makes
         /// them unequal.
