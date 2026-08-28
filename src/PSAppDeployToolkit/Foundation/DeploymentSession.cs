@@ -884,7 +884,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"No processes were specified as requiring closure but deployment has already been changed to [{DeployMode}]");
                     }
-                    if (DeployMode is not DeployMode.Auto)
+                    else if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"No processes were specified as requiring closure but deployment mode was explicitly set to [{DeployMode}].");
                     }
