@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Server.Tests.TestHelpers;
 using Xunit;
@@ -21,12 +22,11 @@ namespace PSADT.ClientServer.Server.Tests
     /// what each one produces is measured against the layout they both have to agree on.
     /// </para>
     /// <para>
-    /// Two refusals are not covered here: the response of the wrong length, and, on the client's side, the
-    /// server proof that does not match. Both need a peer that has derived the correct key and then answers
-    /// with the wrong thing, which cannot be built without a second implementation of the key derivation
-    /// living in the tests. Corrupting the bytes in flight does not reach them, because a message altered
-    /// on the wire fails its authentication tag first - which is itself asserted, over in the tests for
-    /// what both halves share.
+    /// The two refusals that end the exchange are driven by a peer written independently of the code under
+    /// test, since reaching them needs a client that has derived the correct key and then answers with the
+    /// wrong thing. Both are distinguished by the message they carry rather than by their type, because the
+    /// two throw the same one; the strings are protocol diagnostics rather than anything a user reads, so
+    /// matching on them is asserting the branch rather than the wording.
     /// </para>
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
@@ -121,6 +121,85 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             _ = await Assert.ThrowsAsync<InvalidOperationException>(async () => await pair.Server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that the server completes an exchange with a client written from the documented
+        /// protocol rather than from the code that implements it.
+        /// </summary>
+        /// <remarks>
+        /// The strongest thing asserted about either half. An exchange between the two halves that ship
+        /// together only shows they agree with each other, which they would go on doing if both drifted the
+        /// same way; this one shows the server implements the protocol as described. It is also what makes
+        /// the two refusals below trustworthy, since a peer that could not complete a well-behaved exchange
+        /// would fail them for the wrong reason.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_CompletesWithAnIndependentlyWrittenClient()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ServerPipeEncryption server = new();
+            using ProtocolReplica client = new();
+
+            // Assert
+            Assert.Null(await Record.ExceptionAsync(async () => await PipePair.RunBothAsync(
+                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.Faithful).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true));
+        }
+
+        /// <summary>
+        /// Verifies that a correctly encrypted answer of the wrong size is refused.
+        /// </summary>
+        /// <remarks>
+        /// The answer has to carry both challenges, one after the other. A peer returning only the one it
+        /// was sent has proved it holds the key but has not been asked to prove anything itself, so the
+        /// exchange would finish with the server having authenticated nobody.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_RefusesAnAnswerOfTheWrongLength()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ServerPipeEncryption server = new();
+            using ProtocolReplica client = new();
+
+            // Act
+            CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
+                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.ResponseOfTheWrongLength).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert
+            Assert.Contains("invalid response length", failure.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that an answer of the right size which does not carry back the challenge that was sent
+        /// is refused.
+        /// </summary>
+        /// <remarks>
+        /// This is the assertion the challenge exists for. A peer holding the key but replaying an answer
+        /// from an earlier exchange would get this far, and returning the challenge just sent is the only
+        /// thing that shows the answer was composed now.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_RefusesAnAnswerCarryingTheWrongChallenge()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ServerPipeEncryption server = new();
+            using ProtocolReplica client = new();
+
+            // Act
+            CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
+                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.ChallengeThatDoesNotMatch).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert
+            Assert.Contains("server challenge mismatch", failure.Message, StringComparison.Ordinal);
         }
 
         /// <summary>

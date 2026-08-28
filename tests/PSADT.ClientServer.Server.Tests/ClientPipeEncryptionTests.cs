@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Server.Tests.TestHelpers;
 using Xunit;
@@ -16,9 +17,9 @@ namespace PSADT.ClientServer.Server.Tests
     /// read by the other. The type lives here rather than with the client executable because both halves
     /// are one protocol and are only correct with respect to each other.
     /// <para>
-    /// What is not covered here is the refusal of a server proof that does not match, for the reason given
-    /// alongside the server's own tests: reaching it needs a peer holding the right key and answering with
-    /// the wrong thing.
+    /// The refusal that ends the exchange is driven by a peer written independently of the code under test,
+    /// for the reason given alongside the server's own tests: reaching it needs a server holding the right
+    /// key and answering with the wrong thing.
     /// </para>
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
@@ -98,6 +99,57 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             _ = await Assert.ThrowsAsync<InvalidOperationException>(async () => await pair.Client.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that the client completes an exchange with a server written from the documented
+        /// protocol rather than from the code that implements it.
+        /// </summary>
+        /// <remarks>
+        /// The mirror of the server's own test against an independent peer, and it carries the same weight:
+        /// it shows the client implements the protocol as described rather than merely agreeing with the
+        /// half it ships beside.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_CompletesWithAnIndependentlyWrittenServer()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ClientPipeEncryption client = new();
+            using ProtocolReplica server = new();
+
+            // Assert
+            Assert.Null(await Record.ExceptionAsync(async () => await PipePair.RunBothAsync(
+                async () => await server.RunAsServerAsync(pipes.ServerOutput, pipes.ServerInput, ProtocolReplica.ServerBehaviour.Faithful).ConfigureAwait(false),
+                async () => await client.PerformKeyExchangeAsync(pipes.ClientOutput, pipes.ClientInput).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true));
+        }
+
+        /// <summary>
+        /// Verifies that a correctly encrypted proof which is not the challenge the client sent is refused.
+        /// </summary>
+        /// <remarks>
+        /// This is the assertion the client's own challenge exists for, and the only thing standing between
+        /// the client and a peer that holds the key without having been asked to prove it. Holding the key
+        /// is not by itself the thing being checked - a peer that recorded an earlier exchange would hold
+        /// one - so what has to come back is the challenge composed for this exchange and no other.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task PerformKeyExchange_RefusesAProofThatIsNotItsOwnChallenge()
+        {
+            // Arrange
+            using PipePair pipes = new();
+            using ClientPipeEncryption client = new();
+            using ProtocolReplica server = new();
+
+            // Act
+            CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
+                async () => await server.RunAsServerAsync(pipes.ServerOutput, pipes.ServerInput, ProtocolReplica.ServerBehaviour.ProofThatDoesNotMatch).ConfigureAwait(false),
+                async () => await client.PerformKeyExchangeAsync(pipes.ClientOutput, pipes.ClientInput).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert
+            Assert.Contains("server proof mismatch", failure.Message, StringComparison.Ordinal);
         }
 
         /// <summary>
