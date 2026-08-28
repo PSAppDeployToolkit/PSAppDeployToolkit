@@ -8,7 +8,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using PSAppDeployToolkit.Foundation;
 
-namespace PSAppDeployToolkit.Tests.Fixture
+namespace PSADT.PowerShellTestFixture
 {
     /// <summary>
     /// A PowerShell engine hosted in the test process, so that the types in PSAppDeployToolkit can be
@@ -89,7 +89,7 @@ namespace PSAppDeployToolkit.Tests.Fixture
         /// The name the fixture's module is imported under, which becomes an environment table's
         /// <c>AppDeployToolkitName</c>.
         /// </summary>
-        public const string ModuleName = "PSAppDeployToolkit.Tests.Fixture";
+        public const string ModuleName = "PSADT.PowerShellTestFixture";
 
         /// <summary>
         /// Adopts this fixture's runspace as the calling thread's default for the lifetime of the returned scope.

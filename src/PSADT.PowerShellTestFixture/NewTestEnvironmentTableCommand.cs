@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Management.Automation;
 using PSAppDeployToolkit.Foundation;
 
-namespace PSAppDeployToolkit.Tests.Fixture
+namespace PSADT.PowerShellTestFixture
 {
     /// <summary>
     /// Builds an <see cref="EnvironmentTable"/> and writes it to the pipeline.

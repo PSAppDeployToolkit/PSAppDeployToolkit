@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
     <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
-    <ProjectReference Include="..\PSAppDeployToolkit.Tests.Fixture\PSAppDeployToolkit.Tests.Fixture.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
@@ -26,7 +26,7 @@
     copied here, is this one.
   -->
   <ItemGroup>
-    <Content Include="..\PSAppDeployToolkit.Tests.Fixture\PSAppDeployToolkit.Tests.Fixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+    <Content Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
 </Project>

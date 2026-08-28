@@ -1,4 +1,4 @@
-﻿using PSAppDeployToolkit.Tests.Fixture;
+﻿using PSADT.PowerShellTestFixture;
 using Xunit;
 
 namespace PSAppDeployToolkit.Tests.TestHelpers

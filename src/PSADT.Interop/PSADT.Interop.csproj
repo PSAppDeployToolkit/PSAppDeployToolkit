@@ -17,6 +17,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server.Tests" />
     <InternalsVisibleTo Include="PSADT.Interop.Tests" />
+    <InternalsVisibleTo Include="PSADT.PowerShellTestFixture" />
     <InternalsVisibleTo Include="PSADT.Tests" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
@@ -24,7 +25,6 @@
     <InternalsVisibleTo Include="PSADT.WindowsRuntime" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
     <InternalsVisibleTo Include="PSAppDeployToolkit.Tests" />
-    <InternalsVisibleTo Include="PSAppDeployToolkit.Tests.Fixture" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

@@ -1,6 +1,6 @@
 ﻿using System;
 using PSAppDeployToolkit.Foundation;
-using PSAppDeployToolkit.Tests.Fixture;
+using PSADT.PowerShellTestFixture;
 using PSAppDeployToolkit.Tests.TestHelpers;
 using Xunit;
 

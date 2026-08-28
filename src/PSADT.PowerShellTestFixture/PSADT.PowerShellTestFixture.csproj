@@ -3,14 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>PSAppDeployToolkit.Tests.Fixture</RootNamespace>
-    <Product>PSAppDeployToolkit Test Fixture Library</Product>
-    <AssemblyTitle>PSAppDeployToolkit Test Fixture Library</AssemblyTitle>
+    <RootNamespace>PSADT.PowerShellTestFixture</RootNamespace>
+    <Product>PSAppDeployToolkit PowerShell Test Fixture Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit PowerShell Test Fixture Library</AssemblyTitle>
     <AssemblyDescription>This assembly hosts a PowerShell runspace so that the PowerShell-dependent types in PSAppDeployToolkit can be exercised through their real constructors.</AssemblyDescription>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
   <!--
@@ -50,7 +50,7 @@
     $Script:CommandTable to resolve at all.
   -->
   <ItemGroup>
-    <Content Include="PSAppDeployToolkit.Tests.Fixture.psm1" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
