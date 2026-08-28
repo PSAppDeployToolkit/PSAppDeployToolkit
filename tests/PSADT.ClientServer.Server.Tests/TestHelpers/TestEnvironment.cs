@@ -17,9 +17,26 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
     /// needs. It cannot be shared: that one lives in a test assembly, and a test project referencing
     /// another test project would drag its whole suite into this one's discovery.
     /// </para>
+    /// <para>
+    /// Declaration order matters here in a way it does not elsewhere. Static initialisers run in textual
+    /// order, so the table of executable names is declared above the probe that reads it rather than down
+    /// with the other fields; below it, the probe runs against a null and the whole class fails to
+    /// initialise - taking every test that names one of these in a skip condition with it.
+    /// </para>
     /// </remarks>
     public static class TestEnvironment
     {
+        /// <summary>
+        /// The executables <c>ClientServerUtilities</c> expects to find beside the assembly.
+        /// </summary>
+        private static readonly string[] ClientServerExecutableNames =
+        [
+            "PSADT.ClientServer.Client.exe",
+            "PSADT.ClientServer.Client.Compatible.exe",
+            "PSADT.ClientServer.Client.Launcher.exe",
+            "PSADT.ClientServer.Client.Launcher.Compatible.exe",
+        ];
+
         /// <summary>
         /// Whether the caller is running elevated.
         /// </summary>
@@ -127,16 +144,5 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
             }
             return true;
         }
-
-        /// <summary>
-        /// The executables <c>ClientServerUtilities</c> expects to find beside the assembly.
-        /// </summary>
-        private static readonly string[] ClientServerExecutableNames =
-        [
-            "PSADT.ClientServer.Client.exe",
-            "PSADT.ClientServer.Client.Compatible.exe",
-            "PSADT.ClientServer.Client.Launcher.exe",
-            "PSADT.ClientServer.Client.Launcher.Compatible.exe",
-        ];
     }
 }

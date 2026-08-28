@@ -47,11 +47,19 @@
     <ProjectReference Include="@(ClientServerProject)" ReferenceOutputAssembly="false" UndefineProperties="TargetFramework" />
   </ItemGroup>
 
+  <!--
+    The executables alone are not enough. A client that is only launched and then shut down still loads the
+    assembly holding the dialog implementations on its way out, so a run that copied the four executables by
+    themselves got as far as talking to a client and then failed disposing of it, on an assembly that was
+    never laid down beside them. The shipped module puts the whole set in one directory; this reproduces
+    that by asking each project for its built output and for everything it copies alongside it, rather than
+    for its target path alone.
+  -->
   <Target Name="CopyClientServerExecutables" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net472'">
-    <MSBuild Projects="@(ClientServerProject)" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework" BuildInParallel="false">
-      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerTargetPath" />
+    <MSBuild Projects="@(ClientServerProject)" Targets="BuiltProjectOutputGroup;ReferenceCopyLocalPathsOutputGroup" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerOutput" />
     </MSBuild>
-    <Copy SourceFiles="@(_ClientServerTargetPath)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_ClientServerOutput)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
