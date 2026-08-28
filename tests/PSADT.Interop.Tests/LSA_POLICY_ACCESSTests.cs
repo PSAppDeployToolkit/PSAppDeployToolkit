@@ -32,6 +32,7 @@ namespace PSADT.Interop.Tests
             LSA_POLICY_ACCESS.POLICY_AUDIT_LOG_ADMIN,
             LSA_POLICY_ACCESS.POLICY_SERVER_ADMIN,
             LSA_POLICY_ACCESS.POLICY_LOOKUP_NAMES,
+            LSA_POLICY_ACCESS.POLICY_NOTIFICATION,
         ];
 
         /// <summary>
@@ -63,25 +64,32 @@ namespace PSADT.Interop.Tests
 
         /// <summary>
         /// Verifies that the three generic masks partition the specific rights: every specific right
-        /// belongs to exactly one of them, and none is left out. A right assigned to the wrong mask still
-        /// compiles and still looks plausible, and this is what would catch it.
+        /// belongs to exactly one of them, with the notification right the single deliberate exception. A
+        /// right assigned to the wrong mask still compiles and still looks plausible, and this is what
+        /// would catch it.
         /// </summary>
+        /// <remarks>
+        /// The headers put the notification right in all access alone and in none of the three generic
+        /// masks, so it is excluded here rather than treated as a gap. Adding it to one of them would fail
+        /// this test, which is the point.
+        /// </remarks>
         [Fact]
-        public void GenericMasks_PartitionTheSpecificRights()
+        public void GenericMasks_PartitionTheSpecificRightsExceptNotification()
         {
             // Arrange
             const uint readControl = (uint)FileSystemRights.ReadPermissions;
             const uint read = (uint)LSA_POLICY_ACCESS.GENERIC_READ & ~readControl;
             const uint write = (uint)LSA_POLICY_ACCESS.GENERIC_WRITE & ~readControl;
             const uint execute = (uint)LSA_POLICY_ACCESS.GENERIC_EXECUTE & ~readControl;
+            uint generic = Specific.Where(static right => right is not LSA_POLICY_ACCESS.POLICY_NOTIFICATION).Aggregate(0u, static (bits, right) => bits | (uint)right);
 
             // Assert: no right appears in more than one mask
             Assert.Equal(0u, read & write);
             Assert.Equal(0u, read & execute);
             Assert.Equal(0u, write & execute);
 
-            // Assert: together they cover every specific right and nothing else
-            Assert.Equal(read | write | execute, Specific.Aggregate(0u, static (bits, right) => bits | (uint)right));
+            // Assert: together they cover every specific right but the notification one, and nothing else
+            Assert.Equal(read | write | execute, generic);
 
             // Assert: each mask carries read control and nothing else from the standard set
             Assert.Equal(readControl, (uint)LSA_POLICY_ACCESS.GENERIC_READ & 0xFFFF0000u);
@@ -93,10 +101,9 @@ namespace PSADT.Interop.Tests
         /// Verifies that all access is the required standard rights together with every specific right.
         /// </summary>
         /// <remarks>
-        /// The Windows headers also fold POLICY_NOTIFICATION into this mask. CsWin32 does not surface that
-        /// constant and this enumeration does not declare it, so the mask here is narrower by that one bit.
-        /// Nothing in this repository asks for it, and asking for less access than the headers define is
-        /// safe; this test records the difference so it stays deliberate.
+        /// This is the only composite carrying the notification right, which CsWin32 does not surface and
+        /// the enumeration therefore declares by hand. That makes this assertion the one place a wrong
+        /// value for it would show up.
         /// </remarks>
         [Fact]
         public void AllAccess_IsTheRequiredStandardRightsWithEverySpecificRight()

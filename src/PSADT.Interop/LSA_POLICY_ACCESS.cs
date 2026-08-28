@@ -75,6 +75,13 @@ namespace PSADT.Interop
         POLICY_LOOKUP_NAMES = Windows.Win32.PInvoke.POLICY_LOOKUP_NAMES,
 
         /// <summary>
+        /// This access type is needed to receive notification of policy changes.
+        /// </summary>
+        /// <remarks>CsWin32 does not surface this constant, so the value is taken from ntsecapi.h, where it
+        /// follows POLICY_LOOKUP_NAMES as the next single bit.</remarks>
+        POLICY_NOTIFICATION = 0x00001000,
+
+        /// <summary>
         /// Represents a generic read access right that combines standard read permissions with the ability to view audit information and retrieve private policy information.
         /// </summary>
         GENERIC_READ = FileSystemRights.ReadPermissions | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION,
@@ -92,6 +99,6 @@ namespace PSADT.Interop
         /// <summary>
         /// Represents the access rights required to perform all policy-related operations.
         /// </summary>
-        POLICY_ALL_ACCESS = FileSystemRights.Delete | FileSystemRights.ReadPermissions | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership | POLICY_VIEW_LOCAL_INFORMATION | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN | POLICY_LOOKUP_NAMES,
+        POLICY_ALL_ACCESS = FileSystemRights.Delete | FileSystemRights.ReadPermissions | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership | POLICY_VIEW_LOCAL_INFORMATION | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN | POLICY_LOOKUP_NAMES | POLICY_NOTIFICATION,
     }
 }
