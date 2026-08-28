@@ -178,8 +178,12 @@ namespace PSAppDeployToolkit.Attributes
         {
             if (value.GetType().GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)) is Type iface)
             {
-                // Use reflection to get the Count property.
-                count = iface.GetProperty("Count")?.GetValue(value) as int? ?? 0;
+                // Count is declared on IReadOnlyCollection<T>, not on IReadOnlyDictionary<TKey, TValue>, and
+                // GetProperty does not search base interfaces - so asking the dictionary interface for it always
+                // returned null and every read-only dictionary counted as empty.
+                count = typeof(IReadOnlyCollection<>)
+                    .MakeGenericType(typeof(KeyValuePair<,>).MakeGenericType(iface.GetGenericArguments()))
+                    .GetProperty("Count")?.GetValue(value) as int? ?? 0;
                 return true;
             }
             count = 0;
