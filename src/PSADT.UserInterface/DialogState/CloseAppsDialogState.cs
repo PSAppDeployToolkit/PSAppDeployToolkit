@@ -22,9 +22,13 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
-        /// <param name="logAction">An optional delegate for logging messages with severity. If null, logging is disabled.</param>
+        /// <param name="logAction">A delegate for logging messages with severity, invoked with this dialog's source name.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logAction"/> is null.</exception>
         internal CloseAppsDialogState(IReadOnlyList<ProcessDefinition>? closeProcesses, Func<string, LogSeverity, string, ValueTask> logAction)
         {
+            // Checked here rather than where it is called, since it is only stored until then.
+            ArgumentNullException.ThrowIfNull(logAction);
+
             // Only initialise these variables if they're not null. The definitions are copied into the
             // collection the process service holds them in, which is narrower than what arrives here: the
             // payload carrying them compares by their contents and so keeps them in a list that does too.

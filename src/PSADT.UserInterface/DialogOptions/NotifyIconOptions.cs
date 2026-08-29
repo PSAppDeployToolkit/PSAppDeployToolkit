@@ -18,13 +18,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Initializes a new instance of the NotifyIconOptions class using the specified configuration options.
         /// </summary>
-        /// <remarks>Values are retrieved from the provided options dictionary. If a key is missing, a
-        /// default value is used: 'BalloonTipIcon' defaults to an invalid value.</remarks>
-        /// <param name="options">An IDictionary containing configuration values for the balloon tip. Expected keys include 'Text',
-        /// 'Icon', 'BalloonTipTitle', 'BalloonTipText', and 'BalloonTipIcon'.</param>
+        /// <remarks>Values are retrieved from the provided options dictionary. Every key but
+        /// 'AppTaskbarIconImage' is required.</remarks>
+        /// <param name="options">An IDictionary containing configuration values for the notify icon. Expected keys are 'AppTitle',
+        /// 'AppIconImage', 'AppTaskbarIconImage', and 'MessageText'.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public NotifyIconOptions(IDictionary options) : this(
-            (string?)options["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
             (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
             (string?)options["AppTaskbarIconImage"],
             (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."))
