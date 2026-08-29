@@ -14,6 +14,7 @@
     <Project Path="src/PSAppDeployToolkit/PSAppDeployToolkit.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/PSADT.ClientServer.Client.Tests/PSADT.ClientServer.Client.Tests.csproj" />
     <Project Path="tests/PSADT.ClientServer.Server.Tests/PSADT.ClientServer.Server.Tests.csproj" />
     <Project Path="tests/PSADT.CodeAnalysis.Tests/PSADT.CodeAnalysis.Tests.csproj" />
     <Project Path="tests/PSADT.Interop.Tests/PSADT.Interop.Tests.csproj" />

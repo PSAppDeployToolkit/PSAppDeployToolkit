@@ -50,6 +50,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
     <ProjectReference Include="..\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
