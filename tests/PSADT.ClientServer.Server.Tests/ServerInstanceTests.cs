@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
@@ -476,6 +477,54 @@ namespace PSADT.ClientServer.Server.Tests
                 await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>([])).ConfigureAwait(true);
 
                 // Assert
+                Assert.Equal(written, session.GetLogBuffer().Count);
+            }
+            finally
+            {
+                temp.Delete(recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a frame which reads cleanly but is not a log message faults when there is a session
+        /// to write it to, and is dropped when there is not.
+        /// </summary>
+        /// <remarks>
+        /// The read succeeding and the frame making sense are two different things, and only the first is
+        /// covered by the failures the reader itself raises. A frame that decrypts to something else - an
+        /// older client, or a payload that changed shape - gets as far as being deserialised and fails there,
+        /// which is what turns it into a fault the loop above reports rather than a log line quietly lost.
+        /// <para>
+        /// The two halves are asserted together because the difference between them is not incidental. The
+        /// deserialise happens only after the session has been found, so the same bad frame that fails loudly
+        /// on a server running a deployment is discarded without a word on one that is not - which is worth
+        /// knowing when a client's logging turns out to have gone missing.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_FaultsOnAFrameThatIsNotALogMessage()
+        {
+            // Arrange: a frame that reads back perfectly well as something else entirely.
+            byte[] frame = DataSerialization.SerializeToBytes(new EnvironmentVariablePayload("PATH"));
+
+            // Assert: with nothing to write to, the frame is never deserialised and nothing is noticed.
+            Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            Assert.Null(await Record.ExceptionAsync(async () => await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true)).ConfigureAwait(true));
+
+            // Arrange: and again with a session seated.
+            using IDisposable scope = powerShell.Enter();
+            DirectoryInfo temp = NewScratchDirectory();
+            try
+            {
+                using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(ScratchConfiguration(temp), powerShell.NewEnvironmentTable());
+                DeploymentSession session = NewSession();
+                database.Sessions.Add(session);
+                int written = session.GetLogBuffer().Count;
+
+                // Assert: now it is deserialised, and says so rather than writing something meaningless.
+                _ = await Assert.ThrowsAsync<SerializationException>(
+                    async () => await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true)).ConfigureAwait(true);
                 Assert.Equal(written, session.GetLogBuffer().Count);
             }
             finally
