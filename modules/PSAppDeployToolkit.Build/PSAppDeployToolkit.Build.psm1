@@ -75,7 +75,7 @@ try
                         SolutionPath = [System.IO.Path]::Combine($RepositoryRoot, 'PSADT.slnx')
                         BasePath = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib')
                         PathMap = @{
-                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.ClientServer.Client.Launcher.Compatible\bin\Debug\net472')))\*" = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net472')
+                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.ClientServer.Client\bin\Debug\net472')))\*" = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net472')
                             "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.WindowsRuntime\bin\Debug\net8.0-windows10.0.22621.0')))\*" = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
                             "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.ClientServer.Server\bin\Debug\net8.0')))\*" = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
                         }

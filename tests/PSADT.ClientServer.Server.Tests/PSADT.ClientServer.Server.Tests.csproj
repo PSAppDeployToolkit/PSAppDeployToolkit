@@ -42,17 +42,18 @@
 
     The lookup resolves to the net472 directory beside PSADT.dll, so both of this project's target
     frameworks land on the same folder: net472 is its own output directory, and net8.0 walks up one
-    level and back down into net472. Building the four projects and copying their executables there
-    once therefore satisfies both runs.
+    level and back down into net472. Building the client project and copying its four executables
+    there once therefore satisfies both runs.
 
     Ordering is expressed as a ProjectReference rather than by invoking the Build target imperatively.
     An MSBuild task asking for Build races the solution's own build of the same project and the two
     collide writing its output; a ProjectReference goes through MSBuild's project instance cache and
-    builds once. GetTargetPath below only reads a property, so it adds no second builder.
+    builds once. GetClientVariantOutputs below resolves to that same instance, so it reports the four
+    executables without adding a second builder.
 
-    UndefineProperties drops TargetFramework from what the reference passes down, and it has to. These
-    four projects are single-targeted, so a solution build builds them with no TargetFramework global
-    property at all. Handing them one - which is what SetTargetFramework does - produces a second,
+    UndefineProperties drops TargetFramework from what the reference passes down, and it has to. That
+    project is single-targeted, so a solution build builds it with no TargetFramework global property
+    at all. Handing it one - which is what SetTargetFramework does - produces a second,
     differently-keyed project instance that the instance cache cannot match against the first, and the
     two then build concurrently into the same output. Undefining it makes both requests the same
     instance.
@@ -63,9 +64,6 @@
   -->
   <ItemGroup>
     <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
-    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
-    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
-    <ClientServerProject Include="..\..\src\PSADT.ClientServer.Client.Launcher.Compatible\PSADT.ClientServer.Client.Launcher.Compatible.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
@@ -77,11 +75,10 @@
     assembly holding the dialog implementations on its way out, so a run that copied the four executables by
     themselves got as far as talking to a client and then failed disposing of it, on an assembly that was
     never laid down beside them. The shipped module puts the whole set in one directory; this reproduces
-    that by asking each project for its built output and for everything it copies alongside it, rather than
-    for its target path alone.
+    that by asking for every variant's executable and for everything the project copies alongside them.
   -->
   <Target Name="CopyClientServerExecutables" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net472'">
-    <MSBuild Projects="@(ClientServerProject)" Targets="BuiltProjectOutputGroup;ReferenceCopyLocalPathsOutputGroup" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework" BuildInParallel="false">
+    <MSBuild Projects="@(ClientServerProject)" Targets="GetClientVariantOutputs;ReferenceCopyLocalPathsOutputGroup" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework" BuildInParallel="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ClientServerOutput" />
     </MSBuild>
     <Copy SourceFiles="@(_ClientServerOutput)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />

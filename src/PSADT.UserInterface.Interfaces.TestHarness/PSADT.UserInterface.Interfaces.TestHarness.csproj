@@ -11,14 +11,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
-    <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher.Compatible\PSADT.ClientServer.Client.Launcher.Compatible.csproj" />
-    <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
     <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
+
+  <!--
+    ClientServerUtilities cannot initialize unless all four client executables sit beside this assembly.
+    The ProjectReference above copies only the variant the client project builds as itself, so the rest
+    are fetched from the same build.
+  -->
+  <Target Name="CopyClientServerExecutables" AfterTargets="Build">
+    <MSBuild Projects="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" Targets="GetClientVariantOutputs" Properties="Configuration=$(Configuration)" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerTargetPath" />
+    </MSBuild>
+    <Copy SourceFiles="@(_ClientServerTargetPath)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="PowerShellStandard.Library" PrivateAssets="all" ExcludeAssets="runtime" />

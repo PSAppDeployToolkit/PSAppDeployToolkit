@@ -138,36 +138,6 @@
           "PSADT.WindowsRuntime": "[1.0.0, )"
         }
       },
-      "psadt.clientserver.client.compatible": {
-        "type": "Project",
-        "dependencies": {
-          "PSADT": "[1.0.0, )",
-          "PSADT.ClientServer.Client": "[1.0.0, )",
-          "PSADT.ClientServer.Server": "[1.0.0, )",
-          "PSADT.UserInterface.Interfaces": "[1.0.0, )",
-          "PSADT.WindowsRuntime": "[1.0.0, )"
-        }
-      },
-      "psadt.clientserver.client.launcher": {
-        "type": "Project",
-        "dependencies": {
-          "PSADT": "[1.0.0, )",
-          "PSADT.ClientServer.Client.Compatible": "[1.0.0, )",
-          "PSADT.ClientServer.Server": "[1.0.0, )",
-          "PSADT.UserInterface.Interfaces": "[1.0.0, )",
-          "PSADT.WindowsRuntime": "[1.0.0, )"
-        }
-      },
-      "psadt.clientserver.client.launcher.compatible": {
-        "type": "Project",
-        "dependencies": {
-          "PSADT": "[1.0.0, )",
-          "PSADT.ClientServer.Client.Launcher": "[1.0.0, )",
-          "PSADT.ClientServer.Server": "[1.0.0, )",
-          "PSADT.UserInterface.Interfaces": "[1.0.0, )",
-          "PSADT.WindowsRuntime": "[1.0.0, )"
-        }
-      },
       "psadt.clientserver.server": {
         "type": "Project",
         "dependencies": {

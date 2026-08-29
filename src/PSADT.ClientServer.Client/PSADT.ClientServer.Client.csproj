@@ -1,14 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <OutputType>Exe</OutputType>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
-    <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
-    <AssemblyTitle>PSAppDeployToolkit Client/Server Client Executable</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
     <ApplicationIcon>..\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.ClientServer.ClientExecutable</StartupObject>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!--
+    ClientServerUtilities resolves four executables by name from one directory, so this project builds
+    four times: once as itself, and once per remaining variant by re-entering with ClientVariant set.
+    All four share an output directory, which is what the module build copies wholesale. Only
+    IntermediateOutputPath is redirected per variant - BaseIntermediateOutputPath stays where it is so
+    restore still writes one assets file and one lock file for all of them.
+  -->
+  <ItemGroup>
+    <ClientVariant Include="Client" />
+    <ClientVariant Include="Client.Compatible" />
+    <ClientVariant Include="Client.Launcher" />
+    <ClientVariant Include="Client.Launcher.Compatible" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ClientVariant Condition="'$(ClientVariant)' == ''">Client</ClientVariant>
+    <AssemblyName>PSADT.ClientServer.$(ClientVariant)</AssemblyName>
+    <IntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\$(ClientVariant)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- The launcher variants are windowed; the clients are console. -->
+  <PropertyGroup Condition="!$(ClientVariant.StartsWith('Client.Launcher'))">
+    <OutputType>Exe</OutputType>
+    <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(ClientVariant.StartsWith('Client.Launcher'))">
+    <OutputType>WinExe</OutputType>
+    <Product>PSAppDeployToolkit Client/Server Client Launcher Executable</Product>
+  </PropertyGroup>
+
+  <!-- The compatible variants drop uiAccess, which Windows honours only for a signed executable in a secure path. -->
+  <PropertyGroup Condition="!$(ClientVariant.EndsWith('Compatible'))">
+    <ApplicationManifest>Properties\app.default.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(ClientVariant.EndsWith('Compatible'))">
+    <ApplicationManifest>Properties\app.compatible.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyTitle>$(Product)</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,4 +55,35 @@
     <ProjectReference Include="..\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>
+
+  <Target Name="BuildClientVariants" AfterTargets="Build" Condition="'$(_InnerClientVariant)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" BuildInParallel="false"
+             Condition="'%(ClientVariant.Identity)' != '$(ClientVariant)'"
+             Properties="ClientVariant=%(ClientVariant.Identity);_InnerClientVariant=true;Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="CleanClientVariants" AfterTargets="Clean" Condition="'$(_InnerClientVariant)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Clean" BuildInParallel="false"
+             Condition="'%(ClientVariant.Identity)' != '$(ClientVariant)'"
+             Properties="ClientVariant=%(ClientVariant.Identity);_InnerClientVariant=true;Configuration=$(Configuration)" />
+  </Target>
+
+  <!--
+    Consumers ask for this in place of GetTargetPath or BuiltProjectOutputGroup, either of which reports
+    only the variant being built. The configuration file goes with each executable: it carries the binding
+    redirects, and a client launched without one dies on an assembly version mismatch before it can report
+    anything.
+
+    It depends on the builds that produce what it reports rather than on the caller having ordered them.
+    The variants are built from inside this project, so a ProjectReference orders the outer build alone
+    and a caller can otherwise reach the copy before the rest exist. Both targets are reached on the
+    instance the solution is already building, so they run once and this adds no second builder.
+  -->
+  <Target Name="GetClientVariantOutputs" DependsOnTargets="Build;BuildClientVariants" Returns="@(ClientVariantOutput)">
+    <ItemGroup>
+      <ClientVariantOutput Include="@(ClientVariant->'$(TargetDir)PSADT.ClientServer.%(Identity).exe')" />
+      <ClientVariantOutput Include="@(ClientVariant->'$(TargetDir)PSADT.ClientServer.%(Identity).exe.config')" />
+    </ItemGroup>
+  </Target>
+
 </Project>
