@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
+    <ProjectReference Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
     <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
@@ -26,7 +26,7 @@
     copied here, is this one.
   -->
   <ItemGroup>
-    <Content Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+    <Content Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
 </Project>

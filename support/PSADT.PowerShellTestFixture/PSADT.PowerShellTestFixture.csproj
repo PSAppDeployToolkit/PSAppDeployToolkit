@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
   <!--

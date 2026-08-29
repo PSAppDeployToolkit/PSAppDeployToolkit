@@ -4,14 +4,16 @@
     <Project Path="src/PSADT.ClientServer.Server/PSADT.ClientServer.Server.csproj" Id="e6c50d7a-561d-4e51-8f05-f9ecdd0f53aa" />
     <Project Path="src/PSADT.CodeAnalysis/PSADT.CodeAnalysis.csproj" />
     <Project Path="src/PSADT.Interop/PSADT.Interop.csproj" />
-    <Project Path="src/PSADT.PowerShellTestFixture/PSADT.PowerShellTestFixture.csproj" />
-    <Project Path="src/PSADT.UserInterface.Interfaces.TestHarness/PSADT.UserInterface.Interfaces.TestHarness.csproj" />
     <Project Path="src/PSADT.UserInterface.Interfaces/PSADT.UserInterface.Interfaces.csproj" />
     <Project Path="src/PSADT.UserInterface/PSADT.UserInterface.csproj" />
-    <Project Path="src/PSADT.WindowsRuntime.TrimHarness/PSADT.WindowsRuntime.TrimHarness.csproj" />
     <Project Path="src/PSADT.WindowsRuntime/PSADT.WindowsRuntime.csproj" />
     <Project Path="src/PSADT/PSADT.csproj" />
     <Project Path="src/PSAppDeployToolkit/PSAppDeployToolkit.csproj" />
+  </Folder>
+  <Folder Name="/support/">
+    <Project Path="support/PSADT.PowerShellTestFixture/PSADT.PowerShellTestFixture.csproj" />
+    <Project Path="support/PSADT.UserInterface.Interfaces.TestHarness/PSADT.UserInterface.Interfaces.TestHarness.csproj" />
+    <Project Path="support/PSADT.WindowsRuntime.TrimHarness/PSADT.WindowsRuntime.TrimHarness.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PSADT.ClientServer.Client.Tests/PSADT.ClientServer.Client.Tests.csproj" />

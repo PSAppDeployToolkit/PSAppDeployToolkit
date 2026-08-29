@@ -11,7 +11,7 @@
     it carries, and whether one is seated at all is asked of ModuleDatabase.
   -->
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
+    <ProjectReference Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
     <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
@@ -34,7 +34,7 @@
     is this one.
   -->
   <ItemGroup>
-    <Content Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+    <Content Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
 </Project>

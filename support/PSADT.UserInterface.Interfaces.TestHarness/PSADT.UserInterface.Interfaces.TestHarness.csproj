@@ -5,16 +5,16 @@
     <Product>PSAppDeployToolkit User Interface Test Harness</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
     <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
-    <ApplicationIcon>..\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <ApplicationIcon>..\..\src\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.UserInterface.Interfaces.TestHarness.Program</StartupObject>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
-    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
-    <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
-    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.Interop\PSADT.Interop.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
   <!--
@@ -23,7 +23,7 @@
     are fetched from the same build.
   -->
   <Target Name="CopyClientServerExecutables" AfterTargets="Build">
-    <MSBuild Projects="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" Targets="GetClientVariantOutputs" Properties="Configuration=$(Configuration)" BuildInParallel="false">
+    <MSBuild Projects="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" Targets="GetClientVariantOutputs" Properties="Configuration=$(Configuration)" BuildInParallel="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ClientServerTargetPath" />
     </MSBuild>
     <Copy SourceFiles="@(_ClientServerTargetPath)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />

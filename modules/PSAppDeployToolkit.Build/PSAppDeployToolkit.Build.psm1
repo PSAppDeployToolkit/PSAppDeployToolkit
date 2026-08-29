@@ -80,9 +80,9 @@ try
                             "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.ClientServer.Server\bin\Debug\net8.0')))\*" = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
                         }
                         PublishItems = @{
-                            ([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.WindowsRuntime.TrimHarness\PSADT.WindowsRuntime.TrimHarness.csproj')) = @{
-                                ([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\Microsoft.Windows.SDK.NET.dll')) = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
-                                ([System.IO.Path]::Combine($RepositoryRoot, 'src\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\WinRT.Runtime.dll')) = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
+                            ([System.IO.Path]::Combine($RepositoryRoot, 'support\PSADT.WindowsRuntime.TrimHarness\PSADT.WindowsRuntime.TrimHarness.csproj')) = @{
+                                ([System.IO.Path]::Combine($RepositoryRoot, 'support\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\Microsoft.Windows.SDK.NET.dll')) = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
+                                ([System.IO.Path]::Combine($RepositoryRoot, 'support\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\WinRT.Runtime.dll')) = [System.IO.Path]::Combine($RepositoryRoot, 'modules\PSAppDeployToolkit\lib\net8.0')
                             }
                         }
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(

@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
-    <ProjectReference Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
+    <ProjectReference Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
   </ItemGroup>
 
   <!--
@@ -31,7 +31,7 @@
     not its Content, and the fixture looks for the module where its own assembly was loaded from.
   -->
   <ItemGroup>
-    <Content Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+    <Content Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
   <!--
