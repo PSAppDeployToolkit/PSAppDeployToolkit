@@ -131,17 +131,11 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         /// Records that a dialog appears in the taskbar whether or not minimizing was allowed.
         /// </summary>
         /// <remarks>
-        /// Recorded rather than endorsed. The comment above the opt-in block describes turning the
-        /// taskbar button on, and the control box with it, as part of enabling minimizing - but nothing
-        /// ever turns either off, and both properties start out true on any form. So four of that
-        /// block's five statements assign the value the property already held, and the only one that
-        /// changes anything is the minimize box itself.
-        /// <para>
-        /// Whether that matters is a product question rather than a test one: a dialog that cannot be
-        /// minimized arguably has no business owning a taskbar button, but having one also makes a
-        /// dialog that got buried findable. This pins today's answer so that changing it is a decision
-        /// somebody makes rather than something that drifts.
-        /// </para>
+        /// Neither property is touched by either dialog style, so both keep the values a window starts
+        /// with. A dialog that cannot be minimized arguably has no business owning a taskbar button, but
+        /// having one also makes a dialog that got buried findable, and the Fluent dialog behaves the
+        /// same way. This pins today's answer so that changing it is a decision somebody makes rather
+        /// than something that drifts.
         /// </remarks>
         /// <param name="allowMinimize">Whether minimizing was asked for.</param>
         [Theory]
@@ -162,30 +156,44 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         }
 
         /// <summary>
-        /// Verifies that opting in to minimizing turns on everything needed for it to work.
+        /// Verifies that the minimize box follows the option in both directions.
         /// </summary>
         /// <remarks>
-        /// Five settings have to move together, which is why this lives on the base rather than being
-        /// repeated per dialog. The border style is the non-obvious one: Windows will not draw a
-        /// minimize glyph on a fixed-dialog frame however the box is set, so the frame has to change
-        /// too. And without the taskbar button, a dialog the user minimized could not be got back.
+        /// Applied either way rather than only when opting in, which is how the Fluent dialog handles
+        /// the same option. The minimize box is the only thing that has to move: the frame, the control
+        /// box, the maximize box and the taskbar button already hold the values this needs, so the four
+        /// assignments that used to accompany this one each wrote back what was already there.
         /// </remarks>
-        [Fact]
-        public void Constructor_TurnsOnEverythingMinimizingNeeds()
+        /// <param name="allowMinimize">Whether minimizing was asked for.</param>
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Constructor_GivesTheDialogAMinimizeBoxOnlyWhenAskedTo(bool allowMinimize)
         {
             // Arrange
             Hashtable table = SampleOptions.CustomDialog();
-            table["DialogAllowMinimize"] = true;
+            table["DialogAllowMinimize"] = allowMinimize;
 
             // Act
             using ProbeDialog dialog = Build(table);
 
             // Assert
-            Assert.True(dialog.ControlBox);
-            Assert.True(dialog.MinimizeBox);
+            Assert.Equal(allowMinimize, dialog.MinimizeBox);
             Assert.False(dialog.MaximizeBox);
-            Assert.True(dialog.ShowInTaskbar);
             Assert.Equal(FormBorderStyle.FixedSingle, dialog.FormBorderStyle);
+        }
+
+        /// <summary>
+        /// Verifies that a dialog whose options say nothing about minimizing does not offer it.
+        /// </summary>
+        [Fact]
+        public void Constructor_RefusesMinimizingByDefault()
+        {
+            // Act
+            using ProbeDialog dialog = Build(SampleOptions.CustomDialog());
+
+            // Assert
+            Assert.False(dialog.MinimizeBox);
         }
 
         /// <summary>
