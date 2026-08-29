@@ -342,8 +342,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <remarks>This method processes text to remove specific formatting tags, such as bold, italic,
         /// accent, and URL tags, as defined by the <see cref="DialogText.FormattingRegex"/> regular expression.
-        /// The content within these tags is preserved and included in the returned string. Handles nested tags properly
-        /// by repeatedly processing the text until all tags are removed.</remarks>
+        /// The content within these tags is preserved and included in the returned string.
+        /// <para>
+        /// One pass over the matches found in the original text suffices. The pattern matches each opening and
+        /// closing style tag as a match in its own right rather than as a pair, so a nested tag is simply another
+        /// match, and each match is removed by replacing its literal text rather than by its position. That means
+        /// every occurrence of a given tag goes at once and the later matches for it become no-ops, which is also
+        /// why the positions recorded in the matches are never read - they refer to the text as it was before any
+        /// replacement.
+        /// </para></remarks>
         /// <param name="text">The input string containing formatting tags to be stripped.</param>
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
         private protected static string StripFormattingTags(string text)

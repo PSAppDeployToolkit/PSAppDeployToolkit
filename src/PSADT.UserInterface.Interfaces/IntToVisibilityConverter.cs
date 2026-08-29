@@ -6,11 +6,9 @@ using System.Windows.Data;
 namespace PSADT.UserInterface.Interfaces
 {
     /// <summary>
-    /// Converts an integer value to a Visibility enum value.
-    /// If the integer is greater than 0 or greater than specified threshold, returns Visible, otherwise returns Collapsed.
-    /// Can be reversed with the parameter 'True' to collapse when value > 0.
-    /// Special cases can be handled with string parameters like 'ListView' for ListView scrollbar behavior.
+    /// Converts a count to a <see cref="Visibility"/>, showing an element only when the count is above zero.
     /// </summary>
+    /// <remarks>The conversion is one-way and takes no converter parameter. A value that is not an <see cref="int"/> - including a boxed <see cref="long"/> or <see cref="uint"/>, and null - converts to <see cref="Visibility.Collapsed"/> rather than throwing.</remarks>
     public sealed class IntToVisibilityConverter : IValueConverter
     {
         /// <summary>
@@ -32,13 +30,12 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Converts a value from the target type back to the source type.
         /// </summary>
-        /// <remarks>Override this method in a derived class to provide custom conversion logic from the
-        /// target type back to the source type.</remarks>
-        /// <param name="value">The value to convert back to the source type.</param>
-        /// <param name="targetType">The type to convert the value to.</param>
-        /// <param name="parameter">An optional parameter to use in the conversion logic.</param>
-        /// <param name="culture">The culture to use in the conversion.</param>
-        /// <returns>The converted value, or throws an exception if the conversion is not implemented.</returns>
+        /// <remarks>Not supported. A count cannot be recovered from a <see cref="Visibility"/>, so the bindings using this converter are one-way.</remarks>
+        /// <param name="value">The value to convert back to the source type. This parameter is not used.</param>
+        /// <param name="targetType">The type to convert the value to. This parameter is not used.</param>
+        /// <param name="parameter">An optional parameter to use in the conversion logic. This parameter is not used.</param>
+        /// <param name="culture">The culture to use in the conversion. This parameter is not used.</param>
+        /// <returns>This method does not return; it always throws.</returns>
         /// <exception cref="NotSupportedException">Thrown in all cases, as this method is not implemented.</exception>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
