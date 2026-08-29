@@ -1,15 +1,18 @@
-﻿using System;
-using Windows.Win32.UI.WindowsAndMessaging;
+﻿using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface
 {
     /// <summary>
     /// Specifies the set of buttons to display in a message box.
     /// </summary>
-    /// <remarks>This enumeration is used to define the button options available in a message box, such as "OK", "Cancel", "Yes", "No", etc. It supports a combination of values due to the <see cref="FlagsAttribute"/> applied to the enumeration.</remarks>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "All values are named as per the Win32 API.")]
+    /// <remarks>The members are the <c>MB_*</c> button constants, which Win32 packs into the low nibble of a
+    /// message box's style word as a small integer rather than as independent bits. They are therefore mutually
+    /// exclusive: a caller chooses one. The style word is assembled by casting this, an icon and a default button to
+    /// <c>MESSAGEBOX_STYLE</c> and combining those, so nothing needs to combine two members of this type - and
+    /// marking it as flags would suggest otherwise while quietly turning <c>OkCancel | AbortRetryIgnore</c> into
+    /// <c>YesNoCancel</c>.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "The zero value is MB_OK, which is named as per the Win32 API rather than as 'None'.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This is typed as per the Win32 API.")]
-    [Flags]
     public enum DialogBoxButtons : uint
     {
         /// <summary>

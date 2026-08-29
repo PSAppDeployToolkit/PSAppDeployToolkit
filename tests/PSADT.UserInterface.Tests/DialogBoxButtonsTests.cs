@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using PSADT.UserInterface.Tests.TestHelpers;
 using Xunit;
 
@@ -53,21 +54,27 @@ namespace PSADT.UserInterface.Tests
         }
 
         /// <summary>
-        /// Verifies that these values do not behave as bit flags, despite the attribute saying they do.
+        /// Verifies that the type is not marked as flags, because these values do not compose.
         /// </summary>
         /// <remarks>
-        /// The one surprising thing about the type, and worth stating rather than leaving to be
-        /// rediscovered. Win32 packs the button set into the low nibble of the style word as a small
-        /// integer, so the members run 0 to 6 rather than occupying separate bits, and combining two of
-        /// them with <c>|</c> silently produces a third valid member instead of a combination.
-        /// <see cref="FlagsAttribute"/> is present so a caller can OR a button set together with an icon
-        /// and a default button, which do occupy their own bits; it does not mean the button values
-        /// themselves compose.
+        /// Win32 packs the button set into the low nibble of the style word as a small integer, so the
+        /// members run 0 to 6 rather than occupying separate bits. <c>OkCancel | AbortRetryIgnore</c> is
+        /// therefore <c>YesNoCancel</c> - a different valid button set rather than a combination - and
+        /// while the type carried <see cref="FlagsAttribute"/> that was something a caller could write and
+        /// nothing would object to. Without it the analysers refuse the expression outright, so this test
+        /// guards the declaration rather than the arithmetic: the arithmetic can no longer be written.
+        /// <para>
+        /// The style word is still assembled by combining a button set with an icon and a default button,
+        /// but that is done on <c>MESSAGEBOX_STYLE</c> after casting, which is where those bits actually
+        /// live. Nothing needs this type to be flags for that to work.
+        /// </para>
         /// </remarks>
         [Fact]
         public void Members_AreASmallIntegerRatherThanIndependentBits()
         {
-            Assert.Equal(DialogBoxButtons.YesNoCancel, DialogBoxButtons.OkCancel | DialogBoxButtons.AbortRetryIgnore);
+            // Assert - not flags, and numbered as consecutive choices rather than as bits.
+            Assert.False(Attribute.IsDefined(typeof(DialogBoxButtons), typeof(FlagsAttribute)));
+            Assert.Equal<ulong[]>([0, 1, 2, 3, 4, 5, 6], [.. EnumValues.DeclaredPairs<DialogBoxButtons>().Select(static member => member.Value)]);
         }
     }
 }
