@@ -915,6 +915,10 @@ namespace PSADT.ClientServer
                     continue;
                 }
                 string key = argv[i][1..].Trim();
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    throw new ClientException($"The argument [{argv[i]}] does not name anything.", ClientExitCode.InvalidArguments);
+                }
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
                 if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
                 {
