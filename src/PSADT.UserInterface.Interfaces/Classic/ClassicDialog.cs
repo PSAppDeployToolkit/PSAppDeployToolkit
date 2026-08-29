@@ -469,8 +469,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                         // Calculate taskbar offset in pixels: difference between full screen and working area
                         Rectangle screenBounds = screen.Bounds;
                         int taskbarOffsetPixels = screenBounds.Height - workingArea.Height - (workingArea.Top - screenBounds.Top);
-                        double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
-                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5) - (Width / dpiScale * 0.6 * dpiScale);
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5) - (Width * 0.6);
                         top = workingArea.Top + ((workingArea.Height - Height) * 0.5) + (taskbarOffsetPixels * 0.5);
                         break;
                     }
