@@ -35,6 +35,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="progressMessageDetail">Optional new detail message.</param>
         /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
         /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (progressMessage is not null)
@@ -44,6 +45,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (progressMessageDetail is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
+            }
+            if (progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.");
             }
             UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage);
         }

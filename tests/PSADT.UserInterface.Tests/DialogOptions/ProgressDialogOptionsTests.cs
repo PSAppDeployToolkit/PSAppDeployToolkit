@@ -78,21 +78,52 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         }
 
         /// <summary>
-        /// Records that the percentage is not range-checked.
+        /// Verifies that a percentage outside nought to a hundred is refused.
         /// </summary>
         /// <remarks>
-        /// A value outside nought to a hundred is stored and passed on rather than refused. This is
-        /// asserted so the behaviour is stated rather than assumed: the module's own parameter validation
-        /// is what keeps a sane value out of here today, and a caller reaching this type directly - which
-        /// the client executable does, from a deserialized payload - gets no second opinion. If that is
-        /// not what is wanted, the guard belongs in the constructor and this test becomes the one that
-        /// says so.
+        /// Not a tidiness check. The classic dialog assigns this straight to a progress bar's value, and
+        /// a bar refuses anything outside its range - on the thread drawing the dialog, where the failure
+        /// has nothing to do with the caller that caused it. The range is what every doc comment on the
+        /// way down already claims, so this makes the claim true at the point the value arrives.
+        /// <para>
+        /// The two infinities and a NaN are included because they slip past a naive pair of comparisons:
+        /// every comparison against NaN is false, so a guard written only as "less than nought or greater
+        /// than a hundred" would let it through.
+        /// </para>
         /// </remarks>
         /// <param name="percentage">A percentage outside the expected range.</param>
         [Theory]
         [InlineData(-1d)]
+        [InlineData(-0.0001d)]
+        [InlineData(100.0001d)]
         [InlineData(101d)]
-        public void Constructor_DoesNotRangeCheckThePercentage(double percentage)
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        public void Constructor_RefusesAPercentageOutsideItsRange(double percentage)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["ProgressPercentage"] = percentage;
+
+            // Act & Assert
+            ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressDialogOptions(table));
+            Assert.Equal("progressPercentage", exception.ParamName);
+        }
+
+        /// <summary>
+        /// Verifies that the ends of the range are accepted.
+        /// </summary>
+        /// <remarks>
+        /// A guard written with the wrong comparison would reject a finished operation reporting a hundred
+        /// per cent, which is the one value every determinate progress bar ends on.
+        /// </remarks>
+        /// <param name="percentage">A percentage at the edge of the range.</param>
+        [Theory]
+        [InlineData(0d)]
+        [InlineData(50d)]
+        [InlineData(100d)]
+        public void Constructor_AcceptsThePercentagesAtEachEndOfTheRange(double percentage)
         {
             // Arrange
             Hashtable table = SampleOptions.ProgressDialog();

@@ -76,10 +76,15 @@ namespace PSADT.UserInterface.DialogOptions
         /// is used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="progressMessageText"/> or <paramref name="progressDetailMessageText"/> is <see
         /// langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
         private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageText);
             ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessageText);
+            if (progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.");
+            }
             ProgressMessageText = progressMessageText;
             ProgressDetailMessageText = progressDetailMessageText;
             ProgressPercentage = progressPercentage;

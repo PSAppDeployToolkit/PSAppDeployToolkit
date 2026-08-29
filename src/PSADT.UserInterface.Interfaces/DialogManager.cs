@@ -349,6 +349,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
         /// <param name="messageAlignment">Optional message alignment. If provided, the message alignment is updated.</param>
         /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to update it.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
         internal static Task UpdateProgressDialogAsync(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (progressDialog is null)
@@ -363,7 +364,9 @@ namespace PSADT.UserInterface.Interfaces
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
             }
-            return InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
+            return progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0)
+                ? throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.")
+                : InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
         }
 
         /// <summary>

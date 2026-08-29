@@ -72,6 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="progressPercentage">The percentage of progress completed, as a value between 0 and 100. If null, the progress percentage is not
         /// updated.</param>
         /// <param name="messageAlignment">Specifies the alignment of the progress message. If null, the default alignment is used.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (progressMessage is not null)
@@ -81,6 +82,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             if (progressMessageDetail is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
+            }
+            if (progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.");
             }
             UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment);
         }

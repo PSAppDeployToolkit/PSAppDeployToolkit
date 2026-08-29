@@ -66,19 +66,44 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
         }
 
         /// <summary>
-        /// Verifies that a percentage outside the range a progress bar can show is carried rather than
-        /// refused.
+        /// Verifies that a percentage outside the range a progress bar can show is refused.
         /// </summary>
         /// <remarks>
-        /// Recorded rather than endorsed. The payload does not police the range, so whatever a caller sends
-        /// reaches the client and the dialog decides what to do with it. Asserted so that adding a check
-        /// here shows up as a test to update rather than as a silent change in what the client receives.
+        /// This payload used to carry whatever it was given and leave the client to decide - which the
+        /// client does by assigning it to a progress bar, whose value setter refuses anything outside its
+        /// range on the thread drawing the dialog. The same guard now sits on
+        /// <c>ProgressDialogOptions</c>, which is the other door to the same bar; this is the update door.
+        /// <para>
+        /// NaN and the infinities are included because a guard written only as "less than nought or
+        /// greater than a hundred" lets NaN through: every comparison against it is false.
+        /// </para>
         /// </remarks>
-        /// <param name="percentage">The percentage to carry.</param>
+        /// <param name="percentage">The percentage to refuse.</param>
         [Theory]
         [InlineData(-1.0)]
         [InlineData(101.0)]
-        public void UpdateProgressDialogPayload_CarriesAPercentageItCannotShow(double percentage)
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        public void UpdateProgressDialogPayload_RefusesAPercentageItCannotShow(double percentage)
+        {
+            // Act & Assert
+            ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new UpdateProgressDialogPayload(percentage: percentage));
+            Assert.Equal("percentage", exception.ParamName);
+        }
+
+        /// <summary>
+        /// Verifies that the ends of the range are carried.
+        /// </summary>
+        /// <remarks>
+        /// A hundred per cent is the value every determinate progress bar finishes on, so a guard written
+        /// with the wrong comparison would break the last update of every deployment that reports one.
+        /// </remarks>
+        /// <param name="percentage">The percentage to carry.</param>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(100.0)]
+        public void UpdateProgressDialogPayload_CarriesThePercentagesAtEachEndOfTheRange(double percentage)
         {
             Assert.Equal(percentage, new UpdateProgressDialogPayload(percentage: percentage).Percentage);
         }

@@ -22,7 +22,7 @@ function Show-ADTInstallationProgress
         The status message detail to be displayed with a fluent progress window. The default status message is taken from the imported `strings.psd1` file.
 
     .PARAMETER StatusBarPercentage
-        The percentage to display on the progress bar with a fluent progress window. If null or not supplied, an indeterminate progress bar is displayed.
+        The percentage to display on the progress bar with a fluent progress window, between 0 and 100. If null or not supplied, an indeterminate progress bar is displayed.
 
     .PARAMETER MessageAlignment
         The text alignment to use for the status message.
@@ -94,6 +94,7 @@ function Show-ADTInstallationProgress
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [ValidateRange(0, 100)]
         [System.Nullable[System.Double]]$StatusBarPercentage,
 
         [Parameter(Mandatory = $false)]
