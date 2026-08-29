@@ -21,6 +21,7 @@
     <Project Path="tests/PSADT.CodeAnalysis.Tests/PSADT.CodeAnalysis.Tests.csproj" />
     <Project Path="tests/PSADT.Interop.Tests/PSADT.Interop.Tests.csproj" />
     <Project Path="tests/PSADT.Tests/PSADT.Tests.csproj" />
+    <Project Path="tests/PSADT.UserInterface.Interfaces.Tests/PSADT.UserInterface.Interfaces.Tests.csproj" />
     <Project Path="tests/PSADT.UserInterface.Tests/PSADT.UserInterface.Tests.csproj" />
     <Project Path="tests/PSAppDeployToolkit.Tests/PSAppDeployToolkit.Tests.csproj" />
   </Folder>
