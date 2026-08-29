@@ -36,7 +36,7 @@ namespace Fluence.Wpf.Automation
     /// consumer has given it an accessible name. An unnamed image is treated as decorative and is
     /// dropped from both the control and content views, so assistive technology never announces a
     /// bare unlabelled image element.
-    /// Authority: WinUI keeps <c>Image</c> at <c>AccessibilityView="Raw"</c> until it is named, and
+    /// Authority: WinUI keeps <c language="xaml">Image</c> at <c language="xaml">AccessibilityView="Raw"</c> until it is named, and
     /// Microsoft's UI Automation guidance is that decorative graphics stay out of the tree entirely.
     /// In-tree precedent: <see cref="FontIconAutomationPeer"/> for the both-views exclusion, and
     /// <see cref="TextBlockAutomationPeer"/> for keying that exclusion off the accessible name.

@@ -32,13 +32,13 @@ namespace Fluence.Wpf.Markup
 {
     /// <summary>
     /// A per-theme value table inside <see cref="ThemeDictionary.ThemeDictionaries"/>. The
-    /// <see cref="ThemeKey"/> names the theme the table serves: <c>Light</c>, <c>Dark</c>,
-    /// <c>HighContrast</c>, the high-contrast polarity keys <c>HighContrastBlack</c> and
-    /// <c>HighContrastWhite</c>, or <c>Default</c> (the fallback for themes without an exact
+    /// <see cref="ThemeKey"/> names the theme the table serves: <c language="xaml">Light</c>, <c language="xaml">Dark</c>,
+    /// <c language="xaml">HighContrast</c>, the high-contrast polarity keys <c language="xaml">HighContrastBlack</c> and
+    /// <c language="xaml">HighContrastWhite</c>, or <c language="xaml">Default</c> (the fallback for themes without an exact
     /// table).
     /// </summary>
     /// <remarks>
-    /// The key lives on this property rather than <c>x:Key</c> because the WPF markup compiler
+    /// The key lives on this property rather than <c language="xaml">x:Key</c> because the WPF markup compiler
     /// cannot compile keyed children inside a dictionary-typed property of a
     /// <see cref="ResourceDictionary"/> subclass. Set <see cref="ThemeKey"/> before adding the
     /// table to a <see cref="ThemeDictionary"/>; changing it afterwards takes effect on the
@@ -47,9 +47,9 @@ namespace Fluence.Wpf.Markup
     public sealed class ThemeResourceDictionary : ResourceDictionary
     {
         /// <summary>
-        /// Gets or sets the theme this table serves: <c>Light</c>, <c>Dark</c>,
-        /// <c>HighContrast</c>, <c>HighContrastBlack</c>, <c>HighContrastWhite</c>, or
-        /// <c>Default</c>.
+        /// Gets or sets the theme this table serves: <c language="xaml">Light</c>, <c language="xaml">Dark</c>,
+        /// <c language="xaml">HighContrast</c>, <c language="xaml">HighContrastBlack</c>, <c language="xaml">HighContrastWhite</c>, or
+        /// <c language="xaml">Default</c>.
         /// </summary>
         public string ThemeKey { get; set; } = "Default";
     }

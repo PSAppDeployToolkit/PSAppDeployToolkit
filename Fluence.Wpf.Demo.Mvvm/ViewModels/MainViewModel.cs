@@ -40,11 +40,11 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
     /// <summary>
     /// Root ViewModel for the Task Manager window. Demonstrates:
     /// <list type="bullet">
-    ///   <item><description><c>[ObservableProperty]</c> - backing fields with auto-notification</description></item>
-    ///   <item><description><c>[RelayCommand(CanExecute)]</c> - enabled/disabled command binding</description></item>
-    ///   <item><description><c>partial void OnXxxChanged</c> - source-generated change callbacks</description></item>
-    ///   <item><description><c>ObservableCollection</c> - live-updating list</description></item>
-    ///   <item><description>Derived properties via <c>OnPropertyChanged</c></description></item>
+    ///   <item><description><c language="csharp">[ObservableProperty]</c> - backing fields with auto-notification</description></item>
+    ///   <item><description><c language="csharp">[RelayCommand(CanExecute)]</c> - enabled/disabled command binding</description></item>
+    ///   <item><description><c language="csharp">partial void OnXxxChanged</c> - source-generated change callbacks</description></item>
+    ///   <item><description><c language="csharp">ObservableCollection</c> - live-updating list</description></item>
+    ///   <item><description>Derived properties via <c language="csharp">OnPropertyChanged</c></description></item>
     /// </list>
     /// </summary>
     public partial class MainViewModel : ObservableObject
@@ -163,7 +163,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
 
         /// <summary>
         /// Removes a specific task. Bound in the DataTemplate via
-        /// <c>RelativeSource AncestorType=Window</c> with <c>CommandParameter="{Binding}"</c>.
+        /// <c language="xaml">RelativeSource AncestorType=Window</c> with <c language="xaml">CommandParameter="{Binding}"</c>.
         /// </summary>
         /// <param name="item">The task item to remove.</param>
         [RelayCommand]

@@ -32,11 +32,11 @@ using System.Runtime.InteropServices;
 namespace Fluence.Wpf.Native
 {
     /// <summary>
-    /// Mirrors the undocumented <c>WINDOWCOMPOSITIONATTRIBDATA</c> structure that
-    /// <c>SetWindowCompositionAttribute</c> takes by reference. It is a tagged pointer: the
+    /// Mirrors the undocumented <c language="csharp">WINDOWCOMPOSITIONATTRIBDATA</c> structure that
+    /// <c language="csharp">SetWindowCompositionAttribute</c> takes by reference. It is a tagged pointer: the
     /// attribute id selects which payload type <see cref="Data"/> points at, and
     /// <see cref="SizeOfData"/> must match that payload exactly or the call is rejected. Fluence
-    /// only ever sends <c>WCA_ACCENT_POLICY</c> with an <see cref="ACCENT_POLICY"/> payload. Field
+    /// only ever sends <c language="csharp">WCA_ACCENT_POLICY</c> with an <see cref="ACCENT_POLICY"/> payload. Field
     /// order and types must match the native layout exactly.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]

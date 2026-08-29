@@ -34,15 +34,15 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Represents a flyout that shows a horizontal bar of primary commands with an optional
     /// expandable overflow menu of secondary commands, mirroring the WinUI 3
-    /// <c>CommandBarFlyout</c> control.
+    /// <c language="csharp">CommandBarFlyout</c> control.
     /// </summary>
     /// <remarks>
     /// Commands are usually <see cref="AppBarButton"/> instances. Clicking a command inside the
-    /// flyout runs its normal <c>Click</c> handling and then dismisses the flyout, matching the
+    /// flyout runs its normal <c language="csharp">Click</c> handling and then dismisses the flyout, matching the
     /// WinUI behavior. The flyout participates in the full <see cref="FlyoutBase"/> contract:
     /// it can be opened via <see cref="FlyoutBase.ShowAt"/> or attached to an element with
     /// <see cref="FlyoutBase.SetAttachedFlyout"/> and opened via
-    /// <see cref="FlyoutBase.ShowAttachedFlyout"/>. The WinUI <c>AlwaysExpanded</c> option is
+    /// <see cref="FlyoutBase.ShowAttachedFlyout"/>. The WinUI <c language="csharp">AlwaysExpanded</c> option is
     /// omitted for v1; the flyout always opens collapsed and the overflow menu is toggled by
     /// the presenter's more button.
     /// </remarks>

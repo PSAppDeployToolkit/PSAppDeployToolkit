@@ -92,7 +92,7 @@ namespace Fluence.Wpf
         /// <remarks>
         /// <para>
         /// The first call seeds the three resource slots ([0] computed colors and brushes, [1] Typography,
-        /// [2] Generic). Later calls replace the computed slot so <c>DynamicResource</c> consumers re-resolve.
+        /// [2] Generic). Later calls replace the computed slot so <c language="xaml">DynamicResource</c> consumers re-resolve.
         /// </para>
         /// <para>
         /// A call whose computed output is identical to the last published one does not rebuild or

@@ -34,7 +34,7 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// Represents a flyout that displays arbitrary content on the Fluent flyout surface,
-    /// mirroring the WinUI 3 <c>Flyout</c> control. The content is hosted in a
+    /// mirroring the WinUI 3 <c language="csharp">Flyout</c> control. The content is hosted in a
     /// <see cref="FlyoutPresenter"/> inside a light-dismiss popup.
     /// </summary>
     public class Flyout : FlyoutBase
@@ -54,10 +54,10 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <remarks>
         /// The content is hosted in an unparented popup, so it does not live in the placement
-        /// target's name scope: <c>ElementName</c> (and <c>RelativeSource FindAncestor</c>
+        /// target's name scope: <c language="xaml">ElementName</c> (and <c language="xaml">RelativeSource FindAncestor</c>
         /// walks above the presenter) bindings inside the content do not resolve. The
         /// presenter inherits the placement target's <see cref="FrameworkElement.DataContext"/>
-        /// while the flyout is open, so plain <c>Binding</c> paths against the anchor's view
+        /// while the flyout is open, so plain <c language="xaml">Binding</c> paths against the anchor's view
         /// model work as expected.
         /// </remarks>
         public object? Content

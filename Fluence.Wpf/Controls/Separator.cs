@@ -31,7 +31,7 @@ using System.Windows;
 namespace Fluence.Wpf.Controls
 {
     /// <summary>
-    /// A Fluent Design horizontal separator that uses <c>DividerStrokeColorDefaultBrush</c>
+    /// A Fluent Design horizontal separator that uses <c language="xaml">DividerStrokeColorDefaultBrush</c>
     /// for standalone content-area use.
     /// Authority: .NET 10 WPF PresentationFramework.Fluent/Styles/Separator.xaml.
     /// </summary>

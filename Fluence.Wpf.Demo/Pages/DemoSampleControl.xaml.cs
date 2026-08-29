@@ -49,8 +49,8 @@ namespace Fluence.Wpf.Demo.Pages
     /// </para>
     /// <para>
     /// Because WPF error MC3093 prevents naming controls inside a property element, named live
-    /// controls are declared in hidden <c>ContentControl</c> slots at the page root and transferred
-    /// into this card by <c>DemoSamplePageWiring.Apply</c>.
+    /// controls are declared in hidden <c language="csharp">ContentControl</c> slots at the page root and transferred
+    /// into this card by <c language="csharp">DemoSamplePageWiring.Apply</c>.
     /// </para>
     /// </remarks>
     public partial class DemoSampleControl : ContentControl

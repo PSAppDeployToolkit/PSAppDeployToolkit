@@ -33,7 +33,7 @@ using Windows.Win32.Foundation;
 namespace Fluence.Wpf.Native
 {
     /// <summary>
-    /// The shell <c>APPBARDATA</c> structure passed to <c>SHAppBarMessage</c>. <see cref="cbSize"/>
+    /// The shell <c language="csharp">APPBARDATA</c> structure passed to <c language="csharp">SHAppBarMessage</c>. <see cref="cbSize"/>
     /// must be initialized to the struct size before the call.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]

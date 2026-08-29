@@ -31,10 +31,10 @@ namespace Fluence.Wpf.Helpers
     /// <summary>
     /// Snapshot of the DWM window-feature capabilities available on the current OS build.
     /// Capabilities are probed once per call-site via <see cref="Current"/>; callers hold the
-    /// snapshot for the duration of one <c>ApplyWindowShell</c> pass rather than querying the OS
+    /// snapshot for the duration of one <c language="csharp">ApplyWindowShell</c> pass rather than querying the OS
     /// on every individual attribute write.
     /// </summary>
-    /// <param name="supportsSystemBackdropType">Whether the current OS build supports the <c>SystemBackdropType</c> attribute.</param>
+    /// <param name="supportsSystemBackdropType">Whether the current OS build supports the <c language="csharp">SystemBackdropType</c> attribute.</param>
     /// <param name="supportsMicaEffect">Whether the current OS build supports the legacy Mica effect.</param>
     /// <param name="supportsRoundedCorners">Whether the current OS build supports rounded corners.</param>
     /// <param name="supportsCaptionColor">Whether the current OS build supports setting the caption color.</param>
@@ -50,16 +50,16 @@ namespace Fluence.Wpf.Helpers
     {
         /// <summary>
         /// Gets a value indicating whether the OS supports
-        /// <c>DWMWA_SYSTEMBACKDROP_TYPE</c> (attribute 38). <see langword="true"/> on Windows 11
+        /// <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c> (attribute 38). <see langword="true"/> on Windows 11
         /// 22H2 (build 22621) and later; <see langword="false"/> on earlier builds. When
-        /// <see langword="true"/>, the canonical <c>DWMSBT_*</c> values must be used instead of
-        /// the legacy <c>DWMWA_MICA_EFFECT</c> attribute.
+        /// <see langword="true"/>, the canonical <c language="csharp">DWMSBT_*</c> values must be used instead of
+        /// the legacy <c language="csharp">DWMWA_MICA_EFFECT</c> attribute.
         /// </summary>
         internal bool SupportsSystemBackdropType { get; } = supportsSystemBackdropType;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports the legacy Mica toggle
-        /// (<c>DWMWA_MICA_EFFECT</c>, attribute 1029). <see langword="true"/> on Windows 11 21H2
+        /// (<c language="csharp">DWMWA_MICA_EFFECT</c>, attribute 1029). <see langword="true"/> on Windows 11 21H2
         /// (builds 22000 to 22620); <see langword="false"/> on Windows 10 or Windows 11 22H2+.
         /// Mutually exclusive with <see cref="SupportsSystemBackdropType"/>: when both would be
         /// <see langword="true"/>, <see cref="SupportsSystemBackdropType"/> wins and this is
@@ -69,29 +69,29 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets a value indicating whether the OS supports the DWM rounded-corner preference
-        /// (<c>DWMWA_WINDOW_CORNER_PREFERENCE</c>, attribute 33). <see langword="true"/> on any
+        /// (<c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>, attribute 33). <see langword="true"/> on any
         /// Windows 11 build (build 22000+); <see langword="false"/> on Windows 10.
         /// </summary>
         internal bool SupportsRoundedCorners { get; } = supportsRoundedCorners;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports setting the DWM caption color via
-        /// <c>DWMWA_CAPTION_COLOR</c> (attribute 35). <see langword="true"/> on any Windows 11
+        /// <c language="csharp">DWMWA_CAPTION_COLOR</c> (attribute 35). <see langword="true"/> on any Windows 11
         /// build; <see langword="false"/> on Windows 10.
         /// </summary>
         internal bool SupportsCaptionColor { get; } = supportsCaptionColor;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports setting the DWM border color via
-        /// <c>DWMWA_BORDER_COLOR</c> (attribute 34). <see langword="true"/> on any Windows 11
+        /// <c language="csharp">DWMWA_BORDER_COLOR</c> (attribute 34). <see langword="true"/> on any Windows 11
         /// build; <see langword="false"/> on Windows 10.
         /// </summary>
         internal bool SupportsBorderColor { get; } = supportsBorderColor;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports the legacy acrylic accent state
-        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c> via the undocumented
-        /// <c>SetWindowCompositionAttribute</c>). <see langword="true"/> on Windows 10 build 17063
+        /// (<c language="csharp">ACCENT_ENABLE_ACRYLICBLURBEHIND</c> via the undocumented
+        /// <c language="csharp">SetWindowCompositionAttribute</c>). <see langword="true"/> on Windows 10 build 17063
         /// and later; <see langword="false"/> on earlier Windows 10 builds and on every Windows 11
         /// build, which use the DWM system backdrops instead. Mutually exclusive with both
         /// <see cref="SupportsSystemBackdropType"/> and <see cref="SupportsMicaEffect"/>.

@@ -136,11 +136,11 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Closes the dropdown flyout popup if it is open. WinUI's <c>DropDownButton</c> hosts
-        /// a <c>FlyoutBase</c> whose <c>Hide()</c> the application calls after handling a click
+        /// Closes the dropdown flyout popup if it is open. WinUI's <c language="csharp">DropDownButton</c> hosts
+        /// a <c language="csharp">FlyoutBase</c> whose <c language="csharp">Hide()</c> the application calls after handling a click
         /// inside arbitrary flyout content (a plain flyout never dismisses itself); this method
         /// is the equivalent close affordance for the <see cref="Flyout"/> object content model.
-        /// Equivalent to setting <c>IsChecked</c> to <see langword="false"/>.
+        /// Equivalent to setting <c language="csharp">IsChecked</c> to <see langword="false"/>.
         /// </summary>
         public void CloseFlyout()
         {

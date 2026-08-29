@@ -35,7 +35,7 @@ namespace Fluence.Wpf.Tests
 {
     /// <summary>
     /// WI-3 A5-A6 tests: ComboBox and DropDownButton popup border CornerRadius
-    /// tracks <c>OverlayCornerRadius</c> (8px) via DynamicResource.
+    /// tracks <c language="xaml">OverlayCornerRadius</c> (8px) via DynamicResource.
     /// </summary>
     public partial class ControlTests
     {

@@ -163,7 +163,7 @@ namespace Fluence.Wpf.Tests.Theming
         }
 
         /// <summary>
-        /// Writes golden baseline files to <c>data/theme-golden/</c> for every theme variant.
+        /// Writes golden baseline files to <c language="text">data/theme-golden/</c> for every theme variant.
         /// Run once to produce the baseline; subsequent runs verify parity.
         /// </summary>
         [Fact]
@@ -292,7 +292,7 @@ namespace Fluence.Wpf.Tests.Theming
 
         /// <summary>
         /// Hermetic guard for the HighContrast accent-semantic brushes that bind to the live
-        /// <c>SystemColors.HighlightColor</c>. Their value is machine-dependent, so they are excluded
+        /// <c language="csharp">SystemColors.HighlightColor</c>. Their value is machine-dependent, so they are excluded
         /// from the frozen golden snapshot; this verifies the binding contract directly against the
         /// live highlight color, which holds on any machine.
         /// </summary>
@@ -322,7 +322,7 @@ namespace Fluence.Wpf.Tests.Theming
 
         /// <summary>
         /// Hermetic guard for the HighContrast accent-semantic brushes that bind to the live
-        /// <c>SystemColors.HighlightTextColor</c>. Their value is machine-dependent, so they are
+        /// <c language="csharp">SystemColors.HighlightTextColor</c>. Their value is machine-dependent, so they are
         /// excluded from the frozen golden snapshot; this verifies the binding contract directly
         /// against the live highlight text color, which holds on any machine.
         /// </summary>
@@ -419,7 +419,7 @@ namespace Fluence.Wpf.Tests.Theming
 
         /// <summary>
         /// Finds the repository root by walking up from the test output directory until
-        /// <c>Fluence.Wpf.sln</c> is found.
+        /// <c language="text">Fluence.Wpf.sln</c> is found.
         /// </summary>
         internal static string FindRepoRoot()
         {

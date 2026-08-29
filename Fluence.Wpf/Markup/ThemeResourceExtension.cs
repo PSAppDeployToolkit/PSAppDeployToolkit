@@ -31,10 +31,10 @@ using System.Windows;
 namespace Fluence.Wpf.Markup
 {
     /// <summary>
-    /// A theme-reactive resource reference equivalent to the WinUI 3 <c>{ThemeResource}</c>
+    /// A theme-reactive resource reference equivalent to the WinUI 3 <c language="xaml">{ThemeResource}</c>
     /// markup extension. Use it to reference a resource whose value must follow the active
     /// theme, such as any canonical Fluence color or brush token:
-    /// <c>{fluence:ThemeResource TextFillColorPrimaryBrush}</c>.
+    /// <c language="xaml">{fluence:ThemeResource TextFillColorPrimaryBrush}</c>.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -46,8 +46,8 @@ namespace Fluence.Wpf.Markup
     /// an XML namespace prefix.
     /// </para>
     /// <para>
-    /// As with WinUI, a <c>StaticResource</c> reference to a theme-dependent value does not
-    /// update when the theme changes; use this extension (or <c>DynamicResource</c>) for any
+    /// As with WinUI, a <c language="xaml">StaticResource</c> reference to a theme-dependent value does not
+    /// update when the theme changes; use this extension (or <c language="xaml">DynamicResource</c>) for any
     /// value that must react to theme, accent, or high contrast at runtime.
     /// </para>
     /// </remarks>

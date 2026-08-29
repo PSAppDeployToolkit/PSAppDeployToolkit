@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Controls
     /// Indeterminate animation follows the WinUI 3 motion model:
     /// a private sweep-fraction dependency property pulses the arc
     /// length from zero to half the circumference and back over a 2 second linear cycle,
-    /// while the template's <c>PART_IndeterminateRotate</c> transform spins the arc from
+    /// while the template's <c language="xaml">PART_IndeterminateRotate</c> transform spins the arc from
     /// 90 to 1170 degrees over the same 2 second cycle.
     /// </para>
     /// <para>

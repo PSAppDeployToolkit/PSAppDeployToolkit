@@ -40,25 +40,25 @@ using Xunit;
 namespace Fluence.Wpf.Tests.Theming
 {
     /// <summary>
-    /// Deterministic <c>(ApplicationTheme) -> XAML string</c> serializer for the design-time
+    /// Deterministic <c language="text">(ApplicationTheme) -> XAML string</c> serializer for the design-time
     /// color + brush snapshot. It builds the dictionary via
-    /// <see cref="FluenceThemeEngine.BuildStandalone"/> (default accent <c>#0078D4</c>,
+    /// <see cref="FluenceThemeEngine.BuildStandalone"/> (default accent <c language="text">#0078D4</c>,
     /// machine-independent chrome) and emits canonical, ordinal-sorted XAML.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The on-disk generator (<c>RegenerateDesignTimeResourcesAsync</c>) and the CI drift guard
-    /// (<c>DesignTimeResources_AreCurrentAsync</c>) share this one type, so the committed file and the
+    /// The on-disk generator (<c language="csharp">RegenerateDesignTimeResourcesAsync</c>) and the CI drift guard
+    /// (<c language="csharp">DesignTimeResources_AreCurrentAsync</c>) share this one type, so the committed file and the
     /// in-memory comparison are produced identically.
     /// </para>
     /// <para>
     /// Emitted, each section ordinal-sorted by key: every <see cref="Color"/> token; every solid
     /// <see cref="SolidColorBrush"/> twin; the <see cref="LinearGradientBrush"/> elevation brushes;
     /// the <see cref="CornerRadius"/> layout tokens. Deliberately omitted: the runtime-only
-    /// <c>AcrylicNoiseBrush</c> (<see cref="ImageBrush"/>), <c>FlyoutShadowEffect</c>
+    /// <c language="xaml">AcrylicNoiseBrush</c> (<see cref="ImageBrush"/>), <c language="xaml">FlyoutShadowEffect</c>
     /// (<see cref="System.Windows.Media.Effects.DropShadowEffect"/>), the focus-visual
     /// <see cref="Style"/> resources (all non-color, not needed for a static color preview), and
-    /// the <c>SystemColor*</c> aliases (live <see cref="SystemColors"/> snapshots whose values
+    /// the <c language="xaml">SystemColor*</c> aliases (live <see cref="SystemColors"/> snapshots whose values
     /// track the OS theme and accent, so they would make the committed snapshot machine-dependent
     /// and break the drift guard on CI).
     /// </para>
@@ -68,7 +68,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// <summary>
         /// Returns the canonical design-time XAML string for <paramref name="theme"/>.
         /// Must run on the WPF STA thread with an <see cref="Application"/> in scope (pack URIs
-        /// in <c>BaseColorTables</c> require it).
+        /// in <c language="csharp">BaseColorTables</c> require it).
         /// </summary>
         /// <param name="theme">The theme to serialize.</param>
         /// <returns>The canonical design-time XAML string for the specified theme.</returns>

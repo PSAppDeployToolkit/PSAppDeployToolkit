@@ -40,11 +40,11 @@ using System;
 namespace Fluence.Wpf.Demo.Pages
 {
     /// <summary>
-    /// Carries the XAML and C# source text for one <c>DemoSampleControl</c> card.
+    /// Carries the XAML and C# source text for one <c language="csharp">DemoSampleControl</c> card.
     /// </summary>
     /// <remarks>
     /// The <see cref="Slot"/> number is 1-based and must match the position of its corresponding
-    /// <c>DemoSampleControl</c> in document order on the page.
+    /// <c language="csharp">DemoSampleControl</c> in document order on the page.
     /// </remarks>
     internal readonly struct DemoSampleSource
     {
@@ -61,7 +61,7 @@ namespace Fluence.Wpf.Demo.Pages
         }
 
         /// <summary>
-        /// Gets the 1-based index that identifies which <c>DemoSampleControl</c> on the page receives this source.
+        /// Gets the 1-based index that identifies which <c language="csharp">DemoSampleControl</c> on the page receives this source.
         /// </summary>
         public int Slot { get; }
 

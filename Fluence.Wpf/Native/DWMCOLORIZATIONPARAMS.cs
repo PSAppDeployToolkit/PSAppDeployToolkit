@@ -32,7 +32,7 @@ namespace Fluence.Wpf.Native
 {
     /// <summary>
     /// Mirrors the undocumented DWM colorization parameters returned by the ordinal-127 export of
-    /// <c>dwmapi.dll</c>. Used to read the live glass/colorization color when the registry value is
+    /// <c language="text">dwmapi.dll</c>. Used to read the live glass/colorization color when the registry value is
     /// unavailable. Field order and types must match the native layout exactly.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]

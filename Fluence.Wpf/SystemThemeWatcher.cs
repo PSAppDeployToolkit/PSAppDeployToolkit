@@ -202,7 +202,7 @@ namespace Fluence.Wpf
 
         /// <summary>
         /// Returns <see langword="true"/> when a WM_SETTINGCHANGE lParam points to the Unicode string
-        /// <c>"ImmersiveColorSet"</c>, the canonical signal Personalization sends when the
+        /// <c language="csharp">"ImmersiveColorSet"</c>, the canonical signal Personalization sends when the
         /// user changes the Windows accent or app/system theme. WPF's HwndSource uses the
         /// Unicode window-class variant, so the string is UTF-16 LE.
         /// </summary>

@@ -34,7 +34,7 @@ namespace Fluence.Wpf.Helpers
     /// <summary>
     /// Probes the per-user Windows 11 Snap Layout flyout preference. The flyout appears
     /// when the user hovers a window's maximize button and Windows reports the hit-region
-    /// as <c>HTMAXBUTTON</c>. Without the preference check, returning <c>HTMAXBUTTON</c>
+    /// as <c language="csharp">HTMAXBUTTON</c>. Without the preference check, returning <c language="csharp">HTMAXBUTTON</c>
     /// shows the flyout even for users who disabled it in Settings.
     /// </summary>
     internal static class SnapLayoutHelper
@@ -46,8 +46,8 @@ namespace Fluence.Wpf.Helpers
         /// </summary>
         /// <remarks>
         /// The preference is stored under
-        /// <c>HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced</c>
-        /// as <c>EnableSnapAssistFlyout</c> (DWORD). A missing value, a non-DWORD value, or any
+        /// <c language="text">HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced</c>
+        /// as <c language="text">EnableSnapAssistFlyout</c> (DWORD). A missing value, a non-DWORD value, or any
         /// value other than 0 is treated as enabled.
         /// </remarks>
         /// <returns>

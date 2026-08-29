@@ -34,14 +34,14 @@ using System.Windows.Media;
 namespace Fluence.Wpf
 {
     /// <summary>
-    /// Manages system and custom accent colors and publishes them as <c>DynamicResource</c> brush keys aligned with Windows 11.
+    /// Manages system and custom accent colors and publishes them as <c language="xaml">DynamicResource</c> brush keys aligned with Windows 11.
     /// </summary>
     /// <remarks>
     /// Call <see cref="ApplySystemAccent"/>, <see cref="ApplyApplicationAccent"/>, or <see cref="ApplyCustomAccent(Color)"/> after
     /// <see cref="ApplicationThemeManager.Apply"/> so theme-dependent primary/secondary/tertiary accents resolve correctly.
     /// </remarks>
     /// <example>
-    /// <code>
+    /// <code language="csharp">
     /// ApplicationThemeManager.Apply(ApplicationTheme.Auto, BackdropType.Mica, updateAccent: true);
     /// ApplicationAccentColorManager.ApplySystemAccent();
     /// </code>

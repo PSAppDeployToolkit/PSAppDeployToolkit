@@ -34,7 +34,7 @@ using System.Windows.Automation.Peers;
 namespace Fluence.Wpf.Controls
 {
     /// <summary>
-    /// A horizontal trail of crumbs mirroring the WinUI 3 <c>BreadcrumbBar</c>: each item
+    /// A horizontal trail of crumbs mirroring the WinUI 3 <c language="csharp">BreadcrumbBar</c>: each item
     /// renders as a clickable <see cref="BreadcrumbBarItem"/> followed by a chevron separator,
     /// with the last crumb shown as the current location (no trailing chevron, primary text,
     /// SemiBold).

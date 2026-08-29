@@ -36,7 +36,7 @@ namespace Fluence.Wpf.Tests
     /// id and justification; the type is declared here because the tool ships no attribute package.
     /// Test-assembly only.
     /// </summary>
-    /// <param name="ruleId">The Slopwatch rule id to suppress (for example <c>SW001</c>).</param>
+    /// <param name="ruleId">The Slopwatch rule id to suppress (for example <c language="text">SW001</c>).</param>
     /// <param name="justification">Why the flagged pattern is acceptable here.</param>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
     internal sealed class SlopwatchSuppressAttribute(string ruleId, string justification) : Attribute

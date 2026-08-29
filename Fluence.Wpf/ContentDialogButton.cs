@@ -30,7 +30,7 @@ namespace Fluence.Wpf
 {
     /// <summary>
     /// Identifies a command button of a <see cref="Controls.ContentDialog"/>,
-    /// mirroring the WinUI 3 <c>ContentDialogButton</c> enumeration. Used by
+    /// mirroring the WinUI 3 <c language="csharp">ContentDialogButton</c> enumeration. Used by
     /// <see cref="Controls.ContentDialog.DefaultButton"/> to select which button
     /// receives initial focus and responds to the Enter key.
     /// </summary>

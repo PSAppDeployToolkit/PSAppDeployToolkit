@@ -39,9 +39,9 @@ namespace Fluence.Wpf.Helpers
     /// </summary>
     /// <param name="effectiveBackdrop">The backdrop type that will actually be applied after capability downgrade.</param>
     /// <param name="useTransparentBackground">Indicates whether the window's client background must be transparent.</param>
-    /// <param name="backgroundColor">The color that should be set on both <c>Window.Background</c> and <c>HwndSource.CompositionTarget.BackgroundColor</c>.</param>
-    /// <param name="captionColor">The value to write to <c>DWMWA_CAPTION_COLOR</c>.</param>
-    /// <param name="systemBackdropType">The <c>DWMSBT_*</c> value to write via <c>DWMWA_SYSTEMBACKDROP_TYPE</c>, or <see langword="null"/> when the OS does not expose that attribute.</param>
+    /// <param name="backgroundColor">The color that should be set on both <c language="csharp">Window.Background</c> and <c language="csharp">HwndSource.CompositionTarget.BackgroundColor</c>.</param>
+    /// <param name="captionColor">The value to write to <c language="csharp">DWMWA_CAPTION_COLOR</c>.</param>
+    /// <param name="systemBackdropType">The <c language="csharp">DWMSBT_*</c> value to write via <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>, or <see langword="null"/> when the OS does not expose that attribute.</param>
     /// <param name="useLegacyMicaEffect">Indicates whether the legacy 21H2 Mica effect should be applied.</param>
     /// <param name="useImmersiveDarkMode">Indicates whether immersive dark mode should be applied.</param>
     /// <param name="useLegacyAcrylic">Indicates whether the legacy Windows 10 acrylic accent state should be applied.</param>
@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets the <see cref="Color"/> that should be set on both
-        /// <c>Window.Background</c> and <c>HwndSource.CompositionTarget.BackgroundColor</c>.
+        /// <c language="csharp">Window.Background</c> and <c language="csharp">HwndSource.CompositionTarget.BackgroundColor</c>.
         /// <see cref="Colors.Transparent"/> when a system backdrop is active;
         /// the theme fallback color when <see cref="EffectiveBackdrop"/> is
         /// <see cref="BackdropType.None"/>.
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Helpers
         internal Color BackgroundColor { get; private set; } = backgroundColor;
 
         /// <summary>
-        /// Gets the value to write to <c>DWMWA_CAPTION_COLOR</c>.
+        /// Gets the value to write to <c language="csharp">DWMWA_CAPTION_COLOR</c>.
         /// DWMWA_COLOR_NONE when a transparent
         /// backdrop is active (so the system backdrop shows through the caption strip);
         /// DWMWA_COLOR_DEFAULT for
@@ -93,7 +93,7 @@ namespace Fluence.Wpf.Helpers
         internal uint CaptionColor { get; } = captionColor;
 
         /// <summary>
-        /// Gets the <c>DWMSBT_*</c> value to write via <c>DWMWA_SYSTEMBACKDROP_TYPE</c>, or
+        /// Gets the <c language="csharp">DWMSBT_*</c> value to write via <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>, or
         /// <see langword="null"/> when the OS does not expose that attribute (pre-22H2 or
         /// Windows 10). A <see langword="null"/> value must not be written to DWM.
         /// </summary>
@@ -101,15 +101,15 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets a value indicating whether the legacy 21H2 Mica effect
-        /// (<c>DWMWA_MICA_EFFECT</c> attribute 1029) should be applied. <see langword="true"/>
-        /// only on Windows 11 pre-22H2 builds that support <c>DWMWA_MICA_EFFECT</c> but not
-        /// the canonical <c>DWMWA_SYSTEMBACKDROP_TYPE</c>. Mutually exclusive with a non-null
+        /// (<c language="csharp">DWMWA_MICA_EFFECT</c> attribute 1029) should be applied. <see langword="true"/>
+        /// only on Windows 11 pre-22H2 builds that support <c language="csharp">DWMWA_MICA_EFFECT</c> but not
+        /// the canonical <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>. Mutually exclusive with a non-null
         /// <see cref="SystemBackdropType"/>.
         /// </summary>
         internal bool UseLegacyMicaEffect { get; } = useLegacyMicaEffect;
 
         /// <summary>
-        /// Gets a value indicating whether <c>DWMWA_USE_IMMERSIVE_DARK_MODE</c> should be set
+        /// Gets a value indicating whether <c language="csharp">DWMWA_USE_IMMERSIVE_DARK_MODE</c> should be set
         /// on the window handle. <see langword="true"/> when the resolved application theme is
         /// <see cref="ApplicationTheme.Dark"/>; the correct DWM attribute ordinal (19 or 20)
         /// is selected at apply-time by
@@ -119,8 +119,8 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets a value indicating whether the legacy Windows 10 acrylic accent state
-        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c> written through the undocumented
-        /// <c>SetWindowCompositionAttribute</c>) should be applied. <see langword="true"/> only on
+        /// (<c language="csharp">ACCENT_ENABLE_ACRYLICBLURBEHIND</c> written through the undocumented
+        /// <c language="csharp">SetWindowCompositionAttribute</c>) should be applied. <see langword="true"/> only on
         /// a Windows 10 build that supports it, when the requested backdrop is
         /// <see cref="BackdropType.Acrylic"/>, the OS transparency-effects toggle is on, and the
         /// resolved theme is not high contrast. Mutually exclusive with both a non-null
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets the tint color to hand to the legacy acrylic accent policy, packed to the
-        /// <c>0xAABBGGRR</c> gradient color by
+        /// <c language="text">0xAABBGGRR</c> gradient color by
         /// <see cref="Native.NativeMethods.ColorToAbgr"/> at apply time. Only meaningful when
         /// <see cref="UseLegacyAcrylic"/> is <see langword="true"/>; every other plan records
         /// <see cref="Colors.Transparent"/>. Unlike the DWM backdrops, the legacy accent policy has

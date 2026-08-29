@@ -38,8 +38,8 @@ namespace Fluence.Wpf.Theming
     /// <summary>
     /// The single-pipeline theme engine that resolves theme and accent intent into a computed
     /// <see cref="ResourceDictionary"/> and publishes it into application resources. The public
-    /// facades (<c>ApplicationThemeManager</c>, <c>ApplicationAccentColorManager</c>) are thin
-    /// wrappers that delegate to this engine: their <c>Apply</c>/<c>ApplySystemAccent</c> entry
+    /// facades (<c language="csharp">ApplicationThemeManager</c>, <c language="csharp">ApplicationAccentColorManager</c>) are thin
+    /// wrappers that delegate to this engine: their <c language="csharp">Apply</c>/<c language="csharp">ApplySystemAccent</c> entry
     /// points call <see cref="Apply"/>, and they raise their own public events by subscribing to
     /// <see cref="Published"/>.
     /// </summary>
@@ -105,8 +105,8 @@ namespace Fluence.Wpf.Theming
         /// The build is gated on a <see cref="PublishFingerprint"/> of everything that determines the
         /// published output. Windows emits several theme-relevant broadcasts (ImmersiveColorSet,
         /// WM_THEMECHANGED, WM_DWMCOLORIZATIONCOLORCHANGED) for a single user action, and the
-        /// <c>SystemThemeWatcher</c> debounce does not collapse all of them, so an ungated pipeline
-        /// would republish slot [0] repeatedly and force every <c>DynamicResource</c> consumer in the
+        /// <c language="csharp">SystemThemeWatcher</c> debounce does not collapse all of them, so an ungated pipeline
+        /// would republish slot [0] repeatedly and force every <c language="xaml">DynamicResource</c> consumer in the
         /// tree to re-resolve for no visible change. When the fingerprint equals the last one that
         /// was actually published, and that dictionary is still installed at slot [0], the call
         /// returns without touching <see cref="BrushFactory"/>, <see cref="Publish"/>, or
@@ -191,20 +191,20 @@ namespace Fluence.Wpf.Theming
 
         /// <summary>
         /// Builds the computed color + brush <see cref="ResourceDictionary"/> for
-        /// <paramref name="theme"/> using the default Windows accent (<c>#0078D4</c>),
+        /// <paramref name="theme"/> using the default Windows accent (<c language="text">#0078D4</c>),
         /// <b>without</b> publishing into application resources and <b>without</b> reading
         /// <see cref="Application.Current"/>, the registry, or DWM. The default accent is forced
         /// through <see cref="AccentResolver.Resolve"/> with an
         /// <see cref="AccentIntent.FromCustom(Color)"/> intent (the custom path runs the HSV ramp
-        /// generator directly and never touches the registry or <c>DwmGetColorizationParameters</c>),
+        /// generator directly and never touches the registry or <c language="csharp">DwmGetColorizationParameters</c>),
         /// and the title-bar/window-border tokens use their machine-independent theme defaults
-        /// (<c>deterministicChrome</c>). The result is therefore deterministic and headless-safe,
+        /// (<c language="csharp">deterministicChrome</c>). The result is therefore deterministic and headless-safe,
         /// suitable for serializing a static design-time snapshot.
         /// </summary>
         /// <remarks>
         /// Runs the same <see cref="ColorMap.Build"/> -> <see cref="BrushFactory.Build"/> ->
         /// <see cref="SpecialBrushes.Add"/> sequence as the live pipeline so the snapshot stays
-        /// faithful to runtime. It deliberately omits <c>AcrylicNoiseBrush</c> (a runtime-generated
+        /// faithful to runtime. It deliberately omits <c language="xaml">AcrylicNoiseBrush</c> (a runtime-generated
         /// <see cref="ImageBrush"/>), which the live
         /// <see cref="BuildComputedDictionary"/> appends after the fact. Only
         /// <see cref="ApplicationTheme.Light"/> and <see cref="ApplicationTheme.Dark"/> are

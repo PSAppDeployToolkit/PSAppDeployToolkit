@@ -42,7 +42,7 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A contextual tip surface with a title, subtitle, body content, and optional action and
-    /// close buttons, mirroring the WinUI 3 <c>TeachingTip</c> control. The tip is hosted in an
+    /// close buttons, mirroring the WinUI 3 <c language="csharp">TeachingTip</c> control. The tip is hosted in an
     /// internal light-weight <see cref="Popup"/>: when <see cref="Target"/> is set the popup is
     /// anchored to it, centered on the target edge selected by <see cref="PreferredPlacement"/>;
     /// untargeted tips dock to the bottom-right corner of the active window content (or center

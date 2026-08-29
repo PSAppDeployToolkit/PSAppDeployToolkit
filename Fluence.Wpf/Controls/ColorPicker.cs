@@ -51,14 +51,14 @@ namespace Fluence.Wpf.Controls
     /// A control that lets the user pick a color from a saturation/value spectrum, a hue
     /// slider, an optional alpha slider, a current/previous preview swatch row, and a
     /// text-entry area with an RGB/HSV representation selector, per-channel inputs, an
-    /// alpha percentage input, and a hex input, mirroring the WinUI 3 <c>ColorPicker</c>.
+    /// alpha percentage input, and a hex input, mirroring the WinUI 3 <c language="csharp">ColorPicker</c>.
     /// The picker keeps hue, saturation, value, and alpha as its internal source of truth
     /// so dragging across the grey axis does not accumulate RGB round-trip drift, the
     /// same approach WinUI uses.
     /// </summary>
     /// <remarks>
-    /// Scope notes: WinUI's <c>ColorSpectrumShape</c> (the Ring spectrum), the
-    /// <c>ColorSpectrumComponents</c> permutations, <c>Orientation</c>, and the Min/Max
+    /// Scope notes: WinUI's <c language="csharp">ColorSpectrumShape</c> (the Ring spectrum), the
+    /// <c language="csharp">ColorSpectrumComponents</c> permutations, <c language="csharp">Orientation</c>, and the Min/Max
     /// channel range properties are deliberately omitted. The spectrum is fixed to
     /// saturation on the x axis by value on the y axis at the selected hue, with hue on a
     /// horizontal slider serving as the third-dimension color slider. Channel and alpha
@@ -366,7 +366,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the hex text input is shown. The input
-        /// accepts <c>#RRGGBB</c> and <c>#AARRGGBB</c> (the leading <c>#</c> is optional)
+        /// accepts <c language="text">#RRGGBB</c> and <c language="text">#AARRGGBB</c> (the leading <c language="text">#</c> is optional)
         /// and commits on Enter or when keyboard focus leaves the box.
         /// </summary>
         public bool IsHexInputVisible
@@ -876,7 +876,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Formats the current color for the hex input and the automation peer:
-        /// <c>#AARRGGBB</c> when <see cref="IsAlphaEnabled"/>, otherwise <c>#RRGGBB</c>.
+        /// <c language="text">#AARRGGBB</c> when <see cref="IsAlphaEnabled"/>, otherwise <c language="text">#RRGGBB</c>.
         /// </summary>
         internal string GetHexDisplayText()
         {
@@ -1291,7 +1291,7 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Parses <c>#RRGGBB</c> / <c>#AARRGGBB</c> (leading <c>#</c> optional). Six-digit
+        /// Parses <c language="text">#RRGGBB</c> / <c language="text">#AARRGGBB</c> (leading <c language="text">#</c> optional). Six-digit
         /// input is treated as fully opaque.
         /// </summary>
         /// <param name="text">The hex color string to parse.</param>

@@ -30,7 +30,7 @@ namespace Fluence.Wpf
 {
     /// <summary>
     /// Defines where a <see cref="Controls.TeachingTip"/> opens relative to its target,
-    /// mirroring the WinUI 3 <c>TeachingTipPlacementMode</c> contract.
+    /// mirroring the WinUI 3 <c language="csharp">TeachingTipPlacementMode</c> contract.
     /// </summary>
     public enum TeachingTipPlacementMode
     {

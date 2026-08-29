@@ -55,7 +55,7 @@ namespace Fluence.Wpf.Controls
         /// Parameter choices:
         /// <list type="bullet">
         ///   <item><term>CaptionHeight = 0</term><description>
-        ///     Routes all title-bar hits through <c>WM_NCHITTEST</c> so the custom caption can
+        ///     Routes all title-bar hits through <c language="csharp">WM_NCHITTEST</c> so the custom caption can
         ///     distinguish drag, resize, snap, and button regions.
         ///   </description></item>
         ///   <item><term>GlassFrameThickness = -1</term><description>
@@ -73,7 +73,7 @@ namespace Fluence.Wpf.Controls
         ///   </description></item>
         ///   <item><term>CornerRadius = 0</term><description>
         ///     WPF-side rounding is off; rounded corners are driven by
-        ///     <c>DWMWA_WINDOW_CORNER_PREFERENCE</c> to avoid clipping the DWM backdrop.
+        ///     <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c> to avoid clipping the DWM backdrop.
         ///   </description></item>
         /// </list>
         /// </remarks>
@@ -98,18 +98,18 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// When a DWM backdrop is active (<see cref="BackdropType.Mica"/>,
         /// <see cref="BackdropType.Acrylic"/>, <see cref="BackdropType.Tabbed"/>, or
-        /// <see cref="BackdropType.Auto"/>), the thickness is <c>-1</c> so DWM extends the glass
-        /// into the client area and the backdrop shows through. The same <c>-1</c> is used when
+        /// <see cref="BackdropType.Auto"/>), the thickness is <c language="csharp">-1</c> so DWM extends the glass
+        /// into the client area and the backdrop shows through. The same <c language="csharp">-1</c> is used when
         /// the caller requests a drop shadow without a backdrop, because the shadow is rendered
         /// via the DWM glass frame. When neither is active the thickness is a very-thin-but-nonzero
-        /// value (<c>0.00001</c>) so the resize border continues to hit-test while
+        /// value (<c language="csharp">0.00001</c>) so the resize border continues to hit-test while
         /// <see cref="WindowChrome"/>'s renderer does not paint a visible glass-frame artifact.
-        /// This dual-path is intentional: setting <c>-1</c> with
+        /// This dual-path is intentional: setting <c language="csharp">-1</c> with
         /// <see cref="BackdropType.None"/> on Windows 11 renders a visible glass artifact,
         /// so the tiny nonzero value is the correct prevention mechanism.
         /// <para>
         /// The input is the <em>requested</em> backdrop, not the effective one, so a Windows 10
-        /// window that asked for a backdrop it cannot get still receives <c>-1</c>. That is
+        /// window that asked for a backdrop it cannot get still receives <c language="csharp">-1</c>. That is
         /// harmless on Windows 11 and matches the shipped behavior, but it is unverified against
         /// the Windows 10 legacy acrylic path: if visual verification on real Windows 10 hardware
         /// shows a glass-frame artifact around an accent-blurred window, switch this to be driven
@@ -143,8 +143,8 @@ namespace Fluence.Wpf.Controls
         /// <param name="windowState">The current <see cref="WindowState"/>.</param>
         /// <param name="resizeMode">The current <see cref="ResizeMode"/>.</param>
         /// <returns>
-        ///   <c>Thickness(4)</c> when the window can be resized in a normal state;
-        ///   <c>Thickness(0)</c> when maximized, <see cref="ResizeMode.NoResize"/>, or
+        ///   <c language="csharp">Thickness(4)</c> when the window can be resized in a normal state;
+        ///   <c language="csharp">Thickness(0)</c> when maximized, <see cref="ResizeMode.NoResize"/>, or
         ///   <see cref="ResizeMode.CanMinimize"/>.
         /// </returns>
         internal static Thickness GetResizeBorderThickness(WindowState windowState, ResizeMode resizeMode)
@@ -166,15 +166,15 @@ namespace Fluence.Wpf.Controls
         ///     <term>WPF-template border</term>
         ///     <description>
         ///       Active window with accent borders enabled gets a 2 dp border keyed to
-        ///       <c>SystemAccentColorBrush</c>. Inactive windows revert to
-        ///       <c>CardStrokeColorDefaultSolidBrush</c>. Maximized windows get a 0-thick border
+        ///       <c language="xaml">SystemAccentColorBrush</c>. Inactive windows revert to
+        ///       <c language="xaml">CardStrokeColorDefaultSolidBrush</c>. Maximized windows get a 0-thick border
         ///       in every state.
         ///     </description>
         ///   </item>
         ///   <item>
         ///     <term>DWM border color</term>
         ///     <description>
-        ///       When the OS supports <c>DWMWA_BORDER_COLOR</c> and the window is active with
+        ///       When the OS supports <c language="csharp">DWMWA_BORDER_COLOR</c> and the window is active with
         ///       accent borders, the COLORREF derived from <paramref name="accentColor"/> is
         ///       emitted. Otherwise
         ///       DWMWA_COLOR_DEFAULT is used, which tells DWM to
@@ -188,7 +188,7 @@ namespace Fluence.Wpf.Controls
         ///   <see langword="true"/> when <see cref="FluenceWindow"/> is the foreground window.
         /// </param>
         /// <param name="isAccentBorderEnabled">
-        ///   <see langword="true"/> when <c>ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled</c>
+        ///   <see langword="true"/> when <c language="csharp">ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled</c>
         ///   is set.
         /// </param>
         /// <param name="capabilities">The OS capability snapshot.</param>
@@ -229,8 +229,8 @@ namespace Fluence.Wpf.Controls
         ///     <term>Auto / Mica</term>
         ///     <description>
         ///       Resolves to <see cref="BackdropType.Mica"/> when either
-        ///       <c>DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) or the legacy
-        ///       <c>DWMWA_MICA_EFFECT</c> (21H2) is available; falls back to
+        ///       <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) or the legacy
+        ///       <c language="csharp">DWMWA_MICA_EFFECT</c> (21H2) is available; falls back to
         ///       <see cref="BackdropType.None"/> on Windows 10.
         ///     </description>
         ///   </item>
@@ -238,7 +238,7 @@ namespace Fluence.Wpf.Controls
         ///     <term>Acrylic / Tabbed</term>
         ///     <description>
         ///       Passes through on 22H2+. Downgrades to Mica on pre-22H2 Win11 (only
-        ///       <c>DWMWA_MICA_EFFECT</c> is available there). On Windows 10, Acrylic survives as
+        ///       <c language="csharp">DWMWA_MICA_EFFECT</c> is available there). On Windows 10, Acrylic survives as
         ///       itself when the legacy accent path is usable (see
         ///       <see cref="ResolveTransparentBackdrop"/>) and otherwise downgrades to None;
         ///       Tabbed always downgrades to None there, because the legacy accent policy has no
@@ -290,11 +290,11 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// <list type="number">
         ///   <item>
-        ///     <c>DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) expresses both requests natively, so the
+        ///     <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) expresses both requests natively, so the
         ///     request passes through untouched.
         ///   </item>
         ///   <item>
-        ///     <c>DWMWA_MICA_EFFECT</c> (21H2) expresses neither, so both downgrade to the Mica it
+        ///     <c language="csharp">DWMWA_MICA_EFFECT</c> (21H2) expresses neither, so both downgrade to the Mica it
         ///     does express, which is closer to the request than an opaque window.
         ///   </item>
         ///   <item>
@@ -341,15 +341,15 @@ namespace Fluence.Wpf.Controls
         ///     <see cref="ResolveEffectiveBackdrop"/> downgrades the request for the current OS.
         ///   </item>
         ///   <item>
-        ///     <c>None</c> effective backdrop gets a solid fallback background and
+        ///     <c language="csharp">None</c> effective backdrop gets a solid fallback background and
         ///     DWMWA_COLOR_DEFAULT for the caption. On 22H2+ the plan
         ///     emits DWMSBT_NONE to explicitly clear any previous Mica
-        ///     or Acrylic; on Windows 10 no <c>DWMWA_SYSTEMBACKDROP_TYPE</c> write is attempted.
+        ///     or Acrylic; on Windows 10 no <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c> write is attempted.
         ///   </item>
         ///   <item>
-        ///     Mica on pre-22H2 Win11 uses the legacy <c>DWMWA_MICA_EFFECT</c> path
+        ///     Mica on pre-22H2 Win11 uses the legacy <c language="csharp">DWMWA_MICA_EFFECT</c> path
         ///     (<see cref="BackdropPlan.UseLegacyMicaEffect"/> = <see langword="true"/>), never
-        ///     the canonical <c>DWMWA_SYSTEMBACKDROP_TYPE</c>.
+        ///     the canonical <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>.
         ///   </item>
         ///   <item>
         ///     Acrylic that survives on Windows 10 takes the legacy accent path
@@ -357,7 +357,7 @@ namespace Fluence.Wpf.Controls
         ///     DWM attribute at all; the tint travels in the plan instead.
         ///   </item>
         ///   <item>
-        ///     Any other active backdrop maps to a <c>DWMSBT_*</c> value via
+        ///     Any other active backdrop maps to a <c language="csharp">DWMSBT_*</c> value via
         ///     <see cref="MapSystemBackdropType"/>.
         ///   </item>
         /// </list>
@@ -375,7 +375,7 @@ namespace Fluence.Wpf.Controls
         /// </param>
         /// <param name="legacyAcrylicTintColor">
         ///   The tint color to record for the legacy acrylic accent policy, normally the
-        ///   <c>AcrylicBackgroundFillColorDefault</c> theme token. Ignored on every path except the
+        ///   <c language="xaml">AcrylicBackgroundFillColorDefault</c> theme token. Ignored on every path except the
         ///   Windows 10 legacy acrylic one.
         /// </param>
         /// <returns>A <see cref="BackdropPlan"/> describing all DWM writes to perform.</returns>
@@ -465,16 +465,16 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Maps a <see cref="CornerPreference"/> value to the corresponding
-        /// <c>DWMWCP_*</c> constant for <c>DWMWA_WINDOW_CORNER_PREFERENCE</c>.
+        /// <c language="csharp">DWMWCP_*</c> constant for <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>.
         /// </summary>
         /// <remarks>
         /// <see cref="CornerPreference.Default"/> and <see cref="CornerPreference.Round"/> both
-        /// map to DWMWCP_ROUND because <c>Default</c> in the
+        /// map to DWMWCP_ROUND because <c language="csharp">Default</c> in the
         /// Fluence library means "the library default," which is rounded on Windows 11.
         /// </remarks>
         /// <param name="preference">The requested corner style.</param>
-        /// <returns>The <c>DWMWCP_*</c> constant to write via
-        /// <c>DWMWA_WINDOW_CORNER_PREFERENCE</c>.</returns>
+        /// <returns>The <c language="csharp">DWMWCP_*</c> constant to write via
+        /// <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>.</returns>
         internal static DWM_WINDOW_CORNER_PREFERENCE GetCornerPreference(CornerPreference preference)
         {
             return preference switch
@@ -487,12 +487,12 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Maps an effective <see cref="BackdropType"/> to the <c>DWMSBT_*</c> constant for
-        /// <c>DWMWA_SYSTEMBACKDROP_TYPE</c>. Only called when the OS supports that attribute
+        /// Maps an effective <see cref="BackdropType"/> to the <c language="csharp">DWMSBT_*</c> constant for
+        /// <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>. Only called when the OS supports that attribute
         /// (22H2+) and the effective backdrop is not <see cref="BackdropType.None"/>.
         /// </summary>
         /// <param name="backdropType">The effective backdrop type after capability resolution.</param>
-        /// <returns>The <c>DWMSBT_*</c> constant for the system backdrop.</returns>
+        /// <returns>The <c language="csharp">DWMSBT_*</c> constant for the system backdrop.</returns>
         private static DWM_SYSTEMBACKDROP_TYPE MapSystemBackdropType(BackdropType backdropType)
         {
             return backdropType switch

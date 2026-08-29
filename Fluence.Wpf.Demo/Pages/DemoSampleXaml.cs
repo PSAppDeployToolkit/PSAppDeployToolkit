@@ -36,12 +36,12 @@ namespace Fluence.Wpf.Demo.Pages
     internal static class DemoSampleXaml
     {
         /// <summary>
-        /// Wraps a sample body in the canonical UserControl root: the given <c>x:Class</c>,
+        /// Wraps a sample body in the canonical UserControl root: the given <c language="xaml">x:Class</c>,
         /// the WPF presentation and XAML namespaces, and the single
-        /// <c>xmlns:fluence="http://schemas.fluencewpf.com"</c> declaration the library
+        /// <c language="xaml">xmlns:fluence="http://schemas.fluencewpf.com"</c> declaration the library
         /// documents for consumers.
         /// </summary>
-        /// <param name="className">The full <c>x:Class</c> name the sample displays.</param>
+        /// <param name="className">The full <c language="xaml">x:Class</c> name the sample displays.</param>
         /// <param name="body">The sample body markup, newline-terminated.</param>
         internal static string UserControl(string className, string body)
         {

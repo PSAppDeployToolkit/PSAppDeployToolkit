@@ -39,9 +39,9 @@ namespace Fluence.Wpf.Automation
     /// <para>
     /// <see cref="TextBlock"/> wraps a <see cref="System.Windows.Controls.TextBlock"/> inside a
     /// <see cref="System.Windows.Controls.ContentControl"/> template to support the Fluent typography
-    /// ramp. Without this peer, WPF creates a generic peer that reports <c>ControlType.Pane</c>,
+    /// ramp. Without this peer, WPF creates a generic peer that reports <c language="csharp">ControlType.Pane</c>,
     /// placing a spurious container in the UIA tree and breaking
-    /// <c>AutomationProperties.LabeledBy</c> relationships that expect <c>ControlType.Text</c>.
+    /// <c language="xaml">AutomationProperties.LabeledBy</c> relationships that expect <c language="csharp">ControlType.Text</c>.
     /// </para>
     /// <para>
     /// Only <see cref="TextBlock"/> instances with an explicit

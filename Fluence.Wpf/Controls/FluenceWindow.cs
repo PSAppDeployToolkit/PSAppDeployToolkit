@@ -771,7 +771,7 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Strips the native window buttons (and <c>WS_SYSMENU</c>) so the OS caption never paints
+        /// Strips the native window buttons (and <c language="csharp">WS_SYSMENU</c>) so the OS caption never paints
         /// over the custom chrome.
         /// </summary>
         private void HideNativeCaptionButtons()
@@ -909,9 +909,9 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <remarks>
         /// The clear branch is guarded on <see cref="_legacyAcrylicActive"/> rather than run
-        /// unconditionally, because writing <c>ACCENT_DISABLED</c> to a window that never had an
+        /// unconditionally, because writing <c language="csharp">ACCENT_DISABLED</c> to a window that never had an
         /// accent policy is a pointless call on every apply, and on Windows 11 it would fight the
-        /// DWM system backdrop. It is the direct analogue of the explicit <c>DWMSBT_NONE</c> write
+        /// DWM system backdrop. It is the direct analogue of the explicit <c language="csharp">DWMSBT_NONE</c> write
         /// on 22H2+: the accent policy is sticky on the handle, so swapping away from Acrylic has
         /// to remove it rather than simply stop setting it.
         /// </remarks>
@@ -957,7 +957,7 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// Unlike the DWM system backdrops, the legacy accent policy supplies no tint of its own:
         /// without one the window shows raw blurred desktop. The
-        /// <c>AcrylicBackgroundFillColorDefault</c> token carries the WinUI tint including its
+        /// <c language="xaml">AcrylicBackgroundFillColorDefault</c> token carries the WinUI tint including its
         /// alpha, and that alpha is used as-is. Some reference implementations scale the token's
         /// alpha by a further constant (iNKORE uses 0.8) to compensate for the legacy blur being
         /// weaker than DWM acrylic; Fluence does not, so a Windows 10 window matches the token that
@@ -1050,19 +1050,19 @@ namespace Fluence.Wpf.Controls
         /// SizeToContent-driven resize the root visual's arrange lags one layout pass behind the new
         /// client size: the HWND (and <see cref="FrameworkElement.ActualWidth"/> /
         /// <see cref="FrameworkElement.ActualHeight"/>) already reflect the grown size while the
-        /// template root <c>Border</c> is still arranged to the previous, smaller desired size. The
+        /// template root <c language="xaml">Border</c> is still arranged to the previous, smaller desired size. The
         /// gap reads as a rounded accent border floating inside the DWM border (set via
-        /// <c>DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
-        /// longer coincide. An interactive resize hides it because it ends with a real <c>WM_SIZE</c>
+        /// <c language="csharp">DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
+        /// longer coincide. An interactive resize hides it because it ends with a real <c language="csharp">WM_SIZE</c>
         /// that re-arranges the content; a SizeToContent first paint or auto-grow never produces that
-        /// <c>WM_SIZE</c>.
+        /// <c language="csharp">WM_SIZE</c>.
         /// <para>
         /// The correction directly arranges the single visual child to a rect of the window's current
         /// <see cref="FrameworkElement.ActualWidth"/> x <see cref="FrameworkElement.ActualHeight"/>
-        /// (which equal the client area in DIPs), reproducing the re-arrange a real <c>WM_SIZE</c>
+        /// (which equal the client area in DIPs), reproducing the re-arrange a real <c language="csharp">WM_SIZE</c>
         /// would trigger without freezing <see cref="Window.SizeToContent"/> - so the window still
         /// grows when its content grows and stays single-bordered after growing. The
-        /// <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
+        /// <c language="csharp">SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
         /// render with the borders coincident, and a re-entrancy guard prevents the child arrange from
         /// recursing through <see cref="FrameworkElement.SizeChanged"/>.
         /// </para>
@@ -1342,13 +1342,13 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// Windows 10 acrylic is composited per-frame against the desktop behind the window, so a
         /// drag makes the OS re-sample and re-blur continuously and the window visibly lags the
-        /// cursor. <c>ACCENT_ENABLE_BLURBEHIND</c> is the classic Aero blur: same shape, far cheaper
+        /// cursor. <c language="csharp">ACCENT_ENABLE_BLURBEHIND</c> is the classic Aero blur: same shape, far cheaper
         /// to composite, and close enough in appearance that the swap reads as a slight softening
         /// rather than as a mode change. The cheaper-still option is
-        /// <c>ACCENT_ENABLE_GRADIENT</c> with the opaque theme color, which removes the blur cost
+        /// <c language="csharp">ACCENT_ENABLE_GRADIENT</c> with the opaque theme color, which removes the blur cost
         /// entirely but pops visibly at both ends of the drag; switch to it only if the blur still
         /// lags on the target hardware. Neither this message nor its partner is marked handled: the
-        /// window still needs WPF's and <c>WindowChrome</c>'s ordinary move/size processing.
+        /// window still needs WPF's and <c language="csharp">WindowChrome</c>'s ordinary move/size processing.
         /// </remarks>
         private void DowngradeLegacyAcrylicForDrag()
         {
@@ -1379,7 +1379,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Clamps the maximized rectangle to the nearest monitor's work area in response to
-        /// <c>WM_GETMINMAXINFO</c>: positions/sizes to the work area, applies the auto-hide-taskbar
+        /// <c language="csharp">WM_GETMINMAXINFO</c>: positions/sizes to the work area, applies the auto-hide-taskbar
         /// shift when the work area covers the whole monitor, and enforces the window's
         /// Min/Max width/height on the native resize track (DPI-scaled). Marks the message handled so
         /// the clamped values are honoured.
@@ -1474,7 +1474,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Handles a click released over the snap-layout max/restore hit area
-        /// (<c>WM_NCLBUTTONUP</c> with <c>HTMAXBUTTON</c>) by toggling the window state through the
+        /// (<c language="csharp">WM_NCLBUTTONUP</c> with <c language="csharp">HTMAXBUTTON</c>) by toggling the window state through the
         /// same direct path as the command handlers and refreshing the caption buttons.
         /// </summary>
         /// <param name="handled">Indicates whether the click was handled.</param>
@@ -1497,10 +1497,10 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Maps a screen-space <c>WM_NCHITTEST</c> point to a hit-test result for the custom caption.
+        /// Maps a screen-space <c language="csharp">WM_NCHITTEST</c> point to a hit-test result for the custom caption.
         /// Resolution order: the top resize band wins first; then the Windows 11 snap-layout flyout
-        /// over the max/restore button (<c>HTMAXBUTTON</c>); minimize and close fall through to 0 so
-        /// the WPF buttons fire; the remaining title-bar area returns <c>HTCAPTION</c> for dragging
+        /// over the max/restore button (<c language="csharp">HTMAXBUTTON</c>); minimize and close fall through to 0 so
+        /// the WPF buttons fire; the remaining title-bar area returns <c language="csharp">HTCAPTION</c> for dragging
         /// unless it is over interactive content or the window is not moveable.
         /// </summary>
         /// <param name="lParam">The message parameter containing the screen-space point.</param>
@@ -1566,7 +1566,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Resolves whether <paramref name="point"/> falls in the top resize band and, if so, which
-        /// resize hit (<c>HTTOP</c>, <c>HTTOPLEFT</c>, or <c>HTTOPRIGHT</c>) applies. The band is
+        /// resize hit (<c language="csharp">HTTOP</c>, <c language="csharp">HTTOPLEFT</c>, or <c language="csharp">HTTOPRIGHT</c>) applies. The band is
         /// suppressed when the window is maximized or not resizable.
         /// </summary>
         /// <param name="point">The point to test, in window coordinates.</param>
@@ -1760,7 +1760,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Maximizes the window through the direct <see cref="Window.WindowState"/> path (plus a
-        /// native <c>ShowWindow</c> belt-and-braces call) and refreshes the caption buttons.
+        /// native <c language="csharp">ShowWindow</c> belt-and-braces call) and refreshes the caption buttons.
         /// </summary>
         private void MaximizeWindowDirect()
         {
@@ -1774,7 +1774,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Restores the window through the direct <see cref="Window.WindowState"/> path (plus a
-        /// native <c>ShowWindow</c> belt-and-braces call) and refreshes the caption buttons.
+        /// native <c language="csharp">ShowWindow</c> belt-and-braces call) and refreshes the caption buttons.
         /// </summary>
         private void RestoreWindowDirect()
         {

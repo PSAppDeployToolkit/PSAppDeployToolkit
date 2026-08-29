@@ -205,7 +205,7 @@ namespace Fluence.Wpf.Tests
         }
 
         /// <summary>
-        /// Setting <c>AutomationProperties.Name</c> makes the image meaningful, so it must appear in
+        /// Setting <c language="xaml">AutomationProperties.Name</c> makes the image meaningful, so it must appear in
         /// both automation views and report that name.
         /// </summary>
         [Fact]

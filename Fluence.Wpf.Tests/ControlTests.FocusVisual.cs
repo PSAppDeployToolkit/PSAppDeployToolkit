@@ -38,7 +38,7 @@ namespace Fluence.Wpf.Tests
     /// <summary>
     /// WI-3 A1-A4 tests: per-control focus visual style dedup.
     /// Verifies Button, CheckBox, RadioButton, and ToggleButton all use the
-    /// shared <c>DefaultControlFocusVisualStyle</c> resource rather than
+    /// shared <c language="xaml">DefaultControlFocusVisualStyle</c> resource rather than
     /// per-control duplicates.
     /// </summary>
     public partial class ControlTests

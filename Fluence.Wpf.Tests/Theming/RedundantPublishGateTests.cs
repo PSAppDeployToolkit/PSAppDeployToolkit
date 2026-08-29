@@ -242,7 +242,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// re-enters through <see cref="ApplicationThemeManager.Apply"/> with an unchanged request.
         /// When a fingerprint input moved anyway (the OS accent palette, the Settings "Transparency
         /// effects" toggle), the resulting publish must raise Changed even though the requested
-        /// theme and backdrop did not move, because <c>FluenceWindow</c> re-applies its backdrop
+        /// theme and backdrop did not move, because <c language="csharp">FluenceWindow</c> re-applies its backdrop
         /// only from Changed. The moved input is simulated by re-pointing the accent intent without
         /// an apply, so exactly one publish-relevant input changes between two identical requests.
         /// </summary>
@@ -390,7 +390,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// <summary>
         /// The resolved theme is part of the fingerprint in its own right: two runs that somehow
         /// produced the same color map under different themes still select different
-        /// <c>SpecialBrushes</c> branches and must not be treated as interchangeable.
+        /// <c language="csharp">SpecialBrushes</c> branches and must not be treated as interchangeable.
         /// </summary>
         [Fact]
         public Task Fingerprint_SameColorsDifferentTheme_DoesNotMatchAsync()
@@ -436,8 +436,8 @@ namespace Fluence.Wpf.Tests.Theming
 
         /// <summary>
         /// Guards the fingerprint's SystemColors snapshot against drift: every live
-        /// <see cref="SystemColors"/> member that <c>SpecialBrushes.cs</c> reads must also be
-        /// captured by <c>PublishFingerprint.cs</c>, or a high-contrast variant switch that moves
+        /// <see cref="SystemColors"/> member that <c language="text">SpecialBrushes.cs</c> reads must also be
+        /// captured by <c language="text">PublishFingerprint.cs</c>, or a high-contrast variant switch that moves
         /// only the missing member would be swallowed by the redundant-publish gate. The two lists
         /// are compile-time property accesses with no runtime registry to diff, so this scans the
         /// two source files and compares the referenced member sets.
@@ -466,7 +466,7 @@ namespace Fluence.Wpf.Tests.Theming
         }
 
         /// <summary>
-        /// Collects every <c>SystemColors.XxxColor</c> member referenced in the given C# source.
+        /// Collects every <c language="csharp">SystemColors.XxxColor</c> member referenced in the given C# source.
         /// </summary>
         /// <param name="source">The C# source text to scan.</param>
         private static HashSet<string> ExtractSystemColorMembers(string source)

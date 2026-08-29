@@ -30,7 +30,7 @@ namespace Fluence.Wpf
 {
     /// <summary>
     /// Specifies the result of a <see cref="Controls.ContentDialog"/> interaction,
-    /// mirroring the WinUI 3 <c>ContentDialogResult</c> enumeration.
+    /// mirroring the WinUI 3 <c language="csharp">ContentDialogResult</c> enumeration.
     /// </summary>
     public enum ContentDialogResult
     {

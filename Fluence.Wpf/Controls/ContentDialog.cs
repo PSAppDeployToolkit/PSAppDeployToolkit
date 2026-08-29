@@ -45,9 +45,9 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A modal dialog with a title area, arbitrary body content, and up to three command
-    /// buttons, mirroring the WinUI 3 <c>ContentDialog</c> control. While open the dialog sits
+    /// buttons, mirroring the WinUI 3 <c language="csharp">ContentDialog</c> control. While open the dialog sits
     /// above a smoke layer that dims and blocks everything behind it: over a window that exposes
-    /// a full-window overlay host (a FluenceWindow <c>PART_DialogOverlayHost</c>) the smoke
+    /// a full-window overlay host (a FluenceWindow <c language="xaml">PART_DialogOverlayHost</c>) the smoke
     /// covers the entire window, title bar included; over a plain window it is hosted in the
     /// content adorner layer. A tunneling input guard additionally blocks any press outside the
     /// dialog. The owner's visual tree is never restructured. The body uses the inherited
@@ -861,7 +861,7 @@ namespace Fluence.Wpf.Controls
         /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this dialog's automation peer
         /// so Narrator announces the dialog by its <see cref="Title"/> (the peer name) the moment it
         /// opens. This is the net472-safe substitute for the .NET Framework 4.8
-        /// <c>AutomationProperties.IsDialog</c> announcement, paired with the assertive live setting
+        /// <c language="xaml">AutomationProperties.IsDialog</c> announcement, paired with the assertive live setting
         /// declared in the static constructor. Uses only net472-safe APIs (no RaiseNotificationEvent).
         /// </summary>
         private void AnnounceLiveRegion()
@@ -1208,7 +1208,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Hosts the smoke layer and the centered dialog inside the owner window's adorner
-        /// layer. The smoke Border paints <c>SmokeFillColorDefaultBrush</c> across the full
+        /// layer. The smoke Border paints <c language="xaml">SmokeFillColorDefaultBrush</c> across the full
         /// adorned bounds and stays hit-test visible so it blocks mouse input to the window
         /// content beneath; Tab navigation is trapped inside the layout root.
         /// </summary>

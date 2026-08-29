@@ -34,7 +34,7 @@ namespace Fluence.Wpf.Automation
     /// <summary>
     /// Exposes <see cref="ColorPicker"/> to UI Automation as a group whose name reflects
     /// the selected color as a hex string (eight digits when alpha editing is enabled,
-    /// six otherwise), unless an explicit <c>AutomationProperties.Name</c> is set. The
+    /// six otherwise), unless an explicit <c language="xaml">AutomationProperties.Name</c> is set. The
     /// inner sliders and hex text box surface their own interaction patterns.
     /// </summary>
     /// <remarks>Initializes a new instance.</remarks>

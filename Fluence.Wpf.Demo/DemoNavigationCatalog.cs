@@ -35,16 +35,16 @@ namespace Fluence.Wpf.Demo
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Every entry in <see cref="Items"/> drives one row in the left-pane <c>NavigationView</c>.
-    /// The <c>Route</c> property of each entry is the key that <c>MainWindow.CreatePageForRoute</c>
+    /// Every entry in <see cref="Items"/> drives one row in the left-pane <c language="csharp">NavigationView</c>.
+    /// The <c language="csharp">Route</c> property of each entry is the key that <c language="csharp">MainWindow.CreatePageForRoute</c>
     /// uses in its switch to instantiate the matching gallery page. To add a new gallery page:
     /// <list type="number">
-    ///   <item><description>Add a new <see cref="DemoNavigationItem"/> to the <c>CatalogItems</c> array below.</description></item>
-    ///   <item><description>Add a corresponding <see langword="case"/> to <c>MainWindow.CreatePageForRoute</c>.</description></item>
+    ///   <item><description>Add a new <see cref="DemoNavigationItem"/> to the <c language="csharp">CatalogItems</c> array below.</description></item>
+    ///   <item><description>Add a corresponding <see langword="case"/> to <c language="csharp">MainWindow.CreatePageForRoute</c>.</description></item>
     /// </list>
     /// The Settings page is intentionally absent from this list because it lives in the
-    /// <c>NavigationView.FooterMenuItems</c> slot and is registered separately in
-    /// <c>MainWindow.PopulateNavigation</c>.
+    /// <c language="xaml">NavigationView.FooterMenuItems</c> slot and is registered separately in
+    /// <c language="csharp">MainWindow.PopulateNavigation</c>.
     /// </para>
     /// </remarks>
     public static class DemoNavigationCatalog

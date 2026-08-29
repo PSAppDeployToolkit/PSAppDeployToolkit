@@ -33,9 +33,9 @@ namespace Fluence.Wpf.Automation
 {
     /// <summary>
     /// Automation peer for <see cref="FontIcon"/> that excludes the purely decorative glyph from the
-    /// UI Automation control and content views, matching WinUI's <c>AccessibilityView="Raw"</c> behavior.
+    /// UI Automation control and content views, matching WinUI's <c language="xaml">AccessibilityView="Raw"</c> behavior.
     /// The glyph carries no meaning of its own; the labelled parent control (for example a
-    /// <see cref="System.Windows.Controls.Button"/> with an <c>AutomationProperties.Name</c>) is what
+    /// <see cref="System.Windows.Controls.Button"/> with an <c language="xaml">AutomationProperties.Name</c>) is what
     /// screen readers announce.
     /// </summary>
     /// <remarks>Initializes a new instance.</remarks>

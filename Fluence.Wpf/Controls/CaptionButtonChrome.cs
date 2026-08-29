@@ -35,7 +35,7 @@ namespace Fluence.Wpf.Controls
     /// caption button as a function of <see cref="ResizeMode"/> and <see cref="WindowState"/>.
     /// These baselines are then blended with the explicit per-DP overrides
     /// (<see cref="FluenceWindow.IsMinimizeButtonVisible"/> etc.) in
-    /// <c>FluenceWindow.UpdateCaptionButtons</c>.
+    /// <c language="csharp">FluenceWindow.UpdateCaptionButtons</c>.
     /// </summary>
     internal static class CaptionButtonChrome
     {

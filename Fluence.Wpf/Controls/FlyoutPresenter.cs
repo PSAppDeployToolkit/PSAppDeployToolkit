@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Displays the content of a <see cref="Flyout"/> on the canonical Fluent flyout surface
     /// (flyout background fill, flyout stroke, overlay corner radius). The themed template
-    /// lives in <c>Themes/Controls/FlyoutPresenter.xaml</c>.
+    /// lives in <c language="text">Themes/Controls/FlyoutPresenter.xaml</c>.
     /// </summary>
     [TemplatePart(Name = PresenterSurfacePart, Type = typeof(Border))]
     [TemplatePart(Name = PresenterTranslatePart, Type = typeof(TranslateTransform))]

@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Demo
         public string Title { get; } = title;
 
         /// <summary>
-        /// Gets the route key used by <c>MainWindow.CreatePageForRoute</c> to instantiate the
+        /// Gets the route key used by <c language="csharp">MainWindow.CreatePageForRoute</c> to instantiate the
         /// correct gallery page. Must match a case in that switch exactly.
         /// </summary>
         public string Route { get; } = route;

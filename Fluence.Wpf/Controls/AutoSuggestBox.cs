@@ -49,7 +49,7 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A text input control that shows a light-dismiss list of suggestions while the user
-    /// types, mirroring the WinUI 3 <c>AutoSuggestBox</c>. The application drives filtering
+    /// types, mirroring the WinUI 3 <c language="csharp">AutoSuggestBox</c>. The application drives filtering
     /// by handling <see cref="TextChanged"/> and updating <see cref="ItemsSource"/>; the
     /// control opens the suggestion list while it has keyboard focus and suggestions exist.
     /// </summary>

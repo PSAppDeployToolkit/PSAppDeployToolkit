@@ -301,7 +301,7 @@ namespace Fluence.Wpf.Tests
         /// gating fields remain stable). Asserted indirectly by confirming HelpText stays
         /// consistent (the idempotent path) and that the control compiles and functions with
         /// the gating fields present. A reliable in-process event-frequency count via
-        /// <c>AutomationEventHandler</c> requires an out-of-process UIA client because the
+        /// <c language="csharp">AutomationEventHandler</c> requires an out-of-process UIA client because the
         /// WPF automation event bus does not deliver events back to in-process listeners on
         /// net472 without the COM server running; therefore, this test validates observable
         /// state invariants rather than raw event counts.

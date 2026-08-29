@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Native
     /// The native interop surface for <see cref="Controls.FluenceWindow"/> and its
     /// policy/capability helpers: DWM backdrop and frame attributes, UxTheme caption suppression,
     /// immersive color queries, monitor and taskbar geometry, layered-window presentation, and the
-    /// <c>RtlGetVersion</c> OS-build probe. Every method is best-effort and handle-safe so it can be
+    /// <c language="csharp">RtlGetVersion</c> OS-build probe. Every method is best-effort and handle-safe so it can be
     /// called from a presentation path without throwing.
     /// </summary>
     internal static class NativeMethods
@@ -105,7 +105,7 @@ namespace Fluence.Wpf.Native
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="data">The attribute id and its payload pointer.</param>
-        /// <returns>A non-zero <c>BOOL</c> on success.</returns>
+        /// <returns>A non-zero <c language="csharp">BOOL</c> on success.</returns>
         [DllImport("user32.dll", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WINDOWCOMPOSITIONATTRIBDATA data);
 
@@ -147,16 +147,16 @@ namespace Fluence.Wpf.Native
 
         /// <summary>
         /// Applies an <see cref="ACCENT_POLICY"/> to a window through
-        /// <c>SetWindowCompositionAttribute</c>. The policy is pinned through a
+        /// <c language="csharp">SetWindowCompositionAttribute</c>. The policy is pinned through a
         /// <see cref="GCHandle"/> for the duration of the call rather than copied into unmanaged
         /// memory, so there is no allocation to leak on an exception path and no
         /// <see langword="unsafe"/> block; the handle is released in a
         /// <see langword="finally"/> clause.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
-        /// <param name="accentState">One of the <c>ACCENT_*</c> constants on this class.</param>
+        /// <param name="accentState">One of the <c language="csharp">ACCENT_*</c> constants on this class.</param>
         /// <param name="gradientColorAbgr">
-        ///   The tint color packed as <c>0xAABBGGRR</c>, normally produced by
+        ///   The tint color packed as <c language="text">0xAABBGGRR</c>, normally produced by
         ///   <see cref="ColorToAbgr"/>. Ignored by accent states that do not tint.
         /// </param>
         /// <returns><see langword="true"/> when the call succeeds.</returns>
@@ -193,14 +193,14 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Packs a <see cref="System.Windows.Media.Color"/> into the <c>0xAABBGGRR</c> layout that
+        /// Packs a <see cref="System.Windows.Media.Color"/> into the <c language="text">0xAABBGGRR</c> layout that
         /// <see cref="ACCENT_POLICY.GradientColor"/> expects. Unlike
         /// <see cref="ColorToColorRef"/> the alpha channel is meaningful here: it is the opacity of
         /// the tint composited over the blurred desktop, so dropping it would produce a fully
         /// transparent (invisible) tint rather than an opaque one.
         /// </summary>
         /// <param name="color">The source color.</param>
-        /// <returns>The packed <c>0xAABBGGRR</c> value.</returns>
+        /// <returns>The packed <c language="text">0xAABBGGRR</c> value.</returns>
         public static uint ColorToAbgr(System.Windows.Media.Color color)
         {
             return ((uint)color.A << 24) | ((uint)color.B << 16) | ((uint)color.G << 8) | color.R;
@@ -212,12 +212,12 @@ namespace Fluence.Wpf.Native
 
         /// <summary>
         /// Sets a 4-byte DWM window attribute and reports success. The value is copied into a local
-        /// so it can be passed by reference, matching the <c>ref int pvAttribute</c> DWM contract.
+        /// so it can be passed by reference, matching the <c language="csharp">ref int pvAttribute</c> DWM contract.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
-        /// <param name="attribute">The <c>DWMWA_*</c> attribute id.</param>
+        /// <param name="attribute">The <c language="csharp">DWMWA_*</c> attribute id.</param>
         /// <param name="value">The 4-byte value to set.</param>
-        /// <returns><see langword="true"/> when DWM returns <c>S_OK</c>.</returns>
+        /// <returns><see langword="true"/> when DWM returns <c language="csharp">S_OK</c>.</returns>
         public static bool SetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, uint value)
         {
             Span<byte> valueSpan = stackalloc byte[sizeof(uint)];
@@ -227,10 +227,10 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Sets the rounded-corner preference (one of the <c>DWMWCP_*</c> values).
+        /// Sets the rounded-corner preference (one of the <c language="csharp">DWMWCP_*</c> values).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
-        /// <param name="cornerPreference">The <c>DWMWCP_*</c> value.</param>
+        /// <param name="cornerPreference">The <c language="csharp">DWMWCP_*</c> value.</param>
         /// <returns><see langword="true"/> on success.</returns>
         public static bool SetWindowCornerPreference(IntPtr hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPreference)
         {
@@ -246,7 +246,7 @@ namespace Fluence.Wpf.Native
         /// or the dark caption silently fails to apply. This selector is pure so it can be unit
         /// tested without a window handle.
         /// </summary>
-        /// <param name="osBuild">The OS build number (for example <c>18985</c>).</param>
+        /// <param name="osBuild">The OS build number (for example <c language="csharp">18985</c>).</param>
         /// <returns>The DWM attribute id to pass to DwmSetWindowAttribute.</returns>
         public static DWMWINDOWATTRIBUTE GetImmersiveDarkModeAttribute(int osBuild)
         {
@@ -269,10 +269,10 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Sets the DWM system backdrop type (one of the <c>DWMSBT_*</c> values).
+        /// Sets the DWM system backdrop type (one of the <c language="csharp">DWMSBT_*</c> values).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
-        /// <param name="backdropType">The <c>DWMSBT_*</c> value.</param>
+        /// <param name="backdropType">The <c language="csharp">DWMSBT_*</c> value.</param>
         /// <returns><see langword="true"/> on success.</returns>
         public static bool SetSystemBackdropType(IntPtr hwnd, DWM_SYSTEMBACKDROP_TYPE backdropType)
         {
@@ -316,7 +316,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Toggles the legacy Windows 11 21H2 Mica effect (<c>DWMWA_MICA_EFFECT</c>).
+        /// Toggles the legacy Windows 11 21H2 Mica effect (<c language="csharp">DWMWA_MICA_EFFECT</c>).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="enabled"><see langword="true"/> to enable legacy Mica.</param>
@@ -329,7 +329,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Sets the title-bar caption color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).
+        /// Sets the title-bar caption color (a <c language="csharp">COLORREF</c> or a <c language="csharp">DWMWA_COLOR_*</c> sentinel).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="color">The caption color value.</param>
@@ -341,11 +341,11 @@ namespace Fluence.Wpf.Native
 
         /// <summary>
         /// Suppresses Win32 default non-client caption drawing so the DWM backdrop shows
-        /// through cleanly. Best-effort: classic themes return <c>S_FALSE</c> which is treated
+        /// through cleanly. Best-effort: classic themes return <c language="csharp">S_FALSE</c> which is treated
         /// as a no-op success.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
-        /// <returns><see langword="true"/> when the attribute applied (<c>S_OK</c> or <c>S_FALSE</c>).</returns>
+        /// <returns><see langword="true"/> when the attribute applied (<c language="csharp">S_OK</c> or <c language="csharp">S_FALSE</c>).</returns>
         public static bool SuppressNonClientCaptionDraw(IntPtr hwnd)
         {
             if (hwnd == IntPtr.Zero)
@@ -364,7 +364,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Sets the window border color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).
+        /// Sets the window border color (a <c language="csharp">COLORREF</c> or a <c language="csharp">DWMWA_COLOR_*</c> sentinel).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="color">The border color value.</param>
@@ -376,7 +376,7 @@ namespace Fluence.Wpf.Native
 
         /// <summary>
         /// Extends the DWM frame across the entire client area (the "sheet of glass" margins of
-        /// <c>-1</c> on every edge), letting the backdrop composite behind the whole window.
+        /// <c language="csharp">-1</c> on every edge), letting the backdrop composite behind the whole window.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -388,7 +388,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Packs a <see cref="System.Windows.Media.Color"/> into the <c>0x00BBGGRR</c> COLORREF
+        /// Packs a <see cref="System.Windows.Media.Color"/> into the <c language="text">0x00BBGGRR</c> COLORREF
         /// layout that DWM color attributes such as DWMWA_BORDER_COLOR
         /// expect; the alpha channel is ignored. Despite the historical "ABGR" naming, the byte
         /// order produced here is COLORREF, so callers must not reuse it for an attribute that
@@ -412,7 +412,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Rounds the window corners with the full radius (<c>DWMWCP_ROUND</c>).
+        /// Rounds the window corners with the full radius (<c language="csharp">DWMWCP_ROUND</c>).
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -426,7 +426,7 @@ namespace Fluence.Wpf.Native
         #region Window style and presentation helpers
 
         /// <summary>
-        /// Strips <c>WS_SYSMENU</c> from the window style so the native caption (and its buttons)
+        /// Strips <c language="csharp">WS_SYSMENU</c> from the window style so the native caption (and its buttons)
         /// stops painting over the custom Fluent caption.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
@@ -437,13 +437,13 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Minimizes a window through the native <c>ShowWindow</c> API. Used as a belt-and-braces
+        /// Minimizes a window through the native <c language="csharp">ShowWindow</c> API. Used as a belt-and-braces
         /// fallback from the custom caption's minimize handler so minimize is guaranteed to work
-        /// even when the chrome has stripped <c>WS_SYSMENU</c>/<c>WS_MINIMIZEBOX</c> (which blocks
-        /// <c>SC_MINIMIZE</c> via <c>DefWindowProc</c>), the window is <c>NoResize</c>, topmost, or
-        /// shown via <c>ShowDialog()</c> inside a nested dispatcher frame. <c>ShowWindow</c> honors
-        /// <c>SW_MINIMIZE</c> regardless of window styles, so it cannot be silently gated the way
-        /// <c>WM_SYSCOMMAND</c> can.
+        /// even when the chrome has stripped <c language="csharp">WS_SYSMENU</c>/<c language="csharp">WS_MINIMIZEBOX</c> (which blocks
+        /// <c language="csharp">SC_MINIMIZE</c> via <c language="csharp">DefWindowProc</c>), the window is <c language="csharp">NoResize</c>, topmost, or
+        /// shown via <c language="csharp">ShowDialog()</c> inside a nested dispatcher frame. <c language="csharp">ShowWindow</c> honors
+        /// <c language="csharp">SW_MINIMIZE</c> regardless of window styles, so it cannot be silently gated the way
+        /// <c language="csharp">WM_SYSCOMMAND</c> can.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> when the window is (or becomes) minimized.</returns>
@@ -453,7 +453,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Maximizes a window through the native <c>ShowWindow</c> API.
+        /// Maximizes a window through the native <c language="csharp">ShowWindow</c> API.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> when the window is (or becomes) maximized.</returns>
@@ -463,7 +463,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Restores a window through the native <c>ShowWindow</c> API.
+        /// Restores a window through the native <c language="csharp">ShowWindow</c> API.
         /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> when the restore call succeeds.</returns>
@@ -500,9 +500,9 @@ namespace Fluence.Wpf.Native
         /// geometry, converted from device pixels to DIPs. This method is pure so the conversion
         /// can be unit tested without a window handle or a live desktop.
         /// </summary>
-        /// <param name="sizeFrameX">The horizontal size frame in device pixels (<c>SM_CXSIZEFRAME</c>).</param>
-        /// <param name="sizeFrameY">The vertical size frame in device pixels (<c>SM_CYSIZEFRAME</c>).</param>
-        /// <param name="paddedBorder">The border padding in device pixels (<c>SM_CXPADDEDBORDER</c>).</param>
+        /// <param name="sizeFrameX">The horizontal size frame in device pixels (<c language="csharp">SM_CXSIZEFRAME</c>).</param>
+        /// <param name="sizeFrameY">The vertical size frame in device pixels (<c language="csharp">SM_CYSIZEFRAME</c>).</param>
+        /// <param name="paddedBorder">The border padding in device pixels (<c language="csharp">SM_CXPADDEDBORDER</c>).</param>
         /// <param name="dpiScaleX">The horizontal device-pixels-per-DIP scale factor.</param>
         /// <param name="dpiScaleY">The vertical device-pixels-per-DIP scale factor.</param>
         /// <returns>The maximized content inset in DIPs.</returns>
@@ -525,7 +525,7 @@ namespace Fluence.Wpf.Native
 
         /// <summary>
         /// Reads the live resize-frame system metrics and returns the maximized content inset in
-        /// DIPs. <c>GetSystemMetrics</c> reports failure by returning zero rather than by setting
+        /// DIPs. <c language="csharp">GetSystemMetrics</c> reports failure by returning zero rather than by setting
         /// an error code, so a zero in any of the three metrics is treated as a failed read and the
         /// whole result degrades to <see cref="FallbackMaximizedFrameMargin"/>. That is deliberately
         /// conservative: a visual theme that genuinely reports a zero padded border gets an inset
@@ -534,7 +534,7 @@ namespace Fluence.Wpf.Native
         /// </summary>
         /// <remarks>
         /// Prefer the <see cref="GetMaximizedFrameMargin(IntPtr)"/> overload whenever a window
-        /// handle is available. <c>GetSystemMetrics</c> answers at the process system DPI, which
+        /// handle is available. <c language="csharp">GetSystemMetrics</c> answers at the process system DPI, which
         /// under per-monitor v2 awareness is not the DPI of the monitor the window is on, so
         /// dividing its result by that window's scale mixes two DPIs and produces a wrong inset on
         /// every monitor but the primary one. This overload stays for the handle-less case, where
@@ -560,12 +560,12 @@ namespace Fluence.Wpf.Native
         /// overload every realised window should use.
         /// </summary>
         /// <remarks>
-        /// The metrics have to be asked for at the window's own DPI. <c>GetSystemMetrics</c> is
+        /// The metrics have to be asked for at the window's own DPI. <c language="csharp">GetSystemMetrics</c> is
         /// answered at the DPI the process was awarded at start-up, so under per-monitor v2
         /// awareness it keeps reporting primary-monitor pixels while the window lives on a monitor
         /// at another scale; dividing those pixels by the window's scale then yields an inset that
-        /// is wrong by the ratio between the two DPIs. <c>GetSystemMetricsForDpi</c> reports the
-        /// same metrics at an explicit DPI, so pairing it with <c>GetDpiForWindow</c> keeps both
+        /// is wrong by the ratio between the two DPIs. <c language="csharp">GetSystemMetricsForDpi</c> reports the
+        /// same metrics at an explicit DPI, so pairing it with <c language="csharp">GetDpiForWindow</c> keeps both
         /// halves of the conversion on the same monitor. Both APIs ship in Windows 10 1607, below
         /// the library's 1809 baseline. A DPI read of zero (an unrealised or already destroyed
         /// handle) falls back to 96, which reproduces the unscaled metrics.
@@ -595,11 +595,11 @@ namespace Fluence.Wpf.Native
         #region OS version and taskbar helpers
 
         /// <summary>
-        /// Reads the true OS version via <c>RtlGetVersion</c>, which (unlike the manifest-shimmed
-        /// <c>GetVersionEx</c>) reports the real build number the DWM feature gates depend on.
+        /// Reads the true OS version via <c language="csharp">RtlGetVersion</c>, which (unlike the manifest-shimmed
+        /// <c language="csharp">GetVersionEx</c>) reports the real build number the DWM feature gates depend on.
         /// </summary>
         /// <returns>The OS version (major, minor, build, revision).</returns>
-        /// <exception cref="InvalidOperationException">Thrown when <c>RtlGetVersion</c> fails.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when <c language="csharp">RtlGetVersion</c> fails.</exception>
         public static Version GetRealOsVersion()
         {
             OSVERSIONINFOW versionInfo = new()
@@ -630,7 +630,7 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Returns the screen edge (one of the <c>ABE_*</c> values) on which the auto-hide
+        /// Returns the screen edge (one of the <c language="csharp">ABE_*</c> values) on which the auto-hide
         /// taskbar is docked, or <see langword="null"/> when the taskbar is not auto-hide or the
         /// query is unavailable.
         /// </summary>
@@ -659,7 +659,7 @@ namespace Fluence.Wpf.Native
         /// maximized window does not fully cover the taskbar, which would block its hover-reveal.
         /// </summary>
         /// <param name="mmi">The min/max info whose maximized rect is adjusted in place.</param>
-        /// <param name="edge">The auto-hide taskbar edge (one of the <c>ABE_*</c> values).</param>
+        /// <param name="edge">The auto-hide taskbar edge (one of the <c language="csharp">ABE_*</c> values).</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3532:Empty \"default\" clauses should be removed", Justification = "This is deliberate.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1070:Remove redundant default switch section", Justification = "This is deliberate.")]
         public static void ApplyAutoHideTaskbarShift(ref MINMAXINFO mmi, uint edge)
