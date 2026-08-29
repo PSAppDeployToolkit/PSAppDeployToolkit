@@ -18,6 +18,7 @@
     <Project Path="tests/PSADT.ClientServer.Server.Tests/PSADT.ClientServer.Server.Tests.csproj" />
     <Project Path="tests/PSADT.CodeAnalysis.Tests/PSADT.CodeAnalysis.Tests.csproj" />
     <Project Path="tests/PSADT.Interop.Tests/PSADT.Interop.Tests.csproj" />
+    <Project Path="tests/PSADT.PowerShellTestFixture.Tests/PSADT.PowerShellTestFixture.Tests.csproj" />
     <Project Path="tests/PSADT.Tests/PSADT.Tests.csproj" />
     <Project Path="tests/PSADT.UserInterface.Interfaces.Tests/PSADT.UserInterface.Interfaces.Tests.csproj" />
     <Project Path="tests/PSADT.UserInterface.Tests/PSADT.UserInterface.Tests.csproj" />
