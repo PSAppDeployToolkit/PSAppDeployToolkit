@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +32,7 @@ namespace PSADT.UserInterface.DialogOptions
             (string?)options["AppIconDarkImage"],
             (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
             (string?)options["AppTaskbarIconImage"],
-            (bool?)options["DialogTopMost"] ?? false,
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
             (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
             (int?)options["FluentAccentColor"],
             (int?)options["FluentAccentColorDark"],

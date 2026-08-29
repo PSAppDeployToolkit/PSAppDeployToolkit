@@ -196,23 +196,24 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         }
 
         /// <summary>
-        /// Records that this type alone defaults the top-most flag instead of requiring it.
+        /// Verifies that the top-most flag is required here as it is everywhere else.
         /// </summary>
         /// <remarks>
-        /// Every other <c>BaseDialogOptions</c> derivative throws when <c>DialogTopMost</c> is absent;
-        /// this one reads it as false. Stated rather than corrected, because either could be the intended
-        /// behaviour and only the toolkit's authors know which: a list selection dialog that quietly
-        /// opens behind another window is a real difference from one that refuses to open at all.
+        /// This type used to read an absent <c>DialogTopMost</c> as false while every other
+        /// <c>BaseDialogOptions</c> derivative refused to build without it. The difference was not
+        /// harmless: a list selection dialog that quietly opened behind another window would leave a
+        /// deployment waiting on an answer the user could not see they were being asked for.
         /// </remarks>
         [Fact]
-        public void Constructor_DefaultsTheTopMostFlagWhereItsSiblingsRequireIt()
+        public void Constructor_RequiresTheTopMostFlagAsItsSiblingsDo()
         {
             // Arrange
             Hashtable table = SampleOptions.ListSelectionDialog();
             table.Remove("DialogTopMost");
 
             // Act & Assert
-            Assert.False(new ListSelectionDialogOptions(table).DialogTopMost);
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => new ListSelectionDialogOptions(table));
+            Assert.Contains("DialogTopMost", exception.Message, StringComparison.Ordinal);
         }
     }
 }
