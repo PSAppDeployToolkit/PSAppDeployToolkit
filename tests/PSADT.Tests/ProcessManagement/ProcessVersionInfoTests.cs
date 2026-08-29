@@ -57,15 +57,21 @@ namespace PSADT.Tests.ProcessManagement
             // Act
             ProcessVersionInfo actual = ProcessVersionInfo.GetVersionInfo(current);
 
-            // Assert: the strings
-            Assert.Equal(expected.CompanyName, actual.CompanyName);
-            Assert.Equal(expected.FileDescription, actual.FileDescription);
-            Assert.Equal(expected.FileVersion, actual.FileVersion);
-            Assert.Equal(expected.InternalName, actual.InternalName);
-            Assert.Equal(expected.LegalCopyright, actual.LegalCopyright);
-            Assert.Equal(expected.OriginalFilename, actual.OriginalFilename);
-            Assert.Equal(expected.ProductName, actual.ProductName);
-            Assert.Equal(expected.ProductVersion, actual.ProductVersion);
+            // Assert: the strings. Blank is normalised on both sides because the two readers disagree
+            // about how to report a field the resource does not carry: this type reports null, while
+            // FileVersionInfo reports an empty string for some builds and null for others.
+            static string? Absent(string? value)
+            {
+                return !string.IsNullOrWhiteSpace(value) ? value : null;
+            }
+            Assert.Equal(Absent(expected.CompanyName), Absent(actual.CompanyName));
+            Assert.Equal(Absent(expected.FileDescription), Absent(actual.FileDescription));
+            Assert.Equal(Absent(expected.FileVersion), Absent(actual.FileVersion));
+            Assert.Equal(Absent(expected.InternalName), Absent(actual.InternalName));
+            Assert.Equal(Absent(expected.LegalCopyright), Absent(actual.LegalCopyright));
+            Assert.Equal(Absent(expected.OriginalFilename), Absent(actual.OriginalFilename));
+            Assert.Equal(Absent(expected.ProductName), Absent(actual.ProductName));
+            Assert.Equal(Absent(expected.ProductVersion), Absent(actual.ProductVersion));
 
             // Assert: the numbers
             Assert.Equal(expected.FileMajorPart, actual.FileMajorPart);
@@ -77,13 +83,12 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal(expected.ProductBuildPart, actual.ProductBuildPart);
             Assert.Equal(expected.ProductPrivatePart, actual.ProductPrivatePart);
 
-            // Assert: the strings a build only sometimes carries, which are absent far more often than not
-            // and so are the ones most likely to be read from the wrong place without anybody noticing
-            Assert.Equal(expected.Comments, actual.Comments);
-            Assert.Equal(expected.LegalTrademarks, actual.LegalTrademarks);
-            Assert.Equal(expected.PrivateBuild, actual.PrivateBuild);
-            Assert.Equal(expected.SpecialBuild, actual.SpecialBuild);
-            Assert.Equal(expected.Language, actual.Language);
+            // Assert: the strings a build only sometimes carries
+            Assert.Equal(Absent(expected.Comments), Absent(actual.Comments));
+            Assert.Equal(Absent(expected.LegalTrademarks), Absent(actual.LegalTrademarks));
+            Assert.Equal(Absent(expected.PrivateBuild), Absent(actual.PrivateBuild));
+            Assert.Equal(Absent(expected.SpecialBuild), Absent(actual.SpecialBuild));
+            Assert.Equal(Absent(expected.Language), Absent(actual.Language));
 
             // Assert: the flags
             Assert.Equal(expected.IsDebug, actual.IsDebug);
