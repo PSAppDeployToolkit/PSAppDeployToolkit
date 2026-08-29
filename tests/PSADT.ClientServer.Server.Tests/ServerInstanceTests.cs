@@ -1,16 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
+using PSADT.ClientServer.Payloads;
 using PSADT.ClientServer.Server.Tests.TestHelpers;
+using PSADT.PowerShellTestFixture;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
+using PSAppDeployToolkit.Foundation;
+using PSAppDeployToolkit.Logging;
 using Xunit;
 
 namespace PSADT.ClientServer.Server.Tests
@@ -42,8 +50,11 @@ namespace PSADT.ClientServer.Server.Tests
     /// application domain shutting down, which cannot be brought about without ending the test run.
     /// </para>
     /// </remarks>
+    /// <param name="powerShell">The hosted engine, shared across the collection, for the tests that need a
+    /// deployment session to exist.</param>
+    [Collection(PowerShellCollection.Name)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
-    public sealed class ServerInstanceTests
+    public sealed class ServerInstanceTests(PowerShellFixture powerShell)
     {
         /// <summary>
         /// Verifies that no user at all is refused, since an instance has nobody to run a client as without
@@ -306,6 +317,212 @@ namespace PSADT.ClientServer.Server.Tests
             Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserFocusModeStateAsync().ConfigureAwait(true)).ConfigureAwait(true));
             Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserToastNotificationModeAsync().ConfigureAwait(true)).ConfigureAwait(true));
             Assert.Null(instance.GetLogWriterException());
+        }
+
+        /// <summary>
+        /// Verifies that a log frame is taken off the stream even when there is no session to write it to.
+        /// </summary>
+        /// <remarks>
+        /// The reason the reading of a frame and the decision about what to do with it are two separate things.
+        /// A client writes to the log stream throughout a deployment whether or not this end currently has a
+        /// session to record them against, so a frame has to be consumed either way - a stream nobody drains
+        /// fills, and a client blocked writing to a full stream stops answering commands.
+        /// <para>
+        /// Ordering is what is asserted, and it is invisible from outside: both orders behave identically to
+        /// every caller of the server. So the read is handed in, and what is checked is that it happened at all.
+        /// A well-formed frame is used rather than an empty one, so the frame being ignored cannot be put down
+        /// to there being nothing in it.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_ReadsTheFrameEvenWithNoSessionToWriteItTo()
+        {
+            // Arrange: no deployment session is active, since nothing in this assembly seats one.
+            Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            int reads = 0;
+            byte[] frame = DataSerialization.SerializeToBytes(new LogMessagePayload("a message", LogSeverity.Info, "a source"));
+            ValueTask<byte[]> ReadFrameAsync()
+            {
+                reads++;
+                return new ValueTask<byte[]>(frame);
+            }
+
+            // Act
+            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(1, reads);
+        }
+
+        /// <summary>
+        /// Verifies that one call reads one frame, however many the client has waiting.
+        /// </summary>
+        /// <remarks>
+        /// The loop that calls this decides when to stop, by cancellation or by the stream ending. Reading more
+        /// than one frame per call would take that decision away from it and read past the point it was told to
+        /// give up.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_ReadsExactlyOneFramePerCall()
+        {
+            // Arrange
+            int reads = 0;
+            ValueTask<byte[]> ReadFrameAsync()
+            {
+                reads++;
+                return new ValueTask<byte[]>([]);
+            }
+
+            // Act
+            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
+            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(2, reads);
+        }
+
+        /// <summary>
+        /// Verifies that a failure to read is passed on as it was, rather than dressed up.
+        /// </summary>
+        /// <remarks>
+        /// The loop around this tells three kinds of failure apart: cancellation and the end of the stream mean
+        /// the client has finished and the loop stops quietly, while anything else is a fault worth reporting.
+        /// It can only do that if the exception reaches it as itself, so wrapping one here would turn an
+        /// ordinary shutdown into a reported failure.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_PassesOnAFailureToReadAsItWas()
+        {
+            // Assert: the two that mean the client has finished.
+            _ = await Assert.ThrowsAsync<EndOfStreamException>(
+                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new EndOfStreamException()).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = await Assert.ThrowsAsync<OperationCanceledException>(
+                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new OperationCanceledException()).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert: and one that does not.
+            _ = await Assert.ThrowsAsync<InvalidDataException>(
+                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new InvalidDataException()).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that a frame read while a session is active is written to it.
+        /// </summary>
+        /// <remarks>
+        /// The other side of the same decision, and the part that has to be right for a client's own logging to
+        /// appear in a deployment's log at all. Three values travel in the frame and three are handed to the
+        /// session; two of them are strings, so a pair passed the wrong way round would compile and would write a
+        /// log line attributed to its own message.
+        /// <para>
+        /// The message is trimmed on the way through, which is why one arrives padded here: a client writing a
+        /// line already ended by the log writer would otherwise leave the spacing in the middle of the file.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_WritesTheFrameToTheActiveSession()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            DirectoryInfo temp = NewScratchDirectory();
+            try
+            {
+                using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(ScratchConfiguration(temp), powerShell.NewEnvironmentTable());
+                DeploymentSession session = NewSession();
+                database.Sessions.Add(session);
+                int written = session.GetLogBuffer().Count;
+                byte[] frame = DataSerialization.SerializeToBytes(new LogMessagePayload("   a client said this   ", LogSeverity.Warning, "Invoke-SomethingOnTheClient"));
+
+                // Act
+                await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true);
+
+                // Assert
+                LogEntry entry = Assert.Single(session.GetLogBuffer().Skip(written));
+                Assert.Equal("a client said this", entry.Message);
+                Assert.Equal(LogSeverity.Warning, entry.Severity);
+                Assert.Equal("Invoke-SomethingOnTheClient", entry.Source);
+            }
+            finally
+            {
+                temp.Delete(recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that an empty frame is read but written nowhere.
+        /// </summary>
+        /// <remarks>
+        /// A frame with nothing in it carries no log message to deserialize, so there is nothing to write and
+        /// attempting it would fail rather than do nothing. Asserted with a session present, since without one
+        /// nothing would be written whatever the frame held.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadLogFrameAsync_WritesNothingForAnEmptyFrame()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            DirectoryInfo temp = NewScratchDirectory();
+            try
+            {
+                using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(ScratchConfiguration(temp), powerShell.NewEnvironmentTable());
+                DeploymentSession session = NewSession();
+                database.Sessions.Add(session);
+                int written = session.GetLogBuffer().Count;
+
+                // Act
+                await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>([])).ConfigureAwait(true);
+
+                // Assert
+                Assert.Equal(written, session.GetLogBuffer().Count);
+            }
+            finally
+            {
+                temp.Delete(recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// Builds a session for the log frame reader to write into.
+        /// </summary>
+        /// <returns>The session.</returns>
+        private static DeploymentSession NewSession()
+        {
+            return new DeploymentSession(
+                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "AppName", "TestApp" },
+                    { "AppVersion", "1.0.0" },
+                    { "DeployMode", DeployMode.Silent },
+                },
+                noExitOnClose: true,
+                compatibilityMode: false);
+        }
+
+        /// <summary>
+        /// Creates a directory for a session to log into, outside anything the machine depends on.
+        /// </summary>
+        /// <returns>The directory, which the caller removes.</returns>
+        private static DirectoryInfo NewScratchDirectory()
+        {
+            return new DirectoryInfo(Path.GetTempPath()).CreateSubdirectory($"PSADT.ClientServer.Server.Tests_{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}");
+        }
+
+        /// <summary>
+        /// A configuration logging into a scratch directory and reading deferral history from a key that does not
+        /// exist.
+        /// </summary>
+        /// <param name="temp">The directory to log into.</param>
+        /// <returns>The configuration.</returns>
+        private static ModuleConfiguration ScratchConfiguration(DirectoryInfo temp)
+        {
+            return new ModuleConfiguration
+            {
+                LogPath = temp.FullName,
+                RegPath = @"HKCU:\SOFTWARE\PSADT.ClientServer.Server.Tests",
+            };
         }
 
         /// <summary>

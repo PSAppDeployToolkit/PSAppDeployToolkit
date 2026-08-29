@@ -59,18 +59,20 @@ namespace PSADT.ClientServer
             {
                 // Read the log stream until cancellation is requested or the end of the stream is reached.
                 ObjectDisposedException.ThrowIf(_disposed, this);
+
+                // Set up the required delegate for ReadLogFrameAsync, materialised to minimise per-loop allocations.
+                ValueTask<byte[]> ReadFrameAsync()
+                {
+                    return _logEncryption.ReadEncryptedAsync(_logServer);
+                }
+                Func<ValueTask<byte[]>> readFrameAsync = ReadFrameAsync;
+
+                // Spin until cancellation is requested or we've reached the end of stream.
                 while (!_logWriterTaskCts.IsCancellationRequested)
                 {
                     try
                     {
-                        // Read and decrypt the log message, then process it if a deployment session is active.
-                        // We must read it before if there's a deployment session active to clear the queue.
-                        if (await _logEncryption.ReadEncryptedAsync(_logServer).ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
-                        {
-                            // Deserialize the log message DTO.
-                            LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
-                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
-                        }
+                        await ReadLogFrameAsync(readFrameAsync).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
@@ -798,6 +800,27 @@ namespace PSADT.ClientServer
                 {
                     return;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Reads one log frame from the client and writes it to the active deployment session, if there is one.
+        /// </summary>
+        /// <remarks>The read is performed first and unconditionally, and must stay that way. The client writes to
+        /// the log stream whether or not this end has a session to write them to, so a frame has to be taken off
+        /// the stream either way; gating the read on there being a session would leave the stream undrained and
+        /// eventually block the client on it. Separated from the loop that calls it so that ordering can be
+        /// asserted, which it cannot be from outside.</remarks>
+        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream.</param>
+        /// <returns>A task that completes once the frame has been read and, where there was somewhere to put it,
+        /// written.</returns>
+        internal static async Task ReadLogFrameAsync(Func<ValueTask<byte[]>> readFrameAsync)
+        {
+            if (await readFrameAsync().ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
+            {
+                // Deserialize the log message DTO.
+                LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
+                ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
             }
         }
 

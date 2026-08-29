@@ -7,6 +7,31 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
+  </ItemGroup>
+
+  <!--
+    ModuleDatabase holds its state in a PSObject, so touching it loads System.Management.Automation. The log
+    frame reader consults it to decide whether there is a session to write to, which means testing that reader
+    needs the assembly present: Windows PowerShell has it in the GAC, and .NET does not have it at all unless
+    it is brought in. The server only ever runs hosted inside PowerShell, so this is a fact about testing it
+    rather than about running it.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="PowerShellStandard.Library" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.PowerShell.SDK" />
+  </ItemGroup>
+
+  <!--
+    The fixture's script module has to sit beside this assembly rather than only beside the fixture's own, for
+    the reason given in the same place in PSAppDeployToolkit.Tests: a ProjectReference copies the assembly but
+    not its Content, and the fixture looks for the module where its own assembly was loaded from.
+  -->
+  <ItemGroup>
+    <Content Include="..\..\src\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
   <!--
