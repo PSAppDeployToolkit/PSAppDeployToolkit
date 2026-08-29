@@ -271,16 +271,16 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         }
 
         /// <summary>
-        /// Verifies that an update mentioning no alignment puts both labels back to centred.
+        /// Verifies that an update mentioning no alignment leaves the alignment alone.
         /// </summary>
         /// <remarks>
-        /// Recorded rather than endorsed. Every other part of an update leaves what it does not mention
-        /// alone, and alignment does not: an update that only changes the message silently re-centres a
-        /// dialog the caller had left-aligned. Whether that is wanted is a product question, but it is
-        /// a real difference in behaviour between one argument and its neighbours.
+        /// Absent means "leave it alone" for every part of an update, and alignment is no exception. It
+        /// used to be: the alignment was reapplied on every update and fell back to centred whenever one
+        /// was not supplied, so an update that only changed the message silently re-centred a dialog the
+        /// caller had left-aligned.
         /// </remarks>
         [Fact]
-        public void UpdateProgress_ResetsAlignmentWhenAnUpdateDoesNotMentionIt()
+        public void UpdateProgress_LeavesAlignmentAloneWhenAnUpdateDoesNotMentionIt()
         {
             // Arrange
             using ProgressDialog dialog = Build(SampleOptions.ProgressDialog());
@@ -290,7 +290,8 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
             DialogHost.Run(() => dialog.UpdateProgress("Still working"));
 
             // Assert
-            Assert.Equal(ContentAlignment.TopCenter, FormControls.Find<Label>(dialog, "labelMessage").TextAlign);
+            Assert.Equal(ContentAlignment.TopLeft, FormControls.Find<Label>(dialog, "labelMessage").TextAlign);
+            Assert.Equal(ContentAlignment.TopLeft, FormControls.Find<Label>(dialog, "labelDetail").TextAlign);
         }
 
         /// <summary>
