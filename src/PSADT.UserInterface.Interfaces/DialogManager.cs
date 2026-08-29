@@ -352,10 +352,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
         internal static Task UpdateProgressDialogAsync(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
-            if (progressDialog is null)
-            {
-                throw new InvalidOperationException("Cannot update a progress dialog while one is not open.");
-            }
+            // Validate all arguments before checking the state of the progress dialog.
             if (progressMessage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
@@ -364,9 +361,17 @@ namespace PSADT.UserInterface.Interfaces
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
             }
-            return progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0)
-                ? throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.")
-                : InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
+            if (progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.");
+            }
+            if (progressDialog is null)
+            {
+                throw new InvalidOperationException("Cannot update a progress dialog while one is not open.");
+            }
+
+            // Update the progress dialog and return the task representing the asynchronous operation.
+            return InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
         }
 
         /// <summary>

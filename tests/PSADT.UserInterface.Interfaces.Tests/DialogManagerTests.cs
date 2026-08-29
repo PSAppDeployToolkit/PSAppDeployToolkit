@@ -151,23 +151,41 @@ namespace PSADT.UserInterface.Interfaces.Tests
         }
 
         /// <summary>
-        /// Records that the state check is made before the arguments are looked at.
+        /// Verifies that a bad request is reported as a bad request, not as a missing dialog.
         /// </summary>
         /// <remarks>
-        /// Both update methods check whether the thing they are updating exists before they validate
-        /// what they were asked to set it to, so a caller that gets both wrong is told about the missing
-        /// dialog and not about the empty message. That is the opposite of the usual order - arguments
-        /// first, then state - and it means the argument guards on these two methods are unreachable
-        /// until something is actually on screen. The guards themselves are covered where they can be
-        /// reached, on the progress dialogs' own update methods.
+        /// Both update methods validate what they were asked to set before checking whether the thing to
+        /// set it on exists. A caller who gets both wrong is therefore told what is wrong with the
+        /// request rather than discovering the second fault only after fixing the first. It also keeps
+        /// these guards reachable at all: while the state check answered first, nothing that was not
+        /// already on screen could ever reach them.
         /// </remarks>
         [Fact]
-        public void StateChecks_AreMadeBeforeTheArgumentsAreLookedAt()
+        public void ArgumentChecks_AreMadeBeforeTheStateIsLookedAt()
         {
             // Act & Assert
-            _ = Assert.Throws<InvalidOperationException>(Calling(static () => DialogManager.UpdateProgressDialogAsync("   ")));
-            _ = Assert.Throws<InvalidOperationException>(Calling(static () => DialogManager.UpdateProgressDialogAsync(progressPercentage: 150.0)));
-            _ = Assert.Throws<InvalidOperationException>(Calling(static () => DialogManager.UpdateNotifyIconAsync("   ")));
+            _ = Assert.Throws<ArgumentException>(Calling(static () => DialogManager.UpdateProgressDialogAsync("   ")));
+            _ = Assert.Throws<ArgumentException>(Calling(static () => DialogManager.UpdateProgressDialogAsync(progressDetailMessage: "   ")));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(Calling(static () => DialogManager.UpdateProgressDialogAsync(progressPercentage: 150.0)));
+            _ = Assert.Throws<ArgumentException>(Calling(static () => DialogManager.UpdateNotifyIconAsync("   ")));
+        }
+
+        /// <summary>
+        /// Verifies that a percentage inside the range gets past the argument checks to the state check.
+        /// </summary>
+        /// <remarks>
+        /// The other half of the pair above. Without it, a guard that rejected everything would pass the
+        /// rejection tests and nothing would notice.
+        /// </remarks>
+        /// <param name="percentage">The percentage to send.</param>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(50.0)]
+        [InlineData(100.0)]
+        public void ArgumentChecks_LetAValidRequestReachTheStateCheck(double percentage)
+        {
+            // Act & Assert
+            _ = Assert.Throws<InvalidOperationException>(Calling(() => DialogManager.UpdateProgressDialogAsync(progressPercentage: percentage)));
         }
 
         /// <summary>
