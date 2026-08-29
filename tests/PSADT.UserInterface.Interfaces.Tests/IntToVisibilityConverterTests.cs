@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows;
 using Xunit;
@@ -15,7 +14,6 @@ namespace PSADT.UserInterface.Interfaces.Tests
     /// anyone would see. The type test it does rather than a cast is what keeps that from happening, so
     /// the awkward inputs are covered here alongside the ordinary ones.
     /// </remarks>
-    [SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "The converter declares its value and parameter as non-nullable, but WPF calls it with null for both - an unbound source and an absent ConverterParameter. Reaching the behaviour that actually ships therefore requires passing nulls the signature says are impossible.")]
     public sealed class IntToVisibilityConverterTests
     {
         /// <summary>
@@ -29,7 +27,7 @@ namespace PSADT.UserInterface.Interfaces.Tests
         public void Convert_ShowsWhenTheCountIsAboveZero(int count)
         {
             // Act
-            object result = new IntToVisibilityConverter().Convert(count, typeof(Visibility), null!, CultureInfo.InvariantCulture);
+            object result = new IntToVisibilityConverter().Convert(count, typeof(Visibility), parameter: null, CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(Visibility.Visible, result);
@@ -46,7 +44,7 @@ namespace PSADT.UserInterface.Interfaces.Tests
         public void Convert_CollapsesWhenTheCountIsNotAboveZero(int count)
         {
             // Act
-            object result = new IntToVisibilityConverter().Convert(count, typeof(Visibility), null!, CultureInfo.InvariantCulture);
+            object result = new IntToVisibilityConverter().Convert(count, typeof(Visibility), parameter: null, CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(Visibility.Collapsed, result);
@@ -74,7 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Tests
         public void Convert_CollapsesAnythingThatIsNotAnInt(object? value)
         {
             // Act
-            object result = new IntToVisibilityConverter().Convert(value!, typeof(Visibility), null!, CultureInfo.InvariantCulture);
+            object result = new IntToVisibilityConverter().Convert(value, typeof(Visibility), parameter: null, CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(Visibility.Collapsed, result);
@@ -100,8 +98,8 @@ namespace PSADT.UserInterface.Interfaces.Tests
             IntToVisibilityConverter converter = new();
 
             // Act
-            object visible = converter.Convert(1, typeof(Visibility), parameter!, CultureInfo.InvariantCulture);
-            object collapsed = converter.Convert(0, typeof(Visibility), parameter!, CultureInfo.InvariantCulture);
+            object visible = converter.Convert(1, typeof(Visibility), parameter, CultureInfo.InvariantCulture);
+            object collapsed = converter.Convert(0, typeof(Visibility), parameter, CultureInfo.InvariantCulture);
 
             // Assert
             Assert.Equal(Visibility.Visible, visible);
@@ -115,7 +113,7 @@ namespace PSADT.UserInterface.Interfaces.Tests
         public void ConvertBack_IsNotSupported()
         {
             // Act & Assert
-            _ = Assert.Throws<NotSupportedException>(static () => new IntToVisibilityConverter().ConvertBack(Visibility.Visible, typeof(int), null!, CultureInfo.InvariantCulture));
+            _ = Assert.Throws<NotSupportedException>(static () => new IntToVisibilityConverter().ConvertBack(Visibility.Visible, typeof(int), parameter: null, CultureInfo.InvariantCulture));
         }
     }
 }

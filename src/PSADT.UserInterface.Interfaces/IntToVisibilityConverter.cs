@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.Interfaces
     /// <summary>
     /// Converts a count to a <see cref="Visibility"/>, showing an element only when the count is above zero.
     /// </summary>
-    /// <remarks>The conversion is one-way and takes no converter parameter. A value that is not an <see cref="int"/> - including a boxed <see cref="long"/> or <see cref="uint"/>, and null - converts to <see cref="Visibility.Collapsed"/> rather than throwing.</remarks>
+    /// <remarks>The conversion is one-way and takes no converter parameter. A value that is not an <see cref="int"/> - including a boxed <see cref="long"/> or <see cref="uint"/>, and null - converts to <see cref="Visibility.Collapsed"/> rather than throwing. The value and the parameter are annotated as nullable because WPF supplies null for both: the first for a binding with no source value, the second whenever no ConverterParameter was given.</remarks>
     public sealed class IntToVisibilityConverter : IValueConverter
     {
         /// <summary>
@@ -22,7 +22,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="culture">The culture to use in the converter. This parameter is not used.</param>
         /// <returns>Returns <see cref="Visibility.Visible"/> if the input value is an integer greater than zero; otherwise,
         /// returns <see cref="Visibility.Collapsed"/>.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return value as int? > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="culture">The culture to use in the conversion. This parameter is not used.</param>
         /// <returns>This method does not return; it always throws.</returns>
         /// <exception cref="NotSupportedException">Thrown in all cases, as this method is not implemented.</exception>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
         }
