@@ -937,12 +937,24 @@ namespace PSADT.ClientServer
                 // Assume it's a registry key if it starts with HKEY, otherwise assume it's a file path or literal string.
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
-                    // Provided value is a registry key path.
+                    // Provided value is a registry key path. Opening it throws for a key that isn't there,
+                    // which is the same failure as a value that isn't there and is reported as such.
                     int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
-                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue[..lastBackslashIndex]);
-                    return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], defaultValue: null) is not string argvDictContent
-                        ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
-                        : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
+                    RegistryKey registryKey;
+                    try
+                    {
+                        registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue[..lastBackslashIndex]);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments, ex);
+                    }
+                    using (registryKey)
+                    {
+                        return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], defaultValue: null) is not string argvDictContent
+                            ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
+                            : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
+                    }
                 }
                 return DeserializeString<ReadOnlyDictionary<string, string>>(File.Exists(argvDictValue)
                     ? File.ReadAllText(argvDictValue)
