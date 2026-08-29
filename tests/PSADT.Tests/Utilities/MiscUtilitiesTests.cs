@@ -10,7 +10,7 @@ namespace PSADT.Tests.Utilities
     /// Tests the line trimming and base64 decoding helpers.
     /// </summary>
     /// <remarks>
-    /// The line trimming is what <c>ProcessResult</c> puts every captured output stream through, so its
+    /// The line trimming is what <c language="csharp">ProcessResult</c> puts every captured output stream through, so its
     /// exact behaviour decides what a caller sees from a launched process. Three things are easy to get
     /// wrong and are covered deliberately: interior blank lines must survive, trailing whitespace is
     /// stripped per line while leading whitespace is not, and the string overload re-joins with the

@@ -532,7 +532,7 @@ namespace PSADT.Tests.FileSystem
         /// Skipped when the machine has none of the candidates. The fixture deliberately excludes operating
         /// system binaries: they are signed through the system catalogues rather than in the image, and the
         /// check under test asks for a file-based verification that does not consult those, so
-        /// <c>notepad.exe</c> reports as untrusted despite being signed.
+        /// <c language="text">notepad.exe</c> reports as untrusted despite being signed.
         /// </remarks>
         [Fact(Skip = "No binary with an embedded Authenticode signature was found on this machine.", SkipUnless = nameof(TestEnvironment.HasEmbeddedSignedExecutable), SkipType = typeof(TestEnvironment))]
         public void IsAuthenticodeTrusted_ReportsASignedBinaryAsTrusted()

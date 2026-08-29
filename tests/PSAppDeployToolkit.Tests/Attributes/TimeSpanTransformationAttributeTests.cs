@@ -28,8 +28,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// </summary>
         /// <remarks>
         /// This was the bug. <see cref="TimeSpan.TryParse(string, out TimeSpan)"/> accepts a bare integer and reads it
-        /// as whole days, and it used to run before the numeric fallbacks - so <c>-CloseProcessesCountdown '90'</c> meant
-        /// ninety days while <c>-CloseProcessesCountdown 90</c> meant ninety seconds, a factor of 86,400 apart with no
+        /// as whole days, and it used to run before the numeric fallbacks - so <c language="powershell">-CloseProcessesCountdown '90'</c> meant
+        /// ninety days while <c language="powershell">-CloseProcessesCountdown 90</c> meant ninety seconds, a factor of 86,400 apart with no
         /// error either way.
         /// </remarks>
         /// <param name="input">The string the caller supplied.</param>
@@ -53,7 +53,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// </summary>
         /// <remarks>
         /// The numeric read is deliberately invariant rather than culture-sensitive. Under the current culture,
-        /// <c>"10.5"</c> is ten and a half on an English machine and one hundred and five on a German one, where the
+        /// <c language="powershell">"10.5"</c> is ten and a half on an English machine and one hundred and five on a German one, where the
         /// point is a thousands separator - so a script would mean different things on different agents.
         /// </remarks>
         /// <param name="culture">The culture to read under.</param>
@@ -149,7 +149,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// <remarks>
         /// Everything crossing the engine boundary arrives wrapped, so an attribute that did not unwrap would refuse
         /// every real argument. Wrapped with <see cref="PSObject.AsPSObject"/> rather than the constructor:
-        /// <c>new PSObject(30)</c> binds to a different overload on PowerShell 7 and leaves the value unwrapped, so a
+        /// <c language="csharp">new PSObject(30)</c> binds to a different overload on PowerShell 7 and leaves the value unwrapped, so a
         /// test written that way passes on .NET Framework and fails on .NET for a reason that has nothing to do with
         /// the code under test.
         /// </remarks>
@@ -198,7 +198,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// </summary>
         /// <remarks>
         /// The one place a culture still has a say. Some cultures separate fractional seconds with a comma, so
-        /// <c>"00:00:10,5"</c> is ten and a half seconds under German rules and unreadable under invariant ones. The
+        /// <c language="powershell">"00:00:10,5"</c> is ten and a half seconds under German rules and unreadable under invariant ones. The
         /// numeric reading ahead of it is unaffected either way, since a duration carries colons and never parses as a
         /// number.
         /// </remarks>

@@ -9,9 +9,9 @@ namespace PSADT.UserInterface.Tests
     /// <remarks>
     /// This one decides which implementation renders a dialog - the WinForms classic set or the WPF
     /// fluent set - so its values select between two entirely separate code paths in
-    /// <c>PSADT.UserInterface.Interfaces</c>. The strings tables in
-    /// <c>CloseAppsDialogOptions</c> and elsewhere are likewise split into a <c>Classic</c> and a
-    /// <c>Fluent</c> half that correspond to these members by name.
+    /// <c language="csharp">PSADT.UserInterface.Interfaces</c>. The strings tables in
+    /// <c language="csharp">CloseAppsDialogOptions</c> and elsewhere are likewise split into a <c language="csharp">Classic</c> and a
+    /// <c language="csharp">Fluent</c> half that correspond to these members by name.
     /// </remarks>
     public sealed class DialogStyleTests
     {

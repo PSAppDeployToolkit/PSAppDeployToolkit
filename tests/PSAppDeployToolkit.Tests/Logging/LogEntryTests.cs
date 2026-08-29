@@ -271,7 +271,7 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// Verifies that the CMTrace line carries the attributes OneTrace reads, with the severity as its number.
         /// </summary>
         /// <remarks>
-        /// The severity is asserted as a number on purpose. OneTrace colours a line by the <c>type</c> attribute,
+        /// The severity is asserted as a number on purpose. OneTrace colours a line by the <c language="text">type</c> attribute,
         /// so the numeric values of <see cref="LogSeverity"/> are an external contract rather than an internal
         /// detail, and this is where that contract is actually exercised.
         /// </remarks>

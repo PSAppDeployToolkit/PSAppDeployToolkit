@@ -39,8 +39,8 @@ namespace PSADT.ShortcutManagement
     /// This class enables creating, loading, modifying, and saving Windows shortcut (.lnk) files.
     /// </summary>
     /// <remarks>
-    /// This class wraps the <c>IShellLinkW</c>, <c>IShellLinkDataList</c>, <c>IPersistFile</c>,
-    /// and <c>IPropertyStore</c> COM interfaces to provide full access to shell link properties,
+    /// This class wraps the <c language="csharp">IShellLinkW</c>, <c language="csharp">IShellLinkDataList</c>, <c language="csharp">IPersistFile</c>,
+    /// and <c language="csharp">IPropertyStore</c> COM interfaces to provide full access to shell link properties,
     /// flags, and extended properties such as AppUserModelID.
     /// </remarks>
     public sealed class ShellLinkFile : IDisposable
@@ -225,8 +225,8 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The description text associated with the shortcut.</value>
         /// <remarks>
-        /// First attempts to retrieve the description from <c>IPropertyStore</c> with <c>PKEY_Link_Comment</c>,
-        /// which properly allocates the correct buffer size. Falls back to <c>IShellLinkW.GetDescription</c>
+        /// First attempts to retrieve the description from <c language="csharp">IPropertyStore</c> with <c language="csharp">PKEY_Link_Comment</c>,
+        /// which properly allocates the correct buffer size. Falls back to <c language="csharp">IShellLinkW.GetDescription</c>
         /// if the property store value is not set, as some shortcuts only store the description in the
         /// shell link structure.
         /// </remarks>
@@ -280,9 +280,9 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The arguments passed to the target when the shortcut is activated.</value>
         /// <remarks>
-        /// Uses <c>IPropertyStore</c> with <c>PKEY_Link_Arguments</c> as recommended by Microsoft
+        /// Uses <c language="csharp">IPropertyStore</c> with <c language="csharp">PKEY_Link_Arguments</c> as recommended by Microsoft
         /// for Windows 7 and later, which properly allocates the correct buffer size and avoids
-        /// silent truncation that can occur with <c>IShellLinkW.GetArguments</c>.
+        /// silent truncation that can occur with <c language="csharp">IShellLinkW.GetArguments</c>.
         /// </remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public string? Arguments
@@ -316,7 +316,7 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when the hotkey string format is invalid.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         /// <example>
-        /// <code>
+        /// <code language="csharp">
         /// // Set hotkey using WScript.Shell-compatible string format
         /// shortcut.Hotkey = "ALT+CTRL+F";
         /// shortcut.Hotkey = "Ctrl+Shift+Q";

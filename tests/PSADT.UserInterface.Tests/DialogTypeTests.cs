@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Tests
     /// Tests the enumeration naming each kind of dialog.
     /// </summary>
     /// <remarks>
-    /// This one is not only serialized, it is parsed. The client executable reads a <c>DialogType</c> off
+    /// This one is not only serialized, it is parsed. The client executable reads a <c language="csharp">DialogType</c> off
     /// its own command line with <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> and refuses
     /// to start without a valid one, so the member names are a command line contract as much as the
     /// values are a wire one.
@@ -46,9 +46,9 @@ namespace PSADT.UserInterface.Tests
         /// <remarks>
         /// The pairing is by name and nothing enforces it, so a dialog kind added here without its
         /// options type - or an options type renamed without its member - would only be found when the
-        /// client was asked to show that dialog. <c>HelpConsole</c> is the exception the naming does not
-        /// cover, since its options type is <c>HelpConsoleOptions</c> rather than
-        /// <c>HelpConsoleDialogOptions</c>.
+        /// client was asked to show that dialog. <c language="csharp">HelpConsole</c> is the exception the naming does not
+        /// cover, since its options type is <c language="csharp">HelpConsoleOptions</c> rather than
+        /// <c language="csharp">HelpConsoleDialogOptions</c>.
         /// </remarks>
         [Fact]
         public void Members_EachNameAnOptionsTypeThatExists()

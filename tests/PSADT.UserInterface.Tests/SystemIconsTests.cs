@@ -49,8 +49,8 @@ namespace PSADT.UserInterface.Tests
         /// </summary>
         /// <remarks>
         /// Written as one test looping over the sizes rather than a theory, because
-        /// <c>SHIL_SIZE</c> is internal to <c>PSADT.Interop</c> and a theory would have to expose it on a
-        /// public member to supply it. <c>SHIL_LAST</c> is an alias of <c>SHIL_JUMBO</c> rather than a
+        /// <c language="csharp">SHIL_SIZE</c> is internal to <c language="csharp">PSADT.Interop</c> and a theory would have to expose it on a
+        /// public member to supply it. <c language="csharp">SHIL_LAST</c> is an alias of <c language="csharp">SHIL_JUMBO</c> rather than a
         /// size of its own, so the sizes are deduplicated before being asked for.
         /// </remarks>
         [Fact]
@@ -129,7 +129,7 @@ namespace PSADT.UserInterface.Tests
         }
 
         /// <summary>
-        /// Reads the private lookup table out of <c>SystemIcons</c>.
+        /// Reads the private lookup table out of <c language="csharp">SystemIcons</c>.
         /// </summary>
         /// <remarks>
         /// Reflection because the table is an implementation detail and should stay one. What is being

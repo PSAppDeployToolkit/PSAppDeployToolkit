@@ -9,7 +9,7 @@ namespace PSADT.ClientServer.Server.Tests
     /// Tests the enumeration naming the commands a server sends its client.
     /// </summary>
     /// <remarks>
-    /// A command is not written to the pipe as an integer. <c>ServerInstance</c> casts it to a byte and
+    /// A command is not written to the pipe as an integer. <c language="csharp">ServerInstance</c> casts it to a byte and
     /// makes that the first byte of the request, and the client reads it back the same way. Everything
     /// asserted here is about that: the cast has to be lossless, and two commands must not share a value,
     /// because either fault would have the client obey a different command from the one it was sent

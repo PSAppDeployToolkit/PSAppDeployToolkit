@@ -8,7 +8,7 @@ namespace PSADT.Interop
     /// </summary>
     /// <remarks>The <see cref="PROC_THREAD_ATTRIBUTE"/> enumeration defines a set of constants that represent
     /// different attributes applicable to processes and threads. These attributes are used in conjunction with
-    /// functions like <c>UpdateProcThreadAttribute</c> to modify or specify the behavior of processes and threads
+    /// functions like <c language="csharp">UpdateProcThreadAttribute</c> to modify or specify the behavior of processes and threads
     /// during their creation or execution. Each attribute corresponds to a specific policy or configuration option,
     /// such as security capabilities, processor affinity, or mitigation policies. Extra values not from CsWin32
     /// are from https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2722-L2757 and

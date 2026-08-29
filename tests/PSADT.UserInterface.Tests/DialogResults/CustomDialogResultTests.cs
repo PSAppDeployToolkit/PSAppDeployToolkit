@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
     /// </summary>
     /// <remarks>
     /// This type exists to be compared against a string from PowerShell. Its equality is hand-written
-    /// rather than generated precisely so that <c>$result -eq 'Continue'</c> works, and its result value
+    /// rather than generated precisely so that <c language="powershell">$result -eq 'Continue'</c> works, and its result value
     /// is deliberately kept off the public surface so that PowerShell prints it as the bare string it
     /// stands for rather than as a one-column table. Neither of those is visible from the declaration,
     /// which is why both are pinned here.
@@ -55,7 +55,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
         /// Verifies that a result compares equal to its own value as a string, ignoring case.
         /// </summary>
         /// <remarks>
-        /// The reason <c>Equals(object)</c> is overridden at all. PowerShell's <c>-eq</c> calls it rather
+        /// The reason <c language="csharp">Equals(object)</c> is overridden at all. PowerShell's <c language="powershell">-eq</c> calls it rather
         /// than any operator, so this is what makes a comparison against a literal work in a deployment
         /// script.
         /// </remarks>

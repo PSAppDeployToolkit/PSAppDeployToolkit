@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -11,17 +11,17 @@ using Xunit;
 namespace PSADT.ClientServer.Client.Tests
 {
     /// <summary>
-    /// Tests for <c>ClientExecutable</c>, the client's single type.
+    /// Tests for <c language="csharp">ClientExecutable</c>, the client's single type.
     /// </summary>
     /// <remarks>
     /// Split by how a member has to be reached rather than by what it does. Everything except one
     /// method is private on a static class, so the helpers are called through reflection; the entry
-    /// point and the standalone dispatch are reached by running the executable, because <c>Main</c>
+    /// point and the standalone dispatch are reached by running the executable, because <c language="csharp">Main</c>
     /// answers an empty argument list with a modal dialog and answers a failure in a launcher with
-    /// <c>Environment.FailFast</c>.
+    /// <c language="csharp">Environment.FailFast</c>.
     /// <para>
     /// Nothing here changes machine state. Where a switch would, only the guards that reject bad
-    /// arguments before it acts are exercised, which for <c>/SilentRestart</c> means the delay is never
+    /// arguments before it acts are exercised, which for <c language="text">/SilentRestart</c> means the delay is never
     /// given a value that parses.
     /// </para>
     /// </remarks>
@@ -370,7 +370,7 @@ namespace PSADT.ClientServer.Client.Tests
 
         /// <summary>
         /// Confirms the dialog thread's unhandled exception handler is published where the dialog
-        /// manager looks for it. The handler is never invoked here: it calls <c>FailFast</c>.
+        /// manager looks for it. The handler is never invoked here: it calls <c language="csharp">FailFast</c>.
         /// </summary>
         [Fact]
         public void Init_PublishesAnUnhandledExceptionHandlerForTheDialogThread()
@@ -507,9 +507,9 @@ namespace PSADT.ClientServer.Client.Tests
         /// </summary>
         /// <remarks>
         /// Reaching the exit code at all depends on the exception being serializable: the error handler
-        /// reports by serializing, and aborts on <c>FailFast</c> if that throws. Failures out of
-        /// <c>ReadObject</c> carry an <c>XmlException</c>, whose own message arguments are a
-        /// <c>string[]</c>, so this test also covers that type staying in the serializer's known types.
+        /// reports by serializing, and aborts on <c language="csharp">FailFast</c> if that throws. Failures out of
+        /// <c language="csharp">ReadObject</c> carry an <c language="csharp">XmlException</c>, whose own message arguments are a
+        /// <c language="csharp">string[]</c>, so this test also covers that type staying in the serializer's known types.
         /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact(Skip = ClientRequired, SkipUnless = nameof(TestEnvironment.CanRunClient), SkipType = typeof(TestEnvironment))]
@@ -556,7 +556,7 @@ namespace PSADT.ClientServer.Client.Tests
 
         /// <summary>
         /// Confirms the last input time is written as raw ticks, which is the one operation whose
-        /// output is not serialized because <c>SessionInfo</c> parses it as a number.
+        /// output is not serialized because <c language="csharp">SessionInfo</c> parses it as a number.
         /// </summary>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact(Skip = ClientRequired, SkipUnless = nameof(TestEnvironment.CanRunClient), SkipType = typeof(TestEnvironment))]
@@ -666,8 +666,8 @@ namespace PSADT.ClientServer.Client.Tests
         /// Calls the private argument parser.
         /// </summary>
         /// <remarks>
-        /// The argument list is wrapped rather than passed straight through. A <c>string[]</c> converts
-        /// to the <c>object[]</c> the caller takes as its parameter array, so handing it over bare
+        /// The argument list is wrapped rather than passed straight through. A <c language="csharp">string[]</c> converts
+        /// to the <c language="csharp">object[]</c> the caller takes as its parameter array, so handing it over bare
         /// spreads each argument into a parameter of its own instead of arriving as the one array the
         /// method expects.
         /// </remarks>

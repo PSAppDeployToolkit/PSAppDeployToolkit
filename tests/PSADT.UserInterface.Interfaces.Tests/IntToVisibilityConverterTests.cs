@@ -54,9 +54,9 @@ namespace PSADT.UserInterface.Interfaces.Tests
         /// Verifies that a value which is not an <see cref="int"/> collapses rather than throwing.
         /// </summary>
         /// <remarks>
-        /// The conversion is <c>value as int?</c>, which unboxes only an exact <see cref="int"/>. A
+        /// The conversion is <c language="csharp">value as int?</c>, which unboxes only an exact <see cref="int"/>. A
         /// binding whose source is a <see cref="long"/> or a <see cref="uint"/> - which is what
-        /// <c>DeferralsRemaining</c> is elsewhere in this project - therefore reads as collapsed no
+        /// <c language="csharp">DeferralsRemaining</c> is elsewhere in this project - therefore reads as collapsed no
         /// matter how large it is. That is worth pinning: it is the difference between a hidden panel and
         /// a crash, and it means a future binding has to hand this an <see cref="int"/> to work at all.
         /// </remarks>
@@ -82,8 +82,8 @@ namespace PSADT.UserInterface.Interfaces.Tests
         /// Verifies that the converter parameter is ignored.
         /// </summary>
         /// <remarks>
-        /// The class summary used to promise that a parameter of <c>'True'</c> inverted the result and
-        /// that <c>'ListView'</c> selected a special case. Neither was ever implemented. The summary now
+        /// The class summary used to promise that a parameter of <c language="csharp">'True'</c> inverted the result and
+        /// that <c language="csharp">'ListView'</c> selected a special case. Neither was ever implemented. The summary now
         /// says so, and this holds the code to the documented behaviour so the two cannot drift apart
         /// again without a test noticing.
         /// </remarks>

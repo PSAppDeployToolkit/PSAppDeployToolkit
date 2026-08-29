@@ -5,7 +5,7 @@ namespace PSADT.PowerShellTestFixture
 {
     /// <summary>
     /// The subset of the module's configuration that the types under test read, with the defaults
-    /// <c>config.psd1</c> ships so a test only names what it is varying.
+    /// <c language="text">config.psd1</c> ships so a test only names what it is varying.
     /// </summary>
     /// <remarks>
     /// Mutable on purpose: a test sets the two or three settings its case turns on and leaves the rest. The shape has

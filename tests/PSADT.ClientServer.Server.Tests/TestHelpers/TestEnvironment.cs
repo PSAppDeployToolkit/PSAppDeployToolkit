@@ -9,8 +9,8 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// Each member here answers a question a test needs before it can decide whether it is able to run
-    /// at all. They are exposed as static properties so a test can name one in <c>SkipUnless</c> with
-    /// <c>SkipType</c> pointing at this class, which keeps a single copy of the probe rather than one
+    /// at all. They are exposed as static properties so a test can name one in <c language="csharp">SkipUnless</c> with
+    /// <c language="csharp">SkipType</c> pointing at this class, which keeps a single copy of the probe rather than one
     /// per test class.
     /// <para>
     /// A deliberate near-copy of the one beside PSADT's own tests, carrying only the probes this project
@@ -49,12 +49,12 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         public static bool IsLocalSystem { get; } = GetIsLocalSystem();
 
         /// <summary>
-        /// Whether the client/server executables are present where <c>ClientServerUtilities</c> looks
+        /// Whether the client/server executables are present where <c language="csharp">ClientServerUtilities</c> looks
         /// for them, which decides whether that type can be touched at all.
         /// </summary>
         /// <remarks>
         /// Its static constructor asks whether each executable is Authenticode trusted, and that check
-        /// throws rather than returning false for a file that does not exist. So <c>ServerInstance</c>,
+        /// throws rather than returning false for a file that does not exist. So <c language="csharp">ServerInstance</c>,
         /// which reads it to launch a client, fails with a <see cref="TypeInitializationException"/>
         /// unless they were copied alongside. The project builds and copies them, but a build that
         /// addresses an inner target framework directly skips that step, so the tests confirm it rather
@@ -102,7 +102,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// <remarks>
         /// Asked of the library rather than worked out here, because it is the same answer the launch
         /// path itself consults when deciding whether it can run a client as the caller. Guarded because
-        /// reading it initialises <c>ClientServerUtilities</c>, which throws when the executables are
+        /// reading it initialises <c language="csharp">ClientServerUtilities</c>, which throws when the executables are
         /// missing.
         /// </remarks>
         /// <returns><see langword="true"/> if it is; otherwise, <see langword="false"/>.</returns>
@@ -110,7 +110,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         {
             try
             {
-                return PSADT.AccountManagement.AccountUtilities.CallerIsLoggedOnUser;
+                return AccountManagement.AccountUtilities.CallerIsLoggedOnUser;
             }
             catch (TypeInitializationException)
             {
@@ -122,7 +122,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// Determines whether every client/server executable is present beside the loaded assembly.
         /// </summary>
         /// <remarks>
-        /// The paths are derived the same way <c>ClientServerUtilities</c> derives them, rather than by
+        /// The paths are derived the same way <c language="csharp">ClientServerUtilities</c> derives them, rather than by
         /// reading that type, because reading it is the thing this method exists to make safe.
         /// </remarks>
         /// <returns><see langword="true"/> if all four are present; otherwise, <see langword="false"/>.</returns>

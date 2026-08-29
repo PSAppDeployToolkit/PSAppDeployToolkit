@@ -16,9 +16,9 @@ namespace PSADT.PowerShellTestFixture
     /// </summary>
     /// <remarks>
     /// Nothing in that assembly is reachable without an engine. <see cref="EnvironmentTable"/> takes a live
-    /// <see cref="PSCmdlet"/>; <c>ModuleDatabase</c> holds a <see cref="PSObject"/> only the module seeds; and
-    /// <c>LogUtilities</c>, once a runspace exists, stops resolving its caller from the stack and starts
-    /// evaluating <c>&amp; $Script:CommandTable.'Get-PSCallStack'</c> in the session state the database carries.
+    /// <see cref="PSCmdlet"/>; <c language="csharp">ModuleDatabase</c> holds a <see cref="PSObject"/> only the module seeds; and
+    /// <c language="csharp">LogUtilities</c>, once a runspace exists, stops resolving its caller from the stack and starts
+    /// evaluating <c language="powershell">&amp; $Script:CommandTable.'Get-PSCallStack'</c> in the session state the database carries.
     /// That last one is why this fixture imports a script module as well as this assembly: the variable has to
     /// exist in a real module's session state or the first log entry written fails.
     /// <para>
@@ -74,8 +74,8 @@ namespace PSADT.PowerShellTestFixture
         /// The session state of the fixture's script module, which is the one to place in the module database.
         /// </summary>
         /// <remarks>
-        /// It has to be a module's own session state rather than the global one. <c>LogUtilities</c> reaches
-        /// PowerShell through <c>$Script:CommandTable</c>, and only the module that declares that variable can
+        /// It has to be a module's own session state rather than the global one. <c language="csharp">LogUtilities</c> reaches
+        /// PowerShell through <c language="powershell">$Script:CommandTable</c>, and only the module that declares that variable can
         /// resolve it.
         /// </remarks>
         public SessionState ModuleSessionState { get; }
@@ -97,7 +97,7 @@ namespace PSADT.PowerShellTestFixture
         /// <remarks>
         /// Needed because <see cref="Runspace.DefaultRunspace"/> is per-thread and a test does not run on the
         /// thread that built the fixture. It is also what decides which path the code under test takes: with no
-        /// default runspace <c>LogUtilities</c> resolves its caller from the CLR stack, and with one it asks
+        /// default runspace <c language="csharp">LogUtilities</c> resolves its caller from the CLR stack, and with one it asks
         /// PowerShell instead, so both paths are reachable by entering or not entering this scope.
         /// </remarks>
         /// <returns>A scope that restores whatever the thread's default was on disposal.</returns>
@@ -142,7 +142,7 @@ namespace PSADT.PowerShellTestFixture
         /// </summary>
         /// <remarks>
         /// The session state is this fixture's module, so script blocks the code under test builds resolve
-        /// <c>$Script:CommandTable</c> against it.
+        /// <c language="powershell">$Script:CommandTable</c> against it.
         /// </remarks>
         /// <param name="configuration">The configuration the types under test should read.</param>
         /// <param name="environment">The environment table, where the test needs one.</param>

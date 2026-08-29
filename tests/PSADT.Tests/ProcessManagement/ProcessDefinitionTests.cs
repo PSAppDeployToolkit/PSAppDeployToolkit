@@ -307,8 +307,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Verifies that a path whose file name is entirely a wildcard matches every process name.
         /// </summary>
         /// <remarks>
-        /// This looks alarming and is correct. The file name of <c>C:\Windows\*.exe</c> without its
-        /// extension is <c>*</c>, and a process of any name whatsoever could be running from that path,
+        /// This looks alarming and is correct. The file name of <c language="text">C:\Windows\*.exe</c> without its
+        /// extension is <c language="text">*</c>, and a process of any name whatsoever could be running from that path,
         /// so a test that has only the process name to go on cannot exclude anything. The path itself is
         /// applied separately, by <see cref="ProcessDefinition.IsNameMatch"/> against the full image
         /// path, which is what the test below confirms still discriminates.

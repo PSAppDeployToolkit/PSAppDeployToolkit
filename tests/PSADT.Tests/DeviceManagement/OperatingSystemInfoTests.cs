@@ -12,7 +12,7 @@ namespace PSADT.Tests.DeviceManagement
     /// </summary>
     /// <remarks>
     /// The registry is the oracle here, not <see cref="Environment.OSVersion"/>. That property is backed
-    /// by <c>GetVersionEx</c>, which the application compatibility shims rewrite for a process whose
+    /// by <c language="csharp">GetVersionEx</c>, which the application compatibility shims rewrite for a process whose
     /// manifest does not declare support for the running release: under .NET Framework it reports major
     /// version 6 on a Windows 10 or 11 machine. Reading the version through the runtime library instead is
     /// exactly why this type exists, so testing it against the shimmed value would assert the opposite of

@@ -18,19 +18,19 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
     /// <para>
     /// First, everything has to share one apartment. Windows Forms controls and WPF windows are owned by
     /// the thread that creates them, and a WPF element resolving a DynamicResource against an
-    /// <c>Application</c> living on a different thread fails. So there is one apartment here and every
+    /// <c language="csharp">Application</c> living on a different thread fails. So there is one apartment here and every
     /// test body that touches a dialog runs on it.
     /// </para>
     /// <para>
     /// Second, that apartment has to be the one <see cref="DialogManager"/> creates. Its static
-    /// constructor starts a WPF <c>Application</c> on a dedicated thread of its own and there is no way
-    /// to hand it one; whichever thread it picks is where <c>Application.Current</c> lives for the rest
+    /// constructor starts a WPF <c language="csharp">Application</c> on a dedicated thread of its own and there is no way
+    /// to hand it one; whichever thread it picks is where <c language="csharp">Application.Current</c> lives for the rest
     /// of the process. Rather than fight that, this class touches <see cref="DialogManager"/> first and
     /// then adopts its dispatcher as the shared apartment.
     /// </para>
     /// <para>
     /// Third, the order is not negotiable. <see cref="DialogManager"/>'s static constructor calls
-    /// <c>Application.SetCompatibleTextRenderingDefault</c>, which throws once any Windows Forms control
+    /// <c language="csharp">Application.SetCompatibleTextRenderingDefault</c>, which throws once any Windows Forms control
     /// exists in the process. A Classic dialog test that ran first would poison every DialogManager test
     /// for the rest of the run. Going through <see cref="Run(Action)"/> for all of them makes the boot
     /// happen on first use whatever order the runner picks, so no test has to know about the rule. The

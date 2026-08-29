@@ -11,7 +11,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
     /// </summary>
     /// <remarks>
     /// It accepts a wide set on purpose, so that a caller can name an account the way they happen to have it - a SID, a
-    /// domain-qualified name, a well-known type, a Windows identity, or the object <c>Get-LocalUser</c> hands back. The
+    /// domain-qualified name, a well-known type, a Windows identity, or the object <c language="powershell">Get-LocalUser</c> hands back. The
     /// last of those is reached by reflection, since taking a dependency on the LocalAccounts module for one property
     /// would be worse.
     /// </remarks>
@@ -117,8 +117,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// Verifies that a type derived from one is accepted too.
         /// </summary>
         /// <remarks>
-        /// The module's own <c>LocalUser</c> and <c>LocalGroup</c> both derive from <c>LocalPrincipal</c>, so the base
-        /// type is checked separately. Without that branch, <c>Get-LocalUser | Transform</c> would be refused.
+        /// The module's own <c language="csharp">LocalUser</c> and <c language="csharp">LocalGroup</c> both derive from <c language="csharp">LocalPrincipal</c>, so the base
+        /// type is checked separately. Without that branch, <c language="powershell">Get-LocalUser | Transform</c> would be refused.
         /// </remarks>
         [Fact]
         public void Transform_ReadsTheSidOffSomethingDerivedFromALocalPrincipal()
@@ -135,7 +135,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// </summary>
         /// <remarks>
         /// The namespace is the whole of the check, so this is what stops an unrelated type that happens to carry a
-        /// <c>SID</c> property being read as an account.
+        /// <c language="csharp">SID</c> property being read as an account.
         /// </remarks>
         [Fact]
         public void Transform_RefusesTheSameShapeInAnotherNamespace()
@@ -194,9 +194,9 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// </summary>
         /// <remarks>
         /// <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> accepts the numeric form of an enumeration as
-        /// well as its name, and that reading ran before the account-name one - so <c>"1"</c> came back as the Everyone
+        /// well as its name, and that reading ran before the account-name one - so <c language="powershell">"1"</c> came back as the Everyone
         /// SID rather than an account called "1". Leading white space and a sign are covered too, since
-        /// <c>Enum.TryParse</c> tolerates both and a first-character check would not have.
+        /// <c language="text">Enum.TryParse</c> tolerates both and a first-character check would not have.
         /// </remarks>
         /// <param name="digits">A name made of digits.</param>
         [Theory]

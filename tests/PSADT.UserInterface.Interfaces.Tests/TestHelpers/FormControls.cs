@@ -83,10 +83,10 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         /// Clicks a button, as a user would.
         /// </summary>
         /// <remarks>
-        /// Not <c>PerformClick</c>, which these tests cannot use. That method does nothing unless the
+        /// Not <c language="csharp">PerformClick</c>, which these tests cannot use. That method does nothing unless the
         /// button reports itself selectable, and selectability is computed up the parent chain to the
         /// form - which reports itself invisible until it has been shown. Since these tests deliberately
-        /// never show a dialog, every <c>PerformClick</c> would silently do nothing and every assertion
+        /// never show a dialog, every <c language="csharp">PerformClick</c> would silently do nothing and every assertion
         /// after it would be checking that the dialog had not changed.
         /// <para>
         /// Raising the event on the button directly is the way round it. The handler is the one the

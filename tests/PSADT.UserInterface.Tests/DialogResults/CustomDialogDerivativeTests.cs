@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
     /// Tests the base shared by the dialog results that carry a value alongside their outcome.
     /// </summary>
     /// <remarks>
-    /// Abstract and with a <c>private protected</c> constructor, so it is exercised through
+    /// Abstract and with a <c language="csharp">private protected</c> constructor, so it is exercised through
     /// <see cref="InputDialogResult"/>. What it contributes is one property, and the shape of that
     /// property is the whole point of the type: it re-exposes the base's non-public result value so a
     /// derived result prints as a table, without declaring a second field that would put the value on the

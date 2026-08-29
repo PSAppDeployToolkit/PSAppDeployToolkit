@@ -30,7 +30,7 @@ namespace PSADT.ClientServer.Server.Tests
         /// characters.
         /// </summary>
         /// <remarks>
-        /// <c>0xC3</c> begins a two-byte sequence and <c>0x28</c> cannot continue one. The framework's own
+        /// <c language="csharp">0xC3</c> begins a two-byte sequence and <c language="csharp">0x28</c> cannot continue one. The framework's own
         /// UTF-8 encoding would hand back a replacement character for this and say nothing.
         /// </remarks>
         [Fact]

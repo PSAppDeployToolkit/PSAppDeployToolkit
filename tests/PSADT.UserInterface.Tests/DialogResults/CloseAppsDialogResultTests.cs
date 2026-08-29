@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
     /// Tests the four outcomes of the close-applications dialog.
     /// </summary>
     /// <remarks>
-    /// A <c>TypedConstant</c>, whose general behaviour - numeric conversion, comparison against strings
+    /// A <c language="csharp">TypedConstant</c>, whose general behaviour - numeric conversion, comparison against strings
     /// and integers, equality - is tested where that type lives. What belongs here is the set of
     /// constants itself and the numbers behind them, since those decide what a deployment does next after
     /// asking the user to close their applications.
@@ -76,8 +76,8 @@ namespace PSADT.UserInterface.Tests.DialogResults
         /// Verifies that an outcome compares equal to its name from PowerShell.
         /// </summary>
         /// <remarks>
-        /// A deployment script tests the returned result with <c>-eq 'Defer'</c>, which calls
-        /// <c>Equals(object)</c>. One case is enough to prove the base type's behaviour reaches this
+        /// A deployment script tests the returned result with <c language="powershell">-eq 'Defer'</c>, which calls
+        /// <c language="csharp">Equals(object)</c>. One case is enough to prove the base type's behaviour reaches this
         /// derivative; the general rules are tested with the base type itself.
         /// </remarks>
         [Fact]

@@ -122,8 +122,8 @@ namespace PSADT.Tests.ShortcutManagement
         /// </summary>
         /// <remarks>
         /// The path form is what is asserted, in both directions. The shell stores the path as given - the
-        /// saved file holds <c>IconFile=C:\Windows\System32\shell32.dll</c> - but hands it back as
-        /// <c>file:///C:/Windows/System32/shell32.dll</c>, so the getter translates it back. Without that a
+        /// saved file holds <c language="text">IconFile=C:\Windows\System32\shell32.dll</c> - but hands it back as
+        /// <c language="text">file:///C:/Windows/System32/shell32.dll</c>, so the getter translates it back. Without that a
         /// caller could not pass what it read straight back in, and reading a shortcut and writing it out
         /// again would rewrite the icon as a URI.
         /// </remarks>
@@ -217,7 +217,7 @@ namespace PSADT.Tests.ShortcutManagement
 
                 // Assert
                 Assert.Contains(
-                    $"ShowCommand={expectedValue.ToString(System.Globalization.CultureInfo.InvariantCulture)}",
+                    $"ShowCommand={expectedValue.ToString(CultureInfo.InvariantCulture)}",
                     File.ReadAllText(shortcutPath),
                     StringComparison.Ordinal);
             });
@@ -647,7 +647,7 @@ namespace PSADT.Tests.ShortcutManagement
         /// <remarks>
         /// Compared member by member because <see cref="InternetShortcutInfo"/> carries a
         /// <see cref="FileInfo"/> and so cannot be compared with record equality, for the same reason
-        /// <c>ShellLinkInfo</c> cannot.
+        /// <c language="csharp">ShellLinkInfo</c> cannot.
         /// </remarks>
         [Fact]
         public void InternetShortcutInfo_GetMatchesALoadedSnapshot()

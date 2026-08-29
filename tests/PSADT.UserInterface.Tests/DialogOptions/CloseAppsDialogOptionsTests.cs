@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies the defaults for the values a caller can leave out.
         /// </summary>
         /// <remarks>
-        /// The four booleans read with a <c>?? false</c> rather than staying nullable, so an absent key
+        /// The four booleans read with a <c language="csharp">?? false</c> rather than staying nullable, so an absent key
         /// means the safe option in each case: deferrals are limited, the deployment waits, the countdown
         /// is not forced and the close button is shown.
         /// </remarks>

@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.Tests
     /// keeps the eleven per-type files about what each type actually adds, and means a twelfth options
     /// type is covered the moment it is written.
     /// <para>
-    /// That is not hypothetical: <c>NotifyIconOptions</c> was the one type that indexed its dictionary
+    /// That is not hypothetical: <c language="csharp">NotifyIconOptions</c> was the one type that indexed its dictionary
     /// before checking it for null, which is precisely the kind of single-type omission a per-type file
     /// is unlikely to catch, because whoever writes it copies the type's own source to know what to test.
     /// </para>

@@ -131,8 +131,8 @@ namespace PSADT.ProcessManagement
         /// comparison.
         /// </summary>
         /// <remarks>A <see cref="Regex"/> compares by reference, so a definition holding one directly never equalled
-        /// another built from the same name - two definitions for <c>note*</c> came out unequal while the generated
-        /// <c>ToString</c> rendered them identically. Everything here is worked out from the name alone, which the
+        /// another built from the same name - two definitions for <c language="text">note*</c> came out unequal while the generated
+        /// <c language="csharp">ToString</c> rendered them identically. Everything here is worked out from the name alone, which the
         /// definition already compares, so the right answer is for none of it to count towards the comparison: hence
         /// comparing by the name it was built from, which always agrees with the definition's own comparison of that
         /// name. <para> They are still compiled once and kept, as they were: the alternative of building them on each

@@ -103,8 +103,8 @@ namespace PSADT.Utilities
         /// <summary>
         /// Retrieves a handle to the specified registry hive.
         /// </summary>
-        /// <param name="hiveName">The name of the registry hive to retrieve. Supported values are <c>"HKEY_LOCAL_MACHINE"</c>,
-        /// <c>"HKEY_CURRENT_USER"</c>, <c>"HKEY_CLASSES_ROOT"</c>, <c>"HKEY_USERS"</c>, and <c>"HKEY_CURRENT_CONFIG"</c>.</param>
+        /// <param name="hiveName">The name of the registry hive to retrieve. Supported values are <c language="text">"HKEY_LOCAL_MACHINE"</c>,
+        /// <c language="text">"HKEY_CURRENT_USER"</c>, <c language="text">"HKEY_CLASSES_ROOT"</c>, <c language="text">"HKEY_USERS"</c>, and <c language="text">"HKEY_CURRENT_CONFIG"</c>.</param>
         /// <returns>A <see cref="SafeRegistryHandle"/> representing the handle to the specified
         /// registry hive.</returns>
         /// <exception cref="FormatException">Thrown if <paramref name="hiveName"/> is not one of the supported registry hive names.</exception>

@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// Tests the fifteen options every dialog shares.
     /// </summary>
     /// <remarks>
-    /// <c>BaseDialogOptions</c> is abstract and both its constructors are <c>private protected</c>, so it
+    /// <c language="csharp">BaseDialogOptions</c> is abstract and both its constructors are <c language="csharp">private protected</c>, so it
     /// is exercised through <see cref="ProgressDialogOptions"/> - the derivative that adds least of its
     /// own and therefore obscures least. The base behaviour is tested once here and not restated in the
     /// other ten options tests, which cover only what their own type adds.
@@ -82,8 +82,8 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// </summary>
         /// <remarks>
         /// Null rather than a default matters for the three nullable booleans in particular. A dialog
-        /// reads <c>DialogAllowMinimize</c> as "only an explicit true opts in", so null and false are the
-        /// same to it - but <c>DialogAllowMove</c> and <c>DialogPosition</c> fall through to a per-dialog
+        /// reads <c language="csharp">DialogAllowMinimize</c> as "only an explicit true opts in", so null and false are the
+        /// same to it - but <c language="csharp">DialogAllowMove</c> and <c language="csharp">DialogPosition</c> fall through to a per-dialog
         /// default that a false or a zero would override.
         /// </remarks>
         [Fact]

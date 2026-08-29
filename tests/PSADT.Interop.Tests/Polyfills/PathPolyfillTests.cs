@@ -126,8 +126,7 @@ namespace PSADT.Interop.Tests.Polyfills
         /// the remainder to the span overload, so "-D=1:\dir" throws where it should return false.
         /// </remarks>
         /// <param name="path">The drive-shaped path whose drive letter is not a letter.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Awaiting an upstream Meziantou.Polyfill release; the assertion is the behaviour we want restored.")]
-        [Theory(Skip = "Skipped on net472: the polyfill's drive-letter check relies on unchecked wraparound, and this repository builds with CheckForOverflowUnderflow, so it throws OverflowException instead of returning false. Fix submitted upstream to Meziantou.Polyfill; unskip once the package is updated.")]
+        [Theory]
         [InlineData(@"1:\dir")]
         [InlineData(@"!:\dir")]
         [InlineData(@" :\dir")]

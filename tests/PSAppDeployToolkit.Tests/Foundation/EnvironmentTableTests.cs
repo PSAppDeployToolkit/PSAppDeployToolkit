@@ -17,7 +17,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
     /// Tests the snapshot of the machine and session the module takes once during initialisation.
     /// </summary>
     /// <remarks>
-    /// Built through its real constructor rather than fabricated, which takes a live <c>PSCmdlet</c> and
+    /// Built through its real constructor rather than fabricated, which takes a live <c language="csharp">PSCmdlet</c> and
     /// therefore a hosted PowerShell engine - see <see cref="PowerShellFixture"/> for why that is the only way in.
     /// <para>
     /// This file covers the constructor's contract and the type's identity. The hundred-odd derived members are
@@ -103,7 +103,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// </summary>
         /// <remarks>
         /// Not incidental. These three come from the module the constructing cmdlet belongs to, and
-        /// <c>AppDeployToolkitName</c> goes on to be built into install names, log file names and the registry
+        /// <c language="text">AppDeployToolkitName</c> goes on to be built into install names, log file names and the registry
         /// path deferral history is kept under, so a table that could not find its module would break all three.
         /// </remarks>
         [Fact]
@@ -173,7 +173,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// <remarks>
         /// The distinction the table draws, and it cannot be reached with the engine's own version, which carries
         /// all four parts and none of them zero. A comparison against zero rather than against a negative would
-        /// pass on this machine and turn <c>1.2.0.0</c> into a version with no build, so the case is fed in
+        /// pass on this machine and turn <c language="text">1.2.0.0</c> into a version with no build, so the case is fed in
         /// rather than waited for.
         /// </remarks>
         /// <param name="psVersion">The version to hand the table.</param>
@@ -245,7 +245,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Two independent mappings off one number - a number to three booleans, and the same number to a name -
         /// so tying them to each other catches a wrong constant in either without restating either. The product
         /// type is one of three values on Windows, so exactly one kind holds and the name is never
-        /// <c>Unknown</c>.
+        /// <c language="text">Unknown</c>.
         /// </remarks>
         [Fact]
         public void EnvOSProductType_NamesExactlyOneKindOfOS()
@@ -295,7 +295,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// </summary>
         /// <remarks>
         /// Read through <see cref="WindowsIdentity"/> rather than through the same helper the table uses, so this
-        /// is a second opinion rather than a restatement. <c>IsAdmin</c> is the one that matters most: a session
+        /// is a second opinion rather than a restatement. <c language="csharp">IsAdmin</c> is the one that matters most: a session
         /// that requires elevation is refused on the strength of it.
         /// </remarks>
         [Fact]

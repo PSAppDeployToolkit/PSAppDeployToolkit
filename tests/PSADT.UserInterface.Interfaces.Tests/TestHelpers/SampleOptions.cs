@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// Every options type is constructed from an <see cref="IDictionary"/> assembled by the PowerShell
-    /// module, and the ones deriving from <c>BaseDialogOptions</c> share a handful of keys before they
+    /// module, and the ones deriving from <c language="csharp">BaseDialogOptions</c> share a handful of keys before they
     /// add any of their own. Builders return the dictionary rather than the constructed options, so a
     /// test can take a valid one and change or remove the single key it is about to make an assertion
     /// on. Every value is a required one: an optional key left absent here is absent on purpose, so that
@@ -25,7 +25,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
     internal static class SampleOptions
     {
         /// <summary>
-        /// The keys every <c>BaseDialogOptions</c> derivative requires.
+        /// The keys every <c language="csharp">BaseDialogOptions</c> derivative requires.
         /// </summary>
         /// <returns>A new dictionary each call, so callers can mutate it freely.</returns>
         public static Hashtable BaseDialog()
@@ -42,7 +42,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>ProgressDialogOptions</c> requires.
+        /// The keys <c language="csharp">ProgressDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable ProgressDialog()
@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>CustomDialogOptions</c> requires, with one button defined.
+        /// The keys <c language="csharp">CustomDialogOptions</c> requires, with one button defined.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable CustomDialog()
@@ -66,7 +66,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>InputDialogOptions</c> requires.
+        /// The keys <c language="csharp">InputDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable InputDialog()
@@ -75,7 +75,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>ListSelectionDialogOptions</c> requires.
+        /// The keys <c language="csharp">ListSelectionDialogOptions</c> requires.
         /// </summary>
         /// <param name="listItems">The items to offer, or none for a default pair.</param>
         /// <returns>A new dictionary each call.</returns>
@@ -89,7 +89,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>HelpConsoleOptions</c> requires.
+        /// The keys <c language="csharp">HelpConsoleOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable HelpConsole()
@@ -104,7 +104,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>CloseAppsDialogOptions</c> requires.
+        /// The keys <c language="csharp">CloseAppsDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable CloseAppsDialog()
@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The nested 'Strings' dictionary <c>CloseAppsDialogOptions</c> requires.
+        /// The nested 'Strings' dictionary <c language="csharp">CloseAppsDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable CloseAppsStrings()
@@ -152,7 +152,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The keys <c>RestartDialogOptions</c> requires.
+        /// The keys <c language="csharp">RestartDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable RestartDialog()
@@ -163,7 +163,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
-        /// The nested 'Strings' dictionary <c>RestartDialogOptions</c> requires.
+        /// The nested 'Strings' dictionary <c language="csharp">RestartDialogOptions</c> requires.
         /// </summary>
         /// <returns>A new dictionary each call.</returns>
         public static Hashtable RestartStrings()

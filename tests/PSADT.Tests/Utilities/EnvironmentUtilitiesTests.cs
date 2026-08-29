@@ -359,7 +359,7 @@ namespace PSADT.Tests.Utilities
         /// This is the whole reason the wrapper rebuilds the dictionary rather than handing back the one
         /// the runtime supplies. The two runtimes disagree: .NET Framework compares names without regard
         /// to case and .NET compares them exactly, and a process inherits whatever casing its parent used
-        /// - a shell that spells it <c>SYSTEMROOT</c> passes that on. Without this, the same lookup would
+        /// - a shell that spells it <c language="text">SYSTEMROOT</c> passes that on. Without this, the same lookup would
         /// find a variable under Windows PowerShell and miss it under PowerShell 7.
         /// </remarks>
         [Fact]

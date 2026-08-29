@@ -13,7 +13,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
     /// Tests the helper that decides what to call the command a call stack frame belongs to.
     /// </summary>
     /// <remarks>
-    /// A transcription of the <c>Command</c> script property PowerShell attaches to <see cref="CallStackFrame"/> in
+    /// A transcription of the <c language="text">Command</c> script property PowerShell attaches to <see cref="CallStackFrame"/> in
     /// its type data, so the contract under test is agreement with that property rather than any behaviour of its
     /// own. That property is live in the fixture's runspace, which makes it usable as an oracle: every frame goes
     /// through both and the two answers have to match, save for the one difference the toolkit takes deliberately.
@@ -67,10 +67,10 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// Verifies that a script block, which has no name, falls back to the frame's function name.
         /// </summary>
         /// <remarks>
-        /// Worth pinning for how it gets there: the frame does have an <c>InvocationInfo.MyCommand</c>, so it is the
+        /// Worth pinning for how it gets there: the frame does have an <c language="powershell">$InvocationInfo.MyCommand</c>, so it is the
         /// empty name rather than a missing command that sends it to the last fallback.
         /// <para>
-        /// The value matters downstream. The log writer's caller filter recognises <c>&lt;ScriptBlock&gt;</c> by
+        /// The value matters downstream. The log writer's caller filter recognises <c language="text">&lt;ScriptBlock&gt;</c> by
         /// name and looks past it for something more useful, so this literal is a dependency rather than an
         /// incidental detail.
         /// </para>
@@ -95,7 +95,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// Verifies that a frame carrying no command information at all is named nothing.
         /// </summary>
         /// <remarks>
-        /// Two ordinary constructs reach this branch - invoking a script block through <c>Invoke()</c> and calling a
+        /// Two ordinary constructs reach this branch - invoking a script block through <c language="powershell">Invoke()</c> and calling a
         /// PowerShell class method - and for both the engine answers with an invocation name that is itself empty.
         /// So the helper can and does return an empty string, which is why the log writer's search for a caller
         /// rejects a blank answer and keeps walking outwards. Without that guard, an entry logged from a class
@@ -126,7 +126,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// Pinned because the difference looks like a mistranscription and is not one. Making the comparison literal
         /// would also change which frame a log entry is attributed to: an answer of whitespace is discarded by the
         /// log writer's blank check and the search moves outwards, where the current answer of
-        /// <c>&lt;ScriptBlock&gt;</c> survives it.
+        /// <c language="text">&lt;ScriptBlock&gt;</c> survives it.
         /// </para>
         /// </remarks>
         [Fact]
@@ -309,7 +309,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// </summary>
         /// <param name="shape">The shape that produced the frame.</param>
         /// <param name="frame">The frame itself.</param>
-        /// <param name="oracle">What PowerShell's <c>Command</c> property calls it.</param>
+        /// <param name="oracle">What PowerShell's <c language="text">Command</c> property calls it.</param>
         private sealed class FrameCase(string shape, CallStackFrame frame, string? oracle)
         {
             /// <summary>
@@ -323,7 +323,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
             public CallStackFrame Frame { get; } = frame;
 
             /// <summary>
-            /// What PowerShell's own <c>Command</c> property calls it.
+            /// What PowerShell's own <c language="text">Command</c> property calls it.
             /// </summary>
             public string? Oracle { get; } = oracle;
         }

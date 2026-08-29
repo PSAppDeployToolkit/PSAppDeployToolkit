@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// <remarks>
     /// A single nested dictionary of module name to command name to help text. Like the list selection
     /// dialog, the interesting part is that a dictionary held by reference would defeat the record, so
-    /// the map is copied into nested <c>ValueDictionary</c> instances and rebuilt as a read-only view on
+    /// the map is copied into nested <c language="csharp">ValueDictionary</c> instances and rebuilt as a read-only view on
     /// each read.
     /// </remarks>
     public sealed class HelpConsoleOptionsTests
@@ -123,7 +123,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies that two consoles offering the same help are equal despite holding separate maps.
         /// </summary>
         /// <remarks>
-        /// The reason the backing field is a nested <c>ValueDictionary</c>: the outer dictionary compares
+        /// The reason the backing field is a nested <c language="csharp">ValueDictionary</c>: the outer dictionary compares
         /// its values with the same comparer, so an ordinary inner dictionary would compare by reference
         /// and the outer comparison would fail even for identical contents.
         /// </remarks>

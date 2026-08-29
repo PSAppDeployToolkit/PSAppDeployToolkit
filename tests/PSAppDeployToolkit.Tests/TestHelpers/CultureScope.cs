@@ -17,7 +17,7 @@ namespace PSAppDeployToolkit.Tests.TestHelpers
         /// <summary>
         /// Switches the calling thread to the named culture.
         /// </summary>
-        /// <param name="name">The culture to adopt, such as <c>de-DE</c>.</param>
+        /// <param name="name">The culture to adopt, such as <c language="text">de-DE</c>.</param>
         public CultureScope(string name)
         {
             _previousCulture = Thread.CurrentThread.CurrentCulture;

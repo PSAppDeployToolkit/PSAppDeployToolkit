@@ -136,7 +136,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// Verifies that elements of unlike types are never duplicates of one another.
         /// </summary>
         /// <remarks>
-        /// A string and a number that render alike are still different values, so <c>1</c> and <c>"1"</c> coexist. What
+        /// A string and a number that render alike are still different values, so <c language="text">1</c> and <c language="text">"1"</c> coexist. What
         /// matters is that this holds in either order.
         /// </remarks>
         [Fact]

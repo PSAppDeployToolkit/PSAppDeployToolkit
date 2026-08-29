@@ -7,8 +7,8 @@ namespace PSADT.Tests.Extensions
     /// Tests the binary form conversion used when a security identifier has to be handed to a native API.
     /// </summary>
     /// <remarks>
-    /// <c>FileSystemUtilities.GetEffectiveAccess</c> pins the result of this and passes the pointer to
-    /// <c>AuthzInitializeContextFromSid</c>, so a buffer that is the wrong length or filled from the
+    /// <c language="csharp">FileSystemUtilities.GetEffectiveAccess</c> pins the result of this and passes the pointer to
+    /// <c language="csharp">AuthzInitializeContextFromSid</c>, so a buffer that is the wrong length or filled from the
     /// wrong offset produces an access check against the wrong account rather than an error. The
     /// round-trip through the framework's own parser is the oracle.
     /// </remarks>

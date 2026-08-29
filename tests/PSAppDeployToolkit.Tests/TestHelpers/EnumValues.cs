@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 
@@ -8,7 +8,7 @@ namespace PSAppDeployToolkit.Tests.TestHelpers
     /// Reads the values an enumeration declares.
     /// </summary>
     /// <remarks>
-    /// Read from the type's fields rather than through the generic <c>Enum.GetValues&lt;T&gt;</c>, which is not
+    /// Read from the type's fields rather than through the generic <c language="csharp">Enum.GetValues&lt;T&gt;</c>, which is not
     /// available on every framework this project builds for.
     /// </remarks>
     internal static class EnumValues

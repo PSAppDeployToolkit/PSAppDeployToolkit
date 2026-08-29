@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -146,7 +146,7 @@ namespace PSADT.WindowsRuntime.Tests.UI.Notifications
         /// Reads the values the notification mode enumeration declares.
         /// </summary>
         /// <remarks>
-        /// Read off the fields rather than through <c>Enum.GetValues</c> or <c>Enum.IsDefined</c>, whose
+        /// Read off the fields rather than through <c language="csharp">Enum.GetValues</c> or <c language="csharp">Enum.IsDefined</c>, whose
         /// generic overloads the analyzers ask for and .NET Framework does not have.
         /// </remarks>
         /// <returns>The declared values, in declaration order.</returns>

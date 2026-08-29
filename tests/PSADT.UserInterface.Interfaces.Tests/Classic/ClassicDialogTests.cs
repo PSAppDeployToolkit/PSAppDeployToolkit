@@ -18,7 +18,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
     /// The base cannot be constructed from outside its own hierarchy, so these tests derive a dialog of
     /// their own from it. That is worth the few lines: it isolates what the base does from what any real
     /// dialog adds on top, and because friend access satisfies the internal half of
-    /// <c>private protected</c>, a derived type here reaches the tag stripper, the countdown formatter,
+    /// <c language="csharp">private protected</c>, a derived type here reaches the tag stripper, the countdown formatter,
     /// the close guard and the window procedure directly rather than by reflection.
     /// <para>
     /// No dialog is ever shown. Everything asserted on is applied by the constructor or reachable by
@@ -414,7 +414,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         /// <remarks>
         /// The opening and closing tags are matched separately rather than as a pair, so a deployment
         /// that forgot a closing tag gets its text shown without markup rather than with a stray
-        /// <c>[bold]</c> in the middle of it.
+        /// <c language="text">[bold]</c> in the middle of it.
         /// </remarks>
         /// <param name="text">The text the deployment supplied.</param>
         /// <param name="expected">What the user should end up seeing.</param>
@@ -637,7 +637,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         /// A dialog that adds nothing to the base except a way to reach it.
         /// </summary>
         /// <remarks>
-        /// Deriving is what makes the base's <c>private protected</c> members reachable without
+        /// Deriving is what makes the base's <c language="csharp">private protected</c> members reachable without
         /// reflection. It also isolates the base: a real dialog would bring its own controls and its own
         /// constructor logic, and an assertion here would no longer be about the base alone.
         /// <para>

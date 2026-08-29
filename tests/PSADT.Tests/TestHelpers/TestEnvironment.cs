@@ -10,8 +10,8 @@ namespace PSADT.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// Each member here answers a question a test needs before it can decide whether it is able to run
-    /// at all. They are exposed as static properties so a test can name one in <c>SkipUnless</c> with
-    /// <c>SkipType</c> pointing at this class, which keeps a single copy of the probe rather than one
+    /// at all. They are exposed as static properties so a test can name one in <c language="csharp">SkipUnless</c> with
+    /// <c language="csharp">SkipType</c> pointing at this class, which keeps a single copy of the probe rather than one
     /// per test class.
     /// <para>
     /// Declaration order matters, and not only for the members that read each other directly. Static
@@ -93,23 +93,23 @@ namespace PSADT.Tests.TestHelpers
         /// privilege, so a gate that tested for elevation instead would be asserting a different thing
         /// and would be wrong on a machine whose policy has been changed.
         /// </remarks>
-        public static bool HasDebugPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(PSADT.Interop.SE_PRIVILEGE.SeDebugPrivilege);
+        public static bool HasDebugPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(Interop.SE_PRIVILEGE.SeDebugPrivilege);
 
         /// <summary>
         /// Whether the caller holds the privilege needed to reassign ownership of a file or directory,
         /// which is what changing an owner actually requires.
         /// </summary>
-        public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(PSADT.Interop.SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+        public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(Interop.SE_PRIVILEGE.SeTakeOwnershipPrivilege);
 
         /// <summary>
-        /// Whether the client/server executables are present where <c>ClientServerUtilities</c> looks
+        /// Whether the client/server executables are present where <c language="csharp">ClientServerUtilities</c> looks
         /// for them, which decides whether that type can be touched at all.
         /// </summary>
         /// <remarks>
         /// Its static constructor asks whether each executable is Authenticode trusted, and that check
         /// throws rather than returning false for a file that does not exist. So every type reading
-        /// <c>ClientServerUtilities</c> - <c>ProcessManager</c> through <c>ProcessHandle</c>,
-        /// <c>TokenManager</c>, <c>ClientServerPermissions</c> - fails with a
+        /// <c language="csharp">ClientServerUtilities</c> - <c language="csharp">ProcessManager</c> through <c language="csharp">ProcessHandle</c>,
+        /// <c language="csharp">TokenManager</c>, <c language="csharp">ClientServerPermissions</c> - fails with a
         /// <see cref="TypeInitializationException"/> unless they were copied alongside. The project
         /// builds and copies them, but a build that addresses an inner target framework directly skips
         /// that step, so the tests confirm it rather than assume it.
@@ -141,9 +141,9 @@ namespace PSADT.Tests.TestHelpers
         /// </summary>
         /// <remarks>
         /// Catalog-signed binaries are deliberately excluded. The trust check under test asks
-        /// <c>WinVerifyTrust</c> for a file-based verification with URL retrieval limited to the cache,
+        /// <c language="csharp">WinVerifyTrust</c> for a file-based verification with URL retrieval limited to the cache,
         /// which does not consult the system catalogues, so an operating system binary such as
-        /// <c>notepad.exe</c> reports as untrusted despite being signed. Only files carrying the
+        /// <c language="text">notepad.exe</c> reports as untrusted despite being signed. Only files carrying the
         /// signature in the image itself are a valid positive fixture.
         /// </remarks>
         public static FileInfo? EmbeddedSignedExecutable { get; } = FindFirstExistingFile(
@@ -200,7 +200,7 @@ namespace PSADT.Tests.TestHelpers
         /// or unreadable.
         /// </summary>
         /// <remarks>
-        /// The cache under <c>%SystemRoot%\Installer</c> holds a copy of every package installed
+        /// The cache under <c language="text">%SystemRoot%\Installer</c> holds a copy of every package installed
         /// through Windows Installer, which makes it a source of real databases to read without
         /// shipping one. Enumeration is best-effort: an unreadable store simply produces no fixture,
         /// and the tests that need one skip.
@@ -256,7 +256,7 @@ namespace PSADT.Tests.TestHelpers
         /// Determines whether every client/server executable is present beside the loaded assembly.
         /// </summary>
         /// <remarks>
-        /// The paths are derived the same way <c>ClientServerUtilities</c> derives them, rather than by
+        /// The paths are derived the same way <c language="csharp">ClientServerUtilities</c> derives them, rather than by
         /// reading that type, because reading it is the thing this method exists to make safe.
         /// </remarks>
         /// <returns><see langword="true"/> if all four are present; otherwise, <see langword="false"/>.</returns>
@@ -300,7 +300,7 @@ namespace PSADT.Tests.TestHelpers
         /// <summary>
         /// Returns the first package matching the given pattern that the caller can open for reading.
         /// </summary>
-        /// <param name="pattern">The search pattern to match, such as <c>*.msi</c>.</param>
+        /// <param name="pattern">The search pattern to match, such as <c language="text">*.msi</c>.</param>
         /// <returns>The first readable package, or <see langword="null"/> if there is none.</returns>
         private static FileInfo? FindFirstReadableCachedPackage(string pattern)
         {

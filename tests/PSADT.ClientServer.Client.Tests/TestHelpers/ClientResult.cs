@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 
 namespace PSADT.ClientServer.Client.Tests.TestHelpers
@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
     /// What a client run exited with and wrote.
     /// </summary>
     /// <remarks>
-    /// Deliberately not a positional record. That form generates <c>init</c> accessors, which are not
+    /// Deliberately not a positional record. That form generates <c language="csharp">init</c> accessors, which are not
     /// used anywhere in this repository: the setter is enforced by the compiler alone, so reflection
     /// writes straight through it.
     /// </remarks>

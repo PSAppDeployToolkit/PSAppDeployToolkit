@@ -111,7 +111,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// Verifies that nothing at all is refused, in each of the shapes PowerShell uses for absence.
         /// </summary>
         /// <remarks>
-        /// A CLR null is only one of them: an unset variable arrives as <c>AutomationNull</c>, a null string as
+        /// A CLR null is only one of them: an unset variable arrives as <c language="csharp">AutomationNull</c>, a null string as
         /// <see cref="NullString"/>, and a database null as <see cref="DBNull"/>. Split by shape rather than looped so
         /// a failure names which one.
         /// </remarks>

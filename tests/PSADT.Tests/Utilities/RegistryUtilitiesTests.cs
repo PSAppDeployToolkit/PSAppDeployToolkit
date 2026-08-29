@@ -14,7 +14,7 @@ namespace PSADT.Tests.Utilities
     /// Nothing here writes. The last-write time is read through a native query because the framework does
     /// not expose it at all, and the path parser exists so a caller can hand over a key path in any of the
     /// spellings PowerShell produces - including the provider-qualified form, which is what
-    /// <c>Get-Item</c> hands back.
+    /// <c language="powershell">Get-Item</c> hands back.
     /// </remarks>
     public sealed class RegistryUtilitiesTests
     {

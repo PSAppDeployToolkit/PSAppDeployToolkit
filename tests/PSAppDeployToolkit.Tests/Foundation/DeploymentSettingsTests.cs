@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Tests.TestHelpers;
@@ -10,7 +10,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
     /// Tests the bitfield a deployment session keeps its settings in.
     /// </summary>
     /// <remarks>
-    /// Nineteen flags declared as shift expressions, read back with <c>HasFlag</c>. A duplicated or skipped shift is the
+    /// Nineteen flags declared as shift expressions, read back with <c language="csharp">HasFlag</c>. A duplicated or skipped shift is the
     /// mistake this catches, and it is one nothing else would: two flags sharing a bit would make setting either appear
     /// to set both, so a session marked silent would also read as requiring administrator rights. The compiler has
     /// nothing to say about it and no other test would notice.

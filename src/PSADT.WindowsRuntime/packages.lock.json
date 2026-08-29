@@ -4,9 +4,9 @@
     ".NETFramework,Version=v4.7.2": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.177, )",
-        "resolved": "3.0.177",
-        "contentHash": "Un9RDShcg4kaNiQtNJvNaRQU5ogcFCB6YLSL2TLx49hmLSU+vd6YixciWxWmoKIOdGvPV27dqHHFIBm8qd5U1Q=="
+        "requested": "[3.0.191, )",
+        "resolved": "3.0.191",
+        "contentHash": "koTThgx8TuNelm3lKWDkBLhuWswQa1DHRS5L83zOjjm8Eum0NQqW306+3RpN3gFz3Ncx85e4HaB/cJexhzmTOg=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -26,9 +26,9 @@
       },
       "Microsoft.Windows.SDK.Contracts": {
         "type": "Direct",
-        "requested": "[10.0.28000.2526, )",
-        "resolved": "10.0.28000.2526",
-        "contentHash": "XUggCmxQ1CKPSrl02Ia4+T3xHAeotFuh2eyUoNCUg9UYm5nWQcdIf5jOo/e9uhVuTIDzC1Sgu/Y/BCfWei+HNw==",
+        "requested": "[10.0.28000.2705, )",
+        "resolved": "10.0.28000.2705",
+        "contentHash": "BdNxUYozG2zuV7Iomu7sk9nplKYnmcJujq92523BSbbRHbDoO5Tqm0itxOofc5ND3N1BvRfcYFE+30dp6odsbw==",
         "dependencies": {
           "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
           "System.Runtime.WindowsRuntime": "4.6.0",
@@ -163,9 +163,9 @@
     "net8.0-windows10.0.22621": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.177, )",
-        "resolved": "3.0.177",
-        "contentHash": "Un9RDShcg4kaNiQtNJvNaRQU5ogcFCB6YLSL2TLx49hmLSU+vd6YixciWxWmoKIOdGvPV27dqHHFIBm8qd5U1Q=="
+        "requested": "[3.0.191, )",
+        "resolved": "3.0.191",
+        "contentHash": "koTThgx8TuNelm3lKWDkBLhuWswQa1DHRS5L83zOjjm8Eum0NQqW306+3RpN3gFz3Ncx85e4HaB/cJexhzmTOg=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",

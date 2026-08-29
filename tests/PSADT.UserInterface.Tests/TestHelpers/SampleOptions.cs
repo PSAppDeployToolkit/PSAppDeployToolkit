@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// Every options type is constructed from an <see cref="IDictionary"/> assembled by the PowerShell
-    /// module, and the ones deriving from <c>BaseDialogOptions</c> share fifteen keys before they add any
+    /// module, and the ones deriving from <c language="csharp">BaseDialogOptions</c> share fifteen keys before they add any
     /// of their own. A test that spelled all of those out per case would be mostly restating the base
     /// type, so it is written once here and each builder adds only what its own type needs.
     /// <para>
@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
     internal static class SampleOptions
     {
         /// <summary>
-        /// The keys every <c>BaseDialogOptions</c> derivative requires.
+        /// The keys every <c language="csharp">BaseDialogOptions</c> derivative requires.
         /// </summary>
         /// <returns>A new dictionary each call, so callers can mutate it freely.</returns>
         public static Hashtable BaseDialog()

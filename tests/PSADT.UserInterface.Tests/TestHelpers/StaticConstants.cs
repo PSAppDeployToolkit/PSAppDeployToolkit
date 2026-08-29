@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
     /// Reads the shared constants a type declares as public static fields.
     /// </summary>
     /// <remarks>
-    /// The dialog result types spell their members out as <c>public static readonly</c> fields rather than
+    /// The dialog result types spell their members out as <c language="csharp">public static readonly</c> fields rather than
     /// as enum members, so the only way to ask what a type offers is to reflect over it. Reading them
     /// through here rather than inline in each test keeps the null handling in one place: the two target
     /// frameworks disagree about whether <see cref="FieldInfo.GetValue"/> returns a nullable, so a

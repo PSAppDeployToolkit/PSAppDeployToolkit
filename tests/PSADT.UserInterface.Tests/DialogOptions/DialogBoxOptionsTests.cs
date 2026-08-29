@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// Tests the options for the Windows 9x-style message box.
     /// </summary>
     /// <remarks>
-    /// Stands alone rather than deriving from <c>BaseDialogOptions</c>, because a message box is drawn by
+    /// Stands alone rather than deriving from <c language="csharp">BaseDialogOptions</c>, because a message box is drawn by
     /// Win32 rather than by the toolkit and takes none of the branding a toolkit dialog does. What it
     /// does take is the three Win32 style enumerations, which is most of what there is to check.
     /// </remarks>

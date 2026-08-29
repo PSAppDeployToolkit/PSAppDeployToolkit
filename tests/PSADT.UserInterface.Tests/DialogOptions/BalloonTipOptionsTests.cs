@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// Tests the options for a balloon tip.
     /// </summary>
     /// <remarks>
-    /// One of the three options types that stand alone rather than deriving from <c>BaseDialogOptions</c>,
+    /// One of the three options types that stand alone rather than deriving from <c language="csharp">BaseDialogOptions</c>,
     /// which is why nothing here concerns images, culture or window placement: a balloon tip borrows the
     /// notify icon that is already in the tray.
     /// </remarks>
@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// </summary>
         /// <remarks>
         /// The icon is required rather than defaulted, which is worth pinning: <see cref="BalloonTipIcon"/>
-        /// has a zero member named <c>None</c>, so an absent icon could plausibly have been read as that
+        /// has a zero member named <c language="csharp">None</c>, so an absent icon could plausibly have been read as that
         /// instead. It is not, and a caller has to say which it wants.
         /// </remarks>
         /// <param name="key">The key to remove.</param>

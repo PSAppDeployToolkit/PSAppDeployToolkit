@@ -86,7 +86,7 @@ namespace PSADT.Tests.ShortcutManagement
         /// Verifies that the three window styles the shell honours survive a save and load.
         /// </summary>
         /// <remarks>
-        /// Only these three do. <c>IShellLink::SetShowCmd</c> accepts a normal window, a maximized one
+        /// Only these three do. <c language="csharp">IShellLink::SetShowCmd</c> accepts a normal window, a maximized one
         /// and a minimized one that does not activate, and nothing else, so the other nine members of
         /// <see cref="ShortcutWindowStyle"/> cannot be stored in a shell link even though the type offers
         /// them. The test below states what becomes of those instead.
@@ -422,7 +422,7 @@ namespace PSADT.Tests.ShortcutManagement
         /// Worth its own test because it used not to hold. The paths a snapshot carries are exposed as
         /// <see cref="FileInfo"/>, which does not override equality, so holding them directly made the
         /// generated comparison a reference comparison and no two snapshots ever matched - while the
-        /// generated <c>ToString</c> rendered them identically, which made it thoroughly confusing to run
+        /// generated <c language="csharp">ToString</c> rendered them identically, which made it thoroughly confusing to run
         /// into. They are recorded as paths and rebuilt on read instead.
         /// </remarks>
         [Fact]

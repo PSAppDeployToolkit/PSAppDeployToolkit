@@ -19,8 +19,8 @@ namespace PSADT.Tests.Security
     /// either way.
     /// <para>
     /// Two privileges anchor the assertions, chosen so that they hold whether or not the run is elevated:
-    /// <c>SeChangeNotifyPrivilege</c>, which every account holds and which is enabled by default, and
-    /// <c>SeCreateTokenPrivilege</c>, which is granted to the local system account alone - not to
+    /// <c language="csharp">SeChangeNotifyPrivilege</c>, which every account holds and which is enabled by default, and
+    /// <c language="csharp">SeCreateTokenPrivilege</c>, which is granted to the local system account alone - not to
     /// administrators - and so is absent from any token these tests will see.
     /// </para>
     /// </remarks>
@@ -156,7 +156,7 @@ namespace PSADT.Tests.Security
         /// to succeed and leaving the caller believing it has a right it does not.
         /// </summary>
         /// <remarks>
-        /// This is the failure worth being loud about: <c>AdjustTokenPrivileges</c> reports success even
+        /// This is the failure worth being loud about: <c language="csharp">AdjustTokenPrivileges</c> reports success even
         /// when it could not enable everything it was asked to, so a caller that trusted the return value
         /// would proceed without the right it thinks it has.
         /// </remarks>

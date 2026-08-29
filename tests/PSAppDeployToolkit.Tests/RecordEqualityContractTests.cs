@@ -14,7 +14,7 @@ namespace PSAppDeployToolkit.Tests
     /// Not a test of one class. Declaring a type a record is a promise that two of them describing the same thing
     /// compare equal, and the compiler generates that comparison over the type's instance fields - so a single
     /// field whose own type compares by reference silently reduces the whole record to reference equality. That is
-    /// how <c>LogEntry</c> came to have a broken comparison: one <see cref="System.IO.FileInfo"/> among nine
+    /// how <c language="csharp">LogEntry</c> came to have a broken comparison: one <see cref="System.IO.FileInfo"/> among nine
     /// values.
     /// <para>
     /// Reading the source found that one. This finds the next one, which is the point: the failure mode is
@@ -58,7 +58,7 @@ namespace PSAppDeployToolkit.Tests
         /// cannot quietly turn it into a test of nothing.
         /// </summary>
         /// <remarks>
-        /// Records are found by the <c>PrintMembers</c> method the compiler generates for them, which is an
+        /// Records are found by the <c language="csharp">PrintMembers</c> method the compiler generates for them, which is an
         /// implementation detail rather than a documented one. If a future compiler stops emitting it, the sweep
         /// above would find no records, pass, and go on passing for ever. Naming the records that are known to be
         /// there is what stops that.
@@ -78,7 +78,7 @@ namespace PSAppDeployToolkit.Tests
         /// The records declared in the assembly under test.
         /// </summary>
         /// <remarks>
-        /// A record is identified by <c>PrintMembers</c>, which the compiler generates for every record and for
+        /// A record is identified by <c language="csharp">PrintMembers</c>, which the compiler generates for every record and for
         /// nothing else. There is no attribute or reflection flag that says "record", so this is the usual way of
         /// asking; <see cref="Records_AreFoundAtAll"/> guards it.
         /// </remarks>
@@ -93,7 +93,7 @@ namespace PSAppDeployToolkit.Tests
         /// Determines whether values of a type compare by reference rather than by what they hold.
         /// </summary>
         /// <remarks>
-        /// The question reduces to one thing: whose <c>Equals(object)</c> runs. A reference type that does not
+        /// The question reduces to one thing: whose <c language="csharp">Equals(object)</c> runs. A reference type that does not
         /// override it inherits <see cref="object"/>'s, which is reference comparison - that catches arrays, every
         /// collection the framework offers, <see cref="System.IO.FileInfo"/>, <see cref="System.IO.DirectoryInfo"/>,
         /// <see cref="System.Text.RegularExpressions.Regex"/> and the rest. A value type that does not override it
@@ -102,11 +102,11 @@ namespace PSAppDeployToolkit.Tests
         /// <para>
         /// An interface-typed field is reported as well, since what it holds at runtime decides the answer and the
         /// declaration cannot promise anything. That is deliberate rather than conservative: a record field typed
-        /// <c>IReadOnlyList&lt;T&gt;</c> is the exact shape of the bug this exists to find.
+        /// <c language="csharp">IReadOnlyList&lt;T&gt;</c> is the exact shape of the bug this exists to find.
         /// </para>
         /// <para>
         /// Generic arguments are not examined. A type that overrides equality is taken at its word about how it
-        /// compares what it contains - <c>ValueList&lt;T&gt;</c> compares array elements by their contents, for
+        /// compares what it contains - <c language="csharp">ValueList&lt;T&gt;</c> compares array elements by their contents, for
         /// instance - and second-guessing that would report it wrongly.
         /// </para>
         /// </remarks>
@@ -122,7 +122,7 @@ namespace PSAppDeployToolkit.Tests
         /// Describes a field by the property it backs, where it backs one.
         /// </summary>
         /// <remarks>
-        /// An auto-property's backing field is named <c>&lt;Name&gt;k__BackingField</c>, which is not what anyone
+        /// An auto-property's backing field is named <c language="csharp">&lt;Name&gt;k__BackingField</c>, which is not what anyone
         /// reading a failure is looking for.
         /// </remarks>
         /// <param name="field">The field to describe.</param>

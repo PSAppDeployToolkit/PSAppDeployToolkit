@@ -13,8 +13,8 @@ namespace PSADT.Tests.Utilities
     /// <remarks>
     /// Every method here is a one-line unchecked cast, so the conversions themselves are covered by one
     /// theory per width rather than one test per method. What earns the rest of this file is the
-    /// contract with <c>Convert-ADTValueType</c>, which builds its method name by interpolating a
-    /// <see cref="ValueTypeConverter.ValueTypes"/> member into <c>"To$To"</c>. Nothing in the compiler
+    /// contract with <c language="powershell">Convert-ADTValueType</c>, which builds its method name by interpolating a
+    /// <see cref="ValueTypeConverter.ValueTypes"/> member into <c language="powershell">"To$To"</c>. Nothing in the compiler
     /// enforces that pairing, so a member added to the enumeration without a matching method fails only
     /// at runtime, in PowerShell, with a method-not-found error.
     /// </remarks>
@@ -22,7 +22,7 @@ namespace PSADT.Tests.Utilities
     {
         /// <summary>
         /// Verifies that every enumeration member names a conversion method that exists, which is the
-        /// assumption <c>Convert-ADTValueType</c> makes when it resolves <c>"To$To"</c>.
+        /// assumption <c language="powershell">Convert-ADTValueType</c> makes when it resolves <c language="powershell">"To$To"</c>.
         /// </summary>
         /// <param name="memberName">The name of the enumeration member.</param>
         [Theory]
@@ -191,7 +191,7 @@ namespace PSADT.Tests.Utilities
 
         /// <summary>
         /// Verifies that the framework-named aliases agree with the primitives they duplicate, which is
-        /// what lets <c>Convert-ADTValueType</c> accept either spelling.
+        /// what lets <c language="powershell">Convert-ADTValueType</c> accept either spelling.
         /// </summary>
         /// <param name="input">The value to convert through both spellings.</param>
         [Theory]

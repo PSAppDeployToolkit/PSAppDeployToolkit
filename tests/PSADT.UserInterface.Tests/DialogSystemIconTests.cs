@@ -7,7 +7,7 @@ namespace PSADT.UserInterface.Tests
     /// Tests the stock system icons a custom dialog can display.
     /// </summary>
     /// <remarks>
-    /// Every member has to appear in the lookup table inside <c>SystemIcons</c>, which is checked by
+    /// Every member has to appear in the lookup table inside <c language="csharp">SystemIcons</c>, which is checked by
     /// <see cref="SystemIconsTests"/> rather than here: the two tests together are what makes adding a
     /// member without mapping it fail at build-and-test time instead of at the moment a dialog asks for
     /// the icon.
@@ -18,9 +18,9 @@ namespace PSADT.UserInterface.Tests
         /// Verifies the members and their values.
         /// </summary>
         /// <remarks>
-        /// The names are the ones <c>System.Drawing.SystemIcons</c> uses, which is why <c>Warning</c>
+        /// The names are the ones <c language="csharp">System.Drawing.SystemIcons</c> uses, which is why <c language="csharp">Warning</c>
         /// sits last and out of alphabetical order, and why the set contains near-synonyms such as
-        /// <c>Error</c> and <c>Hand</c>. Those resolve to the same shell icon; that they are distinct
+        /// <c language="csharp">Error</c> and <c language="csharp">Hand</c>. Those resolve to the same shell icon; that they are distinct
         /// members here is what lets a caller keep using whichever name it already used.
         /// </remarks>
         [Fact]

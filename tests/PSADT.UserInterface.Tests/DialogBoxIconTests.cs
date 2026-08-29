@@ -8,10 +8,10 @@ namespace PSADT.UserInterface.Tests
     /// Tests the icon a message box shows beside its text.
     /// </summary>
     /// <remarks>
-    /// Win32 gives these four icons only two pairs of distinct values: <c>MB_ICONSTOP</c> is
-    /// <c>MB_ICONHAND</c> and <c>MB_ICONINFORMATION</c> is <c>MB_ICONASTERISK</c>. The members here are
-    /// named for the Visual Basic constants the toolkit's own callers use, which is why <c>Stop</c> and
-    /// <c>Information</c> appear rather than the hand and asterisk they resolve to.
+    /// Win32 gives these four icons only two pairs of distinct values: <c language="csharp">MB_ICONSTOP</c> is
+    /// <c language="csharp">MB_ICONHAND</c> and <c language="csharp">MB_ICONINFORMATION</c> is <c language="csharp">MB_ICONASTERISK</c>. The members here are
+    /// named for the Visual Basic constants the toolkit's own callers use, which is why <c language="csharp">Stop</c> and
+    /// <c language="csharp">Information</c> appear rather than the hand and asterisk they resolve to.
     /// </remarks>
     public sealed class DialogBoxIconTests
     {
@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.Tests
         /// by not asking for an icon at all.
         /// </summary>
         /// <remarks>
-        /// Win32 has no <c>MB_ICONNONE</c>; passing zero is what suppresses the icon. The options type
+        /// Win32 has no <c language="csharp">MB_ICONNONE</c>; passing zero is what suppresses the icon. The options type
         /// therefore holds a nullable <see cref="DialogBoxIcon"/> and a zero member here would give two
         /// spellings of the same thing, one of which would survive a round trip as a value rather than
         /// as an absence. Both suppression rules on the declaration exist to allow this.

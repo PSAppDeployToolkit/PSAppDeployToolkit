@@ -47,7 +47,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// </summary>
         /// <remarks>
         /// A different message from the one above, and deliberately so: the assembly loaded correctly but
-        /// <c>Initialize-ADTModule</c> has not run, which is something the caller can act on.
+        /// <c language="powershell">Initialize-ADTModule</c> has not run, which is something the caller can act on.
         /// </remarks>
         [Fact]
         public void GetEnvironment_NamesTheCommandThatInitialisesTheModule()
@@ -156,7 +156,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// <remarks>
         /// Sessions nest: a deployment script may open one and call something that opens another, and the innermost is
         /// the one a log entry belongs to. Position in the list is what decides, so this is the behaviour every caller
-        /// of <c>Get-ADTSession</c> depends on.
+        /// of <c language="powershell">Get-ADTSession</c> depends on.
         /// </remarks>
         [Fact]
         public void GetDeploymentSession_HandsBackTheMostRecentlyOpened()
@@ -188,7 +188,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// </summary>
         /// <remarks>
         /// The session state matters rather than merely the runspace: the script blocks the toolkit builds refer to
-        /// <c>$Script:CommandTable</c>, which only the module's own scope can resolve.
+        /// <c language="powershell">$Script:CommandTable</c>, which only the module's own scope can resolve.
         /// </remarks>
         [Fact]
         public void InvokeScript_RunsAgainstTheModulesSessionState()
@@ -256,7 +256,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that seating a database is refused from outside the module.
         /// </summary>
         /// <remarks>
-        /// The guard reads the call stack for a frame belonging to <c>PSAppDeployToolkit.psm1</c> inside a module of
+        /// The guard reads the call stack for a frame belonging to <c language="text">PSAppDeployToolkit.psm1</c> inside a module of
         /// that name, so nothing a test can do will satisfy it - which is the point, and is why these tests seat the
         /// field directly instead.
         /// <para>

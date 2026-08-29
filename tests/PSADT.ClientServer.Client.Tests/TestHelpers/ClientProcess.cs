@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -13,10 +13,10 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// The exit code is the contract the PowerShell module reads through
-    /// <c>Invoke-ADTClientServerOperation</c>, so it is what these tests assert on. Reaching it means
-    /// running the real executable: <c>Main</c> cannot be called in process, because it answers an
+    /// <c language="powershell">Invoke-ADTClientServerOperation</c>, so it is what these tests assert on. Reaching it means
+    /// running the real executable: <c language="csharp">Main</c> cannot be called in process, because it answers an
     /// empty argument list with a modal dialog and answers a failure in a launcher with
-    /// <c>Environment.FailFast</c>.
+    /// <c language="csharp">Environment.FailFast</c>.
     /// <para>
     /// Every run is bounded and the process killed if it outstays that bound, so a switch that blocks
     /// on a dialog fails its own test rather than hanging the suite.
@@ -66,7 +66,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// Joins arguments into a command line, quoting any that contain whitespace.
         /// </summary>
         /// <remarks>
-        /// .NET Framework has no <c>ArgumentList</c>, so the command line is assembled here. Serialized
+        /// .NET Framework has no <c language="csharp">ArgumentList</c>, so the command line is assembled here. Serialized
         /// arguments dictionaries are Base64 and the switches are single words, so nothing these tests
         /// pass contains a quote of its own to escape.
         /// </remarks>

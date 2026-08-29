@@ -16,7 +16,7 @@ namespace PSADT.UserInterface.Tests.DialogState
     /// <remarks>
     /// The one type in this project that is neither a value nor a static helper: it owns a process
     /// monitoring service and a stopwatch, and has to be disposed. Nothing here starts the monitoring -
-    /// the service only polls once <c>Start</c> is called, which these tests never do - so no process on
+    /// the service only polls once <c language="csharp">Start</c> is called, which these tests never do - so no process on
     /// the machine is looked at or touched.
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
@@ -158,7 +158,7 @@ namespace PSADT.UserInterface.Tests.DialogState
         /// Verifies that disposing twice is harmless, whether or not there is a service to dispose.
         /// </summary>
         /// <remarks>
-        /// Both paths through <c>DisposeAsync</c> set the flag - the early return when there is no service
+        /// Both paths through <c language="csharp">DisposeAsync</c> set the flag - the early return when there is no service
         /// and the one that disposes it - and a dialog closed while its own cleanup is already running can
         /// reach either twice.
         /// </remarks>

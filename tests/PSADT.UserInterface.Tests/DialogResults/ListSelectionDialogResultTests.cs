@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
         /// <remarks>
         /// The case that used to fail, for the same reason as
         /// <see cref="InputDialogResultTests.Equality_IsReflexiveWhenThereIsNoText"/>: the comparison read
-        /// <c>SelectedItem?.Equals(...) is true</c>, which is false when the item is null, so a cancelled
+        /// <c language="csharp">SelectedItem?.Equals(...) is true</c>, which is false when the item is null, so a cancelled
         /// or expired selection was not equal to itself.
         /// </remarks>
         [Fact]

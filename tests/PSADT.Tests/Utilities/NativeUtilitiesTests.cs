@@ -8,13 +8,13 @@ namespace PSADT.Tests.Utilities
     /// Tests the AArch64 instruction encoders.
     /// </summary>
     /// <remarks>
-    /// These build the thread-injection stub <c>FileHandleManager</c> runs inside another process on ARM
+    /// These build the thread-injection stub <c language="csharp">FileHandleManager</c> runs inside another process on ARM
     /// machines. A wrong bit here does not fail a build or throw an exception; it produces machine code
     /// that executes in a foreign process and corrupts or crashes it, which is close to undiagnosable
     /// after the fact. Every expected value below is the real encoding of the named instruction, taken
     /// from the field layout in the architecture reference rather than from this implementation:
-    /// <c>MOVZ</c> and <c>MOVK</c> are <c>sf opc 100101 hw imm16 Rd</c> with the register in bits 0-4,
-    /// the immediate in bits 5-20 and the shift selector in bits 21-22; <c>BR</c> and <c>BLR</c> carry
+    /// <c language="text">MOVZ</c> and <c language="text">MOVK</c> are <c language="text">sf opc 100101 hw imm16 Rd</c> with the register in bits 0-4,
+    /// the immediate in bits 5-20 and the shift selector in bits 21-22; <c language="text">BR</c> and <c language="text">BLR</c> carry
     /// their register in bits 5-9.
     /// </remarks>
     public sealed class NativeUtilitiesTests

@@ -487,7 +487,7 @@ namespace PSADT.ProcessManagement
         /// it cannot seek, which an anonymous pipe is. A byte-order mark at the head of a process's standard input is
         /// not skipped by the process reading it: it arrives as part of the first line and corrupts it. <para> This is
         /// reached more readily than it looks. The default stream encoding is recorded by name so that it survives
-        /// being serialised to a client, and resolving <c>utf-8</c> by name yields the variant that does emit a mark
+        /// being serialised to a client, and resolving <c language="text">utf-8</c> by name yields the variant that does emit a mark
         /// even where the encoding it was recorded from did not. </para></remarks>
         /// <param name="encoding">The encoding to strip the preamble from.</param>
         /// <returns>The same encoding where it has no preamble; otherwise, an equivalent one that emits none.</returns>
@@ -661,9 +661,9 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Creates a new process using the specified primary token and command line.
         /// </summary>
-        /// <remarks>This method attempts to create a process using <c>CreateProcessAsUser</c> if
-        /// possible, falling back to <c>CreateProcessWithToken</c> if necessary. It requires specific privileges to be
-        /// enabled, such as <c>SeIncreaseQuotaPrivilege</c> and <c>SeAssignPrimaryTokenPrivilege</c>.</remarks>
+        /// <remarks>This method attempts to create a process using <c language="csharp">CreateProcessAsUser</c> if
+        /// possible, falling back to <c language="csharp">CreateProcessWithToken</c> if necessary. It requires specific privileges to be
+        /// enabled, such as <c language="csharp">SeIncreaseQuotaPrivilege</c> and <c language="csharp">SeAssignPrimaryTokenPrivilege</c>.</remarks>
         /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
         /// <param name="callerPrivilges">A read-only collection of the privileges held by the caller, used to determine if specific
         /// privileges are present that may allow process creation even when job object restrictions are in place.</param>

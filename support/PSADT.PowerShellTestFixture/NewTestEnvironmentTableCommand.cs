@@ -11,7 +11,7 @@ namespace PSADT.PowerShellTestFixture
     /// </summary>
     /// <remarks>
     /// This exists because <see cref="EnvironmentTable"/> takes a <see cref="PSCmdlet"/> and reads
-    /// <c>MyInvocation.MyCommand.Module</c> from it, which is populated only for a cmdlet running in a pipeline
+    /// <c language="powershell">$MyInvocation.MyCommand.Module</c> from it, which is populated only for a cmdlet running in a pipeline
     /// as part of a module. There is no way to hand it one from outside: <see cref="PSCmdlet.MyInvocation"/>
     /// comes from the engine's own invocation state, not from anything a caller can set. So the fixture asks
     /// PowerShell to run this, and PowerShell supplies the cmdlet.
@@ -78,7 +78,7 @@ namespace PSADT.PowerShellTestFixture
         /// </summary>
         /// <remarks>
         /// Windows PowerShell records a <see cref="Version"/> here. PowerShell 7 records a
-        /// <c>SemanticVersion</c>, which is not a <see cref="Version"/> and does not convert to one, so its
+        /// <c language="text">SemanticVersion</c>, which is not a <see cref="Version"/> and does not convert to one, so its
         /// prerelease suffix is dropped and the numeric part is reparsed.
         /// </remarks>
         /// <param name="psVersionTable">The engine's version table.</param>

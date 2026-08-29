@@ -133,7 +133,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// behaviour it changes much later in the constructor, which would test the behaviour rather than the
         /// mapping and would leave the ones with no separable behaviour untested.
         /// <para>
-        /// <c>RequireAdmin</c> is left to its own test, since setting it decides whether the constructor throws.
+        /// <c language="csharp">RequireAdmin</c> is left to its own test, since setting it decides whether the constructor throws.
         /// </para>
         /// </remarks>
         [Fact]
@@ -197,7 +197,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that a switch passed but turned off is not the same as one never passed at all.
         /// </summary>
         /// <remarks>
-        /// <c>NoProcessDetection</c> is the one parameter of the forty with three states rather than two. Absent
+        /// <c language="csharp">NoProcessDetection</c> is the one parameter of the forty with three states rather than two. Absent
         /// leaves detection to the usual rules, on suppresses it, and explicitly off forces it - so the flag being
         /// clear is only half of what an explicit no means. The other half changes how the deployment mode is
         /// resolved and is asserted there.
@@ -1394,7 +1394,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that compatibility mode publishes the session's members into the caller's scope.
         /// </summary>
         /// <remarks>
-        /// A version three deployment script reads <c>$installName</c> rather than asking a session for it, so
+        /// A version three deployment script reads <c language="powershell">$installName</c> rather than asking a session for it, so
         /// every public member is set as a variable of the same name. The variables are taken away afterwards
         /// because the scope they are published into is the fixture's, and it outlives this test.
         /// </remarks>

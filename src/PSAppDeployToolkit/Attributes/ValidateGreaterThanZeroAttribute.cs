@@ -12,7 +12,7 @@ namespace PSAppDeployToolkit.Attributes
     /// <remarks>
     /// This attribute validates comparable value types against their default value (for example, numeric types against
     /// 0 and <see cref="TimeSpan"/> against <see cref="TimeSpan.Zero"/>). For non-value types, it validates values
-    /// that expose a public static <c>Zero</c> property and implement <see cref="IComparable"/>. For collections, each
+    /// that expose a public static <c language="csharp">Zero</c> property and implement <see cref="IComparable"/>. For collections, each
     /// element is validated individually.
     /// </remarks>
     public sealed class ValidateGreaterThanZeroAttribute : ValidateArgumentsAttribute

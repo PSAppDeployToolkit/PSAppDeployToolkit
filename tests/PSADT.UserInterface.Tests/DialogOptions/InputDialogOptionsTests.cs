@@ -34,7 +34,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies the defaults for the two values this type adds.
         /// </summary>
         /// <remarks>
-        /// <c>SecureInput</c> defaulting to false is the safe direction only because false means an
+        /// <c language="csharp">SecureInput</c> defaulting to false is the safe direction only because false means an
         /// ordinary text box. A caller wanting a masked field has to ask for one, and asking is what the
         /// module does when collecting a credential.
         /// </remarks>

@@ -8,8 +8,8 @@ namespace PSADT.Tests.TestHelpers
     /// Reads the values an enumeration declares.
     /// </summary>
     /// <remarks>
-    /// Read from the type's fields rather than through the generic <c>Enum.IsDefined</c> or
-    /// <c>Enum.GetValues&lt;T&gt;</c>, neither of which is available on every target framework this project
+    /// Read from the type's fields rather than through the generic <c language="csharp">Enum.IsDefined</c> or
+    /// <c language="csharp">Enum.GetValues&lt;T&gt;</c>, neither of which is available on every target framework this project
     /// builds for.
     /// </remarks>
     internal static class EnumValues
@@ -24,4 +24,4 @@ namespace PSADT.Tests.TestHelpers
             return [.. typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static).Select(static f => (TEnum)(f.GetRawConstantValue() ?? default(TEnum)))];
         }
     }
-}
+}

@@ -166,7 +166,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Determines whether the specified process has exited using minimal privileges.
         /// </summary>
-        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// <remarks>This method opens the process with <c language="csharp">PROCESS_QUERY_LIMITED_INFORMATION</c> access
         /// and checks the exit code to determine if the process is still running. This is more reliable than
         /// using <see cref="Process.HasExited"/> which relies on a cached handle that may have been opened
         /// with broader access rights that could fail on protected processes.</remarks>
@@ -205,7 +205,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Retrieves the security identifier (SID) of the user associated with the specified process.
         /// </summary>
-        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// <remarks>This method opens the process with <c language="csharp">PROCESS_QUERY_LIMITED_INFORMATION</c> access
         /// and queries the process token to retrieve the user SID. This is more reliable than using
         /// <see cref="Process.SafeHandle"/> which may have been opened with broader access rights that
         /// could fail on protected processes.</remarks>
@@ -221,7 +221,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Retrieves the security identifier (SID) of the user associated with the specified process.
         /// </summary>
-        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// <remarks>This method opens the process with <c language="csharp">PROCESS_QUERY_LIMITED_INFORMATION</c> access
         /// and queries the process token to retrieve the user SID.</remarks>
         /// <param name="processId">The identifier of the process for which to retrieve the SID. Must be a valid process ID.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>

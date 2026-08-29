@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         /// </summary>
         /// <remarks>
         /// It exists for the Windows Forms designer, which constructs a form with no arguments to draw
-        /// it. <c>LicenseManager.UsageMode</c> is how a form tells the two apart, and a test run is
+        /// it. <c language="csharp">LicenseManager.UsageMode</c> is how a form tells the two apart, and a test run is
         /// runtime by definition, so this is the same refusal reached by the other door.
         /// </remarks>
         [Fact]

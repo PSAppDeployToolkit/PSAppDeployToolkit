@@ -789,13 +789,13 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>This method ensures compatibility with parsers that handle quoted values in key-value
         /// pairs. If the value in a key-value pair is already quoted, it is assumed to be correctly formatted and
-        /// returned as-is, as is NSIS's <c>/D=</c> parameter, which must never be quoted. All other key-value pairs
+        /// returned as-is, as is NSIS's <c language="text">/D=</c> parameter, which must never be quoted. All other key-value pairs
         /// are escaped so that a value containing whitespace survives being parsed back out of the command line.
         /// For all other cases, strict escaping is applied.</remarks>
         /// <param name="argument">The command-line argument to escape. Can be a key-value pair (e.g., "key=value") or a single value.</param>
         /// <returns>A string representing the escaped argument. If the argument is <see langword="null"/>, returns an empty
-        /// quoted string (<c>""</c>). If the argument is a key-value pair with an already quoted value, or is NSIS's
-        /// <c>/D=</c> parameter, the original argument is returned unchanged. Otherwise, the argument is escaped using
+        /// quoted string (<c language="text">""</c>). If the argument is a key-value pair with an already quoted value, or is NSIS's
+        /// <c language="text">/D=</c> parameter, the original argument is returned unchanged. Otherwise, the argument is escaped using
         /// strict escaping rules.</returns>
         private static string EscapeArgumentCompatible(string argument)
         {

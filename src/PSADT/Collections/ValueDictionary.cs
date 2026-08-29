@@ -109,11 +109,11 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>The <c>MaybeNullWhen</c> annotation the framework puts on this parameter is deliberately not
+        /// <remarks>The <c language="csharp">MaybeNullWhen</c> annotation the framework puts on this parameter is deliberately not
         /// repeated here. The .NET Framework reference assemblies carry no nullable annotations at all, so annotating
         /// the implementation more richly than the member it implements is an error there; leaving it off says only
         /// that the value is set, which is true on both. <para> The lookup goes through the indexer rather than the
-        /// underlying dictionary's own <c>TryGetValue</c> for the same reason: what that reports about the value it
+        /// underlying dictionary's own <c language="csharp">TryGetValue</c> for the same reason: what that reports about the value it
         /// hands back differs between the two frameworks, so a single spelling of it cannot compile clean on both.
         /// </para></remarks>
         [SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "An unconstrained TValue has no other way to spell the value handed back when the key is absent, which the return value already tells the caller to ignore.")]

@@ -132,7 +132,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies the defaults for the values a caller can leave out.
         /// </summary>
         /// <remarks>
-        /// <c>MinimizeWindows</c> is the odd one: it is read with a <c>?? false</c> rather than kept
+        /// <c language="csharp">MinimizeWindows</c> is the odd one: it is read with a <c language="csharp">?? false</c> rather than kept
         /// nullable, so its absence means "do not minimize" rather than "no preference".
         /// </remarks>
         [Fact]

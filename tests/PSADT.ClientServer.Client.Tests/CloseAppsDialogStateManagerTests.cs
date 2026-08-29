@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Client.Tests.TestHelpers;
@@ -8,7 +8,7 @@ using Xunit;
 namespace PSADT.ClientServer.Client.Tests
 {
     /// <summary>
-    /// Tests for <c>ClientExecutable.CloseAppsDialogStateManager</c>, which owns the close applications
+    /// Tests for <c language="csharp">ClientExecutable.CloseAppsDialogStateManager</c>, which owns the close applications
     /// dialog state across one client/server session.
     /// </summary>
     /// <remarks>

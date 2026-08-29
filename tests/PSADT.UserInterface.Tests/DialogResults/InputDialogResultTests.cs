@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.Tests.DialogResults
         /// </summary>
         /// <remarks>
         /// This is the case that used to fail. The comparison read
-        /// <c>Text?.Equals(other.Text, ...) is true</c>, which evaluates to false when <c>Text</c> is
+        /// <c language="csharp">Text?.Equals(other.Text, ...) is true</c>, which evaluates to false when <c language="csharp">Text</c> is
         /// null - so a result with no text was not equal to itself, and
         /// <see cref="InputDialogResult.DefaultResult"/> in particular failed every comparison the module
         /// made against it while its hash code went on claiming the opposite.

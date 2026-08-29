@@ -429,10 +429,10 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Custom DataContractResolver that handles serialization of dictionary types that share the same
         /// data contract name (ArrayOfKeyValueOfanyTypeanyType), specifically <see cref="System.Collections.Hashtable"/> and
-        /// the internal <c>System.Collections.ListDictionaryInternal</c> type used by <see cref="Exception.Data"/>.
+        /// the internal <c language="csharp">System.Collections.ListDictionaryInternal</c> type used by <see cref="Exception.Data"/>.
         /// </summary>
         /// <remarks>
-        /// Both <see cref="System.Collections.Hashtable"/> and <c>ListDictionaryInternal</c> serialize to the same data contract name,
+        /// Both <see cref="System.Collections.Hashtable"/> and <c language="csharp">ListDictionaryInternal</c> serialize to the same data contract name,
         /// which prevents them from being in the KnownTypes list simultaneously. This resolver handles them
         /// dynamically: serialization preserves the original type identity, while deserialization always
         /// returns <see cref="System.Collections.Hashtable"/> as the more general and publicly accessible type.

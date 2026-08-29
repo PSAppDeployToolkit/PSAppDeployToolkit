@@ -18,7 +18,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
     /// file owns the matrix and each subclass file asserts nothing but its own choice. Driven through the subclasses
     /// because the base is abstract and there is no other way to reach a given pair.
     /// <para>
-    /// The flags are not symmetrical, which is the thing most likely to be got wrong: <c>allowEmpty</c> relaxes the
+    /// The flags are not symmetrical, which is the thing most likely to be got wrong: <c language="csharp">allowEmpty</c> relaxes the
     /// check on strings only. An empty collection is refused whatever it is set to.
     /// </para>
     /// </remarks>
@@ -135,7 +135,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// Verifies that an empty collection is refused even by the validator that permits an empty string.
         /// </summary>
         /// <remarks>
-        /// The asymmetry worth pinning. <c>allowEmpty</c> is consulted only where a string is being judged; the
+        /// The asymmetry worth pinning. <c language="csharp">allowEmpty</c> is consulted only where a string is being judged; the
         /// empty-collection refusal is unconditional. A reader of the type's name would reasonably expect otherwise.
         /// </remarks>
         [Fact]
@@ -156,7 +156,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// <remarks>
         /// Two separate branches reach the same refusal. Anything implementing the non-generic
         /// <see cref="IDictionary"/> takes the first; a type offering only
-        /// <see cref="IReadOnlyDictionary{TKey, TValue}"/> takes a reflected path that reads <c>Count</c> off the
+        /// <see cref="IReadOnlyDictionary{TKey, TValue}"/> takes a reflected path that reads <c language="csharp">Count</c> off the
         /// interface. Nothing in the framework takes the second - <see cref="Dictionary{TKey, TValue}"/> and its
         /// read-only wrapper both implement <see cref="IDictionary"/> - so it is reached here with a stand-in, which
         /// is the only way to exercise it at all.
@@ -473,7 +473,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// <remarks>
         /// Exists to reach the reflected read-only-dictionary branch, which nothing in the framework can reach because
         /// every dictionary it ships also implements the non-generic <see cref="IDictionary"/> and is caught by the
-        /// earlier test. Only <c>Count</c> is ever read, so the rest is the minimum the interface demands.
+        /// earlier test. Only <c language="csharp">Count</c> is ever read, so the rest is the minimum the interface demands.
         /// </remarks>
         /// <param name="count">How many entries to claim.</param>
         /// <param name="value">The single value to report, however many entries are claimed.</param>

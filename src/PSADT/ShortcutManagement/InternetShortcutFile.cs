@@ -40,8 +40,8 @@ namespace PSADT.ShortcutManagement
     /// This class enables creating, loading, modifying, and saving Internet shortcut (.url) files.
     /// </summary>
     /// <remarks>
-    /// This class wraps the <c>IUniformResourceLocatorW</c>, <c>IPersistFile</c>, <c>IPropertySetStorage</c>,
-    /// and <c>IPropertyStorage</c> COM interfaces to provide access to URL shortcut properties.
+    /// This class wraps the <c language="csharp">IUniformResourceLocatorW</c>, <c language="csharp">IPersistFile</c>, <c language="csharp">IPropertySetStorage</c>,
+    /// and <c language="csharp">IPropertyStorage</c> COM interfaces to provide access to URL shortcut properties.
     /// </remarks>
     public sealed class InternetShortcutFile : IDisposable
     {

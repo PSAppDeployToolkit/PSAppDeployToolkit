@@ -72,7 +72,7 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
         /// This payload used to carry whatever it was given and leave the client to decide - which the
         /// client does by assigning it to a progress bar, whose value setter refuses anything outside its
         /// range on the thread drawing the dialog. The same guard now sits on
-        /// <c>ProgressDialogOptions</c>, which is the other door to the same bar; this is the update door.
+        /// <c language="csharp">ProgressDialogOptions</c>, which is the other door to the same bar; this is the update door.
         /// <para>
         /// NaN and the infinities are included because a guard written only as "less than nought or
         /// greater than a hundred" lets NaN through: every comparison against it is false.

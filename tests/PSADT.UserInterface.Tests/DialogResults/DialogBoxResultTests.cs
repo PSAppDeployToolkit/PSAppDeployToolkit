@@ -11,8 +11,8 @@ namespace PSADT.UserInterface.Tests.DialogResults
     /// Tests the outcomes of a Win32 message box.
     /// </summary>
     /// <remarks>
-    /// These carry the numeric values Win32 returns from <c>MessageBox</c>, so the values are checked
-    /// against the <c>ID*</c> constants written out here rather than against the generated ones the source
+    /// These carry the numeric values Win32 returns from <c language="csharp">MessageBox</c>, so the values are checked
+    /// against the <c language="text">ID*</c> constants written out here rather than against the generated ones the source
     /// refers to. The lookup that turns a raw return value into one of these is built by reflecting over
     /// the type's own static fields, which is concise but means nothing fails until it is used.
     /// </remarks>
@@ -77,8 +77,8 @@ namespace PSADT.UserInterface.Tests.DialogResults
         /// Verifies that a value Win32 could return but the toolkit does not name is refused.
         /// </summary>
         /// <remarks>
-        /// <c>IDHELP</c> is the interesting case rather than an invented number: it is a real
-        /// <c>MESSAGEBOX_RESULT</c> that sits between two the toolkit does name, and it is absent here
+        /// <c language="csharp">IDHELP</c> is the interesting case rather than an invented number: it is a real
+        /// <c language="csharp">MESSAGEBOX_RESULT</c> that sits between two the toolkit does name, and it is absent here
         /// because none of the button sets on offer include a Help button. Should one ever be added, this
         /// is what says the result type has to gain a member too.
         /// </remarks>

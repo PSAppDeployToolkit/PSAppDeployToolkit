@@ -9,8 +9,8 @@ namespace PSADT.Tests.ShortcutManagement
     /// it through.
     /// </summary>
     /// <remarks>
-    /// The string form is not cosmetic. <c>ShellLinkFile.Hotkey</c> and
-    /// <c>InternetShortcutFile.Hotkey</c> both read by calling <see cref="ShortcutHotkey.ToString"/> and
+    /// The string form is not cosmetic. <c language="csharp">ShellLinkFile.Hotkey</c> and
+    /// <c language="csharp">InternetShortcutFile.Hotkey</c> both read by calling <see cref="ShortcutHotkey.ToString"/> and
     /// write by calling <see cref="ShortcutHotkey.Parse"/>, so reading a shortcut and writing it back
     /// unchanged goes through both. Anything the pair cannot represent losslessly is silently altered on
     /// the way through, which is why the round-trip theory below covers the whole modifier space and

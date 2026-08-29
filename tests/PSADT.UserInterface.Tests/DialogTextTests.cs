@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.Tests
         /// </summary>
         /// <remarks>
         /// The two URL forms are alternatives in one pattern and the simple one is written first, so it
-        /// gets first refusal on any <c>[url</c>. It does not match a descriptive tag only because it
+        /// gets first refusal on any <c language="text">[url</c>. It does not match a descriptive tag only because it
         /// requires the closing bracket immediately - which is the kind of thing that holds until someone
         /// makes the pattern more permissive.
         /// </remarks>
@@ -91,8 +91,8 @@ namespace PSADT.UserInterface.Tests
         /// Verifies that a closing tag is not read as an opening one.
         /// </summary>
         /// <remarks>
-        /// The opening tags are written before the closing ones in the alternation, so <c>[/bold]</c> is
-        /// only safe from matching <c>[bold]</c> because of the slash. Worth its own case, since the
+        /// The opening tags are written before the closing ones in the alternation, so <c language="text">[/bold]</c> is
+        /// only safe from matching <c language="text">[bold]</c> because of the slash. Worth its own case, since the
         /// consequence of getting it wrong is text that turns bold and never turns back.
         /// </remarks>
         [Fact]

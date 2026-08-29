@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Tests
         /// <remarks>
         /// This is how they actually travel: the payload carrying a dialog request declares the base type,
         /// so the serializer has to resolve the concrete one from the <see cref="KnownTypeAttribute"/>
-        /// list. <c>BaseDialogOptions</c> names eight known types and neither
+        /// list. <c language="csharp">BaseDialogOptions</c> names eight known types and neither
         /// <see cref="InputDialogOptions"/> nor <see cref="ListSelectionDialogOptions"/> is among them -
         /// they are reachable only through <see cref="CustomDialogOptions"/>'s own list. That the chain is
         /// followed rather than only its first level is the thing worth proving.
@@ -131,7 +131,7 @@ namespace PSADT.UserInterface.Tests
         /// Verifies that a derived result carries its result value exactly once.
         /// </summary>
         /// <remarks>
-        /// <c>CustomDialogDerivative</c> re-exposes the base type's non-public field as a property rather
+        /// <c language="csharp">CustomDialogDerivative</c> re-exposes the base type's non-public field as a property rather
         /// than declaring a second field of its own. A field would be a second
         /// <see cref="DataMemberAttribute"/> of the same name, and the value would then be written twice
         /// into every input and list-selection result that crosses the pipe. It round trips either way,
@@ -270,7 +270,7 @@ namespace PSADT.UserInterface.Tests
         /// Counts non-overlapping occurrences of one string within another.
         /// </summary>
         /// <remarks>
-        /// Hand-rolled because the string overload of <c>Split</c> that would express this does not exist
+        /// Hand-rolled because the string overload of <c language="csharp">Split</c> that would express this does not exist
         /// on .NET Framework.
         /// </remarks>
         /// <param name="haystack">The text to search.</param>

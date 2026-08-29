@@ -111,7 +111,7 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// </summary>
         /// <remarks>
         /// With no runspace the caller comes from the CLR stack, and the first frame outside the toolkit's own
-        /// namespaces is taken. A test class sits in <c>PSAppDeployToolkit.Tests</c>, which the pattern matching those
+        /// namespaces is taken. A test class sits in <c language="text">PSAppDeployToolkit.Tests</c>, which the pattern matching those
         /// namespaces also matches, so the frame chosen here is xunit's rather than the test's - a real consequence of
         /// how the filter is written, and worth knowing before reading a log from a test run.
         /// </remarks>
@@ -341,7 +341,7 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// Verifies that the host stream is used when a runspace is available.
         /// </summary>
         /// <remarks>
-        /// This is the path that reaches <c>$Script:CommandTable</c> in the module's session state, so it exercises the
+        /// This is the path that reaches <c language="powershell">$Script:CommandTable</c> in the module's session state, so it exercises the
         /// half of the fixture that supplies it. Nothing should reach the console: the entry goes to PowerShell's own
         /// information stream instead.
         /// </remarks>
@@ -391,11 +391,11 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// </summary>
         /// <remarks>
         /// An open runspace is not enough on its own. The test is whether the stack carries a
-        /// <c>System.Management.Automation</c> frame, so a direct call from .NET reads the CLR stack even with a
+        /// <c language="csharp">System.Management.Automation</c> frame, so a direct call from .NET reads the CLR stack even with a
         /// runspace open, and only a call arriving from a script asks PowerShell for its call stack. That is the right
         /// behaviour - it is where the caller actually is - but it is not what the runspace check alone suggests.
         /// <para>
-        /// The two report different shapes: a CLR frame gives <c>Type.Method()</c>, a PowerShell frame gives a command
+        /// The two report different shapes: a CLR frame gives <c language="csharp">Type.Method()</c>, a PowerShell frame gives a command
         /// name. Asserted by shape rather than by value, since what sits above a test differs from what sits above a
         /// deployment script.
         /// </para>

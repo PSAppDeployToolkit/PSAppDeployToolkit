@@ -11,7 +11,7 @@ namespace PSADT.ClientServer.Payloads
     /// </summary>
     /// <remarks>The definitions are held as a <see cref="ValueList{T}"/> so that this record compares by their
     /// contents. Every collection the framework offers compares by reference, so holding one directly would make two
-    /// payloads listing the same applications unequal however alike they were, while the generated <c>ToString</c>
+    /// payloads listing the same applications unequal however alike they were, while the generated <c language="csharp">ToString</c>
     /// rendered them identically.</remarks>
     [DataContract]
     internal sealed record class InitCloseAppsDialogPayload : IClientServerPayload

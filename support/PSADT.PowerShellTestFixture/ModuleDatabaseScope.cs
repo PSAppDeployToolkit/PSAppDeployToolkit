@@ -10,8 +10,8 @@ namespace PSADT.PowerShellTestFixture
     /// Seats a module database for the lifetime of one test and puts back whatever was there.
     /// </summary>
     /// <remarks>
-    /// The real database is only ever seated from inside <c>PSAppDeployToolkit.psm1</c>, which
-    /// <c>ModuleDatabase.Init</c> enforces by inspecting the call stack. There is no way to satisfy that from a test,
+    /// The real database is only ever seated from inside <c language="text">PSAppDeployToolkit.psm1</c>, which
+    /// <c language="csharp">ModuleDatabase.Init</c> enforces by inspecting the call stack. There is no way to satisfy that from a test,
     /// so the private field is set directly - which is also what lets a test choose the configuration a case turns on.
     /// <para>
     /// Restoring on disposal matters because the field is static: a test that left one seated would change what every
@@ -63,7 +63,7 @@ namespace PSADT.PowerShellTestFixture
         /// <summary>
         /// The open sessions the database holds, which a test can add to.
         /// </summary>
-        /// <remarks>The instance behind this is a <see cref="List{T}"/>, because <c>ModuleDatabase</c> casts the stored
+        /// <remarks>The instance behind this is a <see cref="List{T}"/>, because <c language="csharp">ModuleDatabase</c> casts the stored
         /// value to one rather than to an interface.</remarks>
         public IList<DeploymentSession> Sessions { get; }
 

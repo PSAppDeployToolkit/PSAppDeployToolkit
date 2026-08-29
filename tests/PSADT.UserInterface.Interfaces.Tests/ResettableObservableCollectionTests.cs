@@ -11,9 +11,9 @@ namespace PSADT.UserInterface.Interfaces.Tests
     /// </summary>
     /// <remarks>
     /// The Fluent close-applications dialog rebinds its list every time the set of running processes
-    /// changes, which for an ordinary <c>ObservableCollection</c> would mean one notification per item
-    /// removed and one per item added - and a WPF <c>ListView</c> rebuilding a row for each. The whole
-    /// point of this type is that a caller sees exactly one <c>Reset</c> however many items moved, so
+    /// changes, which for an ordinary <c language="csharp">ObservableCollection</c> would mean one notification per item
+    /// removed and one per item added - and a WPF <c language="csharp">ListView</c> rebuilding a row for each. The whole
+    /// point of this type is that a caller sees exactly one <c language="csharp">Reset</c> however many items moved, so
     /// that is what these tests hold it to.
     /// </remarks>
     public sealed class ResettableObservableCollectionTests
@@ -169,10 +169,10 @@ namespace PSADT.UserInterface.Interfaces.Tests
         /// Records that property notifications are not suppressed along with the collection notification.
         /// </summary>
         /// <remarks>
-        /// Only <c>OnCollectionChanged</c> is overridden, so the <c>Count</c> and <c>Item[]</c> property
+        /// Only <c language="csharp">OnCollectionChanged</c> is overridden, so the <c language="csharp">Count</c> and <c language="csharp">Item[]</c> property
         /// notifications the base class raises for the clear and for each add still go out. That is not a
         /// defect - the type promises a single collection notification and delivers one - but it is worth
-        /// having written down, because a binding watching <c>Count</c> sees the reset as several changes
+        /// having written down, because a binding watching <c language="csharp">Count</c> sees the reset as several changes
         /// rather than one.
         /// </remarks>
         [Fact]

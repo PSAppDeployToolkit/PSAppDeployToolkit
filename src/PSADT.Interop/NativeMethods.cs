@@ -327,7 +327,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Creates a new process using the specified token, application name, command line, and other parameters.
         /// </summary>
-        /// <remarks>This method wraps the native Windows API function <c>CreateProcessWithTokenW</c>,
+        /// <remarks>This method wraps the native Windows API function <c language="csharp">CreateProcessWithTokenW</c>,
         /// providing a managed interface for creating processes with a specified access token. The caller is
         /// responsible for ensuring that the provided token and environment block are valid.</remarks>
         /// <param name="hToken">A handle to the access token that will be used to create the process. This handle must be valid and have the
@@ -600,7 +600,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Modifies an access control list (ACL) by adding or updating the specified access control entries (ACEs).
         /// </summary>
-        /// <remarks>This method uses the Windows API function <c>SetEntriesInAcl</c> to modify the ACL.
+        /// <remarks>This method uses the Windows API function <c language="csharp">SetEntriesInAcl</c> to modify the ACL.
         /// The caller must ensure that the <paramref name="OldAcl"/> handle, if provided, is valid and not closed. The
         /// <paramref name="NewAcl"/> handle must be released by the caller to avoid memory leaks.</remarks>
         /// <param name="pListOfExplicitEntries">A read-only span of <see cref="EXPLICIT_ACCESS_W"/> structures that define the access control entries to be
@@ -660,7 +660,7 @@ namespace PSADT.Interop
         /// Sets the security information for a specified object, such as a file, registry key, or other securable
         /// object.
         /// </summary>
-        /// <remarks>This method wraps the native <c>SetSecurityInfo</c> function and ensures proper
+        /// <remarks>This method wraps the native <c language="csharp">SetSecurityInfo</c> function and ensures proper
         /// reference management for the provided handles. Callers are responsible for ensuring that the handles passed
         /// to this method are valid and not closed.</remarks>
         /// <param name="handle">A <see cref="SafeHandle"/> representing the handle to the object whose security information is being set.
@@ -744,7 +744,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Retrieves security information for a specified object, such as its owner, group, DACL, or SACL.
         /// </summary>
-        /// <remarks>This method wraps the native <c>GetNamedSecurityInfo</c> function and provides a
+        /// <remarks>This method wraps the native <c language="csharp">GetNamedSecurityInfo</c> function and provides a
         /// managed interface for retrieving security information. The caller is responsible for freeing any handles or
         /// memory returned by this method to avoid resource leaks.</remarks>
         /// <param name="pObjectName">The name of the object for which to retrieve security information. This can be a file, registry key, or
@@ -1028,7 +1028,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Initializes an authorization context from a security identifier (SID).
         /// </summary>
-        /// <remarks>This method wraps the native <c>AuthzInitializeContextFromSid</c> function and
+        /// <remarks>This method wraps the native <c language="csharp">AuthzInitializeContextFromSid</c> function and
         /// ensures proper error handling. It throws exceptions for common failure scenarios, such as invalid handles or
         /// system errors.</remarks>
         /// <param name="Flags">A combination of <see cref="AUTHZ_CONTEXT_FLAGS"/> values that specify the behavior of the authorization
@@ -1079,7 +1079,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Initializes an authorization context from a security identifier (SID).
         /// </summary>
-        /// <remarks>This method wraps the native <c>AuthzInitializeContextFromSid</c> function and
+        /// <remarks>This method wraps the native <c language="csharp">AuthzInitializeContextFromSid</c> function and
         /// ensures proper error handling. It throws exceptions for common failure scenarios, such as invalid handles or
         /// system errors.</remarks>
         /// <param name="UserSid">A <see cref="SafeHandle"/> representing the security identifier (SID) of the user for whom the context is
@@ -1154,7 +1154,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Performs an access check using the specified client context, access request, and security descriptors.
         /// </summary>
-        /// <remarks>This method wraps the native <c>AuthzAccessCheck</c> function and performs additional
+        /// <remarks>This method wraps the native <c language="csharp">AuthzAccessCheck</c> function and performs additional
         /// error handling to ensure proper resource management. The caller must ensure that all input handles and
         /// structures are valid and properly initialized before calling this method.</remarks>
         /// <param name="Flags">Flags that specify the behavior of the access check. This parameter can include one or more values from the
@@ -1207,7 +1207,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Performs an access check using the specified client context, access request, and security descriptors.
         /// </summary>
-        /// <remarks>This method wraps the native <c>AuthzAccessCheck</c> function and performs additional
+        /// <remarks>This method wraps the native <c language="csharp">AuthzAccessCheck</c> function and performs additional
         /// error handling to ensure proper resource management. The caller must ensure that all input handles and
         /// structures are valid and properly initialized before calling this method.</remarks>
         /// <param name="hAuthzClientContext">A handle to the client context used for the access check. This handle must be valid and initialized.</param>
@@ -1255,7 +1255,7 @@ namespace PSADT.Interop
         /// Queries information from a policy object based on the specified information class.
         /// </summary>
         /// <remarks>This method wraps the native LSA (Local Security Authority) function
-        /// <c>LsaQueryInformationPolicy</c>. The caller must ensure that the <paramref name="PolicyHandle"/> is valid
+        /// <c language="csharp">LsaQueryInformationPolicy</c>. The caller must ensure that the <paramref name="PolicyHandle"/> is valid
         /// and has the necessary access rights. The returned buffer must be freed using the appropriate mechanism to
         /// avoid memory leaks.</remarks>
         /// <param name="PolicyHandle">A handle to the policy object from which information is to be queried. This handle must have the appropriate
@@ -2023,7 +2023,7 @@ namespace PSADT.Interop
         /// Retrieves the current system power status, including battery and AC power information.
         /// </summary>
         /// <remarks>This method wraps a call to the native Win32 API function
-        /// <c>GetSystemPowerStatus</c>. It throws an exception if the underlying API call fails.</remarks>
+        /// <c language="csharp">GetSystemPowerStatus</c>. It throws an exception if the underlying API call fails.</remarks>
         /// <param name="lpSystemPowerStatus">When the method returns, contains a <see cref="SYSTEM_POWER_STATUS"/> structure with details about the
         /// system's power status.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
@@ -2071,7 +2071,7 @@ namespace PSADT.Interop
         /// Queries information about the specified job object.
         /// </summary>
         /// <remarks>This method is a wrapper around the native Windows API function
-        /// <c>QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
+        /// <c language="csharp">QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
         /// such as accounting information, limits, and process information.</remarks>
         /// <param name="hJob">A handle to the job object. This handle must have the Query access right.</param>
         /// <param name="JobObjectInformationClass">The information class for the job object. This parameter specifies the type of information to be queried.</param>
@@ -2099,7 +2099,7 @@ namespace PSADT.Interop
         /// Queries information about the specified job object.
         /// </summary>
         /// <remarks>This method is a wrapper around the native Windows API function
-        /// <c>QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
+        /// <c language="csharp">QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
         /// such as accounting information, limits, and process information.</remarks>
         /// <param name="JobObjectInformationClass">The information class for the job object. This parameter specifies the type of information to be queried.</param>
         /// <param name="lpJobObjectInformation">A buffer that receives the information. The format of this data depends on the value of the <paramref
@@ -3394,7 +3394,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Removes a menu item from the specified menu.
         /// </summary>
-        /// <remarks>This method wraps the native <c>RemoveMenu</c> function and ensures that any failure is reported as a managed exception.</remarks>
+        /// <remarks>This method wraps the native <c language="csharp">RemoveMenu</c> function and ensures that any failure is reported as a managed exception.</remarks>
         /// <param name="hMenu">A handle to the menu from which the item will be removed. This handle must be valid and cannot be null.</param>
         /// <param name="uPosition">The position of the menu item to be removed. The interpretation of this value depends on the <paramref name="uFlags"/> parameter.</param>
         /// <param name="uFlags">Specifies how the <paramref name="uPosition"/> parameter is interpreted. This can be a combination of <see cref="MENU_ITEM_FLAGS"/> values.</param>
@@ -3409,7 +3409,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Retrieves a handle to the top-level window that matches the specified class name and window name.
         /// </summary>
-        /// <remarks>This method wraps the native <c>FindWindow</c> function and throws an exception if the window is not found. Use this method to locate a top-level window by its class name, window name, or both.</remarks>
+        /// <remarks>This method wraps the native <c language="csharp">FindWindow</c> function and throws an exception if the window is not found. Use this method to locate a top-level window by its class name, window name, or both.</remarks>
         /// <param name="lpClassName">The class name of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the class name.</param>
         /// <param name="lpWindowName">The window name (title) of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the window name.</param>
         /// <returns>A handle to the window that matches the specified criteria.</returns>
@@ -3500,7 +3500,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Retrieves the time of the last input event (e.g., keyboard or mouse activity) for the system.
         /// </summary>
-        /// <remarks>This method wraps the native <c>GetLastInputInfo</c> function and ensures that the
+        /// <remarks>This method wraps the native <c language="csharp">GetLastInputInfo</c> function and ensures that the
         /// <paramref name="plii"/> structure is properly initialized before the call. The caller can use the <see
         /// cref="LASTINPUTINFO.dwTime"/> value to calculate the duration of user inactivity by comparing it with the
         /// current system tick count.</remarks>

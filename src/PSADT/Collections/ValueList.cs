@@ -12,7 +12,7 @@ namespace PSADT.Collections
     /// </summary>
     /// <remarks>A record compares each of its fields, and every collection the framework offers compares by
     /// reference - so a record holding one is a record that never equals another describing the same thing, while its
-    /// generated <c>ToString</c> renders the two identically. This exists to be held in place of one: a record stores
+    /// generated <c language="csharp">ToString</c> renders the two identically. This exists to be held in place of one: a record stores
     /// it privately and exposes it through a property typed as <see cref="IReadOnlyList{T}"/>, so the generated
     /// equality picks up the contents while the type's callers see no difference. <para> Making it the declared type
     /// of the field, rather than writing a comparison by hand on each record, is the point: equality then stays

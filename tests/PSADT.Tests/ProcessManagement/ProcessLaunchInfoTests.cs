@@ -11,7 +11,7 @@ namespace PSADT.Tests.ProcessManagement
     /// </summary>
     /// <remarks>
     /// Only the paths that need no user token are covered here. Anything reached by supplying a
-    /// <c>RunAsActiveUser</c> or asking for environment expansion in another user's context brokers a
+    /// <c language="csharp">RunAsActiveUser</c> or asking for environment expansion in another user's context brokers a
     /// token, which belongs with the elevation-gated tests rather than with pure construction.
     /// <para>
     /// The shell execute combination checks are the substance. Shell execute cannot carry a token, so the
@@ -179,7 +179,7 @@ namespace PSADT.Tests.ProcessManagement
         /// Verifies that a single argument is passed through unescaped while two or more are escaped.
         /// </summary>
         /// <remarks>
-        /// Deliberate, and matching <c>UserShellExecuteOptions</c>. Pinned here so the asymmetry stays a
+        /// Deliberate, and matching <c language="csharp">UserShellExecuteOptions</c>. Pinned here so the asymmetry stays a
         /// decision rather than drifting.
         /// </remarks>
         [Fact]
@@ -415,7 +415,7 @@ namespace PSADT.Tests.ProcessManagement
             ProcessLaunchInfo launchInfo = new(Path.Join(Environment.SystemDirectory, "cmd.exe"));
 
             // Assert: the interpreter is a console application, and the launch agrees
-            Assert.Equal(PSADT.Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, launchInfo.ImageSubsystem);
+            Assert.Equal(Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, launchInfo.ImageSubsystem);
             Assert.True(launchInfo.IsCliApplication());
         }
 
@@ -430,7 +430,7 @@ namespace PSADT.Tests.ProcessManagement
         [Fact]
         public void ImageSubsystem_FallsBackToTheExtension()
         {
-            Assert.Equal(PSADT.Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, new ProcessLaunchInfo(@"C:\does-not-exist\script.bat").ImageSubsystem);
+            Assert.Equal(Interop.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI, new ProcessLaunchInfo(@"C:\does-not-exist\script.bat").ImageSubsystem);
         }
 
         /// <summary>

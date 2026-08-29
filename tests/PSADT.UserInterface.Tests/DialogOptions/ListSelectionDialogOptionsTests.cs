@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// <remarks>
     /// The only options type holding a collection, which is what most of these are about: a list held by
     /// reference would defeat both the record's equality and its immutability, so the items are copied
-    /// into a <c>ValueList</c> on the way in and rebuilt into a read-only view on the way out.
+    /// into a <c language="csharp">ValueList</c> on the way in and rebuilt into a read-only view on the way out.
     /// </remarks>
     public sealed class ListSelectionDialogOptionsTests
     {
@@ -134,8 +134,8 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies that the list is rebuilt on each read rather than handed out.
         /// </summary>
         /// <remarks>
-        /// The same guarantee the culture makes in <c>BaseDialogOptions</c>, for the same reason: the
-        /// backing field is a <c>ValueList</c> that compares by contents, and the property builds a fresh
+        /// The same guarantee the culture makes in <c language="csharp">BaseDialogOptions</c>, for the same reason: the
+        /// backing field is a <c language="csharp">ValueList</c> that compares by contents, and the property builds a fresh
         /// read-only view so no caller can reach the storage behind it.
         /// </remarks>
         [Fact]
@@ -153,7 +153,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies that two dialogs offering the same items are equal despite holding separate lists.
         /// </summary>
         /// <remarks>
-        /// This is the reason the backing field is a <c>ValueList</c> rather than an array or a
+        /// This is the reason the backing field is a <c language="csharp">ValueList</c> rather than an array or a
         /// <see cref="List{T}"/>, either of which would compare by reference and reduce the whole record
         /// to reference equality.
         /// </remarks>
@@ -199,8 +199,8 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies that the top-most flag is required here as it is everywhere else.
         /// </summary>
         /// <remarks>
-        /// This type used to read an absent <c>DialogTopMost</c> as false while every other
-        /// <c>BaseDialogOptions</c> derivative refused to build without it. The difference was not
+        /// This type used to read an absent <c language="csharp">DialogTopMost</c> as false while every other
+        /// <c language="csharp">BaseDialogOptions</c> derivative refused to build without it. The difference was not
         /// harmless: a list selection dialog that quietly opened behind another window would leave a
         /// deployment waiting on an answer the user could not see they were being asked for.
         /// </remarks>

@@ -173,7 +173,7 @@ namespace PSADT.Tests.TerminalServices
             Assert.False(session.IsConsoleSession && session.IsRdpSession);
 
             // Assert: a session reached remotely reports a protocol other than the console's
-            Assert.Equal(session.ClientProtocolType is not PSADT.Interop.WTS_PROTOCOL_TYPE.Console, session.IsRdpSession);
+            Assert.Equal(session.ClientProtocolType is not Interop.WTS_PROTOCOL_TYPE.Console, session.IsRdpSession);
 
             // Assert: and a client directory is only reported alongside a client that has one
             if (session.ClientDirectory is not null)

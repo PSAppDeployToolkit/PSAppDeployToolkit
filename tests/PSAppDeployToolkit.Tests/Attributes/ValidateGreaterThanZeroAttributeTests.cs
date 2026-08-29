@@ -13,7 +13,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
     /// <remarks>
     /// Applied to timeouts and retry counts, where zero means something different from unset and is almost always a
     /// caller mistake. It reaches zero two ways: a value type is compared against its own default, and a reference
-    /// type against a static <c>Zero</c> of its own type.
+    /// type against a static <c language="csharp">Zero</c> of its own type.
     /// </remarks>
     public sealed class ValidateGreaterThanZeroAttributeTests
     {
@@ -89,7 +89,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// Verifies that a type with no notion of zero is refused for that reason, and says which type it was.
         /// </summary>
         /// <remarks>
-        /// A reference type qualifies only by carrying a static <c>Zero</c> of its own type. Neither of these does, so
+        /// A reference type qualifies only by carrying a static <c language="csharp">Zero</c> of its own type. Neither of these does, so
         /// both are refused as unsupported rather than silently passed - which is the safer failure, since a caller
         /// would otherwise believe a check had happened.
         /// </remarks>
@@ -107,10 +107,10 @@ namespace PSAppDeployToolkit.Tests.Attributes
         }
 
         /// <summary>
-        /// Verifies that a reference type carrying a static <c>Zero</c> of its own type is compared against it.
+        /// Verifies that a reference type carrying a static <c language="csharp">Zero</c> of its own type is compared against it.
         /// </summary>
         /// <remarks>
-        /// Reached with a stand-in because nothing in the framework fits: the types that offer a static <c>Zero</c> -
+        /// Reached with a stand-in because nothing in the framework fits: the types that offer a static <c language="csharp">Zero</c> -
         /// <see cref="TimeSpan"/>, <see cref="decimal"/>, the numeric types - are all value types and take the other
         /// path. So this branch would otherwise never run.
         /// </remarks>
@@ -133,7 +133,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         }
 
         /// <summary>
-        /// A comparable reference type offering a static <c>Zero</c> of its own type.
+        /// A comparable reference type offering a static <c language="csharp">Zero</c> of its own type.
         /// </summary>
         /// <param name="value">The amount this stands for.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0097:A class that implements IComparable<T> or IComparable should override comparison operators", Justification = "The validator compares through IComparable by reflection; operators would never be called.")]

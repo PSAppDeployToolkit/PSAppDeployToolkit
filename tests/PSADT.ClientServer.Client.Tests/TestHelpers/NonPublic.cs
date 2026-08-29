@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace PSADT.ClientServer.Client.Tests.TestHelpers
 {
     /// <summary>
-    /// Reaches the members of <c>ClientExecutable</c> that <c>InternalsVisibleTo</c> does not.
+    /// Reaches the members of <c language="csharp">ClientExecutable</c> that <c language="csharp">InternalsVisibleTo</c> does not.
     /// </summary>
     /// <remarks>
     /// The type itself is internal, so the friend grant reaches it and its one internal method. Every
@@ -15,7 +15,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
     /// rather than by preference: it couples each test to a member's name.
     /// <para>
     /// Two of the members under test are generic, which the ordinary lookup cannot call - a
-    /// <c>MethodInfo</c> for an open generic has to be closed over the type argument first. Those go
+    /// <c language="csharp">MethodInfo</c> for an open generic has to be closed over the type argument first. Those go
     /// through <see cref="CallStaticGeneric{TResult}"/>.
     /// </para>
     /// </remarks>
@@ -112,7 +112,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// <remarks>
         /// The members this is used for return <see cref="ValueTask"/>, which is not an
         /// <see cref="IAsyncResult"/> and cannot be cast to <see cref="Task"/>. Rather than close over
-        /// its type here, the returned object is asked for its <c>AsTask</c> and that is awaited, which
+        /// its type here, the returned object is asked for its <c language="csharp">AsTask</c> and that is awaited, which
         /// works for both flavours of awaitable this project has.
         /// </remarks>
         /// <param name="instance">The object to call on.</param>

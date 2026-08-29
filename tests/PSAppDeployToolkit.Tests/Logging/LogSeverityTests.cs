@@ -9,7 +9,7 @@ namespace PSAppDeployToolkit.Tests.Logging
     /// Tests the severity values, which are a contract with something outside this codebase.
     /// </summary>
     /// <remarks>
-    /// The numeric value of each is written into every CMTrace log line as its <c>type</c> attribute, and OneTrace
+    /// The numeric value of each is written into every CMTrace log line as its <c language="text">type</c> attribute, and OneTrace
     /// colours a line by reading it. So these are not internal identifiers that may be renumbered: inserting a member
     /// in the middle would silently recolour every log the toolkit has ever written, with nothing in this codebase
     /// noticing.

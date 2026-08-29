@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.Win32;
 
 namespace PSADT.WindowsRuntime.Tests.TestHelpers
@@ -9,9 +9,9 @@ namespace PSADT.WindowsRuntime.Tests.TestHelpers
     /// <remarks>
     /// The one fact that matters here is which build of Windows is running, because both APIs this
     /// assembly wraps shipped in the same one. It is read from the registry rather than from
-    /// <c>ApiInformation</c>: asking <c>ApiInformation</c> would restate the guard the code under test
+    /// <c language="csharp">ApiInformation</c>: asking <c language="csharp">ApiInformation</c> would restate the guard the code under test
     /// uses, and a test gated on the implementation's own answer agrees with it whether or not either
-    /// is right. It is read from the registry rather than from <c>Environment.OSVersion</c> as well,
+    /// is right. It is read from the registry rather than from <c language="csharp">Environment.OSVersion</c> as well,
     /// because on .NET Framework that property reports what the process manifest permits it to report
     /// rather than what is running.
     /// <para>

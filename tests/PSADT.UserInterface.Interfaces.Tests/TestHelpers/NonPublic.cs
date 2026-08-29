@@ -5,7 +5,7 @@ using System.Runtime.ExceptionServices;
 namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
 {
     /// <summary>
-    /// Reaches the few members that neither <c>InternalsVisibleTo</c> nor a derived test dialog reaches.
+    /// Reaches the few members that neither <c language="xml">InternalsVisibleTo</c> nor a derived test dialog reaches.
     /// </summary>
     /// <remarks>
     /// Most of this project is internal, which the test assembly sees directly. Most of the rest is
@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
     /// <para>
     /// The Fluent dialogs are the ones that cannot be derived from, and not because they are sealed -
     /// most are, but the base is abstract and its immediate subclass is not. The obstacle is XAML:
-    /// <c>InitializeComponent</c> asks <c>Application.LoadComponent</c> for a resource addressed by a
+    /// <c language="csharp">InitializeComponent</c> asks <c language="csharp">Application.LoadComponent</c> for a resource addressed by a
     /// URI naming the assembly the markup was compiled into, and that call refuses when the object it
     /// is loading into comes from a different assembly. A test type deriving from a Fluent dialog
     /// therefore throws before its constructor finishes, however the accessibility works out. The

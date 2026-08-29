@@ -14,7 +14,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
     /// </summary>
     /// <remarks>
     /// Split by what each member needs. Unwrapping and the null tests are pure and run without an engine; the three
-    /// that ask PowerShell to render something need a runspace, because they reach <c>Out-String</c> to decide whether
+    /// that ask PowerShell to render something need a runspace, because they reach <c language="powershell">Out-String</c> to decide whether
     /// a value has anything worth showing.
     /// </remarks>
     /// <param name="powerShell">The hosted engine, shared across the collection.</param>
@@ -61,7 +61,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// Worth recording because it differs from <see cref="PowerShellUtilities.TryGetBaseObject"/>, which treats all
-        /// four as null. Here they are unwrapped and cast like any other value, so <c>AutomationNull</c> - itself a
+        /// four as null. Here they are unwrapped and cast like any other value, so <c language="csharp">AutomationNull</c> - itself a
         /// wrapper - comes out as the object it wraps. Harmless in current use, since the only callers ask for
         /// <see cref="object"/> or hand it a value they already know the shape of, but the two are not
         /// interchangeable.
@@ -160,7 +160,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// Zero and false are the cases that matter: both are falsy to PowerShell but both render as text, so neither
-        /// is empty. A parameter set to <c>0</c> has been set.
+        /// is empty. A parameter set to <c language="text">0</c> has been set.
         /// </remarks>
         [Fact]
         public void ObjectRendersAsEmpty_DoesNotMistakeAValueForNothing()
@@ -179,7 +179,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// This is how remaining arguments arrive when a caller splats or forwards them: a flat list of tokens with no
-        /// binding, which has to be turned back into something shaped like <c>$PSBoundParameters</c>.
+        /// binding, which has to be turned back into something shaped like <c language="powershell">$PSBoundParameters</c>.
         /// </remarks>
         [Fact]
         public void ConvertValuesFromRemainingArguments_TurnsAValuelessParameterIntoASwitch()
@@ -213,7 +213,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// Verifies that a parameter whose value renders as nothing is dropped altogether.
         /// </summary>
         /// <remarks>
-        /// Deliberate: forwarding <c>-Name ''</c> to a command that would reject a blank name is worse than not
+        /// Deliberate: forwarding <c language="powershell">-Name ''</c> to a command that would reject a blank name is worse than not
         /// forwarding it at all, so the key is removed rather than passed on empty.
         /// </remarks>
         [Fact]
@@ -233,7 +233,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// Verifies that a trailing colon is not taken as part of the name.
         /// </summary>
         /// <remarks>
-        /// <c>-Force:</c> is how a caller writes a switch whose value follows, so the colon belongs to the syntax
+        /// <c language="powershell">-Force:</c> is how a caller writes a switch whose value follows, so the colon belongs to the syntax
         /// rather than the name.
         /// </remarks>
         [Fact]
@@ -254,7 +254,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// PowerShell binds parameters case-insensitively, so a dictionary standing in for
-        /// <c>$PSBoundParameters</c> has to as well.
+        /// <c language="powershell">$PSBoundParameters</c> has to as well.
         /// </remarks>
         [Fact]
         public void ConvertValuesFromRemainingArguments_MatchesNamesWithoutRegardToCase()
@@ -274,7 +274,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// The source says in capitals that this must not be read-only, because it stands in for
-        /// <c>$PSBoundParameters</c> and callers go on to adjust it. Nothing else would catch a change to that.
+        /// <c language="powershell">$PSBoundParameters</c> and callers go on to adjust it. Nothing else would catch a change to that.
         /// </remarks>
         [Fact]
         public void ConvertValuesFromRemainingArguments_ReturnsSomethingStillMutable()
@@ -306,7 +306,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// Verifies that a single-character parameter name is not recognised.
         /// </summary>
         /// <remarks>
-        /// The pattern requires at least two characters after the dash, so <c>-f</c> is read as a value rather than a
+        /// The pattern requires at least two characters after the dash, so <c language="powershell">-f</c> is read as a value rather than a
         /// parameter and is discarded for having no parameter before it. PowerShell itself accepts a one-character
         /// name, so this is a real difference; pinned as the current behaviour rather than endorsed.
         /// </remarks>
@@ -323,7 +323,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// Verifies that a name and value joined by a colon in one token is not recognised.
         /// </summary>
         /// <remarks>
-        /// <c>-Name:Notepad</c> is valid PowerShell, but the pattern only allows a colon at the very end, so the whole
+        /// <c language="powershell">-Name:Notepad</c> is valid PowerShell, but the pattern only allows a colon at the very end, so the whole
         /// token is read as a value. Pinned for the same reason as the single-character case.
         /// </remarks>
         [Fact]
@@ -376,7 +376,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// Verifies that a nested list of remaining arguments is flattened into the result.
         /// </summary>
         /// <remarks>
-        /// This is how a forwarded <c>$args</c> arrives: one bound parameter whose value is the whole unbound list.
+        /// This is how a forwarded <c language="powershell">$args</c> arrives: one bound parameter whose value is the whole unbound list.
         /// Recognised by the list carrying something that looks like a parameter, and turned back into arguments by
         /// the same conversion that reads remaining arguments in the first place.
         /// </remarks>
@@ -431,7 +431,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
         /// </summary>
         /// <remarks>
         /// The opposite of the other conversion, and deliberately so: a rendered command line is finished, whereas a
-        /// stand-in for <c>$PSBoundParameters</c> is not.
+        /// stand-in for <c language="powershell">$PSBoundParameters</c> is not.
         /// </remarks>
         [Fact]
         public void ConvertBoundParametersToArgumentList_ReturnsSomethingFinished()

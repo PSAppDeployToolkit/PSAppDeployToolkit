@@ -41,11 +41,11 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies the defaults for the values a caller can leave out.
         /// </summary>
         /// <remarks>
-        /// <c>DialogAllowCancel</c> is the one that is collapsed rather than kept nullable, and it
+        /// <c language="csharp">DialogAllowCancel</c> is the one that is collapsed rather than kept nullable, and it
         /// defaults to false - so a restart prompt cannot be dismissed unless the caller says it can. The
-        /// field used to be called <c>AllowCancel</c> while the dictionary key it is read from was
-        /// <c>DialogAllowCancel</c>; they now agree, and agree with the <c>DialogAllowMove</c> and
-        /// <c>DialogAllowMinimize</c> pair on the base type.
+        /// field used to be called <c language="csharp">AllowCancel</c> while the dictionary key it is read from was
+        /// <c language="csharp">DialogAllowCancel</c>; they now agree, and agree with the <c language="csharp">DialogAllowMove</c> and
+        /// <c language="csharp">DialogAllowMinimize</c> pair on the base type.
         /// </remarks>
         [Fact]
         public void Constructor_DefaultsTheOptionalValues()
@@ -80,7 +80,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// </summary>
         /// <remarks>
         /// The two optional strings on this type used to be treated differently, with only
-        /// <c>CustomMessageText</c> rejected when blank. Both now follow the rule the rest of these types
+        /// <c language="csharp">CustomMessageText</c> rejected when blank. Both now follow the rule the rest of these types
         /// keep: absent is a valid state, present-but-blank is not, since it says a value was meant and
         /// then supplies nothing.
         /// </remarks>

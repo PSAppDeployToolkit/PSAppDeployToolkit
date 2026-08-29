@@ -88,8 +88,7 @@ namespace PSADT.Interop.Tests.Polyfills
         /// parameter, which is what the framework overloads do.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Awaiting an upstream Meziantou.Polyfill release; the assertion is the behaviour we want restored.")]
-        [Fact(Skip = "Skipped on net472: neither polyfill overload null-checks its argument, so both throw NullReferenceException instead of ArgumentNullException. Fix submitted upstream to Meziantou.Polyfill; unskip once the package is updated.")]
+        [Fact]
         public void Join_ThrowsOnNullValues()
         {
             // Arrange

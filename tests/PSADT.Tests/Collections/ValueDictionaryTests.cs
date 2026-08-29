@@ -327,7 +327,7 @@ namespace PSADT.Tests.Collections
 
         /// <summary>
         /// Verifies that a dictionary survives a data contract round trip, which is the only reason the
-        /// parameterless constructor and <c>Add</c> are public at all.
+        /// parameterless constructor and <c language="csharp">Add</c> are public at all.
         /// </summary>
         /// <remarks>
         /// The serializer rebuilds a collection by constructing an empty one and adding to it, and refuses

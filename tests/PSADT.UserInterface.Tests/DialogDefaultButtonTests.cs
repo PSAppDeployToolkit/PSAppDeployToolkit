@@ -18,7 +18,7 @@ namespace PSADT.UserInterface.Tests
         /// </summary>
         /// <remarks>
         /// The names describe where the button sits rather than which it is, and the order of the members
-        /// follows the order they appear on screen. <c>None</c> is zero so that a dialog with no default
+        /// follows the order they appear on screen. <c language="csharp">None</c> is zero so that a dialog with no default
         /// gets one by leaving the value unset.
         /// </remarks>
         [Fact]

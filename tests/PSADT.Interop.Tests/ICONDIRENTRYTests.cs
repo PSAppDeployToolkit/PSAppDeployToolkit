@@ -14,7 +14,7 @@ namespace PSADT.Interop.Tests
         /// <summary>
         /// Verifies that an entry occupies the sixteen bytes the icon format specifies and that every field
         /// lands where the format puts it. Other tests write field values at fixed offsets, which only
-        /// works while the packing holds; a lost <c>Pack = 1</c> or a reordered field would move the fields
+        /// works while the packing holds; a lost <c language="csharp">Pack = 1</c> or a reordered field would move the fields
         /// without breaking the build.
         /// </summary>
         [Fact]

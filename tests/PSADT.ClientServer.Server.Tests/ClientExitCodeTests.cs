@@ -10,7 +10,7 @@ namespace PSADT.ClientServer.Server.Tests
     /// </summary>
     /// <remarks>
     /// These are process exit codes, not an internal vocabulary. The client returns one from its entry
-    /// point and the server reads it back off the exited process, asking <c>Enum.IsDefined</c> whether the
+    /// point and the server reads it back off the exited process, asking <c language="csharp">Enum.IsDefined</c> whether the
     /// number it got is one of these before naming it - and reporting an unknown program if it is not. So
     /// what matters is the numbers rather than the names: two codes sharing one would have the server
     /// report the wrong reason, and a code the lookup does not recognise would have it report none.
@@ -43,7 +43,7 @@ namespace PSADT.ClientServer.Server.Tests
         /// Verifies that every reason is recognised by the lookup the server performs on an exit code.
         /// </summary>
         /// <remarks>
-        /// The server hands <c>Enum.IsDefined</c> the exit code as an <see cref="int"/>, which is a
+        /// The server hands <c language="csharp">Enum.IsDefined</c> the exit code as an <see cref="int"/>, which is a
         /// different question from handing it a value of this type: the answer depends on the number being
         /// declared rather than on the value being well-formed. Asked the same way here so that the answer
         /// means the same thing.

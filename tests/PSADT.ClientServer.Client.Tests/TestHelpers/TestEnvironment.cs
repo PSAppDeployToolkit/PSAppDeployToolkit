@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Security.Principal;
 
 namespace PSADT.ClientServer.Client.Tests.TestHelpers
@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
     /// Facts about the machine a test run landed on, resolved once and shared by every test class.
     /// </summary>
     /// <remarks>
-    /// Exposed as static properties so a test can name one in <c>SkipUnless</c> with <c>SkipType</c>
+    /// Exposed as static properties so a test can name one in <c language="csharp">SkipUnless</c> with <c language="csharp">SkipType</c>
     /// pointing here, which keeps one copy of each probe rather than one per test class. A deliberate
     /// near-copy of the one beside the server's tests, carrying only what this project asks: a test
     /// project referencing another test project would drag its whole suite into this one's discovery.
@@ -50,14 +50,14 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// </summary>
         /// <remarks>
         /// The inverse of <see cref="IsLocalSystem"/>, because the only account-gated path here refuses
-        /// every caller that is not the local system account and there is no <c>SkipIf</c> to express
+        /// every caller that is not the local system account and there is no <c language="csharp">SkipIf</c> to express
         /// that with.
         /// </remarks>
         public static bool IsNotLocalSystem { get; } = !IsLocalSystem;
 
         /// <summary>
         /// Whether every client/server executable is present beside this assembly, which decides
-        /// whether <c>ClientServerUtilities</c> can be touched at all.
+        /// whether <c language="csharp">ClientServerUtilities</c> can be touched at all.
         /// </summary>
         /// <remarks>
         /// Its static constructor asks whether each executable is Authenticode trusted, and that check
@@ -70,11 +70,11 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// </summary>
         /// <remarks>
         /// Resolved the way the library resolves it, so an unsigned development build lands on the
-        /// compatible variant. The default variant requests <c>uiAccess</c>, which Windows grants only
+        /// compatible variant. The default variant requests <c language="xml">uiAccess</c>, which Windows grants only
         /// to a signed executable in a secure path and otherwise refuses to launch at all. The launcher
         /// variants are excluded by that same resolution, which matters here beyond the signing: they
-        /// are windowed, and <c>InvokeMainErrorHandler</c> answers a failure in one with
-        /// <c>Environment.FailFast</c> rather than a serialized exception on standard error.
+        /// are windowed, and <c language="csharp">InvokeMainErrorHandler</c> answers a failure in one with
+        /// <c language="csharp"    >Environment.FailFast</c> rather than a serialized exception on standard error.
         /// </remarks>
         public static FileInfo? ClientExecutable { get; } = GetClientExecutable();
 
@@ -107,7 +107,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// Determines whether every client/server executable is present beside the loaded assembly.
         /// </summary>
         /// <remarks>
-        /// The paths are derived the same way <c>ClientServerUtilities</c> derives them, rather than by
+        /// The paths are derived the same way <c language="csharp">ClientServerUtilities</c> derives them, rather than by
         /// reading that type, because reading it is the thing this method exists to make safe.
         /// </remarks>
         /// <returns><see langword="true"/> if all four are present; otherwise, <see langword="false"/>.</returns>
@@ -129,7 +129,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         /// <returns>The executable, or <see langword="null"/> if the set is incomplete.</returns>
         private static FileInfo? GetClientExecutable()
         {
-            return !ClientServerExecutablesPresent ? null : PSADT.Foundation.ClientServerUtilities.ClientAutoPath;
+            return !ClientServerExecutablesPresent ? null : Foundation.ClientServerUtilities.ClientAutoPath;
         }
     }
 }

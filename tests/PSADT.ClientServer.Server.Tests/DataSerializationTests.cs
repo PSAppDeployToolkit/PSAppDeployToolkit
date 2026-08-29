@@ -216,11 +216,11 @@ namespace PSADT.ClientServer.Server.Tests
         /// <remarks>
         /// Its callers report a failure by serializing the exception, so one that cannot be serialized
         /// leaves them nothing to report. The client is the case that matters: its error handler calls
-        /// <c>Environment.FailFast</c> when serializing the exception throws, so the process aborted with
+        /// <c language="csharp">Environment.FailFast</c> when serializing the exception throws, so the process aborted with
         /// an empty standard error rather than an exit code the server could read.
         /// <para>
-        /// The obstacle was the inner <c>XmlException</c>, which carries the arguments of its own message
-        /// as a <c>string[]</c>. That type had to be a known type before an exception holding one could
+        /// The obstacle was the inner <c language="csharp">XmlException</c>, which carries the arguments of its own message
+        /// as a <c language="csharp">string[]</c>. That type had to be a known type before an exception holding one could
         /// be written.
         /// </para>
         /// </remarks>

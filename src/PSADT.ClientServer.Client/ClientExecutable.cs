@@ -195,7 +195,7 @@ namespace PSADT.ClientServer
         /// the method writes an error message to the standard error stream and terminates the process with an
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
-        /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
+        /// the keys <c language="text">"InputPipe"</c> and <c language="text">"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
         /// <exception cref="ClientException">Thrown when a required pipe handle is missing, invalid, or cannot be opened.</exception>
         private static async ValueTask<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
         {

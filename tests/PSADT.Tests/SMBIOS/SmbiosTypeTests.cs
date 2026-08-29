@@ -106,7 +106,7 @@ namespace PSADT.Tests.SMBIOS
         /// The value of every member declared by the structure type enumeration.
         /// </summary>
         /// <remarks>
-        /// Read from the enumeration's fields rather than through <c>Enum.GetValues</c>, which has no
+        /// Read from the enumeration's fields rather than through <c language="csharp">Enum.GetValues</c>, which has no
         /// generic overload on every target framework this project builds for.
         /// </remarks>
         /// <returns>The declared values, in declaration order.</returns>

@@ -12,9 +12,9 @@ namespace PSADT.UserInterface.Tests
         /// Verifies the members and their values.
         /// </summary>
         /// <remarks>
-        /// <c>Left</c> is zero, which matters beyond the wire format: the options types hold this as a
+        /// <c language="csharp">Left</c> is zero, which matters beyond the wire format: the options types hold this as a
         /// nullable and an absent value falls through to the dialog's own default, so a member added
-        /// ahead of <c>Left</c> would change what unaligned text does.
+        /// ahead of <c language="csharp">Left</c> would change what unaligned text does.
         /// </remarks>
         [Fact]
         public void Members_AreTheSerializedContract()

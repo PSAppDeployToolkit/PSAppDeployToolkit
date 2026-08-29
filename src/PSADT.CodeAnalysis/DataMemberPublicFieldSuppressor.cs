@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace PSADT.CodeAnalysis
 {
     /// <summary>
-    /// Suppresses CA1051 diagnostics for visible fields decorated with <c>DataMemberAttribute</c> or <c>IgnoreDataMemberAttribute</c>.
+    /// Suppresses CA1051 diagnostics for visible fields decorated with <c language="csharp">DataMemberAttribute</c> or <c language="csharp">IgnoreDataMemberAttribute</c>.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class DataMemberPublicFieldSuppressor : DiagnosticSuppressor

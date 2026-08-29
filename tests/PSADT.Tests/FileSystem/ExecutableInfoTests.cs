@@ -13,7 +13,7 @@ namespace PSADT.Tests.FileSystem
     /// Tests the portable executable header reader.
     /// </summary>
     /// <remarks>
-    /// What this decides matters more than it looks: <c>ProcessLaunchInfo</c> asks it whether a file is a
+    /// What this decides matters more than it looks: <c language="csharp">ProcessLaunchInfo</c> asks it whether a file is a
     /// console or a windowed application, and uses the answer to decide whether to attach pipes to a
     /// launched process. A misread subsystem means output silently goes nowhere.
     /// <para>

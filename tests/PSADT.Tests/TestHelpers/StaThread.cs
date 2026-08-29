@@ -10,7 +10,7 @@ namespace PSADT.Tests.TestHelpers
     /// <remarks>
     /// Some of the COM objects this assembly wraps can only be created on a single-threaded apartment.
     /// The internet shortcut is one: creating it from a multi-threaded apartment puts the object in the
-    /// host apartment and then needs a marshalling proxy for <c>IUniformResourceLocatorW</c>, which has
+    /// host apartment and then needs a marshalling proxy for <c language="csharp">IUniformResourceLocatorW</c>, which has
     /// none registered, so the creation fails with "Interface not registered" rather than with anything
     /// that names the real cause.
     /// <para>
