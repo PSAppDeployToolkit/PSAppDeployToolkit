@@ -34,6 +34,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Disable all except the cancel button until an item is selected.
             if (options.SelectedIndex is null)
             {
+                // A ComboBox's Items collection is itself a collection view, so adding the first item
+                // makes it current and the dialog opens showing a selection nobody made. Clear it, or
+                // the buttons below are disabled against a visible selection and only changing it
+                // raises the event that re-enables them - leaving a user who wants the item already
+                // showing to select something else and select back. Cleared before the handler is
+                // attached so it is not woken by this.
+                ListSelectionComboBox.SelectedIndex = -1;
                 ListSelectionComboBox.SelectionChanged += (sender, e) =>
                 {
                     ButtonLeft.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;

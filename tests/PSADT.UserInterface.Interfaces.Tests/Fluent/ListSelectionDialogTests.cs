@@ -57,30 +57,23 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Records that the first item shows as chosen while the buttons that would accept it stay
-        /// disabled.
+        /// Verifies that nothing is chosen to start with when the deployment did not choose.
         /// </summary>
         /// <remarks>
-        /// Recorded, not endorsed. A WPF item collection is itself a collection view, so adding the
-        /// first item makes it current and the drop-down shows it as the selection. That happens while
-        /// the items are being added, which is before the handler watching for a choice is attached and
-        /// before the accepting buttons are explicitly disabled - so the dialog opens displaying a
-        /// choice it will not accept.
-        /// <para>
-        /// The consequence is a user who wants the item already showing has no way to proceed: only
-        /// changing the selection raises the event that enables the buttons, so they must pick something
-        /// else and pick back. This pins what happens today so the behaviour cannot change unnoticed
-        /// while it is decided what should happen instead.
-        /// </para>
+        /// Has to be cleared rather than simply left alone. A WPF item collection is itself a collection
+        /// view, so adding the first item makes it current and the drop-down would otherwise open
+        /// showing a selection nobody made - one the accepting buttons refuse, because they are disabled
+        /// until the selection <i>changes</i>. A user who wanted the item already showing would have had
+        /// to select something else and select back.
         /// </remarks>
         [Fact]
-        public void Constructor_ShowsTheFirstItemAsChosenButWillNotAcceptIt()
+        public void Constructor_ChoosesNothingByDefault()
         {
             // Act & Assert
             WithDialog(Options("Personal", "Team"), static dialog =>
             {
-                Assert.Equal(0, dialog.ListSelectionComboBox.SelectedIndex);
-                Assert.Equal("Personal", dialog.ListSelectionComboBox.SelectedItem);
+                Assert.Equal(-1, dialog.ListSelectionComboBox.SelectedIndex);
+                Assert.Null(dialog.ListSelectionComboBox.SelectedItem);
                 Assert.False(dialog.ButtonLeft.IsEnabled);
             });
         }
@@ -90,9 +83,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// </summary>
         /// <remarks>
         /// The dismissing button stays available throughout - a user who does not want to choose has to
-        /// be able to say so. See
-        /// <see cref="Constructor_ShowsTheFirstItemAsChosenButWillNotAcceptIt"/> for what this leaves a
-        /// user who does want the item already showing.
+        /// be able to say so.
         /// </remarks>
         [Fact]
         public void Constructor_WaitsForAChoiceBeforeOfferingToAcceptOne()
@@ -187,23 +178,22 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Records that dismissing without choosing still reports the item that was showing.
+        /// Verifies that dismissing without choosing reports no choice.
         /// </summary>
         /// <remarks>
-        /// Recorded, not endorsed, and the other half of what
-        /// <see cref="Constructor_ShowsTheFirstItemAsChosenButWillNotAcceptIt"/> describes. The
-        /// dismissing button is available from the start, and the answer it records reads whatever the
-        /// drop-down is showing - which is the first item, whether or not the user ever looked at it. So
-        /// a caller cannot tell a user who chose the first item from one who cancelled outright.
+        /// The dismissing button is available from the start, and the answer it records reads whatever
+        /// the drop-down is showing. That is only meaningful because nothing is showing until the user
+        /// chooses: were the first item still selected on opening, a caller could not tell someone who
+        /// chose it from someone who cancelled outright.
         /// </remarks>
         [Fact]
-        public void ButtonClick_ReportsTheShownItemWhenDismissedWithoutChoosing()
+        public void ButtonClick_ReportsNoChoiceWhenDismissedWithoutOne()
         {
             // Act & Assert
             WithDialog(Options("Personal", "Team"), static dialog =>
             {
                 FluentControls.Click(dialog.ButtonRight);
-                Assert.Equal(new ListSelectionDialogResult("Cancel", "Personal"), dialog.DialogResult);
+                Assert.Equal(new ListSelectionDialogResult("Cancel", selectedItem: null), dialog.DialogResult);
             });
         }
 
