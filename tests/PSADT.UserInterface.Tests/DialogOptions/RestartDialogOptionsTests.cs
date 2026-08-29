@@ -34,17 +34,18 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Equal(TimeSpan.FromMinutes(5), options.CountdownNoMinimizeDuration);
             Assert.Equal("a maintenance window", options.ShutdownReasonText);
             Assert.Equal("a custom message", options.CustomMessageText);
-            Assert.True(options.AllowCancel);
+            Assert.True(options.DialogAllowCancel);
         }
 
         /// <summary>
         /// Verifies the defaults for the values a caller can leave out.
         /// </summary>
         /// <remarks>
-        /// <c>AllowCancel</c> is the one that is collapsed rather than kept nullable, and it defaults to
-        /// false - so a restart prompt cannot be dismissed unless the caller says it can. Note also that
-        /// the dictionary key is <c>DialogAllowCancel</c> while the field is <c>AllowCancel</c>; that
-        /// mismatch is the sort of thing that only shows up when someone asserts on both.
+        /// <c>DialogAllowCancel</c> is the one that is collapsed rather than kept nullable, and it
+        /// defaults to false - so a restart prompt cannot be dismissed unless the caller says it can. The
+        /// field used to be called <c>AllowCancel</c> while the dictionary key it is read from was
+        /// <c>DialogAllowCancel</c>; they now agree, and agree with the <c>DialogAllowMove</c> and
+        /// <c>DialogAllowMinimize</c> pair on the base type.
         /// </remarks>
         [Fact]
         public void Constructor_DefaultsTheOptionalValues()
@@ -57,7 +58,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.CountdownNoMinimizeDuration);
             Assert.Null(options.ShutdownReasonText);
             Assert.Null(options.CustomMessageText);
-            Assert.False(options.AllowCancel);
+            Assert.False(options.DialogAllowCancel);
         }
 
         /// <summary>

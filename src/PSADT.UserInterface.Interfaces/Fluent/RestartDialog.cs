@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -32,7 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.Message);
             }
             ButtonPanel.Visibility = Visibility.Visible;
-            allowCancel = options.AllowCancel;
+            allowCancel = options.DialogAllowCancel;
 
             // Configure left button
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);

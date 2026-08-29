@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -88,7 +88,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 shutdownReasonText = options.ShutdownReasonText;
 
                 // Set up the Cancel button if cancellation is allowed, otherwise remove it.
-                if (options.AllowCancel)
+                if (options.DialogAllowCancel)
                 {
                     buttonCancel.Text = StripFormattingTags(options.Strings.ButtonCancel);
                 }
