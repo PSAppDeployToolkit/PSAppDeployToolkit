@@ -49,7 +49,7 @@
       "psadt.interop": {
         "type": "Project",
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "[10.0.5, 10.0.6)"
+          "System.Linq.AsyncEnumerable": "[10.0.11, )"
         }
       },
       "psadt.windowsruntime": {
@@ -60,9 +60,9 @@
       },
       "System.Linq.AsyncEnumerable": {
         "type": "CentralTransitive",
-        "requested": "[10.0.5, 10.0.6)",
-        "resolved": "10.0.5",
-        "contentHash": "00y94lP/SeWF5VMb8GlG3iwLyl7abEofwN+Bke1LKEkvsB8dEtr/pDtn4EWQYkvg49UwGJN+JSCE1gKhPIT0cQ=="
+        "requested": "[10.0.11, )",
+        "resolved": "10.0.11",
+        "contentHash": "vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg=="
       }
     },
     "net8.0-windows10.0.22621/win-x64": {}

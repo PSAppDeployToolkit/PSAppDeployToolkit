@@ -38,4 +38,23 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <!--
+    Run under Microsoft.Testing.Platform rather than xunit's own console runner, which is what makes code
+    coverage available: the collector is an MTP extension, and an assembly built for xunit's runner never
+    loads it. It is also what lets "dotnet test" discover these projects at all; against xunit's runner it
+    reports zero tests and exits 5.
+
+    This changes the command line every test executable accepts. xunit's own single-dash arguments for
+    selecting tests and choosing a reporter are replaced by MTP's own filtering options, so anything
+    scripted against the old ones needs updating alongside.
+  -->
+  <PropertyGroup>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+  </ItemGroup>
+
 </Project>
