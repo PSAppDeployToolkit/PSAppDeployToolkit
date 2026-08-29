@@ -924,6 +924,10 @@ namespace PSADT.ClientServer
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
+                if (arguments.ContainsKey(key))
+                {
+                    throw new ClientException($"The argument [{argv[i]}] was specified more than once.", ClientExitCode.InvalidArguments);
+                }
                 arguments.Add(key, value);
             }
 
