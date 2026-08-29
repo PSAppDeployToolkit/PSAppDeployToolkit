@@ -46,37 +46,37 @@ namespace Fluence.Wpf.Demo.Pages
 {
     /// <summary>
     /// Transfers live controls and source text from page-level hidden slots into their matching
-    /// <c>DemoSampleControl</c> cards on a gallery page.
+    /// <c language="csharp">DemoSampleControl</c> cards on a gallery page.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// WPF error MC3093 prevents giving an <c>x:Name</c> to a control declared directly inside a
-    /// <c>DemoSampleControl</c> property element, because WPF treats that property element as a
+    /// WPF error MC3093 prevents giving an <c language="xaml">x:Name</c> to a control declared directly inside a
+    /// <c language="csharp">DemoSampleControl</c> property element, because WPF treats that property element as a
     /// template scope. Gallery pages therefore declare named <see cref="ContentControl"/> slots at
-    /// the page root using the convention <c>DemoSampleSlotNNDemoContentHost</c>,
-    /// <c>DemoSampleSlotNNOutputContentHost</c>, and <c>DemoSampleSlotNNRightRailContentHost</c>
+    /// the page root using the convention <c language="xaml">DemoSampleSlotNNDemoContentHost</c>,
+    /// <c language="xaml">DemoSampleSlotNNOutputContentHost</c>, and <c language="xaml">DemoSampleSlotNNRightRailContentHost</c>
     /// (where NN is the 1-based sample index). Calling <see cref="Apply"/> finds every such slot,
     /// moves its child into the matching sample card zone, assigns the XAML and C# source text, and
     /// clears the now-empty slot. After <see cref="Apply"/> returns the hidden slots are empty and
-    /// all live controls live inside their <c>DemoSampleControl</c> cards.
+    /// all live controls live inside their <c language="csharp">DemoSampleControl</c> cards.
     /// </para>
     /// <para>
     /// If the number of <see cref="DemoSampleSource"/> arguments does not equal the number of
-    /// <c>DemoSampleControl</c> instances on the page, <see cref="Apply"/> throws so the mismatch
+    /// <c language="csharp">DemoSampleControl</c> instances on the page, <see cref="Apply"/> throws so the mismatch
     /// is caught at startup rather than silently producing a card with no source code.
     /// </para>
     /// </remarks>
     internal static class DemoSamplePageWiring
     {
         /// <summary>
-        /// Wires every <c>DemoSampleControl</c> on a page to its live content and source code.
+        /// Wires every <c language="csharp">DemoSampleControl</c> on a page to its live content and source code.
         /// </summary>
         /// <remarks>
-        /// WPF will not let you give an <c>x:Name</c> to a control declared directly inside a
-        /// <c>DemoSampleControl</c> property element (error MC3093). So pages instead declare
+        /// WPF will not let you give an <c language="xaml">x:Name</c> to a control declared directly inside a
+        /// <c language="csharp">DemoSampleControl</c> property element (error MC3093). So pages instead declare
         /// hidden <see cref="ContentControl"/> "slots" named
-        /// <c>DemoSampleSlotNNDemoContentHost</c> / <c>...OutputContentHost</c> /
-        /// <c>...RightRailContentHost</c> (NN is the 1-based sample index). This method finds each
+        /// <c language="xaml">DemoSampleSlotNNDemoContentHost</c> / <c language="xaml">...OutputContentHost</c> /
+        /// <c language="xaml">...RightRailContentHost</c> (NN is the 1-based sample index). This method finds each
         /// slot, transfers its child into the matching sample card, attaches the XAML/C# source, and
         /// clears the slot. The Nth <see cref="DemoSampleSource"/> argument supplies the Nth card's
         /// source text, so the source count must equal the sample count.
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Demo.Pages
         /// <param name="root">The page's content root to search.</param>
         /// <param name="sources">Source-code entries, one per sample, in document order.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="root"/> or <paramref name="sources"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the number of <see cref="DemoSampleSource"/> entries does not match the number of <c>DemoSampleControl</c> instances on the page.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the number of <see cref="DemoSampleSource"/> entries does not match the number of <c language="csharp">DemoSampleControl</c> instances on the page.</exception>
         internal static void Apply(DependencyObject root, params DemoSampleSource[] sources)
         {
             ArgumentNullException.ThrowIfNull(root);

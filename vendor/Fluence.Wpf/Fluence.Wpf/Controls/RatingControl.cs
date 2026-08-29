@@ -41,8 +41,8 @@ namespace Fluence.Wpf.Controls
     /// Renders up to <see cref="MaxRating"/> star glyphs using Segoe Fluent Icons
     /// (U+E734 StarEmpty / U+E735 StarFilled).
     /// Authority: WinUI 3 RatingControl_themeresources.xaml + RatingControl.xaml.
-    /// Brush states: <c>AccentFillColorDefaultBrush</c> (filled),
-    /// <c>TextFillColorSecondaryBrush</c> (unset), <c>TextFillColorDisabledBrush</c> (disabled).
+    /// Brush states: <c language="xaml">AccentFillColorDefaultBrush</c> (filled),
+    /// <c language="xaml">TextFillColorSecondaryBrush</c> (unset), <c language="xaml">TextFillColorDisabledBrush</c> (disabled).
     /// </summary>
     [TemplatePart(Name = PART_StarsPanel, Type = typeof(System.Windows.Controls.StackPanel))]
     [TemplatePart(Name = PART_Caption, Type = typeof(System.Windows.Controls.TextBlock))]

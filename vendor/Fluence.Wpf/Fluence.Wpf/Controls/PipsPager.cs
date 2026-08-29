@@ -48,7 +48,7 @@ using System.Windows.Media.Animation;
 namespace Fluence.Wpf.Controls
 {
     /// <summary>
-    /// A page indicator mirroring the WinUI 3 <c>PipsPager</c>: a horizontal or vertical run
+    /// A page indicator mirroring the WinUI 3 <c language="csharp">PipsPager</c>: a horizontal or vertical run
     /// of round pip dots, one per visible page, with the selected pip rendered larger in the
     /// accent fill. Clicking a pip selects its page, optional previous/next chevron buttons
     /// step the selection, and arrow keys move the selection while keyboard focus is inside
@@ -56,9 +56,9 @@ namespace Fluence.Wpf.Controls
     /// </summary>
     /// <remarks>
     /// <para>
-    /// One pip per page is generated in code into the <c>PART_PipsHost</c> panel (the same
+    /// One pip per page is generated in code into the <c language="xaml">PART_PipsHost</c> panel (the same
     /// approach as <see cref="RatingControl"/>) and the whole run is hosted in the
-    /// <c>PART_PipsScrollViewer</c> viewport. When <see cref="NumberOfPages"/> exceeds
+    /// <c language="xaml">PART_PipsScrollViewer</c> viewport. When <see cref="NumberOfPages"/> exceeds
     /// <see cref="MaxVisiblePips"/> the viewport is clamped to <see cref="MaxVisiblePips"/>
     /// pip boxes along the orientation axis and stays put while the selection moves inside
     /// it, scrolling only far enough to bring a selection that has left the viewport back to
@@ -583,7 +583,7 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// WinUI's <c>PipsPager::CalculateScrollViewerSize</c>: the viewport spans the pages it
+        /// WinUI's <c language="cpp">PipsPager::CalculateScrollViewerSize</c>: the viewport spans the pages it
         /// can show, sized as every pip but the selected one at the rest box size plus one
         /// selected box. This template uses a single square box for both states, so both
         /// arguments arrive as <see cref="PipBoxSize"/>; keeping them separate means a future

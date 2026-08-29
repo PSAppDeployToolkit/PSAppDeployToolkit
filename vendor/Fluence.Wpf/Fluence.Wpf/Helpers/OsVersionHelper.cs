@@ -78,8 +78,8 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Gets a value indicating whether the undocumented
-        /// <c>SetWindowCompositionAttribute</c> acrylic accent state
-        /// (<c>ACCENT_ENABLE_ACRYLICBLURBEHIND</c>) is available. Build 17063 is the first build
+        /// <c language="csharp">SetWindowCompositionAttribute</c> acrylic accent state
+        /// (<c language="csharp">ACCENT_ENABLE_ACRYLICBLURBEHIND</c>) is available. Build 17063 is the first build
         /// that honours the acrylic accent state; earlier builds accept the call but render the
         /// plain Aero blur instead. Windows 11 is excluded deliberately: it has the DWM system
         /// backdrops, and the legacy accent path on Windows 11 both looks wrong and fights the

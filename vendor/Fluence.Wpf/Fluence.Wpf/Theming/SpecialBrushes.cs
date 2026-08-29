@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Theming
     /// Constructs every brush that is not a plain solid twin of a Color token, plus the
     /// theme-independent layout/shadow/focus tokens consumed by control templates. This is the
     /// single C# home for the special-brush definitions (elevation gradients, focus visuals, and
-    /// high-contrast SystemColors aliases) that are not the plain solid twins <c>BrushFactory</c>
+    /// high-contrast SystemColors aliases) that are not the plain solid twins <c language="csharp">BrushFactory</c>
     /// emits for each Color key. All produced brushes are frozen.
     /// </summary>
     internal static class SpecialBrushes
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Theming
 
         /// <summary>
         /// Builds the two-border control focus visual (outer + inner stroke, 4 px radius),
-        /// the WinUI 3 <c>DefaultControlFocusVisualStyle</c>. The border brushes are
+        /// the WinUI 3 <c language="xaml">DefaultControlFocusVisualStyle</c>. The border brushes are
         /// resolved via <see cref="DynamicResourceExtension"/> so they re-evaluate
         /// against whichever computed dictionary is active.
         /// </summary>
@@ -149,7 +149,7 @@ namespace Fluence.Wpf.Theming
 
         /// <summary>
         /// Builds the inset single-stroke collection focus visual, the WinUI 3
-        /// <c>DefaultCollectionFocusVisualStyle</c>.
+        /// <c language="xaml">DefaultCollectionFocusVisualStyle</c>.
         /// </summary>
         private static Style BuildCollectionFocusVisualStyle()
         {
@@ -290,7 +290,7 @@ namespace Fluence.Wpf.Theming
         /// reproducing the non-accent brush overrides in Section 2 of Theme.HighContrast.xaml.
         /// Accent-derived brushes are intentionally left as their computed twins (the legacy C#
         /// accent overlay took precedence over the HC XAML for those keys, so the golden records
-        /// the computed palette, not the HC SystemColors). A re-Apply on <c>WM_SETTINGCHANGE</c>
+        /// the computed palette, not the HC SystemColors). A re-Apply on <c language="csharp">WM_SETTINGCHANGE</c>
         /// refreshes the snapshot when the HC variant changes.
         /// </summary>
         /// <param name="dict">The resource dictionary to populate.</param>

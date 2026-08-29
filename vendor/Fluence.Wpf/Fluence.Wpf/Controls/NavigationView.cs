@@ -469,7 +469,7 @@ defaultValue: null,
         /// Gets the collection of pinned footer entries, rendered below the main menu items.
         /// Footer entries are <see cref="NavigationViewItem"/> instances that participate in the
         /// same single-selection model and selection indicator as the main menu, mirroring the
-        /// WinUI <c>NavigationView.FooterMenuItems</c> region.
+        /// WinUI <c language="xaml">NavigationView.FooterMenuItems</c> region.
         /// </summary>
         public ObservableCollection<object> FooterMenuItems => (ObservableCollection<object>)GetValue(FooterMenuItemsProperty);
 
@@ -847,7 +847,7 @@ defaultValue: null,
         }
 
         /// <summary>
-        /// Transitions the back button to the correct <c>BackButtonStates</c> VSM state
+        /// Transitions the back button to the correct <c language="xaml">BackButtonStates</c> VSM state
         /// based on <see cref="IsBackButtonVisible"/>. Called without transitions on
         /// initial template application; with transitions on runtime changes.
         /// </summary>
@@ -926,7 +926,7 @@ defaultValue: null,
         /// Evicts the item's cached natural width and schedules an overflow pass on its owning
         /// <see cref="NavigationView"/>. Called by <see cref="NavigationViewItem"/> when a
         /// measure-affecting property changes, because an item sitting collapsed inside the
-        /// overflow menu is never measured and so never raises the <c>SizeChanged</c> that is the
+        /// overflow menu is never measured and so never raises the <c language="csharp">SizeChanged</c> that is the
         /// ordinary eviction path - without this, shrinking an overflowed item's content leaves it
         /// pinned in the menu on its stale (larger) cached width forever.
         /// </summary>

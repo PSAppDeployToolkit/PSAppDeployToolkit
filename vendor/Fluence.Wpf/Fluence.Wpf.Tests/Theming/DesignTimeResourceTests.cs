@@ -37,9 +37,9 @@ namespace Fluence.Wpf.Tests.Theming
 {
     /// <summary>
     /// Guards the generated design-time color + brush snapshots
-    /// (<c>Fluence.Wpf/Properties/DesignTime.{Light,Dark}.xaml</c>) against drift from the theme
+    /// (<c language="text">Fluence.Wpf/Properties/DesignTime.{Light,Dark}.xaml</c>) against drift from the theme
     /// engine, and verifies they are valid loadable XAML. The snapshot is produced by
-    /// <see cref="DesignTimeResourceWriter"/> from <c>FluenceThemeEngine.BuildStandalone</c>.
+    /// <see cref="DesignTimeResourceWriter"/> from <c language="csharp">FluenceThemeEngine.BuildStandalone</c>.
     /// </summary>
     public class DesignTimeResourceTests
     {
@@ -110,9 +110,9 @@ namespace Fluence.Wpf.Tests.Theming
         }
 
         /// <summary>
-        /// Maintainer-only regenerator. Normally <c>[Ignore]</c>d so it never runs in CI; remove the
+        /// Maintainer-only regenerator. Normally <c language="csharp">[Ignore]</c>d so it never runs in CI; remove the
         /// attribute (or run it explicitly) after an intentional engine change, then re-commit the
-        /// updated <c>DesignTime.{Light,Dark}.xaml</c> files.
+        /// updated <c language="text">DesignTime.{Light,Dark}.xaml</c> files.
         /// </summary>
         [SlopwatchSuppress("SW001", "Maintainer-only file generator that rewrites committed DesignTime.{Light,Dark}.xaml; must not run in CI. DesignTimeResources_AreCurrent is the CI guard.")]
         [Fact(Explicit = true)] // Maintainer-only: writes the committed DesignTime.{Light,Dark}.xaml files. Run manually after an intentional engine change.

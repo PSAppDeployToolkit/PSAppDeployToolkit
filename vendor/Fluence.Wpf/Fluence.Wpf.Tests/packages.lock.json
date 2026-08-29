@@ -4,15 +4,15 @@
     ".NETFramework,Version=v4.7.2": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.177, )",
-        "resolved": "3.0.177",
-        "contentHash": "Un9RDShcg4kaNiQtNJvNaRQU5ogcFCB6YLSL2TLx49hmLSU+vd6YixciWxWmoKIOdGvPV27dqHHFIBm8qd5U1Q=="
+        "requested": "[3.0.191, )",
+        "resolved": "3.0.191",
+        "contentHash": "koTThgx8TuNelm3lKWDkBLhuWswQa1DHRS5L83zOjjm8Eum0NQqW306+3RpN3gFz3Ncx85e4HaB/cJexhzmTOg=="
       },
       "Meziantou.Polyfill": {
         "type": "Direct",
-        "requested": "[1.0.163, )",
-        "resolved": "1.0.163",
-        "contentHash": "xNULkbt82BERFYqZ5bFHsDfRE9ywmBvlvxrW4j6UxrcUyPq3dtCpv3HVciuGjZqM3KxZoIx50N0Xb8XOGZiVHw=="
+        "requested": "[1.0.164, )",
+        "resolved": "1.0.164",
+        "contentHash": "s7MyUOVqnFL3qa3Ed0OUR3HYNwYbnK7cQghrmppXLdrESLBHKdxGa7zJtrac7QJHxPQOQWuwGUvGaVxj9PGX4g=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -287,7 +287,7 @@
       "fluence.wpf.demo": {
         "type": "Project",
         "dependencies": {
-          "Fluence.Wpf": "[0.8.17-preview, )"
+          "Fluence.Wpf": "[0.8.18-preview, )"
         }
       },
       "Microsoft.Bcl.Memory": {
@@ -322,9 +322,9 @@
     "net10.0-windows10.0.26100": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.177, )",
-        "resolved": "3.0.177",
-        "contentHash": "Un9RDShcg4kaNiQtNJvNaRQU5ogcFCB6YLSL2TLx49hmLSU+vd6YixciWxWmoKIOdGvPV27dqHHFIBm8qd5U1Q=="
+        "requested": "[3.0.191, )",
+        "resolved": "3.0.191",
+        "contentHash": "koTThgx8TuNelm3lKWDkBLhuWswQa1DHRS5L83zOjjm8Eum0NQqW306+3RpN3gFz3Ncx85e4HaB/cJexhzmTOg=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -525,14 +525,14 @@
       "fluence.wpf.demo": {
         "type": "Project",
         "dependencies": {
-          "Fluence.Wpf": "[0.8.17-preview, )"
+          "Fluence.Wpf": "[0.8.18-preview, )"
         }
       },
       "fluence.wpf.demo.mvvm": {
         "type": "Project",
         "dependencies": {
           "CommunityToolkit.Mvvm": "[8.4.2, )",
-          "Fluence.Wpf": "[0.8.17-preview, )"
+          "Fluence.Wpf": "[0.8.18-preview, )"
         }
       },
       "CommunityToolkit.Mvvm": {

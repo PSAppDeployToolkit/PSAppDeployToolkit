@@ -32,7 +32,7 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A Fluent Design horizontal menu bar. The menu bar itself is transparent; each
-    /// top-level <see cref="MenuItem"/> entry receives the shared Fluent <c>MenuItem</c>
+    /// top-level <see cref="MenuItem"/> entry receives the shared Fluent <c language="xaml">MenuItem</c>
     /// style and opens a flyout-styled popup for its sub-items.
     /// </summary>
     public class Menu : System.Windows.Controls.Menu

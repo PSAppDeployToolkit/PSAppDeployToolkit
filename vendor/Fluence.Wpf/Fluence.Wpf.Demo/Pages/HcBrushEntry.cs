@@ -36,12 +36,12 @@ namespace Fluence.Wpf.Demo.Pages
     public sealed class HcBrushEntry
     {
         /// <summary>
-        /// Gets or sets the Fluence resource key (e.g. <c>TextFillColorPrimaryBrush</c>).
+        /// Gets or sets the Fluence resource key (e.g. <c language="xaml">TextFillColorPrimaryBrush</c>).
         /// </summary>
         public string? Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the Windows HC system colour name (e.g. <c>WindowText</c>).
+        /// Gets or sets the Windows HC system colour name (e.g. <c language="text">WindowText</c>).
         /// </summary>
         public string? HcMapping { get; set; }
 

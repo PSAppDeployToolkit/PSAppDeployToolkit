@@ -34,7 +34,7 @@ namespace Fluence.Wpf.Tests
 {
     /// <summary>
     /// Pins observable properties of the fallback accent ramp generator. The system
-    /// <c>AccentPalette</c> registry blob is the source of truth for any system accent
+    /// <c language="text">AccentPalette</c> registry blob is the source of truth for any system accent
     /// (see <see cref="RegistryHelper.TryGetAccentPalette"/>); the generator only runs
     /// when that blob is unavailable or when the caller supplies a custom color.
     /// </summary>
@@ -140,13 +140,13 @@ namespace Fluence.Wpf.Tests
         }
 
         /// <summary>
-        /// Sanity check: when a system <c>AccentPalette</c> is present, the registry helper
+        /// Sanity check: when a system <c language="text">AccentPalette</c> is present, the registry helper
         /// must return seven distinct opaque colors. This pins the contract relied on by
         /// <see cref="ApplicationAccentColorManager.ApplySystemAccent"/> to consume the
         /// system-supplied ramp directly instead of running the algorithm.
         /// </summary>
         /// <summary>
-        /// Declarative skip condition: true when the system <c>AccentPalette</c> registry blob
+        /// Declarative skip condition: true when the system <c language="text">AccentPalette</c> registry blob
         /// is present on this machine.
         /// </summary>
         public static bool SystemAccentPalettePresent =>

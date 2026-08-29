@@ -53,22 +53,22 @@ namespace Fluence.Wpf.Theming
     /// test switch, so none of those needs a separate field.</description></item>
     /// <item><description>A snapshot of the live <see cref="SystemColors"/> members that
     /// <see cref="SpecialBrushes"/> reads directly rather than through the color map. Note that
-    /// <c>AddSystemColorAliases</c> reads them in <b>every</b> theme, not only high contrast, so the
+    /// <c language="csharp">AddSystemColorAliases</c> reads them in <b>every</b> theme, not only high contrast, so the
     /// snapshot is unconditional.</description></item>
     /// <item><description>The Settings "Transparency effects" toggle
-    /// (<c>RegistryHelper.GetEnableTransparency</c>). It changes no computed color, so on its own
+    /// (<c language="csharp">RegistryHelper.GetEnableTransparency</c>). It changes no computed color, so on its own
     /// the map cannot see it, but the Windows 10 legacy-acrylic path in
-    /// <c>Fluence.Wpf.Controls.FluenceWindow</c> re-reads the setting from the publish chain: the
+    /// <c language="csharp">Fluence.Wpf.Controls.FluenceWindow</c> re-reads the setting from the publish chain: the
     /// toggle broadcasts ImmersiveColorSet, and if the gate swallowed that broadcast no
-    /// <c>Changed</c> event would fire and every open window would keep the acrylic the old setting
+    /// <c language="csharp">Changed</c> event would fire and every open window would keep the acrylic the old setting
     /// asked for. Carrying the flag makes the toggle a fingerprint mismatch and so a
     /// republish.</description></item>
     /// </list>
     /// The map is compared by count plus pairwise lookup rather than hashed: at roughly 250 entries
     /// that is cheaper than building a hash and cannot collide.
     /// <para>
-    /// One published entry is deliberately outside the fingerprint: <c>AcrylicNoiseBrush</c>, which
-    /// <see cref="FluenceThemeEngine"/> appends from <c>AcrylicNoiseHelper.GetNoiseBrush</c>. It is a
+    /// One published entry is deliberately outside the fingerprint: <c language="xaml">AcrylicNoiseBrush</c>, which
+    /// <see cref="FluenceThemeEngine"/> appends from <c language="csharp">AcrylicNoiseHelper.GetNoiseBrush</c>. It is a
     /// deterministic process-wide singleton that depends on neither theme nor accent, so it can never
     /// be the reason two applies differ. If that brush ever becomes theme, accent, or DPI dependent,
     /// whatever it varies on must be added here or the gate will skip a change that should ship.
@@ -152,7 +152,7 @@ namespace Fluence.Wpf.Theming
 
         /// <summary>
         /// Snapshots every live <see cref="SystemColors"/> member that <see cref="SpecialBrushes"/>
-        /// reads: the eight <c>AddSystemColorAliases</c> values, which are emitted in every theme,
+        /// reads: the eight <c language="csharp">AddSystemColorAliases</c> values, which are emitted in every theme,
         /// plus <see cref="SystemColors.ControlDarkColor"/> and
         /// <see cref="SystemColors.ControlLightColor"/>, which only the high-contrast branch reads.
         /// Capturing the union unconditionally keeps the gate a single comparison and costs two

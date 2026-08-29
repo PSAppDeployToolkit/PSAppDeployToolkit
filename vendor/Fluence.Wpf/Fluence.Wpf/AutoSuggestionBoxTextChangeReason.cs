@@ -30,7 +30,7 @@ namespace Fluence.Wpf
 {
     /// <summary>
     /// Specifies the reason the text changed in an <see cref="Controls.AutoSuggestBox"/>,
-    /// mirroring the WinUI 3 <c>AutoSuggestionBoxTextChangeReason</c> enumeration.
+    /// mirroring the WinUI 3 <c language="csharp">AutoSuggestionBoxTextChangeReason</c> enumeration.
     /// </summary>
     public enum AutoSuggestionBoxTextChangeReason
     {

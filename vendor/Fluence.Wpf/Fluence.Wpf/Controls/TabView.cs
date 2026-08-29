@@ -52,7 +52,7 @@ namespace Fluence.Wpf.Controls
     /// full control of their data model.
     /// </para>
     /// <para>
-    /// <c>PART_ScrollBackButton</c> and <c>PART_ScrollForwardButton</c> are automatically
+    /// <c language="xaml">PART_ScrollBackButton</c> and <c language="xaml">PART_ScrollForwardButton</c> are automatically
     /// shown or hidden based on whether the tab strip overflows the available width.
     /// </para>
     /// </remarks>

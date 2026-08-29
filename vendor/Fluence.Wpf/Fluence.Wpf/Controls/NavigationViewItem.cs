@@ -176,7 +176,7 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// Evicts the parent <see cref="NavigationView"/>'s cached Top-overflow natural width when a
         /// measure-affecting property changes while a width is cached. An item sitting collapsed in
-        /// the overflow menu is never measured, so it never raises the <c>SizeChanged</c> that is
+        /// the overflow menu is never measured, so it never raises the <c language="csharp">SizeChanged</c> that is
         /// the ordinary eviction path; a content or font change while overflowed would otherwise
         /// keep the stale width forever. <see cref="UIElement.VisibilityProperty"/> is excluded
         /// because the overflow pass itself toggles it, and that toggle carries no width change.

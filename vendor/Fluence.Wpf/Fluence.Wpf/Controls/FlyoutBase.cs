@@ -36,7 +36,7 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Represents the base class for flyout controls that display lightweight UI in a
     /// light-dismiss <see cref="Popup"/> anchored to a placement target, mirroring the
-    /// WinUI 3 <c>FlyoutBase</c> contract.
+    /// WinUI 3 <c language="csharp">FlyoutBase</c> contract.
     /// </summary>
     /// <remarks>
     /// The popup is created lazily on the first <see cref="ShowAt"/> call with

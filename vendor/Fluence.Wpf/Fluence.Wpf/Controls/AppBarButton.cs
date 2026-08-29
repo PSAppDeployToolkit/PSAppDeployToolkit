@@ -33,13 +33,13 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// Represents a templated command button for command bar surfaces such as
-    /// <see cref="CommandBarFlyout"/>, mirroring the WinUI 3 <c>AppBarButton</c> contract.
+    /// <see cref="CommandBarFlyout"/>, mirroring the WinUI 3 <c language="csharp">AppBarButton</c> contract.
     /// </summary>
     /// <remarks>
     /// The default style renders the compact primary-bar appearance: a 40x40 hit target with a
     /// centered <see cref="Icon"/> and the <see cref="Label"/> surfaced as a tooltip. Inside the
     /// overflow menu of a <see cref="CommandBarFlyout"/> the presenter applies the
-    /// <c>CommandBarFlyoutSecondaryAppBarButtonStyle</c> resource, which renders the icon and
+    /// <c language="xaml">CommandBarFlyoutSecondaryAppBarButtonStyle</c> resource, which renders the icon and
     /// label side by side in a full-width menu-item row.
     /// </remarks>
     public class AppBarButton : System.Windows.Controls.Button

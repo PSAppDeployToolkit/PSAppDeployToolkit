@@ -40,7 +40,7 @@ using System.Windows.Threading;
 namespace Fluence.Wpf.Demo
 {
     /// <summary>
-    /// The main gallery window: a <c>FluenceWindow</c> with a <c>NavigationView</c> shell that
+    /// The main gallery window: a <c language="csharp">FluenceWindow</c> with a <c language="csharp">NavigationView</c> shell that
     /// drives all seventeen gallery pages. It owns the title-bar layout, the search box filtering,
     /// the back-navigation stack, and the page-creation switch.
     /// </summary>
@@ -540,7 +540,7 @@ namespace Fluence.Wpf.Demo
         /// Typography.xaml ControlFastOutSlowInKeySpline motion token, mirrored by value).
         /// Top-level navigation switches use page refresh per the Fluent page-transition
         /// guidance (slide up + fade in, 300 ms, decelerate). The start pose is seeded as a
-        /// local value before the clocks start: <c>BeginAnimation</c> only takes effect on the
+        /// local value before the clocks start: <c language="csharp">BeginAnimation</c> only takes effect on the
         /// next animation tick, so an unseeded start lets the frame composited right after the
         /// content swap render the page at its rest pose (opaque, unshifted) and the following
         /// frame snap it to the transition start - a visible flash on every navigation. The

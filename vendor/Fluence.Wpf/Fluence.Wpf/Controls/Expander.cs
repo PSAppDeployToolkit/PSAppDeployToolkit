@@ -256,7 +256,7 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// One-shot <c>LayoutUpdated</c> hook that starts the deferred expand slide once the
+        /// One-shot <c language="csharp">LayoutUpdated</c> hook that starts the deferred expand slide once the
         /// content row has taken its layout space.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

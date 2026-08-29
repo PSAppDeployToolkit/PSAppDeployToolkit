@@ -41,17 +41,17 @@ namespace Fluence.Wpf.Tests
 {
     /// <summary>
     /// MANUAL EXPERIMENT - measures whether writing the DWM/Explorer accent color values
-    /// causes Windows to regenerate the <c>AccentPalette</c> registry blob. If it does, we
+    /// causes Windows to regenerate the <c language="text">AccentPalette</c> registry blob. If it does, we
     /// can read the new palette and use the OS-generated ramp for any custom color (no
     /// algorithm needed). If it does not, this approach is not viable and Fluence must rely
-    /// on the HSL ramp algorithm in <c>HsvColorHelper.GenerateAccentRampWinaccent</c>.
+    /// on the HSL ramp algorithm in <c language="csharp">HsvColorHelper.GenerateAccentRampWinaccent</c>.
     /// <para>
     /// **WARNING**: This experiment temporarily modifies the user's actual system accent
     /// color. The Start menu, taskbar, every Win11 app, and DWM window borders will see the
     /// new color until the restore step runs. The restore is in a try/finally and broadcasts
-    /// <c>WM_SETTINGCHANGE</c>, but expect a flash of the experimental color (Mango = #CA5010).
+    /// <c language="csharp">WM_SETTINGCHANGE</c>, but expect a flash of the experimental color (Mango = #CA5010).
     /// Do not run while screen-sharing or recording. All tests in this class are
-    /// <c>[Ignore]</c>'d by default; remove the attribute to run.
+    /// <c language="csharp">[Ignore]</c>'d by default; remove the attribute to run.
     /// </para>
     /// </summary>
     /// <param name="output">The xUnit test output sink for diagnostic logging.</param>
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
 
 
         /// <summary>
-        /// Probe 1: write only to <c>DWM\AccentColor</c> (the simplest signal) and check whether
+        /// Probe 1: write only to <c language="text">DWM\AccentColor</c> (the simplest signal) and check whether
         /// AccentPalette regenerates after a 1s wait.
         /// </summary>
         [Fact(Explicit = true)] // Modifies user's system accent; run explicitly and manually only.
@@ -96,7 +96,7 @@ namespace Fluence.Wpf.Tests
         /// Probe 3: write all accent values AND broadcast WM_SETTINGCHANGE with the
         /// "ImmersiveColorSet" lParam (Personalize sends this), then check.
         /// Result (2026-05-23 run, build 22000+): palette did NOT regenerate. Windows
-        /// computes <c>AccentPalette</c> from a private themecpl/themeui code path only
+        /// computes <c language="text">AccentPalette</c> from a private themecpl/themeui code path only
         /// when the user picks an accent in Settings; registry writes are ignored.
         /// </summary>
         [Fact(Explicit = true)] // Modifies user's system accent. Result confirmed 2026-05-23: palette does NOT regenerate.

@@ -37,11 +37,11 @@ namespace Fluence.Wpf.Tests
     /// <summary>
     /// READ-ONLY PROBE - enumerates every immersive color set Windows ships and dumps the
     /// Light3/2/1, Base, Dark1/2/3 ramp for each. No registry writes, no system mutations;
-    /// purely a call to <c>uxtheme.dll</c> ordinals (#94, #95, #96).
+    /// purely a call to <c language="text">uxtheme.dll</c> ordinals (#94, #95, #96).
     /// <para>
     /// If this reports a row for every Windows-default accent (Mango, Mint, Plum, etc.) with
-    /// its full 7-color ramp, then <c>ApplyCustomAccent(color)</c> can look up the row at
-    /// runtime instead of relying on a manually-captured <c>KnownAccentRamps</c> table.
+    /// its full 7-color ramp, then <c language="csharp">ApplyCustomAccent(color)</c> can look up the row at
+    /// runtime instead of relying on a manually-captured <c language="csharp">KnownAccentRamps</c> table.
     /// </para>
     /// </summary>
     /// <param name="output">The xUnit test output sink for diagnostic logging.</param>

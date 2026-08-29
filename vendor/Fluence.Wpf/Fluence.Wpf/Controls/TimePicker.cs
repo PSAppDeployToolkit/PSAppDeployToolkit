@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// A control that lets the user pick a time of day from hour, minute, and (in 12-hour
     /// mode) AM/PM selector columns hosted in a light-dismiss flyout, mirroring the WinUI 3
-    /// <c>TimePicker</c>. The always-visible field is a button-styled row showing the
+    /// <c language="csharp">TimePicker</c>. The always-visible field is a button-styled row showing the
     /// selected hour, two-digit minute, and culture AM/PM designator; the flyout commits the
     /// pending column selection through its accept button and discards it through cancel.
     /// </summary>

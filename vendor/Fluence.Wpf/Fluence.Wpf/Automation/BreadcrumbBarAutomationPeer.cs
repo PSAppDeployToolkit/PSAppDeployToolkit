@@ -33,7 +33,7 @@ namespace Fluence.Wpf.Automation
 {
     /// <summary>
     /// Exposes <see cref="BreadcrumbBar"/> to UI Automation as a group named via
-    /// <c>AutomationProperties.Name</c> (the inherited
+    /// <c language="xaml">AutomationProperties.Name</c> (the inherited
     /// <see cref="FrameworkElementAutomationPeer.GetNameCore"/> behavior). The individual
     /// crumbs surface their own focusable elements beneath the group.
     /// </summary>

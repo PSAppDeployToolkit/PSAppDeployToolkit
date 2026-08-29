@@ -37,12 +37,12 @@ namespace Fluence.Wpf.Controls
     /// Displays the commands of a <see cref="CommandBarFlyout"/> on the canonical Fluent flyout
     /// surface: a horizontal primary bar, a more button shown while secondary commands exist,
     /// and a collapsible overflow menu below the bar toggled via <see cref="IsExpanded"/>. The
-    /// themed template lives in <c>Themes/Controls/CommandBarFlyout.xaml</c>.
+    /// themed template lives in <c language="text">Themes/Controls/CommandBarFlyout.xaml</c>.
     /// </summary>
     /// <remarks>
     /// Clicking any <see cref="AppBarButton"/> hosted in the presenter (other than the more
-    /// button) dismisses the owning flyout after the button's normal <c>Click</c> handling,
-    /// matching the WinUI command-dismiss behavior. The WinUI <c>AlwaysExpanded</c> option is
+    /// button) dismisses the owning flyout after the button's normal <c language="csharp">Click</c> handling,
+    /// matching the WinUI command-dismiss behavior. The WinUI <c language="csharp">AlwaysExpanded</c> option is
     /// omitted for v1, so the overflow collapses again whenever the flyout closes.
     /// </remarks>
     [TemplatePart(Name = PART_PrimaryItemsControl, Type = typeof(System.Windows.Controls.ItemsControl))]

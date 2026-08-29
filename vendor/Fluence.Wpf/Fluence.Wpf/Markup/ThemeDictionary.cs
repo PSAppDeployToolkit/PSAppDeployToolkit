@@ -36,22 +36,22 @@ namespace Fluence.Wpf.Markup
 {
     /// <summary>
     /// A resource dictionary with per-theme value tables, equivalent to WinUI 3
-    /// <c>ResourceDictionary.ThemeDictionaries</c>. Populate <see cref="ThemeDictionaries"/>
-    /// with <see cref="ThemeResourceDictionary"/> tables keyed <c>Light</c>, <c>Dark</c>,
-    /// <c>HighContrast</c>, or <c>Default</c>; the matching table is selected automatically on
-    /// every theme change and any <c>DynamicResource</c> (or <c>ThemeResource</c>) reference
+    /// <c language="xaml">ResourceDictionary.ThemeDictionaries</c>. Populate <see cref="ThemeDictionaries"/>
+    /// with <see cref="ThemeResourceDictionary"/> tables keyed <c language="xaml">Light</c>, <c language="xaml">Dark</c>,
+    /// <c language="xaml">HighContrast</c>, or <c language="xaml">Default</c>; the matching table is selected automatically on
+    /// every theme change and any <c language="xaml">DynamicResource</c> (or <c language="xaml">ThemeResource</c>) reference
     /// into it re-resolves.
     /// </summary>
     /// <remarks>
     /// <para>
     /// Selection picks the table whose <see cref="ThemeResourceDictionary.ThemeKey"/> matches
     /// the resolved theme reported by <see cref="ApplicationThemeManager.ResolvedTheme"/> and
-    /// falls back to the <c>Default</c> table when the exact theme key is absent. Under high
-    /// contrast, the WinUI polarity keys <c>HighContrastBlack</c> (dark schemes) and
-    /// <c>HighContrastWhite</c> (light schemes) are tried before the generic
-    /// <c>HighContrast</c> key; polarity is judged from the live system window luminance, so
+    /// falls back to the <c language="xaml">Default</c> table when the exact theme key is absent. Under high
+    /// contrast, the WinUI polarity keys <c language="xaml">HighContrastBlack</c> (dark schemes) and
+    /// <c language="xaml">HighContrastWhite</c> (light schemes) are tried before the generic
+    /// <c language="xaml">HighContrast</c> key; polarity is judged from the live system window luminance, so
     /// custom schemes classify by how their background reads. Unlike WinUI,
-    /// the tables carry their key on the <c>ThemeKey</c> property rather than <c>x:Key</c>: the
+    /// the tables carry their key on the <c language="xaml">ThemeKey</c> property rather than <c language="xaml">x:Key</c>: the
     /// WPF markup compiler cannot compile keyed children inside a dictionary-typed property of
     /// a <see cref="ResourceDictionary"/> subclass. In XAML:
     /// </para>
@@ -72,7 +72,7 @@ namespace Fluence.Wpf.Markup
     /// <para>
     /// The type is equally usable from code, which suits values only known at runtime:
     /// </para>
-    /// <code><![CDATA[
+    /// <code language="csharp"><![CDATA[
     /// ThemeDictionary icons = new()
     /// {
     ///     ThemeDictionaries =
@@ -88,10 +88,10 @@ namespace Fluence.Wpf.Markup
     /// three application-level merged dictionaries owned by
     /// <see cref="ApplicationThemeManager"/>, and its own <see cref="ResourceDictionary.MergedDictionaries"/>
     /// collection is owned by the selection mechanism: entries added there by callers are
-    /// discarded on the next swap. In a scope WPF seals read-only (<c>Style.Resources</c>,
+    /// discarded on the next swap. In a scope WPF seals read-only (<c language="xaml">Style.Resources</c>,
     /// template resources) the dictionary keeps the selection made before sealing instead of
-    /// swapping. As in WinUI, a <c>StaticResource</c> reference into a theme dictionary does
-    /// not update after a theme change; reference its keys with <c>DynamicResource</c> or
+    /// swapping. As in WinUI, a <c language="xaml">StaticResource</c> reference into a theme dictionary does
+    /// not update after a theme change; reference its keys with <c language="xaml">DynamicResource</c> or
     /// <see cref="ThemeResourceExtension"/>.
     /// </para>
     /// <para>
@@ -119,8 +119,8 @@ namespace Fluence.Wpf.Markup
 
         /// <summary>
         /// Gets the per-theme tables. Each table's <see cref="ThemeResourceDictionary.ThemeKey"/>
-        /// names the theme it serves: <c>Light</c>, <c>Dark</c>, <c>HighContrast</c>, or
-        /// <c>Default</c> (the fallback used when the resolved theme has no exact entry).
+        /// names the theme it serves: <c language="xaml">Light</c>, <c language="xaml">Dark</c>, <c language="xaml">HighContrast</c>, or
+        /// <c language="xaml">Default</c> (the fallback used when the resolved theme has no exact entry).
         /// </summary>
         public ThemeResourceDictionaryCollection ThemeDictionaries { get; }
 
@@ -134,7 +134,7 @@ namespace Fluence.Wpf.Markup
 
         /// <summary>
         /// Swaps the merged table to the one matching the given resolved theme, falling back to
-        /// the <c>Default</c> table.
+        /// the <c language="xaml">Default</c> table.
         /// </summary>
         /// <param name="resolvedTheme">The concrete theme to select a table for.</param>
         private void ApplyResolvedTheme(ApplicationTheme resolvedTheme)
@@ -163,10 +163,10 @@ namespace Fluence.Wpf.Markup
 
         /// <summary>
         /// Picks the table for the given resolved theme. High contrast first tries the
-        /// polarity-specific key (<c>HighContrastBlack</c> for dark schemes,
-        /// <c>HighContrastWhite</c> for light schemes, judged by the live system window
-        /// luminance), then the generic <c>HighContrast</c> key; every theme falls back to
-        /// <c>Default</c>, mirroring the WinUI lookup order.
+        /// polarity-specific key (<c language="xaml">HighContrastBlack</c> for dark schemes,
+        /// <c language="xaml">HighContrastWhite</c> for light schemes, judged by the live system window
+        /// luminance), then the generic <c language="xaml">HighContrast</c> key; every theme falls back to
+        /// <c language="xaml">Default</c>, mirroring the WinUI lookup order.
         /// </summary>
         /// <param name="resolvedTheme">The concrete theme to select a table for.</param>
         private ResourceDictionary? SelectTable(ApplicationTheme resolvedTheme)

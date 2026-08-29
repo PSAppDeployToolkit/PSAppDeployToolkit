@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
 
         /// <summary>
         /// The capability snapshot of a Windows 10 build at or past 17063: no DWM backdrop
-        /// attribute of any kind, but the legacy <c>SetWindowCompositionAttribute</c> acrylic
+        /// attribute of any kind, but the legacy <c language="csharp">SetWindowCompositionAttribute</c> acrylic
         /// accent state is available.
         /// </summary>
         private static WindowCapabilities Win10AcrylicCaps()

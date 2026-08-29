@@ -252,7 +252,7 @@ namespace Fluence.Wpf.Controls
         /// Gets or sets the visual appearance of the split button.
         /// Set to <see cref="ControlAppearance.Accent"/> to apply the accent-colored variant;
         /// the divider stroke will automatically switch to
-        /// <c>ControlStrokeColorOnAccentSecondaryBrush</c> per WinUI 3 canonical styling.
+        /// <c language="xaml">ControlStrokeColorOnAccentSecondaryBrush</c> per WinUI 3 canonical styling.
         /// </summary>
         public ControlAppearance Appearance
         {
@@ -285,8 +285,8 @@ namespace Fluence.Wpf.Controls
         #endregion IsFlyoutOpen (read-only)
 
         /// <summary>
-        /// Closes the secondary-half flyout popup if it is open. WinUI's <c>SplitButton</c>
-        /// hosts a <c>FlyoutBase</c> whose <c>Hide()</c> the application calls after handling
+        /// Closes the secondary-half flyout popup if it is open. WinUI's <c language="csharp">SplitButton</c>
+        /// hosts a <c language="csharp">FlyoutBase</c> whose <c language="csharp">Hide()</c> the application calls after handling
         /// a click inside arbitrary flyout content (a plain flyout never dismisses itself);
         /// this method is the equivalent close affordance for the <see cref="Flyout"/> object
         /// content model, and the light-dismiss (click outside) path is unaffected.

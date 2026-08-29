@@ -35,12 +35,12 @@ namespace Fluence.Wpf.Helpers
 {
     /// <summary>
     /// Animates a <see cref="GridLength"/> dependency property (such as
-    /// <see cref="ColumnDefinition"/>.<c>Width</c> or <see cref="RowDefinition"/>.<c>Height</c>)
+    /// <see cref="ColumnDefinition"/>.<c language="csharp">Width</c> or <see cref="RowDefinition"/>.<c language="csharp">Height</c>)
     /// between two absolute pixel values using a <see cref="IEasingFunction"/>.
     /// </summary>
     /// <remarks>
     /// WPF ships no GridLength animator because <see cref="GridLength"/> is a struct with
-    /// a <c>GridUnitType</c>. This implementation interpolates only the numeric value and
+    /// a <c language="csharp">GridUnitType</c>. This implementation interpolates only the numeric value and
     /// preserves <see cref="GridUnitType.Pixel"/>, which is sufficient for navigation
     /// pane expand / collapse transitions.
     /// </remarks>

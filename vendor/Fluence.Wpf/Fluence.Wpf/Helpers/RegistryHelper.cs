@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Helpers
 
         /// <summary>
         /// Reads the Settings "Transparency effects" toggle
-        /// (<c>HKCU\...\Themes\Personalize\EnableTransparency</c>). A missing or non-integer value
+        /// (<c language="text">HKCU\...\Themes\Personalize\EnableTransparency</c>). A missing or non-integer value
         /// reads as enabled, matching the OS default and the sibling theme-flag readers: a machine
         /// that has never had the toggle written should get the transparent surfaces, not the
         /// opaque fallback.
@@ -110,11 +110,11 @@ namespace Fluence.Wpf.Helpers
         }
 
         /// <summary>
-        /// Reads the active Windows theme file name from <c>HKCU\...\Themes\CurrentTheme</c>,
+        /// Reads the active Windows theme file name from <c language="text">HKCU\...\Themes\CurrentTheme</c>,
         /// strips the directory and extension, and returns the lowercased base name. Returns
-        /// <see langword="null"/> when the value is missing or empty. Used by <c>ResolveTheme</c> as a
-        /// defensive dual-fallback ahead of <c>AppsUseLightTheme</c> so that named Windows 11
-        /// themes (e.g. <c>themea.theme</c>) and high-contrast variants are recognised.
+        /// <see langword="null"/> when the value is missing or empty. Used by <c language="csharp">ResolveTheme</c> as a
+        /// defensive dual-fallback ahead of <c language="text">AppsUseLightTheme</c> so that named Windows 11
+        /// themes (e.g. <c language="text">themea.theme</c>) and high-contrast variants are recognised.
         /// </summary>
         internal static string? GetCurrentThemeFileNameLowerInvariant()
         {

@@ -38,7 +38,7 @@ namespace Fluence.Wpf.Helpers
     /// (<see cref="DwmBorderColor"/>), because only some OS builds support the DWM side.
     /// </summary>
     /// <param name="templateBorderThickness">The thickness of the WPF-template border element.</param>
-    /// <param name="templateBorderBrushResourceKey">The <c>DynamicResource</c> key for the border brush.</param>
+    /// <param name="templateBorderBrushResourceKey">The <c language="xaml">DynamicResource</c> key for the border brush.</param>
     /// <param name="dwmBorderColor">The COLORREF (BGR, 24-bit) value for the DWM border color.</param>
     internal sealed class FramePlan(
         Thickness templateBorderThickness,
@@ -46,22 +46,22 @@ namespace Fluence.Wpf.Helpers
         uint dwmBorderColor)
     {
         /// <summary>
-        /// Gets the thickness of the WPF-template border element. <c>Thickness(2)</c> when the
-        /// window is active and in normal state; <c>Thickness(0)</c> when maximized (a border at
+        /// Gets the thickness of the WPF-template border element. <c language="csharp">Thickness(2)</c> when the
+        /// window is active and in normal state; <c language="csharp">Thickness(0)</c> when maximized (a border at
         /// the monitor edge would clip against the taskbar or other monitors).
         /// </summary>
         internal Thickness TemplateBorderThickness { get; private set; } = templateBorderThickness;
 
         /// <summary>
-        /// Gets the <c>DynamicResource</c> key for the border brush to apply to the template
-        /// border element. <c>"SystemAccentColorBrush"</c> when the window is active and accent
-        /// borders are enabled; <c>"CardStrokeColorDefaultSolidBrush"</c> when the window is
+        /// Gets the <c language="xaml">DynamicResource</c> key for the border brush to apply to the template
+        /// border element. <c language="xaml">"SystemAccentColorBrush"</c> when the window is active and accent
+        /// borders are enabled; <c language="xaml">"CardStrokeColorDefaultSolidBrush"</c> when the window is
         /// inactive or accent borders are off.
         /// </summary>
         internal string TemplateBorderBrushResourceKey { get; } = templateBorderBrushResourceKey;
 
         /// <summary>
-        /// Gets the COLORREF (BGR, 24-bit) value to write to <c>DWMWA_BORDER_COLOR</c>, or
+        /// Gets the COLORREF (BGR, 24-bit) value to write to <c language="csharp">DWMWA_BORDER_COLOR</c>, or
         /// DWMWA_COLOR_DEFAULT when the OS
         /// does not expose that attribute (Windows 10) or the window is inactive. A caller
         /// must check <see cref="WindowCapabilities.SupportsBorderColor"/> before writing this

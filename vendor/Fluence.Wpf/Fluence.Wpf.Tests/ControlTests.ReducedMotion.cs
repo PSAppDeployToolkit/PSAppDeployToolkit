@@ -60,7 +60,7 @@ namespace Fluence.Wpf.Tests
         /// information. An indeterminate bar carries no value at all - the movement *is* the
         /// message - so parking it produces a control that looks like a stalled determinate bar
         /// and tells the user the operation has hung. That is what happened in PSAppDeployToolkit:
-        /// <c>Show-ADTInstallationProgress</c> returned normally but its dialog sat motionless on
+        /// <c language="powershell">Show-ADTInstallationProgress</c> returned normally but its dialog sat motionless on
         /// any machine with animation effects off, and the install looked frozen. Screen-reader
         /// users, the exact audience the reduced-motion work was for, very often have animation
         /// effects off.
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
         /// So indeterminate progress is classed as essential status feedback, not decoration, and
         /// is exempt from the gate. Everything else in this file stays gated. Do not "fix" this
         /// test by re-adding a <see cref="MotionHelper.IsMotionEnabled"/> check to
-        /// <c>ProgressBar.StartIndeterminate</c>.
+        /// <c language="csharp">ProgressBar.StartIndeterminate</c>.
         /// </para>
         /// </summary>
         [Fact]

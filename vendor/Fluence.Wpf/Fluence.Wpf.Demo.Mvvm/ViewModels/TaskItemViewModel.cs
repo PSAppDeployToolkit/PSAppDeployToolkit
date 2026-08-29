@@ -32,7 +32,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
 {
     /// <summary>
     /// Represents a single task item. Demonstrates <see cref="ObservableObject"/>
-    /// with source-generated <c>[ObservableProperty]</c> backing fields.
+    /// with source-generated <c language="csharp">[ObservableProperty]</c> backing fields.
     /// </summary>
     /// <remarks>
     /// Initializes a new task with the given title.

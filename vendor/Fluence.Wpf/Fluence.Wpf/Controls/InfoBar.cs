@@ -123,7 +123,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Returns the Segoe Fluent Icons glyph that represents <paramref name="severity"/>. This is the
-        /// single programmatic source for the severity glyphs; it mirrors the <c>Severity</c> triggers in
+        /// single programmatic source for the severity glyphs; it mirrors the <c language="xaml">Severity</c> triggers in
         /// Themes/Controls/InfoBar.xaml (WPF property triggers cannot call this method, so keep both in sync).
         /// </summary>
         /// <param name="severity">The severity to map.</param>
@@ -142,8 +142,8 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Returns the theme brush resource key (for a <c>DynamicResource</c> reference) that colors
-        /// <paramref name="severity"/>. Mirrors the <c>Severity</c> triggers in Themes/Controls/InfoBar.xaml.
+        /// Returns the theme brush resource key (for a <c language="xaml">DynamicResource</c> reference) that colors
+        /// <paramref name="severity"/>. Mirrors the <c language="xaml">Severity</c> triggers in Themes/Controls/InfoBar.xaml.
         /// </summary>
         /// <param name="severity">The severity to map.</param>
         /// <returns>A brush key resolvable against the Fluence theme dictionaries.</returns>

@@ -31,7 +31,7 @@ namespace Fluence.Wpf
     /// <summary>
     /// Defines when the previous and next navigation buttons of a
     /// <see cref="Controls.PipsPager"/> are shown, mirroring the WinUI 3
-    /// <c>PipsPagerButtonVisibility</c> enumeration.
+    /// <c language="csharp">PipsPagerButtonVisibility</c> enumeration.
     /// </summary>
     public enum PipsPagerButtonVisibility
     {

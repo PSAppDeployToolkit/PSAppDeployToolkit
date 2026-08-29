@@ -49,7 +49,7 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A control that lets the user pick a calendar date from day, month, and year selector
-    /// columns hosted in a light-dismiss flyout, mirroring the WinUI 3 <c>DatePicker</c>.
+    /// columns hosted in a light-dismiss flyout, mirroring the WinUI 3 <c language="csharp">DatePicker</c>.
     /// The always-visible field is a button-styled row showing the selected day, month name,
     /// and year ordered by the current culture's short date pattern; the flyout commits the
     /// pending column selection through its accept button and discards it through cancel.
@@ -595,7 +595,7 @@ defaultValue: null,
         /// unset, clamped into the <see cref="MinYear"/>..<see cref="MaxYear"/> range) and
         /// highlights the matching items. Day and month wrap endlessly like WinUI's looping
         /// selectors (see <see cref="LoopingSelectorColumns"/>); the year column is padded and
-        /// bounded, exactly as WinUI's year <c>LoopingSelector</c> sets <c>ShouldLoop=false</c>,
+        /// bounded, exactly as WinUI's year <c language="csharp">LoopingSelector</c> sets <c language="csharp">ShouldLoop=false</c>,
         /// so it stops at <see cref="MinYear"/> and <see cref="MaxYear"/>.
         /// </summary>
         private void PopulateSelectorColumns()

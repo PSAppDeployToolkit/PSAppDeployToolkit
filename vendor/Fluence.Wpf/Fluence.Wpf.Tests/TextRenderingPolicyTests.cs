@@ -407,7 +407,7 @@ namespace Fluence.Wpf.Tests
         }
 
         /// <summary>
-        /// Names a theme without <c>Enum.GetName</c>, whose generic overload the analyzers demand on
+        /// Names a theme without <c language="csharp">Enum.GetName</c>, whose generic overload the analyzers demand on
         /// net10 and which does not exist on net472.
         /// </summary>
         /// <param name="theme">The theme to name.</param>

@@ -42,14 +42,14 @@ namespace Fluence.Wpf.Tests
 {
     /// <summary>
     /// Maintainer-driven, opt-in harness that renders the representative demo surfaces used in the
-    /// documentation and writes PNGs under <c>docs/screenshots/</c>: the gallery shell in its three
+    /// documentation and writes PNGs under <c language="text">docs/screenshots/</c>: the gallery shell in its three
     /// navigation modes (Home / Left, Buttons / LeftCompact, Status / Top), the MVVM task-manager
     /// app, and the PowerShell controls-tour window, each in Light and Dark.
     /// </summary>
     /// <remarks>
-    /// Capture is gated behind the <c>FLUENCE_CAPTURE_SCREENSHOTS</c> environment variable, so a
+    /// Capture is gated behind the <c language="text">FLUENCE_CAPTURE_SCREENSHOTS</c> environment variable, so a
     /// normal test run reports these tests as inconclusive and never overwrites the committed
-    /// images; set the variable to <c>1</c> to regenerate them. Only the WPF visual tree is
+    /// images; set the variable to <c language="text">1</c> to regenerate them. Only the WPF visual tree is
     /// captured - DWM Mica / Acrylic backdrops are composited outside WPF and are not included in
     /// <see cref="RenderTargetBitmap"/> output, which is intended: the screenshots document control
     /// surfaces and theme resources, not DWM composition.
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Tests
 
         /// <summary>
         /// Declarative skip condition: capture tests run only when
-        /// <c>FLUENCE_CAPTURE_SCREENSHOTS</c> is set, so the screenshots are never regenerated
+        /// <c language="text">FLUENCE_CAPTURE_SCREENSHOTS</c> is set, so the screenshots are never regenerated
         /// during an ordinary test run.
         /// </summary>
         public static bool ScreenshotCaptureEnabled
@@ -239,7 +239,7 @@ namespace Fluence.Wpf.Tests
         /// <summary>
         /// Captures the gallery shell (<see cref="Demo.MainWindow"/>) at <paramref name="route"/>
         /// with the navigation pane forced to <paramref name="paneMode"/>, writing
-        /// <c>{outputName}-{themeSlug}.png</c>.
+        /// <c language="text">{outputName}-{themeSlug}.png</c>.
         /// </summary>
         /// <param name="theme">The theme to apply.</param>
         /// <param name="themeSlug">The slug representing the theme.</param>
@@ -289,7 +289,7 @@ namespace Fluence.Wpf.Tests
         }
 
         /// <summary>
-        /// Reads the inline XAML here-string from <c>03-ControlsTour.ps1</c> so the captured window
+        /// Reads the inline XAML here-string from <c language="text">03-ControlsTour.ps1</c> so the captured window
         /// stays in lock-step with the script the screenshot documents.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the XAML here-string cannot be located.</exception>

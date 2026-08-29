@@ -35,16 +35,16 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// The selector column used by the <see cref="DatePicker"/> and <see cref="TimePicker"/>
-    /// flyouts, mirroring the WinUI 3 <c>LoopingSelector</c>. Rows are a fixed
+    /// flyouts, mirroring the WinUI 3 <c language="csharp">LoopingSelector</c>. Rows are a fixed
     /// <see cref="ItemHeight"/> tall, the viewport shows exactly nine of them, and the row in
     /// the middle is always the selected one: scrolling moves the selection and setting the
     /// selection scrolls the row under the flyout's highlight band.
     /// </summary>
     /// <remarks>
-    /// Feed the column a <c>LoopingItemsSource</c> to make it wrap endlessly, or a plain list
-    /// padded with <c>LoopingSelectorPlaceholder</c> rows when the values must not repeat (the
+    /// Feed the column a <c language="csharp">LoopingItemsSource</c> to make it wrap endlessly, or a plain list
+    /// padded with <c language="xaml">LoopingSelectorPlaceholder</c> rows when the values must not repeat (the
     /// AM/PM designator column). Both cases are handled by the picker code through
-    /// <c>Fluence.Wpf.Helpers.LoopingSelectorColumns</c>; nothing here assumes a particular
+    /// <c language="csharp">Fluence.Wpf.Helpers.LoopingSelectorColumns</c>; nothing here assumes a particular
     /// item type.
     /// </remarks>
     [TemplatePart(Name = PART_ScrollViewer, Type = typeof(ScrollViewer))]
@@ -133,7 +133,7 @@ namespace Fluence.Wpf.Controls
         /// Gets or sets the height of a single row. The column's own height is derived from it
         /// (nine rows), and the default item container style binds each container to it, so the
         /// item-unit scroll offset and the flyout's highlight band always line up. The default
-        /// is 40, the WinUI <c>TimePickerFlyoutPresenterItemHeight</c>.
+        /// is 40, the WinUI <c language="xaml">TimePickerFlyoutPresenterItemHeight</c>.
         /// </summary>
         public double ItemHeight
         {

@@ -38,7 +38,7 @@ namespace Fluence.Wpf.Tests
     /// <summary>
     /// Regression tests for the SizeToContent double-border fix in <see cref="Controls.FluenceWindow"/>.
     /// A <see cref="Window"/> with an active <see cref="Window.SizeToContent"/> sizes its HWND to the
-    /// latest content-desired size, but the template root <c>Border</c> (the accent-bordered window
+    /// latest content-desired size, but the template root <c language="xaml">Border</c> (the accent-bordered window
     /// chrome) was left arranged one layout pass behind the realised client area, so it floated
     /// inside the DWM accent border on every edge. The fix re-arranges the root visual to the full
     /// client area whenever SizeToContent is active, while keeping SizeToContent's auto-grow behavior.

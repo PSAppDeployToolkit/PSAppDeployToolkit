@@ -64,7 +64,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Gets the number of distinct values in one band, that is the length of the sequence
         /// the list repeats. A selector index maps back to a source index with
-        /// <c>index % SourceCount</c>.
+        /// <c language="csharp">index % SourceCount</c>.
         /// </summary>
         internal int SourceCount => _source.Count;
 
@@ -91,7 +91,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Gets the value at <paramref name="index"/>, which is the source value at
-        /// <c>index % SourceCount</c>. Setting a value is not supported.
+        /// <c language="csharp">index % SourceCount</c>. Setting a value is not supported.
         /// </summary>
         /// <param name="index">The index into the repeated list.</param>
         /// <returns>The source value that <paramref name="index"/> maps onto.</returns>

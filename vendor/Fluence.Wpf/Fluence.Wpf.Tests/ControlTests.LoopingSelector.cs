@@ -207,7 +207,7 @@ namespace Fluence.Wpf.Tests
         /// <summary>
         /// A row has to be reachable by keyboard and has to show where focus landed, or the picker
         /// flyout is a dead end for anyone not using a pointer. The container style therefore keeps
-        /// the ListBoxItem default <c>IsTabStop</c> and carries the shared collection focus visual,
+        /// the ListBoxItem default <c language="csharp">IsTabStop</c> and carries the shared collection focus visual,
         /// matching ListBox.xaml; only the column itself suppresses the focus visual.
         /// </summary>
         [Fact]
