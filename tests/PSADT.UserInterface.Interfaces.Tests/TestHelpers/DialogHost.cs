@@ -96,6 +96,36 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
         }
 
         /// <summary>
+        /// Builds a dialog on the shared apartment, runs a test body against it, and disposes it, all
+        /// without leaving the apartment.
+        /// </summary>
+        /// <remarks>
+        /// WPF is stricter about its apartment than Windows Forms is. Every property of a window or of
+        /// anything in it is a dependency property, and reading one from another thread throws rather
+        /// than returning a stale value - so a Fluent dialog cannot be built here and asserted on over
+        /// there. Disposing has the same constraint, because detaching a routed event handler and
+        /// stopping a dispatcher timer are both apartment-bound.
+        /// <para>
+        /// Passing the body in rather than handing the dialog back is what keeps all three on the right
+        /// thread without every test having to remember to arrange it.
+        /// </para>
+        /// </remarks>
+        /// <typeparam name="TDialog">The type of dialog to build.</typeparam>
+        /// <param name="factory">Builds the dialog.</param>
+        /// <param name="body">The assertions to run against it.</param>
+        public static void WithDialog<TDialog>(Func<TDialog> factory, Action<TDialog> body)
+            where TDialog : IDisposable
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+            ArgumentNullException.ThrowIfNull(body);
+            Run(() =>
+            {
+                using TDialog dialog = factory();
+                body(dialog);
+            });
+        }
+
+        /// <summary>
         /// Drains the dispatcher queue so queued layout, binding and idle callbacks have run before a
         /// test samples the state they affect.
         /// </summary>

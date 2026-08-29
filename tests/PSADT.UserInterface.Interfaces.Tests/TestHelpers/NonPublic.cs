@@ -14,9 +14,19 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
     /// tag stripper, the countdown formatter and the window procedure without any reflection at all.
     /// <para>
     /// What is left is genuinely out of reach: fields the Windows Forms designer emits as private,
-    /// static helpers that are private rather than private-protected, and members of the concrete
-    /// dialogs that are sealed and so cannot be derived from. Those are reached here. Reflection couples
-    /// a test to a member's name, so it is used only where the alternative is no coverage at all.
+    /// static helpers that are private rather than private-protected, and members of dialogs that
+    /// cannot be derived from. Those are reached here. Reflection couples a test to a member's name, so
+    /// it is used only where the alternative is no coverage at all.
+    /// </para>
+    /// <para>
+    /// The Fluent dialogs are the ones that cannot be derived from, and not because they are sealed -
+    /// most are, but the base is abstract and its immediate subclass is not. The obstacle is XAML:
+    /// <c>InitializeComponent</c> asks <c>Application.LoadComponent</c> for a resource addressed by a
+    /// URI naming the assembly the markup was compiled into, and that call refuses when the object it
+    /// is loading into comes from a different assembly. A test type deriving from a Fluent dialog
+    /// therefore throws before its constructor finishes, however the accessibility works out. The
+    /// Classic dialogs have no such constraint, which is why they are tested through a derived probe
+    /// and these are not.
     /// </para>
     /// </remarks>
     internal static class NonPublic
@@ -45,6 +55,20 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
             MethodInfo method = typeof(TDeclaring).GetMethod(name, Any)
                 ?? throw new MissingMethodException(typeof(TDeclaring).FullName, name);
             return (TResult)Unwrap(() => method.Invoke(obj: null, arguments))!;
+        }
+
+        /// <summary>
+        /// Calls a static method that returns nothing.
+        /// </summary>
+        /// <typeparam name="TDeclaring">The type declaring the method.</typeparam>
+        /// <param name="name">The method's name.</param>
+        /// <param name="arguments">The arguments to pass.</param>
+        /// <exception cref="MissingMethodException">Thrown if the type declares no such method.</exception>
+        public static void CallStatic<TDeclaring>(string name, params object?[] arguments)
+        {
+            MethodInfo method = typeof(TDeclaring).GetMethod(name, Any)
+                ?? throw new MissingMethodException(typeof(TDeclaring).FullName, name);
+            _ = Unwrap(() => method.Invoke(obj: null, arguments));
         }
 
         /// <summary>
@@ -87,6 +111,27 @@ namespace PSADT.UserInterface.Interfaces.Tests.TestHelpers
                 }
             }
             throw new MissingFieldException(instance.GetType().FullName, name);
+        }
+
+        /// <summary>
+        /// Reads a property, including one declared by a base type.
+        /// </summary>
+        /// <typeparam name="TValue">The property's type.</typeparam>
+        /// <param name="instance">The object to read from.</param>
+        /// <param name="name">The property's name.</param>
+        /// <returns>The property's value.</returns>
+        /// <exception cref="MissingMemberException">Thrown if neither the type nor its bases declare such a property.</exception>
+        public static TValue Property<TValue>(object instance, string name)
+        {
+            ArgumentNullException.ThrowIfNull(instance);
+            for (Type? type = instance.GetType(); type is not null; type = type.BaseType)
+            {
+                if (type.GetProperty(name, Any) is PropertyInfo property)
+                {
+                    return (TValue)Unwrap(() => property.GetValue(instance))!;
+                }
+            }
+            throw new MissingMemberException(instance.GetType().FullName, name);
         }
 
         /// <summary>
