@@ -117,7 +117,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// Displays a message box with the specified text, caption, and style, and returns the user's response.
         /// </summary>
-        /// <remarks>This method wraps the Windows API <c>MessageBox</c> function and provides additional
+        /// <remarks>This method wraps the Windows API <c language="csharp">MessageBox</c> function and provides additional
         /// error handling. Ensure that the calling thread has a message loop if the message box is displayed in a GUI
         /// application.</remarks>
         /// <param name="hWnd">A handle to the owner window of the message box. Pass <see langword="null"/> to display the message box

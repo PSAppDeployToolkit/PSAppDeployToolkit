@@ -115,7 +115,8 @@ function Invoke-ADTModuleCompilation
                     Get-ChildItem -Path $outputPath.Key.Replace('Debug', 'Release') -File -Exclude *.xml | Copy-Item -Destination $dest -Recurse -Force
                     if (!$dest.EndsWith('net472') -and ($buildItem.OutputFile.Count -gt 1))
                     {
-                        Get-ChildItem -LiteralPath ($buildItem.OutputFile -replace '^.+\\(.+)\..{3}$', "$($buildItem.SourcePath)\`$1") -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Release') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $dest -Force
+                        $depsSearchPaths = $buildItem.OutputFile -replace '^.+\\(.+)\..{3}$', "$($buildItem.SourcePath)\`$1" | Select-Object -Unique | & { process { if (Test-Path -LiteralPath $_ -PathType Container) { return $_ } } }
+                        Get-ChildItem -LiteralPath $depsSearchPaths -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Release') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $dest -Force
                     }
                 }
                 if ($buildItem.PublishItems)

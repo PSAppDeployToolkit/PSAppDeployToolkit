@@ -1,4 +1,4 @@
-BeforeDiscovery {
+﻿BeforeDiscovery {
     Set-Location -Path $PSScriptRoot
     $ModuleName = 'PSAppDeployToolkit'
 

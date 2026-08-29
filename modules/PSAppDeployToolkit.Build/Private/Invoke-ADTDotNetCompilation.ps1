@@ -126,8 +126,9 @@ function Invoke-ADTDotNetCompilation
             foreach ($buildType in ($buildConfigs | Select-Object -Unique))
             {
                 # We use dotnet msbuild here as it best matches the build process used by Visual Studio which is our IDE of choice.
+                # Use 'Clean;Build' instead of 'Rebuild' as a target here as it can cause race conditions for parallel compilations.
                 Write-ADTBuildLogEntry -Message "Building [$($buildItem.SolutionPath)] solution in [$buildType] mode, please wait..."
-                & $dotnet msbuild $buildItem.SolutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m | Write-ADTDotNetOutputBuildLogEntry
+                & $dotnet msbuild $buildItem.SolutionPath '-target:Clean;Build' -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m | Write-ADTDotNetOutputBuildLogEntry
                 if ($Global:LASTEXITCODE)
                 {
                     throw "Failed to build solution [$($buildItem.SolutionPath -replace '^.+\\')] with exit code [$Global:LASTEXITCODE]."
@@ -181,7 +182,8 @@ function Invoke-ADTDotNetCompilation
                         Get-ChildItem -Path $outputPath.Key -File -Exclude *.xml | Copy-Item -Destination $outputPath.Value -Recurse -Force
                         if (!$outputPath.Value.EndsWith('net472') -and ($buildItem.OutputFile.Count -gt 1))
                         {
-                            Get-ChildItem -LiteralPath ($buildItem.OutputFile -replace '^.+\\(.+)\..{3}$', "$($buildItem.SourcePath)\`$1") -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Debug') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $outputPath.Value -Force
+                            $depsSearchPaths = $buildItem.OutputFile -replace '^.+\\(.+)\..{3}$', "$($buildItem.SourcePath)\`$1" | Select-Object -Unique | & { process { if (Test-Path -LiteralPath $_ -PathType Container) { return $_ } } }
+                            Get-ChildItem -LiteralPath $depsSearchPaths -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Debug') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $outputPath.Value -Force
                         }
                     }
                     if ($buildItem.PublishItems)

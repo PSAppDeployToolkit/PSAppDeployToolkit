@@ -73,11 +73,11 @@
           }
         }
       },
-      "System.Linq.AsyncEnumerable/10.0.5": {
+      "System.Linq.AsyncEnumerable/10.0.11": {
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.1126.37416"
           }
         }
       },
@@ -115,7 +115,7 @@
       },
       "PSADT.Interop/1.0.0": {
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "10.0.5"
+          "System.Linq.AsyncEnumerable": "10.0.11"
         },
         "runtime": {
           "PSADT.Interop.dll": {
@@ -172,12 +172,12 @@
       "path": "system.io.packaging/8.0.1",
       "hashPath": "system.io.packaging.8.0.1.nupkg.sha512"
     },
-    "System.Linq.AsyncEnumerable/10.0.5": {
+    "System.Linq.AsyncEnumerable/10.0.11": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-00y94lP/SeWF5VMb8GlG3iwLyl7abEofwN+Bke1LKEkvsB8dEtr/pDtn4EWQYkvg49UwGJN+JSCE1gKhPIT0cQ==",
-      "path": "system.linq.asyncenumerable/10.0.5",
-      "hashPath": "system.linq.asyncenumerable.10.0.5.nupkg.sha512"
+      "sha512": "sha512-vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg==",
+      "path": "system.linq.asyncenumerable/10.0.11",
+      "hashPath": "system.linq.asyncenumerable.10.0.11.nupkg.sha512"
     },
     "System.ServiceProcess.ServiceController/8.0.1": {
       "type": "package",
