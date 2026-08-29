@@ -457,12 +457,11 @@ namespace PSADT.UserInterface.Interfaces
         /// <exception cref="ArgumentException">Thrown when <paramref name="messageText"/> is null or whitespace.</exception>
         internal static Task UpdateNotifyIconAsync(string messageText)
         {
-            if (notifyIcon is null)
-            {
-                throw new InvalidOperationException("Cannot update a notify icon while one is not open.");
-            }
+            // Arguments before state, as in UpdateProgressDialogAsync.
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
-            return InvokeDialogActionAsync(() => notifyIcon.Text = messageText);
+            return notifyIcon is null
+                ? throw new InvalidOperationException("Cannot update a notify icon while one is not open.")
+                : InvokeDialogActionAsync(() => notifyIcon.Text = messageText);
         }
 
         /// <summary>
