@@ -25,29 +25,38 @@
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
   </ItemGroup>
 
+  <!--
+    SubType=Form opens these in the Windows Forms designer rather than the code editor. Design-time
+    only; it has no effect on the build. The paths carried a stale "Interfaces\" prefix that matched
+    nothing, so the whole group was inert - Visual Studio had quietly rewritten the correct list into
+    the untracked .csproj.user beside this file, which is why nobody noticed. This is that list.
+  -->
   <ItemGroup>
-    <Compile Update="Interfaces\Classic\ClassicBase.cs">
+    <Compile Update="Classic\ClassicBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\ClassicDialog.cs">
+    <Compile Update="Classic\ClassicDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\CloseAppsDialog.cs">
+    <Compile Update="Classic\CloseAppsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\CustomDialog.cs">
+    <Compile Update="Classic\CustomDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\HelpConsole.cs">
+    <Compile Update="Classic\HelpConsole.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\InputDialog.cs">
+    <Compile Update="Classic\InputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\ProgressDialog.cs">
+    <Compile Update="Classic\ListSelectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Interfaces\Classic\RestartDialog.cs">
+    <Compile Update="Classic\ProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Classic\RestartDialog.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
