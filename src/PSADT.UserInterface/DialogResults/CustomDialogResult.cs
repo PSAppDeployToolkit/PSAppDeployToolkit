@@ -75,10 +75,12 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the result of the last executed operation as a string.
         /// </summary>
-        /// <remarks>This property is read-only and is set internally by the class. It reflects the
-        /// outcome of the most recent operation performed by the dialog.</remarks>
+        /// <remarks>Deliberately not public. PowerShell renders an object with no public members via its
+        /// <see cref="ToString"/>, which is what makes a bare result print as the string it stands for. Derived
+        /// types that do want a property table re-expose this through <see cref="CustomDialogDerivative.Result"/>
+        /// rather than declaring a second field, which would serialise the value twice.</remarks>
         [DataMember]
-        private readonly string Result;
+        private protected readonly string Result;
 
         /// <summary>
         /// Converts a CustomDialogResult instance to its string representation.

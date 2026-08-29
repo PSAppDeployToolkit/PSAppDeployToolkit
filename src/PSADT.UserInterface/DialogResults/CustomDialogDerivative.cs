@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -21,14 +20,14 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="result">The result string that represents the outcome of the dialog operation. This value cannot be null.</param>
         private protected CustomDialogDerivative(string result) : base(result)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(result);
-            Result = result;
         }
 
         /// <summary>
-        /// Gets or sets the result value as a string.
+        /// Gets the result value as a string.
         /// </summary>
-        [DataMember]
-        public readonly string Result;
+        /// <remarks>Re-exposes the base type's non-public field so that PowerShell renders a derived result as
+        /// a property table alongside its own values, rather than as the bare string a
+        /// <see cref="CustomDialogResult"/> prints. A second field here would serialise the value twice.</remarks>
+        public new string Result => base.Result;
     }
 }
