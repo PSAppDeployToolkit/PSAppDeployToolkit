@@ -665,17 +665,22 @@ namespace PSADT.ClientServer
                 }
                 finally
                 {
-                    // Cancel the log writer and wait for it to finish.
-                    await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
-                    if (_logWriterTask is not null)
-                    {
-                        await _logWriterTask.ConfigureAwait(false);
-                        _logWriterTask = null;
-                    }
-
                     // Unregister the process exit handler and mark as disposed.
                     AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
-                    _disposed = true;
+                    try
+                    {
+                        // Cancel the log writer and wait for it to finish.
+                        await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
+                        if (_logWriterTask is not null)
+                        {
+                            await _logWriterTask.ConfigureAwait(false);
+                        }
+                    }
+                    finally
+                    {
+                        _logWriterTask = null;
+                        _disposed = true;
+                    }
                 }
             }
         }

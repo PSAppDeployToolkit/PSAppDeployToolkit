@@ -534,6 +534,47 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a log reader which failed is reported, and leaves the instance disposed rather than
+        /// half-way through it.
+        /// </summary>
+        /// <remarks>
+        /// Disposal waits on the log reader from a finally block, so a fault from that wait skips whatever
+        /// follows it. With the disposed flag and the process exit handler left until afterwards, that meant an
+        /// instance whose pipes and cancellation sources had already been closed by the enclosing using block,
+        /// but which still reported itself as not disposed - so later calls failed on closed pipes rather than
+        /// saying they were too late, and the exit handler stayed registered to try disposing it all over again.
+        /// <para>
+        /// The failure is planted rather than provoked. A log reader only faults on a frame that is neither the
+        /// end of the stream nor cancellation, which takes a corrupt log stream, and that takes a client that is
+        /// not the real one. Reaching for the field by name is the price of covering the consequence at all; it
+        /// fails loudly rather than silently if the field is ever renamed.
+        /// </para>
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the field this plants a failure in has been renamed.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposing the instance is the call under test, and the analyser cannot see it through the assertion it is made from.")]
+        [Fact]
+        public async Task DisposeAsync_FinishesDisposingWhenTheLogReaderFailed()
+        {
+            // Arrange
+            ServerInstance instance = new(SomeUser());
+            FieldInfo logWriterTask = typeof(ServerInstance).GetField("_logWriterTask", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("ServerInstance no longer has a _logWriterTask field for this test to plant a failure in.");
+            logWriterTask.SetValue(instance, Task.FromException(new ServerException("the log stream failed", (Exception?)null)));
+
+            // Act
+            ServerException failure = await Assert.ThrowsAsync<ServerException>(async () => await instance.DisposeAsync().ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert: the failure is reported, and the instance is disposed all the same.
+            Assert.Equal("the log stream failed", failure.Message);
+            _ = Assert.Throws<ObjectDisposedException>(instance.GetLogWriterException);
+
+            // Assert: so disposing again does nothing, rather than waiting on the same failure and raising it a
+            // second time from a caller's using block.
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.DisposeAsync().ConfigureAwait(true)).ConfigureAwait(true));
+        }
+
+        /// <summary>
         /// Builds a session for the log frame reader to write into.
         /// </summary>
         /// <returns>The session.</returns>
