@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Reflection;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
@@ -303,6 +306,156 @@ namespace PSADT.ClientServer.Server.Tests
             Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserFocusModeStateAsync().ConfigureAwait(true)).ConfigureAwait(true));
             Assert.Null(await Record.ExceptionAsync(async () => await instance.GetUserToastNotificationModeAsync().ConfigureAwait(true)).ConfigureAwait(true));
             Assert.Null(instance.GetLogWriterException());
+        }
+
+        /// <summary>
+        /// Verifies that only one particular failure is forgiven when a client shuts down.
+        /// </summary>
+        /// <remarks>
+        /// A client on its way out can lose the window it was tidying up, and that is not worth reporting as a
+        /// failed deployment. Anything else is. The rule is one native error code deep, which is the sort of
+        /// constant that gets adjusted by someone reading a different error's documentation, so it is named
+        /// here rather than left to be read out of the source.
+        /// </remarks>
+        /// <param name="nativeErrorCode">The native error code the client failed with.</param>
+        /// <param name="expected">Whether that failure should be forgiven.</param>
+        [Theory]
+        [InlineData(1400, true)]
+        [InlineData(1399, false)]
+        [InlineData(1401, false)]
+        [InlineData(0, false)]
+        public void IsIgnorableClientShutdownException_ForgivesOnlyAnInvalidWindowHandle(int nativeErrorCode, bool expected)
+        {
+            // Assert
+            Assert.Equal(expected, IsIgnorable(new Win32Exception(nativeErrorCode)));
+        }
+
+        /// <summary>
+        /// Verifies that a failure of another kind entirely is not forgiven.
+        /// </summary>
+        /// <remarks>
+        /// The check is on the type as well as the code, so an exception carrying no native code at all must not
+        /// match by default.
+        /// </remarks>
+        [Fact]
+        public void IsIgnorableClientShutdownException_ForgivesNothingThatIsNotAWin32Failure()
+        {
+            // Assert
+            Assert.False(IsIgnorable(new InvalidOperationException("The client gave up.")));
+            Assert.False(IsIgnorable(new OperationCanceledException()));
+        }
+
+        /// <summary>
+        /// Verifies that an instance stops reporting itself as running once it has been disposed.
+        /// </summary>
+        /// <remarks>
+        /// Asked by callers deciding whether there is still a client to talk to, so it has to answer for the
+        /// instance rather than for the process: a disposed instance has let go of its client and cannot reach
+        /// one whether or not anything is still alive.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task IsRunning_IsFalseOnceTheInstanceHasBeenDisposed()
+        {
+            // Arrange
+            ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+            Assert.True(instance.IsRunning);
+
+            // Act
+            await instance.DisposeAsync().ConfigureAwait(true);
+
+            // Assert
+            Assert.False(instance.IsRunning);
+        }
+
+        /// <summary>
+        /// Verifies that an instance whose client has died can still be disposed.
+        /// </summary>
+        /// <remarks>
+        /// A client can go away without being asked - killed by security software, by the user, or by falling
+        /// over. Disposal notices the process is already gone, skips asking it to close politely, and does not
+        /// then hold its exit code against it. Getting this wrong would turn somebody else's kill into a
+        /// deployment that reported a failure of its own on the way out.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task DisposeAsync_SucceedsWhenTheClientHasAlreadyDied()
+        {
+            // Arrange
+            // Disposal is what is being asserted, and doing it twice is a no-op, so the outer one only guarantees
+            // the instance is let go of if an assertion above it fails first.
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+            KillClientOf(instance);
+            Assert.False(instance.IsRunning);
+
+            // Assert
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.DisposeAsync().ConfigureAwait(true)).ConfigureAwait(true));
+        }
+
+        /// <summary>
+        /// Verifies that asking a client that has died reports a failure rather than waiting for an answer.
+        /// </summary>
+        /// <remarks>
+        /// Both halves of a command can fail once the other end is gone - the write, or the read that follows it
+        /// - and both are wrapped the same way, so what is asserted is the wrapping rather than which half lost.
+        /// The important part is that it ends at all: a caller waiting forever on a client that no longer exists
+        /// would hang a deployment.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ServerInstance_ReportsAFailureWhenAskingAClientThatHasDied()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+            KillClientOf(instance);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<ServerException>(async () => await instance.ProgressDialogOpenAsync().ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Asks the shutdown rule about an exception.
+        /// </summary>
+        /// <remarks>
+        /// The rule is private and static and reaches nothing else, so it is asked directly rather than through
+        /// a disposal arranged to fail in exactly the right way.
+        /// </remarks>
+        /// <param name="exception">The exception to ask about.</param>
+        /// <returns>Whether the failure would be forgiven.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the rule is gone or answers with nothing, since
+        /// an assertion that quietly stopped asserting would be worse than a failing one.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The rule is a private static predicate whose only caller is a disposal path that cannot be driven to it from outside.")]
+        private static bool IsIgnorable(Exception exception)
+        {
+            MethodInfo rule = typeof(ServerInstance).GetMethod("IsIgnorableClientShutdownException", BindingFlags.NonPublic | BindingFlags.Static)
+                ?? throw new InvalidOperationException("ServerInstance no longer carries the shutdown rule for the tests to ask.");
+            return (bool)(rule.Invoke(null, [exception]) ?? throw new InvalidOperationException("The shutdown rule answered with nothing."));
+        }
+
+        /// <summary>
+        /// Ends the client an instance started, and waits until it has actually gone.
+        /// </summary>
+        /// <remarks>
+        /// Reached through the instance rather than by looking for a process of the right name, so that a client
+        /// belonging to something else on the machine cannot be the one that gets killed. The process is not
+        /// disposed here because the instance still owns it.
+        /// </remarks>
+        /// <param name="instance">The instance whose client should be ended.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the instance has no client to end, or no longer
+        /// holds it where this expects to find it.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "An instance does not expose its client process, and a client dying unexpectedly is a case worth covering.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The process belongs to the instance under test, which disposes it.")]
+        private static void KillClientOf(ServerInstance instance)
+        {
+            object handle = typeof(ServerInstance).GetField("_clientProcess", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(instance)
+                ?? throw new InvalidOperationException("The instance has no client process to end.");
+            Process client = (Process?)handle.GetType().GetProperty("Process")?.GetValue(handle)
+                ?? throw new InvalidOperationException("The client process handle no longer carries a process.");
+            client.Kill();
+            Assert.True(client.WaitForExit(30000), "The client process did not end when it was killed.");
         }
 
         /// <summary>
