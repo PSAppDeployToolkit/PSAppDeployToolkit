@@ -88,6 +88,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
             }
+            if (shutdownReasonText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(shutdownReasonText);
+            }
             ArgumentNullException.ThrowIfNull(strings);
             Strings = strings;
             CountdownDuration = countdownDuration;

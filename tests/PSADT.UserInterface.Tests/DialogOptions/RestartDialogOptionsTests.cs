@@ -76,23 +76,26 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         }
 
         /// <summary>
-        /// Records that the shutdown reason is not checked for blankness the way the custom message is.
+        /// Verifies that a shutdown reason present but blank is refused.
         /// </summary>
         /// <remarks>
-        /// The two optional strings on this type are treated differently: <c>CustomMessageText</c> is
-        /// rejected when blank, <c>ShutdownReasonText</c> is not. Stated rather than corrected, since the
-        /// reason text is passed to the shutdown API rather than rendered and a blank one may well be
-        /// acceptable there. If it is not, the guard belongs beside the other one.
+        /// The two optional strings on this type used to be treated differently, with only
+        /// <c>CustomMessageText</c> rejected when blank. Both now follow the rule the rest of these types
+        /// keep: absent is a valid state, present-but-blank is not, since it says a value was meant and
+        /// then supplies nothing.
         /// </remarks>
-        [Fact]
-        public void Constructor_DoesNotCheckTheShutdownReasonForBlankness()
+        /// <param name="value">The blank value to refuse.</param>
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Constructor_RefusesABlankShutdownReason(string value)
         {
             // Arrange
             Hashtable table = SampleOptions.RestartDialog();
-            table["ShutdownReasonText"] = "   ";
+            table["ShutdownReasonText"] = value;
 
             // Act & Assert
-            Assert.Equal("   ", new RestartDialogOptions(DeploymentType.Install, table).ShutdownReasonText);
+            _ = Assert.Throws<ArgumentException>(() => new RestartDialogOptions(DeploymentType.Install, table));
         }
 
         /// <summary>
