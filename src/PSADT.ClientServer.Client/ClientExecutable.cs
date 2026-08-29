@@ -649,12 +649,12 @@ namespace PSADT.ClientServer
                     // Deserialize the options to the correct type based on DialogType and show the dialog.
                     Console.WriteLine(SerializeToString(dialogType switch
                     {
-                        DialogType.CustomDialog => await DialogManager.ShowCustomDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.DialogBox => await DialogManager.ShowDialogBoxAsync(DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.HelpConsole => await DialogManager.ShowHelpConsoleAsync(DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.InputDialog => await DialogManager.ShowInputDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.ListSelectionDialog => await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.RestartDialog => await DialogManager.ShowRestartDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.CustomDialog => await DialogManager.ShowCustomDialogAsync(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.DialogBox => await DialogManager.ShowDialogBoxAsync(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.HelpConsole => await DialogManager.ShowHelpConsoleAsync(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.InputDialog => await DialogManager.ShowInputDialogAsync(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.ListSelectionDialog => await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DeserializeString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.RestartDialog => await DialogManager.ShowRestartDialogAsync(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.CloseAppsDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported by the current implementation.", ClientExitCode.UnsupportedDialog),
                     }));
                     return (int)ClientExitCode.Success;
