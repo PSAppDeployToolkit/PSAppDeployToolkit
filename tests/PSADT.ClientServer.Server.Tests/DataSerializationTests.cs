@@ -210,6 +210,36 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that the exception this serializer raises for unreadable input can itself be
+        /// serialized.
+        /// </summary>
+        /// <remarks>
+        /// Its callers report a failure by serializing the exception, so one that cannot be serialized
+        /// leaves them nothing to report. The client is the case that matters: its error handler calls
+        /// <c>Environment.FailFast</c> when serializing the exception throws, so the process aborted with
+        /// an empty standard error rather than an exit code the server could read.
+        /// <para>
+        /// The obstacle was the inner <c>XmlException</c>, which carries the arguments of its own message
+        /// as a <c>string[]</c>. That type had to be a known type before an exception holding one could
+        /// be written.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void Exception_FromUnreadableInputIsItselfSerializable()
+        {
+            // Arrange
+            SerializationException thrown = Assert.Throws<SerializationException>(
+                static () => DataSerialization.DeserializeFromString<ProcessDefinition>("notserializedcontent"));
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(thrown));
+
+            // Assert
+            _ = Assert.IsType<SerializationException>(restored);
+            Assert.Equal(thrown.Message, restored.Message);
+        }
+
+        /// <summary>
         /// Verifies that whatever an exception was carrying in its data survives with it.
         /// </summary>
         /// <remarks>

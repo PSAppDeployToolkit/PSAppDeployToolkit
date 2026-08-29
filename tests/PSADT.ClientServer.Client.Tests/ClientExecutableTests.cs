@@ -506,24 +506,18 @@ namespace PSADT.ClientServer.Client.Tests
         /// shown.
         /// </summary>
         /// <remarks>
-        /// Skipped against a defect rather than deleted, so the intended behaviour stays recorded where
-        /// someone changing this path will see it. The client answers this today by dying at
-        /// <c>0x80131623</c> with nothing on standard error: <c>InvokeMainErrorHandler</c> serializes
-        /// the exception to report it, that serialization throws for a <c>ClientException</c> wrapping
-        /// a <c>DataSerialization</c> failure, and its inner catch calls <c>Environment.FailFast</c>.
-        /// The same happens for <c>/GetEnvironmentVariable -ArgumentsDictionary notserializedcontent</c>,
-        /// and it predates the switch to the wrapper here - reverting that hunk gives the identical exit
-        /// code and empty stream. Remove the skip once a failure to serialize reports rather than
-        /// aborts.
+        /// Reaching the exit code at all depends on the exception being serializable: the error handler
+        /// reports by serializing, and aborts on <c>FailFast</c> if that throws. Failures out of
+        /// <c>ReadObject</c> carry an <c>XmlException</c>, whose own message arguments are a
+        /// <c>string[]</c>, so this test also covers that type staying in the serializer's known types.
         /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Skipped against a known defect rather than deleted, so the behaviour it asserts stays recorded. The remarks name the defect and what clears the skip.")]
-        [Fact(Skip = "Blocked: the client FailFasts with 0x80131623 and writes nothing, because a ClientException wrapping a DataSerialization failure cannot itself be serialized.")]
+        [Fact(Skip = ClientRequired, SkipUnless = nameof(TestEnvironment.CanRunClient), SkipType = typeof(TestEnvironment))]
         public async Task Client_RefusesAModalDialogWhoseOptionsCannotBeRead()
         {
-            Assert.SkipUnless(TestEnvironment.CanRunClient, ClientRequired);
             ClientResult result = await ClientProcess.RunAsync("/ShowModalDialog", "-DialogType", "InputDialog", "-DialogStyle", "Classic", "-Options", "notserializedcontent").ConfigureAwait(true);
             Assert.Equal(ClientExitCode.InvalidOptions, result.ExitCodeAsEnum);
+            Assert.NotEmpty(result.StandardError.Trim());
         }
 
         /// <summary>
