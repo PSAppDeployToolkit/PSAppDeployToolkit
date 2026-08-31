@@ -1,4 +1,10 @@
-﻿#Requires -RunAsAdministrator
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+
+    # A runtime skip rather than #Requires -RunAsAdministrator, which fails the whole container and so
+    # fails the build on any session that is not elevated.
+    $script:IsElevated = Test-ADTCallerElevated
+}
 BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
@@ -88,7 +94,7 @@ BeforeAll {
     }
 }
 
-Describe 'Add-ADTFont' {
+Describe 'Add-ADTFont' -Skip:(!$script:IsElevated) {
 
     Context 'Single File Installation' {
         AfterEach {
