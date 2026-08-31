@@ -36,7 +36,10 @@ Describe 'Set-ADTServiceStartMode' {
             }
             { Set-ADTServiceStartMode -InputObject $null -StartMode 'Automatic' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Set-ADTServiceStartMode'
             { Set-ADTServiceStartMode -InputObject '' -StartMode 'Automatic' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Set-ADTServiceStartMode'
-            { Set-ADTServiceStartMode -InputObject " `f`n`r`t`v" -StartMode 'Automatic' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Set-ADTServiceStartMode'
+            # White space converts to a ServiceController with no ServiceName, so the parameter's own
+            # ValidateScript reports it. It surfaced as a plain binding failure only while
+            # New-ADTValidateScriptErrorRecord threw part way through building that error.
+            { Set-ADTServiceStartMode -InputObject " `f`n`r`t`v" -StartMode 'Automatic' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidInputObjectParameterValue,Set-ADTServiceStartMode'
         }
     }
 }

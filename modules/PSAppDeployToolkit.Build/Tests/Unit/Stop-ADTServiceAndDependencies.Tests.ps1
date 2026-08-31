@@ -95,7 +95,10 @@ Describe 'Stop-ADTServiceAndDependencies' {
             }
             { Stop-ADTServiceAndDependencies -InputObject $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Stop-ADTServiceAndDependencies'
             { Stop-ADTServiceAndDependencies -InputObject '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Stop-ADTServiceAndDependencies'
-            { Stop-ADTServiceAndDependencies -InputObject " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Stop-ADTServiceAndDependencies'
+            # White space converts to a ServiceController with no ServiceName, so the parameter's own
+            # ValidateScript reports it. It surfaced as a plain binding failure only while
+            # New-ADTValidateScriptErrorRecord threw part way through building that error.
+            { Stop-ADTServiceAndDependencies -InputObject " `f`n`r`t`v" } | Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidInputObjectParameterValue,Stop-ADTServiceAndDependencies'
         }
     }
 }

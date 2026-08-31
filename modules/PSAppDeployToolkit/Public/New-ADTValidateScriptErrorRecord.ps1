@@ -108,9 +108,20 @@ function New-ADTValidateScriptErrorRecord
         Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
         ErrorId = "Invalid$($ParameterName)ParameterValue"
         TargetObject = $ProvidedValue
-        TargetName = $ProvidedValue.ToString()
-        TargetType = $(if ($null -ne $ProvidedValue) { $ProvidedValue.GetType().Name })
         RecommendedAction = "Review the supplied $($ParameterName) parameter value and try again."
+    }
+
+    # The value reported on here is commonly null, empty or white space, because that is what the caller's
+    # validator rejected. New-ADTErrorRecord accepts none of those for either field, so they are supplied
+    # only when there is something to say and the value itself is carried by TargetObject regardless.
+    if ($null -ne $ProvidedValue)
+    {
+        $naerParams.Add('TargetType', $ProvidedValue.GetType().Name)
+        $providedValueString = $ProvidedValue.ToString()
+        if (![System.String]::IsNullOrWhiteSpace($providedValueString))
+        {
+            $naerParams.Add('TargetName', $providedValueString)
+        }
     }
     return (New-ADTErrorRecord @naerParams)
 }
