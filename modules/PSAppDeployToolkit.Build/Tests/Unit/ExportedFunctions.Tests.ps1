@@ -48,6 +48,11 @@ BeforeDiscovery {
     Set-Location -Path $PSScriptRoot
     $ModuleName = 'PSAppDeployToolkit'
     $PathToManifest = [System.IO.Path]::Combine('..', '..', '..', $ModuleName, "$ModuleName.psd1")
+
+    # Get-Command below sees nothing unless the module is already loaded, and BeforeAll runs after
+    # discovery, so without this every per-function Context silently disappears.
+    Get-Module $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
+    Import-Module $PathToManifest -Force
     $manifestContent = Test-ModuleManifest -Path $PathToManifest
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
