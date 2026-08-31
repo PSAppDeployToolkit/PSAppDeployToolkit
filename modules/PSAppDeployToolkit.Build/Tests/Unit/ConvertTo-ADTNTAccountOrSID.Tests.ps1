@@ -45,17 +45,16 @@ Describe 'ConvertTo-ADTNTAccountOrSID' {
             { ConvertTo-ADTNTAccountOrSID -SID 'not-a-sid' } | Should -Throw -ErrorId 'ParameterArgumentTransformationError,ConvertTo-ADTNTAccountOrSID'
         }
 
-        It 'Reports an account it cannot resolve' -Skip {
-            # Skipped: the off-domain fallback in Convert-ADTNTAccountToSID pipes
-            # GroupPolicyAccountInfo::Get() into `& { if ($_.Username.Equals(...)) }` with no process block,
-            # so the body runs once in the end block where $_ is null. The result is "The property
-            # 'Username' cannot be found on this object" rather than either a resolved SID or the original
-            # translation failure. Its mirror, the SID to account direction at line 146, has the process
-            # block and behaves correctly.
-            #
-            # The comment on that branch says it exists for a device with no line of sight to a domain
-            # controller, which is a normal state for a deployment. Unskip with the fix.
-            { ConvertTo-ADTNTAccountOrSID -AccountName 'NoSuchAccountHere12345' -ErrorAction Stop } | Should -Throw -ExceptionType ([System.Security.Principal.IdentityNotMappedException])
+        It 'Reports an account it cannot resolve' {
+            # The failure the caller needs to see is the translation one. Without a process block on the
+            # group policy fallback, the body ran once with a null $_ and buried it under a missing
+            # 'Username' property instead.
+            { ConvertTo-ADTNTAccountOrSID -AccountName 'NoSuchAccountHere12345' -ErrorAction Stop } | Should -Throw -ErrorId 'IdentityNotMappedException,ConvertTo-ADTNTAccountOrSID'
+        }
+
+        It 'Reports a SID it cannot resolve the same way' {
+            # The mirror direction, which already had its process block. Both should fail alike.
+            { ConvertTo-ADTNTAccountOrSID -SID 'S-1-5-21-1111111111-2222222222-3333333333-4444' -ErrorAction Stop } | Should -Throw -ErrorId 'IdentityNotMappedException,ConvertTo-ADTNTAccountOrSID'
         }
     }
 }
