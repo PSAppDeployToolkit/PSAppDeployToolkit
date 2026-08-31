@@ -190,8 +190,10 @@ function Get-ADTUserProfiles
                                 continue
                             }
 
-                            # Return early for accounts that have a null NTAccount.
-                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $securityIdentifier -InformationAction SilentlyContinue))
+                            # Return early for accounts that have a null NTAccount. A SID with no account
+                            # behind it, which service profiles commonly have, throws rather than returning
+                            # null, so the failure is ignored here to leave the profile skipped as intended.
+                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $securityIdentifier -InformationAction SilentlyContinue -ErrorAction Ignore))
                             {
                                 continue
                             }

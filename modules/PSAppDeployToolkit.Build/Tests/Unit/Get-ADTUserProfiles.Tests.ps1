@@ -72,12 +72,16 @@ Describe 'Get-ADTUserProfiles' {
             { Get-ADTUserProfiles -SID $script:Mine.SID, $script:Mine.SID } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
         }
 
-        It 'Includes the service profiles without erroring' -Skip {
-            # Skipped: a service profile whose SID has no account behind it makes
-            # ConvertTo-ADTNTAccountOrSID throw, but the caller tests its result for null instead, per the
-            # comment "Return early for accounts that have a null NTAccount". The profile is dropped either
-            # way, so the outcome is right and the error is noise. Unskip with the fix.
-            { Get-ADTUserProfiles -IncludeServiceProfiles -ErrorAction Stop } | Should -Not -Throw
+        It 'Completes without erroring for <Switch>' -ForEach @(
+            @{ Switch = 'IncludeServiceProfiles' }
+            @{ Switch = 'IncludeSystemProfiles' }
+            @{ Switch = 'IncludeIISAppPoolProfiles' }
+            @{ Switch = 'IncludeEpmProfiles' }
+        ) {
+            # A service or app pool SID commonly has no account behind it, which makes the translation
+            # throw where the enumeration means to skip the profile quietly.
+            $splat = @{ $Switch = $true }
+            { Get-ADTUserProfiles @splat -ErrorAction Stop } | Should -Not -Throw
         }
     }
 }
