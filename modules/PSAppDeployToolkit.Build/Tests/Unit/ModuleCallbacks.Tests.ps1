@@ -1,12 +1,6 @@
 ﻿BeforeDiscovery {
-    Set-Location -Path $PSScriptRoot
-    $ModuleName = 'PSAppDeployToolkit'
-
-    # Anchored on $PSScriptRoot because the .NET file APIs below resolve a relative path against the process
-    # working directory, which Set-Location does not move.
-    $ModuleRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', $ModuleName))
-    Get-Module $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
-    Import-Module ([System.IO.Path]::Combine($ModuleRoot, "$ModuleName.psd1")) -Force
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
 
     # Read from the enumeration rather than listed here, so a callback type added later is checked without this
     # file being touched. Each entry is a hashtable because Pester makes a hashtable's keys available as

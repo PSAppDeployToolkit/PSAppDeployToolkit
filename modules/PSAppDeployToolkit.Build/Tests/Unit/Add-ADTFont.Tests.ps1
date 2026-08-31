@@ -1,7 +1,7 @@
 ﻿#Requires -RunAsAdministrator
 BeforeAll {
-    Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
-    Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
 
     # Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables { }

@@ -1,6 +1,6 @@
 ﻿BeforeAll {
-    Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
-    Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
 }
 Describe 'Set-ADTServiceStartMode' {
     BeforeAll {
