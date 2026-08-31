@@ -66,17 +66,27 @@ Describe 'Convert-ADTRegistryKeyToHashtable' {
             }
         }
 
-        It 'Recurses into subkeys' -Skip {
-            # Skipped: the subkey recursion is `$registryKeys | & $MyInvocation.MyCommand` written inside an
-            # anonymous `& { end { ... } }` block. There, $MyInvocation.MyCommand is a ScriptInfo wrapping
-            # that anonymous block rather than the enclosing function, so it does not re-enter
-            # Convert-ADTRegistryKeyToHashtable at all. Invoking that ScriptInfo also fails outright with
-            # "AuthorizationManager check failed" wherever a code integrity policy is enforced.
-            #
-            # Reachable in production: Import-ADTModuleDataFile pipes the HKLM policy key for Config or
-            # Strings into this function, and those are nested, so any customer using the ADMX policy
-            # overrides on a locked-down machine takes this path. Unskip with the fix.
+        It 'Recurses into subkeys' {
+            # The recursion has to reach the function itself. Written as $MyInvocation.MyCommand from inside
+            # the anonymous scriptblock it lives in, it resolved to that block instead, so it never recursed
+            # and was refused outright wherever code integrity is enforced.
             (Convert-Probe -LiteralPath $script:NestedRoot)['ConvertProbeNested']['Nested']['InnerValue'] | Should -BeExactly 'inner'
+        }
+
+        It 'Recurses more than one level deep' {
+            $deep = (New-Item -Path 'TestRegistry:\ConvertProbeDeep\One\Two' -ItemType Directory -Force).PSPath
+            $null = New-ItemProperty -LiteralPath $deep -Name 'DeepValue' -Value 'deep' -PropertyType String
+            (Convert-Probe -LiteralPath 'TestRegistry:\ConvertProbeDeep')['ConvertProbeDeep']['One']['Two']['DeepValue'] | Should -BeExactly 'deep'
+        }
+
+        It 'Carries a key that has both values and subkeys' {
+            $both = (New-Item -Path 'TestRegistry:\ConvertProbeBoth' -ItemType Directory -Force).PSPath
+            $null = New-ItemProperty -LiteralPath $both -Name 'OwnValue' -Value 'own' -PropertyType String
+            $null = New-ItemProperty -LiteralPath (New-Item -Path 'TestRegistry:\ConvertProbeBoth\Child' -ItemType Directory -Force).PSPath -Name 'ChildValue' -Value 'child' -PropertyType String
+
+            $section = (Convert-Probe -LiteralPath $both)['ConvertProbeBoth']
+            $section['OwnValue'] | Should -BeExactly 'own'
+            $section['Child']['ChildValue'] | Should -BeExactly 'child'
         }
 
         It 'Returns nothing for a key with no values at all' {

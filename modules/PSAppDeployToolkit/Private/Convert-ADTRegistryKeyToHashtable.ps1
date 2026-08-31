@@ -8,6 +8,10 @@ function Private:Convert-ADTRegistryKeyToHashtable
 {
     begin
     {
+        # Captured here because $MyInvocation.MyCommand inside the anonymous scriptblock below resolves to
+        # that block rather than to this function, and invoking it is refused where code integrity is enforced.
+        $thisCommand = $MyInvocation.MyCommand
+
         # Open collector to store all converted keys.
         $data = @{}
     }
@@ -22,7 +26,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
                 {
                     try
                     {
-                        $registryKeys | & $MyInvocation.MyCommand
+                        $registryKeys | & $thisCommand
                     }
                     finally
                     {
