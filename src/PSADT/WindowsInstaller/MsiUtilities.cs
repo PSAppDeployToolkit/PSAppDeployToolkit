@@ -26,12 +26,13 @@ namespace PSADT.WindowsInstaller
         /// <summary>
         /// Retrieves a Win32Exception corresponding to a given MSI exit code, including the associated message.
         /// </summary>
-        /// <param name="exitCode">The MSI exit code for which to retrieve the corresponding Win32Exception.</param>
+        /// <param name="exitCode">The MSI exit code for which to retrieve the corresponding Win32Exception. Unsigned to match WIN32_ERROR, so codes above Int32.MaxValue such as 0xC0000005 are accepted.</param>
         /// <returns>A Win32Exception representing the error associated with the specified MSI exit code.</returns>
-        public static Win32Exception GetExceptionForMsiExitCode(int exitCode)
+        public static Win32Exception GetExceptionForMsiExitCode(uint exitCode)
         {
+            // Win32Exception takes a signed code, where the high half of the unsigned range is negative.
             string message = ExceptionUtilities.GetMessageForWin32Error((WIN32_ERROR)exitCode, disableSuffix: true);
-            return new(exitCode, message.TrimEnd('.') + $" ({(WIN32_ERROR)exitCode}).");
+            return new(unchecked((int)exitCode), message.TrimEnd('.') + $" ({(WIN32_ERROR)exitCode}).");
         }
 
         /// <summary>

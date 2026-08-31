@@ -34,12 +34,15 @@ Describe 'Get-ADTMsiExitCodeMessage' {
             Get-ADTMsiExitCodeMessage -MsiExitCode 16180339 | Should -Not -BeNullOrEmpty
         }
 
-        It 'Accepts the whole of the range its parameter declares' -Skip {
-            # Skipped: -MsiExitCode is [System.Nullable[System.UInt32]], but the underlying
-            # MsiUtilities.GetExceptionForMsiExitCode takes an Int32, so anything above Int32.MaxValue
-            # fails with a MethodException rather than a message or a clean error. That covers exit codes
-            # such as 0xC0000005, which a process can genuinely return. Unskip with the fix.
-            Get-ADTMsiExitCodeMessage -MsiExitCode ([System.UInt32]::MaxValue) | Should -Not -BeNullOrEmpty
+        It 'Accepts <Case>, which is above the signed range' -ForEach @(
+            @{ Case = '0x80070005'; MsiExitCode = 2147942405 }
+            @{ Case = '0xC0000005'; MsiExitCode = 3221225477 }
+            @{ Case = 'the largest UInt32'; MsiExitCode = 4294967295 }
+        ) {
+            # -MsiExitCode is declared as a UInt32, so the whole of that range has to work. The underlying
+            # method took an Int32, so anything past Int32.MaxValue used to fail with a MethodException.
+            # A process can genuinely exit with a code such as 0xC0000005.
+            Get-ADTMsiExitCodeMessage -MsiExitCode $MsiExitCode | Should -Not -BeNullOrEmpty
         }
     }
 }

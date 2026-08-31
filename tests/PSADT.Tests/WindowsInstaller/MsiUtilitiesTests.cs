@@ -232,13 +232,35 @@ namespace PSADT.Tests.WindowsInstaller
         [InlineData(1618)]
         [InlineData(1641)]
         [InlineData(3010)]
-        public void GetExceptionForMsiExitCode_CarriesTheExitCode(int exitCode)
+        public void GetExceptionForMsiExitCode_CarriesTheExitCode(uint exitCode)
         {
             // Act
             Win32Exception exception = MsiUtilities.GetExceptionForMsiExitCode(exitCode);
 
             // Assert
-            Assert.Equal(exitCode, exception.NativeErrorCode);
+            Assert.Equal(unchecked((int)exitCode), exception.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that a code above <see cref="int.MaxValue"/> is accepted rather than rejected.
+        /// </summary>
+        /// <remarks>
+        /// A process can exit with a code such as 0xC0000005, and the PowerShell wrapper declares the parameter as an
+        /// unsigned integer, so the whole of that range has to be usable.
+        /// </remarks>
+        /// <param name="exitCode">The exit code to translate.</param>
+        [Theory]
+        [InlineData(0x80070005u)]
+        [InlineData(0xC0000005u)]
+        [InlineData(uint.MaxValue)]
+        public void GetExceptionForMsiExitCode_AcceptsCodesAboveTheSignedRange(uint exitCode)
+        {
+            // Act
+            Win32Exception exception = MsiUtilities.GetExceptionForMsiExitCode(exitCode);
+
+            // Assert
+            Assert.Equal(unchecked((int)exitCode), exception.NativeErrorCode);
+            Assert.False(string.IsNullOrWhiteSpace(exception.Message));
         }
 
         /// <summary>
@@ -251,7 +273,7 @@ namespace PSADT.Tests.WindowsInstaller
         [InlineData(1603)]
         [InlineData(1618)]
         [InlineData(3010)]
-        public void GetExceptionForMsiExitCode_AppendsTheSymbolicNameOnce(int exitCode)
+        public void GetExceptionForMsiExitCode_AppendsTheSymbolicNameOnce(uint exitCode)
         {
             // Act
             string message = MsiUtilities.GetExceptionForMsiExitCode(exitCode).Message;
