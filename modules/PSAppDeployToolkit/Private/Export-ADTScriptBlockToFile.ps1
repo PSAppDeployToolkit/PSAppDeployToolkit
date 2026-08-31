@@ -25,8 +25,9 @@ function Private:Export-ADTScriptBlockToFile
         [System.Management.Automation.SwitchParameter]$Force
     )
 
-    # Throw if the file exists.
-    if ((Test-Path -LiteralPath $LiteralPath -PathType Container) -and !$Force)
+    # Throw if the path exists. Deliberately not -PathType Leaf: a directory cannot be overwritten with a
+    # file either, and testing for Container here meant an existing file was silently replaced instead.
+    if ((Test-Path -LiteralPath $LiteralPath) -and !$Force)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("The specified file path [$LiteralPath] already exists.")
