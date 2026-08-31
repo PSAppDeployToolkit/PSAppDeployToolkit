@@ -107,7 +107,9 @@ Describe $ModuleName {
                 $returnValueTypes = [System.Collections.Generic.HashSet[System.Type]]::new()
                 foreach ($returnValue in $help.returnValues.returnValue.Type.Name)
                 {
-                    $returnValueName = $returnValue.Split([System.Environment]::NewLine)[0]
+                    # ToCharArray() because .NET Core has a Split(string) overload that Windows PowerShell
+                    # lacks, and Get-Help returns LF, so splitting on the CRLF pair never matches.
+                    $returnValueName = $returnValue.Split([System.Environment]::NewLine.ToCharArray())[0]
                     if ($returnValueName -eq 'None')
                     {
                         continue

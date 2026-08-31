@@ -52,7 +52,9 @@ Describe 'New-ADTFolder' {
         It 'Should verify that LiteralPath is a valid path' {
             $invalidFileName = [System.IO.Path]::GetInvalidFileNameChars() -join ''
             { New-ADTFolder -LiteralPath $invalidFileName } | Should -Throw -ExceptionType ([System.Management.Automation.DriveNotFoundException]) -ErrorId 'DriveNotFound,New-ADTFolder'
-            { New-ADTFolder -LiteralPath "$Env:SystemDrive\$invalidFileName" } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage 'Illegal characters in path.' -ErrorId 'System.ArgumentException,Microsoft.PowerShell.Commands.TestPathCommand'
+            # The message and the ErrorId prefix both differ between Windows PowerShell and PowerShell 7,
+            # so this matches only on the part they share.
+            { New-ADTFolder -LiteralPath "$Env:SystemDrive\$invalidFileName" } | Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId '*,Microsoft.PowerShell.Commands.TestPathCommand'
         }
         It 'Should accept pipeline input for the LiteralPath parameter' {
             { [PSCustomObject]@{ LiteralPath = "$TestDrive\NewFolder" } | New-ADTFolder } | Should -Not -Throw
