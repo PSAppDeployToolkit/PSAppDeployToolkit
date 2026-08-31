@@ -99,6 +99,7 @@ function Get-ADTPEFileArchitecture
         # Set up required constants for processing each requested file.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         [System.Int32]$PE_POINTER_OFFSET = 60; [System.Int32]$MACHINE_OFFSET = 4
+        [System.UInt16]$DOS_SIGNATURE = 0x5A4D; [System.UInt32]$NT_SIGNATURE = 0x00004550
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
     }
 
@@ -135,8 +136,24 @@ function Get-ADTPEFileArchitecture
                         $stream.Dispose()
                     }
 
+                    # Confirm this is a PE image before trusting the offsets below. Without the two
+                    # signature checks, the machine type is read from whatever bytes happen to sit at the
+                    # computed position, so a file that is not an image yields a plausible-looking result.
+                    $peHeaderOffset = [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET)
+                    if (([System.BitConverter]::ToUInt16($data, 0) -ne $DOS_SIGNATURE) -or ($peHeaderOffset -lt 0) -or (($peHeaderOffset + $MACHINE_OFFSET + 2) -gt $data.Length) -or ([System.BitConverter]::ToUInt32($data, $peHeaderOffset) -ne $NT_SIGNATURE))
+                    {
+                        $naerParams = @{
+                            Exception = [System.BadImageFormatException]::new("The file [$($file.FullName)] is not a valid portable executable image.", $file.FullName)
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                            ErrorId = 'FileNotPortableExecutable'
+                            TargetObject = $file
+                            RecommendedAction = "Please supply the path to an executable or library and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+
                     # Get the file header from the header's address, factoring in any offsets.
-                    $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
+                    $peArchValue = [System.BitConverter]::ToUInt16($data, $peHeaderOffset + $MACHINE_OFFSET)
                     $peArchEnum = [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_UNKNOWN; $null = [PSADT.Interop.IMAGE_FILE_MACHINE]::TryParse($peArchValue, [ref]$peArchEnum)
                     Write-ADTLogEntry -Message "File [$($file.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)

@@ -31,14 +31,22 @@ Describe 'Get-ADTPEFileArchitecture' {
             Get-Item -LiteralPath "$env:SystemRoot\System32\notepad.exe" | Get-ADTPEFileArchitecture | Should -Be ([PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64)
         }
 
-        It 'Errors on a file that is not a PE image' -Skip {
-            # Skipped: the header offset is read without first checking the MZ and PE signatures, so a file
-            # that is not an image returns whatever bytes happen to sit there, cast to an
-            # IMAGE_FILE_MACHINE. A plain text file yields 8289, which a caller branching on 32 versus
-            # 64-bit would act on. Unskip with the fix.
-            $notAnImage = "$TestDrive\notanimage.txt"
-            Set-Content -LiteralPath $notAnImage -Value 'this is not a portable executable'
-            { Get-ADTPEFileArchitecture -LiteralPath $notAnImage -ErrorAction Stop } | Should -Throw
+        It 'Errors on <Case> rather than reading a machine type out of it' -ForEach @(
+            @{ Case = 'a text file' }
+            @{ Case = 'an empty file' }
+            @{ Case = 'a file with only a DOS header' }
+        ) {
+            # Without the signature checks the header offset is followed blindly, so whatever bytes sit at
+            # the computed position become the answer. A text file yielded 8289, which a caller branching
+            # on 32 versus 64-bit would have acted on.
+            $path = "$TestDrive\$($Case -replace '\W').bin"
+            switch ($Case)
+            {
+                'a text file' { Set-Content -LiteralPath $path -Value 'this is not a portable executable' }
+                'an empty file' { [System.IO.File]::WriteAllBytes($path, [System.Byte[]]::new(0)) }
+                'a file with only a DOS header' { [System.IO.File]::WriteAllBytes($path, [System.Byte[]](0x4D, 0x5A) + [System.Byte[]]::new(200)) }
+            }
+            { Get-ADTPEFileArchitecture -LiteralPath $path -ErrorAction Stop } | Should -Throw -ErrorId 'FileNotPortableExecutable,Get-ADTPEFileArchitecture'
         }
 
         It 'Errors on a file that does not exist' {
