@@ -75,12 +75,16 @@ namespace PSAppDeployToolkit.Utilities
         /// Converts a list of remaining arguments to a dictionary of key-value pairs.
         /// This MUST NOT return a ReadOnlyDictionary! The API must match $PSBoundParameters.
         /// </summary>
-        /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
+        /// <param name="remainingArguments">A list of remaining arguments to convert. Null yields an empty dictionary, as a ValueFromRemainingArguments parameter that bound nothing arrives here as null.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
         /// <exception cref="FormatException">Thrown when the parser is unable to process the provided arguments.</exception>
-        public static IDictionary<string, object> ConvertValuesFromRemainingArguments(IEnumerable<object> remainingArguments)
+        public static IDictionary<string, object> ConvertValuesFromRemainingArguments(IEnumerable<object>? remainingArguments)
         {
             Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
+            if (remainingArguments is null)
+            {
+                return values;
+            }
             try
             {
                 string currentKey = string.Empty;

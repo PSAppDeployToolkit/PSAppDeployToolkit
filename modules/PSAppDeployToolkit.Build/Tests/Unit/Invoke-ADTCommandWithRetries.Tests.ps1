@@ -37,28 +37,21 @@ Describe 'Invoke-ADTCommandWithRetries' {
     }
 
     Context 'Functionality' {
-        It 'Runs the command once when it succeeds' -Skip {
-            # Skipped: the function always fails when nothing is passed through to the target command.
-            # $Parameters is left null and Convert-ADTValuesFromRemainingArguments throws on null, even
-            # though it declares [AllowNull()]. Unskip along with the fix.
+        It 'Runs the command once when it succeeds' {
+            # Deliberately passes nothing through to the target. That leaves $Parameters null, which used to
+            # throw out of Convert-ADTValuesFromRemainingArguments and broke every argument-free call.
             Invoke-ADTCommandWithRetries -Command $script:Probe | Should -BeExactly 'succeeded'
             $script:ProbeAttempts | Should -Be 1
         }
 
-        It 'Resolves a command given by name, with no arguments of its own' -Skip {
-            # Skipped for the same reason.
+        It 'Resolves a command given by name, with no arguments of its own' {
             Invoke-ADTCommandWithRetries -Command Get-ADTPowerShellProcessPath | Should -Not -BeNullOrEmpty
         }
 
-        It 'Resolves a command given by name' {
-            # The name path, which goes through the module's own command table rather than the CommandInfo
-            # branch the rest of these use.
+        It 'Resolves a command given by name, with arguments' {
+            # The name path goes through the module's own command table rather than the CommandInfo branch
+            # the rest of these use.
             Invoke-ADTCommandWithRetries -Command Get-ADTFreeDiskSpace -Drive $env:SystemDrive | Should -BeOfType ([System.Double])
-        }
-
-        It 'Runs the command once when it succeeds first time' {
-            Invoke-ADTCommandWithRetries -Command $script:Probe -Return 'ok' | Should -BeExactly 'ok'
-            $script:ProbeAttempts | Should -Be 1
         }
 
         It 'Retries until the command succeeds' {

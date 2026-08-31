@@ -291,6 +291,42 @@ namespace PSAppDeployToolkit.Tests.Utilities
         }
 
         /// <summary>
+        /// Verifies that a null list yields an empty dictionary rather than throwing.
+        /// </summary>
+        /// <remarks>
+        /// A <c language="powershell">ValueFromRemainingArguments</c> parameter that bound nothing arrives here as null, and the
+        /// PowerShell wrapper declares <c language="powershell">[AllowNull()]</c>. Throwing instead broke every caller that
+        /// forwarded no arguments of its own.
+        /// </remarks>
+        [Fact]
+        public void ConvertValuesFromRemainingArguments_TreatsNullAsNoArguments()
+        {
+            using IDisposable scope = powerShell.Enter();
+
+            // Act
+            IDictionary<string, object> values = PowerShellUtilities.ConvertValuesFromRemainingArguments(remainingArguments: null);
+
+            // Assert
+            Assert.Empty(values);
+            Assert.False(values.IsReadOnly);
+        }
+
+        /// <summary>
+        /// Verifies that an empty list yields an empty dictionary, the same as null.
+        /// </summary>
+        [Fact]
+        public void ConvertValuesFromRemainingArguments_TreatsAnEmptyListAsNoArguments()
+        {
+            using IDisposable scope = powerShell.Enter();
+
+            // Act
+            IDictionary<string, object> values = PowerShellUtilities.ConvertValuesFromRemainingArguments([]);
+
+            // Assert
+            Assert.Empty(values);
+        }
+
+        /// <summary>
         /// Verifies that a value with no parameter before it is discarded.
         /// </summary>
         [Fact]
