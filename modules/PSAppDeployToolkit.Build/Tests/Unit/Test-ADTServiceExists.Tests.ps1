@@ -7,23 +7,34 @@ Describe 'Test-ADTServiceExists' {
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'realServiceName', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $realServiceName = Get-Service | Select-Object -First 1 -ExpandProperty Name
 
-        while ($true)
+        # Get-Service reports a missing service non-terminatingly, so -ErrorAction Stop is what makes the
+        # catch reachable at all. The attempt bound keeps a behaviour change from hanging the run again.
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fakeServiceName', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+        $fakeServiceName = $null
+        $attempts = 0
+
+        while (!$fakeServiceName -and (++$attempts -le 10))
         {
-            $fakeServiceName = [System.Guid]::NewGuid().ToString()
+            $candidate = [System.Guid]::NewGuid().ToString()
 
             try
             {
-                Get-Service -Name $fakeServiceName
+                Get-Service -Name $candidate -ErrorAction Stop
             }
             catch [Microsoft.PowerShell.Commands.ServiceCommandException]
             {
-                if ($_.CategoryInfo.Category -eq [System.Management.Automation.ErrorCategory]::ObjectNotFound)
+                if ($_.CategoryInfo.Category -ne [System.Management.Automation.ErrorCategory]::ObjectNotFound)
                 {
-                    break
+                    throw
                 }
 
-                throw
+                $fakeServiceName = $candidate
             }
+        }
+
+        if (!$fakeServiceName)
+        {
+            throw "Could not find an unused service name after $attempts attempts."
         }
 
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
