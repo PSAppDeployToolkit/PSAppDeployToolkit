@@ -66,11 +66,19 @@ BeforeAll {
             Write-Warning "Error removing font via Remove-ADTFont: $_"
         }
 
-        # Fallback: If file still exists, force remove it
+        # Fallback: If file still exists, force remove it. Reported rather than swallowed, because a
+        # silent failure here is what left orphaned fonts behind across earlier runs.
         $fontPath = Join-Path $script:FontsDir $FontFileName
         if (Test-Path -LiteralPath $fontPath)
         {
-            Remove-Item -LiteralPath $fontPath -Force -ErrorAction SilentlyContinue
+            try
+            {
+                Remove-Item -LiteralPath $fontPath -Force -ErrorAction Stop
+            }
+            catch
+            {
+                Write-Warning "Could not remove test font [$fontPath]: $($_.Exception.Message)"
+            }
         }
 
         # Fallback: If registry entry still exists, remove it
@@ -92,9 +100,37 @@ BeforeAll {
             Write-Warning "Error removing registry entry: $_"
         }
     }
+
+    # Clears anything an earlier run left installed, however long ago. Matching only this file's own
+    # prefix means it can touch nothing but fonts these tests created.
+    function Remove-OrphanedTestFont
+    {
+        foreach ($value in @((Get-Item -LiteralPath $script:FontRegKey -ErrorAction SilentlyContinue).Property))
+        {
+            if ((Get-ItemPropertyValue -LiteralPath $script:FontRegKey -Name $value) -match '^PesterTest_')
+            {
+                Write-Warning "Removing orphaned registry entry [$value] left behind by an earlier run."
+                Remove-ItemProperty -LiteralPath $script:FontRegKey -Name $value -Force
+            }
+        }
+        foreach ($orphan in @(Get-ChildItem -LiteralPath $script:FontsDir -Filter 'PesterTest_*' -ErrorAction SilentlyContinue))
+        {
+            Write-Warning "Removing orphaned test font [$($orphan.Name)] left behind by an earlier run."
+            Remove-TestFont -FontFileName $orphan.Name
+        }
+    }
 }
 
 Describe 'Add-ADTFont' -Skip:(!$script:IsElevated) {
+    # Swept before as well as after: a run that fails part way would otherwise leave its fonts installed
+    # for good, which is how orphans accumulated in the Fonts directory over earlier sessions.
+    BeforeAll {
+        Remove-OrphanedTestFont
+    }
+
+    AfterAll {
+        Remove-OrphanedTestFont
+    }
 
     Context 'Single File Installation' {
         AfterEach {
