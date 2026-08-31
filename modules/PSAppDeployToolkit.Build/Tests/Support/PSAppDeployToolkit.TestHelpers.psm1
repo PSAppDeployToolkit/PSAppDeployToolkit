@@ -131,8 +131,78 @@ function Test-ADTCallerElevated
 
 #-----------------------------------------------------------------------------
 #
+# MARK: Initialize-ADTTestModule
+#
+#-----------------------------------------------------------------------------
+
+function Initialize-ADTTestModule
+{
+    <#
+    .SYNOPSIS
+        Initialises the module under test with its log output redirected.
+
+    .DESCRIPTION
+        The `Initialize-ADTTestModule` function initialises the module and repoints its log, temp and cache directories at a location of the caller's choosing, so that opening a session writes under `TestDrive` rather than anywhere on the machine.
+
+        Each path is set in both its ordinary and its no-admin-rights form, because the module picks between them on whether the caller is elevated, and a test should not write somewhere different depending on how it was run.
+
+        Host logging is turned off as well, so a session's banner does not interleave itself through the test output. A test that needs to see that output can turn it back on for itself.
+
+        Call `Import-ADTModuleUnderTest -Force` afterwards to discard the state this leaves behind.
+
+    .PARAMETER Path
+        The directory to write logs, temporary files and cached content into, normally `TestDrive`.
+
+    .PARAMETER RegistryPath
+        The registry key to write under, normally something below `TestRegistry`. Supply this in any test that reaches something persisting to the registry, such as deferral history, which otherwise writes to the machine's real toolkit key.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        None
+
+        This function does not return any output.
+
+    .EXAMPLE
+        Initialize-ADTTestModule -Path $TestDrive
+
+        Initialises the module and keeps everything a session writes on the test's own drive.
+    #>
+
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$RegistryPath
+    )
+
+    Initialize-ADTModule -InformationAction SilentlyContinue
+
+    & (Get-Module -Name PSAppDeployToolkit) {
+        foreach ($setting in 'LogPath', 'LogPathNoAdminRights', 'TempPath', 'TempPathNoAdminRights', 'CachePath', 'CachePathNoAdminRights')
+        {
+            $ADT.Config.Toolkit.$setting = [System.IO.Path]::Combine($args[0], $setting.Replace('NoAdminRights', [System.String]::Empty))
+        }
+        $ADT.Config.Toolkit.LogWriteToHost = $false
+
+        if (![System.String]::IsNullOrWhiteSpace($args[1]))
+        {
+            $ADT.Config.Toolkit.RegPath = $ADT.Config.Toolkit.RegPathNoAdminRights = $args[1]
+        }
+    } $Path $RegistryPath
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Module Exports
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Initialize-ADTTestModule
