@@ -332,7 +332,11 @@ function New-ADTTemplate
                     $str = $_.ToString()
                     if (!$LiteralString -and ($str -match '(?<!`)\$'))
                     {
-                        return "`"$($str -replace '(?<!`)"', '`"')`""
+                        # Escaped in a statement of its own. Nesting this inside the double quoted string
+                        # it builds meant the backticks were consumed as that string's own escapes, so the
+                        # quotes went out bare and closed the value early.
+                        $escaped = [System.Text.RegularExpressions.Regex]::Replace($str, '(?<!`)"', '`"')
+                        return '"' + $escaped + '"'
                     }
                     return "'$([System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent($str))'"
                 }

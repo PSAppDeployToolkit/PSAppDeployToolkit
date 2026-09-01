@@ -202,13 +202,29 @@ Describe 'New-ADTTemplate' {
     }
 
     Context 'A value carrying both a reference and a quote' {
-        # Skipped until the escaping is repaired. The quote is written out unescaped, so it closes the
-        # string it was meant to sit inside and the generated script does not parse from there on.
-        It 'Escapes the quote so that the generated script still parses' -Skip {
+        It 'Escapes the quote so that the generated script still parses' {
             $template = New-ADTTemplate -Destination "$TestDrive\Quoted" -Force -PassThru -SessionProperties @{ Quoted = '$envProgramFiles\Vendor "quoted"' }
             $parseErrors = $null
             $null = [System.Management.Automation.Language.Parser]::ParseInput([System.IO.File]::ReadAllText((Join-Path -Path $template.FullName -ChildPath 'Invoke-AppDeployToolkit.ps1')), [ref]$null, [ref]$parseErrors)
             $parseErrors | Should -BeNullOrEmpty
+        }
+
+        It 'Leaves the value able to evaluate back to what was handed in' {
+            # Escaping it is only half the job: what the generated script evaluates has to come back as
+            # the original text, quotes and all.
+            $template = New-ADTTemplate -Destination "$TestDrive\QuotedValue" -Force -PassThru -SessionProperties @{ Quoted = '$envProgramFiles\Vendor "quoted"' }
+            $content = [System.IO.File]::ReadAllText((Join-Path -Path $template.FullName -ChildPath 'Invoke-AppDeployToolkit.ps1'))
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+            $literal = ($ast.Find({ param ($node) $node -is [System.Management.Automation.Language.HashtableAst] }, $true).KeyValuePairs | & {
+                    process
+                    {
+                        if ($_.Item1.Value.Equals('Quoted'))
+                        {
+                            return $_.Item2.Extent.Text
+                        }
+                    }
+                })
+            [System.Management.Automation.ScriptBlock]::Create("`$envProgramFiles = 'C:\Program Files'; $literal").Invoke() | Should -BeExactly 'C:\Program Files\Vendor "quoted"'
         }
     }
 
