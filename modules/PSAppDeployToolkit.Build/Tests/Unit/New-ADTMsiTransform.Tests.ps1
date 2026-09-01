@@ -37,28 +37,26 @@ Describe 'New-ADTMsiTransform' -Skip:(!$script:HasMsi) {
     }
 
     Context 'Functionality' {
-        # Every test in this block that does not supply -ApplyTransformPath is skipped until the function
-        # is repaired. An unbound [System.String] parameter is an empty string rather than null, and it is
-        # forwarded to CreatePropertyTransformFile regardless, so its applyTransformPath guard rejects the
-        # call. That leaves the common case, a transform built straight from a package, failing outright.
-        It 'Writes a transform beside the package' -Skip {
-            New-ADTMsiTransform -MsiPath $script:Package -TransformProperties @{ ALLUSERS = '1' }
+        It 'Writes a transform beside the package' {
+            # The default name is the package's own with the extension swapped, so that a package and its
+            # transform travel together.
+            New-ADTMsiTransform -MsiPath $script:Package -TransformProperties @{ ADTTESTONLY = 'yes' }
             Test-Path -LiteralPath ($script:Package -replace '\.msi$', '.mst') -PathType Leaf | Should -BeTrue
         }
 
-        It 'Writes a transform where it was told to' -Skip {
+        It 'Writes a transform where it was told to' {
             $transform = "$TestDrive\Named$([System.Guid]::NewGuid().ToString('N')).mst"
-            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath $transform -TransformProperties @{ ALLUSERS = '1' }
+            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath $transform -TransformProperties @{ ADTTESTONLY = 'yes' }
             Test-Path -LiteralPath $transform -PathType Leaf | Should -BeTrue
         }
 
-        It 'Writes a transform with something in it' -Skip {
+        It 'Writes a transform with something in it' {
             $transform = "$TestDrive\Sized$([System.Guid]::NewGuid().ToString('N')).mst"
-            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath $transform -TransformProperties @{ ALLUSERS = '1'; REBOOT = 'ReallySuppress' }
+            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath $transform -TransformProperties @{ ADTTESTONLY = 'yes'; REBOOT = 'ReallySuppress' }
             (Get-Item -LiteralPath $transform).Length | Should -BeGreaterThan 0
         }
 
-        It 'Produces a transform the installer will accept' -Skip {
+        It 'Produces a transform the installer will accept' {
             # A transform that cannot be applied is worse than none at all, since the failure only shows up
             # at install time on the endpoint.
             $transform = "$TestDrive\Applied$([System.Guid]::NewGuid().ToString('N')).mst"
@@ -66,7 +64,7 @@ Describe 'New-ADTMsiTransform' -Skip:(!$script:HasMsi) {
             (Get-ADTMsiTableProperty -LiteralPath $script:Package -TransformPath $transform).ADTTRANSFORMED | Should -BeExactly 'yes'
         }
 
-        It 'Builds on a transform it was given' -Skip {
+        It 'Builds on a transform it was given' {
             $first = "$TestDrive\First$([System.Guid]::NewGuid().ToString('N')).mst"
             New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath $first -TransformProperties @{ ADTFIRST = 'one' }
             $second = "$TestDrive\Second$([System.Guid]::NewGuid().ToString('N')).mst"
@@ -76,21 +74,27 @@ Describe 'New-ADTMsiTransform' -Skip:(!$script:HasMsi) {
             $applied.ADTSECOND | Should -BeExactly 'two'
         }
 
-        It 'Leaves the package it read alone' -Skip {
+        It 'Leaves the package it read alone' {
             # The transform is a separate file precisely so that the vendor's package is not modified.
             $before = (Get-Item -LiteralPath $script:Package).LastWriteTimeUtc
-            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath "$TestDrive\Untouched$([System.Guid]::NewGuid().ToString('N')).mst" -TransformProperties @{ ALLUSERS = '1' }
+            New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath "$TestDrive\Untouched$([System.Guid]::NewGuid().ToString('N')).mst" -TransformProperties @{ ADTTESTONLY = 'yes' }
             (Get-Item -LiteralPath $script:Package).LastWriteTimeUtc | Should -Be $before
         }
     }
 
     Context 'Input Validation' {
+        It 'Reports a transform that would change nothing' {
+            # Windows Installer refuses to generate an empty transform, which is what asking for a value
+            # the package already carries amounts to.
+            { New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath "$TestDrive\Empty$([System.Guid]::NewGuid().ToString('N')).mst" -TransformProperties @{ ALLUSERS = (Get-ADTMsiTableProperty -LiteralPath $script:Package).ALLUSERS } } | Should -Throw
+        }
+
         It 'Refuses a package that is not there' {
-            { New-ADTMsiTransform -MsiPath "$TestDrive\NeverExisted.msi" -TransformProperties @{ ALLUSERS = '1' } } | Should -Throw -ErrorId 'InvalidMsiPathParameterValue,New-ADTMsiTransform'
+            { New-ADTMsiTransform -MsiPath "$TestDrive\NeverExisted.msi" -TransformProperties @{ ADTTESTONLY = 'yes' } } | Should -Throw -ErrorId 'InvalidMsiPathParameterValue,New-ADTMsiTransform'
         }
 
         It 'Refuses a transform to build on that is not there' {
-            { New-ADTMsiTransform -MsiPath $script:Package -ApplyTransformPath "$TestDrive\NeverExisted.mst" -TransformProperties @{ ALLUSERS = '1' } } | Should -Throw -ErrorId 'InvalidApplyTransformPathParameterValue,New-ADTMsiTransform'
+            { New-ADTMsiTransform -MsiPath $script:Package -ApplyTransformPath "$TestDrive\NeverExisted.mst" -TransformProperties @{ ADTTESTONLY = 'yes' } } | Should -Throw -ErrorId 'InvalidApplyTransformPathParameterValue,New-ADTMsiTransform'
         }
 
         It 'Refuses an empty set of properties' {

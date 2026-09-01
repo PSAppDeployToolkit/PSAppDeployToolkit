@@ -125,7 +125,17 @@ function New-ADTMsiTransform
         {
             try
             {
-                [PSADT.WindowsInstaller.MsiUtilities]::CreatePropertyTransformFile($MsiPath, $NewTransformPath, $propsDict, $ApplyTransformPath)
+                # The transform to build on is only passed along when the caller named one. An unbound
+                # string parameter is empty rather than null, and PowerShell has no way of handing null
+                # to a string argument, so the shorter overload is the only way to reach its default.
+                if ($ApplyTransformPath)
+                {
+                    [PSADT.WindowsInstaller.MsiUtilities]::CreatePropertyTransformFile($MsiPath, $NewTransformPath, $propsDict, $ApplyTransformPath)
+                }
+                else
+                {
+                    [PSADT.WindowsInstaller.MsiUtilities]::CreatePropertyTransformFile($MsiPath, $NewTransformPath, $propsDict)
+                }
                 Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
             }
             catch
