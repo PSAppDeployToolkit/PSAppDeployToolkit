@@ -19,7 +19,8 @@ function Show-ADTInstallationWelcome
         * Prevent users from launching the specified applications while the deployment is in progress.
 
     .PARAMETER CloseProcesses
-        Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`
+        One or more processes to close. Specify multiple processes separated by a comma. Provide either the bare process name (do not include the `.exe`), or the full path to a specific executable if you need to distinguish between two processes that share the same name (for example, two different vendors' `javaw.exe`). Wildcards (`*`) are supported in either form.
+        Specify custom descriptions to show to the end user like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`. The `Description` property is purely cosmetic - it does not filter or restrict which running processes are matched. Use the full path form of `Name` if you need to target one specific executable.
 
     .PARAMETER HideCloseButton
         Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.
