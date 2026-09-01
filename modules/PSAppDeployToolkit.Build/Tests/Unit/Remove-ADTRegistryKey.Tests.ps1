@@ -65,10 +65,7 @@ Describe 'Remove-ADTRegistryKey' {
             Test-Path -LiteralPath $TestKey | Should -BeFalse
         }
 
-        # Skipped until the function is repaired. Its subkey guard calls Get-ChildItem on the supplied
-        # path, which for a wildcard returns the matching keys rather than their children, so any
-        # wildcard is treated as though it had subkeys and refused.
-        It 'Resolves a wildcard' -Skip {
+        It 'Resolves a wildcard' {
             $null = New-Item -Path "$TestKey\MatchOne" -ItemType Directory -Force
             $null = New-Item -Path "$TestKey\Ignored" -ItemType Directory -Force
             Remove-ADTRegistryKey -Path "$TestKey\Match*"

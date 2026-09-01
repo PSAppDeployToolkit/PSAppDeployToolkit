@@ -152,9 +152,11 @@ function Remove-ADTRegistryKey
                             $null = Remove-Item @pathParam -Force -Recurse
                         }
                     }
-                    elseif (!(Get-ChildItem @pathParam))
+                    elseif (!(Get-Item @pathParam | Get-ChildItem))
                     {
                         # Check if there are subkeys of the path, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
+                        # The keys are resolved via Get-Item first because a wildcard path handed straight to Get-ChildItem returns the
+                        # keys that matched it rather than their children, which would refuse every wildcard as though it had subkeys.
                         Write-ADTLogEntry -Message "Deleting registry key [$($pathParam.($PSCmdlet.ParameterSetName))]."
                         if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.ParameterSetName), 'Delete registry key'))
                         {
