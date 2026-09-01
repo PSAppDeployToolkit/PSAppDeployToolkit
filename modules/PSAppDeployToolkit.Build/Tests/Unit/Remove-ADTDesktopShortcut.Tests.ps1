@@ -116,4 +116,51 @@ Describe 'Remove-ADTDesktopShortcut' {
             { Remove-ADTDesktopShortcut -Scope AllUsersDesktop, AllUsersDesktop -RemoveAllShortcuts -WhatIf } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Remove-ADTDesktopShortcut'
         }
     }
+
+    Context 'A shortcut that will not delete' {
+        BeforeEach {
+            # A handle is held open on whichever shortcuts the case locks. Deleting a file that another
+            # process has open without sharing delete access fails, which is the same refusal a shortcut
+            # still held by Explorer produces.
+            $script:Desktop = "$TestDrive\Locked$([System.Guid]::NewGuid().ToString('N'))"
+            $null = New-Item -Path $script:Desktop -ItemType Directory -Force
+            1..2 | ForEach-Object { Set-Content -LiteralPath "$script:Desktop\Shortcut$_.lnk" -Value 'shortcut' }
+            Mock -ModuleName PSAppDeployToolkit Get-ChildItem { Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath $script:Desktop -Filter '*.lnk' } -ParameterFilter { $Filter -eq '*.lnk' }
+            $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'ShortcutLocks' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
+            $script:Streams = [System.Collections.Generic.List[System.IO.FileStream]]::new()
+        }
+
+        AfterEach {
+            $script:Streams | & { process { $_.Dispose() } }
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+        }
+
+        It 'Stops at the first one it cannot delete' {
+            # A caller who says nothing about errors gets the default of Stop, and so is told about the
+            # failure rather than handed a partial result reported as a success.
+            $script:Streams.Add([System.IO.File]::Open("$script:Desktop\Shortcut1.lnk", 'Open', 'Read', 'None'))
+            { Remove-ADTDesktopShortcut -RemoveAllShortcuts } | Should -Throw -ErrorId 'IOException,Remove-ADTDesktopShortcut'
+        }
+
+        It 'Removes the rest when told to carry on' {
+            $script:Streams.Add([System.IO.File]::Open("$script:Desktop\Shortcut1.lnk", 'Open', 'Read', 'None'))
+            Remove-ADTDesktopShortcut -RemoveAllShortcuts -ErrorAction Continue -ErrorVariable removalErrors 2>$null
+            Get-ShortcutName | Should -BeExactly 'Shortcut1.lnk'
+            $removalErrors | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Gathers the failures together when none of them could be removed' {
+            # One error per shortcut is noise when the cause is the same for all of them, so a wholesale
+            # failure is reported once with the individual failures carried inside it.
+            1..2 | ForEach-Object { $script:Streams.Add([System.IO.File]::Open("$script:Desktop\Shortcut$_.lnk", 'Open', 'Read', 'None')) }
+            Remove-ADTDesktopShortcut -RemoveAllShortcuts -ErrorAction Continue -ErrorVariable removalErrors 2>$null
+            # The error variable also collects the intermediate objects each record passes through on its
+            # way out, so the reported failure has to be picked out of it rather than read off the end.
+            $aggregate = @($removalErrors | & { process { if (($_ -is [System.Management.Automation.ErrorRecord]) -and $_.FullyQualifiedErrorId.Equals('ShortcutDeletionFullFailure,Remove-ADTDesktopShortcut')) { return $_ } } })
+            $aggregate | Should -Not -BeNullOrEmpty
+            $aggregate[0].Exception | Should -BeOfType ([System.AggregateException])
+            $aggregate[0].Exception.InnerExceptions.Count | Should -Be 2
+            Get-ShortcutName | Should -Be @('Shortcut1.lnk', 'Shortcut2.lnk')
+        }
+    }
 }

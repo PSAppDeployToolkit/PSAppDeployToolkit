@@ -72,6 +72,38 @@ Describe 'Copy-ADTContentToCache' {
             Test-Path -LiteralPath "$script:Cache\stale.txt" | Should -BeFalse
         }
 
+        It 'Copies the toolkit content on its own' {
+            # Toolkit means everything that is not one of the two content folders, so the deployment script
+            # itself comes across and nothing else does.
+            Copy-ADTContentToCache -Content Toolkit
+            Test-Path -LiteralPath "$script:Cache\Invoke-AppDeployToolkit.ps1" -PathType Leaf | Should -BeTrue
+            Test-Path -LiteralPath "$script:Cache\Files" | Should -BeFalse
+            Test-Path -LiteralPath "$script:Cache\SupportFiles" | Should -BeFalse
+        }
+
+        It 'Copies the support files on their own' {
+            Copy-ADTContentToCache -Content SupportFiles
+            Test-Path -LiteralPath "$script:Cache\SupportFiles\support.txt" -PathType Leaf | Should -BeTrue
+            Test-Path -LiteralPath "$script:Cache\Files" | Should -BeFalse
+            $script:Session.DirSupportFiles | Should -BeExactly "$script:Cache\SupportFiles"
+            $script:Session.DirFiles | Should -BeExactly "$script:Deploy\Files"
+        }
+
+        It 'Reports a cache folder it could not clear' {
+            # Something holding a file open in the cache is the usual reason, and copying over the top of a
+            # folder that could not be cleared would mix the last run's content in with this one's.
+            $null = New-Item -Path $script:Cache -ItemType Directory -Force
+            $stream = [System.IO.File]::Open("$script:Cache\held-open.txt", 'Create', 'Write', 'None')
+
+            try
+            {
+                { Copy-ADTContentToCache } | Should -Throw -ErrorId 'RemoveFileSystemItemIOError,Copy-ADTContentToCache'
+            }
+            finally
+            {
+                $stream.Dispose()
+            }
+        }
         It 'Refuses the root cache folder' {
             # The destination is erased before copying, so allowing the root would wipe every other
             # package's cache along with it.
