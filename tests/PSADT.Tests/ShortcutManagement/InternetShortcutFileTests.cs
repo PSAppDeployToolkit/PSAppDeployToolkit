@@ -186,13 +186,12 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
-        /// Verifies that the setter puts the show command into the saved file, which is the half of the
-        /// property that works.
+        /// Verifies that the setter puts the show command into the saved file, in the form the shell reads.
         /// </summary>
         /// <remarks>
-        /// Asserted against the file rather than through the getter, because the getter cannot read it
-        /// back - see the skipped round trip below. The file is plain text in an INI-like layout, so the
-        /// stored value can be checked directly and the defect localised to the read side.
+        /// Asserted against the file rather than through the getter, which answers from what the instance
+        /// remembers and so would pass whether or not anything was written. The file is plain text in an
+        /// INI-like layout, so the stored value can be checked directly.
         /// </remarks>
         /// <param name="showCommand">The show command to write.</param>
         /// <param name="expectedValue">The number the shell should store for it.</param>
@@ -258,6 +257,41 @@ namespace PSADT.Tests.ShortcutManagement
                 // Assert: and on one loaded back from the saved file
                 using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
                 Assert.Equal(showCommand, loaded.ShowCommand);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that the working directory survives a save and load.
+        /// </summary>
+        /// <remarks>
+        /// The shell will not hand this back through the property storage it was written to, exactly as it
+        /// will not for the show command, so it is remembered on the instance and read back out of the file
+        /// for a shortcut that was loaded. Both routes are covered here.
+        /// </remarks>
+        [Fact]
+        public void Save_RoundTripsTheWorkingDirectory()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("workingdir.url");
+                string workingDirectory = Environment.SystemDirectory;
+
+                // Act
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    created.WorkingDirectory = workingDirectory;
+
+                    // Assert: readable on the instance that set it, before anything is saved
+                    Assert.Equal(workingDirectory, created.WorkingDirectory);
+                    created.Save(shortcutPath);
+                }
+
+                // Assert: written into the file, and readable on one loaded back from it
+                Assert.Contains($"WorkingDirectory={workingDirectory}", File.ReadAllText(shortcutPath), StringComparison.Ordinal);
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.Equal(workingDirectory, loaded.WorkingDirectory);
             });
         }
 

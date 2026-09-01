@@ -189,10 +189,7 @@ Describe 'Set-ADTShortcut' {
             (Get-ADTShortcut -LiteralPath $script:UrlPath).IconIndex | Should -Be 0
         }
 
-        # Skipped until a working directory can be read back off an internet shortcut. It is written into the
-        # file correctly, but the shell does not report it back and nothing else does either, so a caller who
-        # sets one is told there is none.
-        It 'Records a working directory' -Skip {
+        It 'Records a working directory' {
             Set-ADTShortcut -LiteralPath $script:UrlPath -WorkingDirectory ([System.Environment]::SystemDirectory)
             (Get-ADTShortcut -LiteralPath $script:UrlPath).WorkingDirectory | Should -BeExactly ([System.Environment]::SystemDirectory)
             Set-ADTShortcut -LiteralPath $script:UrlPath -Clear WorkingDirectory

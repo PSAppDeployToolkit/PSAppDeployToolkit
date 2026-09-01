@@ -103,10 +103,11 @@ namespace PSADT.ShortcutManagement
                 _internetShortcut = internetShortcut;
                 _storageMode = storageMode;
 
-                // Read the show command out of the file now, while the path is in hand and the file is known to
-                // be there. The shell will not report it back, so this is the only opportunity to learn what the
-                // shortcut was saved with - see the remarks on ShowCommand.
+                // Read the show command and working directory out of the file now, while the path is in hand and
+                // the file is known to be there. The shell will not report either back, so this is the only
+                // opportunity to learn what the shortcut was saved with - see the remarks on those properties.
                 ShowCommandValue = GetShowCommandFromFile(filePath);
+                WorkingDirectoryValue = IniUtilities.GetSectionKeyValue(filePath, "InternetShortcut", "WorkingDirectory");
             }
             catch (Exception ex)
             {
@@ -229,17 +230,24 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the working directory for the Internet shortcut.
         /// </summary>
+        /// <remarks>The shell writes this into the file but will not report it back, exactly as it does with
+        /// <see cref="ShowCommand"/>, so the instance keeps track of it: a shortcut that was loaded starts from what
+        /// the file records, and assigning to it updates that. Without this a caller would set a working directory,
+        /// save, load, and be told there was none. <para> The shell is still asked first, on the same grounds as
+        /// <see cref="ShowCommand"/>: it answers with nothing on every release this has been tried against, but if a
+        /// future one starts reporting the value then that is the authoritative answer and it wins. </para></remarks>
         public string? WorkingDirectory
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                return GetStringProperty(PID_IS.PID_IS_WORKINGDIR);
+                return GetStringProperty(PID_IS.PID_IS_WORKINGDIR) ?? WorkingDirectoryValue;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 SetStringProperty(PID_IS.PID_IS_WORKINGDIR, value);
+                WorkingDirectoryValue = value;
             }
         }
 
@@ -905,6 +913,12 @@ namespace PSADT.ShortcutManagement
         /// shortcut would be saved with rather than only what somebody last asked for. A shortcut that was built
         /// rather than loaded starts with none, which is correct: there is no file for it to have come from.</remarks>
         private ShortcutWindowStyle? ShowCommandValue { get; set; }
+
+        /// <summary>
+        /// The working directory this instance holds, which the shell will not report back.
+        /// </summary>
+        /// <remarks>Kept on the same terms as <see cref="ShowCommandValue"/>.</remarks>
+        private string? WorkingDirectoryValue { get; set; }
 
         /// <summary>
         /// Indicates whether the object has been disposed.
