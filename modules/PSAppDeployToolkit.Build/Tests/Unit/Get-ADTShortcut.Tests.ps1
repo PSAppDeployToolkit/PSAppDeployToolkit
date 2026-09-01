@@ -66,6 +66,41 @@ Describe 'Get-ADTShortcut' {
         }
     }
 
+    Context 'Internet shortcuts' {
+        BeforeAll {
+            # Written out by hand rather than with New-ADTShortcut, so that what is read back is compared
+            # against something this module had no part in producing. A .url is an ini file, not the COM
+            # ShellLink a .lnk is, and comes back as a different type entirely.
+            $script:UrlPath = "$TestDrive\Internet.url"
+            [System.IO.File]::WriteAllLines($script:UrlPath, [System.String[]]@(
+                    '[InternetShortcut]'
+                    'URL=https://psappdeploytoolkit.com/'
+                    "IconFile=$([System.Environment]::SystemDirectory)\shell32.dll"
+                    'IconIndex=7'
+                    'Desc=The toolkit'
+                ))
+        }
+
+        It 'Should return an InternetShortcutInfo' {
+            Get-ADTShortcut -LiteralPath $script:UrlPath | Should -BeOfType ([PSADT.ShortcutManagement.InternetShortcutInfo])
+        }
+
+        It 'Should report the address it points at' {
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
+        }
+
+        It 'Should report the icon' {
+            $shortcut = Get-ADTShortcut -LiteralPath $script:UrlPath
+            $shortcut.IconFile | Should -BeExactly "$([System.Environment]::SystemDirectory)\shell32.dll"
+            $shortcut.IconIndex | Should -Be 7
+        }
+
+        It 'Should report the description' {
+            # Held as Desc in the file rather than as Description, so the mapping is worth pinning.
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Description | Should -BeExactly 'The toolkit'
+        }
+    }
+
     Context 'Input Validation' {
         It 'Should validate that the path provided to -LiteralPath exists' {
             { Get-ADTShortcut -LiteralPath "$TestDrive\DoesNotExist.lnk" } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Get-ADTShortcut'

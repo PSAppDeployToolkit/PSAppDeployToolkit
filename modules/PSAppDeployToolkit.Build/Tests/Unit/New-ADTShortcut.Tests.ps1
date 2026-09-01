@@ -58,6 +58,42 @@ Describe 'New-ADTShortcut' {
         }
     }
 
+    Context 'Internet shortcuts' {
+        BeforeEach {
+            $script:UrlPath = "$TestDrive\New$([System.Guid]::NewGuid().ToString('N')).url"
+        }
+
+        It 'Should create a .url shortcut' {
+            # The other supported extension, and a different format: an ini file rather than the COM
+            # ShellLink a .lnk is.
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://psappdeploytoolkit.com/'
+            [System.IO.File]::ReadAllLines($script:UrlPath) | Should -Contain '[InternetShortcut]'
+            [System.IO.File]::ReadAllLines($script:UrlPath) | Should -Contain 'URL=https://psappdeploytoolkit.com/'
+        }
+
+        It 'Should return an InternetShortcutInfo when -PassThru is provided' {
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://psappdeploytoolkit.com/' -PassThru | Should -BeOfType ([PSADT.ShortcutManagement.InternetShortcutInfo])
+        }
+
+        It 'Should write the icon it was given' {
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://psappdeploytoolkit.com/' -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 7
+            $shortcut = Get-ADTShortcut -LiteralPath $script:UrlPath
+            $shortcut.IconFile | Should -BeExactly "$([System.Environment]::SystemDirectory)\shell32.dll"
+            $shortcut.IconIndex | Should -Be 7
+        }
+
+        It 'Should throw when the path already exists and -Force is not specified' {
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://psappdeploytoolkit.com/'
+            { New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://example.invalid/' } | Should -Throw -ErrorId 'ShortcutPathIsPreExisting,New-ADTShortcut'
+        }
+
+        It 'Should replace an existing shortcut when -Force is specified' {
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://psappdeploytoolkit.com/'
+            New-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://example.invalid/' -Force
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://example.invalid/'
+        }
+    }
+
     Context 'Input Validation' {
         It 'Should throw when the path provided to -LiteralPath already exists and -Force is not specified' {
             New-ADTShortcut @shellLinkProperties

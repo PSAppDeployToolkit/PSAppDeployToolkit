@@ -58,6 +58,47 @@ Describe 'Set-ADTShortcut' {
         }
     }
 
+    Context 'Internet shortcuts' {
+        BeforeEach {
+            $script:UrlPath = "$TestDrive\Set$([System.Guid]::NewGuid().ToString('N')).url"
+            [System.IO.File]::WriteAllLines($script:UrlPath, [System.String[]]@(
+                    '[InternetShortcut]'
+                    'URL=https://psappdeploytoolkit.com/'
+                ))
+        }
+
+        It 'Should change the address it points at' {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -TargetPath 'https://github.com/PSAppDeployToolkit'
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://github.com/PSAppDeployToolkit'
+        }
+
+        It 'Should change the icon' {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 7
+            $shortcut = Get-ADTShortcut -LiteralPath $script:UrlPath
+            $shortcut.IconFile | Should -BeExactly "$([System.Environment]::SystemDirectory)\shell32.dll"
+            $shortcut.IconIndex | Should -Be 7
+        }
+
+        It 'Should change the description' {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Description 'The toolkit'
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Description | Should -BeExactly 'The toolkit'
+        }
+
+        It 'Should leave the address alone when changing something else' {
+            # Each setting is written back into the same file, so one of them must not lose the others.
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Description 'The toolkit'
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
+        }
+
+        It 'Should ignore a property a .url has no place for' {
+            # Arguments belong to a .lnk. Accepting and dropping them keeps a caller from having to know
+            # which extension they are working with, so what matters is that nothing else is disturbed.
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Arguments 'these go nowhere'
+            [System.IO.File]::ReadAllText($script:UrlPath) | Should -Not -BeLike '*these go nowhere*'
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
+        }
+    }
+
     Context 'Input Validation' {
         It 'Should throw when the path provided to -LiteralPath does not exists and -Force is not specified' {
             { Set-ADTShortcut -LiteralPath "$TestDrive\DoesNotExist.lnk" -TargetPath 'test' } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTShortcut'
