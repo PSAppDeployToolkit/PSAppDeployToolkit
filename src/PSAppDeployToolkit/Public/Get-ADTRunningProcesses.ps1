@@ -14,7 +14,8 @@ function Get-ADTRunningProcesses
         The `Get-ADTRunningProcesses` function returns the processes that are running from the provided list of process objects.
 
     .PARAMETER ProcessDefinition
-        One or more process objects to search for.
+        One or more process objects to search for. Provide either the bare process name (do not include the `.exe`), or the full path to a specific executable if you need to distinguish between two processes that share the same name (for example, two different vendors' `javaw.exe`). Wildcards (`*`) are supported in either form.
+        Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`. The `Description` property is purely cosmetic - it does not filter or restrict which running processes are matched.
 
     .INPUTS
         None.
