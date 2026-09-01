@@ -440,3 +440,58 @@ Describe 'Copy-ADTFile' -ForEach @(
         Write-Warning 'Long paths are not enabled, skipping test.'
     }
 }
+
+Describe 'Copy-ADTFile' {
+    BeforeAll {
+        Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+        Import-ADTModuleUnderTest
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ExitCodeSource', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+        $ExitCodeSource = (New-Item -Path "$TestDrive\ExitCodes" -ItemType Directory -Force).FullName
+        Set-Content -LiteralPath "$ExitCodeSource\file.txt" -Value 'content'
+
+        Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+    }
+
+    Context "How Robocopy's result is read" {
+        # Robocopy cannot be made to return each of these on demand without contriving a filesystem that
+        # produces them, so the process result is handed over directly and what is under test is the reading
+        # of it. Nothing is copied under these mocks, so only the reporting is asserted.
+        It 'Treats exit code <ExitCode> as a warning and carries on' -ForEach @(
+            @{ ExitCode = 4 }
+            @{ ExitCode = 6 }
+            @{ ExitCode = 7 }
+            @{ ExitCode = 8 }
+        ) {
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess ([System.Management.Automation.ScriptBlock]::Create("[PSADT.ProcessManagement.ProcessResult]::new($ExitCode)")) -ParameterFilter { $FilePath -match 'Robocopy\.exe$' }
+            { Copy-ADTFile -Path "$ExitCodeSource\file.txt" -Destination "$TestDrive\Warned$ExitCode" -FileCopyMode Robocopy } | Should -Not -Throw
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Severity -eq 'Warning') -and $Message.StartsWith('Robocopy completed.') } -Times 1 -Exactly
+        }
+
+        It 'Says nothing of exit code 5' {
+            # Files were copied and files were mismatched, but nothing failed, so there is nothing to warn
+            # about and a warning here would have every caller chasing a non-problem.
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { [PSADT.ProcessManagement.ProcessResult]::new(5) } -ParameterFilter { $FilePath -match 'Robocopy\.exe$' }
+            Copy-ADTFile -Path "$ExitCodeSource\file.txt" -Destination "$TestDrive\Warned5" -FileCopyMode Robocopy
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Severity -eq 'Warning') -and $Message.StartsWith('Robocopy completed.') } -Times 0 -Exactly
+        }
+
+        It 'Fails on exit code <ExitCode>' -ForEach @(
+            @{ ExitCode = 16 }
+            @{ ExitCode = 99 }
+        ) {
+            # 16 is Robocopy's own serious-error code and anything past it is undocumented, so neither is
+            # logged and passed over the way a partial copy is.
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess ([System.Management.Automation.ScriptBlock]::Create("[PSADT.ProcessManagement.ProcessResult]::new($ExitCode)")) -ParameterFilter { $FilePath -match 'Robocopy\.exe$' }
+            { Copy-ADTFile -Path "$ExitCodeSource\file.txt" -Destination "$TestDrive\Failed$ExitCode" -FileCopyMode Robocopy } | Should -Throw -ErrorId 'RobocopyError,Copy-ADTFile'
+        }
+
+        It 'Carries on past exit code <ExitCode> when told to' -ForEach @(
+            @{ ExitCode = 16 }
+            @{ ExitCode = 99 }
+        ) {
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess ([System.Management.Automation.ScriptBlock]::Create("[PSADT.ProcessManagement.ProcessResult]::new($ExitCode)")) -ParameterFilter { $FilePath -match 'Robocopy\.exe$' }
+            { Copy-ADTFile -Path "$ExitCodeSource\file.txt" -Destination "$TestDrive\Continued$ExitCode" -FileCopyMode Robocopy -ContinueFileCopyOnError } | Should -Not -Throw
+        }
+    }
+}
