@@ -118,7 +118,7 @@ function Test-ADTServiceExists
     {
         # Initialise the function and confirm no wildcards have been provided for the UseCIM pathway.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ([System.Management.Automation.WildcardPattern]::ContainsWildcardCharacters($Name))
+        if ($UseCIM -and [System.Management.Automation.WildcardPattern]::ContainsWildcardCharacters($Name))
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("The [-UseCIM] parameter does not support wildcard patterns in [-Name]. Use an exact service name, or omit [-UseCIM] to allow wildcard matching.")

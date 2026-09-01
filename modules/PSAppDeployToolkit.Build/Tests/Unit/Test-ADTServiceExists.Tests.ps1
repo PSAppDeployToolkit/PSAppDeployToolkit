@@ -82,13 +82,11 @@ Describe 'Test-ADTServiceExists' {
             Test-ADTServiceExists -DisplayName $displayNamePattern | Should -BeTrue
         }
 
-        # Skipped until the guard is narrowed to the CIM pathway. It runs on every call, so the wildcard
-        # support that -Name declares and that the function's own help demonstrates is unreachable.
-        It 'Matches a service by a name pattern' -Skip {
+        It 'Matches a service by a name pattern' {
             Test-ADTServiceExists -Name $namePattern | Should -BeTrue
         }
 
-        It 'Reports no match for a name pattern nothing answers' -Skip {
+        It 'Reports no match for a name pattern nothing answers' {
             Test-ADTServiceExists -Name "$fakeServiceName*" | Should -BeFalse
         }
     }
