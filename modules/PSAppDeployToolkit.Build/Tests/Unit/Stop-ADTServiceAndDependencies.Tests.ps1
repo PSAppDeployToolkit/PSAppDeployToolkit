@@ -1,72 +1,82 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
-    Import-ADTModuleUnderTest
-}
-Describe 'Stop-ADTServiceAndDependencies' {
-    BeforeAll {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'serviceWithMultipleRunningDependentServices', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $serviceWithMultipleRunningDependentServices = $null
-        $dependentServices = [System.Collections.Generic.List[System.ServiceProcess.ServiceController]]::new()
 
-        # Find a service that has more than one running dependent service
-        foreach ($service in Get-Service)
+    # These tests need a running service with more than one running dependent, which not every
+    # machine has. Found at discovery so that the tests skip where there is none, rather than every one of
+    # them failing on a null service the way they used to.
+    $script:SubjectName = $null
+    foreach ($service in Get-Service)
+    {
+        if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running) -or !$service.DependentServices)
         {
-            if ($service.Status -ne [System.ServiceProcess.ServiceControllerStatus]::Running)
+            continue
+        }
+        $matching = 0
+        foreach ($dependent in $service.DependentServices)
+        {
+            if ($dependent.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
             {
-                continue
-            }
-
-            if (!$service.DependentServices)
-            {
-                continue
-            }
-
-            $dependentServices.Clear()
-
-            foreach ($dependentService in $service.DependentServices)
-            {
-                if ($dependentService.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running)
-                {
-                    $dependentServices.Add($dependentService)
-                }
-            }
-
-            if ($dependentServices.Count -gt 1)
-            {
-                $serviceWithMultipleRunningDependentServices = $service
-                break
+                $matching++
             }
         }
-
-        # Mock Stop-Service so that tests can be performed without admin rights or altering the state of the host
-        Mock Stop-Service { if ($PesterBoundParameters['PassThru']) { return $PesterBoundParameters.InputObject } } -ModuleName PSAppDeployToolkit
-
-        # Mock Write-ADTLogEntry due to its expense when running via Pester.
-        Mock Write-ADTLogEntry { } -ModuleName PSAppDeployToolkit
+        if ($matching -gt 1)
+        {
+            $script:SubjectName = $service.ServiceName
+            break
+        }
     }
+}
 
-    Context 'Functionality' {
+BeforeAll {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
+
+    # Mock Stop-Service so that tests can be performed without admin rights or altering the state of the host
+    Mock Stop-Service { if ($PesterBoundParameters['PassThru']) { return $PesterBoundParameters.InputObject } } -ModuleName PSAppDeployToolkit
+
+    # Mock Write-ADTLogEntry due to its expense when running via Pester.
+    Mock Write-ADTLogEntry { } -ModuleName PSAppDeployToolkit
+}
+
+Describe 'Stop-ADTServiceAndDependencies' {
+    # The service found at discovery is handed in rather than read from a script variable, which is not the
+    # same scope once the tests are actually running.
+    Context 'Functionality' -Skip:(!$script:SubjectName) -ForEach @(@{ SubjectName = $script:SubjectName }) {
+        BeforeAll {
+            $script:Subject = Get-Service -Name $SubjectName
+            $script:DependentCount = 0
+            foreach ($dependent in $script:Subject.DependentServices)
+            {
+                if ($dependent.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
+                {
+                    $script:DependentCount++
+                }
+            }
+        }
         It 'Should stop all dependent services' {
-            Stop-ADTServiceAndDependencies -InputObject $serviceWithMultipleRunningDependentServices
+            # One forced call is all this function makes: Stop-Service -Force is what brings the dependents
+            # down with the parent, rather than the function stopping each of them itself.
+            Stop-ADTServiceAndDependencies -InputObject $script:Subject
             Should -Invoke -CommandName Stop-Service -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
         It 'Should not attempt to stop services with running dependents when -SkipDependentServices is provided' {
-            Stop-ADTServiceAndDependencies -InputObject $serviceWithMultipleRunningDependentServices -SkipDependentServices
+            # Refusing outright is the point: stopping the parent would take the dependents with it, which
+            # is the very thing the caller asked to avoid.
+            $script:DependentCount | Should -BeGreaterThan 1
+            Stop-ADTServiceAndDependencies -InputObject $script:Subject -SkipDependentServices
             Should -Not -Invoke -CommandName Stop-Service -ModuleName PSAppDeployToolkit
         }
         It 'Should accept ServiceController objects through the pipeline' {
-            { $serviceWithMultipleRunningDependentServices | Stop-ADTServiceAndDependencies } | Should -Not -Throw
-            #$serviceWithMultipleRunningDependentServices | Stop-ADTServiceAndDependencies
+            $script:Subject | Stop-ADTServiceAndDependencies
             Should -Invoke -CommandName Stop-Service -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
         It 'Should return the specified service when -PassThru is provided' {
-            $return = Stop-ADTServiceAndDependencies -InputObject $serviceWithMultipleRunningDependentServices -PassThru
+            $return = Stop-ADTServiceAndDependencies -InputObject $script:Subject -PassThru
             $return | Should -HaveCount 1
             $return | Should -BeOfType ([System.ServiceProcess.ServiceController])
-            $return.ServiceName | Should -BeExactly $serviceWithMultipleRunningDependentServices.ServiceName
+            $return.ServiceName | Should -BeExactly $script:Subject.ServiceName
         }
     }
-
     Context 'Input Validation' {
         It 'Should verify that -Name is not null, empty or whitespace' {
             $shouldParams = @{
