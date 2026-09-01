@@ -74,8 +74,9 @@ function Remove-ADTEdgeExtension
         {
             try
             {
-                # Return early if the extension isn't installed.
-                if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
+                # Return early if the extension isn't installed. Match() is used rather than reading the
+                # collection's Name, which strict mode refuses when there are no extensions configured.
+                if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties.Match($ExtensionID).Count)
                 {
                     Write-ADTLogEntry -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
                     return

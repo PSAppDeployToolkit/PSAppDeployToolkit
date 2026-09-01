@@ -35,27 +35,26 @@ Describe 'Get-ADTEdgeExtensions' {
             }
         }
 
-        # Skipped until the function is repaired. It seeds the value with no content at all, so what the
-        # next call reads back parses to nothing rather than to the empty object it just reported.
-        It 'Seeds a value it can read back' -Skip {
+        It 'Seeds a value it can read back' {
+            # Whatever the seeding writes is what the next call parses, so a value that comes back as
+            # nothing leaves every later caller with nothing to work from.
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock Test-ADTRegistryValue { return $false }
-                Mock Set-ADTRegistryKey { $script:SeededValue = $Value }
+                Mock Set-ADTRegistryKey { }
 
                 $null = Get-ADTEdgeExtensions
-                $script:SeededValue | Should -Not -BeNullOrEmpty
-                $script:SeededValue | ConvertFrom-Json | Should -Not -BeNullOrEmpty
+                Should -Invoke Set-ADTRegistryKey -Times 1 -Exactly -ParameterFilter { ![System.String]::IsNullOrWhiteSpace($Value) -and ($null -ne ($Value | ConvertFrom-Json)) }
             }
         }
 
-        # Skipped for the same reason. A value that is present but carries nothing is what the seeding
-        # above leaves behind, and callers index into what comes back without checking it for null.
-        It 'Returns an empty object rather than nothing when the stored value is blank' -Skip {
+        # A value that is present but carries nothing means the same as no extensions at all, and
+        # callers index into what comes back without checking it for null.
+        It 'Returns an empty object rather than nothing when the stored value is blank' {
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock Test-ADTRegistryValue { return $true }
                 Mock Get-ADTRegistryKey { return [System.String]::Empty }
 
-                Get-ADTEdgeExtensions | Should -Not -BeNullOrEmpty
+                Get-ADTEdgeExtensions | Should -BeOfType ([System.Management.Automation.PSCustomObject])
             }
         }
 

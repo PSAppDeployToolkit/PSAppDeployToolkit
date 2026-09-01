@@ -64,18 +64,15 @@ Describe 'Remove-ADTEdgeExtension' {
         }
     }
 
-    # Both of these are skipped until the function is repaired. Its membership test reads the Name of an
-    # empty property collection, which the module's strict mode refuses, so an empty extension list fails
-    # rather than reporting that there was nothing to remove. Get-ADTEdgeExtensions compounds it by
-    # seeding the policy value as an empty string rather than an empty object, which parses back to
-    # nothing, so on a machine that never had Edge extension policy the first call creates the very
-    # condition every later call falls over on.
     Context 'With no extension policy configured' {
-        It 'Does not object' -Skip {
+        It 'Does not object' {
+            # Nothing configured means nothing to remove, which is a result rather than a failure.
             { Remove-ADTEdgeExtension -ExtensionID 'anything' } | Should -Not -Throw
         }
 
-        It 'Keeps working once the policy value has been seeded' -Skip {
+        It 'Keeps working once the policy value has been seeded' {
+            # The first call through here seeds the policy value, so a second one reads back whatever the
+            # first wrote. That round trip is where this used to come apart.
             Remove-ADTEdgeExtension -ExtensionID 'anything'
             { Remove-ADTEdgeExtension -ExtensionID 'anything' } | Should -Not -Throw
         }
