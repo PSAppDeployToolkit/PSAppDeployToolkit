@@ -100,10 +100,9 @@ Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
             $after.ADTSECOND | Should -BeExactly 'second'
         }
 
-        # Skipped pending a decision on the behaviour. The function doubles single quotes before building
-        # its MSI SQL statement, which is the SQL convention but not one the Windows Installer query
-        # engine implements, so a value carrying an apostrophe fails with a bare syntax error.
-        It 'Survives a value carrying a single quote' -Skip {
+        It 'Survives a value carrying a single quote' {
+            # The Windows Installer query engine has no escape sequence for a quote inside a literal, so a
+            # value carrying an apostrophe only survives if it never goes into the statement text.
             (Invoke-AgainstDatabase -Path $script:Package -Action { Set-ADTMsiProperty -Database $args[0] -PropertyName 'ADTQUOTED' -PropertyValue "Vendor's Product" }).ADTQUOTED | Should -BeExactly "Vendor's Product"
         }
 

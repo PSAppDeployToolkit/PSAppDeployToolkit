@@ -74,7 +74,60 @@ function Set-ADTMsiProperty
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
-        $View = $null
+
+        # Internal worker to run a statement against the database with its values supplied out of band.
+        # The Windows Installer query engine has no escape sequence for a quote inside a literal, so the
+        # values are bound to markers in the statement rather than written into it.
+        function Invoke-ADTMsiDatabaseStatement
+        {
+            [CmdletBinding()]
+            [OutputType([System.Object])]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.__ComObject]$Database,
+
+                [Parameter(Mandatory = $true)]
+                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+                [System.String]$Statement,
+
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.String[]]$Values,
+
+                [Parameter(Mandatory = $false)]
+                [System.Management.Automation.SwitchParameter]$Fetch
+            )
+
+            $record = $installer.GetType().InvokeMember('CreateRecord', [System.Reflection.BindingFlags]::InvokeMethod, $null, $installer, @($Values.Length))
+            try
+            {
+                for ($i = 0; $i -lt $Values.Length; $i++)
+                {
+                    $null = $record.GetType().InvokeMember('StringData', [System.Reflection.BindingFlags]::SetProperty, $null, $record, @(($i + 1), $Values[$i]))
+                }
+                $view = $Database.GetType().InvokeMember('OpenView', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Database, @($Statement))
+                try
+                {
+                    $null = $view.GetType().InvokeMember('Execute', [System.Reflection.BindingFlags]::InvokeMethod, $null, $view, @($record))
+                    if ($Fetch)
+                    {
+                        return $view.GetType().InvokeMember('Fetch', [System.Reflection.BindingFlags]::InvokeMethod, $null, $view, $null)
+                    }
+                }
+                finally
+                {
+                    $null = $view.GetType().InvokeMember('Close', [System.Reflection.BindingFlags]::InvokeMethod, $null, $view, $null)
+                    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($view)
+                }
+            }
+            finally
+            {
+                $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($record)
+            }
+        }
+        $installer = New-Object -ComObject WindowsInstaller.Installer
     }
 
     process
@@ -88,41 +141,17 @@ function Set-ADTMsiProperty
         {
             try
             {
-                # Open the requested table view from the database, ensuring that we escape single quotes for MSI SQL queries.
-                $escapedPropertyName = $PropertyName.Replace("'", "''"); $escapedPropertyValue = $PropertyValue.Replace("'", "''")
-                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$escapedPropertyName'")
-                $Record = try
+                # Retrieve the requested property from the requested table to find out whether it is there.
+                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+                if (Invoke-ADTMsiDatabaseStatement -Database $Database -Statement 'SELECT * FROM Property WHERE Property=?' -Values $PropertyName -Fetch)
                 {
-                    # Retrieve the requested property from the requested table and close off the view.
-                    # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
-                }
-                finally
-                {
-                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($View)
-                }
-
-                # Set the MSI property.
-                $View = if ($Record)
-                {
-                    # If the property already exists, then create the view for updating the property.
-                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$escapedPropertyValue' WHERE Property='$escapedPropertyName'")
+                    # If the property already exists, update it in place.
+                    $null = Invoke-ADTMsiDatabaseStatement -Database $Database -Statement 'UPDATE Property SET Value=? WHERE Property=?' -Values $PropertyValue, $PropertyName
                 }
                 else
                 {
-                    # If property does not exist, then create view for inserting the property.
-                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$escapedPropertyName','$escapedPropertyValue')")
-                }
-                $null = try
-                {
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
-                }
-                finally
-                {
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                    [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($View)
+                    # If the property does not exist, add it to the table.
+                    $null = Invoke-ADTMsiDatabaseStatement -Database $Database -Statement 'INSERT INTO Property (Property, Value) VALUES (?, ?)' -Values $PropertyName, $PropertyValue
                 }
             }
             catch
@@ -138,6 +167,7 @@ function Set-ADTMsiProperty
 
     end
     {
+        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
