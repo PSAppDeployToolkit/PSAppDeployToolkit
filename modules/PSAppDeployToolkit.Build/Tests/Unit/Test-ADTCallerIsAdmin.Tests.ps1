@@ -2,24 +2,41 @@
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 }
+
 Describe 'Test-ADTCallerIsAdmin' {
     Context 'Functionality' {
-        It 'Should return $true when the caller is in the Administrator role' {
-            $callerIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-            try
-            {
-                if ([System.Security.Principal.WindowsPrincipal]::new($callerIdentity).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
+        It 'Answers with a boolean' {
+            Test-ADTCallerIsAdmin | Should -BeOfType ([System.Boolean])
+        }
+
+        It 'Agrees with the token Windows reports for this process' {
+            # Asked of whoami rather than of the same WindowsPrincipal call the function makes, so that
+            # the answer comes from somewhere else. An unelevated process still carries the
+            # Administrators SID in its token, but for deny only, so the SID alone is not the question.
+            $adminsGroup = whoami /groups /fo csv | ConvertFrom-Csv | & {
+                process
                 {
-                    Test-ADTCallerIsAdmin | Should -BeTrue
-                }
-                else
-                {
-                    Test-ADTCallerIsAdmin | Should -BeFalse
+                    if ($_.SID.Equals('S-1-5-32-544'))
+                    {
+                        return $_
+                    }
                 }
             }
-            finally
+            Test-ADTCallerIsAdmin | Should -Be ($adminsGroup -and $adminsGroup.Attributes.Contains('Enabled group'))
+        }
+
+        It 'Agrees with what this process can actually do' {
+            # The strongest oracle available: an operation only an administrator can perform. If the
+            # function says yes then this has to work, and if it says no then it must not, so an
+            # implementation that simply returned one answer would fail here whichever answer it chose.
+            $privilegedRead = { $null = Get-ChildItem -LiteralPath "$([System.Environment]::SystemDirectory)\config" -ErrorAction Stop }
+            if (Test-ADTCallerIsAdmin)
             {
-                $callerIdentity.Dispose()
+                $privilegedRead | Should -Not -Throw
+            }
+            else
+            {
+                $privilegedRead | Should -Throw
             }
         }
     }

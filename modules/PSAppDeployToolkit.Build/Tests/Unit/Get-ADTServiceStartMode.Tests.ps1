@@ -1,153 +1,91 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
-    Import-ADTModuleUnderTest
-}
-Describe 'Get-ADTServiceStartMode' {
-    BeforeAll {
-        $services = Get-Service
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'bootService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $bootService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Boot) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'systemService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $systemService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::System) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'automaticService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $automaticService = $null
-        $delayedAutomaticService = $null
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manualService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $manualService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Manual) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'disabledService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
-        $disabledService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Disabled) { return $_ } } } | Select-Object -First 1
-
-        foreach ($service in $services)
+    # One service per start mode, found from the registry rather than from ServiceController.StartType,
+    # which is the very property the function returns. Start maps 0 to Boot, 1 to System, 2 to Automatic,
+    # 3 to Manual and 4 to Disabled, with DelayedAutoStart telling the two automatic modes apart.
+    $script:StartModeCases = @(
+        @{ Mode = 'Boot'; Start = 0; Delayed = $false }
+        @{ Mode = 'System'; Start = 1; Delayed = $false }
+        @{ Mode = 'Automatic'; Start = 2; Delayed = $false }
+        @{ Mode = 'Automatic (Delayed Start)'; Start = 2; Delayed = $true }
+        @{ Mode = 'Manual'; Start = 3; Delayed = $false }
+        @{ Mode = 'Disabled'; Start = 4; Delayed = $false }
+    ) | & {
+        begin
         {
-            if ($service.StartType -ne [System.ServiceProcess.ServiceStartMode]::Automatic)
-            {
-                continue
-            }
-
-            if ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1)
-            {
-                $delayedAutomaticService = $service
-            }
-            else
-            {
-                $automaticService = $service
-                if ($delayedAutomaticService)
-                {
-                    break
-                }
-            }
+            $keys = Get-ChildItem -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services'
+            $known = Get-Service | & { process { $_.ServiceName } }
         }
-
-        # Mock Write-ADTLogEntry due to its expense when running via Pester.
-        Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+        process
+        {
+            $case = $_
+            $match = $keys | & {
+                process
+                {
+                    if (($known -notcontains $_.PSChildName) -or ($_.GetValue('Start') -ne $case.Start) -or (!!$_.GetValue('DelayedAutoStart') -ne $case.Delayed))
+                    {
+                        return
+                    }
+                    return $_.PSChildName
+                }
+            } | Select-Object -First 1
+            return $case + @{ ServiceName = $match }
+        }
     }
 
-    Context 'Functionality' {
-        It 'Should return the service start mode' {
-            if ($bootService)
+}
+
+BeforeAll {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
+
+    # Mock Write-ADTLogEntry due to its expense when running via Pester.
+    Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+
+    # Any service will do for the tests about how one is named rather than about which mode comes back.
+    # Established here rather than at discovery, since that scope is not visible from inside a test.
+    $script:AnyService = Get-Service | Select-Object -First 1
+}
+
+Describe 'Get-ADTServiceStartMode' {
+    Context 'Reporting the start mode' {
+        It 'Reports <Mode>' -ForEach $script:StartModeCases {
+            # Skipped by name rather than passing silently, so that a mode this machine has no service
+            # for is visible in the results instead of looking like it was checked.
+            if (!$ServiceName)
             {
-                Get-ADTServiceStartMode -InputObject $bootService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
+                Set-ItResult -Skipped -Because "this machine has no service with a start mode of [$Mode]"
             }
-            if ($systemService)
-            {
-                Get-ADTServiceStartMode -InputObject $systemService | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
-            }
-            if ($automaticService)
-            {
-                Get-ADTServiceStartMode -InputObject $automaticService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
-            }
-            if ($delayedAutomaticService)
-            {
-                Get-ADTServiceStartMode -InputObject $delayedAutomaticService | Should -Be 'Automatic (Delayed Start)'
-            }
-            if ($manualService)
-            {
-                Get-ADTServiceStartMode -InputObject $manualService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
-            }
-            if ($disabledService)
-            {
-                Get-ADTServiceStartMode -InputObject $disabledService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
-            }
+            Get-ADTServiceStartMode -Name $ServiceName | Should -Be $Mode
         }
-        It 'Should return the service start mode by service name' {
-            if ($bootService)
-            {
-                Get-ADTServiceStartMode -Name $bootService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
-            }
-            if ($systemService)
-            {
-                Get-ADTServiceStartMode -Name $systemService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
-            }
-            if ($automaticService)
-            {
-                Get-ADTServiceStartMode -Name $automaticService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
-            }
-            if ($delayedAutomaticService)
-            {
-                Get-ADTServiceStartMode -Name $delayedAutomaticService.ServiceName | Should -Be 'Automatic (Delayed Start)'
-            }
-            if ($manualService)
-            {
-                Get-ADTServiceStartMode -Name $manualService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
-            }
-            if ($disabledService)
-            {
-                Get-ADTServiceStartMode -Name $disabledService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
-            }
+    }
+
+    Context 'Naming the service' {
+        It 'Accepts a service name' {
+            Get-ADTServiceStartMode -Name $script:AnyService.ServiceName | Should -Not -BeNullOrEmpty
         }
-        It 'Should return the service start mode by display name' {
-            if ($bootService)
-            {
-                Get-ADTServiceStartMode -DisplayName $bootService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
-            }
-            if ($systemService)
-            {
-                Get-ADTServiceStartMode -DisplayName $systemService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
-            }
-            if ($automaticService)
-            {
-                Get-ADTServiceStartMode -DisplayName $automaticService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
-            }
-            if ($delayedAutomaticService)
-            {
-                Get-ADTServiceStartMode -DisplayName $delayedAutomaticService.DisplayName | Should -Be 'Automatic (Delayed Start)'
-            }
-            if ($manualService)
-            {
-                Get-ADTServiceStartMode -DisplayName $manualService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
-            }
-            if ($disabledService)
-            {
-                Get-ADTServiceStartMode -DisplayName $disabledService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
-            }
+
+        It 'Accepts a display name' {
+            # The display name is handed to Get-Service, which treats it as a pattern, so it is escaped
+            # rather than trusted to contain nothing that looks like one.
+            Get-ADTServiceStartMode -DisplayName ([System.Management.Automation.WildcardPattern]::Escape($script:AnyService.DisplayName)) | Should -Be (Get-ADTServiceStartMode -Name $script:AnyService.ServiceName)
         }
-        It 'Should accept ServiceController objects through the pipeline' {
-            if ($bootService)
-            {
-                $bootService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
-            }
-            if ($systemService)
-            {
-                $systemService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
-            }
-            if ($automaticService)
-            {
-                $automaticService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
-            }
-            if ($delayedAutomaticService)
-            {
-                $delayedAutomaticService | Get-ADTServiceStartMode | Should -Be 'Automatic (Delayed Start)'
-            }
-            if ($manualService)
-            {
-                $manualService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
-            }
-            if ($disabledService)
-            {
-                $disabledService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
-            }
+
+        It 'Accepts a service object' {
+            Get-ADTServiceStartMode -InputObject $script:AnyService | Should -Be (Get-ADTServiceStartMode -Name $script:AnyService.ServiceName)
         }
+
+        It 'Accepts a service object from the pipeline' {
+            $script:AnyService | Get-ADTServiceStartMode | Should -Be (Get-ADTServiceStartMode -Name $script:AnyService.ServiceName)
+        }
+
+        It 'Reports one mode per service when given several' {
+            # Deployments pipe a filtered list of services in, so the results have to line up one for one.
+            $services = Get-Service | Select-Object -First 3
+            @($services | Get-ADTServiceStartMode).Count | Should -Be 3
+        }
+
         It "Should thow when the name provided doesn't exist" {
             $shouldParams = @{
                 Throw = $true
