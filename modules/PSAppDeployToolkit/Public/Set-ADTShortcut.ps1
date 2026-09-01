@@ -255,10 +255,6 @@ function Set-ADTShortcut
                         {
                             $shortcut.Url = $TargetPath
                         }
-                        elseif ($Clear -contains 'TargetPath')
-                        {
-                            $shortcut.Url = [System.Management.Automation.Language.NullString]::Value
-                        }
 
                         # IconLocation.
                         if ($PSBoundParameters.ContainsKey('IconLocation'))
@@ -369,10 +365,6 @@ function Set-ADTShortcut
                         if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
                         {
                             $shortcut.TargetPath = $TargetPath
-                        }
-                        elseif ($Clear -contains 'TargetPath')
-                        {
-                            $shortcut.TargetPath = [System.Management.Automation.Language.NullString]::Value
                         }
 
                         # Arguments.
