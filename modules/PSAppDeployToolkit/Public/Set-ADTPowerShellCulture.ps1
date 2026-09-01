@@ -56,8 +56,8 @@ function Set-ADTPowerShellCulture
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $smaCultureResolver = [System.Reflection.Assembly]::Load('System.Management.Automation').GetType('Microsoft.PowerShell.NativeCultureResolver')
         $smaResolverFlags = [System.Reflection.BindingFlags]::NonPublic -bor [System.Reflection.BindingFlags]::Static
+        $smaCultureFields = [System.Reflection.Assembly]::Load('System.Management.Automation').GetType('Microsoft.PowerShell.NativeCultureResolver').GetFields($smaResolverFlags).Where({ $_.Name -match '^m_(ui)?Culture$' })
         [System.Globalization.CultureInfo[]]$validCultures = (Get-WinUserLanguageList).LanguageTag
     }
 
@@ -80,10 +80,13 @@ function Set-ADTPowerShellCulture
                     throw (New-ADTErrorRecord @naerParams)
                 }
 
-                # Reflectively update the culture to the specified value.
-                # This will change PowerShell, but not its default variables like $PSCulture and $PSUICulture.
-                $smaCultureResolver.GetField('m_Culture', $smaResolverFlags).SetValue($null, $CultureInfo)
-                $smaCultureResolver.GetField('m_uiCulture', $smaResolverFlags).SetValue($null, $CultureInfo)
+                # Update the culture on the thread, which is what PowerShell's culture resolver defers to.
+                [System.Threading.Thread]::CurrentThread.CurrentCulture = $CultureInfo
+                [System.Threading.Thread]::CurrentThread.CurrentUICulture = $CultureInfo
+
+                # Releases that cache the culture in the resolver's own fields need those set as well,
+                # otherwise the thread's value is never consulted again for the life of the process.
+                $smaCultureFields | & { process { $_.SetValue($null, $CultureInfo) } }
             }
             catch
             {

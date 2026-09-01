@@ -23,10 +23,7 @@ Describe 'Set-ADTPowerShellCulture' {
             [System.Threading.Thread]::CurrentThread.CurrentUICulture = $script:OriginalUICulture
         }
 
-        # Skipped until the function is repaired. It reaches for the private m_Culture/m_uiCulture fields
-        # on Microsoft.PowerShell.NativeCultureResolver, which PowerShell 7.6 replaced with read-only
-        # properties that defer to the thread, so every call fails on a null field reference.
-        It 'Changes the culture PowerShell resolves against' -Skip {
+        It 'Changes the culture PowerShell resolves against' {
             # This is the whole point of the function: Import-LocalizedData and the string tables read
             # PowerShell's resolved culture, not the thread's, so the change has to reach that far.
             $target = [System.Globalization.CultureInfo]::new((Get-WinUserLanguageList)[0].LanguageTag)
@@ -34,7 +31,7 @@ Describe 'Set-ADTPowerShellCulture' {
             (Get-UICulture).Name | Should -BeExactly $target.Name
         }
 
-        It 'Returns nothing' -Skip {
+        It 'Returns nothing' {
             Set-ADTPowerShellCulture -CultureInfo ([System.Globalization.CultureInfo]::new((Get-WinUserLanguageList)[0].LanguageTag)) | Should -BeNullOrEmpty
         }
     }
