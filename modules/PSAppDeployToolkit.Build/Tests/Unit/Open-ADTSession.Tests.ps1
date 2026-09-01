@@ -114,6 +114,79 @@ Describe 'Open-ADTSession' {
     }
 
     Context 'Callbacks' {
+        It 'Runs the callbacks registered for either side of a session opening' {
+            # PreOpen runs before the session exists and PostOpen once it does, which is what lets an
+            # extension prepare something the session needs and then attach to the session itself.
+            $script:Order = [System.Collections.Generic.List[System.String]]::new()
+            function Test-PreOpenCallback
+            {
+                $script:Order.Add("pre:$(InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count })")
+            }
+            function Test-PostOpenCallback
+            {
+                $script:Order.Add("post:$(InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count })")
+            }
+            Add-ADTModuleCallback -Hookpoint PreOpen -Callback (Get-Command Test-PreOpenCallback)
+            Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command Test-PostOpenCallback)
+            try
+            {
+                $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'OpenCallbacks' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
+                Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+                $script:Order | Should -Be @('pre:0', 'post:1')
+            }
+            finally
+            {
+                Clear-ADTModuleCallback -Hookpoint PreOpen
+                Clear-ADTModuleCallback -Hookpoint PostOpen
+            }
+        }
+
+        It 'Opens no session at all when a PreOpen callback throws' {
+            # PreOpen is where an extension says the deployment cannot go ahead, so the session must not be
+            # left half open with nothing to close it.
+            function Test-FailingPreOpenCallback
+            {
+                throw 'The callback failed deliberately.'
+            }
+            Add-ADTModuleCallback -Hookpoint PreOpen -Callback (Get-Command Test-FailingPreOpenCallback)
+            try
+            {
+                { Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'FailedPreOpen' -DeployMode Silent -InformationAction SilentlyContinue } | Should -Throw -ExpectedMessage 'The callback failed deliberately.'
+                Test-ADTSessionActive | Should -BeFalse
+            }
+            finally
+            {
+                Clear-ADTModuleCallback -Hookpoint PreOpen
+                while (Test-ADTSessionActive)
+                {
+                    Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+                }
+            }
+        }
+
+        It 'Closes the session again when a PostOpen callback throws' {
+            # The session is already open and registered by this point, so the failure has to unwind it as
+            # well as be reported, or the deployment carries on holding a session nothing will close.
+            function Test-FailingPostOpenCallback
+            {
+                throw 'The callback failed deliberately.'
+            }
+            Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command Test-FailingPostOpenCallback)
+            try
+            {
+                Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'FailedPostOpen' -DeployMode Silent -InformationAction SilentlyContinue -ErrorVariable openErrors 2>$null
+                $openErrors.Exception.Message | Should -Contain 'The callback failed deliberately.'
+                Test-ADTSessionActive | Should -BeFalse
+            }
+            finally
+            {
+                Clear-ADTModuleCallback -Hookpoint PostOpen
+                while (Test-ADTSessionActive)
+                {
+                    Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+                }
+            }
+        }
         It 'Runs the callbacks registered for the start of a deployment' {
             # Extensions hook here to set themselves up once the session exists but before the deployment
             # gets going.
@@ -184,6 +257,22 @@ Describe 'Open-ADTSession' {
             # Called directly rather than through the helper, so that the refusal is reported against the
             # function under test rather than against the helper doing the splatting.
             { Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'NullClass' -DeployMode Silent -SessionClass $null -InformationAction SilentlyContinue } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Open-ADTSession'
+        }
+    }
+
+    Context 'Without being told whose scope it is opening in' {
+        AfterEach {
+            while (Test-ADTSessionActive)
+            {
+                Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+            }
+        }
+
+        It 'Falls back to the calling scope' {
+            # A deployment script calls this without naming a session state, and the environment variables
+            # have to land somewhere for the rest of the script to read them.
+            $session = Open-ADTSession -AppName 'NoSessionState' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
+            $session | Should -BeOfType ([PSAppDeployToolkit.Foundation.DeploymentSession])
         }
     }
 }
