@@ -278,7 +278,9 @@ function Set-ADTShortcut
                         }
                         elseif ($Clear -contains 'IconIndex')
                         {
-                            $shortcut.IconIndex = $null
+                            # An internet shortcut will not hold an index of nothing while it still has an icon file,
+                            # so clearing it means the first icon in that file, as it does for a shell link.
+                            $shortcut.IconIndex = 0
                         }
 
                         # Description.

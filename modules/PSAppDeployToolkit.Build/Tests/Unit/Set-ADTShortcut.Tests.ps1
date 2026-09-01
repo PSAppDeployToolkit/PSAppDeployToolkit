@@ -187,10 +187,7 @@ Describe 'Set-ADTShortcut' {
             (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
         }
 
-        # Skipped until clearing the index no longer asks for something the shortcut refuses. An internet
-        # shortcut will not hold an index of nothing while it still has an icon file, so the assignment throws
-        # and the caller is told the whole call failed.
-        It 'Returns -IconIndex to the first icon' -Skip {
+        It 'Returns -IconIndex to the first icon' {
             Set-ADTShortcut -LiteralPath $script:UrlPath -Clear IconIndex
             (Get-ADTShortcut -LiteralPath $script:UrlPath).IconIndex | Should -Be 0
         }
