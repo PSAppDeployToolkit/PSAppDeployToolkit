@@ -1,9 +1,19 @@
 ﻿BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
-    Import-ADTModuleUnderTest
+    Import-ADTModuleUnderTest -Force
+
+    Mock -ModuleName PSAppDeployToolkit Exit-ADTInvocation { }
+    Initialize-ADTTestModule -Path $TestDrive
 
     # Mock Write-ADTLogEntry due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+
+    # A package that is not there, so that msiexec fails at opening it rather than installing anything.
+    $script:AbsentPackage = "$TestDrive\NeverExisted.msi"
+}
+
+AfterAll {
+    Import-ADTModuleUnderTest -Force
 }
 Describe 'Start-ADTProcess' {
     Context 'Running a process' {
@@ -121,6 +131,221 @@ Describe 'Start-ADTProcess' {
         }
     }
 
+    Context 'Reporting the exit code' {
+        It 'Explains an installer exit code in the installer''s own terms' {
+            # msiexec reports failures as Windows Installer codes, which mean nothing on their own, so the
+            # message is looked up rather than left as a number. Pointed at a package that is not there,
+            # so it fails at opening it rather than installing anything.
+            Start-ADTProcess -FilePath 'msiexec.exe' -ArgumentList '/i', $script:AbsentPackage, '/qn' -CreateNoWindow -ErrorAction SilentlyContinue
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*ERROR_INSTALL_PACKAGE_OPEN_FAILED*' }
+        }
+
+        It 'Reports a code nominated as needing a reboot' {
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 3010' -CreateNoWindow -RebootExitCodes 3010
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*A reboot is required*' }
+        }
+
+        It 'Reports a code it was told to ignore as ignored' {
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 5' -CreateNoWindow -IgnoreExitCodes 5 -WarningAction SilentlyContinue
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*is being ignored*' }
+        }
+
+        It 'Ignores every code when told to ignore all of them' {
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 7' -CreateNoWindow -IgnoreExitCodes '*' -WarningAction SilentlyContinue } | Should -Not -Throw
+        }
+
+        It 'Says that ignoring exit codes is on its way out' {
+            # Deprecated in favour of -SuccessExitCodes and -RebootExitCodes, so anyone still using it
+            # needs to hear about it while it still works.
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 5' -CreateNoWindow -IgnoreExitCodes 5 -WarningAction SilentlyContinue
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*obsolete*' -and $Severity -eq 'Warning' }
+        }
+    }
+
+    Context 'How the process is launched' {
+        It 'Keeps the arguments out of the execution log with -SecureArgumentList' {
+            # Installers are handed credentials and licence keys on the command line, and the log is
+            # written to disk and collected.
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0', 'a-secret-value' -CreateNoWindow -SecureArgumentList
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*Parameters Hidden*' }
+        }
+
+        # Skipped until the leak is closed. Initialize-ADTFunction writes every bound parameter out as a
+        # table, argument list included, so the values -SecureArgumentList exists to keep out of the log
+        # reach it anyway on any run with debug logging turned on.
+        It 'Keeps the argument values out of the log entirely with -SecureArgumentList' -Skip {
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0', 'a-secret-value' -CreateNoWindow -SecureArgumentList
+            Should -Not -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*a-secret-value*' }
+        }
+
+        It 'Says the streams are unavailable when it was not asked for a hidden window' {
+            # Redirecting the streams requires the process to be created without a window, so a caller who
+            # wants a window has to be told the output will not be captured.
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -WindowStyle Hidden
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*streams will not be available*' }
+        }
+
+        It 'Waits for the installer mutex when asked' {
+            # Two installers at once is what the mutex exists to prevent, so a caller running one has to
+            # be able to queue behind whatever else is going.
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -WaitForMsiExec } | Should -Not -Throw
+        }
+
+        It 'Runs without capturing the streams when asked' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'echo nothing-captured' -CreateNoWindow -NoStreamLogging -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Accepts a priority to run at' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -PriorityClass BelowNormal -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Accepts an encoding for the streams' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'echo encoded' -CreateNoWindow -StreamEncoding ([System.Text.Encoding]::UTF8) -PassThru).StdOut | Should -Contain 'encoded'
+        }
+
+        It 'Runs with an unelevated token when asked' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Reports the installer being busy rather than queueing forever' {
+            # The mutex is taken on another thread so that this call finds it held, which is what happens
+            # when another installer is already running. Held for as long as the wait below and no longer.
+            $shell = [System.Management.Automation.PowerShell]::Create()
+            ($shell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()).Open()
+            $taken = [System.Threading.ManualResetEventSlim]::new($false)
+            $release = [System.Threading.CancellationTokenSource]::new()
+            $shell.Runspace.SessionStateProxy.SetVariable('taken', $taken)
+            $shell.Runspace.SessionStateProxy.SetVariable('release', $release)
+            $async = $shell.AddScript({
+                    $mutex = [System.Threading.Mutex]::new($false, 'Global\_MSIExecute')
+                    try
+                    {
+                        if ($mutex.WaitOne(1000))
+                        {
+                            $taken.Set()
+                            [void]$release.Token.WaitHandle.WaitOne(20000)
+                            $mutex.ReleaseMutex()
+                        }
+                    }
+                    finally
+                    {
+                        $mutex.Dispose()
+                    }
+                }).BeginInvoke()
+            try
+            {
+                if (!$taken.Wait(5000))
+                {
+                    Set-ItResult -Skipped -Because 'the installer mutex could not be taken to test against'
+                }
+                { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -WaitForMsiExec -MsiExecWaitTime ([System.TimeSpan]::FromSeconds(1)) } | Should -Throw -ErrorId 'MsiExecUnavailable,Start-ADTProcess'
+            }
+            finally
+            {
+                $release.Cancel()
+                $null = $shell.EndInvoke($async)
+                $shell.Runspace.Dispose()
+                $shell.Dispose()
+                $release.Dispose()
+                $taken.Dispose()
+            }
+        }
+
+        It 'Accepts <Switch> as a way of handling child processes' -ForEach @(
+            @{ Switch = 'KillChildProcessesWithParent' }
+            @{ Switch = 'WaitForChildProcesses' }
+        ) {
+            $splat = @{ $Switch = $true }
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -PassThru @splat).ExitCode | Should -Be 0
+        }
+    }
+
+    Context 'Running as the active user' {
+        BeforeAll {
+            $script:ActiveUser = InModuleScope -ModuleName PSAppDeployToolkit { Get-ADTClientServerUser }
+        }
+
+        It 'Runs the process in the user''s session' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Hands the process to the shell when asked' {
+            # ShellExecute is how a document or a registered file type gets opened as the user would, and
+            # it gives up the output streams in exchange.
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -UseShellExecute -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Accepts a verb for the shell to use' {
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -UseShellExecute -Verb 'open' -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Accepts <Switch> when choosing the token' -ForEach @(
+            @{ Switch = 'UseLinkedAdminToken' }
+            @{ Switch = 'UseHighestAvailableToken' }
+            @{ Switch = 'DenyUserTermination' }
+            @{ Switch = 'InheritEnvironmentVariables' }
+        ) {
+            # Which token the process gets decides what it can do, and each of these picks a different one.
+            $splat = @{ $Switch = $true }
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -PassThru @splat).ExitCode | Should -Be 0
+        }
+    }
+
+    Context 'Within a deployment session' {
+        BeforeEach {
+            $script:Deploy = "$TestDrive\Deploy$([System.Guid]::NewGuid().ToString('N'))"
+            $null = New-Item -Path "$script:Deploy\Files" -ItemType Directory -Force
+            $script:Session = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'ProcessSession' -DeployMode Silent -ScriptDirectory $script:Deploy -PassThru -InformationAction SilentlyContinue
+        }
+
+        AfterEach {
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+        }
+
+        It 'Runs an installer from the deployment''s own Files folder' {
+            # An installer given by name rather than by path is expected to sit alongside the deployment,
+            # so that is where it is run from. msiexec is the case that cannot take its directory from the
+            # executable, since that is a Windows one.
+            Start-ADTProcess -FilePath 'msiexec.exe' -ArgumentList '/i', $script:AbsentPackage, '/qn' -CreateNoWindow -ErrorAction SilentlyContinue
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like "*$($script:Session.DirFiles)*" }
+        }
+
+        It 'Records a successful exit code against the deployment' {
+            # A deployment's exit code is set from every process it runs, not only the ones that fail, so
+            # that a run which succeeds throughout reports as much.
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow
+            $script:Session.GetExitCode() | Should -Be 0
+        }
+
+        It 'Runs in the user''s session from within a deployment' {
+            # Reaching the user's session from a deployment is the case that has to make the deployment's
+            # own content readable to them first.
+            $user = InModuleScope -ModuleName PSAppDeployToolkit { Get-ADTClientServerUser }
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $user -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Records a failing exit code against the deployment' {
+            # This is how a deployment ends up reporting the installer's own code rather than a generic
+            # failure, which is what the reporting on the other side keys off.
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 9' -CreateNoWindow } | Should -Throw
+            $script:Session.GetExitCode() | Should -Be 9
+        }
+
+        It 'Leaves the deployment''s exit code alone when the caller silenced the failure' {
+            # Silencing it says the caller is handling the code themselves, so the deployment must not be
+            # marked as failed behind their back.
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 9' -CreateNoWindow -ErrorAction SilentlyContinue
+            $script:Session.GetExitCode() | Should -Be 0
+        }
+
+        It 'Takes the deployment''s reboot exit codes without being told them' {
+            # The session carries the codes the package is known to return, so a caller does not have to
+            # repeat them at every call.
+            $script:Session.AppRebootExitCodes | Should -Contain 3010
+            Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 3010' -CreateNoWindow
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*A reboot is required*' }
+        }
+    }
     Context 'Input Validation' {
         It 'Refuses a blank file path' {
             { Start-ADTProcess -FilePath '   ' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Start-ADTProcess'
