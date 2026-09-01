@@ -89,6 +89,52 @@ Describe 'Open-ADTSession' {
         }
     }
 
+    Context 'Carrying extra values onto the session' {
+        AfterEach {
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+        }
+
+        It 'Puts an argument it does not recognise onto the session' {
+            # This is how a deployment script declares its own values once and reads them back off the
+            # session everywhere else, rather than threading them through by hand.
+            $session = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'ExtraValues' -DeployMode Silent -PassThru -InformationAction SilentlyContinue -SomethingOfMyOwn 'a value of my own'
+            $session.SomethingOfMyOwn | Should -BeExactly 'a value of my own'
+        }
+
+        It 'Leaves the values it does recognise where they belong' {
+            $session = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'ExtraValues' -DeployMode Silent -PassThru -InformationAction SilentlyContinue -SomethingOfMyOwn 'a value of my own'
+            $session.AppName | Should -BeExactly 'ExtraValues'
+        }
+
+        It 'Opens against a process of the other architecture when allowed to' {
+            # Refused by default, because a 32-bit PowerShell on a 64-bit machine sees a different
+            # registry and a different Program Files, which is rarely what a deployment wanted.
+            { Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'WowAllowed' -DeployMode Silent -AllowWowProcess -InformationAction SilentlyContinue } | Should -Not -Throw
+        }
+    }
+
+    Context 'Callbacks' {
+        It 'Runs the callbacks registered for the start of a deployment' {
+            # Extensions hook here to set themselves up once the session exists but before the deployment
+            # gets going.
+            $script:Started = 0
+            function Test-OnStartCallback
+            {
+                $script:Started++
+            }
+            Add-ADTModuleCallback -Hookpoint OnStart -Callback (Get-Command Test-OnStartCallback)
+            try
+            {
+                $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'StartCallback' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
+                Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+                $script:Started | Should -Be 1
+            }
+            finally
+            {
+                Clear-ADTModuleCallback -Hookpoint OnStart
+            }
+        }
+    }
     Context 'Input Validation' {
         It 'Rejects a script directory that does not exist' {
             { Open-Probe -Splat @{ ScriptDirectory = "$TestDrive\NoSuchDirectory" } } | Should -Throw
@@ -100,6 +146,44 @@ Describe 'Open-ADTSession' {
 
         It 'Rejects a deploy mode it does not know' {
             { Open-Probe -Splat @{ DeployMode = 'NotAMode' } } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+        }
+
+        It 'Rejects a blank script directory' {
+            { Open-Probe -Splat @{ ScriptDirectory = '   ' } } | Should -Throw -ErrorId 'InvalidScriptDirectoryParameterValue,Open-ADTSession'
+        }
+
+        It 'Rejects a <Parameter> that is <Description>' -ForEach @(
+            @{ Parameter = 'DirFiles'; Description = 'blank'; Value = '   ' }
+            @{ Parameter = 'DirFiles'; Description = 'not there'; Value = 'NoSuchDirectory' }
+            @{ Parameter = 'DirSupportFiles'; Description = 'blank'; Value = '   ' }
+            @{ Parameter = 'DirSupportFiles'; Description = 'not there'; Value = 'NoSuchDirectory' }
+        ) {
+            # A deployment reads its content from these, so being pointed at nothing has to be reported
+            # when the session opens rather than when something first tries to read from it.
+            $value = if ($Value.Equals('NoSuchDirectory')) { "$TestDrive\NoSuchDirectory" } else { $Value }
+            { Open-Probe -Splat @{ $Parameter = $value } } | Should -Throw -ErrorId "Invalid$($Parameter)ParameterValue,Open-ADTSession"
+        }
+
+        It 'Rejects a blank log name' {
+            { Open-Probe -Splat @{ LogName = '   ' } } | Should -Throw -ErrorId 'InvalidLogNameParameterValue,Open-ADTSession'
+        }
+
+        It 'Rejects a log name the log viewer would not open' {
+            # The name has to end in an extension the toolkit writes, so that what it produces is picked
+            # up as a log rather than left as an unknown file.
+            { Open-Probe -Splat @{ LogName = 'NoExtensionAtAll' } } | Should -Throw -ErrorId 'InvalidLogNameParameterValue,Open-ADTSession'
+        }
+
+        It 'Rejects a session class that is not one' {
+            # The class is instantiated and handed back to the caller, so it has to be a deployment
+            # session or nothing downstream will work.
+            { Open-Probe -Splat @{ SessionClass = [System.String] } } | Should -Throw -ErrorId 'InvalidSessionClassParameterValue,Open-ADTSession'
+        }
+
+        It 'Rejects a null session class' {
+            # Called directly rather than through the helper, so that the refusal is reported against the
+            # function under test rather than against the helper doing the splatting.
+            { Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'NullClass' -DeployMode Silent -SessionClass $null -InformationAction SilentlyContinue } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Open-ADTSession'
         }
     }
 }
