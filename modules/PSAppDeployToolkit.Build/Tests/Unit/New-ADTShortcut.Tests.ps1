@@ -94,6 +94,42 @@ Describe 'New-ADTShortcut' {
         }
     }
 
+    Context 'Where the shortcut is written' {
+        It 'Refuses a path that is a directory' {
+            # A caller who pointed at a folder rather than a file would otherwise have the folder replaced.
+            $directory = "$TestDrive\LooksLikeAShortcut.lnk"
+            $null = New-Item -Path $directory -ItemType Directory -Force
+            { New-ADTShortcut -LiteralPath $directory -TargetPath 'C:\Windows' } | Should -Throw -ErrorId 'ShortcutPathInvalid,New-ADTShortcut'
+        }
+
+        It 'Refuses a folder that is not there' {
+            # Creating it unasked would leave a folder behind if the shortcut then failed to write.
+            { New-ADTShortcut -LiteralPath "$TestDrive\NotYetThere\Link.lnk" -TargetPath 'C:\Windows' } | Should -Throw -ErrorId 'ShortcutPathDirectoryDoesNotExist,New-ADTShortcut'
+        }
+
+        It 'Creates the folder when forced' {
+            $target = "$TestDrive\MadeForMe$([System.Guid]::NewGuid().ToString('N'))\Link.lnk"
+            New-ADTShortcut -LiteralPath $target -TargetPath 'C:\Windows' -Force
+            Test-Path -LiteralPath $target -PathType Leaf | Should -BeTrue
+        }
+    }
+
+    Context 'Running as administrator' {
+        It 'Marks the shortcut to elevate' {
+            # Set in the link's own flags rather than in the command line, so it survives the shortcut
+            # being edited by hand afterwards.
+            $target = "$TestDrive\Elevated$([System.Guid]::NewGuid().ToString('N')).lnk"
+            New-ADTShortcut -LiteralPath $target -TargetPath "$([System.Environment]::SystemDirectory)\cmd.exe" -RunAsAdmin
+            (Get-ADTShortcut -LiteralPath $target).RunAsAdmin | Should -BeTrue
+        }
+
+        It 'Leaves it alone when not asked' {
+            $target = "$TestDrive\Plain$([System.Guid]::NewGuid().ToString('N')).lnk"
+            New-ADTShortcut -LiteralPath $target -TargetPath "$([System.Environment]::SystemDirectory)\cmd.exe"
+            (Get-ADTShortcut -LiteralPath $target).RunAsAdmin | Should -BeFalse
+        }
+    }
+
     Context 'Input Validation' {
         It 'Should throw when the path provided to -LiteralPath already exists and -Force is not specified' {
             New-ADTShortcut @shellLinkProperties

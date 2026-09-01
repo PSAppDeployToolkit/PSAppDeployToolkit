@@ -63,6 +63,25 @@ Describe 'Resolve-ADTFileSystemPath' {
             { Resolve-Probe -Splat @{ LiteralPath = "$script:Dir\script"; File = $true; DefaultExtension = 'ps1' } } | Should -Throw -ErrorId 'InvalidDefaultExtensionParameterValue,Resolve-ADTFileSystemPath'
         }
 
+        It 'Rejects a blank -DefaultExtension' {
+            # An extension made of nothing would be appended to every bare name and resolve nothing.
+            $file = "$TestDrive\Blank.exe"
+            Set-Content -LiteralPath $file -Value 'content'
+            { Resolve-Probe -Splat @{ File = $true; LiteralPath = $file; DefaultExtension = '   ' } } | Should -Throw -ErrorId 'InvalidDefaultExtensionParameterValue,Resolve-ADTFileSystemPath'
+        }
+
+        It 'Strips the provider from a provider-qualified filesystem path' {
+            # Paths handed around inside the module carry their provider, and what comes back has to be a
+            # plain filesystem path that anything else can use.
+            $file = "$TestDrive\Qualified.exe"
+            Set-Content -LiteralPath $file -Value 'content'
+            Resolve-Probe -Splat @{ File = $true; LiteralPath = "Microsoft.PowerShell.Core\FileSystem::$file" } | Should -BeExactly $file
+        }
+
+        It 'Rejects a provider-qualified path belonging to another provider' {
+            # A registry path would otherwise be carried through as though it were a file.
+            { Resolve-Probe -Splat @{ File = $true; LiteralPath = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE' } } | Should -Throw -ErrorId 'ProviderQualifiedPathNotFileSystemPath,Resolve-ADTFileSystemPath'
+        }
         It 'Offers -<Parameter> only alongside -File' -ForEach @(
             @{ Parameter = 'ExtraPaths'; Value = 'C:\' }
             @{ Parameter = 'DefaultExtension'; Value = '.ps1' }
@@ -73,6 +92,35 @@ Describe 'Resolve-ADTFileSystemPath' {
 
         It 'Requires either -File or -Directory' {
             { Resolve-Probe -Splat @{ LiteralPath = $script:Dir } } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+        }
+    }
+
+    Context 'Within a deployment session' {
+        BeforeAll {
+            Import-ADTModuleUnderTest -Force
+            Mock -ModuleName PSAppDeployToolkit Exit-ADTInvocation { }
+            Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+            Initialize-ADTTestModule -Path $TestDrive
+
+            $script:Deploy = "$TestDrive\Deploy"
+            $null = New-Item -Path "$script:Deploy\Files" -ItemType Directory -Force
+            $null = New-Item -Path "$script:Deploy\SupportFiles" -ItemType Directory -Force
+            Set-Content -LiteralPath "$script:Deploy\SupportFiles\Helper.exe" -Value 'content'
+            $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'ResolvePaths' -DeployMode Silent -ScriptDirectory $script:Deploy -PassThru -InformationAction SilentlyContinue
+        }
+
+        AfterAll {
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+            Import-ADTModuleUnderTest -Force
+        }
+
+        It 'Finds a bare name in the deployment''s SupportFiles' {
+            # A deployment refers to its helpers by name, and they sit beside it rather than on the path.
+            Resolve-Probe -Splat @{ File = $true; LiteralPath = 'Helper.exe' } | Should -BeExactly "$script:Deploy\SupportFiles\Helper.exe"
+        }
+
+        It 'Still reports a name that is nowhere' {
+            { Resolve-Probe -Splat @{ File = $true; LiteralPath = 'NoSuchHelper.exe' } } | Should -Throw -ErrorId 'LiteralPathNotFound,Resolve-ADTFileSystemPath'
         }
     }
 }
