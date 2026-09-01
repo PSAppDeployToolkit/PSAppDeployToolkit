@@ -2,7 +2,7 @@
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 }
-Describe 'Get-ADTShortcut' {
+Describe 'Set-ADTShortcut' {
     BeforeAll {
         $hotkeyString = 'CTRL+SHIFT+F'
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'shellLinkProperties', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
@@ -50,7 +50,7 @@ Describe 'Get-ADTShortcut' {
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
             }
         }
-        It 'Should return a IShortcutLinkInfo when -PassThru is provided' {
+        It 'Should return a ShellLinkInfo when -PassThru is provided' {
             Set-ADTShortcut @shellLinkProperties -Force | Should -BeNullOrEmpty
 
             $output = Set-ADTShortcut @shellLinkProperties -PassThru

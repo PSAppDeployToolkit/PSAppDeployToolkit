@@ -2,7 +2,7 @@
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 }
-Describe 'Get-ADTShortcut' {
+Describe 'New-ADTShortcut' {
     BeforeAll {
         $hotkeyString = 'CTRL+SHIFT+F'
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'shellLinkProperties', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
@@ -50,7 +50,7 @@ Describe 'Get-ADTShortcut' {
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
             }
         }
-        It 'Should return a IShortcutLinkInfo when -PassThru is provided' {
+        It 'Should return a ShellLinkInfo when -PassThru is provided' {
             New-ADTShortcut @shellLinkProperties -Force | Should -BeNullOrEmpty
 
             $output = New-ADTShortcut @shellLinkProperties -Force -PassThru
@@ -67,8 +67,10 @@ Describe 'Get-ADTShortcut' {
             { New-ADTShortcut -LiteralPath "$TestDrive\WrongExtension.txt" } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentValidationError,New-ADTShortcut'
         }
         It 'Should validate that -Hotkey is a valid hotkey' {
-            { Set-ADTShortcut -LiteralPath $shellLinkProperties.LiteralPath -Hotkey 'NotARealHotkey' -Force } | Should -Throw -ExceptionType ([System.Management.Automation.SetValueInvocationException]) -ErrorId 'ExceptionWhenSetting,Set-ADTShortcut'
-            { Set-ADTShortcut -LiteralPath $shellLinkProperties.LiteralPath -Hotkey 'Ctrl+Shift+0' -Force } | Should -Not -Throw
+            # Named out in full rather than splatted, because the splat already carries a Hotkey and this
+            # test is about the one it is given here.
+            { New-ADTShortcut -LiteralPath $shellLinkProperties.LiteralPath -TargetPath $shellLinkProperties.TargetPath -Hotkey 'NotARealHotkey' -Force } | Should -Throw
+            { New-ADTShortcut -LiteralPath $shellLinkProperties.LiteralPath -TargetPath $shellLinkProperties.TargetPath -Hotkey 'Ctrl+Shift+0' -Force } | Should -Not -Throw
         }
         It 'Should validate that -LiteralPath is not null, empty, or whitespace' {
             $shouldParams = @{
