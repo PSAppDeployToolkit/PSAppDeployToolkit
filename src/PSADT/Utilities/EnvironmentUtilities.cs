@@ -133,7 +133,8 @@ namespace PSADT.Utilities
         /// <param name="target">The scope in which to set the environment variable. Can be <see cref="EnvironmentVariableTarget.Process"/>,
         /// <see cref="EnvironmentVariableTarget.User"/>, or <see cref="EnvironmentVariableTarget.Machine"/>.</param>
         /// <param name="expandable">Indicates whether the value should be stored as an expandable string, allowing references to other
-        /// environment variables (e.g., "%PATH%").</param>
+        /// environment variables (e.g., "%PATH%"). This has no meaning for <see cref="EnvironmentVariableTarget.Process"/>, which is not
+        /// held in the registry, and is ignored for that target.</param>
         /// <param name="append">If <see langword="true"/>, appends <paramref name="value"/> to the existing semicolon-delimited value of the
         /// environment variable, unless it already exists.</param>
         /// <param name="remove">If <see langword="true"/>, removes <paramref name="value"/> from the existing semicolon-delimited value of
@@ -144,21 +145,13 @@ namespace PSADT.Utilities
         /// name="remove"/> are <see langword="true"/>. Also thrown if attempting to append or remove with a null
         /// <paramref name="value"/>.</exception>
         /// <exception cref="FormatException">Thrown if the variable name or value contains invalid characters or formats.</exception>
-        /// <exception cref="NotSupportedException">Thrown if both <paramref name="append"/> and <paramref name="remove"/> are <see langword="true"/>, or if <paramref name="target"/> is <see cref="EnvironmentVariableTarget.Process"/>.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened, or if <paramref name="target"/> is
-        /// <see cref="EnvironmentVariableTarget.Process"/>.</exception>
+        /// <exception cref="NotSupportedException">Thrown if both <paramref name="append"/> and <paramref name="remove"/> are <see langword="true"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="variable"/> exceeds length limits or if <paramref name="target"/> is an invalid enum value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable, bool append, bool remove)
         {
-            // Use the built-in method for process-level variables.
-            if (target is EnvironmentVariableTarget.Process)
-            {
-                SetEnvironmentVariable(variable, value);
-                return;
-            }
-
             // Validate all inputs.
             if (value is not null)
             {
@@ -219,6 +212,22 @@ namespace PSADT.Utilities
                 {
                     value = existingValue + Path.PathSeparator + value;
                 }
+            }
+
+            // Process-level variables belong to the runtime rather than the registry, so use the built-in
+            // method for them. This comes after the append/remove handling above so that those apply to a
+            // process variable the same way they do to a user or machine one.
+            if (target is EnvironmentVariableTarget.Process)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    RemoveEnvironmentVariable(variable);
+                }
+                else
+                {
+                    SetEnvironmentVariable(variable, value);
+                }
+                return;
             }
 
             // Set the environment variable in the registry for user or machine targets.

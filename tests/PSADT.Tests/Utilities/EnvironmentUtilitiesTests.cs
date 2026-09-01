@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using PSADT.Utilities;
 using Xunit;
 
@@ -175,26 +176,68 @@ namespace PSADT.Tests.Utilities
         }
 
         /// <summary>
-        /// Verifies that the process scope is handled by the simple path even when the elaborate overload
-        /// is used, so the appending and removing options do not apply to it.
+        /// Verifies that appending applies to the process scope the same way it does to a persisted one,
+        /// rather than replacing what was there.
         /// </summary>
         [Fact]
-        public void SetEnvironmentVariable_HandlesTheProcessScopeDirectly()
+        public void SetEnvironmentVariable_AppendsWithinTheProcessScope()
         {
             // Arrange
             string name = NewVariableName();
             try
             {
-                // Act: options that the other scopes would refuse together are ignored for this one
-                EnvironmentUtilities.SetEnvironmentVariable(name, "a value", EnvironmentVariableTarget.Process, expandable: true, append: true, remove: true);
+                Environment.SetEnvironmentVariable(name, "first");
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "second", EnvironmentVariableTarget.Process, expandable: false, append: true, remove: false);
 
                 // Assert
-                Assert.Equal("a value", EnvironmentUtilities.GetEnvironmentVariable(name));
+                Assert.Equal($"first{Path.PathSeparator}second", EnvironmentUtilities.GetEnvironmentVariable(name));
             }
             finally
             {
                 Environment.SetEnvironmentVariable(name, value: null);
             }
+        }
+
+        /// <summary>
+        /// Verifies that removing takes the named entry out of a process-scoped list, rather than setting
+        /// the variable to the very entry that was to be removed.
+        /// </summary>
+        [Fact]
+        public void SetEnvironmentVariable_RemovesWithinTheProcessScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                Environment.SetEnvironmentVariable(name, $"first{Path.PathSeparator}second");
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "first", EnvironmentVariableTarget.Process, expandable: false, append: false, remove: true);
+
+                // Assert
+                Assert.Equal("second", EnvironmentUtilities.GetEnvironmentVariable(name));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the process scope refuses appending and removing at once for the same reason the
+        /// persisted scopes do, now that both options mean something to it.
+        /// </summary>
+        [Fact]
+        public void SetEnvironmentVariable_RefusesToAppendAndRemoveAtOnceInTheProcessScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+
+            // Act & Assert
+            _ = Assert.Throws<NotSupportedException>(() => EnvironmentUtilities.SetEnvironmentVariable(name, "a value", EnvironmentVariableTarget.Process, expandable: false, append: true, remove: true));
+            Assert.False(Environment.GetEnvironmentVariables().Contains(name), $"A refused write left '{name}' behind in the process environment.");
         }
 
         /// <summary>

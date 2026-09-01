@@ -45,24 +45,19 @@ Describe 'Set-ADTEnvironmentVariable' {
             (Get-Item -LiteralPath "Env:\$script:Variable").Value | Should -BeExactly 'first'
         }
 
-        # Skipped until the function is repaired. EnvironmentUtilities short-circuits the process target
-        # to a plain assignment before it applies -Append or -Remove, so appending replaces the existing
-        # value outright instead of adding to it.
-        It 'Appends to an existing list' -Skip {
+        It 'Appends to an existing list' {
             [System.Environment]::SetEnvironmentVariable($script:Variable, 'first')
             Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'second' -Target Process -Append
             [System.Environment]::GetEnvironmentVariable($script:Variable) | Should -BeExactly "first$([System.IO.Path]::PathSeparator)second"
         }
 
-        It 'Leaves a list alone when what was appended is already in it' -Skip {
+        It 'Leaves a list alone when what was appended is already in it' {
             [System.Environment]::SetEnvironmentVariable($script:Variable, 'first')
             Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'first' -Target Process -Append
             [System.Environment]::GetEnvironmentVariable($script:Variable) | Should -BeExactly 'first'
         }
 
-        # Skipped for the same reason, and this way round the variable ends up set to the very value the
-        # caller asked to have taken out of it.
-        It 'Removes one entry from a list' -Skip {
+        It 'Removes one entry from a list' {
             [System.Environment]::SetEnvironmentVariable($script:Variable, "first$([System.IO.Path]::PathSeparator)second")
             Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'first' -Target Process -Remove
             [System.Environment]::GetEnvironmentVariable($script:Variable) | Should -BeExactly 'second'
