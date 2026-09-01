@@ -61,6 +61,37 @@ Describe 'Test-ADTServiceExists' {
         }
     }
 
+    Context 'Wildcard patterns' {
+        BeforeAll {
+            # Escaped and then suffixed, so the pattern is certain to match this one service and is not
+            # thrown off by a bracket appearing in a name or a display name.
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'namePattern', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+            $namePattern = "$([System.Management.Automation.WildcardPattern]::Escape($realServiceName))*"
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'displayNamePattern', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+            $displayNamePattern = "$([System.Management.Automation.WildcardPattern]::Escape((Get-Service -Name $realServiceName).DisplayName))*"
+        }
+
+        It 'Refuses a pattern in CIM mode' {
+            # CIM matches on equality, so a pattern there would quietly report the service as missing rather
+            # than finding it, which is worse than being told the pattern cannot be used.
+            { Test-ADTServiceExists -Name $namePattern -UseCIM } | Should -Throw -ErrorId 'UseCimModeNoWildcardSupport,Test-ADTServiceExists'
+        }
+
+        It 'Matches a service by a display name pattern' {
+            Test-ADTServiceExists -DisplayName $displayNamePattern | Should -BeTrue
+        }
+
+        # Skipped until the guard is narrowed to the CIM pathway. It runs on every call, so the wildcard
+        # support that -Name declares and that the function's own help demonstrates is unreachable.
+        It 'Matches a service by a name pattern' -Skip {
+            Test-ADTServiceExists -Name $namePattern | Should -BeTrue
+        }
+
+        It 'Reports no match for a name pattern nothing answers' -Skip {
+            Test-ADTServiceExists -Name "$fakeServiceName*" | Should -BeFalse
+        }
+    }
     Context 'Input Validation' {
         It 'Should verify that -Name is not null, empty or whitespace' {
             $shouldParams = @{

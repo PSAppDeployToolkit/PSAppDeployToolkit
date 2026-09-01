@@ -52,6 +52,16 @@ Describe 'Get-ADTClientServerUser' {
             $named.SID.Value | Should -BeExactly $script:User.SID.Value
         }
 
+        It 'Resolves a named user given with their domain' {
+            # Both forms turn up in configuration and on the command line, and each takes its own path
+            # through the lookup.
+            $named = Get-Probe -Splat @{ Username = $script:User.NTAccount.Value; AllowAnyValidSession = $true }
+            $named.SID.Value | Should -BeExactly $script:User.SID.Value
+        }
+
+        It 'Returns nothing for a domain-qualified user who is not logged on' {
+            Get-Probe -Splat @{ Username = 'NoSuchDomain\NoSuchUserIsLoggedOn12345'; AllowAnyValidSession = $true } | Should -BeNullOrEmpty
+        }
         It 'Returns nothing for a user who is not logged on' {
             Get-Probe -Splat @{ Username = 'NoSuchUserIsLoggedOn12345'; AllowAnyValidSession = $true } | Should -BeNullOrEmpty
         }

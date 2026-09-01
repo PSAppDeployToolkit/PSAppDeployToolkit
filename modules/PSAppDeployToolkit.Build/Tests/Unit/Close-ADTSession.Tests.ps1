@@ -101,11 +101,31 @@ Describe 'Close-ADTSession' {
                 Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
             }
             Clear-ADTModuleCallback -Hookpoint PreClose
+            Clear-ADTModuleCallback -Hookpoint OnFinish
             Clear-ADTModuleCallback -Hookpoint PostClose
         }
 
+        It 'Holds the OnFinish callbacks back until the last session closes' {
+            # OnFinish means the deployment has finished rather than that a session has, so a nested session
+            # closing must not fire it and have the caller tear down what the outer session still needs.
+            $script:CallbackRan = $false
+            function Test-CloseCallback
+            {
+                $script:CallbackRan = $true
+            }
+            Add-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-Command Test-CloseCallback)
+
+            $null = Open-Probe -AppName 'Outer'
+            $null = Open-Probe -AppName 'Inner'
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+            $script:CallbackRan | Should -BeFalse
+
+            Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+            $script:CallbackRan | Should -BeTrue
+        }
         It 'Invokes the <Hookpoint> callbacks' -ForEach @(
             @{ Hookpoint = 'PreClose' }
+            @{ Hookpoint = 'OnFinish' }
             @{ Hookpoint = 'PostClose' }
         ) {
             $script:CallbackRan = $false
@@ -118,6 +138,36 @@ Describe 'Close-ADTSession' {
             $null = Open-Probe
             Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
             $script:CallbackRan | Should -BeTrue
+        }
+    }
+
+    Context 'A callback that fails' {
+        AfterEach {
+            while (Test-ADTSessionActive)
+            {
+                Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+            }
+            Clear-ADTModuleCallback -Hookpoint PreClose
+            Clear-ADTModuleCallback -Hookpoint OnFinish
+            Clear-ADTModuleCallback -Hookpoint PostClose
+        }
+
+        It 'Closes the session anyway when a <Hookpoint> callback throws' -ForEach @(
+            @{ Hookpoint = 'PreClose' }
+            @{ Hookpoint = 'OnFinish' }
+            @{ Hookpoint = 'PostClose' }
+        ) {
+            # A caller's callback failing must not strand the session open, since nothing else is going to
+            # close it and the deployment would sit holding its log and its mutex having reported nothing.
+            function Test-FailingCallback
+            {
+                throw 'The callback failed deliberately.'
+            }
+            Add-ADTModuleCallback -Hookpoint $Hookpoint -Callback (Get-Command Test-FailingCallback)
+
+            $null = Open-Probe
+            Close-ADTSession -ExitCode 42 -NoShellExit -PassThru -InformationAction SilentlyContinue | Should -Be 42
+            Test-ADTSessionActive | Should -BeFalse
         }
     }
 }
