@@ -15,15 +15,12 @@ Describe 'Set-ADTEnvironmentVariable' {
     }
 
     Context 'This process' {
-        # Skipped until the function is repaired. With no -Target it calls a five argument
-        # SetEnvironmentVariable overload that EnvironmentUtilities does not have, so the call fails
-        # before it reaches the environment.
-        It 'Sets the variable' -Skip {
+        It 'Sets the variable' {
             Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'first'
             [System.Environment]::GetEnvironmentVariable($script:Variable) | Should -BeExactly 'first'
         }
 
-        It 'Replaces an existing value' -Skip {
+        It 'Replaces an existing value' {
             [System.Environment]::SetEnvironmentVariable($script:Variable, 'first')
             Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'second'
             [System.Environment]::GetEnvironmentVariable($script:Variable) | Should -BeExactly 'second'
