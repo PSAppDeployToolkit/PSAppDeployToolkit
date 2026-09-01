@@ -1241,11 +1241,13 @@ namespace PSAppDeployToolkit.Foundation
             object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
             object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
             object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
-            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new
+            object? deferRunInterval = history.Properties["DeferRunInterval"]?.Value;
+            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null && deferRunInterval is null ? null : new
             (
                 deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
                 deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
-                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null
+                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null,
+                deferRunInterval is not null ? TimeSpan.Parse((string)deferRunInterval, CultureInfo.InvariantCulture) : null
             );
         }
 

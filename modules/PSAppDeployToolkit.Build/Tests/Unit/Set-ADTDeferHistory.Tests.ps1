@@ -45,12 +45,11 @@ Describe 'Set-ADTDeferHistory' {
             (Get-ADTDeferHistory).DeferDeadline | Should -Be $deadline
         }
 
-        It 'Persists the run interval even though the history does not surface it' {
-            # DeferHistory carries the remaining count, the deadline and the last interval time only.
-            # The interval itself is written to the registry but never read back: Show-ADTInstallationWelcome
-            # takes it as a parameter on each run and compares it against DeferRunIntervalLastTime.
+        It 'Records the run interval and reads it back' {
+            # Written to the registry from the start, but only surfaced on DeferHistory once the record was
+            # widened to carry it, so a caller can now read back what it set.
             Set-ADTDeferHistory -DeferRunInterval 3600 -InformationAction SilentlyContinue
-            (Get-ADTDeferHistory).PSObject.Properties.Name | Should -Not -Contain 'DeferRunInterval'
+            (Get-ADTDeferHistory).DeferRunInterval | Should -Be ([System.TimeSpan]::FromHours(1))
 
             $key = Get-ChildItem -LiteralPath $script:RegistryRoot -Recurse | Select-Object -Last 1
             Get-ItemPropertyValue -LiteralPath $key.PSPath -Name 'DeferRunInterval' | Should -BeExactly '01:00:00'
@@ -58,8 +57,17 @@ Describe 'Set-ADTDeferHistory' {
 
         It 'Reads a bare number on the run interval as seconds' {
             Set-ADTDeferHistory -DeferRunInterval 90 -InformationAction SilentlyContinue
-            $key = Get-ChildItem -LiteralPath $script:RegistryRoot -Recurse | Select-Object -Last 1
-            Get-ItemPropertyValue -LiteralPath $key.PSPath -Name 'DeferRunInterval' | Should -BeExactly '00:01:30'
+            (Get-ADTDeferHistory).DeferRunInterval | Should -Be ([System.TimeSpan]::FromSeconds(90))
+        }
+
+        It 'Returns a history holding only the run interval' {
+            # Nothing else is set, so the history would have read back as absent altogether while the
+            # interval was not one of the values it looked for.
+            Set-ADTDeferHistory -DeferRunInterval 120 -InformationAction SilentlyContinue
+            $history = Get-ADTDeferHistory
+            $history | Should -Not -BeNullOrEmpty
+            $history.DeferRunInterval | Should -Be ([System.TimeSpan]::FromMinutes(2))
+            $history.DeferTimesRemaining | Should -BeNullOrEmpty
         }
 
         It 'Records the time the interval last elapsed' {

@@ -67,6 +67,10 @@ function Import-ADTModuleUnderTest
 
     if ($loaded)
     {
+        # A test that mocks Exit-ADTInvocation never reaches the Close-ADTClientServerProcess inside it, so
+        # the client is left running and holds a handle on the module's own binaries. Closed here, because a
+        # forced reload is where module state is meant to be discarded.
+        & $loaded { if ($null -ne $ADT.ClientServerProcess) { Close-ADTClientServerProcess -InformationAction SilentlyContinue } }
         Remove-Module -ModuleInfo $loaded -Force
     }
 

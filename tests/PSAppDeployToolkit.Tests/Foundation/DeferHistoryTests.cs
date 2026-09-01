@@ -47,6 +47,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             Assert.NotEqual(baseline, new DeferHistory(DeferTimesRemaining: 2, Deadline, LastRun));
             Assert.NotEqual(baseline, new DeferHistory(DeferTimesRemaining: 3, Deadline.AddDays(1), LastRun));
             Assert.NotEqual(baseline, new DeferHistory(DeferTimesRemaining: 3, Deadline, LastRun.AddMinutes(1)));
+            Assert.NotEqual(baseline, new DeferHistory(DeferTimesRemaining: 3, Deadline, LastRun, TimeSpan.FromHours(1)));
         }
 
         /// <summary>
@@ -72,19 +73,37 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that a history reports what it was built from.
         /// </summary>
         /// <remarks>
-        /// The type redeclares all three positional parameters as properties with initialisers, which is
+        /// The type redeclares every positional parameter as a property with an initialiser, which is
         /// redundant but legal; this confirms the redeclaration did not shadow the parameter with something else.
         /// </remarks>
         [Fact]
         public void DeferHistory_ReportsWhatItWasBuiltFrom()
         {
             // Arrange
-            DeferHistory history = new(DeferTimesRemaining: 3, Deadline, LastRun);
+            DeferHistory history = new(DeferTimesRemaining: 3, Deadline, LastRun, TimeSpan.FromMinutes(90));
 
             // Assert
             Assert.Equal(3u, history.DeferTimesRemaining);
             Assert.Equal(Deadline, history.DeferDeadline);
             Assert.Equal(LastRun, history.DeferRunIntervalLastTime);
+            Assert.Equal(TimeSpan.FromMinutes(90), history.DeferRunInterval);
+        }
+
+        /// <summary>
+        /// Verifies that the run interval defaults to absent when it is not supplied.
+        /// </summary>
+        /// <remarks>
+        /// It was added after the other three and carries a default so that existing positional construction
+        /// keeps working, which only holds while the default really is null.
+        /// </remarks>
+        [Fact]
+        public void DeferRunInterval_IsAbsentWhenNotSupplied()
+        {
+            // Act
+            DeferHistory history = new(DeferTimesRemaining: 3, Deadline, LastRun);
+
+            // Assert
+            Assert.Null(history.DeferRunInterval);
         }
 
         /// <summary>

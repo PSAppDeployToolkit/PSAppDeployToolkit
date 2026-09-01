@@ -10,7 +10,9 @@ namespace PSAppDeployToolkit.Foundation
     /// <param name="DeferDeadline">The deadline by which the operation must be completed. Specify null if there is no deadline.</param>
     /// <param name="DeferRunIntervalLastTime">The date and time when the defer run interval was last executed. Specify null if the operation has not been
     /// run yet.</param>
-    public sealed record class DeferHistory(uint? DeferTimesRemaining, DateTime? DeferDeadline, DateTime? DeferRunIntervalLastTime)
+    /// <param name="DeferRunInterval">The interval that must elapse after a deferral before the user is prompted again. Specify null if there is no
+    /// interval. Last in the list so that the three members that predate it keep their positions.</param>
+    public sealed record class DeferHistory(uint? DeferTimesRemaining, DateTime? DeferDeadline, DateTime? DeferRunIntervalLastTime, TimeSpan? DeferRunInterval = null)
     {
         /// <summary>
         /// Gets the number of times the operation can be deferred before it must be completed.
@@ -26,5 +28,10 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the date and time when the defer run interval was last recorded, or null if it has not been set.
         /// </summary>
         public DateTime? DeferRunIntervalLastTime { get; } = DeferRunIntervalLastTime;
+
+        /// <summary>
+        /// Gets the interval that must elapse after a deferral before the user is prompted again, or null if none is set.
+        /// </summary>
+        public TimeSpan? DeferRunInterval { get; } = DeferRunInterval;
     }
 }
