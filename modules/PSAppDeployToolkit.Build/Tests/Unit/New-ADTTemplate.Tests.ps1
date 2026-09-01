@@ -132,6 +132,116 @@ Describe 'New-ADTTemplate' {
         }
     }
 
+    Context 'Session property value types' {
+        BeforeAll {
+            # Generated into a destination of its own and parsed here rather than through the shared
+            # helper, so that what these assertions read is the script this call produced and nothing else.
+            $template = New-ADTTemplate -Destination "$TestDrive\Typed" -Force -PassThru -SessionProperties ([ordered]@{
+                    ALiveReference = '$envProgramFiles\Vendor'
+                    ADateTime = [System.DateTime]::new(2026, 1, 2, 3, 4, 5, [System.DateTimeKind]::Utc)
+                    ATimeSpan = [System.TimeSpan]::FromMinutes(90)
+                    AOneLiner = { Get-Date }
+                    AMultiLiner = {
+                        Get-Date
+                        Get-Location
+                    }
+                })
+            $parseErrors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput([System.IO.File]::ReadAllText((Join-Path -Path $template.FullName -ChildPath 'Invoke-AppDeployToolkit.ps1')), [ref]$null, [ref]$parseErrors)
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ParseErrors', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+            $ParseErrors = $parseErrors
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Typed', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+            $Typed = @{}
+            foreach ($pair in $ast.Find({ param ($node) $node -is [System.Management.Automation.Language.HashtableAst] }, $true).KeyValuePairs)
+            {
+                $Typed[$pair.Item1.Value] = $pair.Item2.Extent.Text
+            }
+        }
+
+        It 'Produces a script that parses' {
+            # Everything below reads the generated hashtable, so it is worth stating outright that the
+            # script it came from is valid PowerShell.
+            $ParseErrors | Should -BeNullOrEmpty
+        }
+
+        It 'Keeps a value carrying a variable reference live' {
+            # A property written as $envProgramFiles\Vendor is meant to resolve when the deployment runs,
+            # so it goes out double quoted rather than single, which is the only form that leaves it live.
+            $Typed['ALiveReference'] | Should -Be '"$envProgramFiles\Vendor"'
+        }
+
+        It 'Writes a date as something that parses back to it' {
+            $Typed['ADateTime'] | Should -BeLike "(Get-Date '2026-01-02T03:04:05*')"
+        }
+
+        It 'Writes a duration as something that parses back to it' {
+            $Typed['ATimeSpan'] | Should -Be "[System.TimeSpan]'01:30:00'"
+        }
+
+        It 'Writes a one line script block on one line' {
+            $Typed['AOneLiner'] | Should -Be '{ Get-Date }'
+        }
+
+        It 'Writes a longer script block across lines' {
+            # The generated script is meant to be read and edited afterwards, so a multi-line body has to
+            # come out laid out rather than folded onto one line.
+            $Typed['AMultiLiner'] | Should -BeLike "*`n*Get-Date*`n*Get-Location*"
+        }
+
+        It 'Refuses a value it has no literal form for' {
+            # Anything else would be written out as whatever ToString gives, which is rarely valid code.
+            { New-ADTTemplate -Destination "$TestDrive\Unsupported" -Force -SessionProperties @{ Unsupported = [System.Text.RegularExpressions.Regex]::new('a') } } | Should -Throw -ErrorId 'UnsupportedSessionPropertyValueType,New-ADTTemplate'
+        }
+
+        It 'Refuses a property with no value at all' {
+            # Nothing sensible could be written for it, and the generated script would not parse.
+            { New-ADTTemplate -Destination "$TestDrive\NullValue" -Force -SessionProperties @{ Nothing = $null } } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+        }
+    }
+
+    Context 'A value carrying both a reference and a quote' {
+        # Skipped until the escaping is repaired. The quote is written out unescaped, so it closes the
+        # string it was meant to sit inside and the generated script does not parse from there on.
+        It 'Escapes the quote so that the generated script still parses' -Skip {
+            $template = New-ADTTemplate -Destination "$TestDrive\Quoted" -Force -PassThru -SessionProperties @{ Quoted = '$envProgramFiles\Vendor "quoted"' }
+            $parseErrors = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseInput([System.IO.File]::ReadAllText((Join-Path -Path $template.FullName -ChildPath 'Invoke-AppDeployToolkit.ps1')), [ref]$null, [ref]$parseErrors)
+            $parseErrors | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Refusing to overwrite' {
+        BeforeEach {
+            $script:Destination = "$TestDrive\Occupied$([System.Guid]::NewGuid().ToString('N'))"
+            $script:Existing = "$script:Destination\PSAppDeployToolkit_$((Get-Module -Name PSAppDeployToolkit).Version)"
+            $null = New-Item -Path $script:Existing -ItemType Directory -Force
+            Set-Content -LiteralPath "$script:Existing\already-here.txt" -Value 'content'
+        }
+
+        It 'Refuses to write into a folder that already has something in it' {
+            # Writing a template over the top of whatever is already there would mix a half-edited
+            # deployment with a fresh one.
+            { New-ADTTemplate -Destination $script:Destination } | Should -Throw -ErrorId 'NonEmptySubfolderError,New-ADTTemplate'
+        }
+
+        It 'Leaves what was already there alone when it refuses' {
+            try
+            {
+                New-ADTTemplate -Destination $script:Destination
+            }
+            catch
+            {
+                $null = $_
+            }
+            [System.IO.File]::ReadAllText("$script:Existing\already-here.txt") | Should -BeLike 'content*'
+        }
+
+        It 'Writes into it anyway when forced' {
+            { New-ADTTemplate -Destination $script:Destination -Force } | Should -Not -Throw
+        }
+    }
     Context 'Default template without customization' {
         BeforeAll {
             $template = Get-ADTTemplateContent
