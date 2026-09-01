@@ -72,6 +72,9 @@ function Update-ADTEnvironmentPsProvider
         {
             try
             {
+                # Capture this session's module path before the refresh below overwrites it. PowerShell adds its own module directories at startup and they appear in neither registry hive.
+                $psModulePath = [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PSModulePath')
+
                 # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
                 Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$userSid\Environment" | & {
                     process
@@ -90,6 +93,9 @@ function Update-ADTEnvironmentPsProvider
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
                 Set-Item -LiteralPath Microsoft.PowerShell.Core\Environment::PATH -Value ([System.String]::Join([System.IO.Path]::PathSeparator, (([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH', 'Machine'), [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH', 'User')).Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim() | Select-ADTUniqueObject)))
+
+                # Set PSModulePath separately as well, leading with this session's own value so that the directories PowerShell added for itself keep both their place and their precedence.
+                Set-Item -LiteralPath Microsoft.PowerShell.Core\Environment::PSModulePath -Value ([System.String]::Join([System.IO.Path]::PathSeparator, (($psModulePath, [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PSModulePath', 'Machine'), [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PSModulePath', 'User')).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim() | Select-ADTUniqueObject)))
             }
             catch
             {

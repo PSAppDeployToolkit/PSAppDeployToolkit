@@ -55,10 +55,7 @@ Describe 'Update-ADTEnvironmentPsProvider' {
             @($entries).Count | Should -Be @($entries | Select-Object -Unique).Count
         }
 
-        # Skipped until the function is repaired. PowerShell adds its own module directories to
-        # PSModulePath at startup and they appear in neither registry hive, so refreshing from the
-        # registry alone drops them and the session can no longer find the modules it shipped with.
-        It 'Keeps the module directories PowerShell added for itself' -Skip {
+        It 'Keeps the module directories PowerShell added for itself' {
             $before = $env:PSModulePath.Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries)
             Update-ADTEnvironmentPsProvider
             foreach ($entry in $before)
