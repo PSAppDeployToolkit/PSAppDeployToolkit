@@ -97,7 +97,10 @@ function Initialize-ADTFunction
         Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
         if ($Cmdlet.MyInvocation.BoundParameters.Count)
         {
-            $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | Out-String -Width ([System.Int16]::MaxValue)
+            # A caller who asked for their argument list to be kept secure means it here as well. This
+            # runs only when debug logging is on, which is exactly when the log gets collected and shared.
+            $secureArgumentList = !!$Cmdlet.MyInvocation.BoundParameters['SecureArgumentList']
+            $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { if ($secureArgumentList -and $_.Key.EndsWith('ArgumentList') -and !$_.Key.Equals('SecureArgumentList')) { '<Value Hidden>' } else { $_.Value } }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | Out-String -Width ([System.Int16]::MaxValue)
             Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
         }
         else

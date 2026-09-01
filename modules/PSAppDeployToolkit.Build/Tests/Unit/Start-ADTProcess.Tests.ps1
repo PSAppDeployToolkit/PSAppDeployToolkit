@@ -170,10 +170,9 @@ Describe 'Start-ADTProcess' {
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*Parameters Hidden*' }
         }
 
-        # Skipped until the leak is closed. Initialize-ADTFunction writes every bound parameter out as a
-        # table, argument list included, so the values -SecureArgumentList exists to keep out of the log
-        # reach it anyway on any run with debug logging turned on.
-        It 'Keeps the argument values out of the log entirely with -SecureArgumentList' -Skip {
+        It 'Keeps the argument values out of the log entirely with -SecureArgumentList' {
+            # Not just out of the execution message: the debug dump of every bound parameter has to
+            # withhold them too, since that is written on exactly the runs whose logs get collected.
             Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0', 'a-secret-value' -CreateNoWindow -SecureArgumentList
             Should -Not -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message -like '*a-secret-value*' }
         }
