@@ -78,6 +78,15 @@
   </PropertyGroup>
 
   <!--
+    The SDK references this package itself, but only on machines with no installed .NET Framework targeting
+    pack, so the lock file it writes differs between Windows and Linux and locked-mode restore then fails
+    with NU1004. Referencing it outright suppresses the SDK's implicit reference and pins one graph.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
     Restore writes a packages.lock.json beside each project, pinning the exact resolved version and content
     hash of every dependency, transitive ones included. Several entries in Directory.Packages.props are
     version ranges rather than exact pins, so without a lock file the restored graph can shift underneath
