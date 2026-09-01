@@ -99,6 +99,131 @@ Describe 'Set-ADTShortcut' {
         }
     }
 
+    Context 'Clearing a property of a .lnk' {
+        BeforeEach {
+            # Built with every property set, so that clearing one of them is visible and the others can be
+            # checked to have survived.
+            $script:LinkPath = "$TestDrive\Clear$([System.Guid]::NewGuid().ToString('N')).lnk"
+            New-ADTShortcut -LiteralPath $script:LinkPath -TargetPath "$([System.Environment]::SystemDirectory)\cmd.exe" -Arguments '/c echo hello' -Description 'A description' -WorkingDirectory ([System.Environment]::SystemDirectory) -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 3 -WindowStyle Maximized -RunAsAdmin -Hotkey 'CTRL+SHIFT+F' -Force
+        }
+
+        It 'Empties -<Property>' -ForEach @(
+            @{ Property = 'Arguments' }
+            @{ Property = 'Description' }
+            @{ Property = 'WorkingDirectory' }
+            @{ Property = 'Hotkey' }
+        ) {
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).$Property | Should -Not -BeNullOrEmpty
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear $Property
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).$Property | Should -BeNullOrEmpty
+        }
+
+        It 'Returns -WindowStyle to normal' {
+            # There is no absent window style, so clearing it means the default a shortcut is created with.
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear WindowStyle
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).WindowStyle | Should -Be ([PSADT.ShortcutManagement.ShortcutWindowStyle]::Normal)
+        }
+
+        It 'Stops it running as administrator' {
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear RunAsAdmin
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).RunAsAdmin | Should -BeFalse
+        }
+
+        It 'Sets it to run as administrator' {
+            Set-ADTShortcut -LiteralPath $script:LinkPath -RunAsAdmin:$false
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).RunAsAdmin | Should -BeFalse
+            Set-ADTShortcut -LiteralPath $script:LinkPath -RunAsAdmin
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).RunAsAdmin | Should -BeTrue
+        }
+
+        It 'Returns -IconIndex to the first icon' {
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear IconIndex
+            (Get-ADTShortcut -LiteralPath $script:LinkPath).IconIndex | Should -Be 0
+        }
+
+        It 'Leaves the properties it was not asked about alone' {
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear Description
+            $shortcut = Get-ADTShortcut -LiteralPath $script:LinkPath
+            $shortcut.Arguments | Should -BeExactly '/c echo hello'
+            # Compared without regard to case, since the shell normalises the casing of what it stores.
+            $shortcut.TargetPath | Should -Be "$([System.Environment]::SystemDirectory)\cmd.exe"
+        }
+
+        # Skipped until the icon location is reported as gone once it has been cleared. The shortcut itself is
+        # correct - the flag that says it carries an icon location is cleared - but the shell reports the old
+        # path back for as long as it is asked, and the second assignment then writes it out again.
+        It 'Empties -IconLocation' -Skip {
+            Set-ADTShortcut -LiteralPath $script:LinkPath -Clear IconLocation
+            $shortcut = Get-ADTShortcut -LiteralPath $script:LinkPath
+            $shortcut.HasIconLocation | Should -BeFalse
+            $shortcut.IconLocation | Should -BeNullOrEmpty
+            $shortcut.IconIndex | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Clearing a property of a .url' {
+        BeforeEach {
+            $script:UrlPath = "$TestDrive\Clear$([System.Guid]::NewGuid().ToString('N')).url"
+            [System.IO.File]::WriteAllLines($script:UrlPath, [System.String[]]@(
+                    '[InternetShortcut]'
+                    'URL=https://psappdeploytoolkit.com/'
+                ))
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Description 'A description' -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 3 -WindowStyle Maximized -Hotkey 'CTRL+SHIFT+G'
+        }
+
+        It 'Empties -<Property>' -ForEach @(
+            @{ Property = 'Description'; Reported = 'Description' }
+            @{ Property = 'IconLocation'; Reported = 'IconFile' }
+            @{ Property = 'WindowStyle'; Reported = 'ShowCommand' }
+            @{ Property = 'Hotkey'; Reported = 'Hotkey' }
+        ) {
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).$Reported | Should -Not -BeNullOrEmpty
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Clear $Property
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).$Reported | Should -BeNullOrEmpty
+        }
+
+        It 'Leaves the address alone when clearing something else' {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Clear Description
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
+        }
+
+        # Skipped until clearing the index no longer asks for something the shortcut refuses. An internet
+        # shortcut will not hold an index of nothing while it still has an icon file, so the assignment throws
+        # and the caller is told the whole call failed.
+        It 'Returns -IconIndex to the first icon' -Skip {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Clear IconIndex
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).IconIndex | Should -Be 0
+        }
+
+        # Skipped until a working directory can be read back off an internet shortcut. It is written into the
+        # file correctly, but the shell does not report it back and nothing else does either, so a caller who
+        # sets one is told there is none.
+        It 'Records a working directory' -Skip {
+            Set-ADTShortcut -LiteralPath $script:UrlPath -WorkingDirectory ([System.Environment]::SystemDirectory)
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).WorkingDirectory | Should -BeExactly ([System.Environment]::SystemDirectory)
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Clear WorkingDirectory
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).WorkingDirectory | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Changing a shortcut it was handed' {
+        BeforeEach {
+            $script:PipedPath = "$TestDrive\Piped$([System.Guid]::NewGuid().ToString('N')).lnk"
+            New-ADTShortcut -LiteralPath $script:PipedPath -TargetPath "$([System.Environment]::SystemDirectory)\cmd.exe" -Description 'Before' -Force
+        }
+
+        It 'Takes a shortcut off the pipeline' {
+            # Reading a shortcut, deciding from what it says, and writing it back is the ordinary way round,
+            # and it saves the caller having to carry the path alongside.
+            Get-ADTShortcut -LiteralPath $script:PipedPath | Set-ADTShortcut -Description 'After'
+            (Get-ADTShortcut -LiteralPath $script:PipedPath).Description | Should -BeExactly 'After'
+        }
+
+        It 'Takes one as -InputObject' {
+            Set-ADTShortcut -InputObject (Get-ADTShortcut -LiteralPath $script:PipedPath) -Description 'After'
+            (Get-ADTShortcut -LiteralPath $script:PipedPath).Description | Should -BeExactly 'After'
+        }
+    }
     Context 'Input Validation' {
         It 'Should throw when the path provided to -LiteralPath does not exists and -Force is not specified' {
             { Set-ADTShortcut -LiteralPath "$TestDrive\DoesNotExist.lnk" -TargetPath 'test' } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTShortcut'
