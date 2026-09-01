@@ -152,11 +152,9 @@ Describe 'Set-ADTItemPermission' {
             Get-RuleCount -Path $script:Target -Sid $script:UsersSid | Should -Be 1
         }
 
-        # Skipped pending a decision on the behaviour. FileSystemUtilities.SetAccessControl writes only the
-        # sections the object reports as modified, and one straight from Get-Acl reports none, so copying a
-        # list from one path to another applies nothing and says nothing. Set-Acl, which New-ADTZipFile
-        # uses for exactly this, does copy it.
-        It 'Copies a list read from another path' -Skip {
+        It 'Copies a list read from another path' {
+            # Copying permissions from one item to another is the whole reason to hand it a list, and it
+            # is the one case where the list arrives with nothing marked as modified.
             $source = "$TestDrive\AclSource$([System.Guid]::NewGuid().ToString('N'))"
             $null = New-Item -Path $source -ItemType Directory -Force
             Set-ADTItemPermission -LiteralPath $source -User "*$script:UsersSid" -Permission FullControl
