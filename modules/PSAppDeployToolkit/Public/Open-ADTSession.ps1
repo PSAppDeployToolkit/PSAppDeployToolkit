@@ -53,8 +53,9 @@ function Open-ADTSession
         Specifies the application reboot codes.
 
     .PARAMETER AppProcessesToClose
-        Specifies one or more processes that require closing to ensure a successful deployment.
-
+        Specifies one or more processes that require closing to ensure a successful deployment. Provide either the bare process name (do not include the `.exe`), or the full path to a specific executable if you need to distinguish between two processes that share the same name (for example, two different vendors' `javaw.exe`). Wildcards (`*`) are supported in either form.
+        Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`. The `Description` property is purely cosmetic - it does not filter or restrict which running processes are matched.
+    
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
