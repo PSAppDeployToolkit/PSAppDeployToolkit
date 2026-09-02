@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // showing to select something else and select back. Cleared before the handler is
                 // attached so it is not woken by this.
                 ListSelectionComboBox.SelectedIndex = -1;
-                ListSelectionComboBox.SelectionChanged += (sender, e) =>
+                ListSelectionComboBox.SelectionChanged += (_, _) =>
                 {
                     ButtonLeft.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
                     ButtonMiddle.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
