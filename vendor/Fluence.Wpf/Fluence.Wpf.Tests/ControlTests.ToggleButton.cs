@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
 
         private static Color GetSolidColor(Brush? brush)
         {
-            return Assert.IsAssignableFrom<SolidColorBrush>(brush).Color;
+            return Assert.IsType<SolidColorBrush>(brush, exactMatch: false).Color;
         }
 
         // Constructs the control inside the STA action: FrameworkElement creation on
@@ -144,8 +144,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static (application, toggleButton) =>
                 {
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
-                    Border backdrop = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
+                    Border backdrop = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "AccentFillColorDefaultBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(1.0, backdrop.Opacity);
@@ -168,8 +168,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(probe.Dispatcher);
                     probe.UpdateLayout();
 
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(probe, "RestFill"));
-                    Border outerBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(probe, "OuterBorder"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(probe, "RestFill"), exactMatch: false);
+                    Border outerBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(probe, "OuterBorder"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "AccentFillColorTertiaryBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(GetResolvedBrushColor(application, "TextOnAccentFillColorSecondaryBrush"), GetSolidColor(probe.Foreground));
@@ -190,8 +190,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static (application, toggleButton) =>
                 {
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
-                    Border backdrop = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
+                    Border backdrop = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "ControlFillColorDefaultBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(0.0, backdrop.Opacity);
@@ -215,8 +215,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(probe.Dispatcher);
                     probe.UpdateLayout();
 
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(probe, "RestFill"));
-                    Border outerBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(probe, "OuterBorder"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(probe, "RestFill"), exactMatch: false);
+                    Border outerBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(probe, "OuterBorder"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "ControlFillColorTertiaryBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(GetResolvedBrushColor(application, "TextFillColorSecondaryBrush"), GetSolidColor(probe.Foreground));
@@ -237,8 +237,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static (application, toggleButton) =>
                 {
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
-                    Border outerBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "OuterBorder"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
+                    Border outerBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "OuterBorder"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "ControlFillColorDisabledBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(GetResolvedBrushColor(application, "TextFillColorDisabledBrush"), GetSolidColor(toggleButton.Foreground));
@@ -258,7 +258,7 @@ namespace Fluence.Wpf.Tests
                 },
                 static (application, toggleButton) =>
                 {
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "AccentFillColorDisabledBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(GetResolvedBrushColor(application, "TextOnAccentFillColorDisabledBrush"), GetSolidColor(toggleButton.Foreground));
@@ -278,8 +278,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static (application, toggleButton) =>
                 {
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
-                    Border backdrop = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
+                    Border backdrop = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "AccentFillBackdrop"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "AccentFillColorDefaultBrush"), GetSolidColor(restFill.Background));
                     Assert.Equal(1.0, backdrop.Opacity);
@@ -298,7 +298,7 @@ namespace Fluence.Wpf.Tests
                 },
                 static (_, toggleButton) =>
                 {
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(toggleButton.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(toggleButton.Template, exactMatch: false);
                     TriggerCollection triggers = template.Triggers;
 
                     int checkedRestIndex = FindTriggerIndex(triggers, static triggerBase =>
@@ -338,7 +338,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(toggleButton.Dispatcher);
                     toggleButton.UpdateLayout();
 
-                    Border restFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"));
+                    Border restFill = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleButton, "RestFill"), exactMatch: false);
 
                     Assert.Equal(GetResolvedBrushColor(application, "AccentFillColorDefaultBrush"), GetSolidColor(restFill.Background));
                     ThemeTestHelpers.AssertKeyThemeBrushesResolve(application);

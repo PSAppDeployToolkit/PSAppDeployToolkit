@@ -70,14 +70,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
 
                     Image spectrumImage = Assert.IsType<Image>(template.FindName("PART_SpectrumImage", picker));
-                    FrameworkElement spectrumArea = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_SpectrumArea", picker));
-                    FrameworkElement spectrumThumb = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_SpectrumThumb", picker));
-                    RangeBase hueSlider = Assert.IsAssignableFrom<RangeBase>(template.FindName("PART_HueSlider", picker));
-                    RangeBase alphaSlider = Assert.IsAssignableFrom<RangeBase>(template.FindName("PART_AlphaSlider", picker));
-                    TextBox hexTextBox = Assert.IsAssignableFrom<TextBox>(template.FindName("PART_HexTextBox", picker));
+                    FrameworkElement spectrumArea = Assert.IsType<FrameworkElement>(template.FindName("PART_SpectrumArea", picker), exactMatch: false);
+                    FrameworkElement spectrumThumb = Assert.IsType<FrameworkElement>(template.FindName("PART_SpectrumThumb", picker), exactMatch: false);
+                    RangeBase hueSlider = Assert.IsType<RangeBase>(template.FindName("PART_HueSlider", picker), exactMatch: false);
+                    RangeBase alphaSlider = Assert.IsType<RangeBase>(template.FindName("PART_AlphaSlider", picker), exactMatch: false);
+                    TextBox hexTextBox = Assert.IsType<TextBox>(template.FindName("PART_HexTextBox", picker), exactMatch: false);
 
                     Assert.Equal(Color.FromArgb(255, 255, 0, 0), picker.Color);
                     Assert.Equal(0d, hueSlider.Minimum);
@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
                     Image spectrumImage = Assert.IsType<Image>(template.FindName("PART_SpectrumImage", picker));
 
                     WriteableBitmap bitmap = Assert.IsType<WriteableBitmap>(spectrumImage.Source);
@@ -147,8 +147,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    TextBox hexTextBox = Assert.IsAssignableFrom<TextBox>(template.FindName("PART_HexTextBox", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    TextBox hexTextBox = Assert.IsType<TextBox>(template.FindName("PART_HexTextBox", picker), exactMatch: false);
                     Assert.Equal("#FF0000", hexTextBox.Text, StringComparer.Ordinal);
 
                     ColorPickerColorChangedEventArgs? changed = null;
@@ -194,10 +194,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    TextBox hexTextBox = Assert.IsAssignableFrom<TextBox>(template.FindName("PART_HexTextBox", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    TextBox hexTextBox = Assert.IsType<TextBox>(template.FindName("PART_HexTextBox", picker), exactMatch: false);
 
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(hexTextBox));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(hexTextBox), exactMatch: false);
 
                     hexTextBox.Text = "#FF0078D4";
                     hexTextBox.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
@@ -254,9 +254,9 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    RangeBase hueSlider = Assert.IsAssignableFrom<RangeBase>(template.FindName("PART_HueSlider", picker));
-                    TextBox hexTextBox = Assert.IsAssignableFrom<TextBox>(template.FindName("PART_HexTextBox", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    RangeBase hueSlider = Assert.IsType<RangeBase>(template.FindName("PART_HueSlider", picker), exactMatch: false);
+                    TextBox hexTextBox = Assert.IsType<TextBox>(template.FindName("PART_HexTextBox", picker), exactMatch: false);
 
                     ColorPickerColorChangedEventArgs? changed = null;
                     picker.ColorChanged += (sender, e) => changed = e;
@@ -297,10 +297,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    FrameworkElement alphaSection = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("AlphaSection", picker));
-                    RangeBase alphaSlider = Assert.IsAssignableFrom<RangeBase>(template.FindName("PART_AlphaSlider", picker));
-                    TextBox hexTextBox = Assert.IsAssignableFrom<TextBox>(template.FindName("PART_HexTextBox", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    FrameworkElement alphaSection = Assert.IsType<FrameworkElement>(template.FindName("AlphaSection", picker), exactMatch: false);
+                    RangeBase alphaSlider = Assert.IsType<RangeBase>(template.FindName("PART_AlphaSlider", picker), exactMatch: false);
+                    TextBox hexTextBox = Assert.IsType<TextBox>(template.FindName("PART_HexTextBox", picker), exactMatch: false);
 
                     Assert.Equal(Visibility.Collapsed, alphaSection.Visibility);
 
@@ -348,9 +348,9 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    FrameworkElement spectrumArea = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_SpectrumArea", picker));
-                    RangeBase hueSlider = Assert.IsAssignableFrom<RangeBase>(template.FindName("PART_HueSlider", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    FrameworkElement spectrumArea = Assert.IsType<FrameworkElement>(template.FindName("PART_SpectrumArea", picker), exactMatch: false);
+                    RangeBase hueSlider = Assert.IsType<RangeBase>(template.FindName("PART_HueSlider", picker), exactMatch: false);
                     Assert.True(spectrumArea.ActualWidth > 0 && spectrumArea.ActualHeight > 0,
                         "The spectrum area must have a layout size once the window is shown.");
 
@@ -403,7 +403,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
                     Border currentSwatch = Assert.IsType<Border>(template.FindName("CurrentSwatchBorder", picker));
                     Border previousSwatch = Assert.IsType<Border>(template.FindName("PreviousSwatchBorder", picker));
 
@@ -449,8 +449,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(picker));
-                    _ = Assert.IsAssignableFrom<Automation.ColorPickerAutomationPeer>(peer);
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(picker), exactMatch: false);
+                    _ = Assert.IsType<Automation.ColorPickerAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal("ColorPicker", peer.GetClassName(), StringComparer.Ordinal);
                     Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
                     Assert.Equal("#FF0000", peer.GetName(), StringComparer.Ordinal);
@@ -506,7 +506,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
                     verify(picker, template, window);
                 }
                 finally
@@ -518,7 +518,7 @@ namespace Fluence.Wpf.Tests
 
         private static void RaiseEnterKey(TextBox textBox)
         {
-            PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(textBox));
+            PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(textBox), exactMatch: false);
             textBox.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
             {
                 RoutedEvent = Keyboard.KeyDownEvent,
@@ -527,7 +527,7 @@ namespace Fluence.Wpf.Tests
 
         private static T GetTemplateElement<T>(ControlTemplate template, Controls.ColorPicker picker, string name) where T : class
         {
-            return Assert.IsAssignableFrom<T>(template.FindName(name, picker));
+            return Assert.IsType<T>(template.FindName(name, picker), exactMatch: false);
         }
 
         [Fact]
@@ -891,7 +891,7 @@ namespace Fluence.Wpf.Tests
                     _ = spectrumArea.Focus();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(spectrumArea));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(spectrumArea), exactMatch: false);
 
                     spectrumArea.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
                     {
@@ -924,7 +924,7 @@ namespace Fluence.Wpf.Tests
                     _ = spectrumArea.Focus();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(spectrumArea));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(spectrumArea), exactMatch: false);
 
                     spectrumArea.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Up)
                     {

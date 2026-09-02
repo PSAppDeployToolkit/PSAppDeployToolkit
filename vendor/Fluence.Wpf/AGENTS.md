@@ -326,7 +326,7 @@ Every project has a committed `packages.lock.json` pinning the exact resolved ve
 
 ### CI/CD pipeline
 
-CI is defined in [.github/workflows/build.yml](.github/workflows/build.yml) and triggered by any push or pull request targeting `main`, plus `v*` tag pushes. The `build` job on `windows-latest` checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts (net472, net8.0-windows, and net10.0-windows library binaries, the demo, and the nupkg). A `v*` tag additionally runs a `release` job after `build` succeeds: it zips the per-TFM binaries and the demo, and creates the GitHub release for the tag with those assets and the nupkg attached (tags containing `-pre` are marked prerelease). NuGet publish remains commented out as a deliberate manual release step.
+CI is defined in [.github/workflows/build.yml](.github/workflows/build.yml) and triggered by any push or pull request targeting `main`, plus `v*` tag pushes. The `build` job on `windows-latest` checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, verifies formatting with `dotnet format --verify-no-changes --severity info`, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts (net472, net8.0-windows, and net10.0-windows library binaries, the demo, and the nupkg). A `v*` tag additionally runs a `release` job after `build` succeeds: it zips the per-TFM binaries and the demo, and creates the GitHub release for the tag with those assets and the nupkg attached (tags containing `-pre` are marked prerelease). NuGet publish remains commented out as a deliberate manual release step.
 
 ```mermaid
 flowchart TD
@@ -336,7 +336,8 @@ flowchart TD
     G --> D[Cache NuGet packages]
     D --> E[dotnet restore]
     E --> H[Build solution Release]
-    H --> I[Test net472<br/>filter-not-trait Category=Screenshots, TRX]
+    H --> F["Check formatting<br/>dotnet format --verify-no-changes --severity info"]
+    F --> I[Test net472<br/>filter-not-trait Category=Screenshots, TRX]
     I --> J[Test net10.0-windows10.0.26100.0<br/>filter-not-trait Category=Screenshots, TRX]
     J --> K[Upload test results<br/>always]
     K --> L[Pack NuGet]

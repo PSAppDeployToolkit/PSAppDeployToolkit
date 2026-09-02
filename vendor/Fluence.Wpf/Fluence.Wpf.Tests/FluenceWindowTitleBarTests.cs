@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -132,13 +133,13 @@ namespace Fluence.Wpf.Tests
 
         private static uint? InvokeHitTestTitleBar(FluenceWindow window, IntPtr lParam)
         {
-            MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod("HitTestTitleBar", BindingFlags.Instance | BindingFlags.NonPublic));
+            MethodInfo method = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod("HitTestTitleBar", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
             return (uint?)method.Invoke(window, [lParam]);
         }
 
         private static IntPtr? InvokeWndProc(FluenceWindow window, uint msg, IntPtr wParam, IntPtr lParam, out bool handled)
         {
-            MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod("WndProc", BindingFlags.Instance | BindingFlags.NonPublic));
+            MethodInfo method = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod("WndProc", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
 
             object[] args = [IntPtr.Zero, (int)msg, wParam, lParam, false];
             IntPtr? result = (IntPtr?)method.Invoke(window, args);
@@ -155,7 +156,7 @@ namespace Fluence.Wpf.Tests
 
         private static System.Windows.Controls.Button? GetCaptionButtonField(FluenceWindow window, string fieldName)
         {
-            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(FluenceWindow).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic));
+            FieldInfo field = Assert.IsType<FieldInfo>(typeof(FluenceWindow).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
             return field.GetValue(window) as System.Windows.Controls.Button;
         }
 
@@ -240,9 +241,10 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task BorderThickness_DefaultIsOneAsync()
+        public Task BorderThickness_DefaultIsTwoAsync()
         {
-            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            // The implicit FluenceWindow style in Themes/Controls/FluenceWindow.xaml sets 2.
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(2), w.BorderThickness));
         }
 
         #endregion 5. HasShadow and WindowBorder defaults
@@ -282,7 +284,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithWindowAsync(static w =>
             {
-                WindowChrome chrome = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w));
+                WindowChrome chrome = Assert.IsType<WindowChrome>(WindowChrome.GetWindowChrome(w), exactMatch: false);
                 Assert.Equal(0d, chrome.CaptionHeight);
 
                 w.ExtendsContentIntoTitleBar = true;
@@ -319,7 +321,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithWindowAsync(static w =>
             {
-                WindowChrome chrome = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w));
+                WindowChrome chrome = Assert.IsType<WindowChrome>(WindowChrome.GetWindowChrome(w), exactMatch: false);
                 Assert.Equal(0d, chrome.CaptionHeight);
             });
         }
@@ -327,13 +329,14 @@ namespace Fluence.Wpf.Tests
         [Fact]
         public Task WindowChrome_AppliedInConstructorAsync()
         {
-            return RunWithWindowAsync(static w => _ = Assert.IsAssignableFrom<WindowChrome>(WindowChrome.GetWindowChrome(w)));
+            return RunWithWindowAsync(static w => _ = Assert.IsType<WindowChrome>(WindowChrome.GetWindowChrome(w), exactMatch: false));
         }
 
         [Fact]
-        public Task DefaultBorderThickness_IsOneAsync()
+        public Task DefaultBorderThickness_IsTwoAsync()
         {
-            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
+            // The implicit FluenceWindow style in Themes/Controls/FluenceWindow.xaml sets 2.
+            return RunWithWindowAsync(static w => Assert.Equal(new Thickness(2), w.BorderThickness));
         }
 
         [Fact]
@@ -444,8 +447,8 @@ namespace Fluence.Wpf.Tests
                     foreach (ApplicationTheme theme in (ApplicationTheme[])[ApplicationTheme.Dark, ApplicationTheme.Light])
                     {
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
-                        object bg = Assert.IsAssignableFrom<object>(app.TryFindResource("ApplicationBackgroundBrush"));
-                        object fg = Assert.IsAssignableFrom<object>(app.TryFindResource("TextFillColorPrimaryBrush"));
+                        object bg = Assert.IsType<object>(app.TryFindResource("ApplicationBackgroundBrush"), exactMatch: false);
+                        object fg = Assert.IsType<object>(app.TryFindResource("TextFillColorPrimaryBrush"), exactMatch: false);
                     }
                 }
                 finally
@@ -524,7 +527,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithShownWindowAsync(static w =>
             {
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -539,7 +542,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithShownWindowAsync(static w =>
             {
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"), exactMatch: false);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 uint? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
@@ -554,7 +557,7 @@ namespace Fluence.Wpf.Tests
             return RunWithShownWindowAsync(static w =>
             {
                 Assert.Equal(WindowState.Normal, w.WindowState);
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -571,7 +574,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Hidden, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
@@ -588,7 +591,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMaximizable = false;
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, btn.Visibility);
                 Assert.False(btn.IsEnabled);
 
@@ -675,8 +678,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithShownWindowAsync(async static w =>
             {
-                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
-                System.Windows.Controls.Button restore = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"));
+                System.Windows.Controls.Button max = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
+                System.Windows.Controls.Button restore = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, max.Visibility);
                 Assert.Equal(Visibility.Collapsed, restore.Visibility);
 
@@ -724,7 +727,7 @@ namespace Fluence.Wpf.Tests
             // OS build, or IsMaximizable gate that WM_NCHITTEST applies before reaching it.
             return RunWithShownWindowAsync(async static w =>
             {
-                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button max = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
                 Assert.True(max.IsEnabled,
                     "Precondition: maximize button must be enabled for SetSnapHover to apply a hover visual.");
 
@@ -733,12 +736,12 @@ namespace Fluence.Wpf.Tests
                 object? expectedBackground = w.TryFindResource("SubtleFillColorSecondaryBrush");
                 object? expectedForeground = w.TryFindResource("TextFillColorPrimaryBrush");
                 object? staleBackground = w.TryFindResource("ControlStrongFillColorDefaultBrush");
-                _ = Assert.IsAssignableFrom<Brush>(expectedBackground);
-                _ = Assert.IsAssignableFrom<Brush>(expectedForeground);
+                _ = Assert.IsType<Brush>(expectedBackground, exactMatch: false);
+                _ = Assert.IsType<Brush>(expectedForeground, exactMatch: false);
 
-                MethodInfo setSnapHover = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
+                MethodInfo setSnapHover = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod(
                     "SetSnapHover",
-                    BindingFlags.Instance | BindingFlags.NonPublic));
+                    BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
                 _ = setSnapHover.Invoke(w, [max]);
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
@@ -748,9 +751,9 @@ namespace Fluence.Wpf.Tests
 
                 // ClearSnapHover must restore the template/style defaults via ClearValue, so the
                 // local Background/Foreground values are cleared back to the unset (style-driven) state.
-                MethodInfo clearSnapHover = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
+                MethodInfo clearSnapHover = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod(
                     "ClearSnapHover",
-                    BindingFlags.Instance | BindingFlags.NonPublic));
+                    BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
                 _ = clearSnapHover.Invoke(w, parameters: null);
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
@@ -775,7 +778,7 @@ namespace Fluence.Wpf.Tests
                 w.ResizeMode = ResizeMode.NoResize;
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, btn.Visibility);
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
@@ -797,7 +800,7 @@ namespace Fluence.Wpf.Tests
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
+                System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, btn?.Visibility);
                 Assert.False(btn?.IsEnabled ?? false,
                     "Explicit Collapsed must also disable the button.");
@@ -813,7 +816,7 @@ namespace Fluence.Wpf.Tests
                 w.ResizeMode = ResizeMode.NoResize;
                 await w.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                System.Windows.Controls.Button max = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
+                System.Windows.Controls.Button max = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, max.Visibility);
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
@@ -875,10 +878,10 @@ namespace Fluence.Wpf.Tests
         {
             return RunWithShownWindowAsync(async static w =>
             {
-                System.Windows.Controls.Button minimize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"));
-                System.Windows.Controls.Button maximize = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"));
-                System.Windows.Controls.Button restore = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"));
-                System.Windows.Controls.Button close = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"));
+                System.Windows.Controls.Button minimize = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_minimizeButton"), exactMatch: false);
+                System.Windows.Controls.Button maximize = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_maximizeButton"), exactMatch: false);
+                System.Windows.Controls.Button restore = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_restoreButton"), exactMatch: false);
+                System.Windows.Controls.Button close = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(w, "_closeButton"), exactMatch: false);
 
                 foreach (Visibility value in (Visibility[])[Visibility.Visible, Visibility.Hidden, Visibility.Collapsed])
                 {
@@ -903,38 +906,38 @@ namespace Fluence.Wpf.Tests
 
         private static CanExecuteRoutedEventArgs CreateCanExecuteArgs(ICommand command)
         {
-            ConstructorInfo ctor = Assert.IsAssignableFrom<ConstructorInfo>(typeof(CanExecuteRoutedEventArgs).GetConstructor(
+            ConstructorInfo ctor = Assert.IsType<ConstructorInfo>(typeof(CanExecuteRoutedEventArgs).GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
                 [typeof(ICommand), typeof(object)],
-                modifiers: null));
+                modifiers: null), exactMatch: false);
             return (CanExecuteRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
         private static bool InvokeCanHandler(FluenceWindow window, string handlerName, CanExecuteRoutedEventArgs args)
         {
-            MethodInfo handler = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
+            MethodInfo handler = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod(
                 handlerName,
-                BindingFlags.Instance | BindingFlags.NonPublic));
+                BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
             _ = handler.Invoke(window, [window, args]);
             return args.CanExecute;
         }
 
         private static ExecutedRoutedEventArgs CreateExecutedArgs(ICommand command)
         {
-            ConstructorInfo ctor = Assert.IsAssignableFrom<ConstructorInfo>(typeof(ExecutedRoutedEventArgs).GetConstructor(
+            ConstructorInfo ctor = Assert.IsType<ConstructorInfo>(typeof(ExecutedRoutedEventArgs).GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
                 [typeof(ICommand), typeof(object)],
-                modifiers: null));
+                modifiers: null), exactMatch: false);
             return (ExecutedRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
         private static void InvokeExecutedHandler(FluenceWindow window, string handlerName, ExecutedRoutedEventArgs args)
         {
-            MethodInfo handler = Assert.IsAssignableFrom<MethodInfo>(typeof(FluenceWindow).GetMethod(
+            MethodInfo handler = Assert.IsType<MethodInfo>(typeof(FluenceWindow).GetMethod(
                 handlerName,
-                BindingFlags.Instance | BindingFlags.NonPublic));
+                BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
             _ = handler.Invoke(window, [window, args]);
         }
 
@@ -1108,7 +1111,7 @@ namespace Fluence.Wpf.Tests
                     CommandManager.InvalidateRequerySuggested();
                     await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.ApplicationIdle, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                    System.Windows.Controls.Button minBtn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(window, "_minimizeButton"));
+                    System.Windows.Controls.Button minBtn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(window, "_minimizeButton"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, minBtn.Visibility);
                     Assert.True(minBtn.IsEnabled,
                         "PSADT flow: Button.IsEnabled must be true so clicks dispatch the command.");
@@ -1380,9 +1383,9 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     await window.Dispatcher.InvokeAsync(static () => { }, priority: DispatcherPriority.Render, cancellationToken: TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
 
-                    foreach (string? fieldName in new[] { "_minimizeButton", "_maximizeButton", "_closeButton" })
+                    foreach (string? fieldName in (IReadOnlyList<string>)["_minimizeButton", "_maximizeButton", "_closeButton"])
                     {
-                        System.Windows.Controls.Button btn = Assert.IsAssignableFrom<System.Windows.Controls.Button>(GetCaptionButtonField(window, fieldName));
+                        System.Windows.Controls.Button btn = Assert.IsType<System.Windows.Controls.Button>(GetCaptionButtonField(window, fieldName), exactMatch: false);
                         Assert.True(btn.IsVisible, fieldName + " must be visible.");
 
                         Point center = new(btn.ActualWidth / 2, btn.ActualHeight / 2);

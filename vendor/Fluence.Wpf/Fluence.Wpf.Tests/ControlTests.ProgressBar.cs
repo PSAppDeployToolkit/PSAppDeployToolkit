@@ -63,7 +63,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
                 SolidColorBrush initial = Assert.IsType<SolidColorBrush>(fill.Background);
                 Color initialColor = initial.Color;
 
@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
+                System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
 
                 Assert.Equal(1.0, progressBar.TrackHeight, 0.1);
                 Assert.Equal(1.0, track.Height, 0.1);
@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
 
                 progressBar.ProgressMode = ProgressBarMode.Standard;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
@@ -167,7 +167,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Grid host = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(progressBar, "ProgressBarIndicatorHost"));
+                System.Windows.Controls.Grid host = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(progressBar, "ProgressBarIndicatorHost"), exactMatch: false);
 
                 // ClipToBounds only clips rectangularly, so the translating indeterminate bars would
                 // show square ends at the control edge. The control must install a rounded RectangleGeometry
@@ -200,9 +200,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
-                System.Windows.Controls.Border bar1 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar"));
-                System.Windows.Controls.Border bar2 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar2"));
+                System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                System.Windows.Controls.Border bar1 = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar"), exactMatch: false);
+                System.Windows.Controls.Border bar2 = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar2"), exactMatch: false);
 
                 double trackWidth = track.ActualWidth;
                 Assert.True(trackWidth > 0, "Track must have a realised width.");
@@ -231,10 +231,10 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
-                System.Windows.Controls.Border bar1 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar"));
-                System.Windows.Controls.Border bar2 = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar2"));
+                System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
+                System.Windows.Controls.Border bar1 = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar"), exactMatch: false);
+                System.Windows.Controls.Border bar2 = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_IndeterminateBar2"), exactMatch: false);
 
                 progressBar.IsIndeterminate = true;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
@@ -402,8 +402,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(progressBar.Template.FindName("PART_FillScale", progressBar));
 
                 progressBar.Value = 60;
@@ -466,8 +466,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border track = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"));
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(progressBar.Template.FindName("PART_FillScale", progressBar));
 
                 progressBar.CurrentStep = 2;
@@ -499,7 +499,7 @@ namespace Fluence.Wpf.Tests
                 applyState(progressBar);
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource(brushKey));
 
@@ -547,7 +547,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border fill = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"));
+                System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource(brushKey));
 

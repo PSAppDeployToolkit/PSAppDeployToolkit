@@ -26,10 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Automation;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls.Primitives;
+using Fluence.Wpf.Automation;
 
 namespace Fluence.Wpf.Controls
 {

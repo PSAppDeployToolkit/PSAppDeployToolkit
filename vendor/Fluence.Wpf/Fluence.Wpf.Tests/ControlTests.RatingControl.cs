@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // PART_StarsPanel must be present after template is applied.
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
                 w.Close();
             });
         }
@@ -80,7 +80,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
                 Assert.Equal(5, panel.Children.Count);
                 w.Close();
             });
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
 
                 // Stars 1-3 must be filled (U+E735), stars 4-5 must be empty (U+E734).
                 int filledCount = 0;
@@ -129,7 +129,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
 
                 SolidColorBrush accentBrush = Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush"));
 
@@ -154,7 +154,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
 
                 SolidColorBrush secondaryBrush = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorSecondaryBrush"));
 
@@ -178,7 +178,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock caption = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"));
+                System.Windows.Controls.TextBlock caption = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, caption.Visibility);
                 Assert.Equal("4.0", caption.Text, StringComparer.Ordinal);
                 w.Close();
@@ -198,7 +198,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock caption = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"));
+                System.Windows.Controls.TextBlock caption = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(rc, "PART_Caption"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, caption.Visibility);
                 w.Close();
             });
@@ -242,7 +242,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.StackPanel panel = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"));
+                System.Windows.Controls.StackPanel panel = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(rc, "PART_StarsPanel"), exactMatch: false);
                 w.Close();
             });
         }
@@ -261,7 +261,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(rating);
-                _ = Assert.IsAssignableFrom<Automation.RatingControlAutomationPeer>(peer);
+                _ = Assert.IsType<Automation.RatingControlAutomationPeer>(peer, exactMatch: false);
                 Assert.Equal(AutomationControlType.Slider, peer.GetAutomationControlType());
 
                 IRangeValueProvider range = (IRangeValueProvider)peer.GetPattern(PatternInterface.RangeValue);
@@ -273,7 +273,7 @@ namespace Fluence.Wpf.Tests
                 _ = rating.Focus();
                 WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(rating));
+                PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(rating), exactMatch: false);
                 rating.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
                 {
                     RoutedEvent = Keyboard.KeyDownEvent,

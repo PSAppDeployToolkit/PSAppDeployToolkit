@@ -61,14 +61,14 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// Rebuilt by <see cref="Refresh"/> whenever tasks or filter change.
         /// </summary>
         [ObservableProperty]
-        private ObservableCollection<TaskItemViewModel> _displayedTasks = [];
+        public partial ObservableCollection<TaskItemViewModel> DisplayedTasks { get; set; } = [];
 
         /// <summary>
         /// Text the user types for a new task. Two-way bound to the TextBox.
         /// The <c>OnNewTaskTextChanged</c> callback re-evaluates <see cref="AddCommand"/>.
         /// </summary>
         [ObservableProperty]
-        private string _newTaskText = string.Empty;
+        public partial string NewTaskText { get; set; } = string.Empty;
 
         /// <summary>
         /// Current filter selection. Changing it triggers <c>OnActiveFilterChanged</c>
@@ -79,7 +79,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// that would fire the notifications before DisplayedTasks is rebuilt (stale read).
         /// </summary>
         [ObservableProperty]
-        private FilterMode _activeFilter = FilterMode.All;
+        public partial FilterMode ActiveFilter { get; set; } = FilterMode.All;
 
         // ---------------------------------------------------------------
         // Derived / computed properties

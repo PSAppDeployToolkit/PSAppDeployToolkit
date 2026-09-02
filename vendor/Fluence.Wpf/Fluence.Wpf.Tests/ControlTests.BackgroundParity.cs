@@ -76,27 +76,27 @@ namespace Fluence.Wpf.Tests
                     _ = radioButton.ApplyTemplate();
                     _ = toggleSwitch.ApplyTemplate();
 
-                    Border indicatorFill = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorFill"));
-                    Border indicatorHover = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorHover"));
-                    Border indicatorPressed = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorPressed"));
+                    Border indicatorFill = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorFill"), exactMatch: false);
+                    Border indicatorHover = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorHover"), exactMatch: false);
+                    Border indicatorPressed = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorPressed"), exactMatch: false);
 
                     AssertBrushColor(indicatorFill.Background, "ControlAltFillColorSecondaryBrush");
                     AssertBrushColor(indicatorHover.Background, "ControlAltFillColorTertiaryBrush");
                     AssertBrushColor(indicatorPressed.Background, "ControlAltFillColorQuarternaryBrush");
                     AssertBrushColor(indicatorPressed.BorderBrush, "ControlStrongStrokeColorDisabledBrush");
 
-                    System.Windows.Shapes.Ellipse outerEllipse = Assert.IsAssignableFrom<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipse"));
-                    System.Windows.Shapes.Ellipse outerEllipseHover = Assert.IsAssignableFrom<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipseHover"));
-                    System.Windows.Shapes.Ellipse outerEllipsePressed = Assert.IsAssignableFrom<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipsePressed"));
+                    System.Windows.Shapes.Ellipse outerEllipse = Assert.IsType<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipse"), exactMatch: false);
+                    System.Windows.Shapes.Ellipse outerEllipseHover = Assert.IsType<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipseHover"), exactMatch: false);
+                    System.Windows.Shapes.Ellipse outerEllipsePressed = Assert.IsType<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipsePressed"), exactMatch: false);
 
                     AssertBrushColor(outerEllipse.Fill, "ControlAltFillColorSecondaryBrush");
                     AssertBrushColor(outerEllipseHover.Fill, "ControlAltFillColorTertiaryBrush");
                     AssertBrushColor(outerEllipsePressed.Fill, "ControlAltFillColorQuarternaryBrush");
                     AssertBrushColor(outerEllipsePressed.Stroke, "ControlStrongStrokeColorDisabledBrush");
 
-                    Border trackOff = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOff"));
-                    Border trackOffHover = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOffHover"));
-                    Border trackOffPressed = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOffPressed"));
+                    Border trackOff = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOff"), exactMatch: false);
+                    Border trackOffHover = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOffHover"), exactMatch: false);
+                    Border trackOffPressed = Assert.IsType<Border>(FindVisualChildByName<Border>(toggleSwitch, "TrackOffPressed"), exactMatch: false);
 
                     AssertBrushColor(trackOff.Background, "ControlAltFillColorSecondaryBrush");
                     AssertBrushColor(trackOff.BorderBrush, "ControlStrongStrokeColorDefaultBrush");
@@ -137,7 +137,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = progressBar.ApplyTemplate();
 
-                    Border track = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(progressBar, "PART_Track"));
+                    Border track = Assert.IsType<Border>(FindVisualChildByName<Border>(progressBar, "PART_Track"), exactMatch: false);
                     AssertBrushColor(track.Background, "ControlStrongStrokeColorDefaultBrush");
                 }
                 finally
@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = scrollBar.ApplyTemplate();
 
-                    Border trackBackground = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(scrollBar, "TrackBackground"));
+                    Border trackBackground = Assert.IsType<Border>(FindVisualChildByName<Border>(scrollBar, "TrackBackground"), exactMatch: false);
                     AssertBrushColor(trackBackground.Background, "ScrollBarTrackFillBrush");
                 }
                 finally
@@ -240,8 +240,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    RichTextBox sourceViewer = Assert.IsAssignableFrom<RichTextBox>(FindVisualChildByName<RichTextBox>(sourceExpander, "SourceTextViewer"));
-                    Border copyButtonHost = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(sourceExpander, "CopySourceButtonHost"));
+                    RichTextBox sourceViewer = Assert.IsType<RichTextBox>(FindVisualChildByName<RichTextBox>(sourceExpander, "SourceTextViewer"), exactMatch: false);
+                    Border copyButtonHost = Assert.IsType<Border>(FindVisualChildByName<Border>(sourceExpander, "CopySourceButtonHost"), exactMatch: false);
                     AssertBrushColor(sourceViewer.Background, "SystemFillColorSolidAttentionBackgroundBrush");
                     AssertBrushColor(copyButtonHost.Background, "CardBackgroundFillColorDefaultBrush");
                 }
@@ -265,7 +265,7 @@ namespace Fluence.Wpf.Tests
                 {
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
-                    _ = Assert.IsAssignableFrom<Color>(application.TryFindResource("CardBackgroundFillColorDefault"));
+                    _ = Assert.IsType<Color>(application.TryFindResource("CardBackgroundFillColorDefault"), exactMatch: false);
                     AssertBrushResolves("CardBackgroundFillColorDefaultBrush");
                 }
             });

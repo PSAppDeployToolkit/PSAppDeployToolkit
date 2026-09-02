@@ -26,7 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Xunit.v3;
 using Xunit.Sdk;
+using Xunit.v3;
 
 [assembly: Parallelization(Mode = ParallelMode.None)]

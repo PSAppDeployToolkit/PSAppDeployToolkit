@@ -131,7 +131,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" MinWidth="160" />
-                        <ColumnDefinition Width="380" />
+                        <ColumnDefinition Width="361" />
                     </Grid.ColumnDefinitions>
 
                     <fluence:ListView

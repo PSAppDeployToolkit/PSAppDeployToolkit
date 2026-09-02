@@ -38,6 +38,11 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build Fluence.Wpf.sln -c Release --no-restore -v minimal
 
+      # dotnet format is the tidiness gate: whitespace, code style (IDE####), and any analyzer
+      # diagnostic at info severity or above that ships a working Fix All provider.
+      - name: Check formatting (dotnet format)
+        run: dotnet format Fluence.Wpf.sln --verify-no-changes --severity info --no-restore
+
       # Screenshots-category tests are PNG regenerators (no pass/fail assertion beyond
       # "rendered without throwing"); they run in full local test runs to refresh
       # docs/screenshots but are skipped here to keep CI fast.

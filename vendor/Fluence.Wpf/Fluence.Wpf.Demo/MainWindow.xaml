@@ -13,7 +13,6 @@
     ExtendsContentIntoTitleBar="True"
     RenderOptions.BitmapScalingMode="HighQuality"
     SystemBackdropType="Mica"
-    TitleBarHeight="42"
     UseLayoutRounding="True">
 
     <fluence:FluenceWindow.TitleBar>
@@ -28,7 +27,7 @@
                 Width="300"
                 MinWidth="300"
                 MaxWidth="475"
-                Margin="0,8,0,0"
+                Margin="0,6,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 PlaceholderText="Search controls and samples..."

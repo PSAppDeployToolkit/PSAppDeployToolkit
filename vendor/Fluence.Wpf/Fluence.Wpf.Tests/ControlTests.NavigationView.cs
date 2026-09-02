@@ -123,8 +123,8 @@ namespace Fluence.Wpf.Tests
         private static void AssertPaneToggleVisible(NavigationView nav)
         {
             _ = nav.ApplyTemplate();
-            System.Windows.Controls.Button paneToggle = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
-                nav.Template.FindName(NavigationView.PartPaneToggleButton, nav));
+            System.Windows.Controls.Button paneToggle = Assert.IsType<System.Windows.Controls.Button>(
+                nav.Template.FindName(NavigationView.PartPaneToggleButton, nav), exactMatch: false);
             Assert.Equal(Visibility.Visible, paneToggle.Visibility);
         }
 
@@ -158,9 +158,9 @@ namespace Fluence.Wpf.Tests
                     _ = await WaitUntilAsync(mw.Dispatcher, 2000, () => FindVisualChildByName<NavigationView>(mw, "DemoNav") is not null).ConfigureAwait(true);
                     mw.UpdateLayout();
 
-                    NavigationView nav = Assert.IsAssignableFrom<NavigationView>(FindVisualChildByName<NavigationView>(mw, "DemoNav"));
+                    NavigationView nav = Assert.IsType<NavigationView>(FindVisualChildByName<NavigationView>(mw, "DemoNav"), exactMatch: false);
                     NavigationViewItem footer = Assert.IsType<NavigationViewItem>(nav.FooterMenuItems.Count > 0 ? nav.FooterMenuItems[0] as NavigationViewItem : null);
-                    ContentPresenter footerIcon = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer!, "IconPresenter"));
+                    ContentPresenter footerIcon = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer!, "IconPresenter"), exactMatch: false);
 
                     nav.IsPaneOpen = false;
                     await WaitForAnimationAndDrainAsync(mw.Dispatcher, 300).ConfigureAwait(true);
@@ -168,7 +168,7 @@ namespace Fluence.Wpf.Tests
 
                     ColumnDefinition paneColumn = Assert.IsType<ColumnDefinition>(nav.Template.FindName("PaneColumn", nav));
 
-                    foreach (double width in new[] { 96.0, 160.0, 240.0, 320.0 })
+                    foreach (double width in (IReadOnlyList<double>)[96.0, 160.0, 240.0, 320.0])
                     {
                         paneColumn!.BeginAnimation(ColumnDefinition.WidthProperty, animation: null);
                         paneColumn.Width = new GridLength(width);
@@ -212,7 +212,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(GetNavigationViewItemsHostPanel(nav));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(GetNavigationViewItemsHostPanel(nav), exactMatch: false);
                     Assert.Equal(Orientation.Vertical, host.Orientation);
                 }
                 finally
@@ -250,7 +250,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(GetNavigationViewItemsHostPanel(nav));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(GetNavigationViewItemsHostPanel(nav), exactMatch: false);
                     Assert.Equal(Orientation.Horizontal, host.Orientation);
                 }
                 finally
@@ -317,7 +317,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.Border footerHost = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneFooterHost"));
+                    System.Windows.Controls.Border footerHost = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneFooterHost"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, footerHost.Visibility);
                     Assert.True(footer.ActualWidth >= 48.0 - 0.5, "LeftCompact footer navigation items should receive the full compact pane width so their icons are visible.");
 
@@ -371,7 +371,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(48.0, nav.GetPaneColumnWidthForTesting(), 0.01);
                     Assert.True(messages.ActualWidth >= 48.0 - 0.5, "Closed Left navigation items should receive the full compact pane width so icons are not clipped.");
 
-                    ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(messages, "IconPresenter"));
+                    ContentPresenter iconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(messages, "IconPresenter"), exactMatch: false);
                     Point iconOffset = iconPresenter.TransformToAncestor(messages).Transform(new Point(0, 0));
                     Assert.True(iconOffset.X >= 4.0 - 0.5, "Closed Left icon should not be clipped on the left edge.");
                     Assert.True(iconOffset.X + iconPresenter.ActualWidth <= 44.0 + 0.5, "Closed Left icon should stay inside the 40px icon slot.");
@@ -420,7 +420,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(48.0, nav.GetPaneColumnWidthForTesting(), 0.01);
                     Assert.True(messages.ActualWidth >= 48.0 - 0.5, "Closed LeftCompact navigation items should receive the full compact pane width so icons are not clipped.");
 
-                    ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(messages, "IconPresenter"));
+                    ContentPresenter iconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(messages, "IconPresenter"), exactMatch: false);
                     Point iconOffset = iconPresenter.TransformToAncestor(messages).Transform(new Point(0, 0));
                     Assert.True(iconOffset.X >= 4.0 - 0.5, "Closed LeftCompact icon should not be clipped on the left edge.");
                     Assert.True(iconOffset.X + iconPresenter.ActualWidth <= 44.0 + 0.5, "Closed LeftCompact icon should stay inside the 40px icon slot.");
@@ -459,7 +459,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FontIcon glyph = Assert.IsAssignableFrom<FontIcon>(FindVisualChildByName<FontIcon>(nav, "PaneToggleGlyph"));
+                    FontIcon glyph = Assert.IsType<FontIcon>(FindVisualChildByName<FontIcon>(nav, "PaneToggleGlyph"), exactMatch: false);
                     Assert.Equal(2.0, glyph.Margin.Left, 0.01);
                 }
                 finally
@@ -501,7 +501,7 @@ namespace Fluence.Wpf.Tests
                     System.Windows.Controls.Button back = Assert.IsType<System.Windows.Controls.Button>(nav.Template.FindName(NavigationView.PartBackButton, nav));
                     System.Windows.Controls.Button paneToggle = Assert.IsType<System.Windows.Controls.Button>(nav.Template.FindName(NavigationView.PartPaneToggleButton, nav));
 
-                    System.Windows.Controls.StackPanel chrome = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(nav, "PaneChrome"));
+                    System.Windows.Controls.StackPanel chrome = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(nav, "PaneChrome"), exactMatch: false);
                     Assert.Equal(Orientation.Horizontal, chrome.Orientation);
                     Assert.Equal(48.0, back.ActualWidth, 0.5);
                     Assert.Equal(48.0, paneToggle.ActualWidth, 0.5);
@@ -585,7 +585,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "InfoBadgePresenter"));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "InfoBadgePresenter"), exactMatch: false);
                     Assert.Same(badge, presenter.Content);
                     Assert.True(double.IsNaN(presenter.Width) || presenter.Width >= 34.0,
                         "NavigationViewItem must not constrain InfoBadge value pills to the old 24px slot.");
@@ -686,8 +686,8 @@ namespace Fluence.Wpf.Tests
                         calls.Add("selection:" + ((NavigationViewItem)nav.SelectedItem).Content);
                     };
 
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(item1));
-                    IInvokeProvider invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(item1), exactMatch: false);
+                    IInvokeProvider invokeProvider = Assert.IsType<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke), exactMatch: false);
 
                     invokeProvider.Invoke();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -738,7 +738,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     nav.SelectedIndex = 0;
-                    FrameworkElement container1 = Assert.IsAssignableFrom<FrameworkElement>(nav.ItemContainerGenerator.ContainerFromIndex(1));
+                    FrameworkElement container1 = Assert.IsType<FrameworkElement>(nav.ItemContainerGenerator.ContainerFromIndex(1), exactMatch: false);
                     _ = Keyboard.Focus(container1);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
@@ -782,7 +782,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     nav.SelectedIndex = 0;
-                    FrameworkElement container1 = Assert.IsAssignableFrom<FrameworkElement>(nav.ItemContainerGenerator.ContainerFromIndex(1));
+                    FrameworkElement container1 = Assert.IsType<FrameworkElement>(nav.ItemContainerGenerator.ContainerFromIndex(1), exactMatch: false);
                     _ = Keyboard.Focus(container1);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
@@ -1067,7 +1067,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = nav.ApplyTemplate();
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(0.0, indicator.Opacity, 0.01);
 
                     nav.SelectedIndex = 0;
@@ -1119,7 +1119,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(1.0, indicator.Opacity, 0.01);
                 }
                 finally
@@ -1166,7 +1166,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     double iconItemX = GetSelectionIndicatorTranslate(indicator).X;
                     Assert.Equal(9.0, iconItemX, 0.5);
 
@@ -1227,7 +1227,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     TranslateTransform translate = GetSelectionIndicatorTranslate(indicator);
                     Assert.False(translate.HasAnimatedProperties,
                         "Initial selection should snap before later changes animate.");
@@ -1294,7 +1294,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     TranslateTransform translate = GetSelectionIndicatorTranslate(indicator);
                     ScaleTransform scale = GetSelectionIndicatorScale(indicator);
                     double homeY = translate.Y;
@@ -1390,7 +1390,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     TranslateTransform translate = GetSelectionIndicatorTranslate(indicator);
                     double parentX = translate.X;
                     double parentY = translate.Y;
@@ -1461,7 +1461,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     TranslateTransform translate = GetSelectionIndicatorTranslate(indicator);
                     double childX = translate.X;
                     double childY = translate.Y;
@@ -1528,7 +1528,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     double iconItemX = GetSelectionIndicatorTranslate(indicator).X;
 
                     nav.SelectedIndex = 1;
@@ -1563,7 +1563,7 @@ topMode: false,
                 {
                     Style style = Assert.IsType<Style>(application.TryFindResource("NavigationViewItemFocusVisual"));
                     ControlTemplate template = Assert.IsType<ControlTemplate>(style.Setters.OfType<Setter>().FirstOrDefault(static setter => setter.Property == Control.TemplateProperty)?.Value as ControlTemplate);
-                    DependencyObject root = Assert.IsAssignableFrom<DependencyObject>(template.LoadContent());
+                    DependencyObject root = Assert.IsType<DependencyObject>(template.LoadContent(), exactMatch: false);
 
                     foreach (System.Windows.Controls.Border border in FindVisualChildren<System.Windows.Controls.Border>(root))
                     {
@@ -1659,7 +1659,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(1.0, indicator.Opacity, 0.01);
                 }
                 finally
@@ -1760,7 +1760,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(1.0, indicator.Opacity, 0.01);
                 }
                 finally
@@ -1808,7 +1808,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    FrameworkElement indicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetSelectionIndicatorForTesting());
+                    FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(1.0, indicator.Opacity, 0.01);
 
                     nav.IsPaneOpen = true;
@@ -1898,7 +1898,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     Point offset = presenter.TransformToAncestor(nav).Transform(new Point(0, 0));
                     Assert.Equal(48.0, offset.X, 1.0);
@@ -1939,7 +1939,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     Point offset = presenter.TransformToAncestor(nav).Transform(new Point(0, 0));
                     Assert.Equal(42.0, offset.Y, 1.0);
@@ -1981,7 +1981,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     Point offset = presenter.TransformToAncestor(nav).Transform(new Point(0, 0));
                     Assert.Equal(20.0, offset.Y, 1.0);
@@ -2022,7 +2022,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     await AssertContentOffsetEventuallyAsync(window, nav, presenter, 320.0).ConfigureAwait(true);
 
@@ -2131,7 +2131,7 @@ topMode: false,
                     _ = await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(nav.GetPaneColumnWidthForTesting() - 320.0) <= 0.5).ConfigureAwait(true);
                     window.UpdateLayout();
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     await AssertContentOffsetEventuallyAsync(window, nav, presenter, 320.0).ConfigureAwait(true);
                 }
@@ -2173,7 +2173,7 @@ topMode: false,
                     await WaitForAnimationAndDrainAsync(window.Dispatcher, 300).ConfigureAwait(true);
                     window.UpdateLayout();
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     Point offset = presenter.TransformToAncestor(nav).Transform(new Point(0, 0));
                     Assert.Equal(20.0, offset.Y, 1.0);
@@ -2214,7 +2214,7 @@ topMode: false,
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     await AssertContentOffsetEventuallyAsync(window, nav, presenter, 48.0).ConfigureAwait(true);
                 }
@@ -2264,7 +2264,7 @@ topMode: false,
 
                     System.Windows.Controls.Button back = Assert.IsType<System.Windows.Controls.Button>(nav.Template.FindName(NavigationView.PartBackButton, nav));
                     System.Windows.Controls.Button paneToggle = Assert.IsType<System.Windows.Controls.Button>(nav.Template.FindName(NavigationView.PartPaneToggleButton, nav));
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
                     Assert.Equal(Visibility.Visible, back.Visibility);
                     Assert.Equal(Visibility.Visible, paneToggle.Visibility);
                     Assert.Equal(48.0, paneToggle.TransformToAncestor(nav).Transform(new Point(0, 0)).X, 1.0);
@@ -2309,7 +2309,7 @@ topMode: false,
                     _ = await WaitUntilAsync(window.Dispatcher, 2000, () => Math.Abs(nav.GetPaneColumnWidthForTesting() - 320.0) <= 0.5).ConfigureAwait(true);
                     window.UpdateLayout();
 
-                    ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter));
+                    ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(nav, NavigationView.PartContentPresenter), exactMatch: false);
 
                     await AssertContentOffsetEventuallyAsync(window, nav, presenter, 320.0).ConfigureAwait(true);
 
@@ -2400,7 +2400,7 @@ topMode: false,
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    NavigationViewItemHeader renderedHeader = Assert.IsAssignableFrom<NavigationViewItemHeader>(FindVisualChild<NavigationViewItemHeader>(nav));
+                    NavigationViewItemHeader renderedHeader = Assert.IsType<NavigationViewItemHeader>(FindVisualChild<NavigationViewItemHeader>(nav), exactMatch: false);
                     Assert.False(renderedHeader.Focusable, "Header must not be focusable.");
                     Assert.Null(nav.SelectedItem);
                 }
@@ -2568,7 +2568,7 @@ topMode: false,
                     WpfTestSta.DrainDispatcher(winLeft.Dispatcher);
                     winLeft.UpdateLayout();
 
-                    System.Windows.Controls.Border paneBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneBorder"));
+                    System.Windows.Controls.Border paneBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneBorder"), exactMatch: false);
                     AssertBrushIsTransparentOrNull(paneBorder.Background,
                         "PaneBorder.Background must be Transparent so DWM backdrop shows through.");
                 }
@@ -2593,7 +2593,7 @@ topMode: false,
                     WpfTestSta.DrainDispatcher(winCompact.Dispatcher);
                     winCompact.UpdateLayout();
 
-                    System.Windows.Controls.Border compactPane = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "CompactPane"));
+                    System.Windows.Controls.Border compactPane = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "CompactPane"), exactMatch: false);
                     AssertBrushIsTransparentOrNull(compactPane.Background,
                         "CompactPane.Background must be Transparent so DWM backdrop shows through.");
                 }
@@ -2618,7 +2618,7 @@ topMode: false,
                     WpfTestSta.DrainDispatcher(winTop.Dispatcher);
                     winTop.UpdateLayout();
 
-                    System.Windows.Controls.Border paneHeader = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneHeaderBorder"));
+                    System.Windows.Controls.Border paneHeader = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(nav, "PaneHeaderBorder"), exactMatch: false);
                     AssertBrushIsTransparentOrNull(paneHeader.Background,
                         "PaneHeaderBorder.Background must be Transparent so DWM backdrop shows through.");
                 }
@@ -2681,8 +2681,8 @@ topMode: false,
                 WpfTestSta.DrainDispatcher(window.Dispatcher);
                 window.UpdateLayout();
 
-                ScrollViewer scrollViewer = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChildByName<ScrollViewer>(nav, NavigationView.PartPaneItemsScrollViewer));
-                _ = Assert.IsAssignableFrom<SmoothScrollViewer>(scrollViewer);
+                ScrollViewer scrollViewer = Assert.IsType<ScrollViewer>(FindVisualChildByName<ScrollViewer>(nav, NavigationView.PartPaneItemsScrollViewer), exactMatch: false);
+                _ = Assert.IsType<SmoothScrollViewer>(scrollViewer, exactMatch: false);
                 Assert.Same(expected, scrollViewer.Style);
             }
             finally

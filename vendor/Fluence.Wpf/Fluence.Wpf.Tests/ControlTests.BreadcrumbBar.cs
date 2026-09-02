@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
                         Assert.False(ancestor.IsLastItem,
                             string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must not report IsLastItem.", index));
 
-                        Controls.FontIcon chevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(ancestor, "ChevronIcon"));
+                        Controls.FontIcon chevron = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(ancestor, "ChevronIcon"), exactMatch: false);
                         Assert.Equal(Visibility.Visible, chevron.Visibility);
 
                         // WinUI BreadcrumbBarChevronLeftToRight is E974 painted in
@@ -154,7 +154,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(last.IsLastItem, "The last crumb must report IsLastItem=true.");
                     Assert.Equal(FontWeights.SemiBold, last.FontWeight);
 
-                    Controls.FontIcon lastChevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(last, "ChevronIcon"));
+                    Controls.FontIcon lastChevron = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(last, "ChevronIcon"), exactMatch: false);
                     Assert.Equal(Visibility.Collapsed, lastChevron.Visibility);
 
                     SolidColorBrush lastForeground = Assert.IsType<SolidColorBrush>(last.Foreground);
@@ -266,7 +266,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(0, clickedIndex);
 
                     _ = second.Focus();
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(second));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(second), exactMatch: false);
 
                     second.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
                     {
@@ -321,7 +321,7 @@ namespace Fluence.Wpf.Tests
                     Assert.False(documents.IsLastItem,
                         "The previously last crumb must lose IsLastItem after an append.");
 
-                    Controls.FontIcon documentsChevron = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(documents, "ChevronIcon"));
+                    Controls.FontIcon documentsChevron = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(documents, "ChevronIcon"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, documentsChevron.Visibility);
 
                     crumbs.RemoveAt(2);
@@ -387,8 +387,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(bar));
-                    _ = Assert.IsAssignableFrom<Automation.BreadcrumbBarAutomationPeer>(peer);
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(bar), exactMatch: false);
+                    _ = Assert.IsType<Automation.BreadcrumbBarAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal("BreadcrumbBar", peer.GetClassName(), StringComparer.Ordinal);
                     Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
                     Assert.Equal("Navigation breadcrumb", peer.GetName(), StringComparer.Ordinal);

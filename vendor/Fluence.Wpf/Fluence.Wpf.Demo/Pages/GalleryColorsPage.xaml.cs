@@ -598,19 +598,19 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void CopyCodeSampleButton_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(SampleMarkup);
+            DemoClipboard.SetText(SampleMarkup);
         }
 
         private void CopyThemeDictionarySampleButton_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(ThemeDictionaryXamlSource);
+            DemoClipboard.SetText(ThemeDictionaryXamlSource);
         }
 
         private static void CopyTokenButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Controls.Button { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
             {
-                Clipboard.SetText(resourceKey);
+                DemoClipboard.SetText(resourceKey);
             }
         }
 

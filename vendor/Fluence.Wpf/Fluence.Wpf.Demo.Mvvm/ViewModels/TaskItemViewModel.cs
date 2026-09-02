@@ -44,13 +44,13 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// The task description text.
         /// </summary>
         [ObservableProperty]
-        private string _title = title;
+        public partial string Title { get; set; } = title;
 
         /// <summary>
         /// Whether the task is complete. Toggled via a CheckBox in the
         /// DataTemplate - no code-behind required.
         /// </summary>
         [ObservableProperty]
-        private bool _isCompleted;
+        public partial bool IsCompleted { get; set; }
     }
 }

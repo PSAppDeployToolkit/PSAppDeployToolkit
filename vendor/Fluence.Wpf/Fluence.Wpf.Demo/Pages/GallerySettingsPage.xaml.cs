@@ -317,7 +317,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void CopyRepositoryButton_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(RepositoryUri.AbsoluteUri);
+            DemoClipboard.SetText(RepositoryUri.AbsoluteUri);
         }
 
         private void OpenRepositoryButton_Click(object sender, RoutedEventArgs e)

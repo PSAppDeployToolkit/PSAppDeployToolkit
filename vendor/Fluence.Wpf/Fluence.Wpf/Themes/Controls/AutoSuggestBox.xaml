@@ -13,8 +13,10 @@
         null so no empty button plate is shown. The suggestion surface reuses the canonical
         flyout tokens from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
         SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
-        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
-        produce artifacts in a Popup (see DropDownButton.xaml).
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
     -->
 
     <!--
@@ -129,6 +131,22 @@
                             PlacementTarget="{Binding ElementName=FieldRoot}"
                             PopupAnimation="None"
                             StaysOpen="False">
+                            <Grid>
+                                <!--
+                                    Elevation caster: an empty sibling behind the surface, because WPF
+                                    drops ClearType for text under an Effect and this surface opts into
+                                    it. No layout gutter is needed, PopupRoot already reserves about
+                                    15 px per side for popup shadows.
+                                -->
+                                <Border
+                                    x:Name="ShadowCaster"
+                                    MinWidth="{Binding ActualWidth, ElementName=FieldRoot}"
+                                    MaxHeight="{TemplateBinding MaxSuggestionListHeight}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                    CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                    Effect="{DynamicResource FlyoutShadowEffect}"
+                                    UseLayoutRounding="True" />
                             <Border
                                 x:Name="SuggestionsSurface"
                                 MinWidth="{Binding ActualWidth, ElementName=FieldRoot}"
@@ -149,6 +167,7 @@
                                     IsTabStop="False"
                                     ItemsSource="{TemplateBinding ItemsSource}" />
                             </Border>
+                            </Grid>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>

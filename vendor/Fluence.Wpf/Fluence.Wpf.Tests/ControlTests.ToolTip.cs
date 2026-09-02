@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                object brush = Assert.IsType<object>(app.TryFindResource("SolidBackgroundFillColorTertiaryBrush"), exactMatch: false);
             });
         }
 
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
                 Application app = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                object brush = Assert.IsType<object>(app.TryFindResource("SurfaceStrokeColorFlyoutBrush"), exactMatch: false);
             });
         }
 

@@ -73,7 +73,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(card);
-                    _ = Assert.IsAssignableFrom<CardAutomationPeer>(peer);
+                    _ = Assert.IsType<CardAutomationPeer>(peer, exactMatch: false);
                 }
                 finally
                 {
@@ -149,8 +149,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(card);
-                    object pattern = Assert.IsAssignableFrom<object>(peer.GetPattern(PatternInterface.Invoke));
-                    _ = Assert.IsAssignableFrom<IInvokeProvider>(pattern);
+                    object pattern = Assert.IsType<object>(peer.GetPattern(PatternInterface.Invoke), exactMatch: false);
+                    _ = Assert.IsType<IInvokeProvider>(pattern, exactMatch: false);
                 }
                 finally
                 {
@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Tests
                     card.Click += (_, _) => clickRaised = true;
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(card);
-                    IInvokeProvider invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
+                    IInvokeProvider invokeProvider = Assert.IsType<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke), exactMatch: false);
                     invokeProvider.Invoke();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 

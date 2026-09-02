@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
                     button.IsEnabled = false;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(button, "MainContentPresenter");
-                    ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(button, "IconPresenter"));
+                    ContentPresenter iconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(button, "IconPresenter"), exactMatch: false);
                     Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
 
                     button.IsEnabled = true;
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Tests
                     link.IsEnabled = false;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     AssertIconMatchesText(link, "MainContentPresenter");
-                    ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(link, "IconPresenter"));
+                    ContentPresenter iconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(link, "IconPresenter"), exactMatch: false);
                     Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
                 }
                 finally
@@ -352,7 +352,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    TextBlock title = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(custom, "TitleTextBlock"));
+                    TextBlock title = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(custom, "TitleTextBlock"), exactMatch: false);
                     SolidColorBrush titleBrush = Assert.IsType<SolidColorBrush>(title.Foreground);
                     Assert.Equal(titleBrush.Color, GetIconForegroundColor(custom));
                     Assert.NotEqual(GetResourceColor("SystemFillColorCriticalBrush"), GetIconForegroundColor(custom));
@@ -361,7 +361,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(Colors.DarkOrchid, GetIconForegroundColor(custom));
 
-                    TextBlock defaultIcon = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(standard, "DefaultIcon"));
+                    TextBlock defaultIcon = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(standard, "DefaultIcon"), exactMatch: false);
                     SolidColorBrush defaultIconBrush = Assert.IsType<SolidColorBrush>(defaultIcon.Foreground);
                     Assert.Equal(GetResourceColor("SystemFillColorCriticalBrush"), defaultIconBrush.Color);
                 }
@@ -449,7 +449,7 @@ namespace Fluence.Wpf.Tests
                     combo.IsEnabled = false;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(GetControlForegroundColor(combo), GetIconForegroundColor(combo));
-                    ContentPresenter leftIcon = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(combo, "LeftIcon"));
+                    ContentPresenter leftIcon = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(combo, "LeftIcon"), exactMatch: false);
                     Assert.Equal(1.0, leftIcon.Opacity, 0.001);
                 }
                 finally
@@ -547,7 +547,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
                         GetIconForegroundColor(secondary));
-                    ContentPresenter secondaryIconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(secondary, "IconPresenter"));
+                    ContentPresenter secondaryIconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(secondary, "IconPresenter"), exactMatch: false);
                     Assert.Equal(1.0, secondaryIconPresenter.Opacity, 0.001);
                 }
                 finally
@@ -608,14 +608,14 @@ namespace Fluence.Wpf.Tests
 
         private static Color GetIconForegroundColor(DependencyObject root)
         {
-            Controls.FontIcon icon = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildren<Controls.FontIcon>(root).FirstOrDefault());
+            Controls.FontIcon icon = Assert.IsType<Controls.FontIcon>(FindVisualChildren<Controls.FontIcon>(root).FirstOrDefault(), exactMatch: false);
             SolidColorBrush brush = Assert.IsType<SolidColorBrush>(icon.Foreground);
             return brush.Color;
         }
 
         private static Color GetPresenterTextColor(DependencyObject root, string presenterName)
         {
-            ContentPresenter presenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(root, presenterName));
+            ContentPresenter presenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(root, presenterName), exactMatch: false);
             SolidColorBrush brush = Assert.IsType<SolidColorBrush>(TextElement.GetForeground(presenter));
             return brush.Color;
         }

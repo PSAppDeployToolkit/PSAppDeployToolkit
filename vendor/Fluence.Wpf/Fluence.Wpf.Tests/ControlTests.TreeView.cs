@@ -63,8 +63,8 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Template applied → ScrollViewer present
-                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
-                _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
+                ScrollViewer sv = Assert.IsType<ScrollViewer>(FindVisualChild<ScrollViewer>(tv), exactMatch: false);
+                _ = Assert.IsType<Controls.SmoothScrollViewer>(sv, exactMatch: false);
                 Assert.Same(app.TryFindResource("ScrollViewerStyle"), sv.Style);
                 w.Close();
             });
@@ -86,9 +86,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ContentPresenter cp = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "PART_Header"));
+                ContentPresenter cp = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(item, "PART_Header"), exactMatch: false);
 
-                ItemsPresenter itemsPresenter = Assert.IsAssignableFrom<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"));
+                ItemsPresenter itemsPresenter = Assert.IsType<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"), exactMatch: false);
 
                 w.Close();
             });
@@ -111,7 +111,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // The ToggleButton expander must be Visible when HasItems is true
-                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
+                ToggleButton expander = Assert.IsType<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, expander.Visibility);
 
                 w.Close();
@@ -133,7 +133,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
+                ToggleButton expander = Assert.IsType<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, expander.Visibility);
 
                 w.Close();
@@ -157,7 +157,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Initially collapsed
-                ItemsPresenter itemsHost = Assert.IsAssignableFrom<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"));
+                ItemsPresenter itemsHost = Assert.IsType<ItemsPresenter>(FindVisualChildByName<ItemsPresenter>(item, "ItemsHost"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, itemsHost.Visibility);
 
                 // Expand
@@ -185,7 +185,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Border itemBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "ItemBorder"));
+                Border itemBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(item, "ItemBorder"), exactMatch: false);
 
                 // Background must be transparent (or null) in normal state
                 Brush normalBg = itemBorder.Background;
@@ -218,7 +218,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ControlTemplate itemTemplate = Assert.IsAssignableFrom<ControlTemplate>(item.Template);
+                ControlTemplate itemTemplate = Assert.IsType<ControlTemplate>(item.Template, exactMatch: false);
                 bool hasHeaderHoverTrigger = false;
                 bool hasAncestorHoverTrigger = false;
 
@@ -278,8 +278,8 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ScrollViewer sv = Assert.IsAssignableFrom<ScrollViewer>(FindVisualChild<ScrollViewer>(tv));
-                _ = Assert.IsAssignableFrom<Controls.SmoothScrollViewer>(sv);
+                ScrollViewer sv = Assert.IsType<ScrollViewer>(FindVisualChild<ScrollViewer>(tv), exactMatch: false);
+                _ = Assert.IsType<Controls.SmoothScrollViewer>(sv, exactMatch: false);
 
                 w.Close();
             });
@@ -301,8 +301,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ToggleButton expander = Assert.IsAssignableFrom<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"));
-                TextBlock chevron = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(expander, "ChevronGlyph"));
+                ToggleButton expander = Assert.IsType<ToggleButton>(FindVisualChildByName<ToggleButton>(item, "Expander"), exactMatch: false);
+                TextBlock chevron = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(expander, "ChevronGlyph"), exactMatch: false);
                 Assert.Equal("\uE76C", chevron.Text, StringComparer.Ordinal);
 
                 w.Close();

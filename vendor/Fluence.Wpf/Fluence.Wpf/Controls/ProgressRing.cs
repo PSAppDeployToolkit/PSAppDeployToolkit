@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Automation;
-using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Automation;
@@ -36,6 +34,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Fluence.Wpf.Automation;
+using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Controls
 {
@@ -463,7 +463,7 @@ namespace Fluence.Wpf.Controls
             {
                 // Switching to indeterminate: stop any in-flight value tween (otherwise its
                 // Completed callback will re-render the arc geometry we just cleared), then
-                // null out determinate arc data.  The code-driven sweep-fraction pulse and
+                // null out determinate arc data. The code-driven sweep-fraction pulse and
                 // template rotation render the indeterminate arc when the control is active.
                 ring.BeginAnimation(AnimatedFractionProperty, animation: null);
                 _ = ring._arcPath?.Data = null;
@@ -570,7 +570,7 @@ namespace Fluence.Wpf.Controls
             }
 
             // No tween before the template has applied - OnApplyTemplate will render the
-            // initial frame synchronously.  Tweening here would race with the layout pass
+            // initial frame synchronously. Tweening here would race with the layout pass
             // and leave the arc blank when the dispatcher drains mid-animation.
             double targetFraction = ring.ComputeFraction();
             if (ring._arcPath is null)
@@ -590,7 +590,7 @@ namespace Fluence.Wpf.Controls
 
             // FillBehavior.Stop keeps the private DP from being held by the animation
             // clock after completion; the completion handler commits the final value so
-            // the next tween starts from the rendered arc position.  The single spline
+            // the next tween starts from the rendered arc position. The single spline
             // keyframe approximates the WinUI value-change easing (KeySpline 0.1,0.9 0.2,1.0)
             // over 367 ms; the default SnapshotAndReplace handoff makes the tween start from
             // the currently rendered fraction.
@@ -748,7 +748,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            // diameter = (width × 0.1) + (1 if width ≤ 40 else 0).  Source:
+            // diameter = (width × 0.1) + (1 if width ≤ 40 else 0). Source:
             // microsoft-ui-xaml-main/src/controls/dev/ProgressRing/ProgressRing.cpp::ApplyTemplateSettings.
             double diameter = (width * 0.1) + (width <= 40.0 ? 1.0 : 0.0);
             double anchor = (width * 0.5) - diameter;

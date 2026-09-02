@@ -479,7 +479,7 @@ namespace Fluence.Wpf.Demo.Pages
             string? source = sender is FrameworkElement element ? element.Tag as string : null;
             if (!string.IsNullOrWhiteSpace(source))
             {
-                Clipboard.SetText(source);
+                DemoClipboard.SetText(source);
             }
         }
 

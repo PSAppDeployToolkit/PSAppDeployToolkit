@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
+using Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Automation
 {

@@ -6,6 +6,8 @@
 
     <Style TargetType="{x:Type controls:Card}">
         <Setter Property="Background" Value="Transparent" />
+        <!--  The CornerRadius dependency property defaults to 8; routing it through the token here lets a consumer retheme it.  -->
+        <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -14,105 +16,89 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:Card}">
+                    <!--
+                        Exactly one element paints the card. The WinUI card background tokens are
+                        translucent (#B3FFFFFF Light, #0DFFFFFF Dark), so painting the same brush on
+                        two nested borders composited it with itself: 70% white rendered as 91%, and
+                        5.1% white as 9.9%, making every card more opaque than the token specifies.
+
+                        There is no elevation either. WinUI has no Card control, but a Fluent card
+                        surface is flat (background, 1 px stroke, radius); shadow is reserved for
+                        transient surfaces such as flyouts and dialogs.
+                    -->
                     <Border
                         x:Name="OuterBorder"
                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <Border
-                            x:Name="ShadowHost"
-                            Background="Transparent"
-                            CornerRadius="{TemplateBinding CornerRadius}">
-                            <Border x:Name="CardRoot" CornerRadius="{TemplateBinding CornerRadius}">
-                                <Grid>
-                                    <Border
-                                        x:Name="VariantBackground"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="{TemplateBinding CornerRadius}"
-                                        UseLayoutRounding="True" />
-                                    <Border
-                                        x:Name="ClickHoverLayer"
-                                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                        CornerRadius="{TemplateBinding CornerRadius}"
-                                        Opacity="0" />
-                                    <Border
-                                        x:Name="ClickPressLayer"
-                                        Background="{DynamicResource ControlFillColorTertiaryBrush}"
-                                        CornerRadius="{TemplateBinding CornerRadius}"
-                                        Opacity="0" />
-                                    <Grid Margin="{TemplateBinding Padding}">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition x:Name="HeaderRow" Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <Grid
-                                            x:Name="HeaderPanel"
-                                            Grid.Row="0"
-                                            Margin="0,0,0,8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <ContentPresenter
-                                                x:Name="IconPresenter"
-                                                Grid.Column="0"
-                                                Margin="0,0,8,0"
-                                                VerticalAlignment="Center"
-                                                Content="{TemplateBinding Icon}"
-                                                TextElement.Foreground="{TemplateBinding Foreground}">
-                                                <ContentPresenter.Resources>
-                                                    <!--  Icon follows the header text (SplitButton precedent): the scoped implicit style outranks the FontIcon theme-style Foreground; a consumer's local Foreground still wins.  -->
-                                                    <Style TargetType="{x:Type controls:FontIcon}">
-                                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:Card}}}" />
-                                                    </Style>
-                                                </ContentPresenter.Resources>
-                                            </ContentPresenter>
-                                            <ContentPresenter
-                                                x:Name="HeaderPresenter"
-                                                Grid.Column="1"
-                                                VerticalAlignment="Center"
-                                                Content="{TemplateBinding Header}"
-                                                ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                TextElement.FontFamily="{TemplateBinding FontFamily}"
-                                                TextElement.Foreground="{TemplateBinding Foreground}" />
-                                        </Grid>
-                                        <ContentPresenter
-                                            x:Name="ContentPresenter"
-                                            Grid.Row="1"
-                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            ContentSource="Content"
-                                            TextElement.FontFamily="{TemplateBinding FontFamily}"
-                                            TextElement.Foreground="{TemplateBinding Foreground}" />
-                                        <ContentPresenter
-                                            x:Name="FooterPresenter"
-                                            Grid.Row="2"
-                                            Margin="0,8,0,0"
-                                            Content="{TemplateBinding Footer}"
-                                            ContentTemplate="{TemplateBinding FooterTemplate}" />
-                                    </Grid>
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        UseLayoutRounding="True">
+                        <Grid>
+                            <Border
+                                x:Name="ClickHoverLayer"
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="0" />
+                            <Border
+                                x:Name="ClickPressLayer"
+                                Background="{DynamicResource ControlFillColorTertiaryBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="0" />
+                            <Grid Margin="{TemplateBinding Padding}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition x:Name="HeaderRow" Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid
+                                    x:Name="HeaderPanel"
+                                    Grid.Row="0"
+                                    Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter
+                                        x:Name="IconPresenter"
+                                        Grid.Column="0"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Icon}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}">
+                                        <ContentPresenter.Resources>
+                                            <!--  Icon follows the header text (SplitButton precedent): the scoped implicit style outranks the FontIcon theme-style Foreground; a consumer's local Foreground still wins.  -->
+                                            <Style TargetType="{x:Type controls:FontIcon}">
+                                                <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:Card}}}" />
+                                            </Style>
+                                        </ContentPresenter.Resources>
+                                    </ContentPresenter>
+                                    <ContentPresenter
+                                        x:Name="HeaderPresenter"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Header}"
+                                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                        TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}" />
                                 </Grid>
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="ClickableStates">
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="PointerOver" />
-                                        <VisualState x:Name="Pressed" />
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                            </Border>
-                        </Border>
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    ContentSource="Content"
+                                    TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                                <ContentPresenter
+                                    x:Name="FooterPresenter"
+                                    Grid.Row="2"
+                                    Margin="0,8,0,0"
+                                    Content="{TemplateBinding Footer}"
+                                    ContentTemplate="{TemplateBinding FooterTemplate}" />
+                            </Grid>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Resources>
-                        <!--  WI-3 C21: subtle elevation for Default variant only (BlurRadius=8, Opacity=0.08).  -->
-                        <DropShadowEffect
-                            x:Key="CardDefaultElevationEffect"
-                            BlurRadius="8"
-                            Direction="270"
-                            Opacity="0.08"
-                            ShadowDepth="2"
-                            Color="Black" />
                         <Storyboard x:Key="HoverOnStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClickHoverLayer" Storyboard.TargetProperty="Opacity">
                                 <SplineDoubleKeyFrame
@@ -170,17 +156,13 @@
 
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Default}">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
-                            <Setter TargetName="VariantBackground" Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
-                            <Setter TargetName="VariantBackground" Property="BorderThickness" Value="1" />
-                            <!--  WI-3 C21: Default variant gets subtle elevation shadow.  -->
-                            <Setter TargetName="OuterBorder" Property="Effect" Value="{StaticResource CardDefaultElevationEffect}" />
+                            <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+                            <Setter TargetName="OuterBorder" Property="BorderThickness" Value="1" />
                         </Trigger>
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Outlined}">
                             <Setter TargetName="OuterBorder" Property="Background" Value="Transparent" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="Transparent" />
-                            <Setter TargetName="VariantBackground" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
-                            <Setter TargetName="VariantBackground" Property="BorderThickness" Value="1" />
+                            <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter TargetName="OuterBorder" Property="BorderThickness" Value="1" />
                         </Trigger>
                         <!--
                             Filled uses ControlAltFillColorQuarternaryBrush, not the near-transparent
@@ -192,13 +174,11 @@
                         -->
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Filled}">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
-                            <Setter TargetName="VariantBackground" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="OuterBorder" Property="BorderThickness" Value="0" />
                         </Trigger>
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Subtle}">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter TargetName="VariantBackground" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="OuterBorder" Property="BorderThickness" Value="0" />
                         </Trigger>
 
                         <MultiTrigger>
@@ -236,7 +216,6 @@
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="ClickHoverLayer" Property="Opacity" Value="0" />
                             <Setter TargetName="ClickPressLayer" Property="Opacity" Value="0" />

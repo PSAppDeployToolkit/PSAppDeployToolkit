@@ -18,10 +18,10 @@
                     <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}">
 
                         <!--
-                            Indeterminate arc (WinUI 3 motion model).  Code-behind
+                            Indeterminate arc (WinUI 3 motion model). Code-behind
                             pulses the arc length (0 -> half circumference -> 0 over 2 s)
                             while PART_IndeterminateRotate spins the arc 90 -> 1170 degrees
-                            over the same 2 s linear cycle.  The path keeps the same Fluent
+                            over the same 2 s linear cycle. The path keeps the same Fluent
                             accent foreground and rounded caps as determinate mode.
                         -->
                         <Path
@@ -38,9 +38,9 @@
                         </Path>
 
                         <!--
-                            Determinate arc.  Path geometry is set from code-behind
+                            Determinate arc. Path geometry is set from code-behind
                             (ProgressRing.RenderDeterminateArc) whenever Value, Minimum,
-                            Maximum, or StrokeThickness changes.  A 367 ms spline-eased
+                            Maximum, or StrokeThickness changes. A 367 ms spline-eased
                             animation on a private AnimatedFraction DP drives the tween.
                         -->
                         <Path
@@ -62,7 +62,7 @@
                             <Setter TargetName="PART_IndeterminateArc" Property="Visibility" Value="Visible" />
                         </MultiTrigger>
 
-                        <!--  Active + Determinate: show arc Path.  Geometry is driven by code-behind.  -->
+                        <!--  Active + Determinate: show arc Path. Geometry is driven by code-behind.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsActive" Value="True" />

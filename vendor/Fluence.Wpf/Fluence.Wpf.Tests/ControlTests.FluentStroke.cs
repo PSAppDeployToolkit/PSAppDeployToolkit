@@ -88,9 +88,9 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = radio.ApplyTemplate();
-                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
+                    Ellipse outerEllipse = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"), exactMatch: false);
 
-                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDefaultBrush"));
+                    Brush expected = Assert.IsType<Brush>(radio.FindResource("ControlStrongStrokeColorDefaultBrush"), exactMatch: false);
                     Assert.Same(expected, outerEllipse.Stroke);
 
                     Color strokeColor = ((SolidColorBrush)outerEllipse.Stroke).Color;
@@ -138,9 +138,9 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Ellipse outerEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"));
+                    Ellipse outerEllipse = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(radio, "OuterEllipse"), exactMatch: false);
 
-                    Brush expected = Assert.IsAssignableFrom<Brush>(radio.FindResource("ControlStrongStrokeColorDisabledBrush"));
+                    Brush expected = Assert.IsType<Brush>(radio.FindResource("ControlStrongStrokeColorDisabledBrush"), exactMatch: false);
                     Assert.Same(expected, outerEllipse.Stroke);
                 }
                 finally
@@ -183,8 +183,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
-                    Border indeterminateDash = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(checkBox, "IndeterminateDash"));
+                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"), exactMatch: false);
+                    Border indeterminateDash = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndeterminateDash"), exactMatch: false);
 
                     // The check-in storyboard now fades the glyph in, so sample until it
                     // settles at the trigger setter steady state instead of asserting
@@ -235,7 +235,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path checkGlyph = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"));
+                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"), exactMatch: false);
                     Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
 
                     checkBox.IsChecked = true;
@@ -439,7 +439,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
                     Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
+                    Brush expectedStroke = Assert.IsType<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"), exactMatch: false);
                     Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally
@@ -496,7 +496,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(new CornerRadius(8, 0, 0, 0), strokeBorder.CornerRadius);
                     Assert.Equal(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness);
 
-                    Brush expectedStroke = Assert.IsAssignableFrom<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"));
+                    Brush expectedStroke = Assert.IsType<Brush>(nav.FindResource("NavigationViewContentSeparatorBrush"), exactMatch: false);
                     Assert.Same(expectedStroke, strokeBorder.BorderBrush);
                 }
                 finally

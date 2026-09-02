@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -37,6 +36,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Fluence.Wpf.Helpers;
 
 // IMPORTANT: every reference to TextBlock / ListBox in this file MUST be fully qualified
 // (System.Windows.Controls.TextBlock, System.Windows.Controls.ListBox). The

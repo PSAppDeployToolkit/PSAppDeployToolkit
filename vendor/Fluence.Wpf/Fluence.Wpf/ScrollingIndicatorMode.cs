@@ -26,31 +26,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Windows;
-using Fluence.Wpf.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace Fluence.Wpf
 {
     /// <summary>
-    /// Event data for <see cref="TabView.TabCloseRequested"/> and <see cref="TabViewItem.CloseRequested"/>.
+    /// Identifies which scrolling indicator a <see cref="ScrollBar"/> is currently showing.
     /// </summary>
     /// <remarks>
-    /// Initializes a new instance of the <see cref="TabViewTabCloseRequestedEventArgs"/> class.
+    /// Mirrors the WinUI 3 <c language="csharp">ScrollingIndicatorMode</c> enumeration that the WinUI ScrollViewer
+    /// template pushes into its two scroll bars. A Fluence scroll bar reads the value from
+    /// <see cref="Controls.ScrollBarExtensions.IndicatorModeProperty"/> and moves its
+    /// <c language="xaml">ScrollingIndicatorStates</c> visual state group to the matching state.
     /// </remarks>
-    /// <param name="routedEvent">The routed event being raised.</param>
-    /// <param name="source">The element raising the event.</param>
-    /// <param name="tab">The <see cref="TabViewItem"/> the user has asked to close.</param>
-    /// <param name="item">The bound data item, or the <see cref="TabViewItem"/> itself if no data was bound.</param>
-    public class TabViewTabCloseRequestedEventArgs(RoutedEvent routedEvent, object source, TabViewItem tab, object item) : RoutedEventArgs(routedEvent, source)
+    public enum ScrollingIndicatorMode
     {
         /// <summary>
-        /// Gets the tab container the user asked to close.
+        /// No indicator is shown. The scroll bar is fully faded out and does not accept input.
         /// </summary>
-        public TabViewItem Tab { get; } = tab;
+        None = 0,
 
         /// <summary>
-        /// Gets the data item bound to <see cref="Tab"/>, or the tab itself when items are declared inline.
+        /// The touch panning indicator is shown: a thin, non interactive bar that reports the
+        /// scroll position without offering a drag target.
         /// </summary>
-        public object Item { get; } = item;
+        TouchIndicator = 1,
+
+        /// <summary>
+        /// The mouse indicator is shown: the interactive rail that expands to its full width while
+        /// the pointer is over it.
+        /// </summary>
+        MouseIndicator = 2,
     }
 }

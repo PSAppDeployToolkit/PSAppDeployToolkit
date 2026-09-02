@@ -227,6 +227,24 @@
                                 translucent layered-window surface and degrades instead of helping,
                                 which is the same reasoning that keeps the FluenceWindow root at Auto.
                             -->
+                            <Grid>
+                                <!--
+                                    Elevation is cast by an empty sibling behind the dropdown. The
+                                    caster is opaque (SolidBackgroundFillColorTertiary) rather than
+                                    the acrylic fill, because a translucent caster casts a washed out
+                                    shadow. No layout gutter is needed: PopupRoot already sizes a
+                                    popup window about 15 px larger per side than its child.
+                                -->
+                                <Border
+                                    x:Name="ShadowCaster"
+                                    MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                    CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                    Effect="{DynamicResource FlyoutShadowEffect}"
+                                    RenderTransform="{Binding RenderTransform, ElementName=PART_DropdownBorder}"
+                                    RenderTransformOrigin="0.5,0" />
                             <Border
                                 x:Name="PART_DropdownBorder"
                                 MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
@@ -240,14 +258,6 @@
                                 <Border.RenderTransform>
                                     <TranslateTransform x:Name="DropdownTranslate" />
                                 </Border.RenderTransform>
-                                <!--
-                                    No DropShadowEffect: WPF bitmap effects on a Border with CornerRadius
-                                    always bleed into the transparent corner nooks, producing darker
-                                    squared-off artifacts at the rounded corners regardless of ShadowDepth.
-                                    Real WinUI 3 uses DWM-managed compositor shadows (not WPF effects).
-                                    The SurfaceStrokeColorFlyoutBrush border + background contrast is
-                                    sufficient for visual separation without the rendering artifact.
-                                -->
                                 <Grid>
                                     <!--  The noise overlay fills the rounded popup shape. Its CornerRadius  -->
                                     <!--  MUST track the outer PART_DropdownBorder.CornerRadius so that when  -->
@@ -270,6 +280,7 @@
                                     </ScrollViewer>
                                 </Grid>
                             </Border>
+                            </Grid>
                         </Popup>
                         <!--
                             WI-3 C18: FocusedStates + EditableFocusedStates VSM groups.

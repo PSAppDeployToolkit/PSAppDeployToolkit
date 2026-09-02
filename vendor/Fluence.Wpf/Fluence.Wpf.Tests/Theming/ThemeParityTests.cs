@@ -313,7 +313,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ResourceDictionary res = Application.Current.Resources;
                 foreach (string key in HighContrastHighlightDerivedBrushKeys)
                 {
-                    _ = Assert.IsAssignableFrom<SolidColorBrush>(res[key]);
+                    _ = Assert.IsType<SolidColorBrush>(res[key], exactMatch: false);
                     SolidColorBrush brush = (SolidColorBrush)res[key];
                     Assert.Equal(highlight, brush.Color);
                 }
@@ -343,7 +343,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ResourceDictionary res = Application.Current.Resources;
                 foreach (string key in HighContrastHighlightTextDerivedBrushKeys)
                 {
-                    _ = Assert.IsAssignableFrom<SolidColorBrush>(res[key]);
+                    _ = Assert.IsType<SolidColorBrush>(res[key], exactMatch: false);
                     SolidColorBrush brush = (SolidColorBrush)res[key];
                     Assert.Equal(highlightText, brush.Color);
                 }

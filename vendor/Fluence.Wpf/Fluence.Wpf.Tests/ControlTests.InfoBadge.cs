@@ -94,8 +94,8 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // DotIndicator should be visible; BadgeBorder should be collapsed.
-                Ellipse dot = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(badge, "DotIndicator"));
-                System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
+                Ellipse dot = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(badge, "DotIndicator"), exactMatch: false);
+                System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, dot.Visibility);
                 Assert.Equal(Visibility.Collapsed, border.Visibility);
                 w.Close();
@@ -139,8 +139,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(w.Dispatcher);
                     w.UpdateLayout();
 
-                    System.Windows.Controls.Border border = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"));
-                    ContentPresenter content = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(badge, "ContentArea"));
+                    System.Windows.Controls.Border border = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(badge, "BadgeBorder"), exactMatch: false);
+                    ContentPresenter content = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(badge, "ContentArea"), exactMatch: false);
                     Assert.Equal(34.0, border.MinWidth, 0.1);
                     Assert.Equal(24.0, border.MinHeight, 0.1);
                     Assert.Equal(24.0, border.MaxHeight, 0.1);

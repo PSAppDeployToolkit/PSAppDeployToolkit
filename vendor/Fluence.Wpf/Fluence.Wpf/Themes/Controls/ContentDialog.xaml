@@ -37,6 +37,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ContentDialog}">
+                    <Grid>
+                        <!--
+                            Elevation caster: an empty sibling behind the surface, so the effect never
+                            covers the dialog text. A dialog is an in-window overlay rather than a
+                            popup, so nothing clips the bleed; the smoke layer sits behind both.
+                        -->
+                        <Border
+                            x:Name="ShadowCaster"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}"
+                            UseLayoutRounding="True" />
                     <Border
                         x:Name="DialogSurface"
                         Background="{TemplateBinding Background}"
@@ -75,6 +87,7 @@
                                         x:Name="ContentScrollViewer"
                                         Grid.Row="1"
                                         HorizontalScrollBarVisibility="Disabled"
+                                        Style="{DynamicResource ScrollViewerStyle}"
                                         VerticalScrollBarVisibility="Auto">
                                         <ContentPresenter
                                             x:Name="BodyPresenter"
@@ -120,6 +133,7 @@
                             </Grid>
                         </Grid>
                     </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Title" Value="{x:Null}">
                             <Setter TargetName="TitlePresenter" Property="Visibility" Value="Collapsed" />

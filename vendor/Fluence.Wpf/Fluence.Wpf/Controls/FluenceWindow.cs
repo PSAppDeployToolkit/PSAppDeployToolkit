@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
-using Fluence.Wpf.Native;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -39,6 +37,8 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shell;
+using Fluence.Wpf.Helpers;
+using Fluence.Wpf.Native;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -1660,7 +1660,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Returns <see langword="true"/> when the element under <paramref name="windowPoint"/> (or any of its
         /// visual ancestors) has <see cref="WindowChrome.IsHitTestVisibleInChromeProperty"/> set to
-        /// <see langword="true"/>.  Used by <see cref="HitTestTitleBar"/> to let clicks on interactive controls
+        /// <see langword="true"/>. Used by <see cref="HitTestTitleBar"/> to let clicks on interactive controls
         /// inside the title bar (e.g. a search TextBox or ToggleSwitch) fall through to WPF instead
         /// of being swallowed as caption-area drag gestures.
         /// </summary>

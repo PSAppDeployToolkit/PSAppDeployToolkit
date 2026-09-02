@@ -61,7 +61,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
+                TextBlock placeholder = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"), exactMatch: false);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
 
@@ -91,7 +91,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                TextBlock placeholder = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"));
+                TextBlock placeholder = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PlaceholderTextBlock"), exactMatch: false);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("TextFillColorTertiaryBrush"));
 
@@ -121,7 +121,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Border validationLine = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(tb, "PART_ValidationLine"));
+                Border validationLine = Assert.IsType<Border>(FindVisualChildByName<Border>(tb, "PART_ValidationLine"), exactMatch: false);
                 Assert.Equal(0.0, validationLine.Opacity, 0.001);
 
                 FocusManager.SetFocusedElement(w, tb);
@@ -155,8 +155,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                TextBlock helper = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_HelperText"));
-                TextBlock icon = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_ValidationIcon"));
+                TextBlock helper = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_HelperText"), exactMatch: false);
+                TextBlock icon = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(tb, "PART_ValidationIcon"), exactMatch: false);
 
                 StackPanel helperRow = Assert.IsType<StackPanel>(VisualTreeHelper.GetParent(helper));
                 Assert.Equal(new Thickness(12, 9, 12, 0), helperRow.Margin);

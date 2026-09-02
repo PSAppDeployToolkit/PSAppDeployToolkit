@@ -69,8 +69,8 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    NavigationView navigationView = Assert.IsAssignableFrom<NavigationView>(FindByName<NavigationView>(window, "DemoNav"));
-                    _ = Assert.IsAssignableFrom<GalleryColorsPage>(navigationView.Content);
+                    NavigationView navigationView = Assert.IsType<NavigationView>(FindByName<NavigationView>(window, "DemoNav"), exactMatch: false);
+                    _ = Assert.IsType<GalleryColorsPage>(navigationView.Content, exactMatch: false);
                 }
                 finally
                 {
@@ -89,9 +89,9 @@ namespace Fluence.Wpf.Tests
                 Window window = CreateHostWindow(page);
                 try
                 {
-                    SmoothScrollViewer scrollViewer = Assert.IsAssignableFrom<SmoothScrollViewer>(FindVisualChild<SmoothScrollViewer>(page));
+                    SmoothScrollViewer scrollViewer = Assert.IsType<SmoothScrollViewer>(FindVisualChild<SmoothScrollViewer>(page), exactMatch: false);
 
-                    TabControl colorTabs = Assert.IsAssignableFrom<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"));
+                    TabControl colorTabs = Assert.IsType<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"), exactMatch: false);
                     Assert.Equal(SectionNames.Length, colorTabs.Items.Count);
 
                     for (int i = 0; i < SectionNames.Length; i++)
@@ -211,7 +211,7 @@ namespace Fluence.Wpf.Tests
         private static SortedSet<string> CollectColorTokenResourceKeys(GalleryColorsPage page, Dispatcher dispatcher)
         {
             SortedSet<string> resourceKeys = new(StringComparer.OrdinalIgnoreCase);
-            TabControl colorTabs = Assert.IsAssignableFrom<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"));
+            TabControl colorTabs = Assert.IsType<TabControl>(FindByName<TabControl>(page, "ColorSectionTabs"), exactMatch: false);
 
             for (int index = 0; index < colorTabs.Items.Count; index++)
             {

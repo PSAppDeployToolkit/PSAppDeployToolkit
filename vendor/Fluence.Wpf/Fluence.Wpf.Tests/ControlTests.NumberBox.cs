@@ -231,7 +231,7 @@ namespace Fluence.Wpf.Tests
         public Task NumberBox_SpinPanel_HasWinUiCanonicalMarginAsync()
         {
             // WI-3 A7: WinUI canonical SpinPanel margin is "0,1,2,1" (2px right inset from
-            // border edge).  Before this fix Fluence used "0,1,0,1" which butted the buttons
+            // border edge). Before this fix Fluence used "0,1,0,1" which butted the buttons
             // flush against the right border of the control.
             return WpfTestSta.RunOnStaAsync(static () =>
             {

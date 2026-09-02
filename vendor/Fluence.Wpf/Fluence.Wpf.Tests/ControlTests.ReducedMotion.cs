@@ -133,11 +133,11 @@ namespace Fluence.Wpf.Tests
                     w.Show();
                     WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                    Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                    Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, indeterminateArc.Visibility);
                     Assert.NotNull(indeterminateArc.Data);
 
-                    RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                    RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                     Assert.False(rotate.HasAnimatedProperties,
                         "With motion disabled the indeterminate rotation must not run.");
                     Assert.Equal(90.0, rotate.Angle, 0.01);
@@ -283,7 +283,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup.");
 
-                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Popup popup = Assert.IsType<Popup>(flyout.HostPopup, exactMatch: false);
                     Controls.FlyoutPresenter presenter = Assert.IsType<Controls.FlyoutPresenter>(popup.Child);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => presenter.IsLoaded).ConfigureAwait(true),
                         "The presenter must load inside the open popup.");

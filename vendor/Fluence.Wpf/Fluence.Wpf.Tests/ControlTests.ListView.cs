@@ -62,9 +62,9 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Find the first ListViewItem in the visual tree
-                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
+                ListViewItem item = Assert.IsType<ListViewItem>(FindVisualChild<ListViewItem>(lv), exactMatch: false);
 
-                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
+                Border indicator = Assert.IsType<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"), exactMatch: false);
                 w.Close();
             });
         }
@@ -83,8 +83,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
-                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
+                ListViewItem item = Assert.IsType<ListViewItem>(FindVisualChild<ListViewItem>(lv), exactMatch: false);
+                Border indicator = Assert.IsType<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"), exactMatch: false);
 
                 Assert.Equal(3.0, indicator.Width, 0.01);
                 w.Close();
@@ -105,8 +105,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
-                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
+                ListViewItem item = Assert.IsType<ListViewItem>(FindVisualChild<ListViewItem>(lv), exactMatch: false);
+                Border indicator = Assert.IsType<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"), exactMatch: false);
 
                 Assert.Equal(new CornerRadius(1.5), indicator.CornerRadius);
                 w.Close();
@@ -127,8 +127,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                ListViewItem item = Assert.IsAssignableFrom<ListViewItem>(FindVisualChild<ListViewItem>(lv));
-                Border indicator = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"));
+                ListViewItem item = Assert.IsType<ListViewItem>(FindVisualChild<ListViewItem>(lv), exactMatch: false);
+                Border indicator = Assert.IsType<Border>(FindVisualChildByName<Border>(item, "SelectionIndicator"), exactMatch: false);
 
                 SolidColorBrush expected = Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush"));
 

@@ -47,10 +47,10 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.CheckBox enable = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "ButtonEnableCheckBox"));
-                Controls.Button standard = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Standard"));
-                Controls.Button accent = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Accent"));
-                Controls.Button subtle = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Subtle"));
+                Controls.CheckBox enable = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "ButtonEnableCheckBox"), exactMatch: false);
+                Controls.Button standard = Assert.IsType<Controls.Button>(FindFluentButtonByContent(window, "Standard"), exactMatch: false);
+                Controls.Button accent = Assert.IsType<Controls.Button>(FindFluentButtonByContent(window, "Accent"), exactMatch: false);
+                Controls.Button subtle = Assert.IsType<Controls.Button>(FindFluentButtonByContent(window, "Subtle"), exactMatch: false);
                 Controls.Button? disabled = FindFluentButtonByContent(window, "Disabled");
 
                 Assert.Null(disabled);
@@ -136,8 +136,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.Button subtle = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Subtle"));
-                Controls.Button refresh = Assert.IsAssignableFrom<Controls.Button>(FindFluentButtonByContent(window, "Refresh"));
+                Controls.Button subtle = Assert.IsType<Controls.Button>(FindFluentButtonByContent(window, "Subtle"), exactMatch: false);
+                Controls.Button refresh = Assert.IsType<Controls.Button>(FindFluentButtonByContent(window, "Refresh"), exactMatch: false);
 
                 AssertBrushIsTransparent(subtle.BorderBrush);
                 AssertBrushIsTransparent(refresh.BorderBrush);
@@ -153,7 +153,7 @@ namespace Fluence.Wpf.Tests
             {
                 List<TextBlock> titles = [.. FindVisualChildren<TextBlock>(window)
                     .Where(static text => string.Equals(text.Text, "Iconography", StringComparison.Ordinal))];
-                Controls.AutoSuggestBox search = Assert.IsAssignableFrom<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"));
+                Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"), exactMatch: false);
 
                 _ = Assert.Single(titles);
                 Assert.Equal("Search icons by name, code, or tags", search.PlaceholderText, StringComparer.Ordinal);
@@ -167,8 +167,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
-                Controls.AutoSuggestBox search = Assert.IsAssignableFrom<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"));
-                Controls.ListView list = Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"));
+                Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"), exactMatch: false);
+                Controls.ListView list = Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"), exactMatch: false);
 
                 int totalIcons = GetIconCatalogItems(list).Count;
                 Assert.True(totalIcons > 500, "Catalog should load the full Segoe Fluent Icons set before filtering.");
@@ -185,7 +185,7 @@ namespace Fluence.Wpf.Tests
                         "Filtered icons should match the search term: " + item.Name);
                 }
 
-                TextBlock nameValue = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "IconNameValueText"));
+                TextBlock nameValue = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "IconNameValueText"), exactMatch: false);
                 Assert.Equal(filtered[0].Name, nameValue.Text, StringComparer.Ordinal);
             });
         }
@@ -195,7 +195,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
-                Controls.ListView list = Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"));
+                Controls.ListView list = Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "IconCatalogList"), exactMatch: false);
 
                 List<Button> tiles = [.. FindVisualChildren<Button>(list)
                     .Where(static tile => tile.DataContext is GalleryIconsPage.IconCatalogItem)];
@@ -212,8 +212,8 @@ namespace Fluence.Wpf.Tests
                 Assert.True(second.IsSelected, "Clicking a tile should select its icon.");
                 Assert.False(first.IsSelected, "Selecting a tile should clear the previous selection.");
 
-                TextBlock nameValue = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "IconNameValueText"));
-                Controls.FontIcon preview = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(window, "IconPreviewGlyph"));
+                TextBlock nameValue = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "IconNameValueText"), exactMatch: false);
+                Controls.FontIcon preview = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(window, "IconPreviewGlyph"), exactMatch: false);
                 Assert.Equal(second.Name, nameValue.Text, StringComparer.Ordinal);
                 Assert.Equal(second.Glyph, preview.Glyph, StringComparer.Ordinal);
             });
@@ -224,7 +224,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryIconsPage(), static window =>
             {
-                Controls.AutoSuggestBox search = Assert.IsAssignableFrom<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"));
+                Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox"), exactMatch: false);
 
                 search.Text = "E71F";
                 WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -254,8 +254,8 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertIconSidebarValue(Window window, string valueName, string buttonName, string expected)
         {
-            TextBlock value = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, valueName));
-            Controls.Button copy = Assert.IsAssignableFrom<Controls.Button>(FindVisualChildByName<Controls.Button>(window, buttonName));
+            TextBlock value = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, valueName), exactMatch: false);
+            Controls.Button copy = Assert.IsType<Controls.Button>(FindVisualChildByName<Controls.Button>(window, buttonName), exactMatch: false);
             Assert.Equal(expected, value.Text, StringComparer.Ordinal);
             Assert.Equal(expected, copy.Tag as string, StringComparer.Ordinal);
         }
@@ -282,9 +282,9 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GallerySelectionPage(), static window =>
             {
-                Controls.RadioButton optionA = Assert.IsAssignableFrom<Controls.RadioButton>(FindRadioButtonByContent(window, "Option A"));
-                Controls.RadioButton optionB = Assert.IsAssignableFrom<Controls.RadioButton>(FindRadioButtonByContent(window, "Option B"));
-                Controls.RadioButton optionC = Assert.IsAssignableFrom<Controls.RadioButton>(FindRadioButtonByContent(window, "Option C"));
+                Controls.RadioButton optionA = Assert.IsType<Controls.RadioButton>(FindRadioButtonByContent(window, "Option A"), exactMatch: false);
+                Controls.RadioButton optionB = Assert.IsType<Controls.RadioButton>(FindRadioButtonByContent(window, "Option B"), exactMatch: false);
+                Controls.RadioButton optionC = Assert.IsType<Controls.RadioButton>(FindRadioButtonByContent(window, "Option C"), exactMatch: false);
 
                 Assert.Equal(0.0, optionA.Margin.Left);
                 Assert.Equal(16.0, optionA.Margin.Right);
@@ -298,7 +298,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryDataBindingPage(), static window =>
             {
-                Controls.TextBox newItemBox = Assert.IsAssignableFrom<Controls.TextBox>(FindVisualChildByName<Controls.TextBox>(window, "NewItemBox"));
+                Controls.TextBox newItemBox = Assert.IsType<Controls.TextBox>(FindVisualChildByName<Controls.TextBox>(window, "NewItemBox"), exactMatch: false);
                 StackPanel rightRailStack = Assert.IsType<StackPanel>(newItemBox.Parent);
 
                 Assert.Equal(320.0, rightRailStack.MinWidth, 0.1);
@@ -311,8 +311,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryNavigationPage(), static window =>
             {
-                Controls.NavigationView compact = Assert.IsAssignableFrom<Controls.NavigationView>(FindVisualChildByName<Controls.NavigationView>(window, "CompactNavigationDemo"));
-                Controls.CheckBox backEnabled = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "BackEnabledToggle"));
+                Controls.NavigationView compact = Assert.IsType<Controls.NavigationView>(FindVisualChildByName<Controls.NavigationView>(window, "CompactNavigationDemo"), exactMatch: false);
+                Controls.CheckBox backEnabled = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "BackEnabledToggle"), exactMatch: false);
 
                 Assert.True(backEnabled.IsChecked.GetValueOrDefault(),
                     "Compact navigation sample should start with the back button enabled.");
@@ -343,9 +343,9 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryFormsPage(), static window =>
             {
-                Controls.Button signIn = Assert.IsAssignableFrom<Controls.Button>(FindVisualChildByName<Controls.Button>(window, "SignInButton"));
+                Controls.Button signIn = Assert.IsType<Controls.Button>(FindVisualChildByName<Controls.Button>(window, "SignInButton"), exactMatch: false);
                 StackPanel? checkoutButtons = FindVisualChildByName<StackPanel>(window, "CheckoutButtonsPanel");
-                Controls.Button placeOrder = Assert.IsAssignableFrom<Controls.Button>(checkoutButtons?.Children.OfType<Controls.Button>().FirstOrDefault());
+                Controls.Button placeOrder = Assert.IsType<Controls.Button>(checkoutButtons?.Children.OfType<Controls.Button>().FirstOrDefault(), exactMatch: false);
                 List<Border> outputRegions = [.. FindVisualChildren<DemoSampleControl>(window)
                     .Select(static sample => sample.FindName("OutputRegion") as Border)
                     .Where(static border => border is not null)
@@ -380,10 +380,10 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryStatusPage(), static window =>
             {
-                Controls.NumberBox numberBox = Assert.IsAssignableFrom<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "ProgressValueNumberBox"));
-                Controls.ProgressBar progressBar = Assert.IsAssignableFrom<Controls.ProgressBar>(FindVisualChildByName<Controls.ProgressBar>(window, "StandardProgressBar"));
-                Controls.ToggleSwitch indeterminateToggle = Assert.IsAssignableFrom<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "IndeterminateToggle"));
-                Controls.NumberBox progressRingValueBox = Assert.IsAssignableFrom<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "ProgressRingValueBox"));
+                Controls.NumberBox numberBox = Assert.IsType<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "ProgressValueNumberBox"), exactMatch: false);
+                Controls.ProgressBar progressBar = Assert.IsType<Controls.ProgressBar>(FindVisualChildByName<Controls.ProgressBar>(window, "StandardProgressBar"), exactMatch: false);
+                Controls.ToggleSwitch indeterminateToggle = Assert.IsType<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "IndeterminateToggle"), exactMatch: false);
+                Controls.NumberBox progressRingValueBox = Assert.IsType<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "ProgressRingValueBox"), exactMatch: false);
 
                 Assert.Equal(HorizontalAlignment.Center, numberBox.HorizontalAlignment);
                 Assert.Equal(VerticalAlignment.Center, numberBox.VerticalAlignment);
@@ -420,11 +420,11 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryFormsPage(), static window =>
             {
-                Grid checkoutGrid = Assert.IsAssignableFrom<Grid>(FindVisualChildByName<Grid>(window, "CheckoutFieldsGrid"));
-                Controls.NumberBox quantity = Assert.IsAssignableFrom<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "QuantityNumberBox"));
-                Controls.TextBox optional = Assert.IsAssignableFrom<Controls.TextBox>(FindVisualChildByName<Controls.TextBox>(window, "OptionalTextBox"));
-                Controls.CheckBox gift = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "GiftCheckBox"));
-                StackPanel actions = Assert.IsAssignableFrom<StackPanel>(FindVisualChildByName<StackPanel>(window, "CheckoutButtonsPanel"));
+                Grid checkoutGrid = Assert.IsType<Grid>(FindVisualChildByName<Grid>(window, "CheckoutFieldsGrid"), exactMatch: false);
+                Controls.NumberBox quantity = Assert.IsType<Controls.NumberBox>(FindVisualChildByName<Controls.NumberBox>(window, "QuantityNumberBox"), exactMatch: false);
+                Controls.TextBox optional = Assert.IsType<Controls.TextBox>(FindVisualChildByName<Controls.TextBox>(window, "OptionalTextBox"), exactMatch: false);
+                Controls.CheckBox gift = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "GiftCheckBox"), exactMatch: false);
+                StackPanel actions = Assert.IsType<StackPanel>(FindVisualChildByName<StackPanel>(window, "CheckoutButtonsPanel"), exactMatch: false);
 
                 Assert.Equal(3, checkoutGrid.ColumnDefinitions.Count);
                 Assert.Equal(0, Grid.GetColumn(quantity));
@@ -438,9 +438,9 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryDataPage(), static window =>
             {
-                Border simpleBackground = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(window, "SimpleListViewBackground"));
-                Border richBackground = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(window, "RichListViewBackground"));
-                StackPanel emptyStateActions = Assert.IsAssignableFrom<StackPanel>(FindVisualChildByName<StackPanel>(window, "EmptyStateActionsPanel"));
+                Border simpleBackground = Assert.IsType<Border>(FindVisualChildByName<Border>(window, "SimpleListViewBackground"), exactMatch: false);
+                Border richBackground = Assert.IsType<Border>(FindVisualChildByName<Border>(window, "RichListViewBackground"), exactMatch: false);
+                StackPanel emptyStateActions = Assert.IsType<StackPanel>(FindVisualChildByName<StackPanel>(window, "EmptyStateActionsPanel"), exactMatch: false);
 
                 Assert.Equal(HorizontalAlignment.Center, emptyStateActions.HorizontalAlignment);
                 Assert.Equal(VerticalAlignment.Center, emptyStateActions.VerticalAlignment);
@@ -469,13 +469,13 @@ namespace Fluence.Wpf.Tests
         {
             await RunDemoPageTestAsync(static () => new GalleryDataBindingPage(), static window =>
             {
-                StackPanel selectionRail = Assert.IsAssignableFrom<StackPanel>(FindVisualChildByName<StackPanel>(window, "SelectionModeRail"));
+                StackPanel selectionRail = Assert.IsType<StackPanel>(FindVisualChildByName<StackPanel>(window, "SelectionModeRail"), exactMatch: false);
                 Assert.Equal(VerticalAlignment.Center, selectionRail.VerticalAlignment);
             }).ConfigureAwait(true);
 
             await RunDemoPageTestAsync(static () => new GalleryTreesPage(), static window =>
             {
-                StackPanel treeExpansionActions = Assert.IsAssignableFrom<StackPanel>(FindVisualChildByName<StackPanel>(window, "TreeExpansionActionsPanel"));
+                StackPanel treeExpansionActions = Assert.IsType<StackPanel>(FindVisualChildByName<StackPanel>(window, "TreeExpansionActionsPanel"), exactMatch: false);
                 Assert.Equal(HorizontalAlignment.Center, treeExpansionActions.HorizontalAlignment);
                 Assert.Equal(VerticalAlignment.Center, treeExpansionActions.VerticalAlignment);
                 Assert.True(treeExpansionActions.Children.OfType<Controls.Button>().All(static button => button.MinWidth >= 140.0),
@@ -495,7 +495,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (string buttonName in buttonNames)
                 {
-                    Controls.Button button = Assert.IsAssignableFrom<Controls.Button>(FindVisualChildByName<Controls.Button>(window, buttonName));
+                    Controls.Button button = Assert.IsType<Controls.Button>(FindVisualChildByName<Controls.Button>(window, buttonName), exactMatch: false);
                     Assert.Equal(36.0, button.Width, 0.1);
                     Assert.Equal(36.0, button.Height, 0.1);
                     Assert.Equal(36.0, button.MinWidth, 0.1);
@@ -509,14 +509,14 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryNavigationPage(), static window =>
             {
-                Controls.NavigationView leftNavigation = Assert.IsAssignableFrom<Controls.NavigationView>(FindVisualChildByName<Controls.NavigationView>(window, "LeftNavigationDemo"));
+                Controls.NavigationView leftNavigation = Assert.IsType<Controls.NavigationView>(FindVisualChildByName<Controls.NavigationView>(window, "LeftNavigationDemo"), exactMatch: false);
 
                 List<Controls.FontIcon> leftIcons = [.. FindVisualChildren<Controls.FontIcon>(leftNavigation)];
                 Assert.True(leftIcons.Count >= 3, "Left navigation sample should expose item icons.");
                 Assert.True(leftIcons.TrueForAll(static icon => Math.Abs(icon.IconFontSize - 16d) < 0.1),
                     "NavigationView item icons should align with the compact pane glyph size.");
 
-                Controls.NavigationView badgeNavigation = Assert.IsAssignableFrom<Controls.NavigationView>(FindVisualChildren<Controls.NavigationView>(window).FirstOrDefault(static nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal)));
+                Controls.NavigationView badgeNavigation = Assert.IsType<Controls.NavigationView>(FindVisualChildren<Controls.NavigationView>(window).FirstOrDefault(static nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal)), exactMatch: false);
                 Assert.Equal(NavigationViewPaneDisplayMode.Left, badgeNavigation.PaneDisplayMode);
                 Assert.True(badgeNavigation.IsPaneOpen,
                     "InfoBadge NavigationView sample should keep the pane open.");
@@ -538,7 +538,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(infoWidth, archiveWidth, 0.1);
                 Assert.True(infoWidth > 0.0, "Placement sample tab headers should use an explicit shared width.");
 
-                TabControl leftTabs = Assert.IsAssignableFrom<TabControl>(FindVisualChildByName<TabControl>(window, "LeftPlacementTabs"));
+                TabControl leftTabs = Assert.IsType<TabControl>(FindVisualChildByName<TabControl>(window, "LeftPlacementTabs"), exactMatch: false);
                 Assert.Equal(Dock.Left, leftTabs.TabStripPlacement);
 
                 TabControl? bottomTabs = FindVisualChildByName<TabControl>(window, "BottomPlacementTabs");
@@ -560,9 +560,9 @@ namespace Fluence.Wpf.Tests
                 Assert.True(descriptions.Exists(static description => description.Contains("Expander", StringComparison.OrdinalIgnoreCase)),
                     "Layout page should have a dedicated Expander DemoSampleControl.");
 
-                Controls.Expander dockPanelExpander = Assert.IsAssignableFrom<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "DockPanelOptionsExpander"));
-                _ = Assert.IsAssignableFrom<DockPanel>(dockPanelExpander.Header);
-                _ = Assert.IsAssignableFrom<DockPanel>(dockPanelExpander.Content);
+                Controls.Expander dockPanelExpander = Assert.IsType<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "DockPanelOptionsExpander"), exactMatch: false);
+                _ = Assert.IsType<DockPanel>(dockPanelExpander.Header, exactMatch: false);
+                _ = Assert.IsType<DockPanel>(dockPanelExpander.Content, exactMatch: false);
             });
         }
 
@@ -571,8 +571,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryAccessibilityPage(), static window =>
             {
-                Controls.ToggleSwitch toggle = Assert.IsAssignableFrom<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "RtlToggle"));
-                Controls.Card card = Assert.IsAssignableFrom<Controls.Card>(FindVisualChildByName<Controls.Card>(window, "RtlDemoCard"));
+                Controls.ToggleSwitch toggle = Assert.IsType<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "RtlToggle"), exactMatch: false);
+                Controls.Card card = Assert.IsType<Controls.Card>(FindVisualChildByName<Controls.Card>(window, "RtlDemoCard"), exactMatch: false);
 
                 Assert.True(toggle.IsChecked.GetValueOrDefault(),
                     "RTL sample should default to On.");

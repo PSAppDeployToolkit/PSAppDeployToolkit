@@ -4,7 +4,7 @@
     <!--  Brushes and accent ramp are built in C# by the FluenceThemeEngine pipeline.  -->
 
     <!--  Application Background  -->
-    <Color x:Key="ApplicationBackgroundColor">#FFFAFAFA</Color>
+    <Color x:Key="ApplicationBackgroundColor">#FFFFFFFF</Color>
 
     <!--  Keyboard Focus  -->
     <Color x:Key="KeyboardFocusBorderColor">#BE000000</Color>

@@ -289,10 +289,18 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.Expander.html">Expander</a>
   <a href="../../api/Fluence.Wpf.Controls.Separator.html">Separator</a>
   <a href="../../api/Fluence.Wpf.Controls.SmoothScrollViewer.html">SmoothScrollViewer</a>
+  <a href="../../api/Fluence.Wpf.Controls.ScrollBarExtensions.html">ScrollBarExtensions</a>
+  <a href="../../api/Fluence.Wpf.ScrollingIndicatorMode.html">ScrollingIndicatorMode</a>
   <a href="../../api/Fluence.Wpf.BorderVariant.html">BorderVariant</a>
 </div>
 
 Layout primitives preserve WPF layout behavior. `SmoothScrollViewer` is the scroll host used throughout the demo gallery.
+
+Scroll bars follow the WinUI 3 indicator model. The rail is a constant 12 px wide, so its hit target never changes size; only the painted thumb grows, from 2 px at rest to 6 px once the pointer is over the rail, after the WinUI 400 ms expand delay. A bar stays hidden until the pointer enters its scroll viewer or the content scrolls, then fades out again two seconds later. A touch or pen scroll shows the thin, non interactive panning bar instead of the draggable rail.
+
+WPF has no framework plumbing for that, so the driver ships as attached properties on `ScrollBarExtensions`. `IsIndicatorEnabled` attaches the behavior and is set by the `VerticalScrollBarStyle` and `HorizontalScrollBarStyle` resources; `IndicatorMode` exposes the current `ScrollingIndicatorMode` and can be written directly by an application that wants to force a bar visible or hidden. A `ScrollBar` that is not hosted in a `ScrollViewer` has nothing to reveal it, so it stays on `MouseIndicator` and remains visible.
+
+The `ScrollViewerStyle` resource is keyed, not implicit, so a plain `ScrollViewer` keeps the WPF default chrome unless it opts in with `Style="{DynamicResource ScrollViewerStyle}"`. `SmoothScrollViewer` picks it up automatically.
 
 ### Menus and Popups
 

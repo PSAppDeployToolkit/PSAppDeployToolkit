@@ -19,7 +19,7 @@
     <Color x:Key="AccentTextFillColorTertiary">#FF005BA1</Color>
     <Color x:Key="AcrylicBackgroundFillColorBase">#FFEEEEEE</Color>
     <Color x:Key="AcrylicBackgroundFillColorDefault">#F0F9F9F9</Color>
-    <Color x:Key="ApplicationBackgroundColor">#FFFAFAFA</Color>
+    <Color x:Key="ApplicationBackgroundColor">#FFFFFFFF</Color>
     <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
     <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
     <Color x:Key="CardBackgroundFillColorTertiary">#FFFFFFFF</Color>
@@ -142,7 +142,7 @@
     <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="#FF005BA1" />
     <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#FFEEEEEE" />
     <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#F0F9F9F9" />
-    <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#B3FFFFFF" />
     <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#80F6F6F6" />
     <SolidColorBrush x:Key="CardBackgroundFillColorTertiaryBrush" Color="#FFFFFFFF" />

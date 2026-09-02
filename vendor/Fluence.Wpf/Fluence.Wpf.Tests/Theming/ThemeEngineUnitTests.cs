@@ -225,7 +225,7 @@ namespace Fluence.Wpf.Tests.Theming
                 Assert.True(app.Resources.MergedDictionaries.Count > 0, "MergedDictionaries must be non-empty after Apply.");
 
                 // Verify at least one color key is present in the published dictionary
-                object accentFill = Assert.IsAssignableFrom<object>(app.Resources.MergedDictionaries[0]["AccentFillColorDefault"]);
+                object accentFill = Assert.IsType<object>(app.Resources.MergedDictionaries[0]["AccentFillColorDefault"], exactMatch: false);
             }).ConfigureAwait(true);
 
             // Tear down after the smoke test so other fixtures see a clean state

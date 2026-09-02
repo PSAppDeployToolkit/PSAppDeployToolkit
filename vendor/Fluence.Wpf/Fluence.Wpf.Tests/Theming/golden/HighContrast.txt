@@ -113,7 +113,7 @@ LayerOnMicaBaseAltFillColorTransparent|#00000000|#00000000
 LayerOnMicaBaseAltFillColorTransparentBrush|#00000000|#00FFFFFF
 NavigationViewContentBackground|#FF000000|#00000000
 NavigationViewContentBackgroundBrush|#00000000|#FFFFFFFF
-ScrollBarTrackFillBrush|#00000000|#FF000000
+ScrollBarTrackFillBrush|#00000000|#FFFFFFFF
 SmokeFillColorDefault|#FF000000|#00000000
 SmokeFillColorDefaultBrush|#00000000|#FFFFFFFF
 SolidBackgroundFillColorBase|#FF000000|#00000000

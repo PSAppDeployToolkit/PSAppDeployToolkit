@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_DownButton", "Decrease"),
                     })
                     {
-                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(numberBox, part));
+                        FrameworkElement btn = Assert.IsType<FrameworkElement>(FindVisualChildByName<FrameworkElement>(numberBox, part), exactMatch: false);
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -102,7 +102,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CloseButton", "Close"),
                     })
                     {
-                        FrameworkElement button = Assert.IsAssignableFrom<FrameworkElement>(FindVisualChildByName<FrameworkElement>(window, part));
+                        FrameworkElement button = Assert.IsType<FrameworkElement>(FindVisualChildByName<FrameworkElement>(window, part), exactMatch: false);
                         string actualName = AutomationProperties.GetName(button);
                         Assert.True(
                             string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -140,8 +140,8 @@ namespace Fluence.Wpf.Tests
                     _ = autoSuggestBox.ApplyTemplate();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(autoSuggestBox.Template);
-                    FrameworkElement queryButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_QueryButton", autoSuggestBox));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(autoSuggestBox.Template, exactMatch: false);
+                    FrameworkElement queryButton = Assert.IsType<FrameworkElement>(template.FindName("PART_QueryButton", autoSuggestBox), exactMatch: false);
                     string actualName = AutomationProperties.GetName(queryButton);
                     Assert.True(
                         string.Equals("Search", actualName, StringComparison.Ordinal),
@@ -172,7 +172,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -180,7 +180,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CancelButton", "Cancel"),
                     })
                     {
-                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
+                        FrameworkElement btn = Assert.IsType<FrameworkElement>(template.FindName(part, picker), exactMatch: false);
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -212,7 +212,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
 
                     foreach ((string part, string expectedName) in new[]
                     {
@@ -220,7 +220,7 @@ namespace Fluence.Wpf.Tests
                         ("PART_CancelButton", "Cancel"),
                     })
                     {
-                        FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(template.FindName(part, picker));
+                        FrameworkElement btn = Assert.IsType<FrameworkElement>(template.FindName(part, picker), exactMatch: false);
                         string actualName = AutomationProperties.GetName(btn);
                         Assert.True(
                             string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -255,8 +255,8 @@ namespace Fluence.Wpf.Tests
                         _ = infoBar.ApplyTemplate();
                         WpfTestSta.DrainDispatcher(infoBarWindow.Dispatcher);
 
-                        ControlTemplate infoBarTemplate = Assert.IsAssignableFrom<ControlTemplate>(infoBar.Template);
-                        FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(infoBarTemplate.FindName("PART_CloseButton", infoBar));
+                        ControlTemplate infoBarTemplate = Assert.IsType<ControlTemplate>(infoBar.Template, exactMatch: false);
+                        FrameworkElement closeButton = Assert.IsType<FrameworkElement>(infoBarTemplate.FindName("PART_CloseButton", infoBar), exactMatch: false);
                         string closeActualName = AutomationProperties.GetName(closeButton);
                         Assert.True(
                             string.Equals("Close", closeActualName, StringComparison.Ordinal),
@@ -283,7 +283,7 @@ namespace Fluence.Wpf.Tests
                         _ = pipsPager.ApplyTemplate();
                         WpfTestSta.DrainDispatcher(pipsWindow.Dispatcher);
 
-                        ControlTemplate pipsTemplate = Assert.IsAssignableFrom<ControlTemplate>(pipsPager.Template);
+                        ControlTemplate pipsTemplate = Assert.IsType<ControlTemplate>(pipsPager.Template, exactMatch: false);
 
                         foreach ((string part, string expectedName) in new[]
                         {
@@ -291,7 +291,7 @@ namespace Fluence.Wpf.Tests
                             ("PART_NextButton", "Next page"),
                         })
                         {
-                            FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(pipsTemplate.FindName(part, pipsPager));
+                            FrameworkElement btn = Assert.IsType<FrameworkElement>(pipsTemplate.FindName(part, pipsPager), exactMatch: false);
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
                                 string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -336,8 +336,8 @@ namespace Fluence.Wpf.Tests
                     _ = item.ApplyTemplate();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(item.Template);
-                    FrameworkElement closeButton = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("PART_CloseButton", item));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(item.Template, exactMatch: false);
+                    FrameworkElement closeButton = Assert.IsType<FrameworkElement>(template.FindName("PART_CloseButton", item), exactMatch: false);
                     string actualName = AutomationProperties.GetName(closeButton);
                     Assert.True(
                         string.Equals("Close tab", actualName, StringComparison.Ordinal),
@@ -371,7 +371,7 @@ namespace Fluence.Wpf.Tests
                         _ = nav.ApplyTemplate();
                         WpfTestSta.DrainDispatcher(navWindow.Dispatcher);
 
-                        ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
+                        ControlTemplate navTemplate = Assert.IsType<ControlTemplate>(nav.Template, exactMatch: false);
 
                         foreach ((string part, string expectedName) in new[]
                         {
@@ -379,7 +379,7 @@ namespace Fluence.Wpf.Tests
                             ("PART_PaneToggleButton", "Navigation"),
                         })
                         {
-                            FrameworkElement btn = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName(part, nav));
+                            FrameworkElement btn = Assert.IsType<FrameworkElement>(navTemplate.FindName(part, nav), exactMatch: false);
                             string actualName = AutomationProperties.GetName(btn);
                             Assert.True(
                                 string.Equals(expectedName, actualName, StringComparison.Ordinal),
@@ -422,9 +422,9 @@ namespace Fluence.Wpf.Tests
                         _ = nav.ApplyTemplate();
                         WpfTestSta.DrainDispatcher(navWindow.Dispatcher);
 
-                        ControlTemplate navTemplate = Assert.IsAssignableFrom<ControlTemplate>(nav.Template);
+                        ControlTemplate navTemplate = Assert.IsType<ControlTemplate>(nav.Template, exactMatch: false);
 
-                        FrameworkElement backButton = Assert.IsAssignableFrom<FrameworkElement>(navTemplate.FindName("PART_BackButton", nav));
+                        FrameworkElement backButton = Assert.IsType<FrameworkElement>(navTemplate.FindName("PART_BackButton", nav), exactMatch: false);
                         string actualName = AutomationProperties.GetName(backButton);
                         Assert.True(
                             string.Equals("Back", actualName, StringComparison.Ordinal),
@@ -453,9 +453,9 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     Controls.FontIcon icon = new() { Glyph = "" };
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(icon));
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(icon), exactMatch: false);
 
-                    _ = Assert.IsAssignableFrom<Automation.FontIconAutomationPeer>(peer);
+                    _ = Assert.IsType<Automation.FontIconAutomationPeer>(peer, exactMatch: false);
                     Assert.False(
                         peer.IsControlElement(),
                         "Decorative FontIcon must be excluded from the UI Automation control view (AccessibilityView=Raw equivalent).");
