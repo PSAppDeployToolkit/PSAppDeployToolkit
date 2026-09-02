@@ -45,7 +45,7 @@ Describe 'Start-ADTProcessAsUser' {
 
     Context 'Input Validation' {
         It 'Requires something to run' {
-            { Start-ADTProcessAsUser } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Start-ADTProcessAsUser) | Should -BeFalse
         }
 
         It 'Refuses a blank file path' {

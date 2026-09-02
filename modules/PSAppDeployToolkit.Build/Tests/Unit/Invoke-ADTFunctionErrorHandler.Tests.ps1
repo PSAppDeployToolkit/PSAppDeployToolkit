@@ -66,7 +66,7 @@ Describe 'Invoke-ADTFunctionErrorHandler' {
         }
 
         It 'Requires an error record to handle' {
-            { Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Invoke-ADTFunctionErrorHandler) -Parameter Cmdlet, SessionState | Should -BeFalse
         }
     }
 }

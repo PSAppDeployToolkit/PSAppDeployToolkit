@@ -47,7 +47,7 @@ Describe 'Show-ADTInstallationWelcome' {
 
     Context 'Input Validation' {
         It 'Requires something to do' {
-            { Show-ADTInstallationWelcome } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationWelcome) | Should -BeFalse
         }
 
         It 'Refuses deferral in a silent run' {

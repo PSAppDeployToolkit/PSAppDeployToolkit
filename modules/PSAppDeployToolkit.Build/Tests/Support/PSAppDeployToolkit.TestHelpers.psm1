@@ -135,6 +135,204 @@ function Test-ADTCallerElevated
 
 #-----------------------------------------------------------------------------
 #
+# MARK: Resolve-ADTParameterName
+#
+#-----------------------------------------------------------------------------
+
+function Resolve-ADTParameterName
+{
+    <#
+    .SYNOPSIS
+        Resolves a parameter name or alias to the name the command declares it under.
+
+    .DESCRIPTION
+        The `Resolve-ADTParameterName` function maps whichever spelling a caller would use at the command line onto the declared name, so that the rest of these helpers can match on one form. Names, aliases and the unambiguous abbreviations of either are all accepted, as they all are on the command line. Anything else throws, so that a parameter named wrongly in a test fails as the mistake it is rather than quietly changing what the test asks.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.CommandInfo]$Command,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]$Name
+    )
+
+    # An exact name or alias first, since either beats an abbreviation that could reach further.
+    if ($Command.Parameters.ContainsKey($Name))
+    {
+        return $Command.Parameters.$Name.Name
+    }
+    foreach ($parameter in $Command.Parameters.Values)
+    {
+        if ($parameter.Aliases -contains $Name)
+        {
+            return $parameter.Name
+        }
+    }
+
+    # Then an abbreviation, which the binder takes as long as only one parameter answers to it.
+    $abbreviated = [System.Collections.Generic.List[System.String]]::new()
+    foreach ($parameter in $Command.Parameters.Values)
+    {
+        foreach ($spelling in @($parameter.Name) + @($parameter.Aliases))
+        {
+            if ($spelling.StartsWith($Name, [System.StringComparison]::OrdinalIgnoreCase))
+            {
+                $abbreviated.Add($parameter.Name)
+                break
+            }
+        }
+    }
+    if ($abbreviated.Count -eq 1)
+    {
+        return $abbreviated[0]
+    }
+    throw "The command [$($Command.Name)] has no parameter answering to [$Name]$(if ($abbreviated.Count) { ", which is ambiguous between ['$([System.String]::Join("', '", $abbreviated))']" })."
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Test-ADTMandatoryParameter
+#
+#-----------------------------------------------------------------------------
+
+function Test-ADTMandatoryParameter
+{
+    <#
+    .SYNOPSIS
+        Tests whether a command declares a parameter as mandatory.
+
+    .DESCRIPTION
+        The `Test-ADTMandatoryParameter` function reports whether every parameter set that declares the named parameter declares it as mandatory.
+
+        Ask this rather than calling the command and leaving the parameter out. A host able to prompt does exactly that when a mandatory parameter is missing, so a test written the other way round hangs the run waiting on input instead of failing, and only passes at all in a host that cannot prompt. `build.ps1` runs in a console that can.
+
+    .PARAMETER Command
+        The command to examine. Pass `Get-Command` output, obtaining it from inside `InModuleScope` for a command the module does not export.
+
+    .PARAMETER Parameter
+        The name of the parameter to examine.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.Boolean
+
+        Returns $true when every parameter set declaring the parameter declares it as mandatory, otherwise $false.
+
+    .EXAMPLE
+        Test-ADTMandatoryParameter -Command (Get-Command Register-ADTDll) -Parameter FilePath
+
+        Returns $true, since a library to register has to be named.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.CommandInfo]$Command,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Parameter
+    )
+
+    # One ParameterAttribute per parameter set the parameter appears in, so all of them have to agree.
+    $declarations = $Command.Parameters.(Resolve-ADTParameterName -Command $Command -Name $Parameter).Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] })
+    return !!$declarations -and !$declarations.Where({ !$_.Mandatory })
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Test-ADTParameterSetSatisfied
+#
+#-----------------------------------------------------------------------------
+
+function Test-ADTParameterSetSatisfied
+{
+    <#
+    .SYNOPSIS
+        Tests whether naming a given set of parameters is enough to resolve a call to one of a command's parameter sets.
+
+    .DESCRIPTION
+        The `Test-ADTParameterSetSatisfied` function reports whether any one of a command's parameter sets both accepts every parameter named and has every one of its own mandatory parameters among them. That is what PowerShell asks when it resolves a call, so a $false answer means the call cannot proceed as written.
+
+        Ask this rather than making the call and seeing it refused. A host able to prompt asks for whatever mandatory parameter is still missing instead of failing, so a test written the other way round hangs the run waiting on input, and only passes at all in a host that cannot prompt. `build.ps1` runs in a console that can.
+
+        Use this where the claim is about the shape of a call - that nothing satisfies it, or that two parameters do not go together. Use `Test-ADTMandatoryParameter` where the claim is about one parameter being required.
+
+    .PARAMETER Command
+        The command to examine. Pass `Get-Command` output, obtaining it from inside `InModuleScope` for a command the module does not export.
+
+    .PARAMETER Parameter
+        The names of the parameters the call names. Omit for a call that names none.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.Boolean
+
+        Returns $true when some parameter set is satisfied by exactly these parameters, otherwise $false.
+
+    .EXAMPLE
+        Test-ADTParameterSetSatisfied -Command (Get-Command Dismount-ADTWimFile)
+
+        Returns $false, since either the mount path or the image path has to be named.
+
+    .EXAMPLE
+        Test-ADTParameterSetSatisfied -Command (Get-Command Send-ADTKeys) -Parameter WindowTitle
+
+        Returns $false, since naming a window still leaves the keys to send unnamed.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.CommandInfo]$Command,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Parameter = @()
+    )
+
+    # Resolved up front so that the matching below compares one spelling against another, and so that a
+    # parameter named wrongly in a test fails as the mistake it is rather than disqualifying every set and
+    # reading as a call that cannot resolve.
+    $named = $Parameter | & { process { Resolve-ADTParameterName -Command $Command -Name $_ } }
+
+    foreach ($parameterSet in $Command.ParameterSets)
+    {
+        # Both halves of what the binder asks: the set has to accept everything named, and everything it
+        # insists on has to be named.
+        $accepted = !$named.Where({ $parameterSet.Parameters.Name -notcontains $_ })
+        $supplied = !$parameterSet.Parameters.Where({ $_.IsMandatory }).Where({ $named -notcontains $_.Name })
+        if ($accepted -and $supplied)
+        {
+            return $true
+        }
+    }
+    return $false
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Initialize-ADTTestModule
 #
 #-----------------------------------------------------------------------------
@@ -209,4 +407,4 @@ function Initialize-ADTTestModule
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Initialize-ADTTestModule
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule

@@ -13,7 +13,7 @@ Describe 'Start-ADTMspProcessAsUser' {
         }
 
         It 'Requires a patch to apply' {
-            { Start-ADTMspProcessAsUser } | Should -Throw -ErrorId 'MissingMandatoryParameter,Start-ADTMspProcessAsUser'
+            Test-ADTMandatoryParameter -Command (Get-Command Start-ADTMspProcessAsUser) -Parameter FilePath | Should -BeTrue
         }
     }
 }

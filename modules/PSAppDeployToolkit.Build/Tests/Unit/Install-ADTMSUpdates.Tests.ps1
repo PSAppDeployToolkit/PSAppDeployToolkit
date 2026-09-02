@@ -28,7 +28,7 @@ Describe 'Install-ADTMSUpdates' {
         }
 
         It 'Requires a path' {
-            { Install-ADTMSUpdates } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Install-ADTMSUpdates) -Parameter LiteralPath | Should -BeTrue
         }
 
         It 'Answers to its former parameter name' {

@@ -13,7 +13,7 @@ Describe 'Start-ADTMspProcess' {
         }
 
         It 'Requires a patch to apply' {
-            { Start-ADTMspProcess } | Should -Throw -ErrorId 'MissingMandatoryParameter,Start-ADTMspProcess'
+            Test-ADTParameterSetSatisfied -Command (Get-Command Start-ADTMspProcess) | Should -BeFalse
         }
 
         It 'Refuses a blank path' {

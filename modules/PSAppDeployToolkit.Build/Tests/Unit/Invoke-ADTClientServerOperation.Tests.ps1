@@ -13,9 +13,7 @@ Describe 'Invoke-ADTClientServerOperation' {
         It 'Requires an operation to perform' {
             # Each operation is its own switch in its own parameter set, so a call naming none of them
             # cannot resolve to anything.
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Invoke-ADTClientServerOperation } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) | Should -BeFalse
         }
 
         It 'Refuses two operations at once' {
@@ -27,9 +25,7 @@ Describe 'Invoke-ADTClientServerOperation' {
         It 'Requires a user to perform it as' {
             # The client belongs to a logged-on session, so there is nowhere to run an operation without
             # naming whose session it is.
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Invoke-ADTClientServerOperation -ProgressDialogOpen } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter ProgressDialogOpen | Should -BeFalse
         }
 
         It 'Refuses something that is not a user' {

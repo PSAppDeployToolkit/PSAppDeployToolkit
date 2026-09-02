@@ -31,7 +31,7 @@ Describe 'Invoke-ADTSCCMTask' {
 
     Context 'Input Validation' {
         It 'Requires a task to trigger' {
-            { Invoke-ADTSCCMTask } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Invoke-ADTSCCMTask) -Parameter ScheduleId | Should -BeTrue
         }
 
         It 'Refuses a task it does not know' {

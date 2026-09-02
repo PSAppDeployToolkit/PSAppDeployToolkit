@@ -95,9 +95,7 @@ Describe 'Import-ADTStringTable' {
         It 'Requires a directory to be nominated, even a null one' {
             # Null is meaningful here as it means "module defaults only", so it has to be stated rather
             # than defaulted into.
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTStringTable -UICulture 'en-US' } | Should -Throw -ErrorId 'MissingMandatoryParameter,Import-ADTStringTable'
-            }
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Import-ADTStringTable }) -Parameter BaseDirectory | Should -BeTrue
         }
 
         It 'Refuses a null culture' {

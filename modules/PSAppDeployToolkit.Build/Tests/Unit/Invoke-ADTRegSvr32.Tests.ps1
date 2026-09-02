@@ -14,7 +14,7 @@ Describe 'Invoke-ADTRegSvr32' {
         }
 
         It 'Requires a library to work on' {
-            { Invoke-ADTRegSvr32 -Action Register } | Should -Throw -ErrorId 'MissingMandatoryParameter,Invoke-ADTRegSvr32'
+            Test-ADTMandatoryParameter -Command (Get-Command Invoke-ADTRegSvr32) -Parameter FilePath | Should -BeTrue
         }
 
         It 'Refuses an action it does not know' {
@@ -27,7 +27,7 @@ Describe 'Invoke-ADTRegSvr32' {
         It 'Requires an action' {
             $library = "$TestDrive\Library.dll"
             Set-Content -LiteralPath $library -Value 'not a library'
-            { Invoke-ADTRegSvr32 -FilePath $library } | Should -Throw -ErrorId 'MissingMandatoryParameter,Invoke-ADTRegSvr32'
+            Test-ADTMandatoryParameter -Command (Get-Command Invoke-ADTRegSvr32) -Parameter Action | Should -BeTrue
         }
     }
 }

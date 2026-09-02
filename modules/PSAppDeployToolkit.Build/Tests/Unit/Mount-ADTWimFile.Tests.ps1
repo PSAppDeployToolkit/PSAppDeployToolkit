@@ -14,7 +14,7 @@ Describe 'Mount-ADTWimFile' {
         }
 
         It 'Requires an image to mount' {
-            { Mount-ADTWimFile -Path "$TestDrive\MountPoint" -Index 1 } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Mount-ADTWimFile) -Parameter Path, Index | Should -BeFalse
         }
 
         It 'Requires somewhere to mount it' {
@@ -22,7 +22,7 @@ Describe 'Mount-ADTWimFile' {
             # rather than the image validation firing first.
             $image = "$TestDrive\Dummy.wim"
             Set-Content -LiteralPath $image -Value 'not an image'
-            { Mount-ADTWimFile -ImagePath $image -Index 1 } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Mount-ADTWimFile) -Parameter ImagePath, Index | Should -BeFalse
         }
 
         It 'Requires the image to be chosen by index or by name' {

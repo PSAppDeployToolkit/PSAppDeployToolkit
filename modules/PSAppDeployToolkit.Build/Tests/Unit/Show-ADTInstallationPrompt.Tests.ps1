@@ -39,6 +39,13 @@ Describe 'Show-ADTInstallationPrompt' {
             Show-ADTInstallationPrompt -Message 'Nothing should appear' -ButtonRightText 'OK' | Should -BeNullOrEmpty
         }
 
+        It 'Requires at least one button' {
+            # Checked ahead of the silent bypass, so that a prompt which could never be dismissed is
+            # reported when it is written rather than the first time a deployment runs interactively.
+            # Asked here rather than alongside the other input checks, because the title and subtitle every
+            # parameter set demands are supplied by the session, and without one the call cannot resolve.
+            { Show-ADTInstallationPrompt -Message 'Anything' } | Should -Throw -ErrorId 'MandatoryParameterMissing,Show-ADTInstallationPrompt'
+        }
         It 'Returns nothing when it was asked for input' {
             # The caller is expecting a string back, so the silent path has to give them nothing to test
             # rather than an empty answer that reads as a real one.
@@ -48,17 +55,12 @@ Describe 'Show-ADTInstallationPrompt' {
 
     Context 'Input Validation' {
         It 'Requires a message' {
-            { Show-ADTInstallationPrompt } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationPrompt) | Should -BeFalse
         }
 
-        It 'Requires at least one button' {
-            # Checked ahead of the silent bypass, so that a prompt which could never be dismissed is
-            # reported when it is written rather than the first time a deployment runs interactively.
-            { Show-ADTInstallationPrompt -Message 'Anything' } | Should -Throw
-        }
 
         It 'Refuses a default answer without asking for input' {
-            { Show-ADTInstallationPrompt -Message 'Anything' -DefaultValue 'preset' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationPrompt) -Parameter Message, Title, Subtitle, DefaultValue | Should -BeFalse
         }
 
         It 'Refuses a default answer alongside a secure one' {

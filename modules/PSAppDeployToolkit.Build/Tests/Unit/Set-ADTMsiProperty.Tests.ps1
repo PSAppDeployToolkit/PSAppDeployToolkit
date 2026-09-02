@@ -113,7 +113,7 @@ Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
 
     Context 'Input Validation' {
         It 'Requires a database to work against' {
-            { Set-ADTMsiProperty -PropertyName 'ADTTESTONLY' -PropertyValue 'a value' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Set-ADTMsiProperty) -Parameter PropertyName, PropertyValue | Should -BeFalse
         }
 
         It 'Requires something that is actually a database' {
@@ -121,7 +121,7 @@ Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
         }
 
         It 'Requires a property name' {
-            { Invoke-AgainstDatabase -Path $script:Package -Action { Set-ADTMsiProperty -Database $args[0] -PropertyValue 'a value' } } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Set-ADTMsiProperty) -Parameter Database, PropertyValue | Should -BeFalse
         }
     }
 }

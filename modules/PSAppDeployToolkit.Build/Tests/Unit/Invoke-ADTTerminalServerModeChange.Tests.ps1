@@ -17,9 +17,7 @@ Describe 'Invoke-ADTTerminalServerModeChange' {
         }
 
         It 'Requires a mode' {
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Invoke-ADTTerminalServerModeChange } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTTerminalServerModeChange }) -Parameter Mode | Should -BeTrue
         }
     }
 }

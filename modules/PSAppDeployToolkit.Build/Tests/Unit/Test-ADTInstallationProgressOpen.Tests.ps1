@@ -40,9 +40,7 @@ Describe 'Test-ADTInstallationProgressOpen' {
     Context 'Input Validation' {
         It 'Requires a user to ask about' {
             # The dialog belongs to a user's session, so there is no answer without one.
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Test-ADTInstallationProgressOpen } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Test-ADTInstallationProgressOpen }) -Parameter RunAsActiveUser | Should -BeTrue
         }
 
         It 'Refuses something that is not a user' {

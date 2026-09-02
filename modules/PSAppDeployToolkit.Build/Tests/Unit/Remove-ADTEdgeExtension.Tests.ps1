@@ -80,7 +80,7 @@ Describe 'Remove-ADTEdgeExtension' {
 
     Context 'Input Validation' {
         It 'Requires an extension to remove' {
-            { Remove-ADTEdgeExtension } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Remove-ADTEdgeExtension) -Parameter ExtensionID | Should -BeTrue
         }
 
         It 'Refuses a blank extension' {

@@ -93,7 +93,7 @@ Describe 'Remove-ADTFileFromUserProfiles' {
         }
 
         It 'Requires a path' {
-            { Remove-ADTFileFromUserProfiles } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Remove-ADTFileFromUserProfiles) | Should -BeFalse
         }
     }
 }

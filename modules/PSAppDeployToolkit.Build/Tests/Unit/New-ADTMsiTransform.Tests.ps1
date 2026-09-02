@@ -103,7 +103,7 @@ Describe 'New-ADTMsiTransform' -Skip:(!$script:HasMsi) {
         }
 
         It 'Requires properties to transform' {
-            { New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath "$TestDrive\None.mst" } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command New-ADTMsiTransform) -Parameter MsiPath, NewTransformPath | Should -BeFalse
         }
     }
 }

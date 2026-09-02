@@ -82,15 +82,15 @@ Describe 'Set-ADTActiveSetup' {
 
     Context 'Input Validation' {
         It 'Requires a key to register under' {
-            { Set-ADTActiveSetup -StubExePath $script:StubPath -NoExecute } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Set-ADTActiveSetup) -Parameter StubExePath, NoExecute | Should -BeFalse
         }
 
         It 'Requires a stub to register' {
-            { Set-ADTActiveSetup -Key $script:Key } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Set-ADTActiveSetup) -Parameter Key | Should -BeFalse
         }
 
         It 'Refuses a stub that is not there' {
-            { Set-ADTActiveSetup -StubExePath "$TestDrive\NeverExisted.vbs" -Key $script:Key -NoExecute } | Should -Throw
+            { Set-ADTActiveSetup -StubExePath "$TestDrive\NeverExisted.vbs" -Key $script:Key -Description 'Test only' -NoExecute } | Should -Throw
         }
 
         It 'Refuses an execution policy it does not know' {

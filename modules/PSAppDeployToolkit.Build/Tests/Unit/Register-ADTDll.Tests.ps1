@@ -18,7 +18,7 @@ Describe 'Register-ADTDll' {
         }
 
         It 'Requires a library to register' {
-            { Register-ADTDll } | Should -Throw -ErrorId 'MissingMandatoryParameter,Register-ADTDll'
+            Test-ADTMandatoryParameter -Command (Get-Command Register-ADTDll) -Parameter FilePath | Should -BeTrue
         }
     }
 }

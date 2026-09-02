@@ -42,11 +42,11 @@ Describe 'Send-ADTKeys' {
 
     Context 'Input Validation' {
         It 'Requires keys to send' {
-            { Send-ADTKeys -WindowTitle 'Anything' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Send-ADTKeys) -Parameter WindowTitle | Should -BeFalse
         }
 
         It 'Requires a window to send them to' {
-            { Send-ADTKeys -Keys 'abc' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Send-ADTKeys) -Parameter Keys | Should -BeFalse
         }
 
         It 'Refuses a title and a handle together' {

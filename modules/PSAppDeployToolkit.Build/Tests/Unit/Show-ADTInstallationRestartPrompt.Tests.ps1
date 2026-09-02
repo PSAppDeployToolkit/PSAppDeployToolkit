@@ -54,7 +54,7 @@ Describe 'Show-ADTInstallationRestartPrompt' {
         }
 
         It 'Refuses a silent countdown without a silent restart' {
-            { Show-ADTInstallationRestartPrompt -SilentCountdown ([System.TimeSpan]::FromSeconds(30)) } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter SilentCountdown, Title, Subtitle | Should -BeFalse
         }
     }
 }

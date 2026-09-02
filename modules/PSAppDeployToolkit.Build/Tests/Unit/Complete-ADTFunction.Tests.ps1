@@ -53,7 +53,7 @@ Describe 'Complete-ADTFunction' {
         }
 
         It 'Requires a cmdlet to work against' {
-            { Complete-ADTFunction } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Complete-ADTFunction) -Parameter Cmdlet | Should -BeTrue
         }
 
         It 'Does not object to being called without a session' {

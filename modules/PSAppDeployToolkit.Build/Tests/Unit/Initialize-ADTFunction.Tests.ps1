@@ -76,7 +76,7 @@ Describe 'Initialize-ADTFunction' {
         }
 
         It 'Requires a cmdlet to work against' {
-            { Initialize-ADTFunction -SessionState $ExecutionContext.SessionState } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Initialize-ADTFunction) -Parameter SessionState | Should -BeFalse
         }
     }
 }

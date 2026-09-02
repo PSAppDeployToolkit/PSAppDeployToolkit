@@ -18,7 +18,7 @@ Describe 'Unregister-ADTDll' {
         }
 
         It 'Requires a library to unregister' {
-            { Unregister-ADTDll } | Should -Throw -ErrorId 'MissingMandatoryParameter,Unregister-ADTDll'
+            Test-ADTMandatoryParameter -Command (Get-Command Unregister-ADTDll) -Parameter FilePath | Should -BeTrue
         }
     }
 }

@@ -42,7 +42,8 @@ Describe 'Show-ADTBalloonTip' {
 
     Context 'Input Validation' {
         It 'Requires something to say' {
-            { Show-ADTBalloonTip } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Show-ADTBalloonTip) -Parameter Text | Should -BeTrue
+            Test-ADTMandatoryParameter -Command (Get-Command Show-ADTBalloonTip) -Parameter Title | Should -BeTrue
         }
 
         It 'Refuses an icon it cannot draw' {

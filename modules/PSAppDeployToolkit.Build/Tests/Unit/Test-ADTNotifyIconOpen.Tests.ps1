@@ -39,9 +39,7 @@ Describe 'Test-ADTNotifyIconOpen' {
 
     Context 'Input Validation' {
         It 'Requires a user to ask about' {
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Test-ADTNotifyIconOpen } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Test-ADTNotifyIconOpen }) -Parameter RunAsActiveUser | Should -BeTrue
         }
 
         It 'Refuses something that is not a user' {

@@ -24,7 +24,7 @@ Describe 'Dismount-ADTWimFile' {
 
     Context 'Input Validation' {
         It 'Requires something to dismount' {
-            { Dismount-ADTWimFile } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Dismount-ADTWimFile) | Should -BeFalse
         }
 
         It 'Refuses a path and an image together' {

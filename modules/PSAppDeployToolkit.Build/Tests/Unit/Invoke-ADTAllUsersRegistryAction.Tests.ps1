@@ -77,7 +77,7 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
 
     Context 'Input Validation' {
         It 'Requires an action to run' {
-            { Invoke-ADTAllUsersRegistryAction -UserProfiles $script:CallerProfile -SkipUnloadedProfiles } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTParameterSetSatisfied -Command (Get-Command Invoke-ADTAllUsersRegistryAction) -Parameter UserProfiles, SkipUnloadedProfiles | Should -BeFalse
         }
 
         It 'Refuses the same profile twice' {

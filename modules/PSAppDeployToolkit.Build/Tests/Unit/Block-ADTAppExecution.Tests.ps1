@@ -11,7 +11,7 @@ Describe 'Block-ADTAppExecution' {
     # that happens is covered.
     Context 'Input Validation' {
         It 'Requires processes to block' {
-            { Block-ADTAppExecution } | Should -Throw -ErrorId 'MissingMandatoryParameter,Block-ADTAppExecution'
+            Test-ADTMandatoryParameter -Command (Get-Command Block-ADTAppExecution) -Parameter Processes | Should -BeTrue
         }
 
         It 'Requires a session to block them for' {

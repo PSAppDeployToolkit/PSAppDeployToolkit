@@ -10,9 +10,7 @@ Describe 'Set-ADTClientServerProcessPermissions' {
     # rewriting the permissions on files inside the installed module.
     Context 'Input Validation' {
         It 'Requires a user to grant access to' {
-            InModuleScope -ModuleName PSAppDeployToolkit {
-                { Set-ADTClientServerProcessPermissions } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
-            }
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Set-ADTClientServerProcessPermissions }) -Parameter User | Should -BeTrue
         }
 
         It 'Refuses something that is not a user' {

@@ -42,7 +42,8 @@ Describe 'Show-ADTDialogBox' {
 
     Context 'Input Validation' {
         It 'Requires something to say' {
-            { Show-ADTDialogBox } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            Test-ADTMandatoryParameter -Command (Get-Command Show-ADTDialogBox) -Parameter Text | Should -BeTrue
+            Test-ADTMandatoryParameter -Command (Get-Command Show-ADTDialogBox) -Parameter Title | Should -BeTrue
         }
 
         It 'Refuses an icon it cannot draw' {
