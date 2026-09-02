@@ -428,5 +428,9 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
+# Except the package the unit tests install and remove, which is committed deliberately. Start-ADTMsiProcess
+# cannot be tested against anything already on the machine without changing software somebody is using.
+!modules/PSAppDeployToolkit.Build/Tests/Assets/*.msi
+
 # Ignore WIM files used for testing
 *.wim
