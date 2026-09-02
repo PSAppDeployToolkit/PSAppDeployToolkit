@@ -59,8 +59,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_ChecksEveryElementOfACollection()
         {
-            ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), new[] { 1, 2, 3 });
-            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), new[] { 1, 0, 3 }));
+            ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), validArgumentList);
+            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), invalidArgumentList));
             _ = Assert.Throws<ArgumentOutOfRangeException>(static () => ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), new List<TimeSpan> { TimeSpan.FromSeconds(1), TimeSpan.Zero }));
         }
 
@@ -131,6 +131,16 @@ namespace PSAppDeployToolkit.Tests.Attributes
             ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), PSObject.AsPSObject(1));
             _ = Assert.Throws<ArgumentOutOfRangeException>(static () => ArgumentAttributes.Validate(new ValidateGreaterThanZeroAttribute(), PSObject.AsPSObject(0)));
         }
+
+        /// <summary>
+        /// A valid list of values, where all are greater than zero.
+        /// </summary>
+        private static readonly int[] validArgumentList = [1, 2, 3];
+
+        /// <summary>
+        /// An invalid list of values, where one is zero and so fails the check.
+        /// </summary>
+        private static readonly int[] invalidArgumentList = [1, 0, 3];
 
         /// <summary>
         /// A comparable reference type offering a static <c language="csharp">Zero</c> of its own type.

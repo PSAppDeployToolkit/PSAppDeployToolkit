@@ -7,7 +7,7 @@ namespace PSADT.UserInterface.Tests
     /// Tests the icon shown on a balloon tip.
     /// </summary>
     /// <remarks>
-    /// Held by <see cref="PSADT.UserInterface.DialogOptions.BalloonTipOptions"/> as a data member, so the
+    /// Held by <see cref="UserInterface.DialogOptions.BalloonTipOptions"/> as a data member, so the
     /// numeric values travel the pipe between the deployment process and the client that shows the tip.
     /// A renumbering therefore shows the wrong icon rather than failing, and the module addresses these
     /// by name from PowerShell, so both halves of each member are pinned.

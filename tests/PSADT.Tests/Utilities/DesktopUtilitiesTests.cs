@@ -70,7 +70,7 @@ namespace PSADT.Tests.Utilities
         [Fact]
         public void GetUserNotificationState_ReportsADefinedState()
         {
-            Assert.Contains(DesktopUtilities.GetUserNotificationState(), EnumValues.Declared<PSADT.Interop.QUERY_USER_NOTIFICATION_STATE>());
+            Assert.Contains(DesktopUtilities.GetUserNotificationState(), EnumValues.Declared<Interop.QUERY_USER_NOTIFICATION_STATE>());
         }
 
         /// <summary>

@@ -2,9 +2,9 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
+using Fluence.Wpf;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
-using Fluence.Wpf;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {

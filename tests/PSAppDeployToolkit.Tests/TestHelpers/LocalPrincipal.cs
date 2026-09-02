@@ -1,4 +1,4 @@
-// IDE0130 wants the namespace to follow the folder. It cannot here: the attribute under test finds this type by
+﻿// IDE0130 wants the namespace to follow the folder. It cannot here: the attribute under test finds this type by
 // namespace and name, so the namespace is the fixture.
 #pragma warning disable IDE0130
 

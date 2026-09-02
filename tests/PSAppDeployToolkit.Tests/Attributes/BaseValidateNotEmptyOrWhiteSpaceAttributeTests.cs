@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Security.Principal;
 using PSAppDeployToolkit.Attributes;
@@ -85,9 +84,9 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_JudgesAScriptBlockByItsText()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), ScriptBlock.Create("Write-Host 'hello'"));
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), ScriptBlock.Create(string.Empty)));
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), ScriptBlock.Create("   ")));
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), System.Management.Automation.ScriptBlock.Create("Write-Host 'hello'"));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), System.Management.Automation.ScriptBlock.Create(string.Empty)));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), System.Management.Automation.ScriptBlock.Create("   ")));
         }
 
         /// <summary>
@@ -141,7 +140,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_RefusesAnEmptyCollectionEvenWhenEmptyStringsArePermitted()
         {
-            foreach (ValidateArgumentsAttribute attribute in AllThree())
+            foreach (System.Management.Automation.ValidateArgumentsAttribute attribute in AllThree())
             {
                 Assert.Contains(
                     "The argument is an empty collection.",
@@ -234,7 +233,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         {
             Assert.Contains(
                 "empty or white space elements",
-                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { "first", "  ", "third" })).Message,
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), argumentListWithWhiteSpace)).Message,
                 StringComparison.Ordinal);
         }
 
@@ -246,7 +245,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         {
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { "first", string.Empty }));
             ArgumentAttributes.Validate(AllowEmpty(), new[] { "first", string.Empty });
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(AllowEmpty(), new[] { "first", "  " }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(AllowEmpty(), argumentListWithTrailingWhiteSpace));
         }
 
         /// <summary>
@@ -274,16 +273,16 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_JudgesScriptBlockElementsByTheirText()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { ScriptBlock.Create("Write-Host 'first'"), ScriptBlock.Create("Write-Host 'second'") });
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { System.Management.Automation.ScriptBlock.Create("Write-Host 'first'"), System.Management.Automation.ScriptBlock.Create("Write-Host 'second'") });
             Assert.Contains(
                 "empty or white space elements",
                 Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
                     NotNullOrWhiteSpace(),
-                    new[] { ScriptBlock.Create("Write-Host 'first'"), ScriptBlock.Create(string.Empty) })).Message,
+                    new[] { System.Management.Automation.ScriptBlock.Create("Write-Host 'first'"), System.Management.Automation.ScriptBlock.Create(string.Empty) })).Message,
                 StringComparison.Ordinal);
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
                 NotNullOrWhiteSpace(),
-                new[] { ScriptBlock.Create("   ") }));
+                new[] { System.Management.Automation.ScriptBlock.Create("   ") }));
         }
 
         /// <summary>
@@ -321,8 +320,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_JudgesDictionaryValuesOfEveryTextCarryingShape()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", ScriptBlock.Create("Write-Host 'hello'") } });
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", ScriptBlock.Create("   ") } }));
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", System.Management.Automation.ScriptBlock.Create("Write-Host 'hello'") } });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "script", System.Management.Automation.ScriptBlock.Create("   ") } }));
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new Hashtable { { "account", new NTAccount("   ") } }));
         }
 
@@ -337,7 +336,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_HonoursTheEmptyFlagForEveryShapeAtEveryLevel()
         {
-            foreach (object empty in new object[] { ScriptBlock.Create(string.Empty), string.Empty })
+            foreach (object empty in new object[] { System.Management.Automation.ScriptBlock.Create(string.Empty), string.Empty })
             {
                 _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), empty));
                 ArgumentAttributes.Validate(AllowEmpty(), empty);
@@ -359,7 +358,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_SkipsTheElementScanForNonNullableValueTypes()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new[] { 1, 2, 3 });
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), integerArgumentList);
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), new int?[] { 1, null }));
         }
 
@@ -396,8 +395,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_UnwrapsAPSObject()
         {
-            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), PSObject.AsPSObject("content"));
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), PSObject.AsPSObject("  ")));
+            ArgumentAttributes.Validate(NotNullOrWhiteSpace(), System.Management.Automation.PSObject.AsPSObject("content"));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(NotNullOrWhiteSpace(), System.Management.Automation.PSObject.AsPSObject("  ")));
         }
 
         /// <summary>
@@ -412,7 +411,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         {
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(
                 NotNullOrWhiteSpace(),
-                new object[] { PSObject.AsPSObject("first"), PSObject.AsPSObject("  ") }));
+                new object[] { System.Management.Automation.PSObject.AsPSObject("first"), System.Management.Automation.PSObject.AsPSObject("  ") }));
         }
 
         /// <summary>
@@ -431,7 +430,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// One of each validator, for the rules none of them relaxes.
         /// </summary>
         /// <returns>The three validators.</returns>
-        private static ValidateArgumentsAttribute[] AllThree()
+        private static System.Management.Automation.ValidateArgumentsAttribute[] AllThree()
         {
             return [NotNullOrWhiteSpace(), AllowNull(), AllowEmpty()];
         }
@@ -444,7 +443,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         /// ambiguous in a file that also uses PowerShell's own types.
         /// </remarks>
         /// <returns>The validator.</returns>
-        private static PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute NotNullOrWhiteSpace()
+        private static ValidateNotNullOrWhiteSpaceAttribute NotNullOrWhiteSpace()
         {
             return new();
         }
@@ -466,6 +465,21 @@ namespace PSAppDeployToolkit.Tests.Attributes
         {
             return new();
         }
+
+        /// <summary>
+        /// An argv-like list of strings, one of which is blank.
+        /// </summary>
+        private static readonly string[] argumentListWithWhiteSpace = ["first", "  ", "third"];
+
+        /// <summary>
+        /// An argv-like list of strings, one of which is blank, but the blank is at the end so the collection is not empty.
+        /// </summary>
+        private static readonly string[] argumentListWithTrailingWhiteSpace = ["first", "  "];
+
+        /// <summary>
+        /// An argv-like list of integers, which are not scanned element by element because they cannot be null or white space.
+        /// </summary>
+        private static readonly int[] integerArgumentList = [1, 2, 3];
 
         /// <summary>
         /// A dictionary that offers only <see cref="IReadOnlyDictionary{TKey, TValue}"/>.

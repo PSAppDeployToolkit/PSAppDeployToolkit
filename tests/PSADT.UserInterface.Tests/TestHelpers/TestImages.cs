@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
     /// Generated rather than committed as binary fixtures, so that a test needing a particular size or
     /// aspect ratio asks for one instead of the suite carrying a file per case. The ICO writer here is
     /// deliberately hand-rolled rather than borrowed from
-    /// <see cref="PSADT.UserInterface.DrawingUtilities"/>: the icon tests need an oracle that does not
+    /// <see cref="DrawingUtilities"/>: the icon tests need an oracle that does not
     /// share a bug with the thing they are checking.
     /// </remarks>
     internal static class TestImages
@@ -86,7 +86,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
         /// <remarks>
         /// A PNG-compressed frame is what a modern ICO holds at these sizes and is what the code under
         /// test writes, so this is the shape its reader has to accept. Only the header matters to
-        /// <see cref="PSADT.UserInterface.DrawingUtilities.IsStreamAnIcon"/>; the payload is there so the
+        /// <see cref="DrawingUtilities.IsStreamAnIcon"/>; the payload is there so the
         /// result is a file the framework will also load.
         /// </remarks>
         /// <param name="size">The frame's width and height in pixels, at most 256.</param>

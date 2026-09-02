@@ -68,7 +68,7 @@ namespace PSADT.ClientServer.Server.Tests
         [Fact]
         public void ClientException_IsAnInvalidOperationException()
         {
-            _ = Assert.IsAssignableFrom<InvalidOperationException>(new ClientException("a failure", ClientExitCode.Unknown));
+            _ = Assert.IsType<InvalidOperationException>(new ClientException("a failure", ClientExitCode.Unknown), exactMatch: false);
         }
     }
 }

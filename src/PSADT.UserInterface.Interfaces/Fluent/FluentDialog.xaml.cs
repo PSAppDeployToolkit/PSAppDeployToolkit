@@ -16,6 +16,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using Fluence.Wpf;
+using Fluence.Wpf.Controls;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.Foundation;
@@ -23,8 +25,6 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
 using Windows.Win32.Foundation;
-using Fluence.Wpf;
-using Fluence.Wpf.Controls;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {

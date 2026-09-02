@@ -5,8 +5,8 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
-using PSADT.Tests.TestHelpers;
 using PSADT.TerminalServices;
+using PSADT.Tests.TestHelpers;
 using Xunit;
 
 namespace PSADT.Tests.TerminalServices
@@ -86,7 +86,7 @@ namespace PSADT.Tests.TerminalServices
             }
 
             // Assert: an active session is by definition a valid one, and has nobody disconnected from it
-            Assert.Contains(session.ConnectState, EnumValues.Declared<PSADT.Interop.WTS_CONNECTSTATE_CLASS>());
+            Assert.Contains(session.ConnectState, EnumValues.Declared<Interop.WTS_CONNECTSTATE_CLASS>());
             if (session.IsActiveUserSession)
             {
                 Assert.True(session.IsValidUserSession);

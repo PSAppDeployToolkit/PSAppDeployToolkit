@@ -62,7 +62,7 @@ namespace PSADT.Tests.SMBIOS
             Array.Sort(reserved);
 
             // Assert
-            Assert.Equal<byte[]>([126, 127], reserved);
+            Assert.Equal([126, 127], reserved);
         }
 
         /// <summary>

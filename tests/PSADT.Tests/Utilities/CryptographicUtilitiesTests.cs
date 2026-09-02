@@ -156,6 +156,7 @@ namespace PSADT.Tests.Utilities
         /// Verifies that a null element contributes zero rather than throwing, so a record with unset
         /// members can still be hashed.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "S3878:Remove this array creation and simply pass the elements.", Justification = "Required for the test case.")]
         [Fact]
         public void GenerateHashCode_TreatsANullElementAsZero()
         {

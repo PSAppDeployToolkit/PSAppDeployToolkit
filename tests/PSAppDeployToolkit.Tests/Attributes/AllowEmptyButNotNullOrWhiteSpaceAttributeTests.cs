@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using PSAppDeployToolkit.Attributes;
 using PSAppDeployToolkit.Tests.TestHelpers;
 using Xunit;

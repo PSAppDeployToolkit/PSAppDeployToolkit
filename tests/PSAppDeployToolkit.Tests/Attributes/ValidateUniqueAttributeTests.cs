@@ -23,8 +23,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
         [Fact]
         public void Validate_AcceptsDistinctElements()
         {
-            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "bravo", "charlie" });
-            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { 1, 2, 3 });
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), uniqueStringArguments);
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), uniqueIntegerArguments);
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace PSAppDeployToolkit.Tests.Attributes
         {
             Assert.Contains(
                 "contains duplicate elements",
-                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "bravo", "alpha" })).Message,
+                Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), duplicatedStringArguments)).Message,
                 StringComparison.Ordinal);
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { 1, 2, 1 }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), duplicatedIntegerArguments));
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace PSAppDeployToolkit.Tests.Attributes
         public void Validate_IgnoresCaseByDefault()
         {
             Assert.Equal(StringComparison.OrdinalIgnoreCase, new ValidateUniqueAttribute().StringComparison);
-            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { "alpha", "ALPHA" }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), differingCaseArguments));
         }
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace PSAppDeployToolkit.Tests.Attributes
 
             // Assert
             Assert.Equal(StringComparison.Ordinal, ordinal.StringComparison);
-            ArgumentAttributes.Validate(ordinal, new[] { "alpha", "ALPHA" });
-            _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(ordinal, new[] { "alpha", "alpha" }));
+            ArgumentAttributes.Validate(ordinal, differingCaseArguments);
+            _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(ordinal, sameCaseArguments));
         }
 
         /// <summary>
@@ -176,6 +176,36 @@ namespace PSAppDeployToolkit.Tests.Attributes
                 new ValidateUniqueAttribute(),
                 new object[] { PSObject.AsPSObject("alpha"), PSObject.AsPSObject("alpha") }));
         }
+
+        /// <summary>
+        /// An array of unique strings.
+        /// </summary>
+        private static readonly string[] uniqueStringArguments = ["alpha", "bravo", "charlie"];
+
+        /// <summary>
+        /// An array of unique integers.
+        /// </summary>
+        private static readonly int[] uniqueIntegerArguments = [1, 2, 3];
+
+        /// <summary>
+        /// An array of strings that contains a duplicate.
+        /// </summary>
+        private static readonly string[] duplicatedStringArguments = ["alpha", "bravo", "alpha"];
+
+        /// <summary>
+        /// An array of integers that contains a duplicate.
+        /// </summary>
+        private static readonly int[] duplicatedIntegerArguments = [1, 2, 1];
+
+        /// <summary>
+        /// An array of strings that differ only in case.
+        /// </summary>
+        private static readonly string[] differingCaseArguments = ["alpha", "ALPHA"];
+
+        /// <summary>
+        /// An array of strings that contains a duplicate.
+        /// </summary>
+        private static readonly string[] sameCaseArguments = ["alpha", "alpha"];
 
         /// <summary>
         /// A record standing in for the kind of element these collections hold.

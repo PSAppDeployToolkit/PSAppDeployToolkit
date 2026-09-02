@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using PSADT.PowerShellTestFixture;
 using PSAppDeployToolkit.Tests.TestHelpers;
 using PSAppDeployToolkit.Utilities;
-using PSADT.PowerShellTestFixture;
 using Xunit;
 
 namespace PSAppDeployToolkit.Tests.Utilities
@@ -170,7 +170,7 @@ namespace PSAppDeployToolkit.Tests.Utilities
             Assert.False(PowerShellUtilities.ObjectRendersAsEmpty("text"));
             Assert.False(PowerShellUtilities.ObjectRendersAsEmpty(0));
             Assert.False(PowerShellUtilities.ObjectRendersAsEmpty(false));
-            Assert.False(PowerShellUtilities.ObjectRendersAsEmpty(new[] { "one" }));
+            Assert.False(PowerShellUtilities.ObjectRendersAsEmpty(testArray));
             Assert.False(PowerShellUtilities.ObjectRendersAsEmpty(new SwitchParameter(isPresent: false)));
         }
 
@@ -456,5 +456,10 @@ namespace PSAppDeployToolkit.Tests.Utilities
                 { "NullString", NullString.Value },
                 { "DBNull", DBNull.Value },
             };
+
+        /// <summary>
+        /// An array to use in tests that need a value which renders as something rather than nothing.
+        /// </summary>
+        private static readonly string[] testArray = ["one"];
     }
 }

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
-using PSADT.Collections;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.Collections;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;
@@ -463,7 +463,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>
         /// <see cref="DirectoryInfo"/> is not a data contract, and unlike on .NET Framework it is no
-        /// longer serializable through <see cref="System.Runtime.Serialization.ISerializable"/> either,
+        /// longer serializable through <see cref="ISerializable"/> either,
         /// so a DataMember of that type makes the whole class unserializable on .NET. The path is stored
         /// instead and the directory rebuilt on access, the same way handles and the stream encoding are
         /// stored in a serializable form here. It is resolved to a full path on the way in so that a

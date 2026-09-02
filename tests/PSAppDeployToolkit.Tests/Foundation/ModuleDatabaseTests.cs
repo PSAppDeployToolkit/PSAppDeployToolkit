@@ -82,7 +82,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "Legacy" });
 
             // Act
-            IDictionary toolkit = Assert.IsAssignableFrom<IDictionary>(ModuleDatabase.GetConfig()["Toolkit"]);
+            IDictionary toolkit = Assert.IsType<IDictionary>(ModuleDatabase.GetConfig()["Toolkit"], exactMatch: false);
 
             // Assert
             Assert.Equal("Legacy", toolkit["LogStyle"]);

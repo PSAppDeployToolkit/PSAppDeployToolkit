@@ -26,7 +26,7 @@ function New-ADTTemplate
         The base name to use for the generated launcher files, without a file extension.
 
     .PARAMETER ExcludeContent
-        Specifies one or more optional content categories to omit from the generated template. Valid values are Assets, Config, Extensions, Files, Module, Strings and SupportFiles. All content is included by default.  You cannot exclude Files, SupportFiles or Config if specifying those items as separate parameters. You can exclude Assets while specifying -Assets to omit the default assets. Excluding Module omits the bundled PSAppDeployToolkit module for deployments that provide it externally.
+        Specifies one or more optional content categories to omit from the generated template. Valid values are Assets, Config, Extensions, Files, Module, Strings and SupportFiles. All content is included by default. You cannot exclude Files, SupportFiles or Config if specifying those items as separate parameters. You can exclude Assets while specifying -Assets to omit the default assets. Excluding Module omits the bundled PSAppDeployToolkit module for deployments that provide it externally.
 
     .PARAMETER SessionProperties
         A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Only supported when -Version is 4.

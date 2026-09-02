@@ -80,7 +80,7 @@ namespace PSADT.ClientServer.Server.Tests
         [Fact]
         public void ServerException_IsAnInvalidOperationException()
         {
-            _ = Assert.IsAssignableFrom<InvalidOperationException>(new ServerException("a failure", (Exception?)null));
+            _ = Assert.IsType<InvalidOperationException>(new ServerException("a failure", (Exception?)null), exactMatch: false);
         }
     }
 }

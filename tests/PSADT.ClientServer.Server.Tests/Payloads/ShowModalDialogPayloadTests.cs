@@ -33,7 +33,7 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
             // Assert
             Assert.Equal(DialogType.DialogBox, payload.DialogType);
             Assert.Equal(DialogStyle.Classic, payload.DialogStyle);
-            Assert.Equal<IDialogOptions>(SampleOptions.DialogBox(), payload.Options);
+            Assert.Equal(SampleOptions.DialogBox(), payload.Options);
         }
 
         /// <summary>

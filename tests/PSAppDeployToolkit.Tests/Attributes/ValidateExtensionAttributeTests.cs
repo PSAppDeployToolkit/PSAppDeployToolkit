@@ -187,8 +187,18 @@ namespace PSAppDeployToolkit.Tests.Attributes
             ValidateExtensionAttribute attribute = new(".msi", ".msp");
 
             // Assert
-            ArgumentAttributes.Validate(attribute, new[] { @"C:\a.msi", @"C:\b.msp" });
-            _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(attribute, new[] { @"C:\a.msi", @"C:\b.exe" }));
+            ArgumentAttributes.Validate(attribute, validArgumentList);
+            _ = Assert.Throws<ArgumentException>(() => ArgumentAttributes.Validate(attribute, invalidArgumentList));
         }
+
+        /// <summary>
+        /// An argv-style list of paths, all of which are valid, for testing the collection validation.
+        /// </summary>
+        private static readonly string[] validArgumentList = [@"C:\a.msi", @"C:\b.msp"];
+
+        /// <summary>
+        /// An argv-style list of paths, some of which are valid, for testing the collection validation.
+        /// </summary>
+        private static readonly string[] invalidArgumentList = [@"C:\a.msi", @"C:\b.exe"];
     }
 }

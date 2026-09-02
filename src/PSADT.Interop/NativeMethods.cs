@@ -918,7 +918,7 @@ namespace PSADT.Interop
         /// Resets the security information for a specified object and its subobjects in the object tree.
         /// </summary>
         /// <remarks>This method modifies the security settings of the specified object and its subobjects
-        /// based on the provided parameters.  It is the caller's responsibility to ensure that the provided handles are
+        /// based on the provided parameters. It is the caller's responsibility to ensure that the provided handles are
         /// valid and properly disposed of after use.</remarks>
         /// <param name="pObjectName">The name of the object for which to reset security information. This must be a valid path or object name.</param>
         /// <param name="ObjectType">The type of the object, such as a file, registry key, or service. This determines how the object is treated
@@ -934,7 +934,7 @@ namespace PSADT.Interop
         /// cancel the operation.</param>
         /// <param name="ProgressInvokeSetting">Specifies how the progress function is invoked, such as on every object or only on errors.</param>
         /// <param name="Args">An optional pointer to additional arguments passed to the progress callback function.</param>
-        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.  Returns <see
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation completes successfully.</returns>
         internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress = null, PROG_INVOKE_SETTING ProgressInvokeSetting = PROG_INVOKE_SETTING.ProgressInvokeNever, nint Args = 0)
         {

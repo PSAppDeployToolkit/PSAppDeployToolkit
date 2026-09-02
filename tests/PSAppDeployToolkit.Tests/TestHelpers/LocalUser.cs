@@ -1,4 +1,4 @@
-// See LocalPrincipal for why this namespace does not follow the folder.
+﻿// See LocalPrincipal for why this namespace does not follow the folder.
 #pragma warning disable IDE0130
 
 using System.Security.Principal;

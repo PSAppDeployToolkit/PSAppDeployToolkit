@@ -334,7 +334,7 @@ namespace PSADT.Tests.AppManagement
         /// <remarks>
         /// Applications are collected into lists that are compared and deduplicated as a whole, so this
         /// has to hold. It did not for a long while: the record carried the uninstaller's path as a
-        /// <see cref="System.IO.FileInfo"/> and its arguments as a collection, and neither of those
+        /// <see cref="FileInfo"/> and its arguments as a collection, and neither of those
         /// compares by value, so no two records ever matched however alike they were. Both are recorded
         /// in forms that compare by their contents instead.
         /// </remarks>

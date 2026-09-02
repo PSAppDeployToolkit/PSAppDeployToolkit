@@ -1,6 +1,6 @@
 ﻿using System;
-using PSAppDeployToolkit.Foundation;
 using PSADT.PowerShellTestFixture.Tests.TestHelpers;
+using PSAppDeployToolkit.Foundation;
 using Xunit;
 
 namespace PSADT.PowerShellTestFixture.Tests

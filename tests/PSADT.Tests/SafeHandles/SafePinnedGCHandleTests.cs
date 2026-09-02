@@ -167,7 +167,7 @@ namespace PSADT.Tests.SafeHandles
             GC.WaitForPendingFinalizers();
 
             // Assert
-            Assert.Equal<byte[]>([1, 2, 3, 4], value);
+            Assert.Equal([1, 2, 3, 4], value);
         }
     }
 }

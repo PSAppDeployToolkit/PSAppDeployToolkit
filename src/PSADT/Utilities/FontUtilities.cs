@@ -109,7 +109,7 @@ namespace PSADT.Utilities
         public static string GetFontTitle(string fontPath)
         {
             // Create factory and font file reference.
-            ArgumentException.ThrowIfNullOrWhiteSpace(fontPath); fontPath = Path.GetFullPath(fontPath.Trim().Trim('"'));
+            ArgumentException.ThrowIfNullOrWhiteSpace(fontPath); fontPath = Path.GetFullPath(fontPath.AsSpan().Trim().Trim('"').Trim().ToString());
             _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
             try
             {

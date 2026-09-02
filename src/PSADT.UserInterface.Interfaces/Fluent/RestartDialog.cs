@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;

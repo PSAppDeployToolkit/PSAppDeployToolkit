@@ -31,7 +31,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
         /// <exception cref="ArgumentNullException">Thrown when the argument is null and allowNull is <see langword="false"/>.</exception>
         /// <exception cref="ArgumentException">Thrown when the argument is empty or consists only of white-space characters and allowEmpty is <see langword="false"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
+        [SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object? arguments, EngineIntrinsics engineIntrinsics)
         {
             // Handle null based on configuration.
@@ -108,8 +108,8 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="entries">The values to validate.</param>
         /// <exception cref="ArgumentException">Thrown when a value is null, empty or white space.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0038:Make method static (deprecated, use CA1822 instead)", Justification = "Reads allowEmpty, which this rule does not recognise as instance state on a primary constructor parameter.")]
+        [SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
+        [SuppressMessage("Design", "MA0038:Make method static (deprecated, use CA1822 instead)", Justification = "Reads allowEmpty, which this rule does not recognise as instance state on a primary constructor parameter.")]
         private void ValidateDictionaryValues(IEnumerable? entries)
         {
             if (entries is null)

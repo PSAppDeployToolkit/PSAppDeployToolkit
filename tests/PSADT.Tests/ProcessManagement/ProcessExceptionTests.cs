@@ -65,7 +65,7 @@ namespace PSADT.Tests.ProcessManagement
             using ProcessResult result = new(1);
 
             // Act & Assert
-            _ = Assert.IsAssignableFrom<ExternalException>(new ProcessException("It went wrong.", result));
+            _ = Assert.IsType<ExternalException>(new ProcessException("It went wrong.", result), exactMatch: false);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace PSADT.CodeAnalysis.Tests.TestHelpers
+﻿namespace PSADT.CodeAnalysis.Tests.TestHelpers
 {
     /// <summary>
     /// Selects the syntax that <see cref="SuppressibleDiagnosticAnalyzer"/> anchors its diagnostic to. The

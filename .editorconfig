@@ -12,6 +12,11 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.cs]
+# System first, then everything else, alphabetical within each and no blank line between them.
+# IDE0055 is what enforces it, and it is on because category-Style below is an error.
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
 # Harden the compiler as far as it'll go.
 dotnet_analyzer_diagnostic.category-Design.severity = error
 dotnet_analyzer_diagnostic.category-Documentation.severity = error
@@ -47,6 +52,8 @@ dotnet_diagnostic.S107.severity = none
 dotnet_diagnostic.S109.severity = none
 dotnet_diagnostic.S1067.severity = none
 dotnet_diagnostic.S1121.severity = none
+dotnet_diagnostic.S1133.severity = none
+dotnet_diagnostic.S1192.severity = none
 dotnet_diagnostic.S1659.severity = none
 dotnet_diagnostic.S3358.severity = none
 dotnet_diagnostic.S3869.severity = none

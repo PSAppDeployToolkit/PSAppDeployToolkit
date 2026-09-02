@@ -28,7 +28,7 @@ namespace PSADT.SMBIOS
     /// Provides methods for retrieving SMBIOS (System Management BIOS) firmware tables from the system.
     /// </summary>
     /// <remarks>The <see cref="SmbiosTables"/> class offers functionality to query and retrieve SMBIOS
-    /// firmware tables,  which contain system hardware and firmware information. These methods rely on the underlying
+    /// firmware tables, which contain system hardware and firmware information. These methods rely on the underlying
     /// system  firmware table provider and identifiers to locate and access the SMBIOS data.</remarks>
     internal static class SmbiosTables
     {

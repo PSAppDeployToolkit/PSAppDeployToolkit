@@ -398,8 +398,8 @@ namespace PSADT.Invoke
             // Set up the help information then display a modal message box if not in debug mode, otherwise write to the console.
             string helpVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new InvalidOperationException("Failed to retrieve assembly version information.");
             string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new InvalidOperationException("Failed to retrieve assembly title information.")} {new Version(helpVersion.Substring(0, helpVersion.IndexOf('+')))}";
-            string helpMessage = string.Join(Environment.NewLine,
-            [
+            string helpMessage = string.Join(
+                Environment.NewLine,
                 helpTitle,
                 "",
                 AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new InvalidOperationException("Failed to retrieve assembly copyright information."),
@@ -432,8 +432,7 @@ namespace PSADT.Invoke
                 "  Zero or more parameters to pass to the deployment script.",
                 "",
                 "  /?, /Help",
-                "  Displays this help message.",
-            ]);
+                "  Displays this help message.");
             if (!inDebugMode)
             {
                 _ = PInvoke.SetProcessDPIAware(); _ = NativeMethods.MessageBox(hWnd: null, helpMessage, helpTitle, MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | MESSAGEBOX_STYLE.MB_ICONINFORMATION);

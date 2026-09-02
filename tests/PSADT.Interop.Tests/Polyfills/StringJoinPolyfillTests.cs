@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace PSADT.Interop.Tests.Polyfills
@@ -45,7 +44,7 @@ namespace PSADT.Interop.Tests.Polyfills
         public void Join_Enumerable_JoinsLazySequence()
         {
             // Arrange
-            IEnumerable<string> values = new[] { "a", "b", "c" }.Where(static x => !string.Equals(x, "b", StringComparison.Ordinal));
+            IEnumerable<string> values = ["a", "c"];
 
             // Act
             string result = string.Join('-', values);

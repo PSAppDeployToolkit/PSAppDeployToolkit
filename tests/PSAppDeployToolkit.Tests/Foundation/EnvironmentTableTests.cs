@@ -6,8 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using PSAppDeployToolkit.Foundation;
 using PSADT.PowerShellTestFixture;
+using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Tests.TestHelpers;
 using Xunit;
 
@@ -39,7 +39,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// point. So the type is an identity rather than a value, and it is no longer declared as a record.
         /// <para>
         /// Worth noting that this test passed before the declaration changed, too - a record holding fifty
-        /// <see cref="System.IO.DirectoryInfo"/> properties was already comparing by reference through them, so it
+        /// <see cref="DirectoryInfo"/> properties was already comparing by reference through them, so it
         /// never delivered the value equality it advertised. Removing the record removed a promise nothing kept
         /// rather than any behaviour a caller could have relied on.
         /// </para>

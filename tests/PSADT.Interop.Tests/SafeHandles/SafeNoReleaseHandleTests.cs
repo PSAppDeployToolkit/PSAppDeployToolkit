@@ -40,7 +40,7 @@ namespace PSADT.Interop.Tests.SafeHandles
             // Assert
             Assert.False(handle.IsInvalid);
             Assert.False(handle.IsClosed);
-            Assert.Equal<long>(1, handle.DangerousGetHandle().ToInt64());
+            Assert.Equal(1, handle.DangerousGetHandle().ToInt64());
         }
 
         /// <summary>

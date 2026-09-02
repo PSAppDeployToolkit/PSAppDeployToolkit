@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Tests.TestHelpers
     /// </summary>
     /// <remarks>
     /// Tests in this assembly query system state but never change it. The one thing here that writes at
-    /// all is <see cref="PSADT.UserInterface.DrawingUtilities.ConvertBitmapFileToIcon"/>, which takes an
+    /// all is <see cref="DrawingUtilities.ConvertBitmapFileToIcon"/>, which takes an
     /// output path and writes to it; giving it a path under here keeps that rule enforced by where the
     /// file goes rather than by the discipline of each test. Disposal is best-effort, since a handle the
     /// code under test still holds must not turn a passing test into a failing one.

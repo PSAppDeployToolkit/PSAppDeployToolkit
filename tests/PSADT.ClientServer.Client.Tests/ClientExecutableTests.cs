@@ -317,7 +317,7 @@ namespace PSADT.ClientServer.Client.Tests
         {
             int mode = NonPublic.CallStatic<int>(Subject, "GetUserToastNotificationMode");
             Assert.True(
-                mode == -1 || Enum.IsDefined(typeof(global::Windows.UI.Notifications.ToastNotificationMode), mode),
+                mode == -1 || Enum.IsDefined(typeof(Windows.UI.Notifications.ToastNotificationMode), mode),
                 string.Create(CultureInfo.InvariantCulture, $"[{mode}] is neither -1 nor a defined ToastNotificationMode."));
         }
 

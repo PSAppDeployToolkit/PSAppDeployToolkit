@@ -61,8 +61,8 @@ namespace PSAppDeployToolkit.Tests.Foundation
                 { "AppArch", "MappedArch" },
                 { "AppLang", "MappedLang" },
                 { "AppRevision", "MappedRevision" },
-                { "AppSuccessExitCodes", new[] { 8001, 8002 } },
-                { "AppRebootExitCodes", new[] { 7001, 7002 } },
+                { "AppSuccessExitCodes", customAppSuccessExitCodes },
+                { "AppRebootExitCodes", customAppRebootExitCodes },
                 { "AppProcessesToClose", new[] { new ProcessDefinition("mapped", "Mapped Process") } },
                 { "AppScriptVersion", new Version(1, 2, 3, 4) },
                 { "AppScriptDate", scriptDate },
@@ -1471,8 +1471,8 @@ namespace PSAppDeployToolkit.Tests.Foundation
             using TempDirectory temp = new();
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
             Dictionary<string, object> parameters = MinimalParameters();
-            parameters.Add("AppSuccessExitCodes", new[] { 60001, 3010 });
-            parameters.Add("AppRebootExitCodes", new[] { 3010 });
+            parameters.Add("AppSuccessExitCodes", typicalAppSuccessExitCodes);
+            parameters.Add("AppRebootExitCodes", typicalAppRebootExitCodes);
             DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
 
             // Assert: a success code that is also the deferral code is a retry.
@@ -1789,5 +1789,25 @@ namespace PSAppDeployToolkit.Tests.Foundation
             { "ExitWithMsiCodes", DeploymentSettings.ExitWithMsiCodes },
             { "AllowWowProcess", DeploymentSettings.AllowWowProcess },
         };
+
+        /// <summary>
+        /// The exit codes a typical application uses to signal success and deferral, for the tests that need them.
+        /// </summary>
+        private static readonly int[] typicalAppSuccessExitCodes = [60001, 3010];
+
+        /// <summary>
+        /// The exit codes a typical application uses to signal that it needs a reboot, for the tests that need them.
+        /// </summary>
+        private static readonly int[] typicalAppRebootExitCodes = [3010];
+
+        /// <summary>
+        /// The exit codes a custom application uses to signal success and deferral, for the tests that need them.
+        /// </summary>
+        private static readonly int[] customAppSuccessExitCodes = [8001, 8002];
+
+        /// <summary>
+        /// The exit codes a custom application uses to signal that it needs a reboot, for the tests that need them.
+        /// </summary>
+        private static readonly int[] customAppRebootExitCodes = [7001, 7002];
     }
 }

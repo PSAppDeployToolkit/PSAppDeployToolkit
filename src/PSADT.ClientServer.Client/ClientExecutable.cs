@@ -156,16 +156,15 @@ namespace PSADT.ClientServer
                 {
                     string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
                     string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+', StringComparison.Ordinal)])}";
-                    string helpMessage = string.Join(Environment.NewLine,
-                    [
+                    string helpMessage = string.Join(
+                        Environment.NewLine,
                         helpTitle,
                         string.Empty,
                         AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new ClientException("Failed to retrieve assembly copyright information.", ClientExitCode.Unknown),
                         string.Empty,
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         string.Empty,
-                        "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
-                    ]);
+                        "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.");
                     _ = await DialogManager.ShowDialogBoxAsync(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, TopMost: true, default).ConfigureAwait(false);
                     throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
                 }

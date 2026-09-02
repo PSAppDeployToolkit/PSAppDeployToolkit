@@ -1,4 +1,4 @@
-using Windows.Win32.UI.WindowsAndMessaging;
+﻿using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface
 {

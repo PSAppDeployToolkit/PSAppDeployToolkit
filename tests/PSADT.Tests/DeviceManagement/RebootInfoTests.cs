@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xunit;
 using PSADT.DeviceManagement;
+using Xunit;
 
 namespace PSADT.Tests.DeviceManagement
 {

@@ -1,4 +1,4 @@
-using Windows.Win32.Foundation;
+﻿using Windows.Win32.Foundation;
 
 namespace PSADT.Interop
 {

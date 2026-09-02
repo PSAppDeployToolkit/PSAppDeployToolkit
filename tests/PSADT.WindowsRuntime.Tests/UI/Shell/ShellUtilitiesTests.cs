@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Threading;
 using PSADT.WindowsRuntime.Tests.TestHelpers;
 using PSADT.WindowsRuntime.UI.Shell;
