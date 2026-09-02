@@ -40,10 +40,11 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             const DialogStyle dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
 
             // Read PSADT's string table into memory.
-            ScriptBlockAst stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\ImportsLast.ps1"), out _, out ParseError[]? errors);
+            string importsLastPath = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\modules\PSAppDeployToolkit\ImportsLast.ps1");
+            ScriptBlockAst stringsAst = Parser.ParseFile(importsLastPath, out _, out ParseError[]? errors);
             if (errors.Length > 0)
             {
-                throw new InvalidDataException("Error parsing strings.psd1 file.");
+                throw new InvalidDataException($"Error parsing {importsLastPath} file.");
             }
 
             // Read out the hashtable.
