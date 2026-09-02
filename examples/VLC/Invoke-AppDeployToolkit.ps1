@@ -51,19 +51,19 @@ param
 
 ## MARK: Variables
 $adtSession = @{
-    AppVendor = 'VideoLAN'
-    AppName = 'VLC media player'
-    AppVersion = '3.0.23'
+    AppVendor = 'Microsoft'
+    AppName = 'ASP.NET Core Runtime'
+    AppVersion = '10.0.11'
     AppArch = 'x64'
     AppLang = 'EN'
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
-    AppProcessesToClose = @(@{ Name = 'vlc'; Description = 'VLC media player' })
+    AppProcessesToClose = @()
     RequireAdmin = $true
 
     AppScriptVersion = '1.0.0'
-    AppScriptDate = '2026-04-01'
+    AppScriptDate = '2026-09-02'
     AppScriptAuthor = 'PSAppDeployToolkit'
 
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
@@ -88,7 +88,7 @@ New-Variable -Name Pre-Install -Value {
 
 ## MARK: Install
 New-Variable -Name Install -Value {
-    Start-ADTProcess -FilePath "vlc-$($adtSession.AppVersion)-win64.exe" -ArgumentList '/L=1033 /S'
+    Start-ADTProcess -FilePath "aspnetcore-runtime-10.0.11-win-x64.exe" -ArgumentList '/install','/quiet','/norestart'
 }
 
 ## MARK: Post-Install
@@ -109,7 +109,7 @@ New-Variable -Name Pre-Uninstall -Value {
 
 ## MARK: Uninstall
 New-Variable -Name Uninstall -Value {
-    Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -ArgumentList '/S'
+    Start-ADTProcess -FilePath "aspnetcore-runtime-10.0.11-win-x64.exe" -ArgumentList '/uninstall','/quiet','/norestart'
 }
 
 ## MARK: Post-Uninstall
