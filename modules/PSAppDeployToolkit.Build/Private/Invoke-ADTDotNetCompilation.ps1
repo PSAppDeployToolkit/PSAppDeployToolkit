@@ -72,6 +72,15 @@ function Invoke-ADTDotNetCompilation
         # Process each build item.
         foreach ($buildItem in $Script:ModuleConstants.DotNetBuildItems)
         {
+            # Confirm the solution is correctly formatted before we commence any compilation.
+            # dotnet.exe emits its diagnostics via stderr, so we reset $ErrorActionPreference in a child scope to stop 2>&1 from throwing on the first line.
+            Write-ADTBuildLogEntry -Message "Confirming code formatting for [$($buildItem.SolutionPath)] solution, please wait..."
+            & { $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Continue; & $dotnet format $buildItem.SolutionPath --verify-no-changes --severity info --exclude-diagnostics CA1051 2>&1 } | Write-ADTDotNetOutputBuildLogEntry
+            if ($Global:LASTEXITCODE)
+            {
+                throw "Code formatting verification for solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
+            }
+
             # Only build a debug version if there are changes to the C# files since the last DLL commit.
             $buildConfigs = [System.Collections.Generic.List[System.String]]'Release'
             if ($testFileChanges)
