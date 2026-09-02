@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.Win32;
 using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Native;
+using Microsoft.Win32;
 using Xunit;
 
 namespace Fluence.Wpf.Tests

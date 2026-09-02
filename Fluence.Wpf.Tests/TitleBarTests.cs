@@ -103,7 +103,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(40.0, paneToggleButton.ActualWidth, 0.5);
                     Assert.Equal(36.0, paneToggleButton.ActualHeight, 0.5);
 
-                    System.Windows.Controls.TextBlock backGlyph = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChild<System.Windows.Controls.TextBlock>(backButton));
+                    System.Windows.Controls.TextBlock backGlyph = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChild<System.Windows.Controls.TextBlock>(backButton), exactMatch: false);
                     Assert.Equal(16.0, backGlyph.ActualWidth, 0.5);
                     Assert.Equal(16.0, backGlyph.ActualHeight, 0.5);
                 });

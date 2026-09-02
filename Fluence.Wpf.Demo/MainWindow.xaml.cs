@@ -26,8 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Fluence.Wpf.Demo.Pages;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -36,6 +34,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
+using Fluence.Wpf.Demo.Pages;
 
 namespace Fluence.Wpf.Demo
 {

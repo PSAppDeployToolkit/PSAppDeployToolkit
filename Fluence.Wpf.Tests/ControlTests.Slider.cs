@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Track track = Assert.IsAssignableFrom<Track>(FindVisualChildByName<Track>(slider, "PART_Track"));
+                Track track = Assert.IsType<Track>(FindVisualChildByName<Track>(slider, "PART_Track"), exactMatch: false);
                 w.Close();
             });
         }
@@ -78,9 +78,9 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Thumb's template root Grid has a ScaleTransform named ThumbScale.
-                Thumb thumb = Assert.IsAssignableFrom<Thumb>(FindVisualChild<Thumb>(slider));
+                Thumb thumb = Assert.IsType<Thumb>(FindVisualChild<Thumb>(slider), exactMatch: false);
 
-                System.Windows.Controls.Grid grid = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChild<System.Windows.Controls.Grid>(thumb));
+                System.Windows.Controls.Grid grid = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChild<System.Windows.Controls.Grid>(thumb), exactMatch: false);
 
                 ScaleTransform scale = Assert.IsType<ScaleTransform>(grid.RenderTransform);
                 Assert.Equal(1.0, scale.ScaleX, 0.001);
@@ -102,8 +102,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Ellipse thumbEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(slider, "ThumbEllipse"));
-                Ellipse innerDot = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(slider, "ThumbInnerDot"));
+                Ellipse thumbEllipse = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(slider, "ThumbEllipse"), exactMatch: false);
+                Ellipse innerDot = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(slider, "ThumbInnerDot"), exactMatch: false);
 
                 w.Close();
             });

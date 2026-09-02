@@ -54,7 +54,7 @@ namespace Fluence.Wpf.Tests
                 FluenceWindow window = new();
                 try
                 {
-                    _ = Assert.IsAssignableFrom<BitmapSource>(window.Icon);
+                    _ = Assert.IsType<BitmapSource>(window.Icon, exactMatch: false);
                 }
                 finally
                 {
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Tests
                 _ = WpfTestSta.EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
 
-                BitmapSource icon = Assert.IsAssignableFrom<BitmapSource>(FluenceWindow.DefaultIcon);
+                BitmapSource icon = Assert.IsType<BitmapSource>(FluenceWindow.DefaultIcon, exactMatch: false);
                 Assert.Equal(icon.PixelWidth, icon.PixelHeight);
             });
         }

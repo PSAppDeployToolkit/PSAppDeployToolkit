@@ -133,7 +133,7 @@ namespace Fluence.Wpf.Demo.Pages
 
             try
             {
-                Clipboard.SetText(value);
+                DemoClipboard.SetText(value);
             }
             catch (ExternalException)
             {

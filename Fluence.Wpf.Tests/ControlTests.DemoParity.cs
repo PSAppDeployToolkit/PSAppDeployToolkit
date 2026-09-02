@@ -43,8 +43,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryInputsPage(), static window =>
             {
-                Controls.Slider horizontal = Assert.IsAssignableFrom<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "HorizontalTickSlider"));
-                Controls.Slider vertical = Assert.IsAssignableFrom<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "VerticalTickSlider"));
+                Controls.Slider horizontal = Assert.IsType<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "HorizontalTickSlider"), exactMatch: false);
+                Controls.Slider vertical = Assert.IsType<Controls.Slider>(FindVisualChildByName<Controls.Slider>(window, "VerticalTickSlider"), exactMatch: false);
 
                 Assert.NotEqual(System.Windows.Controls.Primitives.TickPlacement.None, horizontal.TickPlacement);
                 Assert.NotEqual(System.Windows.Controls.Primitives.TickPlacement.None, vertical.TickPlacement);
@@ -58,8 +58,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.RepeatButton button = Assert.IsAssignableFrom<Controls.RepeatButton>(FindVisualChildByName<Controls.RepeatButton>(window, "RepeatCounterButton"));
-                TextBlock count = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "RepeatButtonCountText"));
+                Controls.RepeatButton button = Assert.IsType<Controls.RepeatButton>(FindVisualChildByName<Controls.RepeatButton>(window, "RepeatCounterButton"), exactMatch: false);
+                TextBlock count = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "RepeatButtonCountText"), exactMatch: false);
                 Controls.RepeatButton? accentRepeat = FindRepeatButtonByContent(window, "Accent repeat");
 
                 Assert.Null(accentRepeat);
@@ -78,9 +78,9 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.ToggleButton wrapToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "WrapToggleButton"));
-                Controls.ToggleButton threeStateToggle = Assert.IsAssignableFrom<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "ThreeStateToggleButton"));
-                TextBlock stateText = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleButtonStateText"));
+                Controls.ToggleButton wrapToggle = Assert.IsType<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "WrapToggleButton"), exactMatch: false);
+                Controls.ToggleButton threeStateToggle = Assert.IsType<Controls.ToggleButton>(FindVisualChildByName<Controls.ToggleButton>(window, "ThreeStateToggleButton"), exactMatch: false);
+                TextBlock stateText = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleButtonStateText"), exactMatch: false);
 
                 Assert.True(threeStateToggle.IsThreeState, "The three-state sample should opt into IsThreeState.");
                 Assert.Equal("Wrap text: Off", stateText.Text, StringComparer.Ordinal);
@@ -100,8 +100,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryButtonsPage(), static window =>
             {
-                Controls.ToggleSplitButton listToggle = Assert.IsAssignableFrom<Controls.ToggleSplitButton>(FindVisualChildByName<Controls.ToggleSplitButton>(window, "ListToggleSplitButton"));
-                TextBlock stateText = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleSplitButtonStateText"));
+                Controls.ToggleSplitButton listToggle = Assert.IsType<Controls.ToggleSplitButton>(FindVisualChildByName<Controls.ToggleSplitButton>(window, "ListToggleSplitButton"), exactMatch: false);
+                TextBlock stateText = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "ToggleSplitButtonStateText"), exactMatch: false);
 
                 Assert.Equal("List formatting: Off", stateText.Text, StringComparer.Ordinal);
 
@@ -126,12 +126,12 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GallerySelectionPage(), static window =>
             {
-                Controls.CheckBox twoState = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "TwoStateCheckBox"));
-                Controls.CheckBox threeState = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "ThreeStateCheckBox"));
-                Controls.CheckBox selectAll = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "SelectAllCheckBox"));
-                Controls.CheckBox optionOne = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionOneCheckBox"));
-                Controls.CheckBox optionTwo = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionTwoCheckBox"));
-                Controls.CheckBox optionThree = Assert.IsAssignableFrom<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionThreeCheckBox"));
+                Controls.CheckBox twoState = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "TwoStateCheckBox"), exactMatch: false);
+                Controls.CheckBox threeState = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "ThreeStateCheckBox"), exactMatch: false);
+                Controls.CheckBox selectAll = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "SelectAllCheckBox"), exactMatch: false);
+                Controls.CheckBox optionOne = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionOneCheckBox"), exactMatch: false);
+                Controls.CheckBox optionTwo = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionTwoCheckBox"), exactMatch: false);
+                Controls.CheckBox optionThree = Assert.IsType<Controls.CheckBox>(FindVisualChildByName<Controls.CheckBox>(window, "OptionThreeCheckBox"), exactMatch: false);
 
                 Assert.False(twoState.IsThreeState);
                 Assert.True(threeState.IsThreeState);
@@ -155,12 +155,12 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GallerySelectionPage(), static window =>
             {
-                Controls.RatingControl rating = Assert.IsAssignableFrom<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "RatingSample"));
-                Controls.RatingControl readOnlyRating = Assert.IsAssignableFrom<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "ReadOnlyRatingSample"));
-                TextBlock workHeader = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleHeaderText"));
-                Controls.ToggleSwitch workToggle = Assert.IsAssignableFrom<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "WorkToggleSwitch"));
-                TextBlock workLabel = Assert.IsAssignableFrom<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleStateText"));
-                Controls.ProgressRing ring = Assert.IsAssignableFrom<Controls.ProgressRing>(FindVisualChildByName<Controls.ProgressRing>(window, "WorkToggleProgressRing"));
+                Controls.RatingControl rating = Assert.IsType<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "RatingSample"), exactMatch: false);
+                Controls.RatingControl readOnlyRating = Assert.IsType<Controls.RatingControl>(FindVisualChildByName<Controls.RatingControl>(window, "ReadOnlyRatingSample"), exactMatch: false);
+                TextBlock workHeader = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleHeaderText"), exactMatch: false);
+                Controls.ToggleSwitch workToggle = Assert.IsType<Controls.ToggleSwitch>(FindVisualChildByName<Controls.ToggleSwitch>(window, "WorkToggleSwitch"), exactMatch: false);
+                TextBlock workLabel = Assert.IsType<TextBlock>(FindVisualChildByName<TextBlock>(window, "WorkToggleStateText"), exactMatch: false);
+                Controls.ProgressRing ring = Assert.IsType<Controls.ProgressRing>(FindVisualChildByName<Controls.ProgressRing>(window, "WorkToggleProgressRing"), exactMatch: false);
 
                 Assert.Equal(1, CountVisualChildren<Controls.ToggleSwitch>(window));
                 Assert.Null(FindVisualChildByName<Controls.ToggleSwitch>(window, "SimpleToggleSwitch"));
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryTreesPage(), static window =>
             {
-                Controls.TreeView treeView = Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"));
+                Controls.TreeView treeView = Assert.IsType<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"), exactMatch: false);
 
                 Assert.Equal(TreeViewSelectionMode.Multiple, treeView.SelectionMode);
             });
@@ -197,7 +197,7 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryLayoutPage(), static window =>
             {
-                Controls.Expander expander = Assert.IsAssignableFrom<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "AdvancedOptionsExpander"));
+                Controls.Expander expander = Assert.IsType<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "AdvancedOptionsExpander"), exactMatch: false);
 
                 Assert.False(expander.IsExpanded, "Layout page Expander sample should be collapsed by default.");
             });
@@ -208,8 +208,8 @@ namespace Fluence.Wpf.Tests
         {
             return RunDemoPageTestAsync(static () => new GalleryDataPage(), static window =>
             {
-                Controls.ListBox singleSelect = Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"));
-                Controls.ListBox multiSelect = Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"));
+                Controls.ListBox singleSelect = Assert.IsType<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"), exactMatch: false);
+                Controls.ListBox multiSelect = Assert.IsType<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"), exactMatch: false);
 
                 Assert.Equal(SelectionMode.Single, singleSelect.SelectionMode);
                 Assert.Equal(SelectionMode.Extended, multiSelect.SelectionMode);
@@ -224,25 +224,25 @@ namespace Fluence.Wpf.Tests
         {
             await RunDemoPageTestAsync(static () => new GalleryDataPage(), static window =>
             {
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SimpleListView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "RichListView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox")));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SimpleListView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "RichListView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListBox>(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"), exactMatch: false));
             }).ConfigureAwait(true);
 
             await RunDemoPageTestAsync(static () => new GalleryDataBindingPage(), static window =>
             {
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "BoundListView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView")));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "BoundListView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.ListView>(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView"), exactMatch: false));
             }).ConfigureAwait(true);
 
             await RunDemoPageTestAsync(static () => new GalleryTreesPage(), static window =>
             {
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView")));
-                AssertControlHasThemedBorder(Assert.IsAssignableFrom<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView")));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView"), exactMatch: false));
+                AssertControlHasThemedBorder(Assert.IsType<Controls.TreeView>(FindVisualChildByName<Controls.TreeView>(window, "ExpansionTreeView"), exactMatch: false));
             }).ConfigureAwait(true);
         }
 

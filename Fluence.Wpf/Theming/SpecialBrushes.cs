@@ -74,6 +74,10 @@ namespace Fluence.Wpf.Theming
             // Brush-only keys with no Color twin.
             dict["AccentFillColorSelectedTextBackgroundBrush"] = Solid(colors["SystemAccentColor"]);
             dict["NavigationViewSelectionIndicatorBrush"] = Solid(colors["SystemAccentColor"]);
+            // WinUI ScrollBarTrackFill is AcrylicInAppFillColorDefaultBrush, which its acrylic theme
+            // dictionary defines with the same tint, opacity, and fallback as
+            // AcrylicBackgroundFillColorDefaultBrush in every theme, so the two resolve identically.
+            // AddHighContrastBrushes overrides this with the live system window color.
             dict["ScrollBarTrackFillBrush"] = Solid(colors["AcrylicBackgroundFillColorDefault"]);
 
             // SystemColor aliases used by the WinUI Gallery color guidance page. These read live
@@ -179,22 +183,23 @@ namespace Fluence.Wpf.Theming
         {
             // ControlElevationBorderBrush: absolute 0,0 -> 0,3 gradient (flipped vertically)
             // from ControlStrokeColorSecondary -> Default.
+            const string ControlStrokeColorDefault = "ControlStrokeColorDefault";
             dict["ControlElevationBorderBrush"] = AbsoluteFlippedGradient(
-                colors["ControlStrokeColorSecondary"], colors["ControlStrokeColorDefault"]);
+                colors["ControlStrokeColorSecondary"], colors[ControlStrokeColorDefault]);
 
             // TextControlElevationBorderBrush: the WinUI 3 text-control rest border is a
             // distinct absolute 0,0 -> 0,2 gradient whose 0.5 stop is the strong stroke,
             // painting the visible bottom underline of every text field at rest
             // (WinUI CommonStyles TextBox_themeresources.xaml).
             dict["TextControlElevationBorderBrush"] = TextControlGradient(
-                colors["ControlStrongStrokeColorDefault"], colors["ControlStrokeColorDefault"]);
+                colors["ControlStrongStrokeColorDefault"], colors[ControlStrokeColorDefault]);
 
             // TextControlElevationBorderFocusedBrush: same geometry with both stops at 1.0,
             // a hard step to a 2px accent band at the bottom edge. WinUI seeds the accent stop
             // with SystemAccentColorDark1 (Light) / SystemAccentColorLight2 (Dark), which is
             // exactly what ColorMap computes as SystemAccentColorPrimary.
             dict["TextControlElevationBorderFocusedBrush"] = TextControlFocusedGradient(
-                colors["SystemAccentColorPrimary"], colors["ControlStrokeColorDefault"]);
+                colors["SystemAccentColorPrimary"], colors[ControlStrokeColorDefault]);
 
             // AccentControlElevationBorderBrush: same geometry, on-accent stroke stops.
             dict["AccentControlElevationBorderBrush"] = AbsoluteFlippedGradient(
@@ -208,7 +213,7 @@ namespace Fluence.Wpf.Theming
                 StartPoint = new Point(0, 0),
                 EndPoint = new Point(0, 1),
             };
-            circle.GradientStops.Add(new GradientStop(colors["ControlStrokeColorDefault"], 0.50));
+            circle.GradientStops.Add(new GradientStop(colors[ControlStrokeColorDefault], 0.50));
             circle.GradientStops.Add(new GradientStop(colors["ControlStrokeColorSecondary"], 0.70));
             circle.Freeze();
             dict["CircleElevationBorderBrush"] = circle;
@@ -422,6 +427,12 @@ namespace Fluence.Wpf.Theming
             // Acrylic background fill
             dict["AcrylicBackgroundFillColorDefaultBrush"] = Solid(window);
             dict["AcrylicBackgroundFillColorBaseBrush"] = Solid(window);
+
+            // Scroll bar track. WinUI resolves ScrollBarTrackFill to AcrylicInAppFillColorDefaultBrush,
+            // which the high contrast dictionary redefines as a solid SystemColorWindowColor brush.
+            // The computed AcrylicBackgroundFillColorDefault token is a fixed black in the HC table, so
+            // the seed assigned in Add would ignore the white on black variants.
+            dict["ScrollBarTrackFillBrush"] = Solid(window);
 
             // System fill (SystemFillColorAttention skipped by Build in HC; brush -> Highlight)
             dict["SystemFillColorAttentionBrush"] = Solid(highlight);

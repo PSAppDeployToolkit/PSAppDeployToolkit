@@ -183,7 +183,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FrameworkElement footerIndicator = Assert.IsAssignableFrom<FrameworkElement>(nav.GetFooterSelectionIndicatorForTesting());
+                    FrameworkElement footerIndicator = Assert.IsType<FrameworkElement>(nav.GetFooterSelectionIndicatorForTesting(), exactMatch: false);
                     Assert.Equal(0.0, footerIndicator!.Opacity, 0.01);
 
                     nav.SelectFooterMenuItem(footer);
@@ -252,7 +252,7 @@ namespace Fluence.Wpf.Tests
                     await WaitForAnimationAndDrainAsync(window.Dispatcher, 300).ConfigureAwait(true);
                     window.UpdateLayout();
 
-                    ContentPresenter iconPresenter = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer, "IconPresenter"));
+                    ContentPresenter iconPresenter = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(footer, "IconPresenter"), exactMatch: false);
                     Point iconOffset = iconPresenter!.TransformToAncestor(footer).Transform(new Point(0, 0));
                     Assert.True(iconOffset.X >= 4.0 - 0.5, "Closed LeftCompact footer icon should not be clipped on the left edge.");
                     Assert.True(iconOffset.X + iconPresenter.ActualWidth <= 44.0 + 0.5, "Closed LeftCompact footer icon should stay inside the 40px icon slot, aligned with the main items.");

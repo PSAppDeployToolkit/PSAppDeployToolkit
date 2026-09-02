@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
 
         private static void RaiseKeyEvent(UIElement target, Key key, RoutedEvent routedEvent)
         {
-            PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(target));
+            PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(target), exactMatch: false);
             target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, key)
             {
                 RoutedEvent = routedEvent,
@@ -117,13 +117,13 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(548.0, dialog.MaxWidth, 0.01);
                     Assert.Equal(320.0, dialog.MinWidth, 0.01);
 
-                    Border surface = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"));
+                    Border surface = Assert.IsType<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"), exactMatch: false);
                     CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
                     Assert.Equal(overlayRadius, surface.CornerRadius);
 
-                    ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
-                    ButtonBase secondary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_SecondaryButton"));
-                    ButtonBase close = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton"));
+                    ButtonBase primary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"), exactMatch: false);
+                    ButtonBase secondary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_SecondaryButton"), exactMatch: false);
+                    ButtonBase close = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, primary.Visibility);
                     Assert.Equal(Visibility.Visible, secondary.Visibility);
                     Assert.Equal(Visibility.Visible, close.Visibility);
@@ -507,7 +507,7 @@ namespace Fluence.Wpf.Tests
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton") is not null).ConfigureAwait(true);
                     Assert.True(templated, "The dialog template must apply before the primary button can be clicked.");
 
-                    ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
+                    ButtonBase primary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"), exactMatch: false);
                     primary.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
                     bool completed = await WaitUntilAsync(window.Dispatcher, 2000, () => dialogTask.IsCompleted).ConfigureAwait(true);
@@ -559,7 +559,7 @@ namespace Fluence.Wpf.Tests
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton") is not null).ConfigureAwait(true);
                     Assert.True(templated, "The dialog template must apply before the close button can be clicked.");
 
-                    ButtonBase close = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton"));
+                    ButtonBase close = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton"), exactMatch: false);
                     close.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
                     bool completed = await WaitUntilAsync(window.Dispatcher, 2000, () => dialogTask.IsCompleted).ConfigureAwait(true);
@@ -656,7 +656,7 @@ namespace Fluence.Wpf.Tests
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton") is not null).ConfigureAwait(true);
                     Assert.True(templated, "The dialog template must apply before the primary button can be clicked.");
 
-                    ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
+                    ButtonBase primary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"), exactMatch: false);
                     primary.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
@@ -689,7 +689,7 @@ namespace Fluence.Wpf.Tests
                 SolidColorBrush smoke = Assert.IsType<SolidColorBrush>(app.TryFindResource("SmokeFillColorDefaultBrush"));
                 Assert.Equal(Color.FromArgb(0x4D, 0x00, 0x00, 0x00), smoke.Color);
 
-                Color smokeColor = Assert.IsAssignableFrom<Color>(app.TryFindResource("SmokeFillColorDefault") as Color?);
+                Color smokeColor = Assert.IsType<Color>(app.TryFindResource("SmokeFillColorDefault") as Color?, exactMatch: false);
             });
         }
 
@@ -733,7 +733,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(outside.Handled, "Pointer input outside the open dialog must be blocked.");
 
                     // A press on the dialog's own button must pass through.
-                    ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
+                    ButtonBase primary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"), exactMatch: false);
                     MouseButtonEventArgs inside = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                     {
                         RoutedEvent = UIElement.PreviewMouseDownEvent,
@@ -792,7 +792,7 @@ namespace Fluence.Wpf.Tests
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton") is not null).ConfigureAwait(true);
                     Assert.True(templated, "The dialog template must apply before key input is simulated.");
 
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(window));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(window), exactMatch: false);
 
                     // A key press sourced outside the dialog (standing in for a title-bar
                     // search box that still holds keyboard focus) must be swallowed.
@@ -805,7 +805,7 @@ namespace Fluence.Wpf.Tests
 
                     // A key press sourced inside the dialog must pass through so the dialog's
                     // own Tab cycle and key handling keep working.
-                    ButtonBase primary = Assert.IsAssignableFrom<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"));
+                    ButtonBase primary = Assert.IsType<ButtonBase>(FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton"), exactMatch: false);
                     KeyEventArgs inside = new(Keyboard.PrimaryDevice, source, 0, Key.A)
                     {
                         RoutedEvent = UIElement.PreviewKeyDownEvent,
@@ -858,7 +858,7 @@ namespace Fluence.Wpf.Tests
                         "The dialog template must apply once overlay-hosted.");
 
                     // C1: the outer dialog stroke is the WinUI ContentDialogBorderBrush.
-                    Border surface = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"));
+                    Border surface = Assert.IsType<Border>(FindVisualChildByName<Border>(dialog, "DialogSurface"), exactMatch: false);
                     Assert.Same(app.TryFindResource("SurfaceStrokeColorDefaultBrush"), surface.BorderBrush);
 
                     // C2: the entrance animates opacity 0->1 and scale 1.05->1.0 around the center.
@@ -901,7 +901,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     Panel host =
-                        Assert.IsAssignableFrom<Panel>(window.Template?.FindName("PART_DialogOverlayHost", window));
+                        Assert.IsType<Panel>(window.Template?.FindName("PART_DialogOverlayHost", window), exactMatch: false);
 
                     Controls.ContentDialog dialog = new()
                     {
@@ -961,7 +961,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(dialog);
-                    _ = Assert.IsAssignableFrom<Automation.ContentDialogAutomationPeer>(peer);
+                    _ = Assert.IsType<Automation.ContentDialogAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal(AutomationControlType.Window, peer.GetAutomationControlType());
                     Assert.Equal("Delete file?", peer.GetName(), StringComparer.Ordinal);
                 }

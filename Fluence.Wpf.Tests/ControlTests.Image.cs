@@ -77,9 +77,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
+                System.Windows.Controls.Image inner = Assert.IsType<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"), exactMatch: false);
 
-                System.Windows.Controls.Border frame = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder"));
+                System.Windows.Controls.Border frame = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(image, "PART_ImageBorder"), exactMatch: false);
                 w.Close();
             });
         }
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
+                System.Windows.Controls.Image inner = Assert.IsType<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"), exactMatch: false);
                 Assert.Same(probe, inner.Source);
                 Assert.Equal(Stretch.UniformToFill, inner.Stretch);
                 w.Close();
@@ -120,7 +120,7 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Image inner = Assert.IsAssignableFrom<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"));
+                System.Windows.Controls.Image inner = Assert.IsType<System.Windows.Controls.Image>(FindVisualChildByName<System.Windows.Controls.Image>(image, "PART_Image"), exactMatch: false);
 
                 RectangleGeometry clip = Assert.IsType<RectangleGeometry>(inner.Clip);
                 Assert.Equal(8.0, clip.RadiusX);
@@ -169,7 +169,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(image);
-                _ = Assert.IsAssignableFrom<Automation.ImageAutomationPeer>(peer);
+                _ = Assert.IsType<Automation.ImageAutomationPeer>(peer, exactMatch: false);
                 Assert.Equal(AutomationControlType.Image, peer.GetAutomationControlType());
                 Assert.Equal("Image", peer.GetClassName(), StringComparer.Ordinal);
                 w.Close();

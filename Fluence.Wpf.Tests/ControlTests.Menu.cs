@@ -105,8 +105,8 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 Assert.Equal(2, menu.Items.Count);
-                _ = Assert.IsAssignableFrom<MenuItem>(menu.Items[0]);
-                _ = Assert.IsAssignableFrom<MenuItem>(menu.Items[1]);
+                _ = Assert.IsType<MenuItem>(menu.Items[0], exactMatch: false);
+                _ = Assert.IsType<MenuItem>(menu.Items[1], exactMatch: false);
                 w.Close();
             });
         }

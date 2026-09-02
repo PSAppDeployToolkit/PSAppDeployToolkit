@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Background ellipse must be in visual tree
-                Ellipse ellipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChild<Ellipse>(pp));
+                Ellipse ellipse = Assert.IsType<Ellipse>(FindVisualChild<Ellipse>(pp), exactMatch: false);
                 w.Close();
             });
         }
@@ -80,11 +80,11 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
 
-                Ellipse imageEllipse = Assert.IsAssignableFrom<Ellipse>(FindVisualChildByName<Ellipse>(pp, "PART_ImageEllipse"));
+                Ellipse imageEllipse = Assert.IsType<Ellipse>(FindVisualChildByName<Ellipse>(pp, "PART_ImageEllipse"), exactMatch: false);
 
-                System.Windows.Controls.Grid badgeGrid = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"));
+                System.Windows.Controls.Grid badgeGrid = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"), exactMatch: false);
 
                 w.Close();
             });
@@ -104,7 +104,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
                 // Contact glyph U+E77B
                 Assert.Equal("\uE77B", initialsText.Text, StringComparer.Ordinal);
                 Assert.Contains("Segoe Fluent Icons", initialsText.FontFamily.Source, StringComparison.Ordinal);
@@ -125,7 +125,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
                 Assert.Equal("JD", initialsText.Text, StringComparer.Ordinal);
                 w.Close();
             });
@@ -144,7 +144,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
                 Assert.Equal("XY", initialsText.Text, StringComparer.Ordinal);
                 w.Close();
             });
@@ -163,7 +163,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
                 Assert.Equal("\uE716", initialsText.Text, StringComparer.Ordinal);
                 w.Close();
             });
@@ -182,10 +182,10 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Grid badgeGrid = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"));
+                System.Windows.Controls.Grid badgeGrid = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, badgeGrid.Visibility);
 
-                System.Windows.Controls.TextBlock badgeText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText"));
+                System.Windows.Controls.TextBlock badgeText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText"), exactMatch: false);
                 Assert.Equal("3", badgeText.Text, StringComparer.Ordinal);
                 w.Close();
             });
@@ -206,9 +206,9 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Grid badgeGrid = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"));
-                System.Windows.Controls.Border badgeBackground = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(pp, "PART_BadgeBackground"));
-                System.Windows.Controls.TextBlock badgeText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText"));
+                System.Windows.Controls.Grid badgeGrid = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"), exactMatch: false);
+                System.Windows.Controls.Border badgeBackground = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(pp, "PART_BadgeBackground"), exactMatch: false);
+                System.Windows.Controls.TextBlock badgeText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText"), exactMatch: false);
                 Assert.Equal("99+", badgeText.Text, StringComparer.Ordinal);
                 Assert.True(badgeGrid.ActualWidth >= badgeText.ActualWidth + 8.0,
                     "Numeric badges must use a pill surface wide enough to cover their rendered text.");
@@ -243,7 +243,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Grid badgeGrid = Assert.IsAssignableFrom<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"));
+                System.Windows.Controls.Grid badgeGrid = Assert.IsType<System.Windows.Controls.Grid>(FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid"), exactMatch: false);
                 Assert.Equal(Visibility.Collapsed, badgeGrid.Visibility);
                 w.Close();
             });
@@ -284,7 +284,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.TextBlock initialsText = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"));
+                System.Windows.Controls.TextBlock initialsText = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText"), exactMatch: false);
                 w.Close();
             });
         }
@@ -304,7 +304,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
-                _ = Assert.IsAssignableFrom<PersonPictureAutomationPeer>(peer);
+                _ = Assert.IsType<PersonPictureAutomationPeer>(peer, exactMatch: false);
                 w.Close();
             });
         }

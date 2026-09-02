@@ -105,8 +105,8 @@
 
     <Style TargetType="{x:Type controls:FluenceWindow}">
         <Setter Property="Background" Value="{DynamicResource ApplicationBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolidBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />

@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path arc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"), exactMatch: false);
                 w.Close();
             });
         }
@@ -107,12 +107,12 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
                 await WaitForAnimationAndDrainAsync(w.Dispatcher, 200).ConfigureAwait(true);
 
-                Path arc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, arc.Visibility);
                 Assert.NotNull(arc.Data);
                 Assert.Equal(new Point(0.5, 0.5), arc.RenderTransformOrigin);
 
-                RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                 Assert.True(rotate.HasAnimatedProperties,
                     "Active indeterminate ProgressRing should animate the template rotate transform.");
 
@@ -196,7 +196,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path arc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"), exactMatch: false);
                 Assert.NotNull(arc.Data);
 
                 w.Close();
@@ -224,7 +224,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path arc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"), exactMatch: false);
                 Assert.Null(arc.Data);
 
                 w.Close();
@@ -282,7 +282,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
                 await WaitForAnimationAndDrainAsync(w.Dispatcher, 200).ConfigureAwait(true);
 
-                Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                 Assert.NotNull(indeterminateArc.Data);
 
                 ring.IsIndeterminate = false;
@@ -314,7 +314,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
                 await WaitForAnimationAndDrainAsync(w.Dispatcher, 200).ConfigureAwait(true);
 
-                Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                 Assert.NotNull(indeterminateArc.Data);
 
                 w.Close();
@@ -407,7 +407,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                 SolidColorBrush initial = Assert.IsType<SolidColorBrush>(indeterminateArc.Stroke);
                 Color initialColor = initial.Color;
 
@@ -481,7 +481,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path indeterminateArc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
+                Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, indeterminateArc.Visibility);
                 Assert.NotNull(indeterminateArc.Data);
 
@@ -495,7 +495,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(initialBounds.Height, laterBounds.Height, 0.01);
                 AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepFractionProperty");
 
-                RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                 Assert.False(rotate.HasAnimatedProperties,
                     "Paused ProgressRing must not run the rotation animation.");
                 Assert.Equal(90.0, rotate.Angle, 0.01);
@@ -574,7 +574,7 @@ namespace Fluence.Wpf.Tests
                 Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"));
                 AssertPathStroke(indeterminateArc, expected);
 
-                RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                 Assert.True(rotate.HasAnimatedProperties,
                     "ShowError should keep the indeterminate arc spinning.");
 
@@ -621,7 +621,7 @@ namespace Fluence.Wpf.Tests
                 Assert.Equal(0.5, sweepFraction, 0.001);
                 AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepFractionProperty");
 
-                RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                 Assert.False(rotate.HasAnimatedProperties,
                     "ShowPaused must not rotate the indeterminate arc.");
                 Assert.Equal(90.0, rotate.Angle, 0.01);
@@ -649,7 +649,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                RotateTransform rotate = Assert.IsAssignableFrom<RotateTransform>(GetIndeterminateRotateTransform(ring));
+                RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
                 Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => rotate.HasAnimatedProperties).ConfigureAwait(true),
                     "The indeterminate animation must run while the ring is loaded and visible.");
 
@@ -735,7 +735,7 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path arc = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"));
+                Path arc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_DeterminateArc"), exactMatch: false);
 
                 w.Close();
             });
@@ -773,8 +773,8 @@ namespace Fluence.Wpf.Tests
         private static T InvokePrivateAnimationFactory<T>(string methodName)
             where T : AnimationTimeline
         {
-            MethodInfo method = Assert.IsAssignableFrom<MethodInfo>(typeof(ProgressRing).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic));
-            return Assert.IsAssignableFrom<T>(method.Invoke(null, parameters: null));
+            MethodInfo method = Assert.IsType<MethodInfo>(typeof(ProgressRing).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic), exactMatch: false);
+            return Assert.IsType<T>(method.Invoke(null, parameters: null), exactMatch: false);
         }
 
         private static RotateTransform? GetIndeterminateRotateTransform(ProgressRing ring)
@@ -784,7 +784,7 @@ namespace Fluence.Wpf.Tests
 
         private static DependencyProperty GetPrivateDependencyProperty(string fieldName)
         {
-            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(ProgressRing).GetField(fieldName, BindingFlags.Static | BindingFlags.NonPublic));
+            FieldInfo field = Assert.IsType<FieldInfo>(typeof(ProgressRing).GetField(fieldName, BindingFlags.Static | BindingFlags.NonPublic), exactMatch: false);
             return Assert.IsType<DependencyProperty>(field.GetValue(null));
         }
 
@@ -808,7 +808,7 @@ namespace Fluence.Wpf.Tests
             for (int i = 0; i < expectedValues.Length; i++)
             {
                 Assert.Equal(expectedValues[i], animation.KeyFrames[i].Value, 0.01);
-                _ = Assert.IsAssignableFrom<LinearDoubleKeyFrame>(animation.KeyFrames[i]);
+                _ = Assert.IsType<LinearDoubleKeyFrame>(animation.KeyFrames[i], exactMatch: false);
             }
         }
 

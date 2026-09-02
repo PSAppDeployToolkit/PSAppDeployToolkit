@@ -29,8 +29,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Media;
-using Microsoft.Win32;
 using Fluence.Wpf.Native;
+using Microsoft.Win32;
 
 namespace Fluence.Wpf.Helpers
 {

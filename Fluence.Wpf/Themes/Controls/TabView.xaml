@@ -305,7 +305,7 @@
                                     Use StackPanel instead of TabPanel.
                                     TabPanel applies selection-aware overlap offsets (±1 px) that
                                     shift the active-tab arrangement rect, causing the right border
-                                    and top-right corner radius to be clipped.  StackPanel lays
+                                    and top-right corner radius to be clipped. StackPanel lays
                                     items out sequentially; Panel.ZIndex on the selected item
                                     handles all z-ordering through our visual-state triggers.
                                 -->

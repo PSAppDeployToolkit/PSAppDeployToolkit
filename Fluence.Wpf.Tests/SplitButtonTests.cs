@@ -123,14 +123,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Button primary = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
-                        splitButton.Template.FindName("PART_PrimaryButton", splitButton));
+                    System.Windows.Controls.Button primary = Assert.IsType<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton), exactMatch: false);
 
-                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(
-                        splitButton.Template.FindName("PART_SecondaryButton", splitButton));
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton), exactMatch: false);
 
-                    Popup popup = Assert.IsAssignableFrom<Popup>(
-                        splitButton.Template.FindName("PART_Popup", splitButton));
+                    Popup popup = Assert.IsType<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton), exactMatch: false);
                     Assert.False(popup.StaysOpen,
                         "PART_Popup.StaysOpen must be false so outside-clicks close the flyout.");
                 }
@@ -171,8 +171,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Button primary = Assert.IsAssignableFrom<System.Windows.Controls.Button>(
-                        splitButton.Template.FindName("PART_PrimaryButton", splitButton));
+                    System.Windows.Controls.Button primary = Assert.IsType<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton), exactMatch: false);
 
                     // Use UI Automation peer -> IInvokeProvider.Invoke(), the canonical
                     // equivalent of a user press-release on the button.
@@ -263,10 +263,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = splitButton.ApplyTemplate();
 
-                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(
-                        splitButton.Template.FindName("PART_SecondaryButton", splitButton));
-                    Popup popup = Assert.IsAssignableFrom<Popup>(
-                        splitButton.Template.FindName("PART_Popup", splitButton));
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton), exactMatch: false);
+                    Popup popup = Assert.IsType<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton), exactMatch: false);
 
                     Assert.False(popup.IsOpen, "Popup should start closed.");
                     Assert.False(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");
@@ -304,7 +304,7 @@ namespace Fluence.Wpf.Tests
             return WpfTestSta.RunOnStaAsync(static () =>
             {
                 SplitButton splitButton = new();
-                AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(splitButton));
+                AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(splitButton), exactMatch: false);
 
                 Assert.Equal(AutomationControlType.SplitButton,
                     peer.GetAutomationControlType());

@@ -134,7 +134,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(numberBox);
-                    _ = Assert.IsAssignableFrom<NumberBoxValueChangedSpyPeer>(peer);
+                    _ = Assert.IsType<NumberBoxValueChangedSpyPeer>(peer, exactMatch: false);
 
                     numberBox.Value = 42;
 

@@ -64,14 +64,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(box.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(box.Template, exactMatch: false);
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(template.FindName("PART_TextBox", box));
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_SuggestionsPopup", box));
-                    Selector list = Assert.IsAssignableFrom<Selector>(template.FindName("PART_SuggestionsList", box));
+                    Selector list = Assert.IsType<Selector>(template.FindName("PART_SuggestionsList", box), exactMatch: false);
 
                     Controls.TextBox verifiedTextBox = textBox ?? throw new InvalidOperationException("PART_TextBox must be a Fluence TextBox so the field matches the themed look.");
-                    _ = Assert.IsAssignableFrom<Controls.ListBox>(list);
+                    _ = Assert.IsType<Controls.ListBox>(list, exactMatch: false);
                     Assert.False(popup.StaysOpen, "The suggestion popup must be light-dismiss (StaysOpen=false).");
                     Assert.True(popup.AllowsTransparency, "The suggestion popup must allow transparency for the rounded surface.");
                     Assert.Equal("Search", verifiedTextBox.PlaceholderText, StringComparer.Ordinal);
@@ -180,7 +180,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
-                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
+                    Selector list = Assert.IsType<Selector>(box.Template?.FindName("PART_SuggestionsList", box), exactMatch: false);
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
@@ -216,7 +216,7 @@ namespace Fluence.Wpf.Tests
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
-                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
+                    Selector list = Assert.IsType<Selector>(box.Template?.FindName("PART_SuggestionsList", box), exactMatch: false);
 
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
@@ -351,7 +351,7 @@ namespace Fluence.Wpf.Tests
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
-                    Selector list = Assert.IsAssignableFrom<Selector>(box.Template?.FindName("PART_SuggestionsList", box));
+                    Selector list = Assert.IsType<Selector>(box.Template?.FindName("PART_SuggestionsList", box), exactMatch: false);
 
                     // Type "ap" (UserInput baseline), then open the list.
                     textBox.Text = "ap";
@@ -426,7 +426,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
-                    ButtonBase queryButton = Assert.IsAssignableFrom<ButtonBase>(box.Template?.FindName("PART_QueryButton", box));
+                    ButtonBase queryButton = Assert.IsType<ButtonBase>(box.Template?.FindName("PART_QueryButton", box), exactMatch: false);
                     Assert.Same(queryButton, textBox.Icon);
                     Assert.Same(box.QueryIcon, queryButton.Content);
 

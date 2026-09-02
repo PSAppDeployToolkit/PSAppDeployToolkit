@@ -182,13 +182,13 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    _ = Assert.IsAssignableFrom<Controls.ListBox>(list);
+                    _ = Assert.IsType<Controls.ListBox>(list, exactMatch: false);
                     Assert.Equal(40.0, list.ItemHeight);
 
                     // Nine rows: the selected row plus four above and four below it.
                     Assert.Equal(40.0 * 9, list.Height);
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(list.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(list.Template, exactMatch: false);
                     ScrollViewer scrollViewer = Assert.IsType<ScrollViewer>(template.FindName("PART_ScrollViewer", list));
                     Assert.True(scrollViewer.CanContentScroll,
                         "The column must scroll in item units so its offset is a row index.");
@@ -229,8 +229,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ListBoxItem row = Assert.IsAssignableFrom<ListBoxItem>(
-                        list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex));
+                    ListBoxItem row = Assert.IsType<ListBoxItem>(
+                        list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex), exactMatch: false);
 
                     Assert.True(row.IsTabStop, "A selector row must stay in the tab order.");
                     Assert.True(row.Focusable, "A selector row must be focusable.");
@@ -264,7 +264,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(list.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(list.Template, exactMatch: false);
                     ScrollViewer scrollViewer = Assert.IsType<ScrollViewer>(template.FindName("PART_ScrollViewer", list));
 
                     int selectedIndex = list.SelectedIndex;
@@ -400,12 +400,12 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(LoopingPaddingItemsCount, list.SelectedIndex);
                     Assert.Equal(0, LoopingSelectorColumns.GetPaddedSourceIndex(list));
 
-                    ListBoxItem padding = Assert.IsAssignableFrom<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(0));
+                    ListBoxItem padding = Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(0), exactMatch: false);
                     Assert.Equal(Visibility.Hidden, padding.Visibility);
                     Assert.False(padding.IsEnabled, "A padding row must not be selectable.");
 
-                    ListBoxItem value = Assert.IsAssignableFrom<ListBoxItem>(
-                        list.ItemContainerGenerator.ContainerFromIndex(LoopingPaddingItemsCount));
+                    ListBoxItem value = Assert.IsType<ListBoxItem>(
+                        list.ItemContainerGenerator.ContainerFromIndex(LoopingPaddingItemsCount), exactMatch: false);
                     Assert.Equal(Visibility.Visible, value.Visibility);
                     Assert.True(value.IsEnabled, "A real value row must stay selectable.");
 
@@ -442,11 +442,11 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector hourList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_HourList", picker));
-                    ButtonBase acceptButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_AcceptButton", picker));
+                    Selector hourList = Assert.IsType<Selector>(template.FindName("PART_HourList", picker), exactMatch: false);
+                    ButtonBase acceptButton = Assert.IsType<ButtonBase>(template.FindName("PART_AcceptButton", picker), exactMatch: false);
 
                     RaiseButtonClick(flyoutButton);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
@@ -490,12 +490,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    ButtonBase acceptButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_AcceptButton", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    ButtonBase acceptButton = Assert.IsType<ButtonBase>(template.FindName("PART_AcceptButton", picker), exactMatch: false);
 
                     picker.SelectedDate = new DateTime(2023, 1, 31, 0, 0, 0, DateTimeKind.Unspecified);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -551,10 +551,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector hourList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_HourList", picker));
+                    Selector hourList = Assert.IsType<Selector>(template.FindName("PART_HourList", picker), exactMatch: false);
                     Border highlight = Assert.IsType<Border>(template.FindName("HighlightRect", picker));
                     Grid selectorsGrid = Assert.IsType<Grid>(template.FindName("SelectorsGrid", picker));
 
@@ -569,8 +569,8 @@ namespace Fluence.Wpf.Tests
                             && highlight.ActualHeight > 0).ConfigureAwait(true),
                         "The selected row container must be realized before it can be measured.");
 
-                    FrameworkElement selectedRow = Assert.IsAssignableFrom<FrameworkElement>(
-                        hourList.ItemContainerGenerator.ContainerFromIndex(hourList.SelectedIndex));
+                    FrameworkElement selectedRow = Assert.IsType<FrameworkElement>(
+                        hourList.ItemContainerGenerator.ContainerFromIndex(hourList.SelectedIndex), exactMatch: false);
 
                     // The whole point of the nine-row viewport and the item-unit offset is that
                     // the selected row lands exactly on the band, so measure it rather than
@@ -608,8 +608,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
 
                     RaiseButtonClick(flyoutButton);

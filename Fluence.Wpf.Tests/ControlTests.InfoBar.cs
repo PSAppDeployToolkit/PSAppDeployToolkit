@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border root = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"));
+                System.Windows.Controls.Border root = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"), exactMatch: false);
                 w.Close();
             });
         }
@@ -107,14 +107,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                     System.Windows.Controls.Button close =
-                        Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(bar, "PART_CloseButton"));
+                        Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(bar, "PART_CloseButton"), exactMatch: false);
                     Assert.Equal(28.0, close.Width, 0.01);
                     Assert.Equal(28.0, close.Height, 0.01);
 
                     // The subtle plate (TeachingTip / PipsPager pattern): a rounded Border
                     // owned by the button's own template, not the OS default chrome.
                     System.Windows.Controls.Border plate =
-                        Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(close, "ButtonPlate"));
+                        Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(close, "ButtonPlate"), exactMatch: false);
                     CornerRadius expectedRadius = (CornerRadius)(app.FindResource("ControlCornerRadius")
                         ?? throw new Xunit.Sdk.XunitException("ControlCornerRadius must resolve."));
                     Assert.Equal(expectedRadius, plate.CornerRadius);
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
                     SolidColorBrush buttonForeground = Assert.IsType<SolidColorBrush>(close.Foreground);
                     Assert.Equal(primary.Color, buttonForeground.Color);
 
-                    FontIcon glyph = Assert.IsAssignableFrom<FontIcon>(FindVisualChildren<FontIcon>(close).FirstOrDefault());
+                    FontIcon glyph = Assert.IsType<FontIcon>(FindVisualChildren<FontIcon>(close).FirstOrDefault(), exactMatch: false);
                     Assert.Equal("\uE711", glyph.Glyph, StringComparer.Ordinal);
                     SolidColorBrush glyphForeground = Assert.IsType<SolidColorBrush>(glyph.Foreground);
                     Assert.Equal(primary.Color, glyphForeground.Color);
@@ -170,8 +170,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
-                System.Windows.Controls.TextBlock defaultIcon = Assert.IsAssignableFrom<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(bar, "DefaultIcon"));
+                System.Windows.Controls.Border indicator = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"), exactMatch: false);
+                System.Windows.Controls.TextBlock defaultIcon = Assert.IsType<System.Windows.Controls.TextBlock>(FindVisualChildByName<System.Windows.Controls.TextBlock>(bar, "DefaultIcon"), exactMatch: false);
                 SolidColorBrush initial = Assert.IsType<SolidColorBrush>(indicator.Background);
                 Color initialColor = initial.Color;
 
@@ -202,7 +202,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border indicator = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"));
+                System.Windows.Controls.Border indicator = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar"), exactMatch: false);
                 Brush brushBefore = indicator.Background;
 
                 // Change severity - trigger + GoToState must both fire
@@ -254,11 +254,11 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border root = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"));
+                System.Windows.Controls.Border root = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder"), exactMatch: false);
                 Assert.False(root.ClipToBounds,
                     "RootBorder should not clip action-button focus visuals or shadow rendering.");
 
-                System.Windows.Controls.ContentPresenter presenter = Assert.IsAssignableFrom<System.Windows.Controls.ContentPresenter>(FindVisualChildByName<System.Windows.Controls.ContentPresenter>(bar, "ActionPresenter"));
+                System.Windows.Controls.ContentPresenter presenter = Assert.IsType<System.Windows.Controls.ContentPresenter>(FindVisualChildByName<System.Windows.Controls.ContentPresenter>(bar, "ActionPresenter"), exactMatch: false);
                 Assert.Equal(Visibility.Visible, presenter.Visibility);
 
                 w.Close();

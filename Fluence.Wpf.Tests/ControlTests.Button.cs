@@ -271,8 +271,8 @@ namespace Fluence.Wpf.Tests
 
                 Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
 
-                _ = Assert.IsAssignableFrom<SolidColorBrush>(restFill.Background);
-                _ = Assert.IsAssignableFrom<SolidColorBrush>(button.Foreground);
+                _ = Assert.IsType<SolidColorBrush>(restFill.Background, exactMatch: false);
+                _ = Assert.IsType<SolidColorBrush>(button.Foreground, exactMatch: false);
                 Assert.Equal(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)restFill.Background).Color);
                 Assert.Equal(Color.FromArgb(0x87, 0xFF, 0xFF, 0xFF), ((SolidColorBrush)button.Foreground).Color);
             }
@@ -299,7 +299,7 @@ namespace Fluence.Wpf.Tests
 
         private static void AssertBrushMatchesResource(Brush actual, string resourceKey)
         {
-            Brush expected = Assert.IsAssignableFrom<Brush>(Application.Current.TryFindResource(resourceKey));
+            Brush expected = Assert.IsType<Brush>(Application.Current.TryFindResource(resourceKey), exactMatch: false);
 
             if (actual is SolidColorBrush actualSolid && expected is SolidColorBrush expectedSolid)
             {

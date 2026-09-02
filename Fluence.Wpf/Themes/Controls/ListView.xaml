@@ -63,21 +63,22 @@
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
-                            <!--  WI-3 C20: WinUI canonical 3×16 accent bar, CornerRadius=1.5.  -->
+                            <!--
+                                WinUI canonical 3x16 accent pill, CornerRadius 1.5, inset 2 px from the
+                                left edge and not hit testable. Geometry from the WinUI TableView row
+                                indicator (controls/dev/TableView/TableView.xaml).
+                            -->
                             <Border
                                 x:Name="SelectionIndicator"
                                 Width="3"
                                 Height="16"
+                                Margin="2,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Background="{DynamicResource AccentFillColorDefaultBrush}"
                                 CornerRadius="1.5"
-                                Opacity="0"
-                                RenderTransformOrigin="0.5,0.5">
-                                <Border.RenderTransform>
-                                    <TranslateTransform x:Name="SelectionIndicatorTranslate" X="-4" />
-                                </Border.RenderTransform>
-                            </Border>
+                                IsHitTestVisible="False"
+                                Opacity="0" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -103,18 +104,9 @@
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <!--  WI-3 C20: canonical ControlFastOutSlowIn easing (KeySpline 0.8,0,0,1).  -->
+                                        <!--  WinUI fades the pill in linearly over 83 ms and does not move it.  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicatorTranslate" Storyboard.TargetProperty="X">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="0" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -122,17 +114,9 @@
                             <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <!--  ControlPressAnimationDuration (100 ms) selection pill exit  -->
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="SelectionIndicator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.1" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="SelectionIndicatorTranslate"
-                                            Storyboard.TargetProperty="X"
-                                            To="-4"
-                                            Duration="0:0:0.1" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </MultiDataTrigger.ExitActions>

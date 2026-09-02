@@ -18,8 +18,10 @@
         LoopingSelectorColumns.cs).
         Segment texts, divider visibility, and culture-driven column order are managed by
         DatePicker code-behind through the named optional elements below.
-        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
-        produce artifacts in a Popup (see DropDownButton.xaml).
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
     -->
 
     <DataTemplate x:Key="DatePickerColumnItemTemplate">
@@ -136,6 +138,22 @@
                             PlacementTarget="{Binding ElementName=PART_FlyoutButton}"
                             PopupAnimation="None"
                             StaysOpen="False">
+                            <Grid>
+                                <!--
+                                    Elevation caster: an empty sibling behind the surface, because WPF
+                                    drops ClearType for text under an Effect and this surface opts into
+                                    it. No layout gutter is needed, PopupRoot already reserves about
+                                    15 px per side for popup shadows.
+                                -->
+                                <Border
+                                    x:Name="ShadowCaster"
+                                    MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                    CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                    Effect="{DynamicResource FlyoutShadowEffect}"
+                                    RenderTransform="{Binding RenderTransform, ElementName=FlyoutSurface}"
+                                    UseLayoutRounding="True" />
                             <Border
                                 x:Name="FlyoutSurface"
                                 MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
@@ -231,6 +249,7 @@
                                     </Grid>
                                 </Grid>
                             </Border>
+                            </Grid>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>

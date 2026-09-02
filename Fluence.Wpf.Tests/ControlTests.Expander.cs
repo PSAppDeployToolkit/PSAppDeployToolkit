@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // RootBorder is the template root - proves Fluence style applied.
-                Border rootBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(expander, "RootBorder"));
+                Border rootBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(expander, "RootBorder"), exactMatch: false);
                 w.Close();
             });
         }
@@ -77,7 +77,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Path chevron = Assert.IsAssignableFrom<Path>(FindVisualChildByName<Path>(expander, "Chevron"));
+                Path chevron = Assert.IsType<Path>(FindVisualChildByName<Path>(expander, "Chevron"), exactMatch: false);
 
                 // Parent Border owns the RotateTransform.
                 Border parent = Assert.IsType<Border>(VisualTreeHelper.GetParent(chevron));
@@ -102,7 +102,7 @@ namespace Fluence.Wpf.Tests
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
                 // Structural check: ExpandSite ContentPresenter is present.
-                ContentPresenter site = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(expander, "ExpandSite"));
+                ContentPresenter site = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(expander, "ExpandSite"), exactMatch: false);
                 w.Close();
             });
         }
@@ -120,7 +120,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Border headerBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(expander, "HeaderBorder"));
+                Border headerBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(expander, "HeaderBorder"), exactMatch: false);
                 Assert.Equal(new CornerRadius(4), headerBorder.CornerRadius);
                 w.Close();
             });
@@ -145,15 +145,15 @@ namespace Fluence.Wpf.Tests
                     w.Show();
                     WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                    Border contentBorder = Assert.IsAssignableFrom<Border>(FindVisualChildByName<Border>(expander, "PART_ContentBorder"));
+                    Border contentBorder = Assert.IsType<Border>(FindVisualChildByName<Border>(expander, "PART_ContentBorder"), exactMatch: false);
                     Assert.True(contentBorder.ClipToBounds,
                         "PART_ContentBorder must clip its bounds so the content slides behind the clip.");
 
                     Grid grid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentBorder));
                     Assert.Equal(2, grid.RowDefinitions.Count);
 
-                    ContentPresenter site = Assert.IsAssignableFrom<ContentPresenter>(FindVisualChildByName<ContentPresenter>(expander, "ExpandSite"));
-                    _ = Assert.IsAssignableFrom<TranslateTransform>(site.RenderTransform);
+                    ContentPresenter site = Assert.IsType<ContentPresenter>(FindVisualChildByName<ContentPresenter>(expander, "ExpandSite"), exactMatch: false);
+                    _ = Assert.IsType<TranslateTransform>(site.RenderTransform, exactMatch: false);
                 }
                 finally
                 {

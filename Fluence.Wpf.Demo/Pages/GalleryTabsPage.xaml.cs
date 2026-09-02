@@ -26,10 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {

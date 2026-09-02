@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
@@ -76,9 +77,9 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(PipsPagerButtonVisibility.Collapsed, pager.PreviousButtonVisibility);
                     Assert.Equal(PipsPagerButtonVisibility.Collapsed, pager.NextButtonVisibility);
 
-                    System.Windows.Controls.Button previous = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"));
-                    System.Windows.Controls.Button next = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"));
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.Button previous = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"), exactMatch: false);
+                    System.Windows.Controls.Button next = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"), exactMatch: false);
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
                     Assert.Empty(host.Children);
                 }
                 finally
@@ -106,12 +107,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
                     Assert.Equal(5, host.Children.Count);
 
                     for (int offset = 0; offset < 5; offset++)
                     {
-                        System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, offset));
+                        System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, offset), exactMatch: false);
                         Assert.Equal(offset is 0, pip.IsChecked);
                         Assert.Equal(
                             string.Format(CultureInfo.InvariantCulture, "Page {0}", offset + 1),
@@ -153,9 +154,9 @@ namespace Fluence.Wpf.Tests
                         raiseCount++;
                     };
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
 
-                    System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 3));
+                    System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 3), exactMatch: false);
 
                     pip.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent, pip));
                     Assert.Equal(3, pager.SelectedPageIndex);
@@ -205,8 +206,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.Button previous = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"));
-                    System.Windows.Controls.Button next = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"));
+                    System.Windows.Controls.Button previous = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"), exactMatch: false);
+                    System.Windows.Controls.Button next = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"), exactMatch: false);
 
                     Assert.False(previous.IsEnabled, "The previous button must be disabled at the first page.");
                     Assert.True(next.IsEnabled, "The next button must be enabled while pages remain ahead.");
@@ -257,7 +258,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
 
                     // Every page gets a pip even past MaxVisiblePips: the count no longer bounds
                     // what is realized, only how much of the run the viewport shows.
@@ -269,7 +270,7 @@ namespace Fluence.Wpf.Tests
                     // WinUI CalculateScrollViewerSize: defaultPipSize * (visible - 1) + selectedPipSize,
                     // and Fluence pips share one 20x20 box, so the viewport is 20 * MaxVisiblePips
                     // over an extent of 20 * NumberOfPages.
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
                     Assert.Equal(60.0, viewer.ViewportWidth, 0.5);
                     Assert.Equal(200.0, viewer.ExtentWidth, 0.5);
                     Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
@@ -314,8 +315,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
 
                     Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
                     Assert.Equal(0.0, outerViewer.VerticalOffset, 0.5);
@@ -323,7 +324,7 @@ namespace Fluence.Wpf.Tests
                     // The last pip sits well past the three-pip viewport, so an unsuppressed
                     // request would scroll the run to its far end.
                     System.Windows.Controls.Primitives.ToggleButton lastPip =
-                        Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 9));
+                        Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 9), exactMatch: false);
                     lastPip.BringIntoView();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
@@ -357,14 +358,14 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
                     Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
 
                     // Pages 1 through 3 all sit inside the opening viewport, so the run of pips must
                     // stay exactly where it is while the selection walks across it. The wait outlasts
                     // the 167ms scroll animation, so a viewport that did move would be caught settled
                     // at its new offset rather than mid-flight.
-                    foreach (int pageIndex in new[] { 1, 2 })
+                    foreach (int pageIndex in (IReadOnlyList<int>)[1, 2])
                     {
                         pager.SelectedPageIndex = pageIndex;
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -372,7 +373,7 @@ namespace Fluence.Wpf.Tests
                         Assert.Equal(0.0, viewer.HorizontalOffset, 0.5);
                     }
 
-                    Assert.True(GetPipAt(Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost")), 2)?.IsChecked,
+                    Assert.True(GetPipAt(Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false), 2)?.IsChecked,
                         "The third pip must be the checked one after selecting page 3.");
                 }
                 finally
@@ -400,7 +401,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
 
                     // Page 5 sits at [80,100) while the viewport spans [0,60). Edge scrolling moves
                     // the minimum that puts it flush against the trailing edge: 100 - 60 = 40. A
@@ -451,7 +452,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
 
                     pager.SelectedPageIndex = 9;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -495,7 +496,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.ScrollViewer viewer = Assert.IsAssignableFrom<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"));
+                    System.Windows.Controls.ScrollViewer viewer = Assert.IsType<System.Windows.Controls.ScrollViewer>(FindVisualChildByName<System.Windows.Controls.ScrollViewer>(pager, "PART_PipsScrollViewer"), exactMatch: false);
 
                     // Scroll away from the start on the horizontal axis first, so the flip has a
                     // stale cross-axis offset to release rather than a viewport already at zero.
@@ -593,9 +594,9 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
-                    Controls.FontIcon previousGlyph = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(pager, "PreviousGlyph"));
-                    Controls.FontIcon nextGlyph = Assert.IsAssignableFrom<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(pager, "NextGlyph"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
+                    Controls.FontIcon previousGlyph = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(pager, "PreviousGlyph"), exactMatch: false);
+                    Controls.FontIcon nextGlyph = Assert.IsType<Controls.FontIcon>(FindVisualChildByName<Controls.FontIcon>(pager, "NextGlyph"), exactMatch: false);
 
                     Assert.Equal(System.Windows.Controls.Orientation.Horizontal, host.Orientation);
                     Assert.Equal("\uE76B", previousGlyph.Glyph, StringComparer.Ordinal);
@@ -634,8 +635,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.Button previous = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"));
-                    System.Windows.Controls.Button next = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"));
+                    System.Windows.Controls.Button previous = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"), exactMatch: false);
+                    System.Windows.Controls.Button next = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"), exactMatch: false);
 
                     Assert.Equal(Visibility.Collapsed, previous.Visibility);
                     Assert.Equal(Visibility.Collapsed, next.Visibility);
@@ -680,12 +681,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
 
-                    System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0));
+                    System.Windows.Controls.Primitives.ToggleButton pip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0), exactMatch: false);
                     _ = pip.Focus();
 
-                    PresentationSource source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(pip));
+                    PresentationSource source = Assert.IsType<PresentationSource>(PresentationSource.FromVisual(pip), exactMatch: false);
 
                     pip.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
                     {
@@ -693,14 +694,14 @@ namespace Fluence.Wpf.Tests
                     });
                     Assert.Equal(1, pager.SelectedPageIndex);
 
-                    pip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 1));
+                    pip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 1), exactMatch: false);
                     pip.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Left)
                     {
                         RoutedEvent = Keyboard.KeyDownEvent,
                     });
                     Assert.Equal(0, pager.SelectedPageIndex);
 
-                    pip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0));
+                    pip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0), exactMatch: false);
                     pip.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Left)
                     {
                         RoutedEvent = Keyboard.KeyDownEvent,
@@ -767,16 +768,16 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
 
-                    object strongFill = Assert.IsAssignableFrom<object>(app.TryFindResource("ControlStrongFillColorDefaultBrush"));
+                    object strongFill = Assert.IsType<object>(app.TryFindResource("ControlStrongFillColorDefaultBrush"), exactMatch: false);
 
                     // WinUI maps PipsPagerNavigationButtonForeground at rest to
                     // ControlStrongFillColorDefaultBrush; the chevron buttons must share the same
                     // neutral strong fill as the pips when not hovered or pressed. The next button
                     // is enabled at the first page, so its Foreground reflects the rest setter
                     // (the previous button is disabled at page 0 and shows the disabled brush).
-                    System.Windows.Controls.Button nextButton = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"));
+                    System.Windows.Controls.Button nextButton = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_NextButton"), exactMatch: false);
                     Assert.True(nextButton.IsEnabled, "The next button must be enabled at the first page.");
                     Assert.Same(strongFill, nextButton.Foreground);
 
@@ -784,18 +785,18 @@ namespace Fluence.Wpf.Tests
                     // ControlStrongFillColorDisabledBrush (not the text disabled fill). The
                     // previous button is disabled at page 0, so its Foreground must reflect that
                     // disabled setter.
-                    object strongFillDisabled = Assert.IsAssignableFrom<object>(app.TryFindResource("ControlStrongFillColorDisabledBrush"));
-                    System.Windows.Controls.Button previousButton = Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"));
+                    object strongFillDisabled = Assert.IsType<object>(app.TryFindResource("ControlStrongFillColorDisabledBrush"), exactMatch: false);
+                    System.Windows.Controls.Button previousButton = Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(pager, "PART_PreviousButton"), exactMatch: false);
                     Assert.False(previousButton.IsEnabled, "The previous button must be disabled at the first page.");
                     Assert.Same(strongFillDisabled, previousButton.Foreground);
 
-                    System.Windows.Controls.Primitives.ToggleButton selectedPip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0));
-                    System.Windows.Controls.Primitives.ToggleButton restPip = Assert.IsAssignableFrom<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 1));
+                    System.Windows.Controls.Primitives.ToggleButton selectedPip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 0), exactMatch: false);
+                    System.Windows.Controls.Primitives.ToggleButton restPip = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(GetPipAt(host, 1), exactMatch: false);
 
                     System.Windows.Shapes.Ellipse selectedDot =
-                        Assert.IsAssignableFrom<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(selectedPip, "Pip"));
+                        Assert.IsType<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(selectedPip, "Pip"), exactMatch: false);
                     System.Windows.Shapes.Ellipse restDot =
-                        Assert.IsAssignableFrom<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(restPip, "Pip"));
+                        Assert.IsType<System.Windows.Shapes.Ellipse>(FindVisualChildByName<System.Windows.Shapes.Ellipse>(restPip, "Pip"), exactMatch: false);
 
                     // WinUI PipsPager pips are neutral: rest and selected dots both use the
                     // strong fill (PipsPagerSelectionIndicatorForeground / ...Selected); the
@@ -838,7 +839,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.StackPanel host = Assert.IsAssignableFrom<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"));
+                    System.Windows.Controls.StackPanel host = Assert.IsType<System.Windows.Controls.StackPanel>(FindVisualChildByName<System.Windows.Controls.StackPanel>(pager, "PART_PipsHost"), exactMatch: false);
 
                     static System.Windows.Shapes.Ellipse? DotAt(System.Windows.Controls.StackPanel pipsHost, int offset)
                     {
@@ -910,8 +911,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(pager));
-                    _ = Assert.IsAssignableFrom<Automation.PipsPagerAutomationPeer>(peer);
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(pager), exactMatch: false);
+                    _ = Assert.IsType<Automation.PipsPagerAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal("PipsPager", peer.GetClassName(), StringComparer.Ordinal);
                     Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
                     Assert.Equal("Gallery pager", peer.GetName(), StringComparer.Ordinal);

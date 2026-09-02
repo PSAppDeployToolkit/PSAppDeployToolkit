@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests
                     InfoBar.GetSeverityBrushKey(InfoBarSeverity.Warning), InfoBar.GetSeverityBrushKey(InfoBarSeverity.Error),
                 })
                 {
-                    _ = Assert.IsAssignableFrom<Brush>(Application.Current.TryFindResource(key));
+                    _ = Assert.IsType<Brush>(Application.Current.TryFindResource(key), exactMatch: false);
                 }
             });
         }

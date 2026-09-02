@@ -47,13 +47,13 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.8.18</VersionPrefix>
+    <VersionPrefix>0.8.19</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
-    <PackageVersion>0.8.18-preview</PackageVersion>
-    <AssemblyVersion>0.8.18.0</AssemblyVersion>
-    <FileVersion>0.8.18.0</FileVersion>
-    <InformationalVersion>0.8.18-preview</InformationalVersion>
-    <BuildDate>2026-08-26</BuildDate>
+    <PackageVersion>0.8.19-preview</PackageVersion>
+    <AssemblyVersion>0.8.19.0</AssemblyVersion>
+    <FileVersion>0.8.19.0</FileVersion>
+    <InformationalVersion>0.8.19-preview</InformationalVersion>
+    <BuildDate>2026-08-30</BuildDate>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
 
@@ -78,6 +78,15 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
+
+  <!--
+    The SDK references this package itself, but only on machines with no installed .NET Framework targeting
+    pack, so the lock file it writes differs between Windows and Linux and locked-mode restore then fails
+    with NU1004. Referencing it outright suppresses the SDK's implicit reference and pins one graph.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+  </ItemGroup>
 
   <!-- Banned API analyzer -->
   <ItemGroup>

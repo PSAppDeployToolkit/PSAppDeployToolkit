@@ -63,7 +63,10 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     CornerRadius? overlayRadius = (CornerRadius?)app.FindResource("OverlayCornerRadius");
-                    Border surface = Assert.IsAssignableFrom<Border>(FindVisualChild<Border>(presenter));
+
+                    // By name, not "the first Border in the tree": the elevation caster is painted
+                    // ahead of the surface and would otherwise be the one under assertion.
+                    Border surface = Assert.IsType<Border>(FindVisualChildByName<Border>(presenter, "PresenterSurface"), exactMatch: false);
 
                     Assert.Equal(overlayRadius, surface.CornerRadius);
                     Assert.Equal(new Thickness(1), surface.BorderThickness);
@@ -108,7 +111,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(openingRaised, "ShowAt should raise Opening before the popup opens.");
                     Assert.True(openedRaised, "ShowAt should raise Opened after the popup opens.");
 
-                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Popup popup = Assert.IsType<Popup>(flyout.HostPopup, exactMatch: false);
                     Assert.False(popup.StaysOpen, "Flyout popups must be light-dismiss (StaysOpen=false).");
                     Assert.True(popup.AllowsTransparency, "Flyout popups must allow transparency for the rounded surface.");
                     Assert.Equal(PopupAnimation.None, popup.PopupAnimation);
@@ -326,7 +329,7 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the flyout popup before placement mapping is verified.");
 
-                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Popup popup = Assert.IsType<Popup>(flyout.HostPopup, exactMatch: false);
                     CustomPopupPlacementCallback? callback = Assert.IsType<CustomPopupPlacementCallback>(popup.CustomPopupPlacementCallback);
                     Assert.Equal(PlacementMode.Custom, popup.Placement);
 

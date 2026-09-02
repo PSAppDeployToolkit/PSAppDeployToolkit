@@ -23,8 +23,10 @@
         TeachingTipAlternateCloseButton* tokens) unless light dismiss is enabled, in which
         case no close affordance is shown. The title reserves a 28px right margin under the
         alternate X (WinUI TeachingTipTitleStackPanelMarginWithHeaderCloseButton).
-        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
-        produce artifacts in a Popup (see DropDownButton.xaml).
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
     -->
 
     <!--
@@ -96,6 +98,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
+                        <!--
+                            Elevation caster: an empty sibling in the same cell, painted behind the
+                            surface so the effect never covers the tip text. No layout gutter is
+                            needed, PopupRoot already reserves about 15 px per side for popup shadows.
+                        -->
+                        <Border
+                            x:Name="ShadowCaster"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}" />
                         <Border
                             x:Name="TipSurface"
                             Grid.Row="1"

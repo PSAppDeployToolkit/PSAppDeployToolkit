@@ -52,7 +52,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <!--
             IsTabStop=False: the outer NumberBox shell must not be a tab stop.
-            Focus is hosted by PART_TextBox (inner element).  Without this,
+            Focus is hosted by PART_TextBox (inner element). Without this,
             Shift+Tab from PART_TextBox lands on the NumberBox shell which
             immediately redirects focus back to PART_TextBox - an infinite loop
             that prevents Shift+Tab from escaping to the previous outer control.

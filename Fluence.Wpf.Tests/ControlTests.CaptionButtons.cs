@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
 
         private static System.Windows.Controls.Button GetCaptionButton(FluenceWindow window, string name)
         {
-            return Assert.IsAssignableFrom<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(window, name));
+            return Assert.IsType<System.Windows.Controls.Button>(FindVisualChildByName<System.Windows.Controls.Button>(window, name), exactMatch: false);
         }
 
         [Fact]

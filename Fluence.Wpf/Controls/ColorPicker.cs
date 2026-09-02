@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -37,6 +36,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Fluence.Wpf.Helpers;
 
 // IMPORTANT: every reference to TextBox / Border / Image in this file MUST be fully
 // qualified (System.Windows.Controls.TextBox, System.Windows.Controls.Border, ...).

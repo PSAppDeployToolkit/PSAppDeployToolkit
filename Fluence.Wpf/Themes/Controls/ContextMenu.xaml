@@ -6,10 +6,10 @@
     <!--
         Fluent Design ContextMenu + MenuItem + Separator styles.
         Authority: WinUI 3 MenuFlyout_themeresources.xaml (brush keys, item heights, padding).
-        Note: No DropShadowEffect on the popup Border - WPF bitmap effects on a Border with
-        CornerRadius produce artifacts in a Popup (see DropDownButton.xaml). System
-        HasDropShadow (popup-level) is used instead.
-        SharedSizeGroup "MenuIconCol" aligns icons across all items in a menu.
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
     -->
 
     <!--  ═══════════════════════════════════════════════════════════  -->
@@ -26,20 +26,36 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ContextMenu}">
-                    <Border
-                        x:Name="MenuSurface"
-                        MinWidth="180"
-                        Padding="2"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{DynamicResource OverlayCornerRadius}"
-                        RenderOptions.ClearTypeHint="Enabled"
-                        UseLayoutRounding="True">
-                        <Grid Grid.IsSharedSizeScope="True">
-                            <ItemsPresenter />
-                        </Grid>
-                    </Border>
+                    <Grid>
+                        <!--
+                            The elevation is cast by an empty sibling painted behind the surface,
+                            because WPF drops ClearType for every text run under an Effect and the
+                            surface opts into it. No layout gutter is needed: PopupRoot already sizes
+                            a popup window about 15 px larger per side than its child, which is more
+                            than FlyoutShadowEffect bleeds.
+                        -->
+                        <Border
+                            x:Name="ShadowCaster"
+                            MinWidth="180"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}"
+                            UseLayoutRounding="True" />
+                        <Border
+                            x:Name="MenuSurface"
+                            MinWidth="180"
+                            Padding="2"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            RenderOptions.ClearTypeHint="Enabled"
+                            UseLayoutRounding="True">
+                            <Grid Grid.IsSharedSizeScope="True">
+                                <ItemsPresenter />
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -90,23 +106,34 @@
                                 PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                                 PopupAnimation="None">
                                 <!--  SubMenuBorder: slide-in from X=-8 on open (167ms ControlFastOutSlowIn).  -->
-                                <Border
-                                    x:Name="SubMenuBorder"
-                                    MinWidth="180"
-                                    Padding="2"
-                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
-                                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="{DynamicResource OverlayCornerRadius}"
-                                    RenderOptions.ClearTypeHint="Enabled"
-                                    UseLayoutRounding="True">
-                                    <Border.RenderTransform>
-                                        <TranslateTransform x:Name="SubMenuTranslate" X="-8" />
-                                    </Border.RenderTransform>
-                                    <Grid Grid.IsSharedSizeScope="True">
-                                        <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Cycle" />
-                                    </Grid>
-                                </Border>
+                                <Grid>
+                                    <!--  Elevation caster, as on the root menu. A submenu is a popup too and gets the same shadow; it shares the slide transform so the shadow travels with it.  -->
+                                    <Border
+                                        x:Name="SubMenuShadowCaster"
+                                        MinWidth="180"
+                                        Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                        CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                        Effect="{DynamicResource FlyoutShadowEffect}"
+                                        RenderTransform="{Binding RenderTransform, ElementName=SubMenuBorder}"
+                                        UseLayoutRounding="True" />
+                                    <Border
+                                        x:Name="SubMenuBorder"
+                                        MinWidth="180"
+                                        Padding="2"
+                                        Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                        BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                        RenderOptions.ClearTypeHint="Enabled"
+                                        UseLayoutRounding="True">
+                                        <Border.RenderTransform>
+                                            <TranslateTransform x:Name="SubMenuTranslate" X="-8" />
+                                        </Border.RenderTransform>
+                                        <Grid Grid.IsSharedSizeScope="True">
+                                            <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
                             </Popup>
 
                             <!--  Checkmark (visible when IsChecked=True and no custom Icon)  -->

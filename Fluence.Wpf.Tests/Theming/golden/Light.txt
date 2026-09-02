@@ -18,8 +18,8 @@ AcrylicBackgroundFillColorBase|#FFEEEEEE|#00000000
 AcrylicBackgroundFillColorBaseBrush|#00000000|#FFEEEEEE
 AcrylicBackgroundFillColorDefault|#F0F9F9F9|#00000000
 AcrylicBackgroundFillColorDefaultBrush|#00000000|#F0F9F9F9
-ApplicationBackgroundBrush|#00000000|#FFFAFAFA
-ApplicationBackgroundColor|#FFFAFAFA|#00000000
+ApplicationBackgroundBrush|#00000000|#FFFFFFFF
+ApplicationBackgroundColor|#FFFFFFFF|#00000000
 CardBackgroundFillColorDefault|#B3FFFFFF|#00000000
 CardBackgroundFillColorDefaultBrush|#00000000|#B3FFFFFF
 CardBackgroundFillColorSecondary|#80F6F6F6|#00000000

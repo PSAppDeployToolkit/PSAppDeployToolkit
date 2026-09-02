@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
 using System.Collections.Generic;
 using System.Windows.Media;
+using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Theming
 {

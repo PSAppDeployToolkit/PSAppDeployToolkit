@@ -124,7 +124,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
-                        object resource = Assert.IsAssignableFrom<object>(app.TryFindResource(key));
+                        object resource = Assert.IsType<object>(app.TryFindResource(key), exactMatch: false);
                     }
                 }
             });
@@ -142,7 +142,7 @@ namespace Fluence.Wpf.Tests
                 ResetAndApply(ApplicationTheme.Light, app);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
-                object brush = Assert.IsAssignableFrom<object>(app.TryFindResource("SystemFillColorCriticalBrush"));
+                object brush = Assert.IsType<object>(app.TryFindResource("SystemFillColorCriticalBrush"), exactMatch: false);
             });
         }
 
@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Tests
         private static void AssertCloseButtonBrush(Application app, string key, Color expected)
         {
             object? resource = app.TryFindResource(key);
-            SolidColorBrush brush = Assert.IsAssignableFrom<SolidColorBrush>(resource);
+            SolidColorBrush brush = Assert.IsType<SolidColorBrush>(resource, exactMatch: false);
             Assert.Equal(expected, brush.Color);
         }
 
@@ -292,7 +292,7 @@ namespace Fluence.Wpf.Tests
 
         private static int GetEventSubscriberCount(Type declaringType, string eventName)
         {
-            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(declaringType.GetField(eventName, BindingFlags.NonPublic | BindingFlags.Static));
+            FieldInfo field = Assert.IsType<FieldInfo>(declaringType.GetField(eventName, BindingFlags.NonPublic | BindingFlags.Static), exactMatch: false);
             Delegate? handler = field.GetValue(null) as Delegate;
             return handler?.GetInvocationList().Length ?? 0;
         }
@@ -426,7 +426,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
-                    System.Windows.Interop.HwndTarget sourceCompositionTarget = Assert.IsAssignableFrom<System.Windows.Interop.HwndTarget>(System.Windows.Interop.HwndSource.FromHwnd(handle)?.CompositionTarget);
+                    System.Windows.Interop.HwndTarget sourceCompositionTarget = Assert.IsType<System.Windows.Interop.HwndTarget>(System.Windows.Interop.HwndSource.FromHwnd(handle)?.CompositionTarget, exactMatch: false);
 
                     // The fix: the HWND redirection surface (HwndTarget.BackgroundColor) must be
                     // cleared to the same color WPF paints its content background, so no opaque
@@ -451,7 +451,7 @@ namespace Fluence.Wpf.Tests
 
         private static int GetWatchedWindowCount()
         {
-            FieldInfo field = Assert.IsAssignableFrom<FieldInfo>(typeof(SystemThemeWatcher).GetField("_watchedWindows", BindingFlags.NonPublic | BindingFlags.Static));
+            FieldInfo field = Assert.IsType<FieldInfo>(typeof(SystemThemeWatcher).GetField("_watchedWindows", BindingFlags.NonPublic | BindingFlags.Static), exactMatch: false);
             return field.GetValue(null) is System.Collections.IList list ? list.Count : 0;
         }
 
@@ -483,7 +483,7 @@ namespace Fluence.Wpf.Tests
                 // its managed references to that HWND's source so nothing is pinned past teardown.
                 Assert.Equal(baselineWatched, GetWatchedWindowCount());
 
-                FieldInfo sourceField = Assert.IsAssignableFrom<FieldInfo>(typeof(FluenceWindow).GetField("_hwndSource", BindingFlags.NonPublic | BindingFlags.Instance));
+                FieldInfo sourceField = Assert.IsType<FieldInfo>(typeof(FluenceWindow).GetField("_hwndSource", BindingFlags.NonPublic | BindingFlags.Instance), exactMatch: false);
                 Assert.Null(sourceField.GetValue(w));
             });
         }

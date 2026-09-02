@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
-                    _ = Assert.IsAssignableFrom<HyperlinkButtonAutomationPeer>(peer);
+                    _ = Assert.IsType<HyperlinkButtonAutomationPeer>(peer, exactMatch: false);
                 }
                 finally
                 {

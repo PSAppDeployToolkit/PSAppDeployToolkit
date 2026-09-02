@@ -113,14 +113,14 @@ namespace Fluence.Wpf.Tests
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => flyout.IsOpen).ConfigureAwait(true),
                         "ShowAt should open the command bar flyout popup.");
 
-                    Popup popup = Assert.IsAssignableFrom<Popup>(flyout.HostPopup);
+                    Popup popup = Assert.IsType<Popup>(flyout.HostPopup, exactMatch: false);
                     Assert.False(popup.StaysOpen, "CommandBarFlyout popups must be light-dismiss (StaysOpen=false).");
 
                     Controls.CommandBarFlyoutPresenter presenter = Assert.IsType<Controls.CommandBarFlyoutPresenter>(popup.Child);
 
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
-                    ItemsControl primaryItems = Assert.IsAssignableFrom<ItemsControl>(presenter.Template.FindName("PART_PrimaryItemsControl", presenter));
+                    ItemsControl primaryItems = Assert.IsType<ItemsControl>(presenter.Template.FindName("PART_PrimaryItemsControl", presenter), exactMatch: false);
                     Assert.Same(flyout.PrimaryCommands, primaryItems.ItemsSource);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => copyButton.IsVisible).ConfigureAwait(true),
                         "Primary AppBarButtons must materialize in the opened bar.");
@@ -165,7 +165,7 @@ namespace Fluence.Wpf.Tests
 
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
-                    ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
+                    ButtonBase moreButton = Assert.IsType<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter), exactMatch: false);
                     Assert.Equal(Visibility.Collapsed, moreButton.Visibility);
 
                     flyout.SecondaryCommands.Add(new Controls.AppBarButton
@@ -221,8 +221,8 @@ namespace Fluence.Wpf.Tests
 
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
-                    ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
-                    FrameworkElement secondaryHost = Assert.IsAssignableFrom<FrameworkElement>(presenter.Template.FindName("PART_SecondaryHost", presenter));
+                    ButtonBase moreButton = Assert.IsType<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter), exactMatch: false);
+                    FrameworkElement secondaryHost = Assert.IsType<FrameworkElement>(presenter.Template.FindName("PART_SecondaryHost", presenter), exactMatch: false);
                     Assert.False(presenter.IsExpanded, "The presenter must open collapsed (AlwaysExpanded is omitted for v1).");
                     Assert.Equal(Visibility.Collapsed, secondaryHost.Visibility);
 
@@ -347,7 +347,7 @@ namespace Fluence.Wpf.Tests
 
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
-                    ButtonBase moreButton = Assert.IsAssignableFrom<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter));
+                    ButtonBase moreButton = Assert.IsType<ButtonBase>(presenter.Template.FindName("PART_MoreButton", presenter), exactMatch: false);
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => deleteButton.IsVisible).ConfigureAwait(true),

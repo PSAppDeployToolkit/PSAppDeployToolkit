@@ -26,10 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Effects;
+using System.Windows.Media;
 using Fluence.Wpf.Controls;
 using Xunit;
 
@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Tests
         // ---------------------------------------------------------------------------
 
         [Fact]
-        public Task Card_DefaultVariant_HasElevationShadowOnOuterBorderAsync()
+        public Task Card_DefaultVariant_IsFlatAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -59,7 +59,36 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                Assert.NotNull(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder")?.Effect as DropShadowEffect);
+                // A Fluent card surface is flat: background, 1 px stroke, radius. Elevation belongs
+                // to transient surfaces, so no variant, Default included, carries an effect.
+                System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"), exactMatch: false);
+                Assert.Null(outerBorder.Effect);
+                w.Close();
+            });
+        }
+
+        [Fact]
+        public Task Card_Background_IsPaintedByExactlyOneLayerAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Card card = new() { Variant = CardVariant.Default, Width = 200, Height = 100 };
+                Window w = new() { Content = card, Width = 300, Height = 200 };
+                w.Show();
+                WpfTestSta.DrainDispatcher(w.Dispatcher);
+
+                SolidColorBrush cardFill = Assert.IsType<SolidColorBrush>(app.TryFindResource("CardBackgroundFillColorDefaultBrush"));
+
+                // The card fill token is translucent (#B3FFFFFF in Light). Painting it on two nested
+                // borders composites it with itself and renders the card more opaque than the token
+                // specifies, so exactly one element in the template may carry it.
+                int painters = FindVisualChildren<System.Windows.Controls.Border>(card)
+                    .Count(b => b.Background is SolidColorBrush brush && brush.Color == cardFill.Color);
+
+                Assert.Equal(1, painters);
                 w.Close();
             });
         }
@@ -77,7 +106,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+                System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"), exactMatch: false);
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -97,7 +126,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+                System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"), exactMatch: false);
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -117,7 +146,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
+                System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"), exactMatch: false);
 
                 Assert.Null(outerBorder.Effect);
                 w.Close();
@@ -125,7 +154,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [Fact]
-        public Task Card_DefaultVariant_ShadowHasCorrectProfileAsync()
+        public Task Card_Surface_CarriesStrokeAndRadiusOnTheSameElementAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -137,14 +166,17 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
 
-                System.Windows.Controls.Border outerBorder = Assert.IsAssignableFrom<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"));
-                DropShadowEffect shadow = Assert.IsType<DropShadowEffect>(outerBorder.Effect);
+                System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder"), exactMatch: false);
 
-                // WI-3 C21: subtle elevation - soft blur, low opacity, downward direction
-                Assert.True(shadow.BlurRadius is >= 4 and <= 16,
-                    $"BlurRadius {shadow.BlurRadius.ToString(CultureInfo.InvariantCulture)} outside expected range [4,16].");
-                Assert.True(shadow.Opacity is > 0 and <= 0.2,
-                    $"Opacity {shadow.Opacity.ToString(CultureInfo.InvariantCulture)} outside expected range (0, 0.2].");
+                // One element owns fill, stroke and radius, so there is no second border to drift.
+                SolidColorBrush expectedStroke = Assert.IsType<SolidColorBrush>(app.TryFindResource("CardStrokeColorDefaultBrush"));
+                SolidColorBrush actualStroke = Assert.IsType<SolidColorBrush>(outerBorder.BorderBrush);
+                Assert.Equal(expectedStroke.Color, actualStroke.Color);
+                Assert.Equal(new Thickness(1), outerBorder.BorderThickness);
+                Assert.Equal(new CornerRadius(8), outerBorder.CornerRadius);
+
+                // The style routes the radius through OverlayCornerRadius so a consumer can retheme it.
+                Assert.Equal(app.TryFindResource("OverlayCornerRadius"), card.CornerRadius);
                 w.Close();
             });
         }

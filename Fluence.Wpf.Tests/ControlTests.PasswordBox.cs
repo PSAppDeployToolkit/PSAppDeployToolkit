@@ -88,7 +88,7 @@ namespace Fluence.Wpf.Tests
                     PasswordBox box = ShowPasswordBox(window, "secret");
 
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(box);
-                    _ = Assert.IsAssignableFrom<PasswordBoxAutomationPeer>(peer);
+                    _ = Assert.IsType<PasswordBoxAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal(AutomationControlType.Edit, peer.GetAutomationControlType());
                     Assert.True(peer.IsPassword(),
                         "PasswordBox peer must report IsPassword=true so Narrator suppresses reading the value aloud.");
@@ -365,10 +365,10 @@ namespace Fluence.Wpf.Tests
                     PasswordBox box = ShowPasswordBox(window);
                     object behavior = GetPasswordBoxBehavior(box);
 
-                    MethodInfo startCapsPoll = Assert.IsAssignableFrom<MethodInfo>(
-                        behavior.GetType().GetMethod("StartCapsPoll", BindingFlags.Instance | BindingFlags.NonPublic));
-                    FieldInfo capsPollTimer = Assert.IsAssignableFrom<FieldInfo>(
-                        behavior.GetType().GetField("_capsPollTimer", BindingFlags.Instance | BindingFlags.NonPublic));
+                    MethodInfo startCapsPoll = Assert.IsType<MethodInfo>(
+                        behavior.GetType().GetMethod("StartCapsPoll", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
+                    FieldInfo capsPollTimer = Assert.IsType<FieldInfo>(
+                        behavior.GetType().GetField("_capsPollTimer", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
 
                     _ = startCapsPoll.Invoke(behavior, parameters: null);
                     DispatcherTimer timer = Assert.IsType<DispatcherTimer>(capsPollTimer.GetValue(behavior));
@@ -448,7 +448,7 @@ namespace Fluence.Wpf.Tests
                     Assert.Equal(new Thickness(10, 5, 6, 6), box.Padding);
                     Assert.Equal(32.0, box.MinHeight);
                     Assert.Equal(new CornerRadius(4), mainBorder.CornerRadius);
-                    _ = Assert.IsAssignableFrom<LinearGradientBrush>(mainBorder.BorderBrush);
+                    _ = Assert.IsType<LinearGradientBrush>(mainBorder.BorderBrush, exactMatch: false);
                     Assert.Equal(30.0, revealButton.Width, 0.1);
                 }
                 finally
@@ -583,8 +583,8 @@ namespace Fluence.Wpf.Tests
         // Caps Lock timer lifetime can be asserted the way it was on the retired wrapper control.
         private static object GetPasswordBoxBehavior(PasswordBox box)
         {
-            FieldInfo behaviorField = Assert.IsAssignableFrom<FieldInfo>(
-                typeof(Controls.PasswordBoxExtensions).GetField("BehaviorProperty", BindingFlags.Static | BindingFlags.NonPublic));
+            FieldInfo behaviorField = Assert.IsType<FieldInfo>(
+                typeof(Controls.PasswordBoxExtensions).GetField("BehaviorProperty", BindingFlags.Static | BindingFlags.NonPublic), exactMatch: false);
             DependencyProperty behaviorProperty = Assert.IsType<DependencyProperty>(behaviorField.GetValue(null));
             return box.GetValue(behaviorProperty)
                 ?? throw new Xunit.Sdk.XunitException("The Fluent style must attach a password box behavior.");

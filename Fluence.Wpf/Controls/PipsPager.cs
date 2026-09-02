@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -35,6 +34,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using Fluence.Wpf.Helpers;
 
 // IMPORTANT: every reference to ToggleButton / ButtonBase / Panel in this file
 // is fully qualified (System.Windows.Controls.Primitives.ToggleButton,

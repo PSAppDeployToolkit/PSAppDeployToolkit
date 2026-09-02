@@ -28,12 +28,36 @@ Fluence.Wpf defines the full WinUI 3 token ramp. These are the keys you will ref
 
 - **Text**: `TextFillColorPrimary`, `TextFillColorSecondary`, `TextFillColorTertiary`, `TextFillColorDisabled`, `TextOnAccentFillColorPrimary` / `Secondary` / `Disabled`.
 - **Fill**: `ControlFillColorDefault`, `ControlFillColorSecondary`, `ControlFillColorTertiary`, `ControlFillColorInputActive`, `ControlFillColorDisabled`, `ControlAltFillColorSecondary` / `Tertiary` / `Quarternary` (CheckBox / RadioButton / ToggleSwitch tracks, `Card` `Filled` variant), `AccentFillColorDefault` / `Secondary` / `Tertiary` / `Disabled`, `SubtleFillColorSecondary` / `Tertiary`, `LayerFillColorDefault`, `CardBackgroundFillColorDefault`.
-- **Stroke**: `ControlStrokeColorDefault` / `Secondary`, **`ControlStrongStrokeColorDefault`** (radio / check-box rings), **`ControlStrongStrokeColorDisabled`**, `CardStrokeColorDefault`, `DividerStrokeColorDefault`, `FocusStrokeColorOuter` / `Inner`.
+- **Stroke**: `ControlStrokeColorDefault` / `Secondary`, **`ControlStrongStrokeColorDefault`** (radio / check-box rings), **`ControlStrongStrokeColorDisabled`**, `CardStrokeColorDefault`, `SurfaceStrokeColorDefault` (the `FluenceWindow` outer border), `DividerStrokeColorDefault`, `FocusStrokeColorOuter` / `Inner`.
 - **Background**: `SolidBackgroundFillColorBase`, `ApplicationBackgroundColor`.
 - **Window controls**: `WindowCloseButtonBackgroundPointerOver`, `WindowCloseButtonBackgroundPressed`, `WindowCloseButtonForegroundPointerOver`.
 - **High contrast aliases**: `SystemColorWindowTextColorBrush`, `SystemColorWindowColorBrush`, `SystemColorButtonFaceColorBrush`, `SystemColorButtonTextColorBrush`, `SystemColorHighlightColorBrush`, `SystemColorHighlightTextColorBrush`, `SystemColorHotlightColorBrush`, `SystemColorGrayTextColorBrush`. These brush-only aliases map directly to WPF `SystemColors`, so you can preview or bind Windows high contrast roles without hard-coding platform resources.
 
 Each color token has a matching `*Brush` frozen `SolidColorBrush` - for example `ControlStrongStrokeColorDefaultBrush` - produced by `BrushFactory`. Reference the brush keys from XAML, not the raw color keys.
+
+## Elevation
+
+Transient surfaces cast a shadow; persistent ones do not. `FlyoutShadowEffect` is the single elevation token: a frozen `DropShadowEffect` (blur radius 18, direction 270, shadow depth 4, 22% black) built by `SpecialBrushes`. It is theme independent, so it does not change with theme or accent.
+
+Twelve templates use it: `FlyoutPresenter`, `ContextMenu` (root menu and submenu), `ComboBox`, `DatePicker`, `TimePicker`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `AutoSuggestBox`, `CommandBarFlyout`, `TeachingTip`, and `ContentDialog`. `ToolTip` elevates through the Win32 popup shadow (`HasDropShadow`) instead. Persistent surfaces such as `Card` stay flat: background, a 1 px stroke, and a corner radius.
+
+WPF disables ClearType for every text run beneath an `Effect`, so no template puts the effect on the surface that hosts the text. Each one paints an empty sibling `Border` named `ShadowCaster` behind the surface, matched in size and corner radius, and carries the effect there:
+
+```xml
+<Grid>
+    <Border x:Name="ShadowCaster"
+            Background="{TemplateBinding Background}"
+            CornerRadius="{DynamicResource OverlayCornerRadius}"
+            Effect="{DynamicResource FlyoutShadowEffect}" />
+    <Border x:Name="PresenterSurface"
+            CornerRadius="{DynamicResource OverlayCornerRadius}"
+            RenderOptions.ClearTypeHint="Enabled">
+        <!--  content  -->
+    </Border>
+</Grid>
+```
+
+Use the same pattern in a custom template. A `Popup` needs no layout gutter and no placement compensation: `PopupRoot` already sizes the popup window roughly 15 px larger per side than its child, and the effect bleeds at most 13 px.
 
 ## WinUI markup parity: ThemeResource and ThemeDictionary
 

@@ -84,6 +84,20 @@
                             Placement="Bottom"
                             PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                             PopupAnimation="None">
+                            <Grid>
+                                <!--
+                                    Elevation caster: an empty sibling behind the surface, because WPF
+                                    drops ClearType for text under an Effect and this surface opts into
+                                    it. No layout gutter is needed, PopupRoot already reserves about
+                                    15 px per side for popup shadows.
+                                -->
+                                <Border
+                                    x:Name="ShadowCaster"
+                                    MinWidth="{Binding ActualWidth, ElementName=OuterBorder}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
+                                    CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                    Effect="{DynamicResource FlyoutShadowEffect}" />
                             <Border
                                 x:Name="FlyoutSurface"
                                 MinWidth="{Binding ActualWidth, ElementName=OuterBorder}"
@@ -93,14 +107,6 @@
                                 BorderThickness="1"
                                 CornerRadius="{TemplateBinding DropdownCornerRadius}"
                                 RenderOptions.ClearTypeHint="Enabled">
-                                <!--
-                                    No DropShadowEffect: WPF bitmap effects on a Border with CornerRadius
-                                    always bleed into the transparent corner nooks, producing darker
-                                    squared-off artifacts at the rounded corners regardless of ShadowDepth.
-                                    Real WinUI 3 uses DWM-managed compositor shadows (not WPF effects).
-                                    The SurfaceStrokeColorFlyoutBrush border + background contrast is
-                                    sufficient for visual separation without the rendering artifact.
-                                -->
                                 <ContentPresenter
                                     x:Name="FlyoutContentPresenter"
                                     Margin="4"
@@ -108,6 +114,7 @@
                                     Content="{TemplateBinding Flyout}"
                                     ContentTemplate="{TemplateBinding FlyoutTemplate}" />
                             </Border>
+                            </Grid>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>

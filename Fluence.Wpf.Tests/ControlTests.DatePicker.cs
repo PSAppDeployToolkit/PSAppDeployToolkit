@@ -71,18 +71,18 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
 
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    Selector yearList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_YearList", picker));
-                    ButtonBase acceptButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_AcceptButton", picker));
-                    ButtonBase cancelButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_CancelButton", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    Selector yearList = Assert.IsType<Selector>(template.FindName("PART_YearList", picker), exactMatch: false);
+                    ButtonBase acceptButton = Assert.IsType<ButtonBase>(template.FindName("PART_AcceptButton", picker), exactMatch: false);
+                    ButtonBase cancelButton = Assert.IsType<ButtonBase>(template.FindName("PART_CancelButton", picker), exactMatch: false);
 
-                    _ = Assert.IsAssignableFrom<Controls.ListBox>(dayList);
-                    _ = Assert.IsAssignableFrom<Controls.Button>(flyoutButton);
+                    _ = Assert.IsType<Controls.ListBox>(dayList, exactMatch: false);
+                    _ = Assert.IsType<Controls.Button>(flyoutButton, exactMatch: false);
                     Assert.False(popup.StaysOpen, "The selector flyout must be light-dismiss (StaysOpen=false).");
                     Assert.True(popup.AllowsTransparency, "The selector flyout must allow transparency for the rounded surface.");
                 }
@@ -111,13 +111,13 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
 
                     TextBlock first = Assert.IsType<TextBlock>(template.FindName("FirstSegmentText", picker));
                     TextBlock second = Assert.IsType<TextBlock>(template.FindName("SecondSegmentText", picker));
                     TextBlock third = Assert.IsType<TextBlock>(template.FindName("ThirdSegmentText", picker));
                     TextBlock placeholder = Assert.IsType<TextBlock>(template.FindName("PlaceholderTextBlock", picker));
-                    FrameworkElement segmentsHost = Assert.IsAssignableFrom<FrameworkElement>(template.FindName("SegmentsHost", picker));
+                    FrameworkElement segmentsHost = Assert.IsType<FrameworkElement>(template.FindName("SegmentsHost", picker), exactMatch: false);
 
 
                     Assert.Equal(Visibility.Visible, placeholder.Visibility);
@@ -166,12 +166,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    Selector yearList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_YearList", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    Selector yearList = Assert.IsType<Selector>(template.FindName("PART_YearList", picker), exactMatch: false);
 
                     picker.SelectedDate = new DateTime(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -227,13 +227,13 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    Selector yearList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_YearList", picker));
-                    ButtonBase acceptButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_AcceptButton", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    Selector yearList = Assert.IsType<Selector>(template.FindName("PART_YearList", picker), exactMatch: false);
+                    ButtonBase acceptButton = Assert.IsType<ButtonBase>(template.FindName("PART_AcceptButton", picker), exactMatch: false);
 
                     DateTime oldDate = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = oldDate;
@@ -287,12 +287,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    ButtonBase cancelButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_CancelButton", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    ButtonBase cancelButton = Assert.IsType<ButtonBase>(template.FindName("PART_CancelButton", picker), exactMatch: false);
 
                     DateTime original = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = original;
@@ -342,12 +342,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    Selector yearList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_YearList", picker));
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    Selector yearList = Assert.IsType<Selector>(template.FindName("PART_YearList", picker), exactMatch: false);
 
                     picker.SelectedDate = new DateTime(2023, 1, 31, 0, 0, 0, DateTimeKind.Unspecified);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -395,8 +395,8 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AutomationPeer peer = Assert.IsAssignableFrom<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(picker));
-                    _ = Assert.IsAssignableFrom<Automation.DatePickerAutomationPeer>(peer);
+                    AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(picker), exactMatch: false);
+                    _ = Assert.IsType<Automation.DatePickerAutomationPeer>(peer, exactMatch: false);
                     Assert.Equal("DatePicker", peer.GetClassName(), StringComparer.Ordinal);
                     Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
                     Assert.Equal("Pick a date", peer.GetName(), StringComparer.Ordinal);
@@ -435,10 +435,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
+                    UIElement popupChild = Assert.IsType<UIElement>(popup.Child, exactMatch: false);
 
                     Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(popupChild));
 
@@ -477,12 +477,12 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
+                    UIElement popupChild = Assert.IsType<UIElement>(popup.Child, exactMatch: false);
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
 
                     DateTime original = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = original;
@@ -531,13 +531,13 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    UIElement popupChild = Assert.IsAssignableFrom<UIElement>(popup.Child);
-                    Selector dayList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_DayList", picker));
-                    Selector monthList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_MonthList", picker));
-                    Selector yearList = Assert.IsAssignableFrom<Selector>(template.FindName("PART_YearList", picker));
+                    UIElement popupChild = Assert.IsType<UIElement>(popup.Child, exactMatch: false);
+                    Selector dayList = Assert.IsType<Selector>(template.FindName("PART_DayList", picker), exactMatch: false);
+                    Selector monthList = Assert.IsType<Selector>(template.FindName("PART_MonthList", picker), exactMatch: false);
+                    Selector yearList = Assert.IsType<Selector>(template.FindName("PART_YearList", picker), exactMatch: false);
 
                     picker.SelectedDate = new DateTime(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -620,7 +620,7 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
                     TextBlock first = Assert.IsType<TextBlock>(template.FindName("FirstSegmentText", picker));
                     TextBlock second = Assert.IsType<TextBlock>(template.FindName("SecondSegmentText", picker));
                     TextBlock third = Assert.IsType<TextBlock>(template.FindName("ThirdSegmentText", picker));
@@ -666,10 +666,10 @@ namespace Fluence.Wpf.Tests
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ControlTemplate template = Assert.IsAssignableFrom<ControlTemplate>(picker.Template);
-                    ButtonBase flyoutButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_FlyoutButton", picker));
+                    ControlTemplate template = Assert.IsType<ControlTemplate>(picker.Template, exactMatch: false);
+                    ButtonBase flyoutButton = Assert.IsType<ButtonBase>(template.FindName("PART_FlyoutButton", picker), exactMatch: false);
                     Popup popup = Assert.IsType<Popup>(template.FindName("PART_Popup", picker));
-                    ButtonBase acceptButton = Assert.IsAssignableFrom<ButtonBase>(template.FindName("PART_AcceptButton", picker));
+                    ButtonBase acceptButton = Assert.IsType<ButtonBase>(template.FindName("PART_AcceptButton", picker), exactMatch: false);
 
                     RaiseButtonClick(flyoutButton);
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
@@ -683,8 +683,8 @@ namespace Fluence.Wpf.Tests
                     // The lockout is a 250 ms Environment.TickCount window, and the dispatcher
                     // drain above can outlast it on a loaded CI runner, so first prove the dismiss
                     // armed it, then re-arm it so the second click is deterministically inside it.
-                    FieldInfo dismissTickField = Assert.IsAssignableFrom<FieldInfo>(
-                        typeof(Controls.DatePicker).GetField("_lastLightDismissTick", BindingFlags.NonPublic | BindingFlags.Instance));
+                    FieldInfo dismissTickField = Assert.IsType<FieldInfo>(
+                        typeof(Controls.DatePicker).GetField("_lastLightDismissTick", BindingFlags.NonPublic | BindingFlags.Instance), exactMatch: false);
                     Assert.NotNull(dismissTickField.GetValue(picker));
                     dismissTickField.SetValue(picker, Environment.TickCount);
 

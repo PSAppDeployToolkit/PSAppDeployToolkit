@@ -9,8 +9,10 @@
         backplates) translated to the in-tree flyout idiom:
         SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
         OverlayCornerRadius (see FlyoutPresenter.xaml / ContextMenu.xaml).
-        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
-        produce artifacts in a Popup (see DropDownButton.xaml).
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
     -->
 
     <!--
@@ -250,6 +252,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:CommandBarFlyoutPresenter}">
+                    <Grid>
+                        <!--
+                            Elevation caster: an empty sibling behind the surface, so the effect never
+                            covers the text. No layout gutter is needed, PopupRoot already reserves
+                            about 15 px per side for popup shadows.
+                        -->
+                        <Border
+                            x:Name="ShadowCaster"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}"
+                            UseLayoutRounding="True" />
                     <Border
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -316,6 +330,7 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <!--
                             Overflow expand/collapse over 167ms on the 0.8,0,0,1 spline

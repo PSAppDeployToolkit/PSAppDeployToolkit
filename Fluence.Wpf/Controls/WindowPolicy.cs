@@ -26,11 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
-using Fluence.Wpf.Native;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
+using Fluence.Wpf.Helpers;
+using Fluence.Wpf.Native;
 using Windows.Win32;
 using Windows.Win32.Graphics.Dwm;
 

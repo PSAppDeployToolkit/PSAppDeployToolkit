@@ -154,7 +154,7 @@ namespace Fluence.Wpf.Demo.Pages
 
             try
             {
-                Clipboard.SetText(styleKey);
+                DemoClipboard.SetText(styleKey);
             }
             catch (ExternalException)
             {
