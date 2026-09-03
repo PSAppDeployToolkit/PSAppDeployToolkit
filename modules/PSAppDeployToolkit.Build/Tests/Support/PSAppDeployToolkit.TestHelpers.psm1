@@ -9,6 +9,14 @@
 New-Variable -Name ModuleRoot -Option Constant -Value ([System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', 'PSAppDeployToolkit')))
 New-Variable -Name ModuleManifest -Option Constant -Value ([System.IO.Path]::Combine($Script:ModuleRoot, 'PSAppDeployToolkit.psd1'))
 
+# The current user's uninstall key, which Get-ADTApplication searches alongside the two machine ones.
+# Entries a test writes go here, so that finding and removing an application can be exercised for real
+# without elevation and without touching anything outside the user running the tests. Held in both the
+# provider and the native form, as reg.exe does not understand the drive-qualified one.
+New-Variable -Name ADTTestApplicationRoot -Option Constant -Value 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+New-Variable -Name ADTTestApplicationRootNative -Option Constant -Value 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+New-Variable -Name ADTTestApplicationPrefix -Option Constant -Value 'ADTTestApplication'
+
 
 #-----------------------------------------------------------------------------
 #
@@ -403,8 +411,312 @@ function Initialize-ADTTestModule
 
 #-----------------------------------------------------------------------------
 #
+# MARK: New-ADTTestApplicationName
+#
+#-----------------------------------------------------------------------------
+
+function New-ADTTestApplicationName
+{
+    <#
+    .SYNOPSIS
+        Invents a name for an application entry no machine could already carry.
+
+    .DESCRIPTION
+        The `New-ADTTestApplicationName` function returns a display name suffixed with a GUID, so that an entry written under it can never collide with, or be mistaken for, software installed on the machine, and a search for it can only find what the test itself created.
+
+        Pass the result to `New-ADTTestApplicationEntry` to write the entry, and to `Get-ADTTestUninstallCommand` to build an uninstall program that removes it.
+
+    .PARAMETER Suffix
+        Text to append after the generated name, for a test needing the name to match something. Supply `Security Update` to have the entry read as a Microsoft update, for instance.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
+
+        Returns the invented display name.
+
+    .EXAMPLE
+        New-ADTTestApplicationName
+
+        Returns a name such as `ADTTestApplication5f2b1c9e4a7d4f0e8b3c6a1d2e5f8091`.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [System.String]$Suffix
+    )
+
+    # The prefix is what the cleanup matches on, so it has to be the leading text and never vary. A GUID in
+    # 'N' form is hex, so appending one cannot introduce anything the update and hotfix filter looks for.
+    return "$script:ADTTestApplicationPrefix$([System.Guid]::NewGuid().ToString('N'))$(if ($PSBoundParameters.ContainsKey('Suffix')) { " $Suffix" })"
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: New-ADTTestApplicationEntry
+#
+#-----------------------------------------------------------------------------
+
+function New-ADTTestApplicationEntry
+{
+    <#
+    .SYNOPSIS
+        Writes an installed application entry for a test to find.
+
+    .DESCRIPTION
+        The `New-ADTTestApplicationEntry` function writes an uninstall entry under the current user's own hive, which `Get-ADTApplication` searches alongside the two machine ones. Writing there is what lets a test exercise finding and removing an application without elevation and without touching anything outside the user running it.
+
+        `DisplayName` is always written, as it is what the search keys off. Everything else is up to the caller, with integers written as DWORDs to match the real flags.
+
+        Clean up with `Remove-ADTTestApplicationEntries`, which every test file writing entries should call from an `AfterEach`.
+
+    .PARAMETER Name
+        The entry's name, from `New-ADTTestApplicationName`. Used as both the key name and the display name.
+
+    .PARAMETER Values
+        The registry values to write alongside the display name, such as `QuietUninstallString` or `SystemComponent`.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        None
+
+        This function does not return any output.
+
+    .EXAMPLE
+        New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
+
+        Writes an entry whose uninstall program removes the entry itself.
+    #>
+
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Collections.Hashtable]$Values = @{}
+    )
+
+    $null = New-Item -Path "$script:ADTTestApplicationRoot\$Name" -Force
+    $null = New-ItemProperty -LiteralPath "$script:ADTTestApplicationRoot\$Name" -Name DisplayName -Value $Name -PropertyType String -Force
+    foreach ($value in $Values.GetEnumerator())
+    {
+        $null = New-ItemProperty -LiteralPath "$script:ADTTestApplicationRoot\$Name" -Name $value.Key -Value $value.Value -PropertyType $(if ($value.Value -is [System.Int32]) { 'DWord' } else { 'String' }) -Force
+    }
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Get-ADTTestUninstallCommand
+#
+#-----------------------------------------------------------------------------
+
+function Get-ADTTestUninstallCommand
+{
+    <#
+    .SYNOPSIS
+        Builds an uninstall program that removes the entry naming it.
+
+    .DESCRIPTION
+        The `Get-ADTTestUninstallCommand` function returns a command line suitable for an entry's `UninstallString` or `QuietUninstallString`, which removes the entry it was written to. That is what an uninstaller does, and it is what lets a test assert a real removal rather than a mocked one while leaving nothing behind.
+
+        `reg.exe` is asked to do the removal as it is on every machine and needs nothing set up.
+
+    .PARAMETER Name
+        The entry to remove, from `New-ADTTestApplicationName`.
+
+    .PARAMETER Unqualified
+        Name the program without saying where it lives, for a test covering resolution against the search path. A command line written to the registry is not obliged to spell out the path.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
+
+        Returns the command line.
+
+    .EXAMPLE
+        Get-ADTTestUninstallCommand -Name $name
+
+        Returns a command line that removes the entry called $name.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Unqualified
+    )
+
+    return "$(if ($Unqualified) { 'cmd.exe' } else { [System.IO.Path]::Combine([System.Environment]::SystemDirectory, 'cmd.exe') }) /c reg.exe delete `"$script:ADTTestApplicationRootNative\$Name`" /f"
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Get-ADTTestApplicationKeyPath
+#
+#-----------------------------------------------------------------------------
+
+function Get-ADTTestApplicationKeyPath
+{
+    <#
+    .SYNOPSIS
+        Returns the registry path of a test's application entry.
+
+    .DESCRIPTION
+        The `Get-ADTTestApplicationKeyPath` function gives back the path the entry is written to, so that a test needing to name that key, such as one supplying its own arguments to an uninstall program, does not restate the uninstall key itself.
+
+    .PARAMETER Name
+        The entry to name, from `New-ADTTestApplicationName`.
+
+    .PARAMETER Native
+        Return the path in the form `reg.exe` understands, rather than the drive-qualified form the registry provider takes.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
+
+        Returns the entry's registry path.
+
+    .EXAMPLE
+        Get-ADTTestApplicationKeyPath -Name $name -Native
+
+        Returns a path such as `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ADTTestApplication...`.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Native
+    )
+
+    return "$(if ($Native) { $script:ADTTestApplicationRootNative } else { $script:ADTTestApplicationRoot })\$Name"
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Test-ADTTestApplicationEntry
+#
+#-----------------------------------------------------------------------------
+
+function Test-ADTTestApplicationEntry
+{
+    <#
+    .SYNOPSIS
+        Tests whether a test's application entry is still there.
+
+    .DESCRIPTION
+        The `Test-ADTTestApplicationEntry` function reports whether the entry is present, which is how a test asserts that a removal happened, or that something declined to remove it.
+
+    .PARAMETER Name
+        The entry to look for, from `New-ADTTestApplicationName`.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.Boolean
+
+        Returns $true while the entry is present, otherwise $false.
+
+    .EXAMPLE
+        Test-ADTTestApplicationEntry -Name $name
+
+        Returns $false once the entry has been removed.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]$Name
+    )
+
+    return Test-Path -LiteralPath "$script:ADTTestApplicationRoot\$Name"
+}
+
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Remove-ADTTestApplicationEntries
+#
+#-----------------------------------------------------------------------------
+
+function Remove-ADTTestApplicationEntries
+{
+    <#
+    .SYNOPSIS
+        Removes every application entry the tests have written.
+
+    .DESCRIPTION
+        The `Remove-ADTTestApplicationEntries` function removes the entries by the prefix they all carry, rather than by names a test recorded, so that a test which fell over before it could clean up still leaves nothing on the machine.
+
+        Call it from an `AfterEach` in every test file writing entries, and from `AfterAll` as well.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        None
+
+        This function does not return any output.
+
+    .EXAMPLE
+        Remove-ADTTestApplicationEntries
+
+        Removes every entry written by any test in the run.
+    #>
+
+    [CmdletBinding()]
+    param
+    (
+    )
+
+    Get-ChildItem -LiteralPath $script:ADTTestApplicationRoot -ErrorAction Ignore | Where-Object { $_.PSChildName.StartsWith($script:ADTTestApplicationPrefix) } | Remove-Item -Recurse -Force
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Module Exports
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries

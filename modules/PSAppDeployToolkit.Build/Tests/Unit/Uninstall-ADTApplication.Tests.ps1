@@ -18,12 +18,8 @@ BeforeAll {
     # Mock Write-ADTLogEntry due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
-    # The current user's uninstall key, which the search covers alongside the two machine ones. Test entries
-    # go here so that removal can be exercised for real without elevation and without touching anything
-    # outside the user running the tests.
-    $script:ArpRoot = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
-    $script:ArpRootNative = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
-    $script:EntryPrefix = 'ADTTestApplication'
+    # The uninstall program the entries name, spelled out in full for every test but the one covering an
+    # uninstall string that does not say where its program lives.
     $script:CmdPath = [System.IO.Path]::Combine([System.Environment]::SystemDirectory, 'cmd.exe')
 
     # An uninstall program that runs and does nothing, for the tests that need one present but not taken.
@@ -44,85 +40,6 @@ BeforeAll {
     # a Registry row of '+', which by design leaves the key behind when the product is removed, so the
     # cleanup has to take it away itself.
     $script:ProductKey = 'HKLM:\SOFTWARE\WOW6432Node\PSAppDeployToolkit TEST Reg'
-
-    function New-TestApplicationName
-    {
-        [CmdletBinding()]
-        [OutputType([System.String])]
-        param
-        (
-        )
-
-        # Suffixed with a GUID so that an entry can never collide with, or be mistaken for, software on the
-        # machine, and so that a test always searches for something only it created.
-        return "$script:EntryPrefix$([System.Guid]::NewGuid().ToString('N'))"
-    }
-
-    function New-TestArpEntry
-    {
-        [CmdletBinding()]
-        param
-        (
-            [Parameter(Mandatory = $true)]
-            [System.String]$Name,
-
-            [Parameter(Mandatory = $false)]
-            [System.Collections.Hashtable]$Values = @{}
-        )
-
-        # DisplayName is what the search keys off and what every test matches on, so it is always written.
-        # Everything else is up to the caller, with integers written as DWORDs as the real flags are.
-        $null = New-Item -Path "$script:ArpRoot\$Name" -Force
-        $null = New-ItemProperty -LiteralPath "$script:ArpRoot\$Name" -Name DisplayName -Value $Name -PropertyType String -Force
-        foreach ($value in $Values.GetEnumerator())
-        {
-            $null = New-ItemProperty -LiteralPath "$script:ArpRoot\$Name" -Name $value.Key -Value $value.Value -PropertyType $(if ($value.Value -is [System.Int32]) { 'DWord' } else { 'String' }) -Force
-        }
-    }
-
-    function Get-TestUninstallCommand
-    {
-        [CmdletBinding()]
-        [OutputType([System.String])]
-        param
-        (
-            [Parameter(Mandatory = $true)]
-            [System.String]$Name,
-
-            [Parameter(Mandatory = $false)]
-            [System.Management.Automation.SwitchParameter]$Unqualified
-        )
-
-        # An uninstall program that removes the entry naming it, which is what an uninstaller does and what
-        # makes the removal here real rather than mocked. reg.exe is asked to do it as it is on every
-        # machine and needs nothing set up.
-        return "$(if ($Unqualified) { 'cmd.exe' } else { $script:CmdPath }) /c reg.exe delete `"$script:ArpRootNative\$Name`" /f"
-    }
-
-    function Test-TestArpEntry
-    {
-        [CmdletBinding()]
-        [OutputType([System.Boolean])]
-        param
-        (
-            [Parameter(Mandatory = $true)]
-            [System.String]$Name
-        )
-
-        return Test-Path -LiteralPath "$script:ArpRoot\$Name"
-    }
-
-    function Remove-TestArpEntries
-    {
-        [CmdletBinding()]
-        param
-        (
-        )
-
-        # Matched on the prefix every test entry carries rather than on names the tests recorded, so that a
-        # test which fell over before it could clean up still leaves nothing behind.
-        Get-ChildItem -LiteralPath $script:ArpRoot -ErrorAction Ignore | Where-Object { $_.PSChildName.StartsWith($script:EntryPrefix) } | Remove-Item -Recurse -Force
-    }
 
     function Test-ProductInstalled
     {
@@ -152,67 +69,67 @@ BeforeAll {
 }
 
 AfterAll {
-    Remove-TestArpEntries
+    Remove-ADTTestApplicationEntries
     Import-ADTModuleUnderTest -Force
 }
 
 Describe 'Uninstall-ADTApplication' {
     Context 'Removing an application with an uninstall program' {
         AfterEach {
-            Remove-TestArpEntries
+            Remove-ADTTestApplicationEntries
         }
 
         It 'Runs the quiet uninstall string and the application is gone' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
             Get-ADTApplication -Name $name -NameMatch Exact | Should -BeNullOrEmpty
         }
 
         It 'Hands back what the uninstall program did on request' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
             $result = Uninstall-ADTApplication -Name $name -NameMatch Exact -PassThru
             $result | Should -BeOfType ([PSADT.ProcessManagement.ProcessResult])
             $result.ExitCode | Should -Be 0
         }
 
         It 'Leaves the application alone for -WhatIf' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact -WhatIf
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
         }
 
         It 'Falls back to the uninstall string when there is no quiet one' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ UninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ UninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Prefers the quiet uninstall string when both are there' {
             # The plain string is the one that removes the entry and the quiet one does nothing, so the
             # entry surviving is what proves which of the two was taken.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand; UninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand; UninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
         }
 
         It 'Takes the plain uninstall string on request' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand; UninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand; UninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact -ForceUninstallString
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Leaves an application carrying no uninstall string alone' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('No UninstallString found') } -Times 1 -Exactly
         }
 
@@ -223,66 +140,66 @@ Describe 'Uninstall-ADTApplication' {
             # Skipped: InstalledApplication resolves an unrooted name against the calling process's working
             # directory, so the search-path fallback is handed a path under that directory and never finds
             # anything. The fallback needs the executable's name, not the path built from it.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name -Unqualified }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name -Unqualified }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Removes an application handed to it down the pipeline' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
             Get-ADTApplication -Name $name -NameMatch Exact | Uninstall-ADTApplication
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Replaces the arguments the uninstall string carried' {
             # The registry says to do nothing and the caller says to remove the entry, so the entry going
             # away is what proves the supplied arguments were used in place of the ones on the entry.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand }
-            Uninstall-ADTApplication -Name $name -NameMatch Exact -ArgumentList '/c', 'reg.exe', 'delete', "$script:ArpRootNative\$name", '/f'
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand }
+            Uninstall-ADTApplication -Name $name -NameMatch Exact -ArgumentList '/c', 'reg.exe', 'delete', (Get-ADTTestApplicationKeyPath -Name $name -Native), '/f'
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Adds to the arguments the uninstall string carried' {
             # The entry supplies an incomplete command and the caller completes it, passed as one string so
             # that it is parsed into arguments rather than handed over whole.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c reg.exe delete" }
-            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList "`"$script:ArpRootNative\$name`" /f"
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c reg.exe delete" }
+            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList "`"$(Get-ADTTestApplicationKeyPath -Name $name -Native)`" /f"
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Appends several arguments to the ones the uninstall string carried' {
             # More than one addition is appended as given, where a single one is parsed first, so the two
             # are separate paths through the same switch.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c reg.exe delete" }
-            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList "$script:ArpRootNative\$name", '/f'
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c reg.exe delete" }
+            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList (Get-ADTTestApplicationKeyPath -Name $name -Native), '/f'
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Supplies arguments for an uninstall string that carried none' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = $script:CmdPath }
-            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList '/c', 'reg.exe', 'delete', "$script:ArpRootNative\$name", '/f'
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = $script:CmdPath }
+            Uninstall-ADTApplication -Name $name -NameMatch Exact -AdditionalArgumentList '/c', 'reg.exe', 'delete', (Get-ADTTestApplicationKeyPath -Name $name -Native), '/f'
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
 
         It 'Runs an uninstall program that takes no arguments' {
             # An uninstall string naming a program and nothing else has no arguments to pass on, which is
             # its own path. whoami reports and exits, so the entry is expected to survive its own removal.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = [System.IO.Path]::Combine([System.Environment]::SystemDirectory, 'whoami.exe') }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = [System.IO.Path]::Combine([System.Environment]::SystemDirectory, 'whoami.exe') }
             $result = Uninstall-ADTApplication -Name $name -NameMatch Exact -PassThru
             $result.ExitCode | Should -Be 0
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
         }
 
         It 'Objects to an exit code nobody said was acceptable' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c exit 3" }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c exit 3" }
             { Uninstall-ADTApplication -Name $name -NameMatch Exact -ErrorAction Stop } | Should -Throw
         }
 
@@ -293,8 +210,8 @@ Describe 'Uninstall-ADTApplication' {
         ) {
             # The same non-zero exit, declared three different ways. Asked to stop on error, so the call
             # returning at all is what says the code was accepted rather than objected to.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c exit 3" }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = "$script:CmdPath /c exit 3" }
             $declaration = @{ $Parameter = 3 }
             $result = Uninstall-ADTApplication -Name $name -NameMatch Exact -PassThru -ErrorAction Stop @declaration
             $result.ExitCode | Should -Be 3
@@ -303,33 +220,33 @@ Describe 'Uninstall-ADTApplication' {
         It 'Surfaces a failure to start the uninstall program' {
             # An entry left behind by something that removed its own uninstaller, which is the state a
             # half-removed application leaves the registry in.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = "$([System.IO.Path]::Combine($TestDrive, 'no-such-uninstaller.exe')) /S" }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = "$([System.IO.Path]::Combine($TestDrive, 'no-such-uninstaller.exe')) /S" }
             { Uninstall-ADTApplication -Name $name -NameMatch Exact -ErrorAction Stop } | Should -Throw
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
         }
 
         It 'Leaves it alone when only Windows Installer products were asked for' {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact -ApplicationType MSI
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
         }
 
         It 'Says there is no product code when a Windows Installer entry carries none' {
             # A product code comes from the entry's own name, so an entry claiming Windows Installer under a
             # name that is not a GUID leaves nothing to hand to msiexec.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ UninstallString = Get-TestUninstallCommand -Name $name; WindowsInstaller = 1 }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ UninstallString = Get-ADTTestUninstallCommand -Name $name; WindowsInstaller = 1 }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('No ProductCode found') } -Times 1 -Exactly
         }
     }
 
     Context 'Removing an application that asks not to be removed' {
         AfterEach {
-            Remove-TestArpEntries
+            Remove-ADTTestApplicationEntries
         }
 
         It 'Leaves an application flagged <Flag> alone' -ForEach @(
@@ -339,20 +256,20 @@ Describe 'Uninstall-ADTApplication' {
             # The two flags are refused at different points, which is what the expected message records: a
             # NoRemove application is found and then skipped, where a SystemComponent one is never returned
             # by the search at all.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name; $Flag = 1 }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name; $Flag = 1 }
             Uninstall-ADTApplication -Name $name -NameMatch Exact
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains($Expected) } -Times 1 -Exactly
         }
 
         It 'Leaves an application flagged SystemComponent alone when handed one' {
             # The search hides these unless it is forced, so the only way to arrive holding one is to force
             # the search and then not the removal, which a caller filtering for itself would do.
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name; SystemComponent = 1 }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name; SystemComponent = 1 }
             Get-ADTApplication -Name $name -NameMatch Exact -Force | Uninstall-ADTApplication
-            Test-TestArpEntry -Name $name | Should -BeTrue
+            Test-ADTTestApplicationEntry -Name $name | Should -BeTrue
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('flagged as [SystemComponent]') } -Times 1 -Exactly
         }
 
@@ -360,10 +277,10 @@ Describe 'Uninstall-ADTApplication' {
             @{ Flag = 'NoRemove' }
             @{ Flag = 'SystemComponent' }
         ) {
-            $name = New-TestApplicationName
-            New-TestArpEntry -Name $name -Values @{ QuietUninstallString = Get-TestUninstallCommand -Name $name; $Flag = 1 }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name; $Flag = 1 }
             Uninstall-ADTApplication -Name $name -NameMatch Exact -Force
-            Test-TestArpEntry -Name $name | Should -BeFalse
+            Test-ADTTestApplicationEntry -Name $name | Should -BeFalse
         }
     }
 
