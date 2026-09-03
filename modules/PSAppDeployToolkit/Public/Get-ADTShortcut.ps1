@@ -43,7 +43,7 @@ function Get-ADTShortcut
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Url shortcuts only support TargetPath, IconLocation, and IconIndex.
+        Url shortcuts support TargetPath, IconLocation, IconIndex, Description and Hotkey. Other parameters are ignored: an internet shortcut has nowhere to keep them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

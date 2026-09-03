@@ -50,9 +50,7 @@ namespace PSADT.ShortcutManagement
             FilePathValue = (internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.")).FullName;
             Url = internetShortcut.Url;
             Name = internetShortcut.Name;
-            WorkingDirectory = internetShortcut.WorkingDirectory;
             Hotkey = internetShortcut.Hotkey;
-            ShowCommand = internetShortcut.ShowCommand;
             IconFile = internetShortcut.IconFile;
             IconIndex = internetShortcut.IconIndex;
             WhatsNew = internetShortcut.WhatsNew;
@@ -86,19 +84,9 @@ namespace PSADT.ShortcutManagement
         public string? Name { get; }
 
         /// <summary>
-        /// Gets the working directory for the internet shortcut.
-        /// </summary>
-        public string? WorkingDirectory { get; }
-
-        /// <summary>
         /// Gets the hotkey for the internet shortcut.
         /// </summary>
         public string? Hotkey { get; }
-
-        /// <summary>
-        /// Gets the show command value for the internet shortcut.
-        /// </summary>
-        public ShortcutWindowStyle? ShowCommand { get; }
 
         /// <summary>
         /// Gets the icon file path for the internet shortcut.

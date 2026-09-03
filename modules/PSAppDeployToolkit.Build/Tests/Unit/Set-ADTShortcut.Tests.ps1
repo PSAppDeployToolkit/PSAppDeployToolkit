@@ -165,13 +165,12 @@ Describe 'Set-ADTShortcut' {
                     '[InternetShortcut]'
                     'URL=https://psappdeploytoolkit.com/'
                 ))
-            Set-ADTShortcut -LiteralPath $script:UrlPath -Description 'A description' -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 3 -WindowStyle Maximized -Hotkey 'CTRL+SHIFT+G'
+            Set-ADTShortcut -LiteralPath $script:UrlPath -Description 'A description' -IconLocation "$([System.Environment]::SystemDirectory)\shell32.dll" -IconIndex 3 -Hotkey 'CTRL+SHIFT+G'
         }
 
         It 'Empties -<Property>' -ForEach @(
             @{ Property = 'Description'; Reported = 'Description' }
             @{ Property = 'IconLocation'; Reported = 'IconFile' }
-            @{ Property = 'WindowStyle'; Reported = 'ShowCommand' }
             @{ Property = 'Hotkey'; Reported = 'Hotkey' }
         ) {
             (Get-ADTShortcut -LiteralPath $script:UrlPath).$Reported | Should -Not -BeNullOrEmpty
@@ -189,11 +188,19 @@ Describe 'Set-ADTShortcut' {
             (Get-ADTShortcut -LiteralPath $script:UrlPath).IconIndex | Should -Be 0
         }
 
-        It 'Records a working directory' {
-            Set-ADTShortcut -LiteralPath $script:UrlPath -WorkingDirectory ([System.Environment]::SystemDirectory)
-            (Get-ADTShortcut -LiteralPath $script:UrlPath).WorkingDirectory | Should -BeExactly ([System.Environment]::SystemDirectory)
-            Set-ADTShortcut -LiteralPath $script:UrlPath -Clear WorkingDirectory
-            (Get-ADTShortcut -LiteralPath $script:UrlPath).WorkingDirectory | Should -BeNullOrEmpty
+        It 'Writes no <Key> for a property it has nowhere to put' -ForEach @(
+            @{ Splat = @{ WorkingDirectory = 'C:\Windows\System32' }; Key = 'WorkingDirectory' }
+            @{ Splat = @{ WindowStyle = 'Maximized' }; Key = 'ShowCommand' }
+        ) {
+            # Nothing is launched from a directory, and the browser opens through the URL handler rather than
+            # from a window state the shortcut carries, so neither means anything here. Accepted and dropped
+            # the way arguments are, so a caller need not know which extension they are working with, rather
+            # than written into a key the shell will then refuse to read back.
+            $splat = $Splat
+            Set-ADTShortcut -LiteralPath $script:UrlPath @splat
+            [System.IO.File]::ReadAllLines($script:UrlPath) | Should -Not -Contain "$Key="
+            [System.IO.File]::ReadAllText($script:UrlPath) | Should -Not -BeLike "*$Key=*"
+            (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
         }
     }
 

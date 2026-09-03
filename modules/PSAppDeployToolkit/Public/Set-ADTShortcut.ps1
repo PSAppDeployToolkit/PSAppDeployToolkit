@@ -85,6 +85,8 @@ function Set-ADTShortcut
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        Url shortcuts support TargetPath, IconLocation, IconIndex, Description and Hotkey. Other parameters are ignored: an internet shortcut has nowhere to keep them.
+
         This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
@@ -291,26 +293,6 @@ function Set-ADTShortcut
                         elseif ($Clear -contains 'Description')
                         {
                             $shortcut.Description = [System.Management.Automation.Language.NullString]::Value
-                        }
-
-                        # WorkingDirectory.
-                        if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
-                        {
-                            $shortcut.WorkingDirectory = $WorkingDirectory
-                        }
-                        elseif ($Clear -contains 'WorkingDirectory')
-                        {
-                            $shortcut.WorkingDirectory = [System.Management.Automation.Language.NullString]::Value
-                        }
-
-                        # WindowStyle.
-                        if ($PSBoundParameters.ContainsKey('WindowStyle'))
-                        {
-                            $shortcut.ShowCommand = $WindowStyle
-                        }
-                        elseif ($Clear -contains 'WindowStyle')
-                        {
-                            $shortcut.ShowCommand = $null
                         }
 
                         # Hotkey.

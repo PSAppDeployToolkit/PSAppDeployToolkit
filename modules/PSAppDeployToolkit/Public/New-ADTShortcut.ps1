@@ -72,7 +72,7 @@ function New-ADTShortcut
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
+        Url shortcuts support TargetPath, IconLocation, IconIndex, Description and Hotkey. Other parameters are ignored: an internet shortcut has nowhere to keep them.
 
         This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 

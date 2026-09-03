@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using PSADT.ShortcutManagement;
 using PSADT.Tests.TestHelpers;
-using PSADT.Utilities;
 using Xunit;
 
 namespace PSADT.Tests.ShortcutManagement
@@ -186,155 +184,6 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
-        /// Verifies that the setter puts the show command into the saved file, in the form the shell reads.
-        /// </summary>
-        /// <remarks>
-        /// Asserted against the file rather than through the getter, which answers from what the instance
-        /// remembers and so would pass whether or not anything was written. The file is plain text in an
-        /// INI-like layout, so the stored value can be checked directly.
-        /// </remarks>
-        /// <param name="showCommand">The show command to write.</param>
-        /// <param name="expectedValue">The number the shell should store for it.</param>
-        [Theory]
-        [InlineData(ShortcutWindowStyle.Normal, 1)]
-        [InlineData(ShortcutWindowStyle.Maximized, 3)]
-        [InlineData(ShortcutWindowStyle.MinimizedNoActivate, 7)]
-        public void Save_WritesTheShowCommandToTheFile(ShortcutWindowStyle showCommand, int expectedValue)
-        {
-            StaThread.Run(() =>
-            {
-                // Arrange
-                using TempDirectory temp = new();
-                string shortcutPath = temp.GetPath("written.url");
-
-                // Act
-                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
-                {
-                    created.ShowCommand = showCommand;
-                    created.Save(shortcutPath);
-                }
-
-                // Assert
-                Assert.Contains(
-                    $"ShowCommand={expectedValue.ToString(CultureInfo.InvariantCulture)}",
-                    File.ReadAllText(shortcutPath),
-                    StringComparison.Ordinal);
-            });
-        }
-
-        /// <summary>
-        /// Verifies that the show command survives a save and load.
-        /// </summary>
-        /// <remarks>
-        /// The shell writes this into the file but will not hand it back through the property storage it
-        /// was written to, so the value is remembered on the instance and read back out of the file for a
-        /// shortcut that was loaded. Both routes are covered here: the value is read on the instance that
-        /// set it, and again on one loaded from the saved file.
-        /// </remarks>
-        /// <param name="showCommand">The show command to write and read back.</param>
-        [Theory]
-        [InlineData(ShortcutWindowStyle.Normal)]
-        [InlineData(ShortcutWindowStyle.Maximized)]
-        [InlineData(ShortcutWindowStyle.MinimizedNoActivate)]
-        public void Save_RoundTripsTheShowCommand(ShortcutWindowStyle showCommand)
-        {
-            StaThread.Run(() =>
-            {
-                // Arrange
-                using TempDirectory temp = new();
-                string shortcutPath = temp.GetPath("showcmd.url");
-
-                // Act
-                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
-                {
-                    created.ShowCommand = showCommand;
-
-                    // Assert: readable on the instance that set it, before anything is saved
-                    Assert.Equal(showCommand, created.ShowCommand);
-                    created.Save(shortcutPath);
-                }
-
-                // Assert: and on one loaded back from the saved file
-                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
-                Assert.Equal(showCommand, loaded.ShowCommand);
-            });
-        }
-
-        /// <summary>
-        /// Verifies that the working directory survives a save and load.
-        /// </summary>
-        /// <remarks>
-        /// The shell will not hand this back through the property storage it was written to, exactly as it
-        /// will not for the show command, so it is remembered on the instance and read back out of the file
-        /// for a shortcut that was loaded. Both routes are covered here.
-        /// </remarks>
-        [Fact]
-        public void Save_RoundTripsTheWorkingDirectory()
-        {
-            StaThread.Run(static () =>
-            {
-                // Arrange
-                using TempDirectory temp = new();
-                string shortcutPath = temp.GetPath("workingdir.url");
-                string workingDirectory = Environment.SystemDirectory;
-
-                // Act
-                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
-                {
-                    created.WorkingDirectory = workingDirectory;
-
-                    // Assert: readable on the instance that set it, before anything is saved
-                    Assert.Equal(workingDirectory, created.WorkingDirectory);
-                    created.Save(shortcutPath);
-                }
-
-                // Assert: written into the file, and readable on one loaded back from it
-                Assert.Contains($"WorkingDirectory={workingDirectory}", File.ReadAllText(shortcutPath), StringComparison.Ordinal);
-                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
-                Assert.Equal(workingDirectory, loaded.WorkingDirectory);
-            });
-        }
-
-        /// <summary>
-        /// Verifies that the show command is read out of the file once, as the shortcut is loaded, rather
-        /// than on every read of the property.
-        /// </summary>
-        /// <remarks>
-        /// Demonstrated by changing the file underneath a loaded shortcut and asking again: an instance
-        /// that re-read the file would report the new value, and one that read it at load reports what it
-        /// was opened with. The behaviour is the same either way for any caller doing something sensible
-        /// - this pins which of the two is happening, so that reading it stops costing a call into the
-        /// shell and a read of the file every time somebody asks.
-        /// </remarks>
-        [Fact]
-        public void ShowCommand_IsReadFromTheFileOnceAtLoad()
-        {
-            StaThread.Run(static () =>
-            {
-                // Arrange: a saved shortcut holding a show command
-                using TempDirectory temp = new();
-                string shortcutPath = temp.GetPath("cached.url");
-                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
-                {
-                    created.ShowCommand = ShortcutWindowStyle.Maximized;
-                    created.Save(shortcutPath);
-                }
-
-                // Act
-                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
-                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
-                IniUtilities.WriteSectionKeyValue(shortcutPath, "InternetShortcut", "ShowCommand", ((int)ShortcutWindowStyle.MinimizedNoActivate).ToString(CultureInfo.InvariantCulture));
-
-                // Assert: the file now says otherwise, and the loaded shortcut still reports what it opened with
-                Assert.Equal(
-                    ((int)ShortcutWindowStyle.MinimizedNoActivate).ToString(CultureInfo.InvariantCulture),
-                    IniUtilities.GetSectionKeyValue(shortcutPath, "InternetShortcut", "ShowCommand"),
-                    StringComparer.Ordinal);
-                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
-            });
-        }
-
-        /// <summary>
         /// Verifies that a shortcut opened read-only says it cannot be saved, and one opened for writing
         /// says it can.
         /// </summary>
@@ -393,40 +242,6 @@ namespace PSADT.Tests.ShortcutManagement
                 // Assert
                 using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
                 Assert.True(loaded.Roamed);
-            });
-        }
-
-        /// <summary>
-        /// Verifies that clearing the show command reports it as cleared, rather than falling back to
-        /// the value still sitting in the file.
-        /// </summary>
-        /// <remarks>
-        /// The value has to be read back out of the file for a shortcut that was loaded, because the
-        /// shell will not report it. That makes "never set" and "set to nothing" look alike unless they
-        /// are told apart deliberately - and getting it wrong means a caller clears the window style,
-        /// reads it back, and is handed the value it just cleared.
-        /// </remarks>
-        [Fact]
-        public void ShowCommand_ClearingItIsNotOverriddenByTheSavedFile()
-        {
-            StaThread.Run(static () =>
-            {
-                // Arrange: a saved shortcut that holds a show command
-                using TempDirectory temp = new();
-                string shortcutPath = temp.GetPath("cleared.url");
-                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
-                {
-                    created.ShowCommand = ShortcutWindowStyle.Maximized;
-                    created.Save(shortcutPath);
-                }
-
-                // Act
-                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath, Interop.STGM.STGM_READWRITE);
-                Assert.Equal(ShortcutWindowStyle.Maximized, loaded.ShowCommand);
-                loaded.ShowCommand = null;
-
-                // Assert
-                Assert.Null(loaded.ShowCommand);
             });
         }
 
