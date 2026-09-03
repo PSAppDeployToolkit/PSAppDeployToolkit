@@ -25,7 +25,10 @@ Describe 'Get-ADTEnvironmentTable' {
         }
 
         It 'Describes this machine rather than a template' {
-            $script:Environment.envComputerName | Should -BeExactly ([System.Net.Dns]::GetHostName().ToUpperInvariant())
+            # Compared without regard to case. What identifies the machine is the name, not how it is cased,
+            # and the two do not always agree on that: a build agent reports its host name in lower case
+            # where a workstation reports it upper.
+            $script:Environment.envComputerName | Should -Be ([System.Net.Dns]::GetHostName())
             $script:Environment.envUserName | Should -BeExactly $env:USERNAME
         }
 

@@ -55,7 +55,11 @@ Describe 'Get-ADTPendingReboot' {
             }
             else
             {
-                $null -ne (Get-ItemProperty -LiteralPath $RegistryPath -Name $ValueName -ErrorAction Ignore).$ValueName
+                # Read into a variable first. A machine with nothing pending has no such value, and taking
+                # the property straight off what comes back then reads it off nothing at all. Named to avoid
+                # $Property, which this test's own data already binds and which names differ from only by case.
+                $registryValue = Get-ItemProperty -LiteralPath $RegistryPath -Name $ValueName -ErrorAction Ignore
+                ($null -ne $registryValue) -and ($null -ne $registryValue.$ValueName)
             }
             $script:Reboot.$Property | Should -Be $expected
         }
