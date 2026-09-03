@@ -327,10 +327,6 @@ function Uninstall-ADTApplication
                     }
                     try
                     {
-                        if ($sampParams.ContainsKey('FilePath'))
-                        {
-                            $null = $sampParams.Remove('FilePath')
-                        }
                         $removeApplication | Start-ADTMsiProcess @sampParams -ErrorAction $OriginalErrorAction
                     }
                     catch
