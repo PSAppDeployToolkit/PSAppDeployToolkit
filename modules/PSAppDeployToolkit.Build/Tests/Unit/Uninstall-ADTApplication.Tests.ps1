@@ -201,9 +201,7 @@ Describe 'Uninstall-ADTApplication' {
             Test-TestArpEntry -Name $name | Should -BeTrue
         }
 
-        It 'Takes the plain uninstall string on request' -Skip {
-            # Skipped: -ForceUninstallString is forwarded to Get-ADTApplication, which has no such
-            # parameter, so asking for it alongside a search throws instead of removing anything.
+        It 'Takes the plain uninstall string on request' {
             $name = New-TestApplicationName
             New-TestArpEntry -Name $name -Values @{ QuietUninstallString = $script:NoOpCommand; UninstallString = Get-TestUninstallCommand -Name $name }
             Uninstall-ADTApplication -Name $name -NameMatch Exact -ForceUninstallString

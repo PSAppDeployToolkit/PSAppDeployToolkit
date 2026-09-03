@@ -253,7 +253,7 @@ function Uninstall-ADTApplication
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes, IgnoreExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ForceUninstallString, ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes, IgnoreExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
             if (($installedApps = Get-ADTApplication @gaiaParams))
             {
                 $InstalledApplication = $installedApps
@@ -261,7 +261,7 @@ function Uninstall-ADTApplication
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, WaitForChildProcesses, KillChildProcessesWithParent
+        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, ForceUninstallString, WaitForChildProcesses, KillChildProcessesWithParent
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
