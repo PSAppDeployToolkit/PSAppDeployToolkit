@@ -335,7 +335,7 @@ namespace PSADT.ClientServer
                                                     // Start gracefully closing each open window.
                                                     foreach (WindowInfo window in windows)
                                                     {
-                                                        Process process = Process.GetProcessById(window.ParentProcessId);
+                                                        Process process = Process.GetProcessById((int)window.ParentProcessId);
                                                         await closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info).ConfigureAwait(false);
                                                         try
                                                         {
@@ -369,7 +369,7 @@ namespace PSADT.ClientServer
                                                         Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
                                                         while (true)
                                                         {
-                                                            if (!WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Any())
+                                                            if (!WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [(uint)process.Id], windowHandleFilter: [window.WindowHandle]).Any())
                                                             {
                                                                 await closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info).ConfigureAwait(false);
                                                                 break;

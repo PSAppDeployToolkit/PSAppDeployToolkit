@@ -28,7 +28,7 @@ namespace PSADT.Tests.WindowManagement
             Assert.Equal("A window title", window.WindowTitle);
             Assert.Equal(0x1234, window.WindowHandle);
             Assert.Equal("notepad", window.ParentProcess);
-            Assert.Equal(4321, window.ParentProcessId);
+            Assert.Equal(4321u, window.ParentProcessId);
             Assert.Equal(0x5678, window.ParentProcessMainWindowHandle);
         }
 

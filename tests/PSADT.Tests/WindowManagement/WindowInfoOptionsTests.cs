@@ -62,7 +62,7 @@ namespace PSADT.Tests.WindowManagement
         [Fact]
         public void Constructor_RejectsAnEmptyParentProcessIdFilter()
         {
-            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => new WindowInfoOptions(windowTitleRegex: null, windowHandleFilter: null, parentProcessFilter: null, parentProcessIdFilter: new ReadOnlyCollection<int>([]), parentProcessMainWindowHandleFilter: null));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(static () => new WindowInfoOptions(windowTitleRegex: null, windowHandleFilter: null, parentProcessFilter: null, parentProcessIdFilter: new ReadOnlyCollection<uint>([]), parentProcessMainWindowHandleFilter: null));
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace PSADT.Tests.WindowManagement
         public void Constructor_CarriesTheProcessFiltersThrough()
         {
             // Act
-            WindowInfoOptions options = new(windowTitleRegex: null, windowHandleFilter: null, parentProcessFilter: new ReadOnlyCollection<string>(["notepad", "wordpad"]), parentProcessIdFilter: new ReadOnlyCollection<int>([100, 200]), parentProcessMainWindowHandleFilter: null);
+            WindowInfoOptions options = new(windowTitleRegex: null, windowHandleFilter: null, parentProcessFilter: new ReadOnlyCollection<string>(["notepad", "wordpad"]), parentProcessIdFilter: new ReadOnlyCollection<uint>([100, 200]), parentProcessMainWindowHandleFilter: null);
 
             // Assert
             Assert.Equal(["notepad", "wordpad"], options.ParentProcessFilter);
@@ -173,7 +173,7 @@ namespace PSADT.Tests.WindowManagement
         public void DataContract_RoundTripsEveryFilter()
         {
             // Arrange
-            WindowInfoOptions original = new(windowTitleRegex: "^Untitled", windowHandleFilter: new ReadOnlyCollection<nint>([1, -1, int.MaxValue]), parentProcessFilter: new ReadOnlyCollection<string>(["notepad"]), parentProcessIdFilter: new ReadOnlyCollection<int>([100]), parentProcessMainWindowHandleFilter: new ReadOnlyCollection<nint>([2, int.MinValue]));
+            WindowInfoOptions original = new(windowTitleRegex: "^Untitled", windowHandleFilter: new ReadOnlyCollection<nint>([1, -1, int.MaxValue]), parentProcessFilter: new ReadOnlyCollection<string>(["notepad"]), parentProcessIdFilter: new ReadOnlyCollection<uint>([100]), parentProcessMainWindowHandleFilter: new ReadOnlyCollection<nint>([2, int.MinValue]));
 
             // The declared member types are interfaces and the stored ones are read-only collections, so
             // the concrete types have to be named. PSADT.ClientServer.Server names these same ones in the
@@ -181,7 +181,7 @@ namespace PSADT.Tests.WindowManagement
             DataContractSerializer serializer = new(typeof(WindowInfoOptions), [
                 typeof(ReadOnlyCollection<long>),
                 typeof(ReadOnlyCollection<string>),
-                typeof(ReadOnlyCollection<int>),
+                typeof(ReadOnlyCollection<uint>),
             ]);
 
             // Act

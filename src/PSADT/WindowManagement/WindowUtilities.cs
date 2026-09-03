@@ -54,14 +54,14 @@ namespace PSADT.WindowManagement
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
-        internal static IEnumerable<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, string? windowTitleRegex = null, IReadOnlyList<nint>? windowHandleFilter = null)
+        internal static IEnumerable<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<uint>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, string? windowTitleRegex = null, IReadOnlyList<nint>? windowHandleFilter = null)
         {
             // Internal worker method to properly validate inputs and retrieve window information.
             IEnumerable<WindowInfo> GetProcessWindowInfoImpl()
             {
                 // Get the list of processes based on the provided filters and start finding applicable windows.
                 Regex? windowTitleRegexObject = windowTitleRegex is not null ? new(windowTitleRegex, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
-                IReadOnlyList<Process> processes = parentProcesses ?? [.. Process.GetProcesses().Where(p => p.MainWindowHandle != default && parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)) is not false && parentProcessIdFilter?.Contains(p.Id) is not false && parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle) is not false)];
+                IReadOnlyList<Process> processes = parentProcesses ?? [.. Process.GetProcesses().Where(p => p.MainWindowHandle != default && parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)) is not false && parentProcessIdFilter?.Contains((uint)p.Id) is not false && parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle) is not false)];
                 foreach (HWND windowHandle in windowHandleFilter is not null ? WindowTools.EnumWindows().Where(w => windowHandleFilter.Contains(w) && NativeMethods.IsWindowVisible(w)) : WindowTools.EnumWindows().Where(static w => NativeMethods.IsWindowVisible(w)))
                 {
                     // Return early if we can't find a process for this window.
@@ -85,7 +85,7 @@ namespace PSADT.WindowManagement
                     {
                         continue;
                     }
-                    yield return new(windowTitle, windowHandle, parentProcess.ProcessName, parentProcess.Id, parentProcess.MainWindowHandle);
+                    yield return new(windowTitle, windowHandle, parentProcess.ProcessName, parentProcessId, parentProcess.MainWindowHandle);
                 }
             }
 

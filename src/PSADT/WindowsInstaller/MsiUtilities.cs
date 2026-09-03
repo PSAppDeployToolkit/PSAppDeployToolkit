@@ -32,7 +32,7 @@ namespace PSADT.WindowsInstaller
         {
             // Win32Exception takes a signed code, where the high half of the unsigned range is negative.
             string message = ExceptionUtilities.GetMessageForWin32Error((WIN32_ERROR)exitCode, disableSuffix: true);
-            return new(unchecked((int)exitCode), message.TrimEnd('.') + $" ({(WIN32_ERROR)exitCode}).");
+            return new(unchecked((int)exitCode), message.TrimEnd('.') + $" ({ExceptionUtilities.GetSymbolForWin32Error((WIN32_ERROR)exitCode)}).");
         }
 
         /// <summary>

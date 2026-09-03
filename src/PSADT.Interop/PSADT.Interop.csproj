@@ -60,6 +60,8 @@
       M:System.ArgumentOutOfRangeException.ThrowIfNotEqual`|
       M:System.ArgumentOutOfRangeException.ThrowIfZero`|
       M:System.Diagnostics.Process.WaitForExitAsync|
+      M:System.Enum.GetNames`|
+      M:System.Enum.GetValues`|
       M:System.Int32.TryParse(System.ReadOnlySpan{System.Char},System.IFormatProvider,|
       M:System.IO.Path.IsPathFullyQualified|
       M:System.IO.Path.Join|

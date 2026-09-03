@@ -210,9 +210,63 @@ namespace PSADT.Interop.Utilities
         /// <returns>A string containing the error message associated with the specified Windows error code.</returns>
         internal static string GetMessageForWin32Error(WIN32_ERROR win32Error, bool disableSuffix = false)
         {
-            string message = $"{new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.')}.{(!disableSuffix ? $" {$"(Exception from WIN32_ERROR: 0x{unchecked((int)win32Error):X8} ({win32Error}))"}" : null)}";
+            string message = $"{new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.')}.{(!disableSuffix ? $" {$"(Exception from WIN32_ERROR: 0x{unchecked((int)win32Error):X8} ({GetSymbolForWin32Error(win32Error)}))"}" : null)}";
             PInvoke.SetLastError(win32Error); return message;
         }
+
+        /// <summary>
+        /// Names a Windows error code, choosing for itself where several names share the one value.
+        /// </summary>
+        /// <remarks><see cref="Enum.ToString()"/> settles a value with more than one name by an internal lookup
+        /// whose answer differs between .NET Framework and .NET, so code 0 - which is ERROR_SUCCESS, NO_ERROR and
+        /// DNS_ERROR_RCODE_NO_ERROR all at once - names itself ERROR_SUCCESS under one and
+        /// DNS_ERROR_RCODE_NO_ERROR under the other. A deployment log reporting a successful install as
+        /// DNS_ERROR_RCODE_NO_ERROR is worse than unhelpful, and which one it says should not depend on the host,
+        /// so the choice is made here: the canonical winerror.h spelling wins, then the shortest name, then
+        /// alphabetical order.</remarks>
+        /// <param name="win32Error">The Windows error code to name.</param>
+        /// <returns>The name for the code, or its value where the enumeration has no name for it.</returns>
+        internal static string GetSymbolForWin32Error(WIN32_ERROR win32Error)
+        {
+            return Win32ErrorSymbols.Value.TryGetValue(win32Error, out string? symbol) ? symbol : win32Error.ToString();
+        }
+
+        /// <summary>
+        /// Reports whether one name for a Windows error code is to be preferred over another.
+        /// </summary>
+        /// <param name="candidate">The name being considered.</param>
+        /// <param name="incumbent">The name already chosen for the same value.</param>
+        /// <returns><see langword="true"/> when the candidate is to be preferred.</returns>
+        private static bool PreferWin32ErrorSymbol(string candidate, string incumbent)
+        {
+            // An ERROR_ prefix is winerror.h's own spelling; anything else is an alias a subsystem brought with it.
+            bool candidateCanonical = candidate.StartsWith("ERROR_", StringComparison.Ordinal);
+            return candidateCanonical != incumbent.StartsWith("ERROR_", StringComparison.Ordinal)
+                ? candidateCanonical
+                : candidate.Length != incumbent.Length
+                ? candidate.Length < incumbent.Length
+                : string.CompareOrdinal(candidate, incumbent) < 0;
+        }
+
+        /// <summary>
+        /// One name per Windows error code, built once and kept.
+        /// </summary>
+        /// <remarks>The enumeration carries several thousand names, so this is worth doing once rather than on
+        /// each error that goes past.</remarks>
+        private static readonly Lazy<IReadOnlyDictionary<WIN32_ERROR, string>> Win32ErrorSymbols = new(static () =>
+        {
+            Dictionary<WIN32_ERROR, string> symbols = [];
+            string[] names = Enum.GetNames<WIN32_ERROR>();
+            WIN32_ERROR[] values = Enum.GetValues<WIN32_ERROR>();
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (!symbols.TryGetValue(values[i], out string? incumbent) || PreferWin32ErrorSymbol(names[i], incumbent))
+                {
+                    symbols[values[i]] = names[i];
+                }
+            }
+            return symbols;
+        });
 
         /// <summary>
         /// Creates an exception instance that corresponds to the specified HRESULT value, optionally associating it

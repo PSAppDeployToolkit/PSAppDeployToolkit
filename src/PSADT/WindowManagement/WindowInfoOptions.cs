@@ -31,7 +31,7 @@ namespace PSADT.WindowManagement
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
-        public WindowInfoOptions(string? windowTitleRegex, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
+        public WindowInfoOptions(string? windowTitleRegex, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<uint>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
             if (windowTitleRegex is not null)
@@ -59,7 +59,7 @@ namespace PSADT.WindowManagement
             WindowTitleRegex = windowTitleRegex;
             WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new ValueList<long>([.. windowHandleFilter.Select(static h => (long)h)]) : null;
             ParentProcessFilterValues = parentProcessFilter is not null ? new ValueList<string>([.. parentProcessFilter]) : null;
-            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new ValueList<int>([.. parentProcessIdFilter]) : null;
+            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new ValueList<uint>([.. parentProcessIdFilter]) : null;
             ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new ValueList<long>([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
         }
 
@@ -95,7 +95,7 @@ namespace PSADT.WindowManagement
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<int>? ParentProcessIdFilter => ParentProcessIdFilterValues is not null ? new ReadOnlyCollection<int>([.. ParentProcessIdFilterValues]) : null;
+        public IReadOnlyList<uint>? ParentProcessIdFilter => ParentProcessIdFilterValues is not null ? new ReadOnlyCollection<uint>([.. ParentProcessIdFilterValues]) : null;
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.
@@ -128,6 +128,6 @@ namespace PSADT.WindowManagement
         /// The list recorded for <see cref="ParentProcessIdFilter"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<int>? ParentProcessIdFilterValues;
+        private readonly ValueList<uint>? ParentProcessIdFilterValues;
     }
 }
