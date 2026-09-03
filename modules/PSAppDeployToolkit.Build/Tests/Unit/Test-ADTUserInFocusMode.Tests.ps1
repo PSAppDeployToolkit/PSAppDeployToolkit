@@ -7,17 +7,24 @@
 }
 Describe 'Test-ADTUserInFocusMode' {
     Context 'Functionality' {
-        It 'Returns a boolean' {
-            Test-ADTUserInFocusMode | Should -BeOfType ([System.Boolean])
+        It 'Answers with a boolean, or with nothing where it cannot tell' {
+            # Nothing is one of its documented answers: the API is absent on older builds of Windows, and
+            # there is nobody to ask about when no user is logged on.
+            $focusMode = Test-ADTUserInFocusMode
+            if ($null -ne $focusMode)
+            {
+                $focusMode | Should -BeOfType ([System.Boolean])
+            }
         }
 
-        It 'Agrees with the toast notification mode it is derived from' {
-            # Focus assist surfaces through the same notification mode, so anything other than Unrestricted
-            # means the user has asked not to be interrupted. No mode at all is not the same thing: a session
-            # with nobody logged into it has none to report, and comparing that against Unrestricted alone
-            # would read an absent mode as an interruption to be avoided.
-            $mode = Get-ADTUserToastNotificationMode
-            Test-ADTUserInFocusMode | Should -Be (($null -ne $mode) -and ($mode -ne [Windows.UI.Notifications.ToastNotificationMode]::Unrestricted))
+        It 'Bypasses itself when nobody is logged on' {
+            # Focus mode belongs to a user, so with none there is nothing to report and nothing to ask the
+            # client about. Deliberately not compared against the toast notification mode, which reads as
+            # though it were the same thing and is not: the two are separate queries against separate
+            # facilities, which is why Test-ADTUserIsBusy takes each of them as its own signal.
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { }
+            Test-ADTUserInFocusMode | Should -BeNullOrEmpty
+            Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message.StartsWith('Bypassing') } -Times 1 -Exactly
         }
     }
 }
