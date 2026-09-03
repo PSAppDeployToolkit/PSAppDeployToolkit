@@ -265,7 +265,12 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the icon index for the Internet shortcut.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if attempting to set the IconIndex to null when IconFile is set.</exception>
+        /// <remarks>An index of none is a real state rather than one to be refused, and it is the state a
+        /// shortcut is left in by assigning <see cref="IconFile"/> on its own: the shell reports the index as empty
+        /// and records no index in the file. Clearing it therefore returns the shortcut to how it reads before an
+        /// index was ever asked for, and the shell falls back to the first icon in the file. This differs from a
+        /// shell link, where the path and the index are set by one call that has no way to express an absent index,
+        /// so clearing it there resolves to the first icon instead.</remarks>
         public int? IconIndex
         {
             get
@@ -276,10 +281,6 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                if (value is null && IconFile is not null)
-                {
-                    throw new InvalidOperationException("Cannot set IconIndex to null when IconFile is set.");
-                }
                 SetInt32Property(PID_IS.PID_IS_ICONINDEX, value);
             }
         }

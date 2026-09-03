@@ -183,9 +183,13 @@ Describe 'Set-ADTShortcut' {
             (Get-ADTShortcut -LiteralPath $script:UrlPath).Url | Should -BeExactly 'https://psappdeploytoolkit.com/'
         }
 
-        It 'Returns -IconIndex to the first icon' {
+        It 'Empties -IconIndex without disturbing the icon' {
+            # An internet shortcut holds no index until one is asked for, so clearing it reads as it did
+            # then rather than as the first icon. The icon file it indexes into is left where it is.
             Set-ADTShortcut -LiteralPath $script:UrlPath -Clear IconIndex
-            (Get-ADTShortcut -LiteralPath $script:UrlPath).IconIndex | Should -Be 0
+            $shortcut = Get-ADTShortcut -LiteralPath $script:UrlPath
+            $shortcut.IconIndex | Should -BeNullOrEmpty
+            $shortcut.IconFile | Should -BeExactly "$([System.Environment]::SystemDirectory)\shell32.dll"
         }
 
         It 'Writes no <Key> for a property it has nowhere to put' -ForEach @(

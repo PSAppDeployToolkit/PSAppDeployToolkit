@@ -165,21 +165,67 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
-        /// Verifies that clearing the index while a file is still set is refused, since the pair would then
-        /// be inconsistent.
+        /// Verifies that the index can be cleared while a file is still set, and that doing so leaves the
+        /// shortcut reading as it does before an index has ever been asked for.
+        /// </summary>
+        /// <remarks>
+        /// Assigning an icon file on its own leaves the index empty, so a file with no index is the state
+        /// the type produces by itself rather than one to be refused. Both are checked here, so that the
+        /// cleared shortcut is held to the same reading as the one that was never given an index.
+        /// </remarks>
+        [Fact]
+        public void IconIndex_CanBeClearedWhileAnIconFileIsSet()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange: a file on its own, which is where an index of none comes from
+                using InternetShortcutFile untouched = InternetShortcutFile.Create(Url);
+                untouched.IconFile = IconPath;
+                Assert.Null(untouched.IconIndex);
+
+                // Act
+                using InternetShortcutFile created = InternetShortcutFile.Create(Url);
+                created.IconFile = IconPath;
+                created.IconIndex = 1;
+                Assert.Equal(1, created.IconIndex);
+                created.IconIndex = null;
+
+                // Assert: cleared, with the file it indexes into left alone
+                Assert.Null(created.IconIndex);
+                Assert.Equal(IconPath, created.IconFile, ignoreCase: true);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that a cleared index stays cleared across a save and load, rather than the saved file
+        /// handing back the value that was cleared.
         /// </summary>
         [Fact]
-        public void IconIndex_RefusesToBeClearedWhileAnIconFileIsSet()
+        public void IconIndex_StaysClearedAcrossASave()
         {
             StaThread.Run(static () =>
             {
                 // Arrange
-                using InternetShortcutFile created = InternetShortcutFile.Create(Url);
-                created.IconFile = IconPath;
-                created.IconIndex = 1;
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("clearedindex.url");
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    created.IconFile = IconPath;
+                    created.IconIndex = 1;
+                    created.Save(shortcutPath);
+                }
 
-                // Act & Assert
-                _ = Assert.Throws<InvalidOperationException>(() => created.IconIndex = null);
+                // Act
+                using (InternetShortcutFile opened = InternetShortcutFile.Load(shortcutPath, Interop.STGM.STGM_READWRITE))
+                {
+                    Assert.Equal(1, opened.IconIndex);
+                    opened.IconIndex = null;
+                }
+
+                // Assert
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.Null(loaded.IconIndex);
+                Assert.Equal(IconPath, loaded.IconFile, ignoreCase: true);
             });
         }
 
