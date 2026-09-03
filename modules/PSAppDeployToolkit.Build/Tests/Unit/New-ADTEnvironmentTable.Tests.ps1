@@ -32,7 +32,7 @@ Describe 'New-ADTEnvironmentTable' {
         It 'Agrees with the table the module is already holding' {
             # Open-ADTSession builds its own, so a second call has to describe the same machine.
             $script:Environment.IsAdmin | Should -Be (Get-ADTEnvironmentTable).IsAdmin
-            $script:Environment.ComputerName | Should -BeExactly (Get-ADTEnvironmentTable).ComputerName
+            $script:Environment.EnvComputerName | Should -BeExactly (Get-ADTEnvironmentTable).EnvComputerName
         }
 
         It 'Presents its values as read-only' {

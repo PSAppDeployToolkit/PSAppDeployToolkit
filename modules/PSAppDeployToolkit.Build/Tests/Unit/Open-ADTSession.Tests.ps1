@@ -175,7 +175,11 @@ Describe 'Open-ADTSession' {
             try
             {
                 Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'FailedPostOpen' -DeployMode Silent -InformationAction SilentlyContinue -ErrorVariable openErrors 2>$null
-                $openErrors.Exception.Message | Should -Contain 'The callback failed deliberately.'
+
+                # The error variable also collects the intermediate objects each record passes through on its
+                # way out, and those carry no exception of their own, so the records are picked out first.
+                $records = @($openErrors | & { process { if ($_ -is [System.Management.Automation.ErrorRecord]) { return $_ } } })
+                $records.Exception.Message | Should -Contain 'The callback failed deliberately.'
                 Test-ADTSessionActive | Should -BeFalse
             }
             finally

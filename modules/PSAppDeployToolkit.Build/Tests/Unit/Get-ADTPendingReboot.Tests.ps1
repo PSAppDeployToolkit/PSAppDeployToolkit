@@ -21,10 +21,12 @@ Describe 'Get-ADTPendingReboot' {
         }
 
         It 'Reports a plausible last boot time' {
-            # Cross-checked against the tick count rather than CIM, so the two do not share a source.
+            # Cross-checked against CIM, which does not share a source: the function reads the boot time
+            # natively, through DeviceUtilities. The tick count would be the other independent answer, but
+            # .NET Framework has no 64-bit form of it and the 32-bit one wraps every seven weeks.
             $uptime = [System.DateTime]::Now - $script:Reboot.LastBootUpTime
             $uptime.TotalMilliseconds | Should -BeGreaterThan 0
-            [System.Math]::Abs($uptime.TotalMilliseconds - [System.Environment]::TickCount64) | Should -BeLessThan 300000
+            [System.Math]::Abs(($script:Reboot.LastBootUpTime - (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime).TotalSeconds) | Should -BeLessThan 60
         }
 
         It 'Derives <Property> from <RegistryPath>' -ForEach @(

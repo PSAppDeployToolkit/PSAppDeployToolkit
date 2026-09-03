@@ -16,7 +16,9 @@
         (
         )
 
-        return (Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath $script:Desktop -Filter '*.lnk').Name
+        # Expanded through the pipeline rather than read off the result, which is nothing at all once every
+        # shortcut has been removed - the very state most of these tests are asserting.
+        return Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath $script:Desktop -Filter '*.lnk' | Select-Object -ExpandProperty Name
     }
 }
 

@@ -1,13 +1,4 @@
-﻿BeforeDiscovery {
-    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
-
-    # Windows keeps a cached copy of every installed package under its Installer directory, which is the
-    # only MSI guaranteed to be on hand. Reading it needs elevation, so the tests skip without it rather
-    # than shipping an MSI into the repository purely to be read.
-    $script:HasMsi = (Test-ADTCallerElevated) -and !!(Get-ChildItem -LiteralPath "$env:SystemRoot\Installer" -Filter '*.msi' -ErrorAction Ignore | Select-Object -First 1)
-}
-
-BeforeAll {
+﻿BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
@@ -15,10 +6,13 @@ BeforeAll {
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 }
 
-Describe 'Get-ADTMsiTableProperty' -Skip:(!$script:HasMsi) {
+Describe 'Get-ADTMsiTableProperty' {
     Context 'Functionality' {
         BeforeAll {
-            $script:MsiPath = (Get-ChildItem -LiteralPath "$env:SystemRoot\Installer" -Filter '*.msi' | Select-Object -First 1).FullName
+            # The package committed for these tests, rather than whichever one the Windows Installer cache
+            # happens to hold. That one differs from machine to machine and needs elevation to read, so what
+            # was actually under test varied by host and skipped silently where it could not be reached.
+            $script:MsiPath = "$PSScriptRoot\..\Assets\PSAppDeployToolkit Test MSI.msi"
             $script:Properties = Get-ADTMsiTableProperty -LiteralPath $script:MsiPath
         }
 
@@ -42,11 +36,13 @@ Describe 'Get-ADTMsiTableProperty' -Skip:(!$script:HasMsi) {
         }
 
         It 'Reads the summary information instead with -GetSummaryInformation' {
-            # A different table entirely, so the switch has to change what comes back rather than adding to
-            # it. Revision number is where the summary stream keeps the package code.
+            # A different stream entirely, so the switch has to change what comes back rather than adding to
+            # it: a table read hands over a dictionary, where this hands over the summary object itself.
+            # Revision number is where the summary stream keeps the package code.
             $summary = Get-ADTMsiTableProperty -LiteralPath $script:MsiPath -GetSummaryInformation
-            $summary | Should -Not -BeNullOrEmpty
-            $summary.Keys | Should -Not -Contain 'ProductCode'
+            $summary | Should -BeOfType ([PSADT.WindowsInstaller.MsiSummaryInfo])
+            $summary.RevisionNumber | Should -Not -BeNullOrEmpty
+            ($summary | Get-Member -MemberType Property).Name | Should -Not -Contain 'ProductCode'
         }
 
         It 'Reads a named table' {

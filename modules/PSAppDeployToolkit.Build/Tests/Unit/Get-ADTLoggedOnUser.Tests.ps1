@@ -9,7 +9,9 @@
 Describe 'Get-ADTLoggedOnUser' {
     Context 'Functionality' {
         BeforeAll {
-            $script:Sessions = @(Get-ADTLoggedOnUser)
+            # Typed rather than wrapped, so that Count is the array's own and not an ETS member that
+            # StrictMode withholds from a lone session.
+            [PSADT.TerminalServices.SessionInfo[]]$script:Sessions = Get-ADTLoggedOnUser
         }
 
         It 'Returns session information' {
@@ -43,7 +45,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Gives every session a distinct id' {
-            ($script:Sessions.SessionId | Select-Object -Unique).Count | Should -Be $script:Sessions.Count
+            ($script:Sessions.SessionId | Select-Object -Unique | Measure-Object).Count | Should -Be $script:Sessions.Count
         }
     }
 }
