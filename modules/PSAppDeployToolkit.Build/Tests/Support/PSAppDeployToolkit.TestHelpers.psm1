@@ -540,7 +540,7 @@ function Get-ADTTestUninstallCommand
         The entry to remove, from `New-ADTTestApplicationName`.
 
     .PARAMETER Unqualified
-        Name the program without saying where it lives, for a test covering resolution against the search path. A command line written to the registry is not obliged to spell out the path.
+        Name the program without saying where it lives, for a test covering resolution against the system directory. A command line written to the registry is not obliged to spell out the path, and most do not.
 
     .INPUTS
         None

@@ -133,13 +133,11 @@ Describe 'Uninstall-ADTApplication' {
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('No UninstallString found') } -Times 1 -Exactly
         }
 
-        It 'Finds the uninstall program on the path when the string does not qualify it' -Skip {
-            # An uninstall string naming a bare executable is resolved against the path, as a command line
-            # written to the registry is not obliged to spell out where the program lives.
-            #
-            # Skipped: InstalledApplication resolves an unrooted name against the calling process's working
-            # directory, so the search-path fallback is handed a path under that directory and never finds
-            # anything. The fallback needs the executable's name, not the path built from it.
+        It 'Runs an uninstall program the string named without a path' {
+            # A command line written to the registry is not obliged to say where its program lives, and most
+            # of them do not: nearly every entry on a machine names msiexec and nothing more. Such a name is
+            # resolved against the system directory, which is where the process launcher finds it too, and
+            # not against wherever the caller happens to be sitting.
             $name = New-ADTTestApplicationName
             New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name -Unqualified }
             Uninstall-ADTApplication -Name $name -NameMatch Exact

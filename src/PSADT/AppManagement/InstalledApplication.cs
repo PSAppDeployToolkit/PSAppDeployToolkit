@@ -98,8 +98,8 @@ namespace PSADT.AppManagement
             Is64BitApplication = is64BitApplication;
             if (UninstallString is not null)
             {
-                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
-                UninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString); string program = argumentList[0];
+                UninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
                 if (argumentList.Count > 1)
                 {
                     UninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
@@ -107,8 +107,8 @@ namespace PSADT.AppManagement
             }
             if (QuietUninstallString is not null)
             {
-                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
-                QuietUninstallStringFilePathValue = new FileInfo(argumentList[0]).FullName;
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString); string program = argumentList[0];
+                QuietUninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
                 if (argumentList.Count > 1)
                 {
                     QuietUninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
@@ -179,7 +179,11 @@ namespace PSADT.AppManagement
         /// </summary>
         /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
         /// equality, so holding one directly would make this record compare by reference and two descriptions of
-        /// the same application would never match.</remarks>
+        /// the same application would never match.
+        /// <para>A program the uninstall string names without a path is resolved against the system directory,
+        /// which is where such an entry resolves in practice: it is a step in the process launcher's own search
+        /// order, so a registry value of nothing but "MsiExec.exe" starts msiexec wherever the caller happens to
+        /// be sitting.</para></remarks>
         public FileInfo? UninstallStringFilePath => UninstallStringFilePathValue is string uninstallStringFilePath ? new(uninstallStringFilePath) : null;
 
         /// <summary>
@@ -198,6 +202,7 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
+        /// <remarks>Resolved the same way as <see cref="UninstallStringFilePath"/>.</remarks>
         public FileInfo? QuietUninstallStringFilePath => QuietUninstallStringFilePathValue is string quietUninstallStringFilePath ? new(quietUninstallStringFilePath) : null;
 
         /// <summary>
