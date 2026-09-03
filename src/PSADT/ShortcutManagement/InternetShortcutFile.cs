@@ -272,7 +272,13 @@ namespace PSADT.ShortcutManagement
         /// this a caller would set a window style, save, load, and be told there was none. <para> The shell is still
         /// asked first. It answers with nothing on every release this has been tried against, but that is its
         /// behaviour rather than a rule, and if a future one starts reporting the value then that is the
-        /// authoritative answer and it wins. </para></remarks>
+        /// authoritative answer and it wins. </para><para> Reading the file is not for want of somewhere better to
+        /// ask. Of the properties in FMTID_Intshcut, this and the working directory are the only two the shell will
+        /// not report back, and it refuses them even for a file that plainly holds them; every other property in
+        /// the same set reads back through the same call. An internet shortcut also answers to `IShellLinkW`, and
+        /// `GetShowCmd` and `GetWorkingDirectory` there report nothing for it either, while their setters write to
+        /// the file the same way. Both of the shell's own surfaces will write these two and neither will read them.
+        /// </para></remarks>
         public ShortcutWindowStyle? ShowCommand
         {
             get

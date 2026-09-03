@@ -178,6 +178,39 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that clearing an icon location is carried into the saved file, and not just into the
+        /// link that is open. Saving and loading is the whole point of the test: clearing it reads back as
+        /// gone either way, and it is only the file that tells you whether the clearing survived.
+        /// </summary>
+        [Fact]
+        public void IconLocation_StaysClearedAcrossASave()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("clearedicon.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.IconLocation = new FileInfo(TargetPath);
+                created.IconIndex = 2;
+                created.Save(linkPath);
+            }
+
+            // Act
+            using (ShellLinkFile opened = ShellLinkFile.Load(linkPath, Interop.STGM.STGM_READWRITE))
+            {
+                opened.IconLocation = null;
+                opened.IconIndex = null;
+                opened.Save();
+            }
+
+            // Assert
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            Assert.False(loaded.HasIconLocation);
+            Assert.Null(loaded.IconLocation);
+            Assert.Null(loaded.IconIndex);
+        }
+
+        /// <summary>
         /// Verifies that the hotkey survives a save and load through its string form, which is the only
         /// way this type exposes it and therefore the only way it can be set.
         /// </summary>

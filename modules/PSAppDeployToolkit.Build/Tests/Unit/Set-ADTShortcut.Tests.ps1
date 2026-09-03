@@ -149,10 +149,7 @@ Describe 'Set-ADTShortcut' {
             $shortcut.TargetPath | Should -Be "$([System.Environment]::SystemDirectory)\cmd.exe"
         }
 
-        # Skipped until the icon location is reported as gone once it has been cleared. The shortcut itself is
-        # correct - the flag that says it carries an icon location is cleared - but the shell reports the old
-        # path back for as long as it is asked, and the second assignment then writes it out again.
-        It 'Empties -IconLocation' -Skip {
+        It 'Empties -IconLocation' {
             Set-ADTShortcut -LiteralPath $script:LinkPath -Clear IconLocation
             $shortcut = Get-ADTShortcut -LiteralPath $script:LinkPath
             $shortcut.HasIconLocation | Should -BeFalse

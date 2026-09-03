@@ -371,6 +371,11 @@ namespace PSADT.ShortcutManagement
         /// Gets or sets the icon location for the shortcut.
         /// </summary>
         /// <value>The path to the file containing the icon for the shortcut.</value>
+        /// <remarks>Cleared by handing the shell an empty location rather than none. A null location does clear
+        /// what the link reports while it is open, but the clearing is not carried into the saved file: the old
+        /// path is written back out, so a link cleared and saved reads as though it had never been touched. An
+        /// empty location clears it both in the open link and in the file. `IShellLinkW::SetIconLocation` is not
+        /// documented to accept a null path, which is the underlying reason not to pass one.</remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public FileInfo? IconLocation
         {
@@ -386,7 +391,7 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(value?.FullName, IconIndex ?? 0);
+                _shellLink.SetIconLocation(value?.FullName ?? string.Empty, IconIndex ?? 0);
             }
         }
 
@@ -394,6 +399,8 @@ namespace PSADT.ShortcutManagement
         /// Gets or sets the icon index within the icon location file.
         /// </summary>
         /// <value>The zero-based index of the icon within the file specified by <see cref="IconLocation"/>.</value>
+        /// <remarks>An index means nothing without a file for it to index into, so a link carrying no icon location
+        /// has none. See the remarks on <see cref="IconLocation"/>.</remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public int? IconIndex
         {
@@ -407,7 +414,7 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(IconLocation?.FullName, value ?? 0);
+                _shellLink.SetIconLocation(IconLocation?.FullName ?? string.Empty, value ?? 0);
             }
         }
 
@@ -544,7 +551,10 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets a value indicating whether the shortcut has an icon location.
         /// </summary>
-        /// <remarks>This flag is automatically set when <see cref="IconLocation"/> is assigned.</remarks>
+        /// <remarks>Belongs to the link's saved data rather than to the open link, so it answers for what was
+        /// loaded and not for what has been assigned since: it reads false on a link just given an icon location
+        /// and true on one loaded from a file that carries one. Read <see cref="IconLocation"/> to learn whether a
+        /// link has an icon; this reports only what its file recorded.</remarks>
         public bool HasIconLocation => GetFlag(SHELL_LINK_DATA_FLAGS.SLDF_HAS_ICONLOCATION);
 
         /// <summary>
