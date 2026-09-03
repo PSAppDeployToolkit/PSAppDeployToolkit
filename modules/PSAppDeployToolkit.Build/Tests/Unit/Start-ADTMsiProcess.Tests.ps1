@@ -31,10 +31,9 @@ BeforeAll {
     # The package is 32-bit, so its key lands in the WOW6432Node view of the registry.
     $script:ProductKey = 'HKLM:\SOFTWARE\WOW6432Node\PSAppDeployToolkit TEST Reg'
 
-    # Noted so it can be put back as it was. The package creates this key with a Registry row of '+', which
-    # by design leaves it behind when the product is removed, so installing here would otherwise add a key
-    # to the machine that nothing takes away again.
-    $script:ProductKeyExisted = Test-Path -LiteralPath $script:ProductKey
+    # The package creates this key with a Registry row of '+', which by design leaves it behind when the
+    # product is removed, so installing here would otherwise add a key to the machine that nothing takes
+    # away again.
 
     function Test-ProductInstalled
     {
@@ -100,10 +99,12 @@ BeforeAll {
 }
 
 AfterAll {
-    # Whatever was installed here is removed, and the key the package leaves behind goes with it unless the
-    # machine already had one, so the run finishes with the machine as it started.
+    # Whatever was installed here is removed, and the key the package leaves behind goes with it, so the
+    # run finishes with the machine as it started. Removed whether or not it was already there, as nothing
+    # but this package ever creates it: sparing one that pre-existed meant a run which once failed to clean
+    # up kept the key for good, and every run after it read the leftover as the machine's own.
     Remove-TestProduct
-    if (!$script:ProductKeyExisted -and (Test-Path -LiteralPath $script:ProductKey))
+    if (Test-Path -LiteralPath $script:ProductKey)
     {
         Remove-Item -LiteralPath $script:ProductKey -Recurse -Force
     }
