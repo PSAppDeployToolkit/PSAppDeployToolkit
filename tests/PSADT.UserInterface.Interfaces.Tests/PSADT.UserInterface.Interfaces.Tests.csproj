@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Single-targeted where the other test projects are not: the project under test is net472 only,
+    because it is WPF and Windows Forms. Adding these tests to PSADT.UserInterface.Tests, which
+    multi-targets, would leave half the suite existing on one framework and not the other.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>PSADT.UserInterface.Interfaces.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
+  </ItemGroup>
+
+  <!--
+    WPF and Windows Forms both have process-global, one-shot initialisation, and this assembly stands
+    up a single dispatcher that every dialog is built on. Parallel collections would race that setup,
+    so both levels of parallelism are turned off in xunit.runner.json, which has to reach the output
+    directory to take effect.
+  -->
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

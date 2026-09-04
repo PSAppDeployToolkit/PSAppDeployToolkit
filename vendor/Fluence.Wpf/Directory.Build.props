@@ -1,0 +1,142 @@
+﻿<Project>
+  <!-- Common properties for all Fluence.Wpf projects -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Platforms>AnyCPU</Platforms>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <EmbedAllSources>false</EmbedAllSources>
+    <EmbedUntrackedSources>false</EmbedUntrackedSources>
+    <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
+  </PropertyGroup>
+
+  <!--
+    Restore writes a packages.lock.json beside each project, pinning the exact resolved version and content
+    hash of every dependency, transitive ones included. Several entries in Directory.Packages.props can
+    resolve to more than one version over time, so without a lock file the restored graph can shift with no
+    change to this repository. Commit the updated lock files alongside whatever changed them.
+
+    In CI, RestoreLockedMode makes restore fail with NU1004 instead of quietly rewriting the lock file, so
+    a dependency change nobody committed cannot ride along in a build.
+
+    NuGet writes lock files with CRLF on Windows. This repository mandates LF, so normalise regenerated
+    lock files before committing them.
+  -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(GITHUB_ACTIONS)' == 'true'">true</RestoreLockedMode>
+  </PropertyGroup>
+
+  <!-- Common company/product metadata -->
+  <PropertyGroup>
+    <Authors>Dan Cunningham</Authors>
+    <Company>Dan Cunningham</Company>
+    <AssemblyCompany>Dan Cunningham</AssemblyCompany>
+    <VersionPrefix>0.8.19</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <PackageVersion>0.8.19-preview</PackageVersion>
+    <AssemblyVersion>0.8.19.0</AssemblyVersion>
+    <FileVersion>0.8.19.0</FileVersion>
+    <InformationalVersion>0.8.19-preview</InformationalVersion>
+    <BuildDate>2026-08-30</BuildDate>
+    <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildDate</_Parameter1>
+      <_Parameter2>$(BuildDate)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Debug configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <!-- Release configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <!-- ARM64 preference for .NET Framework -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <!--
+    The SDK references this package itself, but only on machines with no installed .NET Framework targeting
+    pack, so the lock file it writes differs between Windows and Linux and locked-mode restore then fails
+    with NU1004. Referencing it outright suppresses the SDK's implicit reference and pins one graph.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Banned API analyzer -->
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.StaticAnalysis">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslynator.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+  <PropertyGroup>
+    <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
+  </PropertyGroup>
+
+  <!--
+    Meziantou.Polyfill opt-in allowlist (prefix-matched XML doc IDs, pipe-separated). This is the
+    shared core every project needs on net472 (and net8 where the package is referenced); projects
+    append their own entries by prefixing $(MeziantouPolyfill_IncludedPolyfills). The two attribute
+    entries are the dependency closure of the generated Index/Range types.
+  -->
+  <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.ArgumentNullException.ThrowIfNull|
+      M:System.String.Contains(System.String,System.StringComparison)|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
+      T:System.Index|
+      T:System.Range|
+      T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
+      T:System.Threading.Lock|
+    </MeziantouPolyfill_IncludedPolyfills>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <!-- Common embedded resource for license -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)LICENSE" />
+  </ItemGroup>
+</Project>

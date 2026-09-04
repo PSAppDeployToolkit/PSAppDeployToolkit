@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <Product>PSAppDeployToolkit User Interface Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Library</AssemblyTitle>
+    <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
+    <NoWarn>SYSLIB1045</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.CodeAnalysis\PSADT.CodeAnalysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Server.Tests" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.Tests" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Properties\DesignTimeResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+  </ItemGroup>
+</Project>

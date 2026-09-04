@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <!--
+    PSADT.Interop gets AllowUnsafeBlocks implicitly from CsWin32's own build props. This project does
+    not reference CsWin32, so it has to opt in explicitly to exercise the pointer and PWSTR paths.
+  -->
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!--
+    net472 has no ICU, so it always collates with NLS. net8.0 would default to ICU, which makes the
+    two legs disagree on culture-sensitive comparisons for reasons that have nothing to do with the
+    polyfills. Pin net8.0 to NLS so the framework leg is a fair oracle.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <RuntimeHostConfigurationOption Include="System.Globalization.UseNls" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.Interop\PSADT.Interop.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -38,7 +38,7 @@ jobs:
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # https://github.com/actions/cache/releases/tag/v5.0.3
       with:
         path: ~\Documents\WindowsPowerShell\Modules
-        key: ${{ runner.os }}-psmodule-PSScriptAnalyzer-1.25.0-Pester-6.0.1-platyPS-0.14.2-Alt3.Docusaurus.Powershell-1.0.37
+        key: ${{ runner.os }}-psmodule-PSScriptAnalyzer-1.25.0-Pester-6.1.0-platyPS-0.14.2-Alt3.Docusaurus.Powershell-1.0.37
 
     - name: Install PowerShell modules
       if: steps.psmodule-cache.outputs.cache-hit != 'true'
@@ -70,14 +70,14 @@ jobs:
       if: github.repository == 'PSAppDeployToolkit/PSAppDeployToolkit' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x' || github.ref == 'refs/heads/4.2.x')
       shell: powershell
       run: |
-        Get-ChildItem -Path "$($PWD)\src\Artifacts\ModuleOnly\PSAppDeployToolkit" -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'Fluence.Wpf.dll', 'Invoke-AppDeployToolkit.exe', 'Microsoft.Windows.SDK.NET.dll', 'WinRT.Runtime.dll' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
+        Get-ChildItem -Path "$($PWD)\artifacts\ModuleOnly\PSAppDeployToolkit" -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'Fluence.Wpf.dll', 'Invoke-AppDeployToolkit.exe', 'Microsoft.Windows.SDK.NET.dll', 'WinRT.Runtime.dll' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
         & azuresigntool.exe sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 -ifl FilesToSign.txt
 
     - name: Generate artifact templates
       id: exports
       shell: powershell
       run: |
-        & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate', 'Compress-ADTBuildAssetContent' }
+        & (Import-Module -Name .\modules\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate', 'Compress-ADTBuildAssetContent' }
 
     - name: Upload module
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
@@ -114,7 +114,7 @@ jobs:
     - name: Upload pester results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
-        path: .\src\Artifacts\TestOutput\PesterTests.xml
+        path: .\artifacts\PesterTests.xml
         if-no-files-found: error
         overwrite: true
         archive: false
@@ -122,7 +122,7 @@ jobs:
     - name: Upload code coverage results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
-        path: .\src\Artifacts\CodeCoverage\CodeCoverage.xml
+        path: .\artifacts\CodeCoverage.xml
         if-no-files-found: error
         overwrite: true
         archive: false
@@ -133,4 +133,4 @@ jobs:
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       run: |
-        & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Import-ADTReleaseModule', 'Invoke-ADTMarkdownExport', 'Invoke-ADTDocusaurusExport', 'Publish-ADTDocusaurusExport' }
+        & (Import-Module -Name .\modules\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Import-ADTReleaseModule', 'Invoke-ADTMarkdownExport', 'Invoke-ADTDocusaurusExport', 'Publish-ADTDocusaurusExport' }

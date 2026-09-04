@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <Product>PSAppDeployToolkit User Interface Test Harness</Product>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
+    <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
+    <ApplicationIcon>..\..\src\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <StartupObject>PSADT.UserInterface.Interfaces.TestHarness.Program</StartupObject>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.Interop\PSADT.Interop.csproj" />
+    <ProjectReference Include="..\..\src\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <!--
+    ClientServerUtilities cannot initialize unless all four client executables sit beside this assembly.
+    The ProjectReference above copies only the variant the client project builds as itself, so the rest
+    are fetched from the same build.
+  -->
+  <Target Name="CopyClientServerExecutables" AfterTargets="Build">
+    <MSBuild Projects="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" Targets="GetClientVariantOutputs" Properties="Configuration=$(Configuration)" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerTargetPath" />
+    </MSBuild>
+    <Copy SourceFiles="@(_ClientServerTargetPath)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="PowerShellStandard.Library" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

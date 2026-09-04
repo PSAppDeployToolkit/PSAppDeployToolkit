@@ -1,0 +1,724 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        Metrics mirror the WinUI 3 ScrollBar_themeresources tokens.
+        ScrollBarSize (12) is the constant rail width; the rail never resizes, only the painted thumb
+        does, so the hit target stays 12 px wide whether the bar is expanded or at rest. WinUI achieves
+        that with a Rectangle whose 6 px transparent stroke insets the fill; the WPF equivalent here is a
+        Border of an explicit width pinned to the rail edge by ScrollBarThumbInsetMargin.
+        Collapsed 2 px and expanded 6 px are the WinUI painted widths
+        (ScrollBarVerticalThumbMinWidth 8 and ScrollBarSize 12, each minus ScrollBarThumbStrokeThickness 6).
+    -->
+    <sys:Double x:Key="ScrollBarSize">12</sys:Double>
+    <sys:Double x:Key="ScrollBarThumbCollapsedSize">2</sys:Double>
+    <sys:Double x:Key="ScrollBarThumbExpandedSize">6</sys:Double>
+    <sys:Double x:Key="ScrollBarVerticalThumbMinHeight">30</sys:Double>
+    <sys:Double x:Key="ScrollBarHorizontalThumbMinWidth">30</sys:Double>
+    <sys:Double x:Key="ScrollBarButtonArrowIconFontSize">8</sys:Double>
+    <sys:Double x:Key="ScrollBarButtonArrowScalePressed">0.875</sys:Double>
+    <sys:Double x:Key="ScrollBarDisabledOpacity">0.5</sys:Double>
+    <CornerRadius x:Key="ScrollBarThumbCornerRadius">3</CornerRadius>
+    <CornerRadius x:Key="ScrollBarTrackCornerRadius">6</CornerRadius>
+    <Thickness x:Key="ScrollBarVerticalThumbInsetMargin">0,0,3,0</Thickness>
+    <Thickness x:Key="ScrollBarHorizontalThumbInsetMargin">0,0,0,3</Thickness>
+    <Thickness x:Key="ScrollViewerScrollBarMargin">1</Thickness>
+
+    <!--
+        Page up / page down / page left / page right regions. WinUI renders these with a bare
+        transparent Grid (RepeatButtonTemplate), which is what the paging hit area needs and nothing more.
+    -->
+    <Style x:Key="ScrollBarTrackButtonStyle" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border Background="{TemplateBinding Background}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!--
+        Line buttons. Brushes follow the WinUI ScrollBarButton* tokens exactly:
+        rest background SubtleFillColorTransparent with a ControlStrongFillColorDefault arrow,
+        hover SubtleFillColorSecondary with a TextFillColorSecondary arrow,
+        pressed ControlStrongFillColorDefault with a TextFillColorSecondary arrow and a 0.875 glyph scale,
+        disabled ControlStrongFillColorDisabled arrow.
+    -->
+    <Style x:Key="ScrollBarLineButtonStyle" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <TextBlock
+                            x:Name="ArrowGlyph"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}"
+                            Foreground="{DynamicResource ControlStrongFillColorDefaultBrush}"
+                            RenderTransformOrigin="0.5,0.5"
+                            Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}">
+                            <TextBlock.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1" />
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="ArrowGlyph" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+                            <Setter TargetName="ArrowGlyph" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <Setter TargetName="ArrowGlyph" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="{StaticResource ScrollBarButtonArrowScalePressed}" ScaleY="{StaticResource ScrollBarButtonArrowScalePressed}" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ArrowGlyph" Property="Foreground" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!--
+        The thumb fill. WinUI uses one brush for rest, hover, and pressed (ScrollBarThumbFill,
+        ScrollBarThumbFillPointerOver, and ScrollBarThumbFillPressed are all
+        ControlStrongFillColorDefaultBrush), so there is deliberately no hover or press colour change
+        here; the only state change is the disabled swap to ControlStrongFillColorDisabledBrush.
+        Size and placement come from the Thumb element in each bar template, not from this style,
+        so one template serves both orientations.
+    -->
+    <Style x:Key="ScrollBarThumbStyle" TargetType="{x:Type Thumb}">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border
+                        x:Name="ThumbVisual"
+                        Background="{DynamicResource ControlStrongFillColorDefaultBrush}"
+                        CornerRadius="{StaticResource ScrollBarThumbCornerRadius}" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!--
+        VerticalScrollBarTemplate
+
+        VSM groups mirror the WinUI ScrollBar template:
+
+        ScrollingIndicatorStates - NoIndicator / MouseIndicator / TouchIndicator.
+            Which indicator is showing. Driven by ScrollBarExtensions, because WPF has no framework
+            equivalent of the WinUI ScrollViewer pushing IndicatorMode into its bars.
+            TouchIndicator reuses the collapsed rail with hit testing turned off, which renders the same
+            2 px non interactive bar as the WinUI VerticalPanningRoot without a second Track.
+
+        ConsciousStates - Collapsed / Expanded.
+            Whether the rail is showing the thumb sliver or the full width thumb plus line buttons.
+            Driven by pointer presence over the bar.
+
+        State storyboards use DiscreteDoubleKeyFrame (KeyTime="0") so GoToState with useTransitions=false
+        applies the final value instantly, which is both the reduced motion path and the test friendly one.
+        Smooth runtime animation lives in the VisualTransition storyboards, whose durations, delays, and
+        easing mirror the WinUI tokens: ScrollBarExpandBeginTime (400 ms), ScrollBarContractBeginTime
+        (500 ms), ScrollBarExpandDuration / ScrollBarContractDuration (167 ms),
+        ScrollBarOpacityChangeDuration (83 ms), and the "0,0,0,1" key spline WinUI uses for the rail.
+        They are mirrored literally because storyboard attributes cannot reference resources.
+    -->
+    <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+        <Grid x:Name="Root" Width="{StaticResource ScrollBarSize}">
+            <Grid x:Name="MainRoot">
+                <Border
+                    x:Name="TrackBackground"
+                    Background="{DynamicResource ScrollBarTrackFillBrush}"
+                    CornerRadius="{StaticResource ScrollBarTrackCornerRadius}"
+                    Opacity="0" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <RepeatButton
+                        x:Name="DecreaseButton"
+                        Grid.Row="0"
+                        Height="{StaticResource ScrollBarSize}"
+                        Command="ScrollBar.LineUpCommand"
+                        Content="&#xEDDB;"
+                        Opacity="0"
+                        Style="{StaticResource ScrollBarLineButtonStyle}" />
+                    <Track
+                        x:Name="PART_Track"
+                        Grid.Row="1"
+                        Focusable="False"
+                        IsDirectionReversed="True"
+                        Maximum="{TemplateBinding Maximum}"
+                        Minimum="{TemplateBinding Minimum}"
+                        ViewportSize="{TemplateBinding ViewportSize}"
+                        Value="{TemplateBinding Value}">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageUpCommand" Style="{StaticResource ScrollBarTrackButtonStyle}" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.Thumb>
+                            <Thumb
+                                x:Name="VerticalThumb"
+                                Width="{StaticResource ScrollBarThumbCollapsedSize}"
+                                MinHeight="{StaticResource ScrollBarVerticalThumbMinHeight}"
+                                Margin="{StaticResource ScrollBarVerticalThumbInsetMargin}"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource ScrollBarThumbStyle}" />
+                        </Track.Thumb>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageDownCommand" Style="{StaticResource ScrollBarTrackButtonStyle}" />
+                        </Track.IncreaseRepeatButton>
+                    </Track>
+                    <RepeatButton
+                        x:Name="IncreaseButton"
+                        Grid.Row="2"
+                        Height="{StaticResource ScrollBarSize}"
+                        Command="ScrollBar.LineDownCommand"
+                        Content="&#xEDDC;"
+                        Opacity="0"
+                        Style="{StaticResource ScrollBarLineButtonStyle}" />
+                </Grid>
+            </Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ScrollingIndicatorStates">
+                    <VisualStateGroup.Transitions>
+                        <VisualTransition From="MouseIndicator" To="NoIndicator">
+                            <Storyboard>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                        <VisualTransition From="TouchIndicator" To="NoIndicator">
+                            <Storyboard>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                    </VisualStateGroup.Transitions>
+                    <VisualState x:Name="NoIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="MouseIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="TouchIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+                <VisualStateGroup x:Name="ConsciousStates">
+                    <VisualStateGroup.Transitions>
+                        <VisualTransition From="Collapsed" To="Expanded">
+                            <!--  ScrollBarExpandBeginTime (400 ms)  -->
+                            <Storyboard BeginTime="0:0:0.4">
+                                <!--  ScrollBarExpandDuration (167 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Width">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.167"
+                                        Value="{StaticResource ScrollBarThumbExpandedSize}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                        <VisualTransition From="Expanded" To="Collapsed">
+                            <!--  ScrollBarContractBeginTime (500 ms)  -->
+                            <Storyboard BeginTime="0:0:0.5">
+                                <!--  ScrollBarContractDuration (167 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Width">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.167"
+                                        Value="{StaticResource ScrollBarThumbCollapsedSize}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                    </VisualStateGroup.Transitions>
+                    <VisualState x:Name="Collapsed">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Width">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource ScrollBarThumbCollapsedSize}" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Expanded">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Width">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource ScrollBarThumbExpandedSize}" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <!--  A hidden or touch panning rail must not swallow clicks aimed at the content beneath it.  -->
+            <Trigger Property="controls:ScrollBarExtensions.IndicatorMode" Value="None">
+                <Setter TargetName="MainRoot" Property="IsHitTestVisible" Value="False" />
+            </Trigger>
+            <Trigger Property="controls:ScrollBarExtensions.IndicatorMode" Value="TouchIndicator">
+                <Setter TargetName="MainRoot" Property="IsHitTestVisible" Value="False" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="{StaticResource ScrollBarDisabledOpacity}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--
+        HorizontalScrollBarTemplate - mirrors VerticalScrollBarTemplate with Width and Height swapped.
+    -->
+    <ControlTemplate x:Key="HorizontalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+        <Grid x:Name="Root" Height="{StaticResource ScrollBarSize}">
+            <Grid x:Name="MainRoot">
+                <Border
+                    x:Name="TrackBackground"
+                    Background="{DynamicResource ScrollBarTrackFillBrush}"
+                    CornerRadius="{StaticResource ScrollBarTrackCornerRadius}"
+                    Opacity="0" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <RepeatButton
+                        x:Name="DecreaseButton"
+                        Grid.Column="0"
+                        Width="{StaticResource ScrollBarSize}"
+                        Command="ScrollBar.LineLeftCommand"
+                        Content="&#xEDD9;"
+                        Opacity="0"
+                        Style="{StaticResource ScrollBarLineButtonStyle}" />
+                    <Track
+                        x:Name="PART_Track"
+                        Grid.Column="1"
+                        Focusable="False"
+                        Maximum="{TemplateBinding Maximum}"
+                        Minimum="{TemplateBinding Minimum}"
+                        ViewportSize="{TemplateBinding ViewportSize}"
+                        Value="{TemplateBinding Value}">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageLeftCommand" Style="{StaticResource ScrollBarTrackButtonStyle}" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.Thumb>
+                            <Thumb
+                                x:Name="HorizontalThumb"
+                                Height="{StaticResource ScrollBarThumbCollapsedSize}"
+                                MinWidth="{StaticResource ScrollBarHorizontalThumbMinWidth}"
+                                Margin="{StaticResource ScrollBarHorizontalThumbInsetMargin}"
+                                VerticalAlignment="Bottom"
+                                Style="{StaticResource ScrollBarThumbStyle}" />
+                        </Track.Thumb>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageRightCommand" Style="{StaticResource ScrollBarTrackButtonStyle}" />
+                        </Track.IncreaseRepeatButton>
+                    </Track>
+                    <RepeatButton
+                        x:Name="IncreaseButton"
+                        Grid.Column="2"
+                        Width="{StaticResource ScrollBarSize}"
+                        Command="ScrollBar.LineRightCommand"
+                        Content="&#xEDDA;"
+                        Opacity="0"
+                        Style="{StaticResource ScrollBarLineButtonStyle}" />
+                </Grid>
+            </Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ScrollingIndicatorStates">
+                    <VisualStateGroup.Transitions>
+                        <VisualTransition From="MouseIndicator" To="NoIndicator">
+                            <Storyboard>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                        <VisualTransition From="TouchIndicator" To="NoIndicator">
+                            <Storyboard>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                    </VisualStateGroup.Transitions>
+                    <VisualState x:Name="NoIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="MouseIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="TouchIndicator">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MainRoot" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+                <VisualStateGroup x:Name="ConsciousStates">
+                    <VisualStateGroup.Transitions>
+                        <VisualTransition From="Collapsed" To="Expanded">
+                            <!--  ScrollBarExpandBeginTime (400 ms)  -->
+                            <Storyboard BeginTime="0:0:0.4">
+                                <!--  ScrollBarExpandDuration (167 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Height">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.167"
+                                        Value="{StaticResource ScrollBarThumbExpandedSize}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                        <VisualTransition From="Expanded" To="Collapsed">
+                            <!--  ScrollBarContractBeginTime (500 ms)  -->
+                            <Storyboard BeginTime="0:0:0.5">
+                                <!--  ScrollBarContractDuration (167 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Height">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.167"
+                                        Value="{StaticResource ScrollBarThumbCollapsedSize}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms)  -->
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0,0,0,1"
+                                        KeyTime="0:0:0.083"
+                                        Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualTransition>
+                    </VisualStateGroup.Transitions>
+                    <VisualState x:Name="Collapsed">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Height">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource ScrollBarThumbCollapsedSize}" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Expanded">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Height">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource ScrollBarThumbExpandedSize}" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IncreaseButton" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <!--  A hidden or touch panning rail must not swallow clicks aimed at the content beneath it.  -->
+            <Trigger Property="controls:ScrollBarExtensions.IndicatorMode" Value="None">
+                <Setter TargetName="MainRoot" Property="IsHitTestVisible" Value="False" />
+            </Trigger>
+            <Trigger Property="controls:ScrollBarExtensions.IndicatorMode" Value="TouchIndicator">
+                <Setter TargetName="MainRoot" Property="IsHitTestVisible" Value="False" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="{StaticResource ScrollBarDisabledOpacity}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="VerticalScrollBarStyle" TargetType="{x:Type ScrollBar}">
+        <Setter Property="controls:ScrollBarExtensions.IsIndicatorEnabled" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinWidth" Value="{StaticResource ScrollBarSize}" />
+        <Setter Property="Orientation" Value="Vertical" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template" Value="{StaticResource VerticalScrollBarTemplate}" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="{StaticResource ScrollBarSize}" />
+    </Style>
+
+    <Style x:Key="HorizontalScrollBarStyle" TargetType="{x:Type ScrollBar}">
+        <Setter Property="controls:ScrollBarExtensions.IsIndicatorEnabled" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Height" Value="{StaticResource ScrollBarSize}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="{StaticResource ScrollBarSize}" />
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template" Value="{StaticResource HorizontalScrollBarTemplate}" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!--
+        ScrollViewerStyle
+
+        Layout follows the WinUI DefaultScrollViewerStyle: a two by two grid whose content presenter spans
+        both rows and both columns, so the bars overlay the content rather than shrinking it, while each
+        bar still occupies its own cell and therefore stops short of the other. ScrollBarSeparator fills
+        the corner the two bars would otherwise cross in. WinUI paints that corner with
+        ScrollViewerScrollBarSeparatorBackground, which resolves to a transparent brush in every WinUI
+        theme dictionary, so the element is a spacer and its WinUI ScrollBarSeparatorStates group, which
+        only animates the opacity of a transparent brush, is deliberately not reproduced.
+
+        The root Border carries no corner radius: WinUI template binds ScrollViewer.CornerRadius, and the
+        WPF ScrollViewer has no such property.
+    -->
+    <Style x:Key="ScrollViewerStyle" TargetType="{x:Type ScrollViewer}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ScrollContentPresenter
+                                x:Name="PART_ScrollContentPresenter"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                Margin="{TemplateBinding Padding}"
+                                CanContentScroll="{TemplateBinding CanContentScroll}"
+                                CanHorizontallyScroll="False"
+                                CanVerticallyScroll="False"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            <ScrollBar
+                                x:Name="PART_VerticalScrollBar"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="{StaticResource ScrollViewerScrollBarMargin}"
+                                Panel.ZIndex="1"
+                                Maximum="{TemplateBinding ScrollableHeight}"
+                                Minimum="0"
+                                Style="{StaticResource VerticalScrollBarStyle}"
+                                ViewportSize="{TemplateBinding ViewportHeight}"
+                                Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                                Value="{TemplateBinding VerticalOffset}" />
+                            <ScrollBar
+                                x:Name="PART_HorizontalScrollBar"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="{StaticResource ScrollViewerScrollBarMargin}"
+                                Panel.ZIndex="1"
+                                Maximum="{TemplateBinding ScrollableWidth}"
+                                Minimum="0"
+                                Style="{StaticResource HorizontalScrollBarStyle}"
+                                ViewportSize="{TemplateBinding ViewportWidth}"
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                Value="{TemplateBinding HorizontalOffset}" />
+                            <Border
+                                x:Name="ScrollBarSeparator"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Panel.ZIndex="1"
+                                Background="{DynamicResource ControlFillColorTransparentBrush}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
+    </Style>
+
+    <Style BasedOn="{StaticResource ScrollViewerStyle}" TargetType="{x:Type controls:SmoothScrollViewer}" />
+
+</ResourceDictionary>

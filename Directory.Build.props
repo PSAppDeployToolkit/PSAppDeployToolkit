@@ -71,11 +71,20 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)src\BannedSymbols.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
   <PropertyGroup>
     <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
   </PropertyGroup>
+
+  <!--
+    The SDK references this package itself, but only on machines with no installed .NET Framework targeting
+    pack, so the lock file it writes differs between Windows and Linux and locked-mode restore then fails
+    with NU1004. Referencing it outright suppresses the SDK's implicit reference and pins one graph.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+  </ItemGroup>
 
   <!--
     Restore writes a packages.lock.json beside each project, pinning the exact resolved version and content

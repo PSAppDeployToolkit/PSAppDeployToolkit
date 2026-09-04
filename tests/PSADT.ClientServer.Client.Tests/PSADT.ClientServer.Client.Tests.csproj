@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Single-targeted because the project under test is. Referencing it for real - rather than with
+    ReferenceOutputAssembly false, as the other suites do - is what puts ClientExecutable in reach of
+    InternalsVisibleTo; the reflection helper takes it from there to the private members.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>PSADT.ClientServer.Client.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+  </ItemGroup>
+
+  <!--
+    ClientServerUtilities resolves four executables beside this assembly and its static constructor
+    throws when one is missing, so the reference above - which brings only the variant the client
+    project builds as itself - is not enough. The subprocess tests need the same four for a different
+    reason: they run one.
+  -->
+  <Target Name="CopyClientServerExecutables" AfterTargets="Build">
+    <MSBuild Projects="..\..\src\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" Targets="GetClientVariantOutputs" Properties="Configuration=$(Configuration)" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ClientServerOutput" />
+    </MSBuild>
+    <Copy SourceFiles="@(_ClientServerOutput)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

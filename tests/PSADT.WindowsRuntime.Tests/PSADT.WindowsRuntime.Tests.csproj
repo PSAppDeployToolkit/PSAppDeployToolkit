@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The modern leg has to name the same Windows platform version as the project under test. A plain
+    net8.0 project cannot reference a net8.0-windows10.0.22621.0 one, and a lower platform version
+    cannot reference a higher one, so this is the one value that works. The net472 leg picks up the
+    Windows Runtime projections transitively, from the Microsoft.Windows.SDK.Contracts reference the
+    project under test declares for that framework.
+  -->
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.22621.0</TargetFrameworks>
+    <RootNamespace>PSADT.WindowsRuntime.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
+  </ItemGroup>
+
+</Project>

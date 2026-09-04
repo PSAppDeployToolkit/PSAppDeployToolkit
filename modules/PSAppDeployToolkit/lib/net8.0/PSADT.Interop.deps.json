@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "PSADT.Interop/1.0.0": {
+        "dependencies": {
+          "System.Linq.AsyncEnumerable": "10.0.11"
+        },
+        "runtime": {
+          "PSADT.Interop.dll": {}
+        }
+      },
+      "System.Linq.AsyncEnumerable/10.0.11": {
+        "runtime": {
+          "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.1126.37416"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PSADT.Interop/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Linq.AsyncEnumerable/10.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg==",
+      "path": "system.linq.asyncenumerable/10.0.11",
+      "hashPath": "system.linq.asyncenumerable.10.0.11.nupkg.sha512"
+    }
+  }
+}

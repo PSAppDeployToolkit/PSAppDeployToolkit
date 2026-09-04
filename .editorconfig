@@ -12,6 +12,11 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.cs]
+# System first, then everything else, alphabetical within each and no blank line between them.
+# IDE0055 is what enforces it, and it is on because category-Style below is an error.
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
 # Harden the compiler as far as it'll go.
 dotnet_analyzer_diagnostic.category-Design.severity = error
 dotnet_analyzer_diagnostic.category-Documentation.severity = error
@@ -47,6 +52,9 @@ dotnet_diagnostic.S107.severity = none
 dotnet_diagnostic.S109.severity = none
 dotnet_diagnostic.S1067.severity = none
 dotnet_diagnostic.S1121.severity = none
+dotnet_diagnostic.S1128.severity = none
+dotnet_diagnostic.S1133.severity = none
+dotnet_diagnostic.S1192.severity = none
 dotnet_diagnostic.S1659.severity = none
 dotnet_diagnostic.S3358.severity = none
 dotnet_diagnostic.S3869.severity = none
@@ -71,7 +79,6 @@ dotnet_diagnostic.RCS1223.severity = none
 dotnet_diagnostic.RCS1231.severity = none
 dotnet_diagnostic.RCS1238.severity = none
 dotnet_diagnostic.RCS1242.severity = none
-dotnet_diagnostic.MA0214.severity = none
 
 # Report collection expressions ([]) for C#14 and lower
 # C# preview reports those diagnostics by default
@@ -93,6 +100,7 @@ MA0153.report_types_with_data_classification_attributes = true
 # Disable Meziantou.Analyzer rules we don't want to deal with.
 dotnet_diagnostic.MA0009.severity = none
 dotnet_diagnostic.MA0012.severity = none
+dotnet_diagnostic.MA0038.severity = none
 dotnet_diagnostic.MA0051.severity = none
 dotnet_diagnostic.MA0110.severity = none
 dotnet_diagnostic.MA0157.severity = none
@@ -100,6 +108,7 @@ dotnet_diagnostic.MA0168.severity = none
 dotnet_diagnostic.MA0175.severity = none
 dotnet_diagnostic.MA0177.severity = none
 dotnet_diagnostic.MA0181.severity = none
+dotnet_diagnostic.MA0214.severity = none
 
 
 # Manual enablement for a number of Roslynator rules. This is the only way...
@@ -868,3 +877,8 @@ dotnet_diagnostic.rcs9010.severity = error
 # Specify ExportCodeFixProviderAttribute.Name
 dotnet_diagnostic.rcs9011.severity = error
 
+
+# Specific formatting skips for XAML files.
+[*.xaml.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.S2333.severity = none

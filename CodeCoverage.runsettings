@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings for code coverage collection.
+
+  Coverage is collected by wrapping a test executable rather than by asking it to measure itself. Run
+  "dotnet-coverage collect", passing this file as the settings argument, cobertura as the output format,
+  a path for the report, and then the test executable to wrap. (A command line cannot be written out here:
+  an XML comment may not contain two hyphens together, so the option prefixes cannot be typed.)
+
+  Wrapping is what makes .NET Framework work. The testing platform's own collector runs in process, which
+  is fine on .NET but cannot attach the profiler on .NET Framework: a net472 run that way succeeds, writes
+  a report, and the report contains no modules at all. Wrapping the process works on both, so it is the one
+  way used for both, and the platform's in-process collector is left unused.
+
+  The file is in run settings form rather than the bare Configuration form the code coverage documentation
+  describes. dotnet-coverage rejects the latter, and says so only at Verbose logging, with a warning that
+  the settings file is not valid and default settings are being used. It then collects everything,
+  silently. The same happens if this file is not well formed, so it is worth parsing after editing.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <!--
+              What is measured is the product, which is what lives in src. This lists the assemblies those
+              projects build, and nothing else is measured: support, tests, vendored code and every
+              third-party dependency are left out by not appearing here rather than by being named in a
+              list of exceptions. A list of exceptions has to be remembered; this has to be added to, and
+              forgetting shows up as an assembly reading zero rather than as a number quietly wrong.
+
+              One line per project under src, except that the client project builds four executables and
+              PSADT.Invoke builds one under a different name. Add a project there, add it here.
+
+              Each is named in full rather than matched with a wildcard. A pattern loose enough to catch the
+              four client executables at once also catches that project's test assembly, which then reports
+              its own coverage as though it were product.
+            -->
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*\\PSADT\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.ClientServer\.Client\.exe$</ModulePath>
+                <ModulePath>.*\\PSADT\.ClientServer\.Client\.Compatible\.exe$</ModulePath>
+                <ModulePath>.*\\PSADT\.ClientServer\.Client\.Launcher\.exe$</ModulePath>
+                <ModulePath>.*\\PSADT\.ClientServer\.Client\.Launcher\.Compatible\.exe$</ModulePath>
+                <ModulePath>.*\\PSADT\.ClientServer\.Server\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.CodeAnalysis\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.Interop\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.UserInterface\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.UserInterface\.Interfaces\.dll$</ModulePath>
+                <ModulePath>.*\\PSADT\.WindowsRuntime\.dll$</ModulePath>
+                <ModulePath>.*\\PSAppDeployToolkit\.dll$</ModulePath>
+                <ModulePath>.*\\Invoke-AppDeployToolkit\.exe$</ModulePath>
+              </Include>
+            </ModulePaths>
+
+            <!-- Anything marked as generated, or as excluded from coverage, is taken at its word. -->
+            <Attributes>
+              <Exclude>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+                <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+              </Exclude>
+            </Attributes>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

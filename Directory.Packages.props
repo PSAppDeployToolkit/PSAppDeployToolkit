@@ -1,23 +1,26 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.177" />
-    <PackageVersion Include="Meziantou.Polyfill" Version="1.0.163" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.200" />
+    <PackageVersion Include="Meziantou.Polyfill" Version="1.0.164" />
     <PackageVersion Include="Microsoft.Bcl.Cryptography" Version="10.0.11" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="[4.13.0,4.14.0)" />
     <PackageVersion Include="Microsoft.Extensions.StaticAnalysis" Version="10.9.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <PackageVersion Include="Microsoft.PowerShell.SDK" Version="[7.4.19,7.5.0)" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.321" />
-    <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.2526" />
+    <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.2705" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
     <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="10.0.11" />
     <PackageVersion Include="System.Drawing.Common" Version="[8.0.30,9.0.0)" />
     <PackageVersion Include="System.IO.Packaging" Version="[8.0.1,9.0.0)" />
-    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="[10.0.5,10.0.6)" />
+    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
     <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="[8.0.1,9.0.0)" />

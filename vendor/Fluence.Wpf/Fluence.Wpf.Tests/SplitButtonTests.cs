@@ -1,0 +1,328 @@
+﻿/*
+ * Copyright 2026 Dan Cunningham
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using Fluence.Wpf.Controls;
+using Xunit;
+
+namespace Fluence.Wpf.Tests
+{
+    public class SplitButtonTests
+    {
+        private static void MergeGeneric(Application application)
+        {
+            ApplicationThemeManager.ResetForTesting();
+            ApplicationAccentColorManager.ResetForTesting();
+            application.Resources.MergedDictionaries.Clear();
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+            application.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
+            });
+        }
+
+        #region Defaults and DPs
+
+        [Fact]
+        public Task Defaults_AreWinUiCanonAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                SplitButton button = new();
+
+                Assert.Equal(new CornerRadius(4), button.CornerRadius);
+                Assert.Equal(new CornerRadius(8), button.DropdownCornerRadius);
+                Assert.False(button.IsFlyoutOpen,
+                    "SplitButton.IsFlyoutOpen must default to false.");
+                Assert.Null(button.Command);
+                Assert.Null(button.CommandParameter);
+                Assert.Null(button.Flyout);
+            });
+        }
+
+        [Fact]
+        public Task IsFlyoutOpen_IsReadOnlyDpAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                // Direct SetValue on the public IsFlyoutOpenProperty must fail: only the
+                // internal PropertyKey may mutate it. Guard against accidental promotion
+                // of the property to read/write.
+                SplitButton button = new();
+                bool threw = false;
+                try
+                {
+                    button.SetValue(SplitButton.IsFlyoutOpenProperty, value: true);
+                }
+                catch (InvalidOperationException)
+                {
+                    threw = true;
+                }
+
+                Assert.True(threw,
+                    "IsFlyoutOpen must be a read-only DP; external SetValue must throw.");
+            });
+        }
+
+        #endregion Defaults and DPs
+
+        #region Template parts
+
+        [Fact]
+        public Task Template_ExposesPrimarySecondaryAndPopupPartsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                MergeGeneric(application);
+
+                Window window = new();
+                try
+                {
+                    SplitButton splitButton = new()
+                    {
+                        Content = "Action",
+                        Flyout = new System.Windows.Controls.TextBlock { Text = "Flyout content" },
+                        Width = 140,
+                    };
+                    window.Content = splitButton;
+                    window.Width = 200;
+                    window.Height = 80;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = splitButton.ApplyTemplate();
+
+                    System.Windows.Controls.Button primary = Assert.IsType<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton), exactMatch: false);
+
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton), exactMatch: false);
+
+                    Popup popup = Assert.IsType<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton), exactMatch: false);
+                    Assert.False(popup.StaysOpen,
+                        "PART_Popup.StaysOpen must be false so outside-clicks close the flyout.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        #endregion Template parts
+
+        #region Primary click
+
+        [Fact]
+        public Task PrimaryButtonClick_RaisesSplitButtonClickAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                MergeGeneric(application);
+
+                Window window = new();
+                try
+                {
+                    SplitButton splitButton = new()
+                    {
+                        Content = "Action",
+                        Width = 140,
+                    };
+                    int clickCount = 0;
+                    splitButton.Click += (s, e) => clickCount++;
+
+                    window.Content = splitButton;
+                    window.Width = 200;
+                    window.Height = 80;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = splitButton.ApplyTemplate();
+
+                    System.Windows.Controls.Button primary = Assert.IsType<System.Windows.Controls.Button>(
+                        splitButton.Template.FindName("PART_PrimaryButton", splitButton), exactMatch: false);
+
+                    // Use UI Automation peer -> IInvokeProvider.Invoke(), the canonical
+                    // equivalent of a user press-release on the button.
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(primary);
+                    IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
+                    invoke.Invoke();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Assert.Equal(1, clickCount);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task PrimaryButtonClick_ExecutesCommandAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                MergeGeneric(application);
+
+                Window window = new();
+                try
+                {
+                    int executed = 0;
+                    RelayCommand command = new(_ => executed++);
+
+                    SplitButton splitButton = new()
+                    {
+                        Content = "Action",
+                        Command = command,
+                        Width = 140,
+                    };
+
+                    window.Content = splitButton;
+                    window.Width = 200;
+                    window.Height = 80;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = splitButton.ApplyTemplate();
+
+                    System.Windows.Controls.Button? primary = splitButton.Template.FindName("PART_PrimaryButton", splitButton)
+                        as System.Windows.Controls.Button;
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(primary);
+                    IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
+                    invoke.Invoke();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Assert.Equal(1, executed);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        #endregion Primary click
+
+        #region Flyout open / close
+
+        [Fact]
+        public Task SecondaryButtonChecked_OpensPopupAndFlipsIsFlyoutOpenAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Application application = WpfTestSta.EnsureApplication();
+                MergeGeneric(application);
+
+                Window window = new();
+                try
+                {
+                    SplitButton splitButton = new()
+                    {
+                        Content = "Action",
+                        Flyout = new System.Windows.Controls.TextBlock { Text = "Hello" },
+                        Width = 140,
+                    };
+
+                    window.Content = splitButton;
+                    window.Width = 200;
+                    window.Height = 80;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = splitButton.ApplyTemplate();
+
+                    System.Windows.Controls.Primitives.ToggleButton secondary = Assert.IsType<System.Windows.Controls.Primitives.ToggleButton>(
+                        splitButton.Template.FindName("PART_SecondaryButton", splitButton), exactMatch: false);
+                    Popup popup = Assert.IsType<Popup>(
+                        splitButton.Template.FindName("PART_Popup", splitButton), exactMatch: false);
+
+                    Assert.False(popup.IsOpen, "Popup should start closed.");
+                    Assert.False(splitButton.IsFlyoutOpen, "IsFlyoutOpen should start false.");
+
+                    secondary.IsChecked = true;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Assert.True(popup.IsOpen,
+                        "Toggling PART_SecondaryButton on must open PART_Popup.");
+                    Assert.True(splitButton.IsFlyoutOpen,
+                        "IsFlyoutOpen must flip true when the secondary toggle is checked.");
+
+                    secondary.IsChecked = false;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Assert.False(popup.IsOpen,
+                        "Toggling PART_SecondaryButton off must close PART_Popup.");
+                    Assert.False(splitButton.IsFlyoutOpen,
+                        "IsFlyoutOpen must flip false when the secondary toggle is unchecked.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        #endregion Flyout open / close
+
+        #region Automation
+
+        [Fact]
+        public Task AutomationPeer_IsSplitButton_WithInvokeAndExpandCollapseAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                SplitButton splitButton = new();
+                AutomationPeer peer = Assert.IsType<AutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(splitButton), exactMatch: false);
+
+                Assert.Equal(AutomationControlType.SplitButton,
+                    peer.GetAutomationControlType());
+                Assert.NotNull(peer.GetPattern(PatternInterface.Invoke));
+                Assert.NotNull(peer.GetPattern(PatternInterface.ExpandCollapse));
+            });
+        }
+
+        #endregion Automation
+
+        private sealed class RelayCommand(Action<object?> execute) : ICommand
+        {
+            private readonly Action<object?> _execute = execute;
+
+            public bool CanExecute(object? parameter) { return true; }
+            public void Execute(object? parameter) { _execute(parameter); }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S108:Nested blocks of code should not be left empty", Justification = "This is just test code.")]
+            public event EventHandler? CanExecuteChanged { add { } remove { } }
+        }
+    }
+}

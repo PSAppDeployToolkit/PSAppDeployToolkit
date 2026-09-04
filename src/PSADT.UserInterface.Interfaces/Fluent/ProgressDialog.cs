@@ -1,0 +1,92 @@
+﻿using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Automation;
+using Fluence.Wpf;
+using PSADT.DeviceManagement;
+using PSADT.UserInterface.DialogOptions;
+
+namespace PSADT.UserInterface.Interfaces.Fluent
+{
+    /// <summary>
+    /// A fluent implementation of PSAppDeployToolkit's ProgressDialog dialog.
+    /// </summary>
+    internal sealed class ProgressDialog : FluentDialog, IProgressDialog
+    {
+        /// <summary>
+        /// Instantiates a new ProgressDialog dialog.
+        /// </summary>
+        /// <param name="options">Mandatory options needed to construct the window.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
+        internal ProgressDialog(ProgressDialogOptions options) : base(options, null!)
+        {
+            UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage);
+            if (_dialogPosition is not DialogPosition.Oobe || (!DeviceUtilities.IsOOBEComplete() && !_dialogAllowMove))
+            {
+                IsMinimizeButtonVisible = Visibility.Visible;
+            }
+            ProgressStackPanel.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.
+        /// </summary>
+        /// <param name="progressMessage">Optional new main progress message.</param>
+        /// <param name="progressMessageDetail">Optional new detail message.</param>
+        /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
+        /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
+        {
+            if (progressMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
+            }
+            if (progressMessageDetail is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
+            }
+            if (progressPercentage is double percentage && (double.IsNaN(percentage) || percentage is < 0.0 or > 100.0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(progressPercentage), percentage, "The progress percentage must be between 0 and 100.");
+            }
+            UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage);
+        }
+
+        /// <summary>
+        /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.
+        /// </summary>
+        /// <param name="progressMessage">Optional new main progress message.</param>
+        /// <param name="progressMessageDetail">Optional new detail message.</param>
+        /// <param name="percentComplete">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
+        private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
+        {
+            if (progressMessage is not null && !string.IsNullOrWhiteSpace(progressMessage))
+            {
+                FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
+                AutomationProperties.SetName(MessageTextBlock, progressMessage);
+            }
+
+            if (progressMessageDetail is not null && !string.IsNullOrWhiteSpace(progressMessageDetail))
+            {
+                FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail);
+                AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessageDetail);
+            }
+
+            if (percentComplete is not null)
+            {
+                // Update the properties as well to maintain state
+                ProgressBar.ProgressMode = ProgressBarMode.StepProgress;
+                ProgressBar.Value = percentComplete.Value;
+
+                // Update accessibility properties
+                AutomationProperties.SetName(ProgressBar, string.Create(CultureInfo.InvariantCulture, $"Progress: {percentComplete.Value:F0}%"));
+            }
+            else
+            {
+                // Update the properties as well to maintain state
+                ProgressBar.ProgressMode = ProgressBarMode.Indeterminate;
+            }
+        }
+    }
+}

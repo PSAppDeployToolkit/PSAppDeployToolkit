@@ -1,0 +1,61 @@
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
+using PSADT.Utilities;
+
+namespace PSADT.UserInterface.DialogResults
+{
+    /// <summary>
+    /// Represents the result of a list selection dialog.
+    /// </summary>
+    [DataContract]
+    public sealed class ListSelectionDialogResult : CustomDialogDerivative
+    {
+        /// <summary>
+        /// Represents the default dialog result used when a dialog times out.
+        /// </summary>
+        public static new readonly ListSelectionDialogResult DefaultResult = new("Timeout", selectedItem: null);
+
+        /// <summary>
+        /// Initializes a new instance of the ListSelectionDialogResult class with the specified result and selected
+        /// item.
+        /// </summary>
+        /// <param name="result">The result of the dialog operation, indicating the outcome of the user's selection.</param>
+        /// <param name="selectedItem">The item that was selected by the user. This parameter cannot be null or empty.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the selectedItem parameter is null or an empty string.</exception>
+        internal ListSelectionDialogResult(string result, string? selectedItem) : base(result)
+        {
+            if (selectedItem is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(selectedItem);
+            }
+            SelectedItem = selectedItem;
+        }
+
+        /// <summary>
+        /// Gets the item selected by the user from the list.
+        /// </summary>
+        [DataMember]
+        public readonly string? SelectedItem;
+
+        /// <summary>
+        /// Determines whether the specified object is equal to the current instance.
+        /// </summary>
+        /// <remarks>Compares both the Result and SelectedItem properties. String equality is not supported for derived types.</remarks>
+        /// <param name="obj">The object to compare with the current instance.</param>
+        /// <returns>true if the specified object is a ListSelectionDialogResult with equal Result and SelectedItem values; otherwise, false.</returns>
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            return obj is ListSelectionDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && string.Equals(SelectedItem, other.SelectedItem, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Returns a hash code for the current instance based on all properties.
+        /// </summary>
+        /// <returns>A hash code combining Result and SelectedItem.</returns>
+        public override int GetHashCode()
+        {
+            return CryptographicUtilities.GenerateHashCode(Result, SelectedItem);
+        }
+    }
+}

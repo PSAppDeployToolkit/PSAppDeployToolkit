@@ -1,4 +1,8 @@
 <Solution>
-  <Project Path="src/PSADT.Invoke/PSADT.Invoke.Tests/PSADT.Invoke.Tests.csproj" />
-  <Project Path="src/PSADT.Invoke/PSADT.Invoke/PSADT.Invoke.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/PSADT.Invoke/PSADT.Invoke.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PSADT.Invoke.Tests/PSADT.Invoke.Tests.csproj" />
+  </Folder>
 </Solution>

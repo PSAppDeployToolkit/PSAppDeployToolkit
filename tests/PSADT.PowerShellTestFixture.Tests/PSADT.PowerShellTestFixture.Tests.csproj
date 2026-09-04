@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <RootNamespace>PSADT.PowerShellTestFixture.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    PSAppDeployToolkit is referenced directly rather than left to arrive through the fixture, because these
+    tests name its types themselves: which database a scope has seated is told apart by the environment table
+    it carries, and whether one is seated at all is asked of ModuleDatabase.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.csproj" />
+    <ProjectReference Include="..\..\src\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <!--
+    The fixture hosts a PowerShell engine, so testing it needs one present: Windows PowerShell has
+    System.Management.Automation in the GAC, and .NET does not have it at all unless it is brought in.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="PowerShellStandard.Library" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.PowerShell.SDK" />
+  </ItemGroup>
+
+  <!--
+    The fixture's script module has to sit beside this assembly rather than only beside the fixture's own. A
+    ProjectReference copies the referenced assembly and its package assets, but not its Content, and the
+    fixture looks for the module in the directory its own assembly was loaded from - which, once copied here,
+    is this one.
+  -->
+  <ItemGroup>
+    <Content Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
+  </ItemGroup>
+
+</Project>

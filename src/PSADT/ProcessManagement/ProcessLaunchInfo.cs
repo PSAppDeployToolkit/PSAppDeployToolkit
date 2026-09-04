@@ -1,0 +1,497 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Threading;
+using Microsoft.Win32.SafeHandles;
+using PSADT.AccountManagement;
+using PSADT.Collections;
+using PSADT.FileSystem;
+using PSADT.Foundation;
+using PSADT.Interop;
+using PSADT.Interop.SafeHandles;
+using PSADT.Security;
+using PSADT.Utilities;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+
+namespace PSADT.ProcessManagement
+{
+    /// <summary>
+    /// Provides options for launching a managed process.
+    /// </summary>
+    [DataContract]
+    public sealed record class ProcessLaunchInfo
+    {
+        /// <summary>
+        /// Initializes a new instance of the ProcessLaunchInfo class with the specified process launch parameters.
+        /// </summary>
+        /// <param name="filePath">The fully qualified path to the executable file to launch. Cannot be null. If not using shell execute and
+        /// not starting with '%', the path must be rooted.</param>
+        /// <param name="argumentList">An optional collection of command-line arguments to pass to the process. If null or empty, no arguments are
+        /// provided.</param>
+        /// <param name="workingDirectory">The working directory for the process. If null or whitespace, the process uses the current directory.</param>
+        /// <param name="runAsActiveUser">Specifies the user context under which to run the process. If null, the default user context is used.</param>
+        /// <param name="inheritEnvironmentVariables">true to inherit the current process's environment variables; otherwise, false.</param>
+        /// <param name="expandEnvironmentVariables">true to expand environment variables in the file path and arguments before launching the process; otherwise,
+        /// false.</param>
+        /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to use when starting a process for another user. If null, no elevation is performed.</param>
+        /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
+        /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
+        /// <param name="useShellExecute">true to use the operating system shell to start the process; otherwise, false.</param>
+        /// <param name="verb">The action to take when starting the process, such as 'runas' or 'open'. If null or whitespace, the default
+        /// verb is used.</param>
+        /// <param name="createNoWindow">true to start the process without creating a new window; otherwise, false.</param>
+        /// <param name="waitForChildProcesses">true to wait for all child processes to exit before completing; otherwise, false.</param>
+        /// <param name="killChildProcessesWithParent">true to terminate all child processes when the parent process exits; otherwise, false.</param>
+        /// <param name="streamEncoding">The text encoding to use for standard input, output, and error streams. If null, the default encoding is
+        /// used.</param>
+        /// <param name="windowStyle">The window style to use when launching the process. If null, the default window style is used.</param>
+        /// <param name="priorityClass">The priority class for the new process. If null, the default priority is used.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. If null, cancellation is not
+        /// supported.</param>
+        /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
+        /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
+        /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3254:Default parameter values should not be passed as arguments", Justification = "This overload intentionally selects the internal constructor and must pass explicit defaults for the intermediate internal-only parameters.")]
+        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList, string? workingDirectory, RunAsActiveUser? runAsActiveUser, bool inheritEnvironmentVariables, bool expandEnvironmentVariables, bool denyUserTermination, ElevatedTokenType? elevatedTokenType, IReadOnlyList<string>? standardInput, bool useShellExecute, string? verb, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent, Encoding? streamEncoding, ProcessWindowStyle? windowStyle, ProcessPriorityClass? priorityClass, CancellationToken? cancellationToken, bool noTerminateOnTimeout) : this(filePath, argumentList, workingDirectory, runAsActiveUser, inheritEnvironmentVariables, expandEnvironmentVariables, denyUserTermination, elevatedTokenType, runAsInvoker: false, uiAccess: false, bypassIfeo: false, standardInput, handlesToInherit: null, useShellExecute, verb, createNoWindow, waitForChildProcesses, killChildProcessesWithParent, streamEncoding, windowStyle, priorityClass, cancellationToken, noTerminateOnTimeout)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ProcessLaunchInfo class with the specified process launch parameters.
+        /// </summary>
+        /// <param name="filePath">The fully qualified path to the executable file to launch. Cannot be null. If not using shell execute and
+        /// not starting with '%', the path must be rooted.</param>
+        /// <param name="argumentList">An optional collection of command-line arguments to pass to the process. If null or empty, no arguments are
+        /// provided.</param>
+        /// <param name="workingDirectory">The working directory for the process. If null or whitespace, the process uses the current directory.</param>
+        /// <param name="runAsActiveUser">Specifies the user context under which to run the process. If null, the default user context is used.</param>
+        /// <param name="inheritEnvironmentVariables">true to inherit the current process's environment variables; otherwise, false.</param>
+        /// <param name="expandEnvironmentVariables">true to expand environment variables in the file path and arguments before launching the process; otherwise,
+        /// false.</param>
+        /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to use when starting a process for another user. If null, no elevation is performed.</param>
+        /// <param name="runAsInvoker">true to launch the process with the same token as the parent process; otherwise, false.</param>
+        /// <param name="uiAccess">true to launch the process with UI access privileges; otherwise, false.</param>
+        /// <param name="bypassIfeo">true to append DEBUG_ONLY_THIS_PROCESS to the process creation flags so that any IFEO debuggers are bypassed and do not interfere with the launched process; otherwise, false.</param>
+        /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
+        /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
+        /// <param name="handlesToInherit">An optional collection of handles to inherit by the new process. If null, no additional handles are
+        /// inherited.</param>
+        /// <param name="useShellExecute">true to use the operating system shell to start the process; otherwise, false.</param>
+        /// <param name="verb">The action to take when starting the process, such as 'runas' or 'open'. If null or whitespace, the default
+        /// verb is used.</param>
+        /// <param name="createNoWindow">true to start the process without creating a new window; otherwise, false.</param>
+        /// <param name="waitForChildProcesses">true to wait for all child processes to exit before completing; otherwise, false.</param>
+        /// <param name="killChildProcessesWithParent">true to terminate all child processes when the parent process exits; otherwise, false.</param>
+        /// <param name="streamEncoding">The text encoding to use for standard input, output, and error streams. If null, the default encoding is
+        /// used.</param>
+        /// <param name="windowStyle">The window style to use when launching the process. If null, the default window style is used.</param>
+        /// <param name="priorityClass">The priority class for the new process. If null, the default priority is used.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. If null, cancellation is not
+        /// supported.</param>
+        /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
+        /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
+        /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
+        internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, ElevatedTokenType? elevatedTokenType = null, bool runAsInvoker = false, bool uiAccess = false, bool bypassIfeo = false, IReadOnlyList<string>? standardInput = null, IReadOnlyList<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
+        {
+            // Validate all string parameters are properly set up.
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+            if (verb is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(verb);
+                Verb = verb;
+            }
+
+            // Confirm we're not using incompatible options.
+            if (useShellExecute)
+            {
+                if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is false)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+                }
+                if (elevatedTokenType?.Equals(Security.ElevatedTokenType.None) is false)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying an ElevatedTokenType.");
+                }
+                if (runAsInvoker)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying RunAsInvoker.");
+                }
+                if (bypassIfeo)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying BypassIfeo.");
+                }
+            }
+
+            // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
+            ArgumentListValue = new ValueList<string>(argumentList is not null ? [.. argumentList] : []);
+            FilePath = filePath.TrimStart('"').TrimEnd('"');
+
+            // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
+            if (elevatedTokenType is not null)
+            {
+                ElevatedTokenType = elevatedTokenType.Value;
+            }
+            InheritEnvironmentVariables = inheritEnvironmentVariables;
+            RunAsActiveUser = runAsActiveUser;
+            BypassIfeo = bypassIfeo;
+            UIAccess = uiAccess;
+
+            // Expand out environment variables for FilePath/ArgumentList as required.
+            if (ExpandEnvironmentVariables = expandEnvironmentVariables)
+            {
+                if (RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is false)
+                {
+                    if (!TokenManager.CanGetUserPrimaryToken)
+                    {
+                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
+                    }
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser.SessionId).ConfigureAwait(false).GetAwaiter().GetResult();
+                    _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
+                    using (lpEnvironment)
+                    {
+                        string ExpandEnvironmentVariables(string name)
+                        {
+                            unsafe
+                            {
+                                fixed (char* pInputArgument = name)
+                                {
+                                    UNICODE_STRING pInputString = default, pOutputString = default; PInvoke.RtlInitUnicodeString(&pInputString, pInputArgument);
+                                    _ = NativeMethods.RtlExpandEnvironmentStrings_U(lpEnvironment, in pInputString, ref pOutputString, out uint requiredBytes);
+                                    fixed (char* pOutputArgument = new char[requiredBytes / sizeof(char)])
+                                    {
+                                        pOutputString = new() { Buffer = pOutputArgument, Length = 0, MaximumLength = (ushort)requiredBytes };
+                                        _ = NativeMethods.RtlExpandEnvironmentStrings_U(lpEnvironment, in pInputString, ref pOutputString, out _);
+                                        return pOutputString.ToManagedString();
+                                    }
+                                }
+                            }
+                        }
+                        if (workingDirectory is not null)
+                        {
+                            ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                            WorkingDirectoryPath = new DirectoryInfo(ExpandEnvironmentVariables(workingDirectory)).FullName;
+                        }
+                        ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
+                        FilePath = ExpandEnvironmentVariables(FilePath);
+                    }
+                }
+                else
+                {
+                    if (workingDirectory is not null)
+                    {
+                        ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                        WorkingDirectoryPath = new DirectoryInfo(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory)).FullName;
+                    }
+                    ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
+                    FilePath = EnvironmentUtilities.ExpandEnvironmentVariables(FilePath);
+                }
+            }
+
+            // Validate the file path is rooted.
+            if (!(UseShellExecute = useShellExecute) && !Path.IsPathFullyQualified(FilePath))
+            {
+                throw new DriveNotFoundException("File path must be fully qualified.");
+            }
+
+            // Create an arguments string out of our ArgumentList (ShellExecute needs this).
+            Arguments = ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(ArgumentList) : ArgumentList.Count > 0 ? ArgumentList[0] : null;
+
+            // Set the WorkingDirectory if specified and not already set by environment variable expansion.
+            if (WorkingDirectoryPath is null && workingDirectory is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                WorkingDirectoryPath = new DirectoryInfo(workingDirectory).FullName;
+            }
+
+            // Determine the type of file we're launching.
+            try
+            {
+                ImageSubsystem = ExecutableInfo.Get(FilePath).Subsystem;
+            }
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                string filePathExtension = Path.GetExtension(FilePath);
+                ImageSubsystem = !string.IsNullOrWhiteSpace(filePathExtension)
+                    && (filePathExtension.Equals(".com", StringComparison.OrdinalIgnoreCase)
+                    || filePathExtension.Equals(".bat", StringComparison.OrdinalIgnoreCase)
+                    || filePathExtension.Equals(".cmd", StringComparison.OrdinalIgnoreCase))
+                    ? IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI
+                    : IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+            }
+
+            // Handle the CreateNoWindow parameter.
+            if (createNoWindow)
+            {
+                WindowStyle = ProcessWindowStyle.Hidden;
+                CreateNoWindow = true;
+            }
+
+            // Handle remaining nullable parameters.
+            if (windowStyle is not null)
+            {
+                WindowStyle = windowStyle.Value;
+            }
+            if (streamEncoding is not null)
+            {
+                StreamEncodingWebName = streamEncoding.WebName;
+            }
+            if (priorityClass is not null)
+            {
+                PriorityClass = priorityClass.Value;
+            }
+            if (cancellationToken is not null)
+            {
+                CancellationToken = cancellationToken.Value;
+            }
+
+            // Set remaining parameters.
+            DenyUserTermination = denyUserTermination;
+            RunAsInvoker = runAsInvoker;
+            StandardInputValue = new ValueList<string>(standardInput is not null ? [.. standardInput] : []);
+            HandlesToInheritValues = new ValueList<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
+            WaitForChildProcesses = waitForChildProcesses;
+            KillChildProcessesWithParent = killChildProcessesWithParent;
+            NoTerminateOnTimeout = noTerminateOnTimeout;
+        }
+
+        /// <summary>
+        /// Gets the file path of the process to launch.
+        /// </summary>
+        [DataMember]
+        public readonly string FilePath;
+
+        /// <summary>
+        /// Gets the arguments to pass to the process.
+        /// </summary>
+        [DataMember]
+        public readonly string? Arguments;
+
+        /// <summary>
+        /// Gets the arguments to pass to the process.
+        /// </summary>
+        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// collection the framework offers compares by reference, so holding one directly would make two of these
+        /// unequal however alike they were.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
+
+        /// <summary>
+        /// Gets the working directory of the process.
+        /// </summary>
+        [IgnoreDataMember]
+        public DirectoryInfo? WorkingDirectory => WorkingDirectoryPath is string workingDirectoryPath ? new(workingDirectoryPath) : null;
+
+        /// <summary>
+        /// Gets the username to use when starting the process.
+        /// </summary>
+        [DataMember]
+        public readonly RunAsActiveUser? RunAsActiveUser;
+
+        /// <summary>
+        /// Gets a value indicating the token type to use when starting a process for another user.
+        /// </summary>
+        [DataMember]
+        public readonly ElevatedTokenType? ElevatedTokenType;
+
+        /// <summary>
+        /// Gets a value indicating whether to inherit the environment variables of the current process.
+        /// </summary>
+        [DataMember]
+        public readonly bool InheritEnvironmentVariables;
+
+        /// <summary>
+        /// Indicates whether environment variables in the input should be expanded.
+        /// </summary>
+        [DataMember]
+        public readonly bool ExpandEnvironmentVariables;
+
+        /// <summary>
+        /// Indicates whether user termination is denied.
+        /// </summary>
+        [DataMember]
+        public readonly bool DenyUserTermination;
+
+        /// <summary>
+        /// Indicates whether an unelevated token should be used for operations.
+        /// </summary>
+        [DataMember]
+        public readonly bool RunAsInvoker;
+
+        /// <summary>
+        /// Indicates whether the process should be started with UI access privileges.
+        /// </summary>
+        /// <remarks>UI access allows the process to interact with higher-privileged windows, such as
+        /// those running as administrator. This is typically required for accessibility tools or applications that need
+        /// to interact with secure desktop elements.</remarks>
+        [DataMember]
+        public readonly bool UIAccess;
+
+        /// <summary>
+        /// Appends DEBUG_ONLY_THIS_PROCESS to the process creation flags so that any IFEO debuggers are bypassed and do not interfere with the launched process.
+        /// </summary>
+        [DataMember]
+        public readonly bool BypassIfeo;
+
+        /// <summary>
+        /// Gets the lines to write to the process's standard input stream.
+        /// </summary>
+        /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<string> StandardInput => new ReadOnlyCollection<string>([.. StandardInputValue]);
+
+        /// <summary>
+        /// Gets an optional collection of handles that the child process should inherit.
+        /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
+        /// </summary>
+        [IgnoreDataMember]
+        public IReadOnlyList<nint> HandlesToInherit => new ReadOnlyCollection<nint>(HandlesToInheritValues?.Select(static h => (nint)h) is IEnumerable<nint> handlesToInheritValues ? [.. handlesToInheritValues] : []);
+
+        /// <summary>
+        /// Gets a value indicating whether to use the shell to execute the process.
+        /// </summary>
+        [DataMember]
+        public readonly bool UseShellExecute;
+
+        /// <summary>
+        /// Gets the verb to use when starting the process.
+        /// </summary>
+        [DataMember]
+        public readonly string? Verb;
+
+        /// <summary>
+        /// Gets a value indicating whether to create a new window for the process.
+        /// </summary>
+        [DataMember]
+        public readonly bool CreateNoWindow;
+
+        /// <summary>
+        /// Gets a value indicating whether the process should wait for child processes to exit before completing.
+        /// </summary>
+        [DataMember]
+        public readonly bool WaitForChildProcesses;
+
+        /// <summary>
+        /// Gets a value indicating whether any child processes spawned with the parent should terminate when the parent closes.
+        /// </summary>
+        [DataMember]
+        public readonly bool KillChildProcessesWithParent;
+
+        /// <summary>
+        /// Gets the encoding type to use when parsing stdout/stderr text.
+        /// </summary>
+        [IgnoreDataMember]
+        public Encoding StreamEncoding => Encoding.GetEncoding(StreamEncodingWebName);
+
+        /// <summary>
+        /// Gets the window style of the process.
+        /// </summary>
+        [DataMember]
+        public readonly ProcessWindowStyle? WindowStyle;
+
+        /// <summary>
+        /// Gets the priority class of the process.
+        /// </summary>
+        [DataMember]
+        public readonly ProcessPriorityClass? PriorityClass;
+
+        /// <summary>
+        /// Gets the cancellation token to cancel the process.
+        /// </summary>
+        [IgnoreDataMember]
+        public readonly CancellationToken? CancellationToken;
+
+        /// <summary>
+        /// Gets whether to not end the process upon CancellationToken expiring.
+        /// </summary>
+        [DataMember]
+        public readonly bool NoTerminateOnTimeout;
+
+        /// <summary>
+        /// Gets the subsystem required to run the image.
+        /// </summary>
+        [DataMember]
+        public readonly IMAGE_SUBSYSTEM ImageSubsystem;
+
+        /// <summary>
+        /// Generates the command-line string representation for the current configuration.
+        /// </summary>
+        /// <remarks>This method uses default options when generating the command-line. To customize the
+        /// output, use the overload that accepts parameters.</remarks>
+        /// <returns>A string containing the command-line arguments constructed from the current settings.</returns>
+        public string MakeCommandLine()
+        {
+            return MakeCommandLine(nullTerminated: false);
+        }
+
+        /// <summary>
+        /// Creates a command-line string for the process, optionally appending a null terminator.
+        /// </summary>
+        /// <param name="nullTerminated">Specifies whether the resulting command-line string should be null-terminated. Set to <see langword="true"/>
+        /// to append a null character at the end; otherwise, <see langword="false"/>.</param>
+        /// <returns>A string containing the command-line representation of the process, including the file path and any
+        /// arguments. If <paramref name="nullTerminated"/> is <see langword="true"/>, the string will end with a null
+        /// character.</returns>
+        internal string MakeCommandLine(bool nullTerminated)
+        {
+            return $"\"{FilePath}\"{(!string.IsNullOrWhiteSpace(Arguments) ? $" {Arguments}" : null)}{(nullTerminated ? '\0' : null)}";
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the application is a command-line interface (CLI) application.
+        /// </summary>
+        internal bool IsCliApplication()
+        {
+            return ImageSubsystem is not IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+        }
+
+        /// <summary>
+        /// Gets an optional collection of handles that the child process should inherit.
+        /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
+        /// </summary>
+        /// <summary>
+        /// The working directory's resolved path, which is what actually gets serialized.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DirectoryInfo"/> is not a data contract, and unlike on .NET Framework it is no
+        /// longer serializable through <see cref="ISerializable"/> either,
+        /// so a DataMember of that type makes the whole class unserializable on .NET. The path is stored
+        /// instead and the directory rebuilt on access, the same way handles and the stream encoding are
+        /// stored in a serializable form here. It is resolved to a full path on the way in so that a
+        /// relative working directory still resolves against the directory current when the launch
+        /// information was created rather than whenever it is next read.
+        /// </remarks>
+        [DataMember]
+        private readonly string? WorkingDirectoryPath;
+
+        [DataMember]
+        private readonly ValueList<long>? HandlesToInheritValues;
+
+        /// <summary>
+        /// Gets the encoding web name string for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly string StreamEncodingWebName = Encoding.Default.WebName;
+
+        /// <summary>
+        /// The list recorded for <see cref="ArgumentList"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> ArgumentListValue;
+
+        /// <summary>
+        /// The list recorded for <see cref="StandardInput"/>.
+        /// </summary>
+        [DataMember]
+        private readonly ValueList<string> StandardInputValue;
+    }
+}

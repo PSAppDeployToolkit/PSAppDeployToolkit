@@ -1,0 +1,84 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        Fluent Design FlyoutPresenter style.
+        Authority: WinUI 3 Flyout_themeresources.xaml (FlyoutContentThemePadding 16,15,16,17;
+        FlyoutThemeMinWidth 96 / MaxWidth 456 / MinHeight 40 / MaxHeight 758).
+        Surface treatment reuses the canonical in-tree flyout tokens from ContextMenu.xaml /
+        ToolTip.xaml: SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
+        OverlayCornerRadius.
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
+        FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
+        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
+        sizes a popup window about 15 px larger per side than its child.
+    -->
+    <Style TargetType="{x:Type controls:FlyoutPresenter}">
+        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="MaxHeight" Value="758" />
+        <Setter Property="MaxWidth" Value="456" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="MinWidth" Value="96" />
+        <Setter Property="Padding" Value="16,15,16,17" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:FlyoutPresenter}">
+                    <Grid>
+                        <Border
+                            x:Name="ShadowCaster"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}"
+                            RenderTransform="{Binding RenderTransform, ElementName=PresenterSurface}"
+                            UseLayoutRounding="True" />
+                        <Border
+                            x:Name="PresenterSurface"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            RenderOptions.ClearTypeHint="Enabled"
+                            UseLayoutRounding="True">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="PresenterTranslate" />
+                            </Border.RenderTransform>
+                            <ScrollViewer
+                                HorizontalScrollBarVisibility="Auto"
+                                Style="{DynamicResource ScrollViewerStyle}"
+                                VerticalScrollBarVisibility="Auto">
+                                <ContentPresenter
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                    TextElement.FontSize="{TemplateBinding FontSize}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    <!--
+                        The open reveal (slide 8px in from the placement side with a fade 0 to 1,
+                        167ms on the 0.8,0,0,1 spline) lives in FlyoutPresenter.OnLoaded and is
+                        placement-aware: FlyoutBase.ShowAt stamps the resolved side onto the
+                        presenter's RevealPlacement before the popup opens. PresenterSurface and
+                        PresenterTranslate are the named parts the reveal animates. v2 limitation:
+                        WPF's custom popup placement offers the opposite edge as a screen-edge
+                        fallback without reporting which candidate won, so the reveal keys off the
+                        requested side, not the actual one.
+                    -->
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    </Style>
+
+</ResourceDictionary>
