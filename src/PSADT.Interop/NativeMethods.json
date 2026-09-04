@@ -2,7 +2,8 @@
   "$schema": "https://aka.ms/CsWin32.schema.json",
   "comInterop": {
     "preserveSigMethods": [
-      "IShellLinkW.Resolve"
+        "IPersistFile.GetCurFile",
+        "IShellLinkW.Resolve"
     ]
   }
 }

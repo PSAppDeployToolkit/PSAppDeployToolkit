@@ -341,6 +341,7 @@ RT_VXD
 RtlGetVersion
 RtlInitUnicodeString
 RtlNtStatusToDosError
+S_FALSE
 S_OK
 SC_CLOSE
 SC_CONTEXTHELP
