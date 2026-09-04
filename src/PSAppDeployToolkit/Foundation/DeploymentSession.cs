@@ -979,13 +979,9 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         throw new InvalidOperationException("SessionState is not available to set compatibility mode variables.");
                     }
-                    foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
+                    foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties(BindingFlags.Instance | BindingFlags.Public))
                     {
                         sessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
-                    }
-                    foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
-                    {
-                        sessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
                     Settings |= DeploymentSettings.CompatibilityMode;
                 }

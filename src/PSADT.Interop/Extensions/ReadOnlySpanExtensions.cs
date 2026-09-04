@@ -41,12 +41,11 @@ internal static class ReadOnlySpanExtensions
     internal static string? ToStringUni(this ReadOnlySpan<char> span)
     {
         int nullTerminator = span.IndexOf('\0');
-        if (nullTerminator == -1)
-        {
-            throw new FormatException("The provided span does not contain a null-terminated Unicode string.");
-        }
-        ReadOnlySpan<char> stringSpan = span[..nullTerminator].Trim();
-        return !stringSpan.IsWhiteSpace() ? stringSpan.ToString() : null;
+        return nullTerminator == -1
+            ? throw new FormatException("The provided span does not contain a null-terminated Unicode string.")
+            : span[..nullTerminator].Trim() is { Length: > 0 } trimmedSpan
+            ? trimmedSpan.ToString()
+            : null;
     }
 
     /// <summary>
