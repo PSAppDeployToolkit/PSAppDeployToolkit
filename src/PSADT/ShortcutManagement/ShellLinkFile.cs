@@ -24,6 +24,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
+using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
@@ -728,14 +729,24 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
-        /// Resolves the shortcut, finding the target if it has moved.
+        /// Resolves the shortcut, finding the target if it has moved, and reports whether it was found.
         /// </summary>
         /// <param name="flags">Flags that control the resolution process.</param>
+        /// <returns>Whether the target could be found.</returns>
+        /// <remarks>The shell answers this with S_OK or S_FALSE, both of which are successes, so the result is read
+        /// from the code rather than from an exception. The default flags ask the question without changing anything:
+        /// no dialog is shown, a target that has moved is not hunted for, the tracking data is left alone, and the
+        /// file is not rewritten.</remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Resolve(Interop.SLR_FLAGS flags = Interop.SLR_FLAGS.SLR_NO_UI | Interop.SLR_FLAGS.SLR_NOUPDATE | Interop.SLR_FLAGS.SLR_NOSEARCH | Interop.SLR_FLAGS.SLR_NOTRACK)
+        public LINK_STATUS Resolve(Interop.SLR_FLAGS flags = Interop.SLR_FLAGS.SLR_NO_UI | Interop.SLR_FLAGS.SLR_NOUPDATE | Interop.SLR_FLAGS.SLR_NOSEARCH | Interop.SLR_FLAGS.SLR_NOTRACK)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _shellLink.Resolve(HWND.Null, (uint)flags);
+            HRESULT hResult = _shellLink.Resolve(HWND.Null, (uint)flags);
+            return hResult.Failed
+                ? throw ExceptionUtilities.GetException(hResult)
+                : hResult.Value is 0
+                ? LINK_STATUS.LINK_STATUS_RESOLVED
+                : LINK_STATUS.LINK_STATUS_BROKEN;
         }
 
         /// <summary>

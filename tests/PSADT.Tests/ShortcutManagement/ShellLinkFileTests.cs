@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using PSADT.Interop;
 using PSADT.ShortcutManagement;
 using PSADT.Tests.TestHelpers;
 using Xunit;
@@ -196,7 +197,7 @@ namespace PSADT.Tests.ShortcutManagement
             }
 
             // Act
-            using (ShellLinkFile opened = ShellLinkFile.Load(linkPath, Interop.STGM.STGM_READWRITE))
+            using (ShellLinkFile opened = ShellLinkFile.Load(linkPath, STGM.STGM_READWRITE))
             {
                 opened.IconLocation = null;
                 opened.IconIndex = null;
@@ -740,10 +741,44 @@ namespace PSADT.Tests.ShortcutManagement
 
             // Act
             using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
-            loaded.Resolve();
+            LINK_STATUS status = loaded.Resolve();
 
             // Assert
+            Assert.Equal(LINK_STATUS.LINK_STATUS_RESOLVED, status);
             Assert.Equal(TargetPath, loaded.TargetPath, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that resolving a link whose target has been removed reports it as broken.
+        /// </summary>
+        /// <remarks>
+        /// The shell answers this with S_FALSE, a success code rather than an error, so the state is
+        /// only visible because the return value is read. A caller watching for an exception would see
+        /// nothing wrong and take every broken link for a resolved one. Nothing finer than these two
+        /// states is on offer: a target deleted after the link was made, one that never existed, one on
+        /// an absent drive and one on an unreachable UNC host all answer identically.
+        /// </remarks>
+        [Fact]
+        public void Resolve_ReportsARemovedTargetAsBroken()
+        {
+            // Arrange: the target is there when the link is made and removed afterwards, which is how a
+            // link comes to be broken rather than being born that way.
+            using TempDirectory temp = new();
+            string targetPath = temp.WriteFile("target.exe", string.Empty);
+            string linkPath = temp.GetPath("broken.lnk");
+            using (ShellLinkFile created = ShellLinkFile.Create(targetPath))
+            {
+                created.Save(linkPath);
+            }
+            File.Delete(targetPath);
+
+            // Act
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            LINK_STATUS status = loaded.Resolve();
+
+            // Assert
+            Assert.Equal(LINK_STATUS.LINK_STATUS_BROKEN, status);
+            Assert.Equal(targetPath, loaded.TargetPath, ignoreCase: true);
         }
 
         /// <summary>
@@ -766,7 +801,7 @@ namespace PSADT.Tests.ShortcutManagement
             {
                 Assert.False(readOnly.CanSave);
             }
-            using ShellLinkFile writable = ShellLinkFile.Load(linkPath, Interop.STGM.STGM_READWRITE);
+            using ShellLinkFile writable = ShellLinkFile.Load(linkPath, STGM.STGM_READWRITE);
             Assert.True(writable.CanSave);
         }
 
