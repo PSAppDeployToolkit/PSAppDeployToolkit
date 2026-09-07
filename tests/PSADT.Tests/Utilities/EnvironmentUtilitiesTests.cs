@@ -11,9 +11,16 @@ namespace PSADT.Tests.Utilities
     /// Tests the environment variable helpers.
     /// </summary>
     /// <remarks>
-    /// Only the process scope is written to. A process-scoped variable lives and dies with the test host,
-    /// so setting one changes nothing that outlasts the run; the user and machine scopes are registry
-    /// writes and are never performed here.
+    /// The process scope is what is written to almost throughout. A process-scoped variable lives and dies
+    /// with the test host, so setting one changes nothing that outlasts the run, and the machine scope is
+    /// never written to at all.
+    /// <para>
+    /// The exception is the pair of tests covering which scope an append or a remove reads from, at the
+    /// end of this file. That distinction cannot be observed within the process scope, where reading the
+    /// process is right by definition, so those two write a uniquely named variable to the user scope and
+    /// take it away again in a finally. They need no elevation, and a name no machine would carry means a
+    /// run that died between the two would leave nothing that could be mistaken for real configuration.
+    /// </para>
     /// <para>
     /// The validation the user and machine scopes perform is still covered, because every one of those
     /// checks runs before anything is written. Each of those tests confirms afterwards that nothing was
@@ -490,6 +497,70 @@ namespace PSADT.Tests.Utilities
             Assert.False(
                 Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User).Contains(name),
                 $"A refused write left '{name}' behind in the user environment.");
+        }
+
+        /// <summary>
+        /// Verifies that appending reads what the target scope holds rather than what this process holds.
+        /// </summary>
+        /// <remarks>
+        /// The two differ constantly in practice: a process inherits the machine and user scopes already
+        /// merged and expanded, and anything the session has since added sits on top. Appending to that
+        /// and writing the result back to a hive replaces what the hive held with the merge, which on a
+        /// machine PATH means every user entry and every session addition is persisted into it.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_AppendsToTheTargetScopeRatherThanTheProcess()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                Environment.SetEnvironmentVariable(name, "target", EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(name, "process");
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "added", EnvironmentVariableTarget.User, expandable: false, append: true, remove: false);
+
+                // Assert
+                Assert.Equal($"target{Path.PathSeparator}added", Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that removing takes the entry out of what the target scope holds rather than out of
+        /// what this process holds.
+        /// </summary>
+        /// <remarks>
+        /// The same read, and the worse half of it: an entry present only in the process would be found,
+        /// reported as removed, and the hive overwritten with the remainder of the merge, leaving the
+        /// entry itself exactly where it was.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_RemovesFromTheTargetScopeRatherThanTheProcess()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                Environment.SetEnvironmentVariable(name, $"keep{Path.PathSeparator}drop", EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(name, $"process{Path.PathSeparator}drop");
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "drop", EnvironmentVariableTarget.User, expandable: false, append: false, remove: true);
+
+                // Assert
+                Assert.Equal("keep", Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
         }
 
         /// <summary>

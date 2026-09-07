@@ -206,7 +206,7 @@ namespace PSADT.Utilities
             {
                 // If the existing value when split results in an empty list, remove it and return.
                 ArgumentNullException.ThrowIfNull(value);
-                string? existingValue = GetEnvironmentVariable(variable);
+                string? existingValue = GetEnvironmentVariable(variable, target);
                 if (existingValue is null || string.IsNullOrWhiteSpace(existingValue))
                 {
                     return;
@@ -230,7 +230,7 @@ namespace PSADT.Utilities
             {
                 // Append the new value to the existing one if the existing value does not already contain it.
                 ArgumentNullException.ThrowIfNull(value);
-                string existingValue = GetEnvironmentVariable(variable) ?? string.Empty;
+                string existingValue = GetEnvironmentVariable(variable, target) ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = existingValue + Path.PathSeparator + value;

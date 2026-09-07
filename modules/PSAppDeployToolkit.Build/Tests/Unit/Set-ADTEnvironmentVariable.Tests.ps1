@@ -69,6 +69,39 @@ Describe 'Set-ADTEnvironmentVariable' {
         }
     }
 
+    Context 'A target that is not this process' {
+        # Appending and removing read the variable's current value before writing it back, and that read
+        # has to come from the scope being written to. Every test above nominates the process target,
+        # where reading the process scope is right by definition, so the distinction only shows up
+        # against another one. The user scope is used because it needs no elevation and is taken away
+        # again immediately; the machine scope is never written to here.
+        AfterEach {
+            [System.Environment]::SetEnvironmentVariable($script:Variable, $null, [System.EnvironmentVariableTarget]::User)
+        }
+
+        It 'Appends to what the target holds, not to what this process holds' {
+            [System.Environment]::SetEnvironmentVariable($script:Variable, 'target', [System.EnvironmentVariableTarget]::User)
+            [System.Environment]::SetEnvironmentVariable($script:Variable, 'process')
+            Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'added' -Target User -Append
+            [System.Environment]::GetEnvironmentVariable($script:Variable, [System.EnvironmentVariableTarget]::User) | Should -BeExactly "target$([System.IO.Path]::PathSeparator)added"
+        }
+
+        It 'Removes from what the target holds, not from what this process holds' {
+            [System.Environment]::SetEnvironmentVariable($script:Variable, "keep$([System.IO.Path]::PathSeparator)drop", [System.EnvironmentVariableTarget]::User)
+            [System.Environment]::SetEnvironmentVariable($script:Variable, "process$([System.IO.Path]::PathSeparator)drop")
+            Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'drop' -Target User -Remove
+            [System.Environment]::GetEnvironmentVariable($script:Variable, [System.EnvironmentVariableTarget]::User) | Should -BeExactly 'keep'
+        }
+
+        It 'Appends nothing to a target holding nothing, whatever this process holds' {
+            # The case that loses data on a machine PATH: what this process holds is the machine and user
+            # values already merged, so appending to that writes every one of those entries into the hive.
+            [System.Environment]::SetEnvironmentVariable($script:Variable, 'process')
+            Set-ADTEnvironmentVariable -Variable $script:Variable -Value 'added' -Target User -Append
+            [System.Environment]::GetEnvironmentVariable($script:Variable, [System.EnvironmentVariableTarget]::User) | Should -BeExactly 'added'
+        }
+    }
+
     Context 'Input Validation' {
         It 'Refuses a blank variable name' {
             { Set-ADTEnvironmentVariable -Variable '   ' -Value 'first' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Set-ADTEnvironmentVariable'
