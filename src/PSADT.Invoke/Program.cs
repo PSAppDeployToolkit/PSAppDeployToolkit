@@ -37,6 +37,7 @@ namespace PSADT.Invoke
         /// <returns>An integer exit code indicating the result of the deployment operation. Returns 0 for success, or a nonzero
         /// value if an error occurs.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the PowerShell process fails to start or if specified command-line arguments are invalid. The exception message provides details about the failure.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This executable stands alone and does not reference PSADT, so the wrapper is not available to it.")]
         private static int Main(string[] argv)
         {
             // Internal worker to prevent access to array-based argv.

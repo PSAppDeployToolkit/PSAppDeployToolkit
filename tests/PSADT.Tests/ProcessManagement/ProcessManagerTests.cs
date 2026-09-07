@@ -165,6 +165,7 @@ namespace PSADT.Tests.ProcessManagement
         /// </summary>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "The variable has to be seeded on this process without the wrapper, since what is under test is that the launch carries this process's environment down.")]
         public async Task LaunchAsync_PassesTheCallersEnvironmentDownAsync()
         {
             // Arrange

@@ -21,12 +21,15 @@ namespace PSADT.Tests.Utilities
     /// altering the machine.
     /// </para>
     /// <para>
-    /// The oracle throughout is <see cref="Environment.GetEnvironmentVariables()"/> rather than the
-    /// single-variable accessor, which this repository bans in favour of the wrapper under test. Where
-    /// that oracle is used to confirm a variable's absence the name is one generated for the test, so the
-    /// two runtimes disagreeing about how it compares names cannot affect the answer.
+    /// This repository bans the framework's environment accessors in favour of the wrapper, and this class
+    /// suppresses that ban wholesale. It has to: what is under test is the wrapper itself, so arranging,
+    /// asserting and cleaning up through it would let a fault shared between reading and writing hide
+    /// itself, and a test would pass against the very defect it exists to catch. Where the framework is
+    /// used to confirm a variable's absence the name is one generated for the test, so the two runtimes
+    /// disagreeing about how they compare names cannot affect the answer.
     /// </para>
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Every arrangement, assertion and cleanup here has to reach the environment without going through the wrapper under test, so that a fault shared between the two cannot hide itself.")]
     public sealed class EnvironmentUtilitiesTests
     {
         /// <summary>

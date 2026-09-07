@@ -71,10 +71,31 @@ namespace PSADT.Utilities
         /// Each entry's key is the variable name, and the value is the variable's value, or <see langword="null"/> where that
         /// value holds nothing but whitespace - the same rule <see cref="GetEnvironmentVariable(string)"/> applies, so the
         /// two cannot disagree about whether a variable is configured.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static IReadOnlyDictionary<string, string?> GetEnvironmentVariables()
         {
             Dictionary<string, string?> variables = new(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables())
+            {
+                variables.Add((string)variable.Key, variable.Value is string value && !string.IsNullOrWhiteSpace(value) ? value : null);
+            }
+            return new ReadOnlyDictionary<string, string?>(variables);
+        }
+
+        /// <summary>
+        /// Retrieves all environment variables from the given target, and their values.
+        /// </summary>
+        /// <remarks>The names are compared without regard to case, and a value holding nothing but whitespace is
+        /// reported as <see langword="null"/>, both for the same reasons as
+        /// <see cref="GetEnvironmentVariables()"/>.</remarks>
+        /// <param name="target">The scope to read from.</param>
+        /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing the environment variable names and
+        /// their values for that target.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
+        public static IReadOnlyDictionary<string, string?> GetEnvironmentVariables(EnvironmentVariableTarget target)
+        {
+            Dictionary<string, string?> variables = new(StringComparer.OrdinalIgnoreCase);
+            foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables(target))
             {
                 variables.Add((string)variable.Key, variable.Value is string value && !string.IsNullOrWhiteSpace(value) ? value : null);
             }
@@ -88,6 +109,7 @@ namespace PSADT.Utilities
         /// not persist after the process ends and do not affect the system or user environment variables.</remarks>
         /// <param name="variable">The name of the environment variable to set. Cannot be null or empty.</param>
         /// <param name="value">The value to assign to the environment variable. If null, the environment variable is deleted.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void SetEnvironmentVariable(string variable, string? value)
         {
             if (value is not null)
@@ -108,6 +130,7 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to create, modify, or delete. Cannot be null or empty.</param>
         /// <param name="value">The value to assign to the environment variable. If null, the environment variable is deleted.</param>
         /// <param name="target">One of the enumeration values that specifies the location where the environment variable is stored.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target)
         {
             if (value is not null)
@@ -277,6 +300,7 @@ namespace PSADT.Utilities
         /// not remove environment variables from the system or user environment. If the specified variable does not
         /// exist, no action is taken.</remarks>
         /// <param name="variable">The name of the environment variable to remove. Cannot be null.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void RemoveEnvironmentVariable(string variable)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
@@ -291,6 +315,7 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to remove. Cannot be null.</param>
         /// <param name="target">An enumeration value that specifies whether the environment variable is removed from the current process,
         /// user, or machine.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void RemoveEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
