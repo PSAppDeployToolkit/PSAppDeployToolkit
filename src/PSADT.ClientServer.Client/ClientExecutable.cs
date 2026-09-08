@@ -1113,13 +1113,7 @@ namespace PSADT.ClientServer
             /// <param name="logAction">The delegate used to write log messages to the server.</param>
             internal async ValueTask ResetAsync(IReadOnlyList<ProcessDefinition>? processDefinitions, Func<string, LogSeverity, string, ValueTask> logAction)
             {
-                if (State is not null)
-                {
-                    await using (State.ConfigureAwait(false))
-                    {
-                        State = null;
-                    }
-                }
+                await DisposeAsync().ConfigureAwait(false);
                 State = new(processDefinitions, logAction);
             }
 
