@@ -258,7 +258,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Gets the contained element records (raw bytes per record, length equals ContainedElementRecordLength).
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
         public IReadOnlyList<byte[]> ContainedElementRecords => new ReadOnlyCollection<byte[]>([.. ContainedElementRecordsValue]);
@@ -346,8 +346,8 @@ namespace PSADT.SMBIOS
             NumberOfPowerCords = numberOfPowerCords;
             ContainedElementCount = containedElementCount;
             ContainedElementRecordLength = containedElementRecordLength;
-            ContainedElementRecordsValue = new ValueList<byte[]>([.. containedElementRecords ?? []]);
-            ContainedElementsValue = new ValueList<SystemEnclosureContainedElement>([.. containedElements ?? []]);
+            ContainedElementRecordsValue = new EquatableList<byte[]>([.. containedElementRecords ?? []]);
+            ContainedElementsValue = new EquatableList<SystemEnclosureContainedElement>([.. containedElements ?? []]);
             SkuNumber = !string.IsNullOrWhiteSpace(skuNumber) ? skuNumber : null;
             RackType = rackType;
             RackHeight = rackHeight;
@@ -400,11 +400,11 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// The list recorded for <see cref="ContainedElementRecords"/>.
         /// </summary>
-        private readonly ValueList<byte[]> ContainedElementRecordsValue;
+        private readonly EquatableList<byte[]> ContainedElementRecordsValue;
 
         /// <summary>
         /// The list recorded for <see cref="ContainedElements"/>.
         /// </summary>
-        private readonly ValueList<SystemEnclosureContainedElement> ContainedElementsValue;
+        private readonly EquatableList<SystemEnclosureContainedElement> ContainedElementsValue;
     }
 }

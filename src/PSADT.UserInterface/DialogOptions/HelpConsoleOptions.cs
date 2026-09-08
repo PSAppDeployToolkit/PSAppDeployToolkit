@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.DialogOptions
         private HelpConsoleOptions(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> moduleHelpMap)
         {
             ArgumentNullException.ThrowIfNull(moduleHelpMap);
-            ModuleHelpMapValue = new ValueDictionary<string, ValueDictionary<string, string>>(moduleHelpMap.Select(static module => new KeyValuePair<string, ValueDictionary<string, string>>(module.Key, new ValueDictionary<string, string>(module.Value))));
+            ModuleHelpMapValue = new EquatableDictionary<string, EquatableDictionary<string, string>>(moduleHelpMap.Select(static module => new KeyValuePair<string, EquatableDictionary<string, string>>(module.Key, new EquatableDictionary<string, string>(module.Value))));
         }
 
         /// <summary>
@@ -46,18 +46,18 @@ namespace PSADT.UserInterface.DialogOptions
         /// the dictionary represents a module, with its value being another dictionary that maps help topic names to
         /// their corresponding descriptions. This structure enables efficient access to context-sensitive help content
         /// for different modules within the application.
-        /// <para>Held as a <see cref="ValueDictionary{TKey, TValue}"/>, inner dictionaries included, so that this
+        /// <para>Held as a <see cref="EquatableDictionary{TKey, TValue}"/>, inner dictionaries included, so that this
         /// record compares by the entries all the way down. Every dictionary the framework offers compares by
         /// reference, so holding one directly would make two consoles offering the same help unequal however alike
         /// they were. Both levels are handed back wrapped rather than as they are held, since what is held is an
         /// internal type that PowerShell could do nothing with.</para></remarks>
         [IgnoreDataMember]
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(ModuleHelpMapValue.ToDictionary(static module => module.Key, static module => (IReadOnlyDictionary<string, string>)new ReadOnlyDictionary<string, string>(module.Value), StringComparer.Ordinal));
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(ModuleHelpMapValue.ToDictionary(static module => module.Key, static module => (IReadOnlyDictionary<string, string>)module.Value, StringComparer.Ordinal));
 
         /// <summary>
         /// The help recorded for <see cref="ModuleHelpMap"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueDictionary<string, ValueDictionary<string, string>> ModuleHelpMapValue;
+        private readonly EquatableDictionary<string, EquatableDictionary<string, string>> ModuleHelpMapValue;
     }
 }

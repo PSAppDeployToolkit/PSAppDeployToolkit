@@ -102,7 +102,7 @@ namespace PSADT.AppManagement
                 UninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
                 if (argumentList.Count > 1)
                 {
-                    UninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
+                    UninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
                 }
             }
             if (QuietUninstallString is not null)
@@ -111,7 +111,7 @@ namespace PSADT.AppManagement
                 QuietUninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
                 if (argumentList.Count > 1)
                 {
-                    QuietUninstallStringArgumentListValue = new ValueList<string>([.. argumentList.Skip(1)]);
+                    QuietUninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
                 }
             }
         }
@@ -189,7 +189,7 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
         public IReadOnlyList<string> UninstallStringArgumentList => new ReadOnlyCollection<string>([.. UninstallStringArgumentListValue]);
@@ -283,11 +283,11 @@ namespace PSADT.AppManagement
         /// <summary>
         /// The list recorded for <see cref="UninstallStringArgumentList"/>.
         /// </summary>
-        private readonly ValueList<string> UninstallStringArgumentListValue = new([]);
+        private readonly EquatableList<string> UninstallStringArgumentListValue = new([]);
 
         /// <summary>
         /// The list recorded for <see cref="QuietUninstallStringArgumentList"/>.
         /// </summary>
-        private readonly ValueList<string> QuietUninstallStringArgumentListValue = new([]);
+        private readonly EquatableList<string> QuietUninstallStringArgumentListValue = new([]);
     }
 }

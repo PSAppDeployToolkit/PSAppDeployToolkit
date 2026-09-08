@@ -9,10 +9,10 @@ namespace PSADT.Collections
     /// <remarks>For most types this is the framework's own comparison. The exception is a value that is itself an
     /// array, which compares by reference and would leave a collection of arrays no better off than the collection it
     /// was built to replace - so those are compared by their contents instead. <para> Held here rather than in each
-    /// collection so that <see cref="ValueList{T}"/> and <see cref="ValueDictionary{TKey, TValue}"/> agree on what two
+    /// collection so that <see cref="EquatableList{T}"/> and <see cref="EquatableDictionary{TKey, TValue}"/> agree on what two
     /// values being the same means. </para></remarks>
     /// <typeparam name="T">The type of the values to compare.</typeparam>
-    internal static class ValueEqualityComparer<T>
+    internal static class ElementEqualityComparer<T>
     {
         /// <summary>
         /// The comparer to use for values of type <typeparamref name="T"/>.

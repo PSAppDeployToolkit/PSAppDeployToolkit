@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
             ProcessValue = new ProcessIdentity(process);
             Description = description;
             FileNameValue = new FileInfo(fileName).FullName;
-            ArgumentListValue = new ValueList<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
+            ArgumentListValue = new EquatableList<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             SID = sid;
         }
 
@@ -261,7 +261,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments passed to the running process.
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
         public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
@@ -281,7 +281,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The list recorded for <see cref="ArgumentList"/>.
         /// </summary>
-        private readonly ValueList<string> ArgumentListValue;
+        private readonly EquatableList<string> ArgumentListValue;
 
         /// <summary>
         /// The process recorded for <see cref="Process"/>.

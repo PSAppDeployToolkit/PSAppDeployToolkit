@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization;
 using PSADT.Collections;
 using Xunit;
@@ -12,7 +12,7 @@ namespace PSADT.Tests.Collections
     /// Tests the dictionary that records hold in place of a framework one so that they compare by value.
     /// </summary>
     /// <remarks>
-    /// The counterpart to <see cref="ValueListTests"/>, and it exists for the same reason: every dictionary
+    /// The counterpart to <see cref="EquatableListTests"/>, and it exists for the same reason: every dictionary
     /// the framework offers compares by reference, which quietly breaks the equality a record advertises.
     /// So the tests are about the comparison rather than about the dictionary.
     /// <para>
@@ -22,7 +22,7 @@ namespace PSADT.Tests.Collections
     /// running total over a sequence does not give for free.
     /// </para>
     /// </remarks>
-    public sealed class ValueDictionaryTests
+    public sealed class EquatableDictionaryTests
     {
         /// <summary>
         /// Verifies that two dictionaries holding the same entries are equal and hash alike.
@@ -31,8 +31,8 @@ namespace PSADT.Tests.Collections
         public void Equals_IsByTheEntries()
         {
             // Arrange
-            ValueDictionary<string, string> first = new([new("alpha", "one"), new("bravo", "two")]);
-            ValueDictionary<string, string> second = new([new("alpha", "one"), new("bravo", "two")]);
+            EquatableDictionary<string, string> first = new([new("alpha", "one"), new("bravo", "two")]);
+            EquatableDictionary<string, string> second = new([new("alpha", "one"), new("bravo", "two")]);
 
             // Assert
             Assert.Equal(first, second);
@@ -52,8 +52,8 @@ namespace PSADT.Tests.Collections
         public void Equals_DoesNotTakeOrderIntoAccount()
         {
             // Arrange
-            ValueDictionary<string, string> first = new([new("alpha", "one"), new("bravo", "two"), new("charlie", "three")]);
-            ValueDictionary<string, string> second = new([new("charlie", "three"), new("alpha", "one"), new("bravo", "two")]);
+            EquatableDictionary<string, string> first = new([new("alpha", "one"), new("bravo", "two"), new("charlie", "three")]);
+            EquatableDictionary<string, string> second = new([new("charlie", "three"), new("alpha", "one"), new("bravo", "two")]);
 
             // Assert
             Assert.Equal(first, second);
@@ -67,8 +67,8 @@ namespace PSADT.Tests.Collections
         public void Equals_TakesTheValuesIntoAccount()
         {
             Assert.NotEqual(
-                new ValueDictionary<string, string>([new("alpha", "one")]),
-                new ValueDictionary<string, string>([new("alpha", "two")]));
+                new EquatableDictionary<string, string>([new("alpha", "one")]),
+                new EquatableDictionary<string, string>([new("alpha", "two")]));
         }
 
         /// <summary>
@@ -78,8 +78,8 @@ namespace PSADT.Tests.Collections
         public void Equals_TakesTheKeysIntoAccount()
         {
             Assert.NotEqual(
-                new ValueDictionary<string, string>([new("alpha", "one")]),
-                new ValueDictionary<string, string>([new("bravo", "one")]));
+                new EquatableDictionary<string, string>([new("alpha", "one")]),
+                new EquatableDictionary<string, string>([new("bravo", "one")]));
         }
 
         /// <summary>
@@ -90,11 +90,11 @@ namespace PSADT.Tests.Collections
         public void Equals_TakesSizeIntoAccount()
         {
             Assert.NotEqual(
-                new ValueDictionary<string, string>([new("alpha", "one")]),
-                new ValueDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]));
+                new EquatableDictionary<string, string>([new("alpha", "one")]),
+                new EquatableDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]));
             Assert.NotEqual(
-                new ValueDictionary<string, string>([]),
-                new ValueDictionary<string, string>([new("alpha", "one")]));
+                new EquatableDictionary<string, string>([]),
+                new EquatableDictionary<string, string>([new("alpha", "one")]));
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace PSADT.Tests.Collections
         [Fact]
         public void Equals_TreatsTwoEmptyDictionariesAsEqual()
         {
-            Assert.Equal(new ValueDictionary<string, string>([]), new ValueDictionary<string, string>([]));
-            Assert.Equal(new ValueDictionary<string, string>([]).GetHashCode(), new ValueDictionary<string, string>([]).GetHashCode());
+            Assert.Equal(new EquatableDictionary<string, string>([]), new EquatableDictionary<string, string>([]));
+            Assert.Equal(new EquatableDictionary<string, string>([]).GetHashCode(), new EquatableDictionary<string, string>([]).GetHashCode());
         }
 
         /// <summary>
@@ -115,9 +115,9 @@ namespace PSADT.Tests.Collections
         [Fact]
         public void Equals_IsNotEqualToNothing()
         {
-            Assert.False(new ValueDictionary<string, string>([]).Equals(other: null));
-            Assert.False(new ValueDictionary<string, string>([new("alpha", "one")]).Equals(obj: null));
-            Assert.False(new ValueDictionary<string, string>([new("alpha", "one")]).Equals(obj: "alpha"));
+            Assert.False(new EquatableDictionary<string, string>([]).Equals(other: null));
+            Assert.False(new EquatableDictionary<string, string>([new("alpha", "one")]).Equals(obj: null));
+            Assert.False(new EquatableDictionary<string, string>([new("alpha", "one")]).Equals(obj: "alpha"));
         }
 
         /// <summary>
@@ -131,13 +131,13 @@ namespace PSADT.Tests.Collections
         public void Equals_ComparesArrayValuesByTheirContents()
         {
             // Arrange: equal contents, different arrays
-            ValueDictionary<string, byte[]> first = new([new("alpha", [1, 2, 3])]);
-            ValueDictionary<string, byte[]> second = new([new("alpha", [1, 2, 3])]);
+            EquatableDictionary<string, byte[]> first = new([new("alpha", [1, 2, 3])]);
+            EquatableDictionary<string, byte[]> second = new([new("alpha", [1, 2, 3])]);
 
             // Assert
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
-            Assert.NotEqual(first, new ValueDictionary<string, byte[]>([new("alpha", [1, 2, 4])]));
+            Assert.NotEqual(first, new EquatableDictionary<string, byte[]>([new("alpha", [1, 2, 4])]));
         }
 
         /// <summary>
@@ -148,14 +148,14 @@ namespace PSADT.Tests.Collections
         public void Equals_ComparesArrayKeysByTheirContents()
         {
             // Arrange: equal contents, different arrays
-            ValueDictionary<byte[], string> first = new([new([1, 2, 3], "alpha")]);
-            ValueDictionary<byte[], string> second = new([new([1, 2, 3], "alpha")]);
+            EquatableDictionary<byte[], string> first = new([new([1, 2, 3], "alpha")]);
+            EquatableDictionary<byte[], string> second = new([new([1, 2, 3], "alpha")]);
 
             // Assert
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
             Assert.True(first.ContainsKey([1, 2, 3]));
-            Assert.NotEqual(first, new ValueDictionary<byte[], string>([new([1, 2, 4], "alpha")]));
+            Assert.NotEqual(first, new EquatableDictionary<byte[], string>([new([1, 2, 4], "alpha")]));
         }
 
         /// <summary>
@@ -165,13 +165,13 @@ namespace PSADT.Tests.Collections
         public void Equals_HandlesNullValues()
         {
             // Arrange
-            ValueDictionary<string, string?> first = new([new("alpha", value: null), new("bravo", "two")]);
-            ValueDictionary<string, string?> second = new([new("alpha", value: null), new("bravo", "two")]);
+            EquatableDictionary<string, string?> first = new([new("alpha", value: null), new("bravo", "two")]);
+            EquatableDictionary<string, string?> second = new([new("alpha", value: null), new("bravo", "two")]);
 
             // Assert
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
-            Assert.NotEqual(first, new ValueDictionary<string, string?>([new("alpha", "one"), new("bravo", "two")]));
+            Assert.NotEqual(first, new EquatableDictionary<string, string?>([new("alpha", "one"), new("bravo", "two")]));
         }
 
         /// <summary>
@@ -186,13 +186,13 @@ namespace PSADT.Tests.Collections
         public void Equals_ComparesNestedDictionariesByTheirEntries()
         {
             // Arrange
-            ValueDictionary<string, ValueDictionary<string, string>> first = new([new("module", new([new("topic", "help")]))]);
-            ValueDictionary<string, ValueDictionary<string, string>> second = new([new("module", new([new("topic", "help")]))]);
+            EquatableDictionary<string, EquatableDictionary<string, string>> first = new([new("module", new([new("topic", "help")]))]);
+            EquatableDictionary<string, EquatableDictionary<string, string>> second = new([new("module", new([new("topic", "help")]))]);
 
             // Assert
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
-            Assert.NotEqual(first, new ValueDictionary<string, ValueDictionary<string, string>>([new("module", new([new("topic", "other")]))]));
+            Assert.NotEqual(first, new EquatableDictionary<string, EquatableDictionary<string, string>>([new("module", new([new("topic", "other")]))]));
         }
 
         /// <summary>
@@ -200,18 +200,18 @@ namespace PSADT.Tests.Collections
         /// to read them with.
         /// </summary>
         [Fact]
-        public void ValueDictionary_HoldsWhatItIsGiven()
+        public void EquatableDictionary_HoldsWhatItIsGiven()
         {
             // Arrange
-            ValueDictionary<string, string> dictionary = new([new("alpha", "one"), new("bravo", "two")]);
+            EquatableDictionary<string, string> dictionary = new([new("alpha", "one"), new("bravo", "two")]);
 
             // Assert
             Assert.Equal(2, dictionary.Count);
             Assert.Equal("two", dictionary["bravo"]);
             Assert.True(dictionary.ContainsKey("alpha"));
             Assert.False(dictionary.ContainsKey("charlie"));
-            Assert.Equal(["alpha", "bravo"], dictionary.Keys);
-            Assert.Equal(["one", "two"], dictionary.Values);
+            Assert.Equal(["alpha", "bravo"], dictionary.Keys, StringComparer.Ordinal);
+            Assert.Equal(["one", "two"], dictionary.Values, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace PSADT.Tests.Collections
         public void TryGetValue_ReportsWhetherTheKeyIsThere()
         {
             // Arrange
-            ValueDictionary<string, string> dictionary = new([new("alpha", "one")]);
+            EquatableDictionary<string, string> dictionary = new([new("alpha", "one")]);
 
             // Assert
             Assert.True(dictionary.TryGetValue("alpha", out string? found));
@@ -242,11 +242,11 @@ namespace PSADT.Tests.Collections
         /// comparison, and with it the comparison of whatever record is holding it.
         /// </summary>
         [Fact]
-        public void ValueDictionary_CopiesWhatItIsGiven()
+        public void EquatableDictionary_CopiesWhatItIsGiven()
         {
             // Arrange
             Dictionary<string, string> source = new(StringComparer.Ordinal) { ["alpha"] = "one" };
-            ValueDictionary<string, string> dictionary = new(source);
+            EquatableDictionary<string, string> dictionary = new(source);
 
             // Act
             source["bravo"] = "two";
@@ -260,86 +260,69 @@ namespace PSADT.Tests.Collections
         /// stale one would leave the dictionary findable under the wrong key.
         /// </summary>
         /// <remarks>
-        /// Adding is only meant to happen while the serializer is rebuilding a dictionary, before anything
-        /// has asked it for anything. Asserted anyway, for the same reason the list asserts it.
+        /// Reached by reflection because that is the only way it is reached at all: the member is private
+        /// so that nothing but the serializer can call it, and the serializer calls it reflectively.
+        /// Asserted for the same reason the list asserts it.
         /// </remarks>
         [Fact]
         public void Add_IsReflectedInTheComparison()
         {
             // Arrange
-            ValueDictionary<string, string> dictionary = new([new("alpha", "one")]);
+            EquatableDictionary<string, string> dictionary = new([new("alpha", "one")]);
             int before = dictionary.GetHashCode();
+            MethodInfo? add = typeof(EquatableDictionary<string, string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(add);
 
             // Act
-            dictionary.Add("bravo", "two");
+            _ = add.Invoke(dictionary, [new KeyValuePair<string, string>("bravo", "two")]);
 
             // Assert
-            Assert.Equal(new ValueDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]), dictionary);
-            Assert.Equal(new ValueDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]).GetHashCode(), dictionary.GetHashCode());
+            Assert.Equal(new EquatableDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]), dictionary);
+            Assert.Equal(new EquatableDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]).GetHashCode(), dictionary.GetHashCode());
             Assert.NotEqual(before, dictionary.GetHashCode());
         }
 
         /// <summary>
-        /// Verifies that every way of changing a dictionary other than the one the serializer needs is
-        /// refused.
+        /// Verifies that no mutable surface is offered, since the type stands in for a value.
         /// </summary>
         /// <remarks>
-        /// The type is meant to stand in for a value, so a dictionary that could be emptied or rewritten
-        /// after the record holding it was built would change that record's hash underneath whatever was
-        /// holding it. These members exist only because the interface the serializer and the read-only
-        /// wrapper both require declares them.
+        /// A dictionary that could be emptied or rewritten after the record holding it was built would
+        /// change that record's hash underneath whatever was holding it. Implementing <see
+        /// cref="IDictionary{TKey, TValue}"/> is what used to put those members within reach, and it also
+        /// made <c language="csharp">Keys</c> and <c language="csharp">Values</c> hand out the underlying dictionary's own mutable
+        /// collections. Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented now.
         /// </remarks>
         [Fact]
-        public void ValueDictionary_RefusesToBeChangedAfterTheFact()
+        public void EquatableDictionary_OffersNoMutableSurface()
         {
             // Arrange
-            IDictionary<string, string> dictionary = new ValueDictionary<string, string>([new("alpha", "one")]);
+            Type[] interfaces = typeof(EquatableDictionary<string, string>).GetInterfaces();
 
             // Assert
-            _ = Assert.Throws<NotSupportedException>(() => dictionary.Remove("alpha"));
-            _ = Assert.Throws<NotSupportedException>(() => dictionary.Remove(new KeyValuePair<string, string>("alpha", "one")));
-            _ = Assert.Throws<NotSupportedException>(dictionary.Clear);
-            _ = Assert.Throws<NotSupportedException>(() => dictionary.Add(new KeyValuePair<string, string>("bravo", "two")));
-            _ = Assert.Throws<NotSupportedException>(() => dictionary["alpha"] = "two");
-            _ = Assert.Single(dictionary);
-        }
-
-        /// <summary>
-        /// Verifies that the members carried only to satisfy the collection interface report what they are
-        /// supposed to, since nothing in the library calls them and a mistake would go unnoticed.
-        /// </summary>
-        [Fact]
-        public void ValueDictionary_SatisfiesTheCollectionInterface()
-        {
-            // Arrange
-            ICollection<KeyValuePair<string, string>> collection = new ValueDictionary<string, string>([new("alpha", "one")]);
-            KeyValuePair<string, string>[] target = new KeyValuePair<string, string>[1];
-
-            // Act
-            collection.CopyTo(target, 0);
-
-            // Assert
-            Assert.True(collection.Contains(new KeyValuePair<string, string>("alpha", "one")));
-            Assert.False(collection.Contains(new KeyValuePair<string, string>("alpha", "two")));
-            Assert.False(collection.Contains(new KeyValuePair<string, string>("bravo", "one")));
-            Assert.Equal([new("alpha", "one")], target);
+            Assert.DoesNotContain(typeof(IDictionary<string, string>), interfaces);
+            Assert.DoesNotContain(typeof(ICollection<KeyValuePair<string, string>>), interfaces);
+            Assert.Contains(typeof(IReadOnlyDictionary<string, string>), interfaces);
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Remove", BindingFlags.Instance | BindingFlags.Public));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public));
         }
 
         /// <summary>
         /// Verifies that a dictionary survives a data contract round trip, which is the only reason the
-        /// parameterless constructor and <c language="csharp">Add</c> are public at all.
+        /// parameterless constructor and <c language="csharp">Add</c> exist at all.
         /// </summary>
         /// <remarks>
-        /// The serializer rebuilds a collection by constructing an empty one and adding to it, and refuses
-        /// a type offering no way to do that. Nesting one inside another is asserted because that is the
-        /// shape the help console's module map takes over the wire.
+        /// The serializer rebuilds a collection by constructing an empty one and adding to it, reaches
+        /// both by reflection, and refuses a type offering no way to do it. Nesting one inside another is
+        /// asserted because that is the shape the help console's module map takes over the wire. Both
+        /// members are private, so nothing the compiler can see would notice them going missing.
         /// </remarks>
         [Fact]
         public void Serialization_RoundTripsEveryEntry()
         {
             // Arrange
-            ValueDictionary<string, ValueDictionary<string, string>> original = new([new("module", new([new("topic", "help"), new("other", "text")]))]);
-            DataContractSerializer serializer = new(typeof(ValueDictionary<string, ValueDictionary<string, string>>));
+            EquatableDictionary<string, EquatableDictionary<string, string>> original = new([new("module", new([new("topic", "help"), new("other", "text")]))]);
+            DataContractSerializer serializer = new(typeof(EquatableDictionary<string, EquatableDictionary<string, string>>));
 
             // Act
             using MemoryStream stream = new();
@@ -351,7 +334,7 @@ namespace PSADT.Tests.Collections
             // and flagged as redundant on the other.
             object? deserialized = serializer.ReadObject(stream);
             Assert.NotNull(deserialized);
-            ValueDictionary<string, ValueDictionary<string, string>> restored = (ValueDictionary<string, ValueDictionary<string, string>>)deserialized;
+            EquatableDictionary<string, EquatableDictionary<string, string>> restored = (EquatableDictionary<string, EquatableDictionary<string, string>>)deserialized;
 
             // Assert
             Assert.Equal(original, restored);
@@ -360,39 +343,14 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
-        /// Verifies that the type can be handed straight to the read-only wrapper, which is how a record
-        /// exposes one without letting an interface reach PowerShell.
-        /// </summary>
-        /// <remarks>
-        /// The wrapper takes a mutable dictionary, which is the whole reason this type implements one
-        /// despite standing in for a value. Reading through it is asserted because the wrapper holds the
-        /// dictionary rather than copying it.
-        /// </remarks>
-        [Fact]
-        public void ValueDictionary_CanBeWrappedForCallers()
-        {
-            // Arrange
-            ValueDictionary<string, string> dictionary = new([new("alpha", "one"), new("bravo", "two")]);
-
-            // Act
-            ReadOnlyDictionary<string, string> wrapped = new(dictionary);
-
-            // Assert
-            Assert.Equal(2, wrapped.Count);
-            Assert.Equal("one", wrapped["alpha"]);
-            Assert.True(wrapped.TryGetValue("bravo", out string? found));
-            Assert.Equal("two", found);
-        }
-
-        /// <summary>
         /// Verifies that nothing at all is refused, since a dictionary built from nothing is a caller's
         /// mistake rather than an empty dictionary.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
         [Fact]
-        public void ValueDictionary_RefusesNothingAtAll()
+        public void EquatableDictionary_RefusesNothingAtAll()
         {
-            _ = Assert.Throws<ArgumentNullException>(static () => new ValueDictionary<string, string>(null!));
+            _ = Assert.Throws<ArgumentNullException>(static () => new EquatableDictionary<string, string>(null!));
         }
 
         /// <summary>
@@ -400,9 +358,9 @@ namespace PSADT.Tests.Collections
         /// caller handing over two values for one key has not decided what it means.
         /// </summary>
         [Fact]
-        public void ValueDictionary_RefusesADuplicateKey()
+        public void EquatableDictionary_RefusesADuplicateKey()
         {
-            _ = Assert.Throws<ArgumentException>(static () => new ValueDictionary<string, string>([new("alpha", "one"), new("alpha", "two")]));
+            _ = Assert.Throws<ArgumentException>(static () => new EquatableDictionary<string, string>([new("alpha", "one"), new("alpha", "two")]));
         }
     }
 }

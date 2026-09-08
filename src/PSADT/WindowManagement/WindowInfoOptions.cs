@@ -57,10 +57,10 @@ namespace PSADT.WindowManagement
 
             // Assign read-only collections or null based on input.
             WindowTitleRegex = windowTitleRegex;
-            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new ValueList<long>([.. windowHandleFilter.Select(static h => (long)h)]) : null;
-            ParentProcessFilterValues = parentProcessFilter is not null ? new ValueList<string>([.. parentProcessFilter]) : null;
-            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new ValueList<uint>([.. parentProcessIdFilter]) : null;
-            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new ValueList<long>([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
+            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new EquatableList<long>([.. windowHandleFilter.Select(static h => (long)h)]) : null;
+            ParentProcessFilterValues = parentProcessFilter is not null ? new EquatableList<string>([.. parentProcessFilter]) : null;
+            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new EquatableList<uint>([.. parentProcessIdFilter]) : null;
+            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new EquatableList<long>([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every
         /// collection the framework offers compares by reference, so holding one directly would make two of these
         /// unequal however alike they were.</remarks>
         [IgnoreDataMember]
@@ -110,24 +110,24 @@ namespace PSADT.WindowManagement
         /// Gets the window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly ValueList<long>? WindowHandleFilterValues;
+        private readonly EquatableList<long>? WindowHandleFilterValues;
 
         /// <summary>
         /// Gets the parent process main window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly ValueList<long>? ParentProcessMainWindowHandleFilterValues;
+        private readonly EquatableList<long>? ParentProcessMainWindowHandleFilterValues;
 
         /// <summary>
         /// The list recorded for <see cref="ParentProcessFilter"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<string>? ParentProcessFilterValues;
+        private readonly EquatableList<string>? ParentProcessFilterValues;
 
         /// <summary>
         /// The list recorded for <see cref="ParentProcessIdFilter"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<uint>? ParentProcessIdFilterValues;
+        private readonly EquatableList<uint>? ParentProcessIdFilterValues;
     }
 }

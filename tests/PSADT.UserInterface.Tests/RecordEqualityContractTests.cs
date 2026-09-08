@@ -25,8 +25,8 @@ namespace PSADT.UserInterface.Tests
     /// The same sweep exists in <c language="text">PSAppDeployToolkit.Tests</c>, where it was written after
     /// <c language="csharp">LogEntry</c> turned out to have one <see cref="System.IO.FileInfo"/> among nine values. This
     /// assembly's records were built with that already known, so the three reference-typed surfaces here
-    /// - a culture, a list and a nested map - are already stored as a name, a <c language="csharp">ValueList</c> and a
-    /// <c language="csharp">ValueDictionary</c>. This is what keeps the next one from being different.
+    /// - a culture, a list and a nested map - are already stored as a name, a <c language="csharp">EquatableList</c> and a
+    /// <c language="csharp">EquatableDictionary</c>. This is what keeps the next one from being different.
     /// </para>
     /// </remarks>
     public sealed class RecordEqualityContractTests
@@ -183,7 +183,7 @@ namespace PSADT.UserInterface.Tests
         /// </para>
         /// <para>
         /// Generic arguments are not examined. A type that overrides equality is taken at its word about
-        /// how it compares what it contains - <c language="csharp">ValueList&lt;T&gt;</c> compares its elements by their
+        /// how it compares what it contains - <c language="csharp">EquatableList&lt;T&gt;</c> compares its elements by their
         /// contents, for instance - and second-guessing that would report it wrongly.
         /// </para>
         /// </remarks>

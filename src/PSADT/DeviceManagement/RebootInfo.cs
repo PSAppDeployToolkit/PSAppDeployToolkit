@@ -47,8 +47,8 @@ namespace PSADT.DeviceManagement
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperationsValue = new ValueList<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
-            ErrorMsgValue = new ValueList<string>([.. errorMsg]);
+            PendingFileRenameOperationsValue = new EquatableList<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
+            ErrorMsgValue = new EquatableList<string>([.. errorMsg]);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets the list of pending file rename operations.
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every collection the
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
         public IReadOnlyList<string> PendingFileRenameOperations => new ReadOnlyCollection<string>([.. PendingFileRenameOperationsValue]);
@@ -125,11 +125,11 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// The list recorded for <see cref="PendingFileRenameOperations"/>.
         /// </summary>
-        private readonly ValueList<string> PendingFileRenameOperationsValue;
+        private readonly EquatableList<string> PendingFileRenameOperationsValue;
 
         /// <summary>
         /// The list recorded for <see cref="ErrorMsg"/>.
         /// </summary>
-        private readonly ValueList<string> ErrorMsgValue;
+        private readonly EquatableList<string> ErrorMsgValue;
     }
 }

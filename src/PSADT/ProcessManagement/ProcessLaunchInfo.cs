@@ -133,7 +133,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentListValue = new ValueList<string>(argumentList is not null ? [.. argumentList] : []);
+            ArgumentListValue = new EquatableList<string>(argumentList is not null ? [.. argumentList] : []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
@@ -181,7 +181,7 @@ namespace PSADT.ProcessManagement
                             ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                             WorkingDirectoryPath = new DirectoryInfo(ExpandEnvironmentVariables(workingDirectory)).FullName;
                         }
-                        ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
+                        ArgumentListValue = new EquatableList<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
                         FilePath = ExpandEnvironmentVariables(FilePath);
                     }
                 }
@@ -192,7 +192,7 @@ namespace PSADT.ProcessManagement
                         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                         WorkingDirectoryPath = new DirectoryInfo(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory)).FullName;
                     }
-                    ArgumentListValue = new ValueList<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
+                    ArgumentListValue = new EquatableList<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
                     FilePath = EnvironmentUtilities.ExpandEnvironmentVariables(FilePath);
                 }
             }
@@ -257,8 +257,8 @@ namespace PSADT.ProcessManagement
             // Set remaining parameters.
             DenyUserTermination = denyUserTermination;
             RunAsInvoker = runAsInvoker;
-            StandardInputValue = new ValueList<string>(standardInput is not null ? [.. standardInput] : []);
-            HandlesToInheritValues = new ValueList<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
+            StandardInputValue = new EquatableList<string>(standardInput is not null ? [.. standardInput] : []);
+            HandlesToInheritValues = new EquatableList<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
@@ -279,7 +279,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every
         /// collection the framework offers compares by reference, so holding one directly would make two of these
         /// unequal however alike they were.</remarks>
         [IgnoreDataMember]
@@ -474,7 +474,7 @@ namespace PSADT.ProcessManagement
         private readonly string? WorkingDirectoryPath;
 
         [DataMember]
-        private readonly ValueList<long>? HandlesToInheritValues;
+        private readonly EquatableList<long>? HandlesToInheritValues;
 
         /// <summary>
         /// Gets the encoding web name string for serialization.
@@ -486,12 +486,12 @@ namespace PSADT.ProcessManagement
         /// The list recorded for <see cref="ArgumentList"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<string> ArgumentListValue;
+        private readonly EquatableList<string> ArgumentListValue;
 
         /// <summary>
         /// The list recorded for <see cref="StandardInput"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<string> StandardInputValue;
+        private readonly EquatableList<string> StandardInputValue;
     }
 }

@@ -9,7 +9,7 @@ namespace PSADT.ClientServer.Payloads
     /// <summary>
     /// Payload for the InitCloseAppsDialog command.
     /// </summary>
-    /// <remarks>The definitions are held as a <see cref="ValueList{T}"/> so that this record compares by their
+    /// <remarks>The definitions are held as a <see cref="EquatableList{T}"/> so that this record compares by their
     /// contents. Every collection the framework offers compares by reference, so holding one directly would make two
     /// payloads listing the same applications unequal however alike they were, while the generated <c language="csharp">ToString</c>
     /// rendered them identically.</remarks>
@@ -22,7 +22,7 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="processDefinitions">The collection of process definitions to monitor, or null if no processes need to be monitored.</param>
         internal InitCloseAppsDialogPayload(IReadOnlyList<ProcessDefinition>? processDefinitions)
         {
-            ProcessDefinitionsValue = processDefinitions is not null ? new ValueList<ProcessDefinition>([.. processDefinitions]) : null;
+            ProcessDefinitionsValue = processDefinitions is not null ? new EquatableList<ProcessDefinition>([.. processDefinitions]) : null;
         }
 
         /// <summary>
@@ -37,6 +37,6 @@ namespace PSADT.ClientServer.Payloads
         /// The definitions recorded for <see cref="ProcessDefinitions"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<ProcessDefinition>? ProcessDefinitionsValue;
+        private readonly EquatableList<ProcessDefinition>? ProcessDefinitionsValue;
     }
 }

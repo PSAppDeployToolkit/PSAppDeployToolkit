@@ -19,28 +19,28 @@ namespace PSADT.Collections
     /// correct when a member is added later, which a hand-written one would not. </para><para> Elements are compared
     /// the same way, so a list of arrays compares by the arrays' contents rather than by their references.
     /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
-    /// The parameterless constructor and <see cref="Add"/> exist for the data contract serializer, which builds a
-    /// collection by constructing an empty one and adding to it, and which refuses a collection type offering no way
-    /// to do that. Nothing else should call them: the point of the type is to stand in for a value, and a list that
-    /// changed after the record holding it was built would change that record's hash code underneath whatever was
-    /// holding it. </para></remarks>
+    /// The parameterless constructor and <see cref="Add"/> are private and exist solely for the data contract
+    /// serializer, which builds a collection by constructing an empty one and adding to it, reaches both by
+    /// reflection, and refuses a collection type offering no way to do it. Being private is the point: the type
+    /// stands in for a value, and a list that changed after the record holding it was built would change that
+    /// record's hash code underneath whatever was holding it, so nothing outside this type can. </para></remarks>
     /// <typeparam name="T">The type of the elements.</typeparam>
-    internal sealed class ValueList<T> : IReadOnlyList<T>, IEquatable<ValueList<T>>
+    internal sealed class EquatableList<T> : IReadOnlyList<T>, IEquatable<EquatableList<T>>
     {
         /// <summary>
-        /// Initializes a new, empty instance of the <see cref="ValueList{T}"/> class.
+        /// Initializes a new, empty instance of the <see cref="EquatableList{T}"/> class.
         /// </summary>
         /// <remarks>For the data contract serializer, which fills it through <see cref="Add"/>.</remarks>
-        public ValueList()
+        private EquatableList()
         {
             _items = [];
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValueList{T}"/> class holding the specified elements.
+        /// Initializes a new instance of the <see cref="EquatableList{T}"/> class holding the specified elements.
         /// </summary>
         /// <param name="items">The elements to hold. They are copied, so the caller may go on using its own list.</param>
-        internal ValueList(IEnumerable<T> items)
+        internal EquatableList(IEnumerable<T> items)
         {
             ArgumentNullException.ThrowIfNull(items);
             _items = [.. items];
@@ -51,7 +51,8 @@ namespace PSADT.Collections
         /// </summary>
         /// <remarks>For the data contract serializer. See the remarks on the type.</remarks>
         /// <param name="item">The element to append.</param>
-        public void Add(T item)
+        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "The data contract serializer calls this by reflection, which the compiler cannot see.")]
+        private void Add(T item)
         {
             _items.Add(item);
             _hashCode = null;
@@ -62,7 +63,7 @@ namespace PSADT.Collections
         /// </summary>
         /// <param name="other">The list to compare against.</param>
         /// <returns><see langword="true"/> if the two hold the same elements; otherwise, <see langword="false"/>.</returns>
-        public bool Equals([NotNullWhen(true)] ValueList<T>? other)
+        public bool Equals([NotNullWhen(true)] EquatableList<T>? other)
         {
             return ReferenceEquals(this, other) || (other is not null && _items.Count == other._items.Count && _items.SequenceEqual(other._items, ElementComparer));
         }
@@ -70,7 +71,7 @@ namespace PSADT.Collections
         /// <inheritdoc/>
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return Equals(obj as ValueList<T>);
+            return Equals(obj as EquatableList<T>);
         }
 
         /// <inheritdoc/>
@@ -118,6 +119,6 @@ namespace PSADT.Collections
         /// </summary>
         /// <remarks>An element that is itself an array is compared by its contents, since an array compares by
         /// reference and a list of arrays would otherwise be no better off than the list this type replaces.</remarks>
-        private static readonly IEqualityComparer<T> ElementComparer = ValueEqualityComparer<T>.Default;
+        private static readonly IEqualityComparer<T> ElementComparer = ElementEqualityComparer<T>.Default;
     }
 }

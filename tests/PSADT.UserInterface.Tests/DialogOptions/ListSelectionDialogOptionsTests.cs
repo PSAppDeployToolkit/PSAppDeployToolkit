@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
     /// <remarks>
     /// The only options type holding a collection, which is what most of these are about: a list held by
     /// reference would defeat both the record's equality and its immutability, so the items are copied
-    /// into a <c language="csharp">ValueList</c> on the way in and rebuilt into a read-only view on the way out.
+    /// into a <c language="csharp">EquatableList</c> on the way in and rebuilt into a read-only view on the way out.
     /// </remarks>
     public sealed class ListSelectionDialogOptionsTests
     {
@@ -135,7 +135,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// </summary>
         /// <remarks>
         /// The same guarantee the culture makes in <c language="csharp">BaseDialogOptions</c>, for the same reason: the
-        /// backing field is a <c language="csharp">ValueList</c> that compares by contents, and the property builds a fresh
+        /// backing field is a <c language="csharp">EquatableList</c> that compares by contents, and the property builds a fresh
         /// read-only view so no caller can reach the storage behind it.
         /// </remarks>
         [Fact]
@@ -153,7 +153,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// Verifies that two dialogs offering the same items are equal despite holding separate lists.
         /// </summary>
         /// <remarks>
-        /// This is the reason the backing field is a <c language="csharp">ValueList</c> rather than an array or a
+        /// This is the reason the backing field is a <c language="csharp">EquatableList</c> rather than an array or a
         /// <see cref="List{T}"/>, either of which would compare by reference and reduce the whole record
         /// to reference equality.
         /// </remarks>

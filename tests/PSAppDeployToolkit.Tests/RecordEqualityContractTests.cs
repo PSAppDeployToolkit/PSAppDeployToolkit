@@ -106,7 +106,7 @@ namespace PSAppDeployToolkit.Tests
         /// </para>
         /// <para>
         /// Generic arguments are not examined. A type that overrides equality is taken at its word about how it
-        /// compares what it contains - <c language="csharp">ValueList&lt;T&gt;</c> compares array elements by their contents, for
+        /// compares what it contains - <c language="csharp">EquatableList&lt;T&gt;</c> compares array elements by their contents, for
         /// instance - and second-guessing that would report it wrongly.
         /// </para>
         /// </remarks>

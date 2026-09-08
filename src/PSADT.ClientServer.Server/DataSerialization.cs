@@ -413,10 +413,10 @@ namespace PSADT.ClientServer
                 typeof(ReadOnlyCollection<int>),
 
                 // Used within Payloads.InitCloseAppsDialogPayload class.
-                typeof(Collections.ValueList<ProcessManagement.ProcessDefinition>),
+                typeof(Collections.EquatableList<ProcessManagement.ProcessDefinition>),
 
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
-                typeof(Collections.ValueDictionary<string, Collections.ValueDictionary<string, string>>),
+                typeof(Collections.EquatableDictionary<string, Collections.EquatableDictionary<string, string>>),
 
                 // XmlException serializes its own message arguments, so without this every failure out of
                 // ReadObject fails here instead, and the client aborts on its error handler's FailFast.

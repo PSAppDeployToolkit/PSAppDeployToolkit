@@ -10,47 +10,46 @@ namespace PSADT.Collections
     /// <summary>
     /// A dictionary that compares by its contents rather than by reference.
     /// </summary>
-    /// <remarks>The dictionary counterpart to <see cref="ValueList{T}"/>, and it exists for the same reason: a
+    /// <remarks>The dictionary counterpart to <see cref="EquatableList{T}"/>, and it exists for the same reason: a
     /// record compares each of its fields, every dictionary the framework offers compares by reference, and a record
     /// holding one is therefore a record that never equals another describing the same thing. A record stores this
-    /// privately and exposes it wrapped in a <see cref="System.Collections.ObjectModel.ReadOnlyDictionary{TKey,
-    /// TValue}"/>, so the generated equality picks up the entries while the type's callers see a concrete dictionary.
+    /// privately and exposes it through a property typed as <see cref="IReadOnlyDictionary{TKey, TValue}"/>, so the
+    /// generated equality picks up the entries while the type's callers see no difference.
     /// <para> Order is not part of the comparison, since two dictionaries holding the same entries describe the same
-    /// thing however they were filled. Keys and values are both compared the way <see cref="ValueEqualityComparer{T}"/>
+    /// thing however they were filled. Keys and values are both compared the way <see cref="ElementEqualityComparer{T}"/>
     /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references.
-    /// </para><para> It is filled once and then left alone. Its hash code is worked out on first use and kept, and the
-    /// members that would change it after the fact - <see cref="IDictionary{TKey, TValue}.Remove(TKey)"/>, <see
-    /// cref="ICollection{T}.Clear"/> and the assigning indexer - throw rather than allow it. <see cref="Add"/> and the
-    /// parameterless constructor are the exception, and they exist for the data contract serializer, which builds a
-    /// dictionary by constructing an empty one and adding to it and which refuses a type offering no way to do that.
-    /// Nothing else should call them: a dictionary that changed after the record holding it was built would change that
-    /// record's hash code underneath whatever was holding it. </para><para> <see cref="IDictionary{TKey, TValue}"/> is
-    /// implemented, despite the type being a value, because it is what both the serializer and <see
-    /// cref="System.Collections.ObjectModel.ReadOnlyDictionary{TKey, TValue}"/> require. The members of it that do not
-    /// belong here are implemented explicitly so that they stay off this type's own surface. </para></remarks>
+    /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
+    /// Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented, so there is no member on any surface that
+    /// would change it. The parameterless constructor and <see cref="Add"/> are private and exist solely for the data
+    /// contract serializer, which builds a collection by constructing an empty one and adding to it, reaches both by
+    /// reflection, and refuses a type offering no way to do it. Being private is the point: a dictionary that changed
+    /// after the record holding it was built would change that record's hash code underneath whatever was holding it,
+    /// so nothing outside this type can. </para><para> <see cref="Add"/> takes a <see cref="KeyValuePair{TKey,
+    /// TValue}"/> rather than a key and a value because that is what the serializer looks for once a type is not an
+    /// <c language="csharp">IDictionary</c>: it treats this as a collection of pairs and wants the pair. </para></remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "The Dictionary suffix is the correct one and is already present.")]
     [SuppressMessage("Design", "MA0182:Avoid unused internal types", Justification = "This is used across InternalsVisibleTo boundaries, by PSADT.UserInterface and by the tests.")]
-    internal sealed class ValueDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>, IEquatable<ValueDictionary<TKey, TValue>> where TKey : notnull
+    internal sealed class EquatableDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IEquatable<EquatableDictionary<TKey, TValue>> where TKey : notnull
     {
         /// <summary>
-        /// Initializes a new, empty instance of the <see cref="ValueDictionary{TKey, TValue}"/> class.
+        /// Initializes a new, empty instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class.
         /// </summary>
         /// <remarks>For the data contract serializer, which fills it through <see cref="Add"/>.</remarks>
-        public ValueDictionary()
+        private EquatableDictionary()
         {
             _items = new(KeyComparer);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValueDictionary{TKey, TValue}"/> class holding the specified
+        /// Initializes a new instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class holding the specified
         /// entries.
         /// </summary>
         /// <param name="entries">The entries to hold. They are copied, so the caller may go on using its own dictionary.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="entries"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="entries"/> holds the same key more than once.</exception>
-        internal ValueDictionary(IEnumerable<KeyValuePair<TKey, TValue>> entries)
+        internal EquatableDictionary(IEnumerable<KeyValuePair<TKey, TValue>> entries)
         {
             ArgumentNullException.ThrowIfNull(entries);
             _items = new(KeyComparer);
@@ -64,11 +63,11 @@ namespace PSADT.Collections
         /// Adds an entry.
         /// </summary>
         /// <remarks>For the data contract serializer. See the remarks on the type.</remarks>
-        /// <param name="key">The key to add.</param>
-        /// <param name="value">The value to add against it.</param>
-        public void Add(TKey key, TValue value)
+        /// <param name="item">The entry to add.</param>
+        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "The data contract serializer calls this by reflection, which the compiler cannot see.")]
+        private void Add(KeyValuePair<TKey, TValue> item)
         {
-            _items.Add(key, value);
+            _items.Add(item.Key, item.Value);
             _hashCode = null;
         }
 
@@ -77,7 +76,7 @@ namespace PSADT.Collections
         /// </summary>
         /// <param name="other">The dictionary to compare against.</param>
         /// <returns><see langword="true"/> if the two hold the same entries; otherwise, <see langword="false"/>.</returns>
-        public bool Equals([NotNullWhen(true)] ValueDictionary<TKey, TValue>? other)
+        public bool Equals([NotNullWhen(true)] EquatableDictionary<TKey, TValue>? other)
         {
             return ReferenceEquals(this, other) || (other is not null && _items.Count == other._items.Count && _items.All(entry => other._items.TryGetValue(entry.Key, out TValue? value) && ValueComparer.Equals(entry.Value, value)));
         }
@@ -85,7 +84,7 @@ namespace PSADT.Collections
         /// <inheritdoc/>
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return Equals(obj as ValueDictionary<TKey, TValue>);
+            return Equals(obj as EquatableDictionary<TKey, TValue>);
         }
 
         /// <inheritdoc/>
@@ -94,7 +93,7 @@ namespace PSADT.Collections
         /// reduced to a hash of its key and value, and those are then sorted before being combined, so that two
         /// dictionaries holding the same entries hash alike however they were filled - which is what makes this agree
         /// with the comparison above, where order does not count. </para></remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The dictionary is filled once and then left alone, which is what the remarks on the type describe; the cache is cleared if anything does add.")]
+        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The dictionary is filled once and then left alone, which is what the remarks on the type describe; the cache is cleared if the serializer does add.")]
         public override int GetHashCode()
         {
             // Combined through the shared helper rather than here, so that every hash this library produces
@@ -136,50 +135,6 @@ namespace PSADT.Collections
             return _items.GetEnumerator();
         }
 
-        /// <inheritdoc/>
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
-        {
-            return _items.TryGetValue(item.Key, out TValue? value) && ValueComparer.Equals(item.Value, value);
-        }
-
-        /// <inheritdoc/>
-        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            ((ICollection<KeyValuePair<TKey, TValue>>)_items).CopyTo(array, arrayIndex);
-        }
-
-        /// <inheritdoc/>
-        /// <remarks>Not supported. See the remarks on the type.</remarks>
-        /// <exception cref="NotSupportedException">Always thrown.</exception>
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
-        {
-            throw new NotSupportedException("A ValueDictionary is filled through Add(TKey, TValue) and not changed afterwards.");
-        }
-
-        /// <inheritdoc/>
-        /// <remarks>Not supported. See the remarks on the type.</remarks>
-        /// <exception cref="NotSupportedException">Always thrown.</exception>
-        bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
-        {
-            throw new NotSupportedException("A ValueDictionary is filled through Add(TKey, TValue) and not changed afterwards.");
-        }
-
-        /// <inheritdoc/>
-        /// <remarks>Not supported. See the remarks on the type.</remarks>
-        /// <exception cref="NotSupportedException">Always thrown.</exception>
-        bool IDictionary<TKey, TValue>.Remove(TKey key)
-        {
-            throw new NotSupportedException("A ValueDictionary is filled through Add(TKey, TValue) and not changed afterwards.");
-        }
-
-        /// <inheritdoc/>
-        /// <remarks>Not supported. See the remarks on the type.</remarks>
-        /// <exception cref="NotSupportedException">Always thrown.</exception>
-        void ICollection<KeyValuePair<TKey, TValue>>.Clear()
-        {
-            throw new NotSupportedException("A ValueDictionary is filled through Add(TKey, TValue) and not changed afterwards.");
-        }
-
         /// <summary>
         /// Reduces each entry to a hash of its key and value, and sorts them.
         /// </summary>
@@ -201,37 +156,17 @@ namespace PSADT.Collections
             return hashCodes;
         }
 
-        /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.this" />
+        /// <inheritdoc/>
         public TValue this[TKey key] => _items[key];
 
         /// <inheritdoc/>
-        /// <remarks>Reading is supported; assigning is not. See the remarks on the type.</remarks>
-        /// <exception cref="NotSupportedException">Thrown when assigning.</exception>
-        TValue IDictionary<TKey, TValue>.this[TKey key]
-        {
-            get => _items[key];
-            set => throw new NotSupportedException("A ValueDictionary is filled through Add(TKey, TValue) and not changed afterwards.");
-        }
-
-        /// <inheritdoc cref="IDictionary{TKey, TValue}.Keys" />
-        public ICollection<TKey> Keys => _items.Keys;
+        public IEnumerable<TKey> Keys => _items.Keys;
 
         /// <inheritdoc/>
-        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _items.Keys;
-
-        /// <inheritdoc cref="IDictionary{TKey, TValue}.Values" />
-        public ICollection<TValue> Values => _items.Values;
-
-        /// <inheritdoc/>
-        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _items.Values;
+        public IEnumerable<TValue> Values => _items.Values;
 
         /// <inheritdoc/>
         public int Count => _items.Count;
-
-        /// <inheritdoc/>
-        /// <remarks>Reported as false because the serializer does fill this through <see cref="Add"/>. Every other
-        /// way of changing it throws; see the remarks on the type.</remarks>
-        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
         /// <summary>
         /// The entries held.
@@ -246,11 +181,11 @@ namespace PSADT.Collections
         /// <summary>
         /// Compares two keys.
         /// </summary>
-        private static readonly IEqualityComparer<TKey> KeyComparer = ValueEqualityComparer<TKey>.Default;
+        private static readonly IEqualityComparer<TKey> KeyComparer = ElementEqualityComparer<TKey>.Default;
 
         /// <summary>
         /// Compares two values.
         /// </summary>
-        private static readonly IEqualityComparer<TValue> ValueComparer = ValueEqualityComparer<TValue>.Default;
+        private static readonly IEqualityComparer<TValue> ValueComparer = ElementEqualityComparer<TValue>.Default;
     }
 }

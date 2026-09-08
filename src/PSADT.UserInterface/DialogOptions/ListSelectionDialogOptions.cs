@@ -103,7 +103,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), selectedIndex, "SelectedIndex must be a valid index within ListItems.");
             }
-            ListItemsValue = new ValueList<string>([.. listItems]);
+            ListItemsValue = new EquatableList<string>([.. listItems]);
             SelectedIndex = selectedIndex;
             Strings = strings;
         }
@@ -111,7 +111,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The list of items to display for user selection.
         /// </summary>
-        /// <remarks>Held as a <see cref="ValueList{T}"/> so that this record compares by the list's contents. Every
+        /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every
         /// collection the framework offers compares by reference, so holding one directly would make two dialogs
         /// offering the same choices unequal however alike they were.</remarks>
         [IgnoreDataMember]
@@ -133,7 +133,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// The items recorded for <see cref="ListItems"/>.
         /// </summary>
         [DataMember]
-        private readonly ValueList<string> ListItemsValue;
+        private readonly EquatableList<string> ListItemsValue;
 
         /// <summary>
         /// Localized strings for the ListSelectionDialog.
