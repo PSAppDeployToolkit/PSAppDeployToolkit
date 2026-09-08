@@ -536,6 +536,12 @@
         "resolved": "5.0.0",
         "contentHash": "+J5kR/naCd62IwY2BG9P0QoHnJM8liBUFFAk6jga1t9s61JC3M+ofb3AY3wc73/pdROyKFCURqctQh8WRCIT/w=="
       },
+      "System.Text.Encoding.CodePages": {
+        "type": "Direct",
+        "requested": "[10.0.11, )",
+        "resolved": "10.0.11",
+        "contentHash": "K00Cn0qXY9jYh7gRemcRDdwj5PhHKMC9UGJjC/dd7Cn9P5yadXDt2SHDC/Q3iVZ+iRnhbwecbvizEtNPBHJ6iA=="
+      },
       "xunit.runner.visualstudio": {
         "type": "Direct",
         "requested": "[4.0.0, )",
@@ -802,6 +808,12 @@
           "System.Text.Encodings.Web": "10.0.10",
           "System.Text.Json": "10.0.10"
         }
+      },
+      "System.Text.Encoding.CodePages": {
+        "type": "Direct",
+        "requested": "[10.0.11, )",
+        "resolved": "10.0.11",
+        "contentHash": "K00Cn0qXY9jYh7gRemcRDdwj5PhHKMC9UGJjC/dd7Cn9P5yadXDt2SHDC/Q3iVZ+iRnhbwecbvizEtNPBHJ6iA=="
       },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",

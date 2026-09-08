@@ -15,9 +15,9 @@ namespace PSADT.Tests.WindowsInstaller
     /// numbered property set read out of one call, so a number off by one reads a neighbouring field and
     /// reports it under the wrong name - which no assertion about "a non-blank string" can catch.
     /// <para>
-    /// Reading the stream needs the host to be able to produce code page 1252, which the .NET runtime does
-    /// not register by default. PowerShell registers it, so the module is unaffected; a bare test host is
-    /// not, and skips rather than fails. That is the only thing gating these now.
+    /// Reading the stream needs the host to be able to produce code page 1252, which .NET does not carry.
+    /// <c language="csharp">LegacyCodePages</c> registers a provider for it the way PowerShell does, so these
+    /// run rather than skip.
     /// </para>
     /// </remarks>
     public sealed class MsiSummaryInfoTests
@@ -26,7 +26,7 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that the summary information of a real package is readable and carries the fields
         /// every package has.
         /// </summary>
-        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void MsiSummaryInfo_ReadsARealPackage()
         {
             // Arrange
@@ -45,7 +45,7 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that the revision number is the package code, since that is the one summary field
         /// callers match packages on.
         /// </summary>
-        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void MsiSummaryInfo_ReportsThePackageCodeAsTheRevisionNumber()
         {
             // Arrange
@@ -68,7 +68,7 @@ namespace PSADT.Tests.WindowsInstaller
         /// strings read under each other's names are both still strings. The three times are the exception
         /// and are asserted by shape: the value they should hold depends on the machine's time zone.
         /// </remarks>
-        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void MsiSummaryInfo_ReadsEveryFieldOfTheStream()
         {
             // Arrange
@@ -107,12 +107,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// them readable at all.
         /// </summary>
         /// <remarks>
-        /// Worth asserting separately because it is the field this whole file is gated on. An installer
-        /// authored before Unicode records its strings in a legacy code page, and the .NET runtime does
-        /// not register those by default - PowerShell does, which is why the module is unaffected and a
-        /// bare test host is not.
+        /// Worth asserting separately because it is the field every other one in the stream depends on: an
+        /// installer authored before Unicode records its strings in a legacy code page, and a string read
+        /// with the wrong one is wrong rather than absent.
         /// </remarks>
-        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void MsiSummaryInfo_ReportsTheCodePageItsStringsWereReadWith()
         {
             // Arrange

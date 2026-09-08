@@ -1311,11 +1311,6 @@
         "resolved": "8.0.0",
         "contentHash": "CNuiA6vb95Oe5PRjClZEBiaju31vwB8OIeCgeSBXyZL6+MS4RVVB2X/C11z0xCkooHE3Vy91nM2z76emIzR+sg=="
       },
-      "System.Text.Encoding.CodePages": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "OZIsVplFGaVY90G2SbpgU7EnCoOO5pw1t4ic21dBF3/1omrJFpAGoNAVpPyMVOC90/hvgkGG3VFqR13YgZMQfg=="
-      },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
         "resolved": "10.0.10",
@@ -1518,6 +1513,12 @@
         "dependencies": {
           "System.Diagnostics.EventLog": "8.0.1"
         }
+      },
+      "System.Text.Encoding.CodePages": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.11, )",
+        "resolved": "8.0.0",
+        "contentHash": "OZIsVplFGaVY90G2SbpgU7EnCoOO5pw1t4ic21dBF3/1omrJFpAGoNAVpPyMVOC90/hvgkGG3VFqR13YgZMQfg=="
       }
     },
     "net8.0/win-x64": {
@@ -1859,11 +1860,6 @@
         "resolved": "8.0.0",
         "contentHash": "CNuiA6vb95Oe5PRjClZEBiaju31vwB8OIeCgeSBXyZL6+MS4RVVB2X/C11z0xCkooHE3Vy91nM2z76emIzR+sg=="
       },
-      "System.Text.Encoding.CodePages": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "OZIsVplFGaVY90G2SbpgU7EnCoOO5pw1t4ic21dBF3/1omrJFpAGoNAVpPyMVOC90/hvgkGG3VFqR13YgZMQfg=="
-      },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
         "resolved": "10.0.10",
@@ -1887,6 +1883,12 @@
         "dependencies": {
           "System.Diagnostics.EventLog": "8.0.1"
         }
+      },
+      "System.Text.Encoding.CodePages": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.11, )",
+        "resolved": "8.0.0",
+        "contentHash": "OZIsVplFGaVY90G2SbpgU7EnCoOO5pw1t4ic21dBF3/1omrJFpAGoNAVpPyMVOC90/hvgkGG3VFqR13YgZMQfg=="
       }
     }
   }

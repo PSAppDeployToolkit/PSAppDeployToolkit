@@ -20,6 +20,16 @@
   </ItemGroup>
 
   <!--
+    The legacy code page encodings, which an installer database names in its summary information and .NET
+    does not carry. .NET Framework has them built in, so this is needed on one target framework only, and
+    it is needed by the test host rather than by the module: PowerShell registers a provider during its own
+    startup, so the module always has them. See LegacyCodePages.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="System.Text.Encoding.CodePages" />
+  </ItemGroup>
+
+  <!--
     Fixtures the tests read but never install or execute. They are copied rather than embedded because
     the code under test takes a path and opens the file itself, so a stream would not exercise it, and
     they land in a folder of the same name beside the assembly so that TestEnvironment can find them.

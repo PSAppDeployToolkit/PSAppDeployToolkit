@@ -187,19 +187,6 @@ namespace PSADT.Tests.TestHelpers
         public static bool HasFontCollection => FontCollection is not null;
 
         /// <summary>
-        /// Whether this host can produce the legacy code page encodings.
-        /// </summary>
-        /// <remarks>
-        /// Windows Installer databases record their code page in the summary information, almost always
-        /// 1252, and reading the summary asks the framework for that encoding. .NET Framework has the
-        /// legacy code pages built in; .NET does not, and a host has to register a provider for them.
-        /// PowerShell registers one during its own startup, so the module always has them, but a bare test
-        /// host does not. Probed rather than assumed from the target framework, so that a host which does
-        /// register a provider runs the tests instead of skipping them.
-        /// </remarks>
-        public static bool CanReadLegacyCodePages { get; } = GetCanReadLegacyCodePages();
-
-        /// <summary>
         /// Whether a cached patch was found, which gates the tests needing one.
         /// </summary>
         public static bool HasCachedMspPackage => CachedMspPackage is not null;
@@ -214,26 +201,6 @@ namespace PSADT.Tests.TestHelpers
         /// unreadable store simply produces no fixture, and the tests that need one skip.
         /// </remarks>
         public static FileInfo? CachedMspPackage { get; } = FindFirstReadableCachedPackage("*.msp");
-
-        /// <summary>
-        /// Determines whether this host can produce the legacy code page encodings.
-        /// </summary>
-        /// <returns><see langword="true"/> if code page 1252 resolves; otherwise, <see langword="false"/>.</returns>
-        private static bool GetCanReadLegacyCodePages()
-        {
-            try
-            {
-                return System.Text.Encoding.GetEncoding(1252) is not null;
-            }
-            catch (NotSupportedException)
-            {
-                return false;
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-        }
 
         /// <summary>
         /// Determines whether the caller is running with administrative rights.
