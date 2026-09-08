@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using PSADT.Tests.TestHelpers;
 using PSADT.WindowsInstaller;
 using Xunit;
@@ -11,15 +10,14 @@ namespace PSADT.Tests.WindowsInstaller
     /// Tests reading the summary information stream of an installer package.
     /// </summary>
     /// <remarks>
-    /// The fixture comes from the installer cache under the Windows directory, which holds a copy of every
-    /// package installed through Windows Installer. Using one of those means the tests read a database a
-    /// real product shipped rather than one authored here, at the cost of not knowing its contents in
-    /// advance - so the assertions are about the fields every package must carry, never about a particular
-    /// product's values. The package is opened read-only.
+    /// The fixture is the installer committed for the tests, opened read-only. Its contents are known, which
+    /// is what lets the field numbers be asserted as numbers rather than only as shapes: the stream is a
+    /// numbered property set read out of one call, so a number off by one reads a neighbouring field and
+    /// reports it under the wrong name - which no assertion about "a non-blank string" can catch.
     /// <para>
-    /// Reading the stream also needs the host to be able to produce code page 1252, which the .NET runtime
-    /// does not register by default. PowerShell registers it, so the module is unaffected; a bare test host
-    /// is not, and skips rather than fails.
+    /// Reading the stream needs the host to be able to produce code page 1252, which the .NET runtime does
+    /// not register by default. PowerShell registers it, so the module is unaffected; a bare test host is
+    /// not, and skips rather than fails. That is the only thing gating these now.
     /// </para>
     /// </remarks>
     public sealed class MsiSummaryInfoTests
@@ -28,12 +26,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that the summary information of a real package is readable and carries the fields
         /// every package has.
         /// </summary>
-        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
         public void MsiSummaryInfo_ReadsARealPackage()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);
@@ -48,12 +45,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that the revision number is the package code, since that is the one summary field
         /// callers match packages on.
         /// </summary>
-        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
         public void MsiSummaryInfo_ReportsThePackageCodeAsTheRevisionNumber()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);
@@ -64,49 +60,46 @@ namespace PSADT.Tests.WindowsInstaller
         }
 
         /// <summary>
-        /// Verifies that every field of the summary stream is read, and that each is either a real value
-        /// or absent rather than a blank one.
+        /// Verifies that every field of the summary stream is read under the name it belongs to.
         /// </summary>
         /// <remarks>
-        /// The summary stream is a numbered property set, so every field here is read by its number out
-        /// of one call - which means a number off by one reads a neighbouring field and reports it under
-        /// the wrong name. Nothing can assert a particular product's values, but the types can be checked
-        /// against the numbers they are meant to be: the three counts are numbers, the three times are
-        /// times, and the strings are either something or nothing.
+        /// Each field is asserted against the value the fixture actually carries, since a transposition is
+        /// what this is looking for and an assertion about a field's type cannot see one - two neighbouring
+        /// strings read under each other's names are both still strings. The three times are the exception
+        /// and are asserted by shape: the value they should hold depends on the machine's time zone.
         /// </remarks>
-        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
         public void MsiSummaryInfo_ReadsEveryFieldOfTheStream()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);
 
-            // Assert: the strings are either a value or nothing, never blank
-            Assert.All(
-                [summary.Title, summary.Subject, summary.Author, summary.Keywords, summary.Comments, summary.LastSavedBy, summary.CreatingApplication],
-                static value => Assert.True(value is null || !string.IsNullOrWhiteSpace(value), "A summary field came back blank rather than absent."));
+            // Assert: the fields the fixture carries, each against its own number
+            Assert.Equal("Intel;0", summary.Template);
+            Assert.Equal("{F509716E-DCB0-4037-A1CF-DC1300651714}", summary.RevisionNumber);
+            Assert.Equal("tomsk", summary.LastSavedBy);
+            Assert.Equal("Master Packager 26.3.9686", summary.CreatingApplication);
+            Assert.Equal(500, summary.PageCount);
+            Assert.Equal(2, summary.WordCount);
 
-            // Assert: the counts, where present, are counts
-            Assert.All(
-                new int?[] { summary.PageCount, summary.WordCount, summary.CharacterCount, summary.Security }.AsEnumerable(),
-                static value => Assert.True(value is null or >= 0, "A summary count came back negative."));
+            // Assert: and the ones it leaves out come back absent rather than blank or zero
+            Assert.Null(summary.Title);
+            Assert.Null(summary.Subject);
+            Assert.Null(summary.Author);
+            Assert.Null(summary.Keywords);
+            Assert.Null(summary.Comments);
+            Assert.Null(summary.CharacterCount);
+            Assert.Null(summary.Security);
 
-            // Assert: the times, where present, are in the past - a package cannot have been authored ahead of now
-            Assert.All(
-                new DateTime?[] { summary.CreateTimeDate, summary.LastSaveTimeDate, summary.LastPrinted }.AsEnumerable(),
-                static value => Assert.True(value is null || value <= DateTime.Now, "A summary time is in the future."));
-
-            // Assert: a package that was saved was created first
-            if (summary.CreateTimeDate is DateTime created && summary.LastSaveTimeDate is DateTime saved)
-            {
-                Assert.True(saved >= created, "The package reports being saved before it was created.");
-            }
-
-            // Assert: and the application that wrote it named itself, which every authoring tool does
-            Assert.NotNull(summary.CreatingApplication);
+            // Assert: the times are present, in the past, and in the order they have to be
+            _ = Assert.NotNull(summary.CreateTimeDate);
+            _ = Assert.NotNull(summary.LastSaveTimeDate);
+            _ = Assert.NotNull(summary.LastPrinted);
+            Assert.True(summary.LastSaveTimeDate >= summary.CreateTimeDate, "The package reports being saved before it was created.");
+            Assert.True(summary.LastSaveTimeDate <= DateTime.Now, "The package reports being saved in the future.");
         }
 
         /// <summary>
@@ -119,12 +112,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// not register those by default - PowerShell does, which is why the module is unaffected and a
         /// bare test host is not.
         /// </remarks>
-        [Fact(Skip = "Needs a readable installer in the Windows Installer cache and a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadMsiSummaryInfo), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = "Needs a host that can produce code page 1252.", SkipUnless = nameof(TestEnvironment.CanReadLegacyCodePages), SkipType = typeof(TestEnvironment))]
         public void MsiSummaryInfo_ReportsTheCodePageItsStringsWereReadWith()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             MsiSummaryInfo summary = MsiSummaryInfo.Get(package.FullName);

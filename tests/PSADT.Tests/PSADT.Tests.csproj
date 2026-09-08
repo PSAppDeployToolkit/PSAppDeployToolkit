@@ -29,6 +29,15 @@
   </ItemGroup>
 
   <!--
+    The installer the build module's Pester tests read, referenced where it lives rather than copied in
+    beside the ones above. It is the same fixture serving the same purpose on both sides of the repo, and
+    a second copy would be 250KB of binary that has to be kept in step by hand.
+  -->
+  <ItemGroup>
+    <Content Include="..\..\modules\PSAppDeployToolkit.Build\Tests\Assets\PSAppDeployToolkit Test MSI.msi" CopyToOutputDirectory="PreserveNewest" LinkBase="TestAssets" />
+  </ItemGroup>
+
+  <!--
     ClientServerUtilities' static constructor calls IsAuthenticodeTrusted() on each client/server
     executable, which throws when the file is missing. That is deliberate: the type is a setup
     component of the PowerShell module and a missing client is meant to fail loudly. It does mean the

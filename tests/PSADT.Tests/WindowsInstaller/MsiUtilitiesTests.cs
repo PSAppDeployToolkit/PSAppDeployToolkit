@@ -13,13 +13,10 @@ namespace PSADT.Tests.WindowsInstaller
     /// Tests the Windows Installer helpers.
     /// </summary>
     /// <remarks>
-    /// The tests that need a real database take their fixture from the installer cache under the Windows
-    /// directory, which holds a copy of every package installed through Windows Installer. Using one of
-    /// those means reading a database a real product shipped rather than one authored here, at the cost of
-    /// not knowing its contents in advance - so those assertions are about the shape of what comes back
-    /// and about the tables and properties every package must carry, never about a particular product's
-    /// values. Every database is opened read-only, and a machine with an empty cache skips rather than
-    /// fails, which an installer-free build agent will be.
+    /// The tests that need a database read the installer committed for them, opened read-only. The ones that
+    /// need a patch still take theirs from the installer cache under the Windows directory, because a patch
+    /// is a diff between two builds of a product and cannot be authored here - those skip on a machine whose
+    /// cache holds none, which an installer-free build agent's will not.
     /// <para>
     /// The packed GUID form is the interesting one. Windows Installer stores product, upgrade and
     /// component codes in a 32-character form that is not simply the GUID with its braces removed: the
@@ -289,12 +286,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that the property table reads back as a dictionary carrying the product code, which is
         /// the property every installable package defines.
         /// </summary>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableDictionary_ReadsThePropertyTable()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             IReadOnlyDictionary<string, object>? properties = MsiUtilities.GetMsiTableDictionary(package.FullName, "Property", 1, 2);
@@ -315,12 +311,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Pinned because it is the opposite of what the surrounding INI and registry helpers do, and the
         /// difference is invisible from the signature.
         /// </remarks>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableDictionary_MatchesTheTableNameWithRegardToCase()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act & Assert: the exact spelling resolves, and the others are reported as absent
             Assert.NotNull(MsiUtilities.GetMsiTableDictionary(package.FullName, "Property", 1, 2));
@@ -332,12 +327,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that a table the database does not have is reported as bad data rather than as an
         /// empty result, which would read as a table that exists and holds nothing.
         /// </summary>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableDictionary_ReportsATableThatIsNotThere()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act & Assert
             _ = Assert.Throws<InvalidDataException>(() => MsiUtilities.GetMsiTableDictionary(package.FullName, "NoSuchTable", 1, 2));
@@ -347,12 +341,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that a column number the table does not have is reported, for both the key and the
         /// value, since the two are resolved separately.
         /// </summary>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableDictionary_ReportsAColumnThatIsNotThere()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act & Assert
             _ = Assert.Throws<InvalidDataException>(() => MsiUtilities.GetMsiTableDictionary(package.FullName, "Property", 99, 2));
@@ -363,12 +356,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that a single column reads back as a list of values, which is the other shape callers
         /// ask the database for.
         /// </summary>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableColumnValues_ReadsASingleColumn()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act
             IReadOnlyList<object> names = MsiUtilities.GetMsiTableColumnValues(package.FullName, "Property", 1);
@@ -444,12 +436,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// Verifies that an empty transform list is rejected, since a caller passing one has lost its
         /// contents rather than meaning "no transforms".
         /// </summary>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void GetMsiTableDictionary_RejectsAnEmptyTransformList()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
 
             // Act & Assert
             _ = Assert.Throws<ArgumentOutOfRangeException>(() => MsiUtilities.GetMsiTableDictionary(package.FullName, "Property", 1, 2, []));
@@ -460,8 +451,8 @@ namespace PSADT.Tests.WindowsInstaller
         /// one rather than an empty file.
         /// </summary>
         /// <remarks>
-        /// Written into a temporary directory that is removed afterwards; the cached package it is
-        /// derived from is only read. A transform is how a deployment overrides an installer's properties
+        /// Written into a temporary directory that is removed afterwards; the package it is derived from is
+        /// only read. A transform is how a deployment overrides an installer's properties
         /// without editing it, so the file being produced at all is the part worth asserting - what it
         /// contains is the installer's own format rather than anything this library composes.
         /// <para>
@@ -470,12 +461,11 @@ namespace PSADT.Tests.WindowsInstaller
         /// whose value the package already held would produce nothing and read as a failure.
         /// </para>
         /// </remarks>
-        [Fact(Skip = "No readable installer was found in the Windows Installer cache.", SkipUnless = nameof(TestEnvironment.HasCachedMsiPackage), SkipType = typeof(TestEnvironment))]
+        [Fact]
         public void CreatePropertyTransformFile_WritesATransform()
         {
             // Arrange
-            FileInfo? package = TestEnvironment.CachedMsiPackage;
-            Assert.NotNull(package);
+            FileInfo package = TestEnvironment.TestMsiPackage;
             using TempDirectory temp = new();
             string transformPath = temp.GetPath("properties.mst");
 

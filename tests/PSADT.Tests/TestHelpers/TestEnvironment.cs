@@ -43,6 +43,26 @@ namespace PSADT.Tests.TestHelpers
             "testPackage.msix"));
 
         /// <summary>
+        /// An installer database shipped alongside the tests, for the members that read one.
+        /// </summary>
+        /// <remarks>
+        /// The same package the build module's Pester tests read, which is what makes the two sides of the
+        /// repo assert against the same database. The tests that need one used to take the first readable
+        /// package out of the Windows Installer cache: that reads a database a real product shipped, but it
+        /// is whatever the machine happens to hold, so a run on a machine with an empty cache skipped and
+        /// no assertion could name a value it expected to find. This one is committed, so neither applies.
+        /// <para>
+        /// Not a probe, for the same reason <see cref="TestPackage"/> is not: it is copied to the output
+        /// directory by the project, so a test finding it missing has a broken build rather than a machine
+        /// that cannot support it.
+        /// </para>
+        /// </remarks>
+        public static FileInfo TestMsiPackage { get; } = new(Path.Join(
+            Path.GetDirectoryName(typeof(TestEnvironment).Assembly.Location),
+            "TestAssets",
+            "PSAppDeployToolkit Test MSI.msi"));
+
+        /// <summary>
         /// The directory holding the machine's installed fonts.
         /// </summary>
         private static string FontsDirectory { get; } = Path.Join(
@@ -167,11 +187,6 @@ namespace PSADT.Tests.TestHelpers
         public static bool HasFontCollection => FontCollection is not null;
 
         /// <summary>
-        /// Whether a cached installer was found, which gates the tests needing a real database.
-        /// </summary>
-        public static bool HasCachedMsiPackage => CachedMsiPackage is not null;
-
-        /// <summary>
         /// Whether this host can produce the legacy code page encodings.
         /// </summary>
         /// <remarks>
@@ -185,31 +200,19 @@ namespace PSADT.Tests.TestHelpers
         public static bool CanReadLegacyCodePages { get; } = GetCanReadLegacyCodePages();
 
         /// <summary>
-        /// Whether a summary information test can run: it needs both a database to read and a host that
-        /// can produce the encoding the database names.
-        /// </summary>
-        public static bool CanReadMsiSummaryInfo => HasCachedMsiPackage && CanReadLegacyCodePages;
-
-        /// <summary>
         /// Whether a cached patch was found, which gates the tests needing one.
         /// </summary>
         public static bool HasCachedMspPackage => CachedMspPackage is not null;
 
         /// <summary>
-        /// An installer cached by Windows Installer, or <see langword="null"/> when the store is empty
-        /// or unreadable.
-        /// </summary>
-        /// <remarks>
-        /// The cache under <c language="text">%SystemRoot%\Installer</c> holds a copy of every package installed
-        /// through Windows Installer, which makes it a source of real databases to read without
-        /// shipping one. Enumeration is best-effort: an unreadable store simply produces no fixture,
-        /// and the tests that need one skip.
-        /// </remarks>
-        public static FileInfo? CachedMsiPackage { get; } = FindFirstReadableCachedPackage("*.msi");
-
-        /// <summary>
         /// A patch cached by Windows Installer, or <see langword="null"/> when there is none.
         /// </summary>
+        /// <remarks>
+        /// Still taken from the cache under <c language="text">%SystemRoot%\Installer</c>, unlike
+        /// <see cref="TestMsiPackage"/>, because no patch is committed for the tests to read and one cannot be
+        /// authored here - a patch is a diff between two builds of a product. Enumeration is best-effort: an
+        /// unreadable store simply produces no fixture, and the tests that need one skip.
+        /// </remarks>
         public static FileInfo? CachedMspPackage { get; } = FindFirstReadableCachedPackage("*.msp");
 
         /// <summary>
@@ -300,7 +303,7 @@ namespace PSADT.Tests.TestHelpers
         /// <summary>
         /// Returns the first package matching the given pattern that the caller can open for reading.
         /// </summary>
-        /// <param name="pattern">The search pattern to match, such as <c language="text">*.msi</c>.</param>
+        /// <param name="pattern">The search pattern to match, such as <c language="text">*.msp</c>.</param>
         /// <returns>The first readable package, or <see langword="null"/> if there is none.</returns>
         private static FileInfo? FindFirstReadableCachedPackage(string pattern)
         {
