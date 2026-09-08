@@ -131,22 +131,23 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         }
 
         /// <summary>
-        /// Verifies that the list is rebuilt on each read rather than handed out.
+        /// Verifies that the list is handed out as it is held rather than copied on every read.
         /// </summary>
         /// <remarks>
-        /// The same guarantee the culture makes in <c language="csharp">BaseDialogOptions</c>, for the same reason: the
-        /// backing field is a <c language="csharp">EquatableList</c> that compares by contents, and the property builds a fresh
-        /// read-only view so no caller can reach the storage behind it.
+        /// It was copied so that no caller could reach the storage behind it, which made every read
+        /// allocate the whole list and any indexed loop over the property quadratic.
+        /// <c language="csharp">EquatableList</c> offers no member that would change it, so there is nothing left to
+        /// protect against and nothing to copy.
         /// </remarks>
         [Fact]
-        public void ListItems_AreRebuiltOnEachRead()
+        public void ListItems_AreHandedOutAsTheyAreHeld()
         {
             // Act
             ListSelectionDialogOptions options = new(SampleOptions.ListSelectionDialog());
 
             // Assert
-            Assert.Equal(options.ListItems, options.ListItems);
-            Assert.NotSame(options.ListItems, options.ListItems);
+            Assert.Same(options.ListItems, options.ListItems);
+            Assert.DoesNotContain(typeof(ICollection<string>), options.ListItems.GetType().GetInterfaces());
         }
 
         /// <summary>

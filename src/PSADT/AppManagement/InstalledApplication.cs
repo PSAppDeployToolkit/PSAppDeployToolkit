@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using PSADT.Collections;
@@ -192,7 +191,7 @@ namespace PSADT.AppManagement
         /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
-        public IReadOnlyList<string> UninstallStringArgumentList => new ReadOnlyCollection<string>([.. UninstallStringArgumentListValue]);
+        public IReadOnlyList<string> UninstallStringArgumentList => UninstallStringArgumentListValue;
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
@@ -208,7 +207,7 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
         /// </summary>
-        public IReadOnlyList<string> QuietUninstallStringArgumentList => new ReadOnlyCollection<string>([.. QuietUninstallStringArgumentListValue]);
+        public IReadOnlyList<string> QuietUninstallStringArgumentList => QuietUninstallStringArgumentListValue;
 
         /// <summary>
         /// Gets the source from which the application was installed.

@@ -283,7 +283,7 @@ namespace PSADT.ProcessManagement
         /// collection the framework offers compares by reference, so holding one directly would make two of these
         /// unequal however alike they were.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
+        public IReadOnlyList<string> ArgumentList => ArgumentListValue;
 
         /// <summary>
         /// Gets the working directory of the process.
@@ -347,7 +347,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<string> StandardInput => new ReadOnlyCollection<string>([.. StandardInputValue]);
+        public IReadOnlyList<string> StandardInput => StandardInputValue;
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using PSADT.Collections;
 
 namespace PSADT.DeviceManagement
@@ -115,12 +114,12 @@ namespace PSADT.DeviceManagement
         /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
-        public IReadOnlyList<string> PendingFileRenameOperations => new ReadOnlyCollection<string>([.. PendingFileRenameOperationsValue]);
+        public IReadOnlyList<string> PendingFileRenameOperations => PendingFileRenameOperationsValue;
 
         /// <summary>
         /// Gets the error messages related to reboot operations.
         /// </summary>
-        public IReadOnlyList<string> ErrorMsg => new ReadOnlyCollection<string>([.. ErrorMsgValue]);
+        public IReadOnlyList<string> ErrorMsg => ErrorMsgValue;
 
         /// <summary>
         /// The list recorded for <see cref="PendingFileRenameOperations"/>.

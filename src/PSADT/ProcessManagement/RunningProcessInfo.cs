@@ -264,7 +264,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
-        public IReadOnlyList<string> ArgumentList => new ReadOnlyCollection<string>([.. ArgumentListValue]);
+        public IReadOnlyList<string> ArgumentList => ArgumentListValue;
 
         /// <summary>
         /// Gets the security identifier (SID) associated with the object.

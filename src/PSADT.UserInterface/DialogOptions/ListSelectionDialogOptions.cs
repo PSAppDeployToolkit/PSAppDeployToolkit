@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.Serialization;
 using PSADT.Collections;
@@ -115,7 +114,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// collection the framework offers compares by reference, so holding one directly would make two dialogs
         /// offering the same choices unequal however alike they were.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<string> ListItems => new ReadOnlyCollection<string>([.. ListItemsValue]);
+        public IReadOnlyList<string> ListItems => ListItemsValue;
 
         /// <summary>
         /// The item that should be selected by default.

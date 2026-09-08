@@ -87,7 +87,7 @@ namespace PSADT.WindowManagement
         /// collection the framework offers compares by reference, so holding one directly would make two of these
         /// unequal however alike they were.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<string>? ParentProcessFilter => ParentProcessFilterValues is not null ? new ReadOnlyCollection<string>([.. ParentProcessFilterValues]) : null;
+        public IReadOnlyList<string>? ParentProcessFilter => ParentProcessFilterValues;
 
         /// <summary>
         /// Gets the list of parent process IDs to use as a filter when selecting processes.
@@ -95,7 +95,7 @@ namespace PSADT.WindowManagement
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<uint>? ParentProcessIdFilter => ParentProcessIdFilterValues is not null ? new ReadOnlyCollection<uint>([.. ParentProcessIdFilterValues]) : null;
+        public IReadOnlyList<uint>? ParentProcessIdFilter => ParentProcessIdFilterValues;
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.

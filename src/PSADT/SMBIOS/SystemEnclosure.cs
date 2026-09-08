@@ -21,7 +21,6 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using PSADT.Collections;
 
 namespace PSADT.SMBIOS
@@ -261,12 +260,12 @@ namespace PSADT.SMBIOS
         /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every collection the
         /// framework offers compares by reference, so holding one directly would make two descriptions of the same
         /// thing unequal however alike they were.</remarks>
-        public IReadOnlyList<byte[]> ContainedElementRecords => new ReadOnlyCollection<byte[]>([.. ContainedElementRecordsValue]);
+        public IReadOnlyList<byte[]> ContainedElementRecords => ContainedElementRecordsValue;
 
         /// <summary>
         /// Gets the contained elements (typed records when record length >= 3).
         /// </summary>
-        public IReadOnlyList<SystemEnclosureContainedElement> ContainedElements => new ReadOnlyCollection<SystemEnclosureContainedElement>([.. ContainedElementsValue]);
+        public IReadOnlyList<SystemEnclosureContainedElement> ContainedElements => ContainedElementsValue;
 
         /// <summary>
         /// Gets the SKU number.
