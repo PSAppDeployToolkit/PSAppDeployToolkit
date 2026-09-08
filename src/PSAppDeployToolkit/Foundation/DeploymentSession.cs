@@ -67,7 +67,6 @@ namespace PSAppDeployToolkit.Foundation
                 string appDeployToolkitName = adtEnv.AppDeployToolkitName;
                 string appDeployMainScriptVersion = adtEnv.AppDeployMainScriptVersion.ToString();
                 bool isProcessUserInteractive = adtEnv.IsProcessUserInteractive;
-                IReadOnlyList<NTAccount>? usersLoggedOn = adtEnv.UsersLoggedOn;
                 Regex invalidChars = adtEnv.InvalidFileNameCharsRegexPattern;
                 RunAsActiveUser? runAsActiveUser = adtEnv.RunAsActiveUser;
                 string currentLanguage = adtEnv.CurrentLanguage;
@@ -647,7 +646,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Perform checks that need to factor in user context.
-                if (usersLoggedOn?.Count > 0)
+                if (adtEnv.UsersLoggedOn is { Count: > 0 } usersLoggedOn)
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
