@@ -10,8 +10,8 @@ function Invoke-ADTModuleBuild
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Prerequisites', 'Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')]
-        [System.String[]]$Steps = ('Prerequisites', 'Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')
+        [ValidateSet('Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')]
+        [System.String[]]$Steps = ('Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')
     )
 
     # Go through the motions.
@@ -19,10 +19,7 @@ function Invoke-ADTModuleBuild
     $imported = $false
     try
     {
-        if ($Steps -contains 'Prerequisites')
-        {
-            Test-ADTBuildEnvironment
-        }
+        Test-ADTBuildEnvironment
         if ($Steps -contains 'Clean')
         {
             Reset-ADTModuleBuildOutputPath
