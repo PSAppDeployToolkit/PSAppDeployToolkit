@@ -537,18 +537,20 @@ function New-ADTTemplate
         # Handle -ZeroConfig: inject the default MSI scriptblock into Install/Uninstall/Repair phases.
         if ($ZeroConfig)
         {
-            $zeroConfigScriptBlock = {
-                ## Handle Zero-Config MSI actions.
-                if ($adtSession.UseDefaultMsi)
-                {
-                    $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-                    if ($adtSession.DefaultMstFile)
-                    {
-                        $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-                    }
-                    Start-ADTMsiProcess @ExecuteDefaultMSISplat
-                }
-            }
+            # Define as a string initially so that this block does not get translated into CommandTable calls by the build system
+            $zeroConfigScriptBlock = @'
+## Handle Zero-Config MSI actions.
+if ($adtSession.UseDefaultMsi)
+{
+    $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
+    if ($adtSession.DefaultMstFile)
+    {
+        $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
+    }
+    Start-ADTMsiProcess @ExecuteDefaultMSISplat
+}
+'@
+            $zeroConfigScriptBlock = [System.Management.Automation.ScriptBlock]::Create($zeroConfigScriptBlock)
             foreach ($sbName in 'InstallScriptBlock', 'UninstallScriptBlock', 'RepairScriptBlock')
             {
                 if ($PSBoundParameters.ContainsKey($sbName))
