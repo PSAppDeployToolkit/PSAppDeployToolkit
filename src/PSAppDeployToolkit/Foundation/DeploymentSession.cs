@@ -73,7 +73,6 @@ namespace PSAppDeployToolkit.Foundation
                 string currentLanguage = adtEnv.CurrentLanguage;
                 Architecture envOSArchitecture = adtEnv.EnvOSArchitecture;
                 NTAccount processNtAccount = adtEnv.ProcessNTAccount;
-                bool isAdmin = adtEnv.IsAdmin;
 
                 // Set up constant values for the lifetime of the deployment session.
                 ConfigLogPath = new((string)configToolkit["LogPath"]!);
@@ -492,9 +491,8 @@ namespace PSAppDeployToolkit.Foundation
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
-                // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
-                // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
+                // Generate the log filename to use. Append the username unless running as LocalSystem, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!AccountUtilities.CallerIsLocalSystem ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -937,7 +935,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Check current permissions and exit if not running with Administrator rights.
-                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
+                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !AccountUtilities.CallerIsAdmin)
                 {
                     throw new UnauthorizedAccessException("This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
                 }

@@ -21,6 +21,7 @@ Describe 'New-ADTLogFileName' {
     Context 'With a session open' {
         BeforeAll {
             $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppVendor 'Vend' -AppName 'Prod' -AppVersion '1.2' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
+            $script:ExpectedName = "Vend_Prod_1.2_Disc_Install$(if (!($adtEnv = Get-ADTEnvironmentTable).IsLocalSystemAccount) { "_$($adtEnv.EnvUserName)" }).log"
         }
 
         AfterAll {
@@ -34,12 +35,12 @@ Describe 'New-ADTLogFileName' {
         It 'Builds the name from the install name, the discriminator and the deployment type' {
             # This is how a function that writes its own log alongside the session's names the file, so the
             # composition is the contract.
-            New-ADTLogFileName -Discriminator 'Disc' -FileNameOnly | Should -BeExactly 'Vend_Prod_1.2_Disc_Install.log'
+            New-ADTLogFileName -Discriminator 'Disc' -FileNameOnly | Should -BeExactly $script:ExpectedName
         }
 
         It 'Returns a full path unless only the name is asked for' {
             $full = New-ADTLogFileName -Discriminator 'Disc'
-            $full | Should -BeExactly ([System.IO.Path]::Combine((Get-ADTConfig).Toolkit.LogPath, 'Vend_Prod_1.2_Disc_Install.log'))
+            $full | Should -BeExactly ([System.IO.Path]::Combine((Get-ADTConfig).Toolkit.LogPath, $script:ExpectedName))
             [System.IO.Path]::IsPathRooted($full) | Should -BeTrue
         }
 
