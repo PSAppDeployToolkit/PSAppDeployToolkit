@@ -87,7 +87,7 @@ namespace PSADT.Utilities
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified section does not exist in the INI file.</exception>
         /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
-        public static OrderedDictionary? GetSection(string filepath, string section)
+        public static OrderedDictionary GetSection(string filepath, string section)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(section);
             ReadOnlyCollection<string> sections = GetSectionNames(filepath);
