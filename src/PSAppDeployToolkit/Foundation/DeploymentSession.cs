@@ -581,7 +581,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
                     }
-                    if (DeployAppScriptParameters?.Count > 0)
+                    if (DeployAppScriptParameters.Count > 0)
                     {
                         WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{CommandLineUtilities.ArgumentListToCommandLine(PowerShellUtilities.ConvertBoundParametersToArgumentList(DeployAppScriptParameters))}].");
                     }
@@ -1639,7 +1639,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters => GetPropertyValue(in field);
+        /// <remarks>Empty rather than nothing at all when the frontend passed none, since a caller piping it in
+        /// PowerShell would get an iteration out of nothing.</remarks>
+        public IReadOnlyDictionary<string, object> DeployAppScriptParameters { get => GetPropertyValue(in field); } = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
 
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.

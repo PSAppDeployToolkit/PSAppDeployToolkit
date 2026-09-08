@@ -541,7 +541,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             EnvironmentTable table = powerShell.NewEnvironmentTable();
 
             // Assert: with no Click-to-Run key there is nothing for any of them to report.
-            if (table.EnvOfficeVars is null)
+            if (table.EnvOfficeVars is { Count: 0 })
             {
                 Assert.Null(table.EnvOfficeVersion);
                 Assert.Null(table.EnvOfficeBitness);

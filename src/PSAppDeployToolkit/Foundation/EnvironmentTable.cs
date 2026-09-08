@@ -162,7 +162,7 @@ namespace PSAppDeployToolkit.Foundation
                     EnvOfficeVars = new ReadOnlyDictionary<string, object>(officeVars);
                 }
             }
-            if (EnvOfficeVars is not null)
+            if (EnvOfficeVars.Count > 0)
             {
                 if (EnvOfficeVars.TryGetValue("VersionToReport", out object? versionToReportObj) && Version.TryParse(versionToReportObj as string, out Version? versionToReport))
                 {
@@ -833,8 +833,9 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>The returned dictionary provides key-value pairs representing office-related settings
         /// or configurations that are specific to the current environment. The collection is read-only and cannot be
-        /// modified through this property.</remarks>
-        public IReadOnlyDictionary<string, object>? EnvOfficeVars { get; }
+        /// modified through this property. <para> Empty rather than nothing at all where no Office installation was
+        /// found, since a caller piping it in PowerShell would get an iteration out of nothing. </para></remarks>
+        public IReadOnlyDictionary<string, object> EnvOfficeVars { get; } = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
 
         /// <summary>
         /// Gets the version of Microsoft Office that is currently installed on the environment, if available.
