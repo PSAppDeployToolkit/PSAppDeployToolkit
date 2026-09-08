@@ -168,6 +168,24 @@ Describe 'Set-ADTItemPermission' {
             Set-ADTItemPermission -LiteralPath $script:Target -AccessControlList $acl -WhatIf
             Get-RuleCount -Path $script:Target -Sid $script:UsersSid | Should -Be 0
         }
+
+        It 'Leaves the list it was given alone when applying it fails' {
+            # Marking the access rules is what gets them written, and applying them clears the marking
+            # again - so a call that succeeds leaves nothing to see. A call that fails leaves the marking
+            # behind, and the caller is then holding a list that writes those rules to the next thing they
+            # hand it to. A file's list handed to a directory fails without touching anything else.
+            $sourceFile = "$TestDrive\AclFile$([System.Guid]::NewGuid().ToString('N')).txt"
+            Set-Content -LiteralPath $sourceFile -Value 'source'
+            Set-ADTItemPermission -LiteralPath $sourceFile -User "*$script:UsersSid" -Permission FullControl
+            $acl = Get-Acl -LiteralPath $sourceFile
+            { Set-ADTItemPermission -LiteralPath $script:Target -AccessControlList $acl -ErrorAction Stop } | Should -Throw
+
+            $other = "$TestDrive\AclOther$([System.Guid]::NewGuid().ToString('N')).txt"
+            Set-Content -LiteralPath $other -Value 'other'
+            $before = Get-RuleCount -Path $other -Sid $script:UsersSid
+            [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl([System.IO.FileInfo]::new($other), $acl)
+            Get-RuleCount -Path $other -Sid $script:UsersSid | Should -Be $before
+        }
     }
 
     Context 'Input Validation' {
