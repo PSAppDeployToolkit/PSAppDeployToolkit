@@ -49,6 +49,21 @@ Describe 'Get-ADTPEFileArchitecture' {
             { Get-ADTPEFileArchitecture -LiteralPath $path -ErrorAction Stop } | Should -Throw -ErrorId 'FileNotPortableExecutable,Get-ADTPEFileArchitecture'
         }
 
+        It 'Refuses a short file that follows a real image through the same call' {
+            # One buffer is allocated for the whole call and filled from each file in turn, so a file
+            # shorter than the buffer leaves the previous file's bytes sitting past its own end. A two
+            # byte file holding nothing but 'MZ' was reported as having the architecture of whatever
+            # came before it: its own two bytes passed the DOS check, and the header offset and PE
+            # signature were both still there from the file before.
+            $path = "$TestDrive\twobytes.bin"
+            [System.IO.File]::WriteAllBytes($path, [System.Byte[]](0x4D, 0x5A))
+
+            # Asserted on its own first, so a failure here says the file is refused for the right reason
+            # rather than because this test wrote something unreadable.
+            { Get-ADTPEFileArchitecture -LiteralPath $path -ErrorAction Stop } | Should -Throw -ErrorId 'FileNotPortableExecutable,Get-ADTPEFileArchitecture'
+            { Get-Item -LiteralPath "$env:SystemRoot\System32\notepad.exe", $path | Get-ADTPEFileArchitecture -ErrorAction Stop } | Should -Throw -ErrorId 'FileNotPortableExecutable,Get-ADTPEFileArchitecture'
+        }
+
         It 'Errors on a file that does not exist' {
             { Get-ADTPEFileArchitecture -LiteralPath "$TestDrive\missing.exe" -ErrorAction Stop } | Should -Throw
         }
