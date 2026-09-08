@@ -494,7 +494,7 @@ namespace PSADT.Interop
                             {
                                 hToken.DangerousAddRef(ref hTokenAddRef);
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                if (!(res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.ToPointer(), lpThreadAttributes.ToPointer(), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal)))
+                                if (!(res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, NullableUtilities.ToPointer(in lpProcessAttributes), NullableUtilities.ToPointer(in lpThreadAttributes), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal)))
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                                 }
@@ -1745,7 +1745,7 @@ namespace PSADT.Interop
                             fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                             {
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                if (!(res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.ToPointer(), lpThreadAttributes.ToPointer(), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal)))
+                                if (!(res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, NullableUtilities.ToPointer(in lpProcessAttributes), NullableUtilities.ToPointer(in lpThreadAttributes), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal)))
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                                 }
