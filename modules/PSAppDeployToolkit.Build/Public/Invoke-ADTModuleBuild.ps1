@@ -10,8 +10,8 @@ function Invoke-ADTModuleBuild
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')]
-        [System.String[]]$Steps = ('Clean', 'Dependencies', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')
+        [ValidateSet('Clean', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')]
+        [System.String[]]$Steps = ('Clean', 'DotNet', 'Analyze', 'UnitTests', 'Build', 'IntegrationTests')
     )
 
     # Go through the motions.
@@ -24,10 +24,7 @@ function Invoke-ADTModuleBuild
         {
             Reset-ADTModuleBuildOutputPath
         }
-        if ($Steps -contains 'Dependencies')
-        {
-            Confirm-ADTBuildModulesPresent
-        }
+        Confirm-ADTBuildModulesPresent
         if ($Steps -contains 'DotNet')
         {
             Invoke-ADTDotNetCompilation

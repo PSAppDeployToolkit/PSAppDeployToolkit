@@ -9,7 +9,7 @@ Set-StrictMode -Version 3
 try
 {
     Import-Module -Name ([System.Management.Automation.WildcardPattern]::Escape("$PSScriptRoot\modules\PSAppDeployToolkit.Build\PSAppDeployToolkit.Build.psd1"))
-    Invoke-ADTModuleBuild -Steps Prerequisites, Dependencies, Analyze, UnitTests
+    Invoke-ADTModuleBuild -Steps Analyze, UnitTests
 }
 catch
 {
