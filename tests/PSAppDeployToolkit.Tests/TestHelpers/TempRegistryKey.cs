@@ -42,8 +42,13 @@ namespace PSAppDeployToolkit.Tests.TestHelpers
         /// Removes the key and everything beneath it.
         /// </summary>
         /// <remarks>
-        /// Best-effort, and the shared parent is pruned only once it is empty, so two tests running against their
-        /// own keys cannot take each other's away.
+        /// Best-effort, and only this test's own key. The shared parent is left where it is: pruning it once it
+        /// looked empty raced with every other test, since a key can be created beneath it between the check and
+        /// the delete and the delete then takes that key too. What the other test sees is its key vanishing
+        /// underneath it, which surfaces as a null reference out of PowerShell's registry provider rather than as
+        /// anything resembling its cause. One empty key beneath the current user's hive is the cheaper thing to
+        /// leave behind, and parallel collections make the race reachable within one process as much as between
+        /// two of them.
         /// </remarks>
         public void Dispose()
         {
@@ -55,11 +60,6 @@ namespace PSAppDeployToolkit.Tests.TestHelpers
             try
             {
                 Registry.CurrentUser.DeleteSubKeyTree(SubKeyName, throwOnMissingSubKey: false);
-                using RegistryKey? parent = Registry.CurrentUser.OpenSubKey(ParentSubKeyName);
-                if (parent?.SubKeyCount is 0 && parent.ValueCount is 0)
-                {
-                    Registry.CurrentUser.DeleteSubKeyTree(ParentSubKeyName, throwOnMissingSubKey: false);
-                }
             }
             catch (Exception ex) when (ex.Message is not null)
             {
