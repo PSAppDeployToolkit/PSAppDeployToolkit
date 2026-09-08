@@ -4144,6 +4144,28 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Converts a file URL into the path it names.
+        /// </summary>
+        /// <param name="pszUrl">The URL to convert, which must be a file URL. <c language="csharp">UrlIs</c> confirms
+        /// whether a given value is one.</param>
+        /// <param name="pszPath">A buffer that receives the path.</param>
+        /// <param name="pcchPath">When this method returns, contains the number of characters written to <paramref
+        /// name="pszPath"/>.</param>
+        /// <returns>An <see cref="HRESULT"/> indicating the result of the operation.</returns>
+        internal static HRESULT PathCreateFromUrl(string pszUrl, Span<char> pszPath, out uint pcchPath)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(pszUrl);
+            pcchPath = (uint)pszPath.Length;
+            HRESULT res = PInvoke.PathCreateFromUrl(pszUrl, pszPath, ref pcchPath, 0);
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
+            InvalidOperationException.ThrowIfZero(pcchPath, "The return length from 'PathCreateFromUrl()' is zero.");
+            return res;
+        }
+
+        /// <summary>
         /// Expands environment variables in the specified source string using the provided environment block and stores
         /// the expanded result in the destination string.
         /// </summary>

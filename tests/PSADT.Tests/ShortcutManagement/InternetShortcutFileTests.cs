@@ -150,6 +150,42 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that an icon file named against an environment variable survives the round trip, which is
+        /// how such an icon is usually written so that it holds up on a system installed elsewhere.
+        /// </summary>
+        /// <remarks>
+        /// The half of the translation the test above does not reach. A path with no drive or UNC root for an
+        /// authority to be built from comes back as <c language="text">file:%25SystemRoot%25/System32/shell32.dll</c>,
+        /// which is not a well formed URI at all: <see cref="Uri"/> refuses to parse it, so translating with that
+        /// handed the value back in exactly the state the shell mangled it into. The converter's own inverse
+        /// recovers it, having been written to undo precisely what the shell applied.
+        /// </remarks>
+        [Fact]
+        public void Save_RoundTripsAnIconNamingAnEnvironmentVariable()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange
+                using TempDirectory temp = new();
+                string shortcutPath = temp.GetPath("envicon.url");
+                const string EnvironmentIconPath = @"%SystemRoot%\System32\shell32.dll";
+
+                // Act
+                using (InternetShortcutFile created = InternetShortcutFile.Create(Url))
+                {
+                    created.IconFile = EnvironmentIconPath;
+                    created.IconIndex = 5;
+                    created.Save(shortcutPath);
+                }
+
+                // Assert
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.Equal(EnvironmentIconPath, loaded.IconFile);
+                Assert.Equal(5, loaded.IconIndex);
+            });
+        }
+
+        /// <summary>
         /// Verifies that the index is not reported when no icon file is set, so a caller cannot read an
         /// index that refers to nothing.
         /// </summary>

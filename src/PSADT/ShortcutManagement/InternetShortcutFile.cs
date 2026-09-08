@@ -243,17 +243,31 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the icon file path for the Internet shortcut.
         /// </summary>
-        /// <remarks>The shell hands this back as a file URI even though it takes and stores a path, so it is
-        /// translated back to a path on the way out. Without that a caller could not pass what it read straight back
-        /// in, and comparing what it set against what it reads would never match.</remarks>
+        /// <remarks>The shell hands this back as a URL even though it takes and stores a path, having put the stored
+        /// value through <c language="csharp">UrlCreateFromPath</c> on the way out, so it is put through that
+        /// function's inverse on the way back in. Without that a caller could not pass what it read straight back in,
+        /// and comparing what it set against what it reads would never match.
+        /// <para>The inverse is used rather than <see cref="Uri"/>, which agrees with it only for the paths that
+        /// happen to make well formed URIs. A path written against an environment variable does not: the shell
+        /// returns %SystemRoot%\System32\shell32.dll as file:%25SystemRoot%25/System32/shell32.dll, with no authority
+        /// to speak of, which <see cref="Uri"/> refuses outright and would therefore hand back mangled.</para>
+        /// <para>An icon that genuinely is a URL fails the conversion, and is returned as it came.</para></remarks>
         public string? IconFile
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                return GetStringProperty(PID_IS.PID_IS_ICONFILE) is string iconFile
-                    ? Uri.TryCreate(iconFile, UriKind.Absolute, out Uri? iconFileUri) && iconFileUri.IsFile ? iconFileUri.LocalPath : iconFile
-                    : null;
+                if (GetStringProperty(PID_IS.PID_IS_ICONFILE) is not string iconFile)
+                {
+                    return null;
+                }
+                if (!PInvoke.UrlIs(iconFile, URLIS.URLIS_FILEURL))
+                {
+                    return iconFile;
+                }
+                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH];
+                _ = NativeMethods.PathCreateFromUrl(iconFile, buffer, out uint bufferLength);
+                return buffer[..(int)bufferLength].ToString();
             }
             set
             {
