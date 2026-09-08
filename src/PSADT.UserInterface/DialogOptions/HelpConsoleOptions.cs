@@ -52,7 +52,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// they were. Both levels are handed back wrapped rather than as they are held, since what is held is an
         /// internal type that PowerShell could do nothing with.</para></remarks>
         [IgnoreDataMember]
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(ModuleHelpMapValue.ToDictionary(static module => module.Key, static module => (IReadOnlyDictionary<string, string>)module.Value, StringComparer.Ordinal));
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(ModuleHelpMapValue.ToDictionary(static module => module.Key, static module => (IReadOnlyDictionary<string, string>)new ReadOnlyDictionary<string, string>(module.Value.ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal)), StringComparer.Ordinal));
 
         /// <summary>
         /// The help recorded for <see cref="ModuleHelpMap"/>.
