@@ -1834,10 +1834,11 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// The part of a name or message that a value is later substituted into.
         /// </summary>
-        /// <remarks>Substituted rather than formatted wherever it is used. Each of the strings carrying this is
-        /// built by interpolating an install name or an exit message into it, and braces are legal in both, so
-        /// formatting would read a caller's text as format items.</remarks>
-        private const string SubstitutionPlaceholder = "{0}";
+        /// <remarks>Substituted rather than formatted, and made of characters no caller could supply: braces are
+        /// legal in an install name, so both formatting and a <c language="csharp">{0}</c> would act on a caller's own text.
+        /// More than one character, which is what keeps substituting it off a char overload having no string
+        /// counterpart.</remarks>
+        private const string SubstitutionPlaceholder = "\uE000substitution\uE000";
 
 
         #endregion Private fields.

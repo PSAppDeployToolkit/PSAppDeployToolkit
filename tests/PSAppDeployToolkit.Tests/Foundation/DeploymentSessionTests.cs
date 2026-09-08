@@ -837,6 +837,34 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that an install name carrying what the placeholder used to be is left alone.
+        /// </summary>
+        /// <remarks>
+        /// The template is built by interpolating the install name and then substituting the discriminator into
+        /// what comes out, so a placeholder a caller could supply is a placeholder their own text gets replaced
+        /// by. Braces are legal in a file name, so an install name of "App{0}" reached the template intact and
+        /// came back as "AppDiscriminator_Discriminator_Install" while the placeholder was still "{0}".
+        /// </remarks>
+        [Fact]
+        public void NewLogFileName_LeavesAnInstallNameCarryingBracedDigitsAlone()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Dictionary<string, object> parameters = MinimalParameters();
+            parameters["AppName"] = "App{0}";
+
+            // Act
+            DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
+            string name = session.NewLogFileName("Discriminator", fileNameOnly: true);
+
+            // Assert
+            Assert.Contains("App{0}", name, StringComparison.Ordinal);
+            Assert.DoesNotContain("AppDiscriminator", name, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that an existing log is archived rather than added to when appending is turned off.
         /// </summary>
         /// <remarks>
