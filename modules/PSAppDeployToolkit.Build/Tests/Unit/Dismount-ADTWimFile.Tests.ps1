@@ -1,4 +1,11 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+
+    # Asking what is mounted goes through Get-WindowsImage, which needs elevation even to answer that
+    # nothing is. A runtime skip rather than #Requires -RunAsAdministrator, which fails the container.
+    $script:IsElevated = Test-ADTCallerElevated
+}
+BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
@@ -8,7 +15,7 @@
 Describe 'Dismount-ADTWimFile' {
     # Mounting an image needs one to mount, and a mounted image is machine state rather than something
     # confined to a test. Only paths and images that are not mounted are asked about here.
-    Context 'When nothing is mounted there' {
+    Context 'When nothing is mounted there' -Skip:(!$script:IsElevated) {
         It 'Does not object to a path with no image on it' {
             { Dismount-ADTWimFile -Path "$TestDrive\NotAMountPoint" } | Should -Not -Throw
         }
