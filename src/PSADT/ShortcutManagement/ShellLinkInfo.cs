@@ -57,7 +57,7 @@ namespace PSADT.ShortcutManagement
             Arguments = shellLink.Arguments;
             Hotkey = shellLink.Hotkey;
             WindowStyle = shellLink.WindowStyle;
-            IconLocationValue = shellLink.IconLocation?.FullName;
+            IconLocation = shellLink.IconLocation;
             IconIndex = shellLink.IconIndex;
             AppUserModelId = shellLink.AppUserModelId;
             AppUserModelExcludeFromShowInNewInstall = shellLink.AppUserModelExcludeFromShowInNewInstall;
@@ -138,9 +138,9 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the icon location for the shortcut.
         /// </summary>
-        /// <remarks>Rebuilt on each read from the path it was recorded under, for the same reason as
-        /// <see cref="FilePath"/>.</remarks>
-        public FileInfo? IconLocation => IconLocationValue is string iconLocation ? new(iconLocation) : null;
+        /// <remarks>Recorded as the shortcut writes it, which is a path expression for the shell to resolve
+        /// rather than a path. See the remarks on <see cref="ShellLinkFile.IconLocation"/>.</remarks>
+        public string? IconLocation { get; }
 
         /// <summary>
         /// Gets the icon index in the icon location file.
@@ -332,9 +332,5 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         private readonly string FilePathValue;
 
-        /// <summary>
-        /// The icon location for the shortcut, as recorded.
-        /// </summary>
-        private readonly string? IconLocationValue;
     }
 }

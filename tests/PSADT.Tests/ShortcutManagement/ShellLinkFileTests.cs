@@ -167,15 +167,54 @@ namespace PSADT.Tests.ShortcutManagement
             // Act
             using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
             {
-                created.IconLocation = new FileInfo(TargetPath);
+                created.IconLocation = TargetPath;
                 created.IconIndex = 2;
                 created.Save(linkPath);
             }
 
             // Assert
             using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
-            Assert.Equal(TargetPath, loaded.IconLocation?.FullName, ignoreCase: true);
+            Assert.Equal(TargetPath, loaded.IconLocation, ignoreCase: true);
             Assert.Equal(2, loaded.IconIndex);
+        }
+
+        /// <summary>
+        /// Verifies that an icon location naming an environment variable is stored and read back exactly as
+        /// written, rather than being resolved against whatever directory the caller happens to be in.
+        /// </summary>
+        /// <remarks>
+        /// This is how icon locations are usually written: the shortcuts Windows ships name imageres.dll
+        /// beneath <c language="csharp">%SystemRoot%</c> rather than beneath a fixed path, so that they
+        /// survive a system installed on another drive, and it is a path expression for the shell to
+        /// resolve rather than a path in its own right.
+        /// <para>
+        /// Both directions are covered at once, and each has its own way of going wrong. Setting the icon
+        /// index restates the location as a side effect of writing an unrelated value, so it is set here
+        /// too; and the snapshot records the location separately from the link, so it is asserted here as
+        /// well as the link itself.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void Save_RoundTripsAnIconLocationNamingAnEnvironmentVariable()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string linkPath = temp.GetPath("envicon.lnk");
+            const string IconLocation = @"%SystemRoot%\System32\imageres.dll";
+
+            // Act
+            using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
+            {
+                created.IconLocation = IconLocation;
+                created.IconIndex = 3;
+                created.Save(linkPath);
+            }
+
+            // Assert
+            using ShellLinkFile loaded = ShellLinkFile.Load(linkPath);
+            Assert.Equal(IconLocation, loaded.IconLocation);
+            Assert.Equal(3, loaded.IconIndex);
+            Assert.Equal(IconLocation, loaded.GetInfoSnapshot().IconLocation);
         }
 
         /// <summary>
@@ -191,7 +230,7 @@ namespace PSADT.Tests.ShortcutManagement
             string linkPath = temp.GetPath("clearedicon.lnk");
             using (ShellLinkFile created = ShellLinkFile.Create(TargetPath))
             {
-                created.IconLocation = new FileInfo(TargetPath);
+                created.IconLocation = TargetPath;
                 created.IconIndex = 2;
                 created.Save(linkPath);
             }

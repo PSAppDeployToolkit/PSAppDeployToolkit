@@ -371,28 +371,31 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the icon location for the shortcut.
         /// </summary>
-        /// <value>The path to the file containing the icon for the shortcut.</value>
-        /// <remarks>Cleared by handing the shell an empty location rather than none. A null location does clear
+        /// <value>The icon location as the shortcut records it, which is a path expression the shell resolves
+        /// rather than a path. It is very often written against an environment variable, as in
+        /// %SystemRoot%\System32\imageres.dll, so that it survives a system installed on another drive.</value>
+        /// <remarks>A string rather than a <see cref="FileInfo"/>, which cannot represent this: it would take the
+        /// variable for a directory name, report the location as not existing, and give a full name rooted
+        /// against whatever directory the caller happened to be in. Expand it before opening it as a file.
+        /// <para>Cleared by handing the shell an empty location rather than none. A null location does clear
         /// what the link reports while it is open, but the clearing is not carried into the saved file: the old
         /// path is written back out, so a link cleared and saved reads as though it had never been touched. An
         /// empty location clears it both in the open link and in the file. `IShellLinkW::SetIconLocation` is not
-        /// documented to accept a null path, which is the underlying reason not to pass one.</remarks>
+        /// documented to accept a null path, which is the underlying reason not to pass one.</para></remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public FileInfo? IconLocation
+        public string? IconLocation
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetIconLocation(buffer, out _);
-                return buffer.ToStringUni() is string iconLocation
-                    ? new(iconLocation)
-                    : null;
+                return buffer.ToStringUni();
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(value?.FullName ?? string.Empty, IconIndex ?? 0);
+                _shellLink.SetIconLocation(value ?? string.Empty, IconIndex ?? 0);
             }
         }
 
@@ -414,8 +417,9 @@ namespace PSADT.ShortcutManagement
             }
             set
             {
+                // The index cannot be set without restating the location, so it is restated as it stands.
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(IconLocation?.FullName ?? string.Empty, value ?? 0);
+                _shellLink.SetIconLocation(IconLocation ?? string.Empty, value ?? 0);
             }
         }
 
