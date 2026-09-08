@@ -445,13 +445,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
-            Span<byte> processIdInfoPtr = stackalloc byte[NativeMethods.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]]; processIdInfoPtr.Clear();
+            Span<byte> processIdInfoPtr = stackalloc byte[NativeMethods.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]];
             ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
-            processIdInfo.ProcessId = (nint)processId;
+            processIdInfo = new() { ProcessId = (nint)processId };
 
             // Perform initial query so we can get the required ImageName buffer length.
             _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _, retrievingLength: true);
-            Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / sizeof(char)) + 1]; imageNamePtr.Clear();
+            Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / sizeof(char)) + 1];
 
             // Assign the ImageName buffer and perform the query again.
             string imageName;
@@ -483,7 +483,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidProgramException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
         private static FileInfo QueryFullProcessImageName(SafeHandle hProcess)
         {
-            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
+            Span<char> buffer = stackalloc char[1024];
             _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
             string result = buffer[..(int)requiredLength].ToString();
             return string.IsNullOrWhiteSpace(result)
@@ -505,7 +505,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidProgramException">Thrown if the underlying system call does not return a valid image file name.</exception>
         private static FileInfo GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
+            Span<char> buffer = stackalloc char[1024];
             string result = buffer[..(int)NativeMethods.GetProcessImageFileName(hProcess, buffer)].ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")

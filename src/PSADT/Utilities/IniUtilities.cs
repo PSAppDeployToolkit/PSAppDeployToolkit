@@ -29,7 +29,7 @@ namespace PSADT.Utilities
         /// string if the key does not exist.</returns>
         public static string? GetSectionKeyValue(string filepath, string section, string key)
         {
-            Span<char> buffer = stackalloc char[4096]; buffer.Clear();
+            Span<char> buffer = stackalloc char[4096];
             uint len;
             try
             {

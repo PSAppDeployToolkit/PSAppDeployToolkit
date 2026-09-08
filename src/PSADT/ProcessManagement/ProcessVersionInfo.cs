@@ -373,7 +373,7 @@ namespace PSADT.ProcessManagement
         /// otherwise, <see langword="null"/>.</returns>
         private static string? GetFileVersionLanguage(string codepage)
         {
-            Span<char> szLang = stackalloc char[1024]; szLang.Clear();
+            Span<char> szLang = stackalloc char[1024];
             string result = szLang[..(int)NativeMethods.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)].ToString();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
