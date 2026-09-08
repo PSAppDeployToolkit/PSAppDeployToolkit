@@ -192,8 +192,19 @@ function Get-ADTUserProfiles
 
                             # Return early for accounts that have a null NTAccount. A SID with no account
                             # behind it, which service profiles commonly have, throws rather than returning
-                            # null, so the failure is ignored here to leave the profile skipped as intended.
-                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $securityIdentifier -InformationAction SilentlyContinue -ErrorAction Ignore))
+                            # null, and that failure is the answer: the profile is skipped as intended.
+                            # Only that one is swallowed. Ignoring them all would take a domain controller
+                            # that cannot be reached for a SID that does not resolve, and quietly leave a
+                            # real profile out of a list the caller has no way of knowing is short.
+                            $ntAccount = try
+                            {
+                                ConvertTo-ADTNTAccountOrSID -SID $securityIdentifier -InformationAction SilentlyContinue -ErrorAction Stop
+                            }
+                            catch [System.Security.Principal.IdentityNotMappedException]
+                            {
+                                $null = $null
+                            }
+                            if (!$ntAccount)
                             {
                                 continue
                             }
