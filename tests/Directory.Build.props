@@ -53,8 +53,13 @@
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
+  <!--
+    Coverage, and a TRX report so a failing test is identifiable from the file it leaves behind rather
+    than from whoever happened to capture the console. TrxReport.Abstractions is already transitive.
+  -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
   </ItemGroup>
 
 </Project>
