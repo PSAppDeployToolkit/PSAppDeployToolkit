@@ -105,6 +105,14 @@ namespace PSADT.Collections
         public int Count => _items.Count;
 
         /// <summary>
+        /// An empty list.
+        /// </summary>
+        /// <remarks>Shared, since the type cannot be changed once it is built. Held so that a record with nothing
+        /// to report hands back an empty list rather than nothing at all, which a caller piping it would get an
+        /// iteration out of.</remarks>
+        internal static readonly EquatableList<T> Empty = new([]);
+
+        /// <summary>
         /// The elements held.
         /// </summary>
         private readonly List<T> _items;

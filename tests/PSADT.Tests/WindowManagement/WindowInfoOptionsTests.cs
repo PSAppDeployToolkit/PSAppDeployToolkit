@@ -20,21 +20,25 @@ namespace PSADT.Tests.WindowManagement
     public sealed class WindowInfoOptionsTests
     {
         /// <summary>
-        /// Verifies that supplying nothing leaves every filter absent, which the enumerator reads as "do
+        /// Verifies that supplying nothing leaves every filter empty, which the enumerator reads as "do
         /// not filter on this".
         /// </summary>
+        /// <remarks>
+        /// Empty rather than nothing at all: a caller piping one of these in PowerShell gets an iteration
+        /// out of nothing, and none out of an empty list.
+        /// </remarks>
         [Fact]
-        public void Constructor_LeavesEveryFilterAbsentWhenNothingIsSupplied()
+        public void Constructor_LeavesEveryFilterEmptyWhenNothingIsSupplied()
         {
             // Act
             WindowInfoOptions options = new(windowTitleRegex: null, windowHandleFilter: null, parentProcessFilter: null, parentProcessIdFilter: null, parentProcessMainWindowHandleFilter: null);
 
             // Assert
             Assert.Null(options.WindowTitleRegex);
-            Assert.Null(options.WindowHandleFilter);
-            Assert.Null(options.ParentProcessFilter);
-            Assert.Null(options.ParentProcessIdFilter);
-            Assert.Null(options.ParentProcessMainWindowHandleFilter);
+            Assert.Empty(options.WindowHandleFilter);
+            Assert.Empty(options.ParentProcessFilter);
+            Assert.Empty(options.ParentProcessIdFilter);
+            Assert.Empty(options.ParentProcessMainWindowHandleFilter);
         }
 
         /// <summary>
@@ -147,8 +151,8 @@ namespace PSADT.Tests.WindowManagement
             WindowInfoOptions options = new(windowTitleRegex: null, windowHandleFilter: new ReadOnlyCollection<nint>([1]), parentProcessFilter: null, parentProcessIdFilter: null, parentProcessMainWindowHandleFilter: new ReadOnlyCollection<nint>([2]));
 
             // Assert
-            Assert.Equal<nint[]>([1], [.. options.WindowHandleFilter!]);
-            Assert.Equal<nint[]>([2], [.. options.ParentProcessMainWindowHandleFilter!]);
+            Assert.Equal<nint[]>([1], [.. options.WindowHandleFilter]);
+            Assert.Equal<nint[]>([2], [.. options.ParentProcessMainWindowHandleFilter]);
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace PSADT.WindowManagement
         /// filters. The enumerable will be empty if no windows match the criteria.</returns>
         internal static IEnumerable<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
-            return GetProcessWindowInfo(parentProcessFilter: options.ParentProcessFilter, parentProcessIdFilter: options.ParentProcessIdFilter, parentProcessMainWindowHandleFilter: options.ParentProcessMainWindowHandleFilter, windowTitleRegex: options.WindowTitleRegex, windowHandleFilter: options.WindowHandleFilter);
+            return GetProcessWindowInfo(parentProcessFilter: options.ParentProcessFilter is { Count: > 0 } parentProcessFilter ? parentProcessFilter : null, parentProcessIdFilter: options.ParentProcessIdFilter is { Count: > 0 } parentProcessIdFilter ? parentProcessIdFilter : null, parentProcessMainWindowHandleFilter: options.ParentProcessMainWindowHandleFilter is { Count: > 0 } parentProcessMainWindowHandleFilter ? parentProcessMainWindowHandleFilter : null, windowTitleRegex: options.WindowTitleRegex, windowHandleFilter: options.WindowHandleFilter is { Count: > 0 } windowHandleFilter ? windowHandleFilter : null);
         }
 
         /// <summary>

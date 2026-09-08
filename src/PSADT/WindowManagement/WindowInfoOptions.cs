@@ -11,8 +11,11 @@ namespace PSADT.WindowManagement
     /// Represents filtering options for retrieving window information.
     /// </summary>
     /// <remarks>This record provides criteria for filtering windows based on their titles, handles, or parent
-    /// processes. Any of the filters can be null, indicating that the corresponding criterion should not be
-    /// applied.</remarks>
+    /// processes. Any of the filters can be empty, indicating that the corresponding criterion should not be
+    /// applied. <para> A filter that was not supplied is held and handed back as an empty list rather than as
+    /// nothing, since a caller piping one in PowerShell gets an iteration out of nothing but none out of an empty
+    /// list. Supplying one that is empty is still refused below: it would have meant matching nothing, and is far
+    /// more likely to be a filter that lost its contents on the way in. </para></remarks>
     [DataContract]
     public sealed record class WindowInfoOptions
     {
@@ -55,12 +58,12 @@ namespace PSADT.WindowManagement
                 ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count, nameof(parentProcessMainWindowHandleFilter));
             }
 
-            // Assign read-only collections or null based on input.
+            // Assign read-only collections, empty where nothing was supplied.
             WindowTitleRegex = windowTitleRegex;
-            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new EquatableList<long>([.. windowHandleFilter.Select(static h => (long)h)]) : null;
-            ParentProcessFilterValues = parentProcessFilter is not null ? new EquatableList<string>([.. parentProcessFilter]) : null;
-            ParentProcessIdFilterValues = parentProcessIdFilter is not null ? new EquatableList<uint>([.. parentProcessIdFilter]) : null;
-            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new EquatableList<long>([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
+            WindowHandleFilterValues = windowHandleFilter?.Select(static h => (long)h) is { } windowHandleFilterList ? new(windowHandleFilterList) : EquatableList<long>.Empty;
+            ParentProcessFilterValues = parentProcessFilter is { } parentProcessFilterList ? new(parentProcessFilterList) : EquatableList<string>.Empty;
+            ParentProcessIdFilterValues = parentProcessIdFilter is { } parentProcessIdFilterList ? new(parentProcessIdFilterList) : EquatableList<uint>.Empty;
+            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Select(static h => (long)h) is { } parentProcessMainWindowHandleFilterList ? new(parentProcessMainWindowHandleFilterList) : EquatableList<long>.Empty;
         }
 
         /// <summary>
@@ -73,21 +76,20 @@ namespace PSADT.WindowManagement
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
-        /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
+        /// filtered. If it is empty, no filtering is applied.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<nint>? WindowHandleFilter => WindowHandleFilterValues?.Select(static v => (nint)v) is IEnumerable<nint> windowHandleFilterValues ? new ReadOnlyCollection<nint>([.. windowHandleFilterValues]) : null;
+        public IReadOnlyList<nint> WindowHandleFilter => new ReadOnlyCollection<nint>([.. WindowHandleFilterValues.Select(static v => (nint)v)]);
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
         /// </summary>
-        /// <remarks>This array contains the names of parent processes that are used as a filter. If the
-        /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
-        /// accessed directly.</remarks>
+        /// <remarks>This array contains the names of parent processes that are used as a filter. If it is
+        /// empty, no filtering is applied.</remarks>
         /// <remarks>Held as a <see cref="EquatableList{T}"/> so that this record compares by the list's contents. Every
         /// collection the framework offers compares by reference, so holding one directly would make two of these
         /// unequal however alike they were.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<string>? ParentProcessFilter => ParentProcessFilterValues;
+        public IReadOnlyList<string> ParentProcessFilter => ParentProcessFilterValues;
 
         /// <summary>
         /// Gets the list of parent process IDs to use as a filter when selecting processes.
@@ -95,7 +97,7 @@ namespace PSADT.WindowManagement
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<uint>? ParentProcessIdFilter => ParentProcessIdFilterValues;
+        public IReadOnlyList<uint> ParentProcessIdFilter => ParentProcessIdFilterValues;
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.
@@ -104,30 +106,30 @@ namespace PSADT.WindowManagement
         /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
         /// applied.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter => ParentProcessMainWindowHandleFilterValues?.Select(static v => (nint)v) is IEnumerable<nint> parentProcessMainWindowHandleFilterValues ? new ReadOnlyCollection<nint>([.. parentProcessMainWindowHandleFilterValues]) : null;
+        public IReadOnlyList<nint> ParentProcessMainWindowHandleFilter => new ReadOnlyCollection<nint>([.. ParentProcessMainWindowHandleFilterValues.Select(static v => (nint)v)]);
 
         /// <summary>
         /// Gets the window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly EquatableList<long>? WindowHandleFilterValues;
+        private readonly EquatableList<long> WindowHandleFilterValues;
 
         /// <summary>
         /// Gets the parent process main window handle filter values for serialization.
         /// </summary>
         [DataMember]
-        private readonly EquatableList<long>? ParentProcessMainWindowHandleFilterValues;
+        private readonly EquatableList<long> ParentProcessMainWindowHandleFilterValues;
 
         /// <summary>
         /// The list recorded for <see cref="ParentProcessFilter"/>.
         /// </summary>
         [DataMember]
-        private readonly EquatableList<string>? ParentProcessFilterValues;
+        private readonly EquatableList<string> ParentProcessFilterValues;
 
         /// <summary>
         /// The list recorded for <see cref="ParentProcessIdFilter"/>.
         /// </summary>
         [DataMember]
-        private readonly EquatableList<uint>? ParentProcessIdFilterValues;
+        private readonly EquatableList<uint> ParentProcessIdFilterValues;
     }
 }
