@@ -44,11 +44,8 @@ Describe 'Test-ADTMutexAvailability' {
             Test-ADTMutexAvailability -MutexName $mutexName | Should -BeTrue
         }
         It 'Should return $false when the mutex is locked' {
-            # Named mutex ownership in .NET is thread-affine: WaitOne() on the same thread that
-            # already holds the mutex is re-entrant and always returns $true. We therefore acquire
-            # the mutex on a background thread (a dedicated PowerShell instance running via
-            # BeginInvoke on a thread pool thread) so that the test thread's WaitOne() call
-            # correctly sees the mutex as unavailable.
+            # Named mutex ownership is thread-affine, so WaitOne() re-enters and returns $true on the thread
+            # already holding it. Acquired on a background thread so the test thread sees it unavailable.
             $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
             $mutexHoldTimeout = 30000
             $mutexAcquireTimeoutMs = 5000

@@ -41,10 +41,8 @@ Describe 'Export-ADTScriptBlockToFile' {
         }
 
         It 'Removes the common leading indentation' {
-            # A scriptblock written inside a function arrives indented, and the exported file should not
-            # inherit that offset.
-            # Built from a string rather than written inline, so the deliberately uneven indentation is not
-            # something the repository's formatter would straighten out.
+            # A scriptblock written inside a function arrives indented, and the export should not inherit
+            # that. Built from a string so the uneven indentation survives the repository's formatter.
             $path = "$TestDrive\indent.ps1"
             Export-Probe -LiteralPath $path -ScriptBlock ([System.Management.Automation.ScriptBlock]::Create(
                     "`n                Write-Output 'a'`n                    Write-Output 'b'`n                Write-Output 'c'`n"

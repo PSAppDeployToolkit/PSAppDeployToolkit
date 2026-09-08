@@ -105,11 +105,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
             WindowStartupLocation = WindowStartupLocation.Manual;
 
-            // Park the window far off every monitor before any layout or show. SizeToContent,
-            // FluentDialog_SizeChanged, FD.Loaded, and PositionWindow calls will all no-op or
-            // operate on this off-screen position until OnContentRendered clears _firstShowPending
-            // and places the window on-screen in one step. The FluenceWindow cloak (belt-and-braces)
-            // will have already hidden the window by the time it is moved on-screen.
+            // Park the window off every monitor before any layout or show. Everything that positions it
+            // no-ops until OnContentRendered clears _firstShowPending and places it on-screen in one step.
             Left = OffscreenCoordinate;
             Top = OffscreenCoordinate;
             Topmost = options.DialogTopMost;
@@ -165,11 +162,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             ApplicationThemeManager.Changed += ThemeManager_ActualThemeChanged;
             ApplicationThemeManager.Apply(ApplicationTheme.Auto);
 
-            // Fluence.Wpf gates Changed behind a redundant-publish check, so the Apply above only
-            // raises it for the first dialog in the process (a genuine transition). Later dialogs
-            // apply an identical theme, get no event, and would otherwise show no icon or accent.
-            // Initialize both directly from the resolved theme; the subscription stays for
-            // OS-driven changes while the dialog is open.
+            // Fluence.Wpf gates Changed behind a redundant-publish check, so only the first dialog in the
+            // process sees it. Initialize from the resolved theme; the subscription covers OS changes.
             SetDialogAccent(ApplicationThemeManager.ResolvedTheme);
             SetDialogIcon(ApplicationThemeManager.ResolvedTheme);
 
@@ -297,14 +291,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // background, frame) before the first paint.
             base.OnSourceInitialized(e);
 
-            // Configure all content-dependent layout and position the window BEFORE the first paint
-            // so the first composed frame is already settled - no visible jump from a default
-            // position, and no pre-arrangement flash of the buttons / content rows. This runs after
-            // the full object graph is constructed (base plus subclass constructors, which set each
-            // dialog's button visibility and content) but before the window renders. Forcing one
-            // layout pass here gives PositionWindow the final ActualWidth / ActualHeight; the wired
-            // SizeChanged handler still repositions if the content size changes later (e.g. the
-            // CloseApps list updating).
+            // Settle content-dependent layout and position before the first paint, so nothing jumps from
+            // a default position. One layout pass here gives PositionWindow the final Actual dimensions.
             AutomationProperties.SetName(this, Title);
             UpdateButtonLayout();
             UpdateRowDefinition();
@@ -314,27 +302,16 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // the on-screen coords by the reveal-time PositionWindow call in OnContentRendered.
             PositionWindow();
 
-            // Pre-populate the countdown display so the first rendered frame shows the real
-            // remaining time (full duration) rather than the XAML-default "00:00:00". The
-            // _countdownStopwatch has not started yet at this point (InitializeCountdown starts
-            // it at Loaded), so Elapsed == 0 and remaining == full duration -- the correct value.
-            // UpdateCountdownDisplay guards against null _countdownDuration internally. This
-            // does NOT start the timer; it only sets the text block once for the first frame.
-            // InitializeCountdown (called from Loaded) still owns timer start and the tick loop.
+            // Show the real remaining time on the first frame rather than the XAML default. The stopwatch
+            // has not started, so remaining is the full duration; this sets the text only, not the timer.
             UpdateCountdownDisplay();
         }
 
         /// <inheritdoc />
         protected override void OnContentRendered(EventArgs e)
         {
-            // First-show reveal: clear the off-screen hold, position the window on-screen, then
-            // let the base (FluenceWindow.OnContentRendered -> RevealAfterFirstPaint) uncloak or
-            // un-alpha the window. The ordering is deliberate:
-            //   1. Clear _firstShowPending so PositionWindow computes the real on-screen coords.
-            //   2. Call PositionWindow -- moves the HWND to its final position while the
-            //      FluenceWindow cloak still holds the window invisible (belt-and-braces).
-            //   3. base.OnContentRendered -> RevealAfterFirstPaint -> uncloak.
-            //   Result: the window appears fully-formed at its final position in one step.
+            // Ordered deliberately: clear the hold so PositionWindow computes real coords, move the HWND
+            // while the cloak still hides it, then let the base uncloak it, settled, in one step.
             //
             // _startingLeft/_startingTop are set inside PositionWindow (Left = _startingLeft = left)
             // so RestoreWindow will correctly restore to the on-screen position, not OffscreenCoordinate.

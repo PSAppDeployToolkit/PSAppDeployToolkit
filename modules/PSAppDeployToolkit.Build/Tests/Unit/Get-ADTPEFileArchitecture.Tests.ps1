@@ -36,9 +36,8 @@ Describe 'Get-ADTPEFileArchitecture' {
             @{ Case = 'an empty file' }
             @{ Case = 'a file with only a DOS header' }
         ) {
-            # Without the signature checks the header offset is followed blindly, so whatever bytes sit at
-            # the computed position become the answer. A text file yielded 8289, which a caller branching
-            # on 32 versus 64-bit would have acted on.
+            # Without the signature checks the offset is followed blindly: a text file yielded 8289,
+            # which a caller branching on 32 versus 64-bit would have acted on.
             $path = "$TestDrive\$($Case -replace '\W').bin"
             switch ($Case)
             {
@@ -50,11 +49,8 @@ Describe 'Get-ADTPEFileArchitecture' {
         }
 
         It 'Refuses a short file that follows a real image through the same call' {
-            # One buffer is allocated for the whole call and filled from each file in turn, so a file
-            # shorter than the buffer leaves the previous file's bytes sitting past its own end. A two
-            # byte file holding nothing but 'MZ' was reported as having the architecture of whatever
-            # came before it: its own two bytes passed the DOS check, and the header offset and PE
-            # signature were both still there from the file before.
+            # The buffer is reused across files, so a two byte 'MZ' file used to inherit the previous
+            # file's header offset and signature, and be reported with that file's architecture.
             $path = "$TestDrive\twobytes.bin"
             [System.IO.File]::WriteAllBytes($path, [System.Byte[]](0x4D, 0x5A))
 

@@ -2,13 +2,8 @@
 #
 # The script module half of the test fixture.
 #
-# LogUtilities does not call PowerShell commands directly. It builds script blocks that reach them
-# through $Script:CommandTable - the module's own table of resolved commands, which the real
-# PSAppDeployToolkit.psm1 populates during import - and hands them to
-# ModuleDatabase.InvokeScript, which invokes them in the session state the database holds. So the
-# session state a test puts in that database has to be a real module's, with that variable in it, or
-# the first log entry written under a runspace fails with "The expression after '&' in a pipeline
-# element produced an object that was not valid".
+# LogUtilities reaches PowerShell commands through $Script:CommandTable and invokes them via
+# ModuleDatabase.InvokeScript, so a test's session state has to be a real module's or logging fails.
 #
 # Only the commands on a path under test are resolved here, and they are resolved eagerly so that a
 # missing one fails at import with a clear error rather than midway through a test.

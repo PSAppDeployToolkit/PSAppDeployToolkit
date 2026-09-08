@@ -239,10 +239,8 @@ namespace PSADT.Tests.ProcessManagement
                 killChildProcessesWithParent: true,
                 windowStyle: ProcessWindowStyle.Hidden,
                 priorityClass: ProcessPriorityClass.High);
-            // The argument list is declared as an interface and holds a ReadOnlyCollection, which the
-            // serializer cannot infer from the declaration. PSADT.ClientServer.Server names that same
-            // concrete type in the known-type list it builds its serializer with, so supplying it here
-            // mirrors the production contract rather than inventing a looser one.
+            // The list is declared as an interface holding a ReadOnlyCollection, which the serializer
+            // cannot infer. Named here as PSADT.ClientServer.Server names it, mirroring production.
             DataContractSerializer serializer = new(typeof(UserShellExecuteOptions), [typeof(ReadOnlyCollection<string>)]);
 
             // Act

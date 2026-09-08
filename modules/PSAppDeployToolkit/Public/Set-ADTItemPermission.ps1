@@ -239,10 +239,8 @@ function Set-ADTItemPermission
                     {
                         return
                     }
-                    # Only the sections a list reports as modified are written, and one read straight from
-                    # another path reports none of them, so copying permissions across would apply nothing
-                    # at all. Re-stamping the access rules onto it marks that section as ours to apply,
-                    # while leaving the owner and any auditing where they are.
+                    # Only sections a list reports as modified get written, and one read from another path
+                    # reports none, so re-stamp the access rules to mark that section as ours to apply.
                     $aclSection = [System.Security.AccessControl.AccessControlSections]::Access
                     $AccessControlList.SetSecurityDescriptorSddlForm($AccessControlList.GetSecurityDescriptorSddlForm($aclSection), $aclSection)
                     [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl($pathInfo, $AccessControlList)

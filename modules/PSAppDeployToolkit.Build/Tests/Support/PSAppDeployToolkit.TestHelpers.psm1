@@ -9,10 +9,8 @@
 New-Variable -Name ModuleRoot -Option Constant -Value ([System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', 'PSAppDeployToolkit')))
 New-Variable -Name ModuleManifest -Option Constant -Value ([System.IO.Path]::Combine($Script:ModuleRoot, 'PSAppDeployToolkit.psd1'))
 
-# The current user's uninstall key, which Get-ADTApplication searches alongside the two machine ones.
-# Entries a test writes go here, so that finding and removing an application can be exercised for real
-# without elevation and without touching anything outside the user running the tests. Held in both the
-# provider and the native form, as reg.exe does not understand the drive-qualified one.
+# The current user's uninstall key, which Get-ADTApplication searches alongside the two machine ones, so
+# tests can write entries without elevation. Held in both forms, as reg.exe needs the unqualified one.
 New-Variable -Name ADTTestApplicationRoot -Option Constant -Value 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
 New-Variable -Name ADTTestApplicationRootNative -Option Constant -Value 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
 New-Variable -Name ADTTestApplicationPrefix -Option Constant -Value 'ADTTestApplication'

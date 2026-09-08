@@ -117,20 +117,16 @@ Describe 'Validation attributes' -Tag Unit {
         }
 
         It '<Validator> can act on [<TypeName>] $<Parameter> in <ScriptName>' -ForEach $script:ValidatedParameters {
-            # The validators reject null, and reject empty or white-space content for the types that carry
-            # text. A non-nullable value type can be none of those, so the attribute does nothing at all -
-            # which is how three enum parameters came to carry it unnoticed. Every reference type can at
-            # least be null, and a nullable value type can too, so both have something to validate.
+            # The validators reject null, and empty or white-space content for the types carrying text. A
+            # non-nullable value type can be none of those, so three enum parameters carried it unnoticed.
             $isNoOp = $ParameterType.IsValueType -and !$ParameterType.IsGenericType
             $isNoOp | Should -BeFalse -Because "[$ParameterType] can be neither null, empty nor white space, so $Validator has no effect on `$$Parameter and should be removed or replaced with a built-in validator"
         }
     }
 
     Context 'Parameter binding' {
-        # Each case binds the parameter's own declaration into a stub with no body, so the validator runs
-        # against exactly what the module declares while no module code can execute. Binding the real
-        # commands would run them for any parameter whose validation failed to fire, which is the one thing
-        # this is here to catch.
+        # Each case binds the parameter's own declaration into a bodyless stub, so the validator runs against
+        # what the module declares while no module code executes, which is the failure this is here to catch.
         BeforeAll {
             function New-ParameterStub
             {

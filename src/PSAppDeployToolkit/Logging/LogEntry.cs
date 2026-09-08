@@ -25,11 +25,8 @@ namespace PSAppDeployToolkit.Logging
         /// <param name="callerSource">The log entry's caller source.</param>
         internal LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string? scriptSection, bool debugMessage, string callerFileName, string callerSource)
         {
-            // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
-            // When splitting the message, we want to trim all lines but not replace genuine
-            // spaces. As such, replace all spaces and empty lines with a punctuation space.
-            // C# identifies this character as whitespace but OneTrace does not so it works.
-            // The empty line feed at the end is required by OneTrace to format correctly.
+            // OneTrace trims empty lines, so they become a punctuation space: whitespace to C#, but not
+            // to OneTrace. The trailing line feed is what makes OneTrace format the entry correctly.
             if (scriptSection is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(scriptSection);

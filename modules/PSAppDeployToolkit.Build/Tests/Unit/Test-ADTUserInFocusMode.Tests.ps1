@@ -18,10 +18,8 @@ Describe 'Test-ADTUserInFocusMode' {
         }
 
         It 'Bypasses itself when nobody is logged on' {
-            # Focus mode belongs to a user, so with none there is nothing to report and nothing to ask the
-            # client about. Deliberately not compared against the toast notification mode, which reads as
-            # though it were the same thing and is not: the two are separate queries against separate
-            # facilities, which is why Test-ADTUserIsBusy takes each of them as its own signal.
+            # Focus mode belongs to a user, so with none there is nothing to ask the client. Deliberately
+            # not compared against toast notification mode: separate queries against separate facilities.
             Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { }
             Test-ADTUserInFocusMode | Should -BeNullOrEmpty
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { $Message.StartsWith('Bypassing') } -Times 1 -Exactly

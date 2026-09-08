@@ -273,11 +273,8 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         [Fact]
         public void CountdownTick_TakesAwayMinimizeAsTheDeadlineApproaches()
         {
-            // Arrange: a warning window longer than the countdown itself, so the dialog is inside it
-            // from the first tick. Winding a stopwatch forward is not possible, and waiting for one to
-            // reach a deadline would make the test as slow as the deadline; setting the deadline to
-            // cover the whole countdown reaches the same branch immediately, and is a configuration a
-            // deployment can legitimately ask for - a restart that may never be put aside.
+            // Arrange: a warning window longer than the countdown, so the dialog is inside it from the
+            // first tick. A stopwatch cannot be wound forward, and this is a legitimate configuration.
             Hashtable table = SampleOptions.RestartDialog();
             table["CountdownDuration"] = TimeSpan.FromMinutes(10);
             table["CountdownNoMinimizeDuration"] = TimeSpan.FromMinutes(20);

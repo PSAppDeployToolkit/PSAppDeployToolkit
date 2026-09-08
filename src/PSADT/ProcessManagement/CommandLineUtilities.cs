@@ -809,10 +809,8 @@ namespace PSADT.ProcessManagement
             int equalsPos = argument.IndexOf('=', StringComparison.Ordinal);
             if (equalsPos > 0 && equalsPos < argument.Length - 1 && (IsQuotedKeyValueValue(argument, equalsPos) || IsNsisDestinationArgument(argument, equalsPos)))
             {
-                // The value is either already quoted, in which case it's assumed to be correctly formatted,
-                // or the argument is NSIS's /D= parameter, which must never be quoted even when the path it
-                // specifies contains spaces. Any other key-value pair falls through to the escaping below so
-                // that a value containing whitespace remains a single argument when it's parsed back out.
+                // Already quoted, or NSIS's /D= which must never be quoted even with spaces in the path.
+                // Everything else falls through to the escaping below to survive being parsed back out.
                 return argument;
             }
 

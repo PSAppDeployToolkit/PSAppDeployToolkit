@@ -10,11 +10,8 @@ Describe 'Test-ADTCallerIsAdmin' {
         }
 
         It 'Agrees with the token Windows reports for this process' {
-            # Asked of whoami rather than of the same WindowsPrincipal call the function makes, so that
-            # the answer comes from somewhere else. An unelevated process still carries the
-            # Administrators SID in its token, but for deny only, so the SID alone is not the question.
-            # Named by its full path, since a machine with a POSIX toolset on its PATH has another whoami
-            # ahead of this one, and that one neither takes these arguments nor answers this question.
+            # Asked of whoami rather than the WindowsPrincipal call the function makes, so the answer comes
+            # from elsewhere. Full path, as a POSIX toolset on PATH supplies a whoami that cannot answer.
             $adminsGroup = & "$([System.Environment]::SystemDirectory)\whoami.exe" /groups /fo csv | ConvertFrom-Csv | & {
                 process
                 {

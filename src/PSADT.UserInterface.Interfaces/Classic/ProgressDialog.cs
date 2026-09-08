@@ -115,11 +115,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 labelDetail.Text = StripFormattingTags(progressMessageDetail);
             }
 
-            // Update the message alignment. Left alone when the caller did not ask for one, the same as
-            // every other argument here: an update reporting only that the detail message changed must
-            // not silently re-centre a dialog the caller had aligned. The designer starts both labels
-            // centred, so a dialog that never asks for an alignment still gets that. An alignment that
-            // is present but does not parse falls back to centred rather than being ignored.
+            // Left alone when the caller did not ask for one, so an update reporting only a message
+            // change cannot re-centre an aligned dialog. Present but unparseable falls back to centred.
             if (messageAlignment is not null)
             {
                 ContentAlignment alignment = Enum.TryParse($"Top{messageAlignment}", out ContentAlignment parsed) ? parsed : ContentAlignment.TopCenter;

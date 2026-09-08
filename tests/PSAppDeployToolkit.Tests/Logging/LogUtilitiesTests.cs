@@ -406,10 +406,8 @@ namespace PSAppDeployToolkit.Tests.Logging
             using IDisposable scope = powerShell.Enter();
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
 
-            // Act: called from a script, so the stack carries PowerShell frames. The four nullable string
-            // arguments are passed as NullString rather than $null, because PowerShell converts $null to an
-            // empty string for a string parameter - which the method then rejects, and which is the whole
-            // reason NullString exists.
+            // Act: called from a script, so the stack carries PowerShell frames. NullString rather than
+            // $null because PowerShell converts $null to an empty string for a string parameter.
             LogEntry fromScript = LogEntryFrom(powerShell.InvokeInRunspace(
                 "$nothing = [System.Management.Automation.Language.NullString]::Value; " +
                 "function Invoke-TestLogEntry { [PSAppDeployToolkit.Logging.LogUtilities]::WriteLogEntry("

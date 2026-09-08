@@ -25,12 +25,8 @@ internal static class IPersistFileExtensions
     /// associated.</param>
     internal static void GetCurFile(this IPersistFile @this, out SafeCoTaskMemHandle? ppszFileName)
     {
-        // GetCurFile reports "no current file" by answering S_FALSE, not by handing back nothing. In that
-        // case what it does hand back is the prompt the object would show in a Save As dialog - "*.url"
-        // for an internet shortcut, though the documentation is explicit that the string is the object's
-        // own choice and gives "*.txt" as its example - which is not a path and must not be treated as
-        // one. S_FALSE is a success code, so the generated wrapper returns normally and the distinction
-        // is invisible through it as CsWin32 by default manages the HRESULT for us instead of returning it.
+        // GetCurFile reports "no current file" with S_FALSE, handing back the object's Save As prompt
+        // (e.g. "*.url") rather than a path. S_FALSE is a success, so the managed wrapper hides it.
         HRESULT hResult = @this.GetCurFile(out PWSTR ppszFileNameLocal);
         SafeCoTaskMemHandle? handle = !ppszFileNameLocal.IsNull()
             ? new(ppszFileNameLocal, ownsHandle: true)

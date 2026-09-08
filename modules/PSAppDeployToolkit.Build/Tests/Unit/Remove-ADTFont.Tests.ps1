@@ -418,10 +418,7 @@ Describe 'Remove-ADTFont' -Skip:(!$script:IsElevated) {
         }
 
         It 'Should execute removal in correct order: RemoveFont -> Registry -> File' {
-            # This test verifies that after Remove-ADTFont completes:
-            # 1. The font resource was unregistered (RemoveFont called)
-            # 2. The registry entry was removed
-            # 3. The file was deleted
+            # Verifies the font was unregistered, the registry entry removed, and the file deleted.
 
             $script:TestFont.FilePath | Should -Exist
             $script:TestFont.RegistryName | Should -Not -BeNullOrEmpty

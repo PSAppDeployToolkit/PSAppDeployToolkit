@@ -127,9 +127,7 @@ function Get-ADTPEFileArchitecture
                     $stream = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
                     try
                     {
-                        # Read until the buffer is full or the file ends. A stream is entitled to return
-                        # fewer bytes than were asked for, and how many arrived decides what below is
-                        # this file's data rather than the previous one's.
+                        # A stream can return fewer bytes than asked for, so read until full or exhausted.
                         $bytesRead = 0
                         while ($bytesRead -lt $data.Length)
                         {
@@ -147,15 +145,8 @@ function Get-ADTPEFileArchitecture
                         $stream.Dispose()
                     }
 
-                    # Confirm this is a PE image before trusting the offsets below. Without the two
-                    # signature checks, the machine type is read from whatever bytes happen to sit at the
-                    # computed position, so a file that is not an image yields a plausible-looking result.
-                    # Bounded by what was read rather than by how big the buffer is. The buffer is
-                    # allocated once and used for every file, so past the end of this read sit the bytes
-                    # of whichever file came before: a short file that begins 'MZ' would otherwise take
-                    # the previous one's header offset, find its signature still sitting there, and be
-                    # reported as having that file's architecture. A file too short to hold the offset
-                    # at all is refused by way of an offset that cannot pass the test below.
+                    # Confirm this is a PE image, bounding every offset by what was actually read. The
+                    # buffer is reused for each file, so past $bytesRead sit the previous file's bytes.
                     $peHeaderOffset = if ($bytesRead -ge ($PE_POINTER_OFFSET + 4)) { [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) } else { -1 }
                     if (($bytesRead -lt 2) -or ([System.BitConverter]::ToUInt16($data, 0) -ne $DOS_SIGNATURE) -or ($peHeaderOffset -lt 0) -or (($peHeaderOffset + $MACHINE_OFFSET + 2) -gt $bytesRead) -or ([System.BitConverter]::ToUInt32($data, $peHeaderOffset) -ne $NT_SIGNATURE))
                     {

@@ -79,11 +79,8 @@ namespace PSADT.Utilities
         /// the specified value into the target register.</returns>
         internal static IReadOnlyList<uint> Load64(int reg, ulong value)
         {
-            // Each cast truncates to the 16 bits that quarter of the value contributes, which is the
-            // whole point of splitting it across four instructions. This repository builds with
-            // CheckForOverflowUnderflow, so the truncation has to be marked unchecked: otherwise every
-            // value wider than 16 bits throws an OverflowException here, and that includes every real
-            // address this is called with.
+            // Each cast truncates to its own 16 bits, which is the point. Marked unchecked because the
+            // repository builds with CheckForOverflowUnderflow, which would throw on any real address.
             unchecked
             {
                 return [

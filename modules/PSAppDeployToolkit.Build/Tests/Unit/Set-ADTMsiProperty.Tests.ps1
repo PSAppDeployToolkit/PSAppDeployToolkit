@@ -15,9 +15,7 @@
             [System.String]$Destination
         )
 
-        # The package committed for these tests, rather than one of Windows' own cached copies. Reading
-        # those needs elevation, which had this whole file skipping on a session without it, and they
-        # run to hundreds of megabytes where this one is a couple of hundred kilobytes.
+        # The committed test package, as Windows' own cached copies need elevation to read.
         Copy-Item -LiteralPath "$PSScriptRoot\..\Assets\PSAppDeployToolkit Test MSI.msi" -Destination $Destination -Force
         return $Destination
     }
@@ -103,10 +101,8 @@ Describe 'Set-ADTMsiProperty' {
     }
 
     Context 'Releasing the installer it creates' {
-        # The release cannot be seen from outside the function, so the installer is handed in through a
-        # mock and kept hold of here. Any further use of a released object throws, which is what makes
-        # the difference observable. The mock body is closed over so that it can reach the variable: a
-        # mock for a module runs in that module's scope, where a variable of this scope is not in sight.
+        # The release is invisible from outside, so the installer is handed in by mock and kept here;
+        # using a released object throws. The closure lets the module-scoped mock reach the variable.
         It 'Releases it once the property is set' {
             $installer = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))
             Mock -ModuleName PSAppDeployToolkit New-Object { $installer }.GetNewClosure() -ParameterFilter { $ComObject -eq 'WindowsInstaller.Installer' }
@@ -116,9 +112,8 @@ Describe 'Set-ADTMsiProperty' {
         }
 
         It 'Releases it when the error is raised as terminating' {
-            # The path that used to leak. An error handled as terminating unwinds straight out of the
-            # function, so an end block never runs and anything released only there is left behind. The
-            # database handed in is a COM object the parameter accepts and the query engine then refuses.
+            # The path that used to leak: a terminating error unwinds straight out, so an end block never
+            # runs. The database passed is a COM object the parameter takes and the query engine refuses.
             $installer = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))
             Mock -ModuleName PSAppDeployToolkit New-Object { $installer }.GetNewClosure() -ParameterFilter { $ComObject -eq 'WindowsInstaller.Installer' }
             $notADatabase = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))

@@ -48,10 +48,8 @@ namespace PSADT.Interop.Tests
             {
                 if (string.Equals(member.Key, nameof(SE_PRIVILEGE.SeUnsolicitedInputPrivilege), StringComparison.Ordinal))
                 {
-                    // SE_UNSOLICITED_INPUT_NAME appears in the Windows headers but the privilege was never
-                    // implemented, so the authority has no entry for it and a lookup fails with
-                    // ERROR_NO_SUCH_PRIVILEGE. The member mirrors the header correctly; it just cannot be
-                    // resolved, which is worth knowing before calling LookupPrivilegeValue with it.
+                    // SE_UNSOLICITED_INPUT_NAME is in the Windows headers but was never implemented, so
+                    // the authority has no entry and the lookup fails with ERROR_NO_SUCH_PRIVILEGE.
                     continue;
                 }
 

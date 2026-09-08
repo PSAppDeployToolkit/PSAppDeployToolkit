@@ -134,10 +134,8 @@ Describe 'Uninstall-ADTApplication' {
         }
 
         It 'Runs an uninstall program the string named without a path' {
-            # A command line written to the registry is not obliged to say where its program lives, and most
-            # of them do not: nearly every entry on a machine names msiexec and nothing more. Such a name is
-            # resolved against the system directory, which is where the process launcher finds it too, and
-            # not against wherever the caller happens to be sitting.
+            # A registry command line need not say where its program lives, and most name only msiexec. Such
+            # a name resolves against the system directory, which is where the process launcher finds it.
             $name = New-ADTTestApplicationName
             New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name -Unqualified }
             Uninstall-ADTApplication -Name $name -NameMatch Exact

@@ -418,10 +418,8 @@ namespace PSADT.ClientServer
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
                 typeof(Collections.ValueDictionary<string, Collections.ValueDictionary<string, string>>),
 
-                // Used within System.Xml.XmlException, which serializes the arguments of its own message
-                // alongside it. Without this, serializing any exception carrying one - which every failure
-                // out of ReadObject below does - fails here rather than reaching the caller, and a client
-                // reporting such a failure aborts on the FailFast guarding its error handler instead.
+                // XmlException serializes its own message arguments, so without this every failure out of
+                // ReadObject fails here instead, and the client aborts on its error handler's FailFast.
                 typeof(string[]),
             ]),
         };

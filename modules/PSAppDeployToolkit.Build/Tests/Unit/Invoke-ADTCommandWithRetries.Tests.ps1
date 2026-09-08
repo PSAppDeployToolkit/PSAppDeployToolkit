@@ -5,10 +5,8 @@
     # Mock Write-ADTLogEntry due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
-    # A probe that fails a set number of times before succeeding, so retry behaviour can be observed. It is
-    # handed over as a CommandInfo because resolving it by name would need it in the global scope, and
-    # because the module resolves its own commands through a table captured at import, which a mock on the
-    # target would never be consulted for.
+    # A probe that fails a set number of times before succeeding. Handed over as a CommandInfo because the
+    # module resolves its own commands through a table captured at import, which a mock never reaches.
     $script:ProbeAttempts = 0
     function Test-ADTRetryProbe
     {

@@ -196,10 +196,8 @@ Describe 'Set-ADTShortcut' {
             @{ Splat = @{ WorkingDirectory = 'C:\Windows\System32' }; Key = 'WorkingDirectory' }
             @{ Splat = @{ WindowStyle = 'Maximized' }; Key = 'ShowCommand' }
         ) {
-            # Nothing is launched from a directory, and the browser opens through the URL handler rather than
-            # from a window state the shortcut carries, so neither means anything here. Accepted and dropped
-            # the way arguments are, so a caller need not know which extension they are working with, rather
-            # than written into a key the shell will then refuse to read back.
+            # Nothing launches from a directory and the browser opens through the URL handler, so neither
+            # means anything here. Accepted and dropped, rather than written to a key the shell refuses.
             $splat = $Splat
             Set-ADTShortcut -LiteralPath $script:UrlPath @splat
             [System.IO.File]::ReadAllLines($script:UrlPath) | Should -Not -Contain "$Key="

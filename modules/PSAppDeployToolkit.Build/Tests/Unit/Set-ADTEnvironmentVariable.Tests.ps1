@@ -70,11 +70,8 @@ Describe 'Set-ADTEnvironmentVariable' {
     }
 
     Context 'A target that is not this process' {
-        # Appending and removing read the variable's current value before writing it back, and that read
-        # has to come from the scope being written to. Every test above nominates the process target,
-        # where reading the process scope is right by definition, so the distinction only shows up
-        # against another one. The user scope is used because it needs no elevation and is taken away
-        # again immediately; the machine scope is never written to here.
+        # Append and remove read the current value before writing back, and that read must come from the
+        # target scope. The tests above all use the process scope, where the distinction cannot show up.
         AfterEach {
             [System.Environment]::SetEnvironmentVariable($script:Variable, $null, [System.EnvironmentVariableTarget]::User)
         }

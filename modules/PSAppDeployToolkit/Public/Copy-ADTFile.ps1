@@ -238,9 +238,7 @@ function Copy-ADTFile
                     else
                     {
                         # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>.
-                        # Trim ending backslash from paths which can cause problems with Robocopy.
-                        # Resolve paths in case relative paths beginning with .\, ..\, or \ are used.
-                        # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
+                        # Paths are resolved, stripped of the provider prefix, and lose any trailing backslash that Robocopy dislikes.
                         $ParentPath = Split-Path @pathSplat
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {

@@ -99,10 +99,8 @@ BeforeAll {
 }
 
 AfterAll {
-    # Whatever was installed here is removed, and the key the package leaves behind goes with it, so the
-    # run finishes with the machine as it started. Removed whether or not it was already there, as nothing
-    # but this package ever creates it: sparing one that pre-existed meant a run which once failed to clean
-    # up kept the key for good, and every run after it read the leftover as the machine's own.
+    # Whatever was installed is removed along with the key the package leaves, whether or not it was already
+    # there: nothing but this package creates it, so sparing one kept a failed run's leftover for good.
     Remove-TestProduct
     if (Test-Path -LiteralPath $script:ProductKey)
     {

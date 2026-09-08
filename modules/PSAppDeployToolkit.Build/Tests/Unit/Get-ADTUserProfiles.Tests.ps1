@@ -85,16 +85,8 @@ Describe 'Get-ADTUserProfiles' {
         }
 
         It 'Asks the translation to fail rather than be ignored' {
-            # A SID with no account behind it is meant to be skipped, and it still is: the tests above
-            # cover that against the real service and app pool profiles, whose SIDs genuinely do not
-            # resolve. What this pins is that the skipping is now decided by which failure came back
-            # rather than by ignoring every one of them, since ignoring them all takes a directory that
-            # cannot be reached for a SID that does not resolve and drops a real profile in silence.
-            #
-            # Asserted on the call rather than on the outcome deliberately. Producing the other failure
-            # would mean a domain controller that cannot be answered from, and a mock standing in for it
-            # is governed by the caller's own error preference rather than the one this passes, so it
-            # would report the mock's behaviour rather than this function's.
+            # Skipping itself is covered above by the real service and app pool profiles. This pins that
+            # it is decided by which failure came back, asserted on the call as the other needs a live DC.
             Mock -ModuleName PSAppDeployToolkit ConvertTo-ADTNTAccountOrSID { [System.Security.Principal.NTAccount]::new('CONTOSO\someone') }
             $null = Get-ADTUserProfiles
             Should -Invoke -ModuleName PSAppDeployToolkit ConvertTo-ADTNTAccountOrSID -ParameterFilter { $ErrorAction -eq 'Stop' }

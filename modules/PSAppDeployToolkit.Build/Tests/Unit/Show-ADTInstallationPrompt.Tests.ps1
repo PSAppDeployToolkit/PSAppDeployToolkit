@@ -40,10 +40,8 @@ Describe 'Show-ADTInstallationPrompt' {
         }
 
         It 'Requires at least one button' {
-            # Checked ahead of the silent bypass, so that a prompt which could never be dismissed is
-            # reported when it is written rather than the first time a deployment runs interactively.
-            # Asked here rather than alongside the other input checks, because the title and subtitle every
-            # parameter set demands are supplied by the session, and without one the call cannot resolve.
+            # Checked ahead of the silent bypass, so an undismissable prompt is reported when it is written
+            # rather than on the first interactive run. Asked here as the session supplies the title.
             { Show-ADTInstallationPrompt -Message 'Anything' } | Should -Throw -ErrorId 'MandatoryParameterMissing,Show-ADTInstallationPrompt'
         }
         It 'Returns nothing when it was asked for input' {

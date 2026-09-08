@@ -97,11 +97,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // BaseDialogOptions. Assigned either way rather than only on opting in, mirroring how
                 // the Fluent dialog applies the same option.
                 //
-                // The minimize box is all that has to move. The designer already gives every dialog a
-                // fixed-single frame with no maximize box, and a form's control box and taskbar button
-                // are present unless something removes them, which nothing here does - so the four
-                // further assignments this block used to carry all wrote back the value the property
-                // already held.
+                // The minimize box is all that has to move; the designer already supplies the rest, so
+                // the four further assignments this block used to carry only rewrote existing values.
                 MinimizeBox = options.DialogAllowMinimize is true;
             }
 
