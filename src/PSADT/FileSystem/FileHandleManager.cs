@@ -4,6 +4,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,6 +14,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.Interop.Utilities;
+using PSADT.ProcessManagement;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
@@ -242,9 +244,9 @@ namespace PSADT.FileSystem
             try
             {
                 ref readonly SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsReadOnlyStructure<SYSTEM_HANDLE_INFORMATION_EX>();
+                ConcurrentBag<FileHandleInfo> openHandles = []; ConcurrentDictionary<uint, string> processNames = [];
                 ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
                 using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
-                ConcurrentBag<FileHandleInfo> openHandles = [];
                 _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
@@ -254,11 +256,11 @@ namespace PSADT.FileSystem
                         return;
                     }
 
-                    // Open the owning process with rights to duplicate handles.
+                    // Open the owning process with rights to duplicate handles and to read its image name.
                     SafeFileHandle fileProcessHandle;
                     try
                     {
-                        fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, (uint)sysHandle.UniqueProcessId);
+                        fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, (uint)sysHandle.UniqueProcessId);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -270,6 +272,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Duplicate the remote handle into our process.
+                    string processName;
                     SafeFileHandle fileDupHandle;
                     using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, ownsHandle: false))
                     using (fileProcessHandle)
@@ -279,6 +282,28 @@ namespace PSADT.FileSystem
                         {
                             return;
                         }
+
+                        // Resolve the owning process's name while its handle is open, which keeps the process object
+                        // alive: this snapshot is of the whole machine, and a process holding handles in it can exit
+                        // before its own handles are reached. Cached because a process owns many handles, not one.
+                        uint processId = (uint)sysHandle.UniqueProcessId;
+                        if (!processNames.TryGetValue(processId, out string? knownName))
+                        {
+                            try
+                            {
+                                knownName = Path.GetFileNameWithoutExtension(ProcessUtilities.GetProcessImageName(fileProcessHandle, ntPathLookupTable).Name);
+                            }
+                            catch (AggregateException)
+                            {
+                                return;
+                            }
+                            if (string.IsNullOrWhiteSpace(knownName))
+                            {
+                                return;
+                            }
+                            processNames[processId] = knownName;
+                        }
+                        processName = knownName;
 
                         // Duplicate the handle into our process.
                         try
@@ -369,7 +394,7 @@ namespace PSADT.FileSystem
                     string objectNameKey = $@"\{string.Join('\\', objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                     if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter, StringComparison.OrdinalIgnoreCase) is string dosPath && (path is null || dosPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
                     {
-                        openHandles.Add(new(in sysHandle, dosPath, objectName, objectType));
+                        openHandles.Add(new(in sysHandle, processName, dosPath, objectName, objectType));
                     }
                 });
                 return new ReadOnlyCollection<FileHandleInfo>([.. openHandles]);

@@ -374,45 +374,70 @@ namespace PSADT.ProcessManagement
                     throw new AggregateException($"Failed to open process ID [{processId}] for querying the image name after the kernel API call failed.", ex1, ex2);
                 }
 
-                // Continue trying to get the process's image name using handle-based methods.
+                // Continue trying to get the process's image name using the handle-based methods.
                 using (hProcess)
                 {
                     try
                     {
-                        // QueryFullProcessImageName is the standard API for this purpose.
-                        return QueryFullProcessImageName(hProcess);
+                        return GetProcessImageName(hProcess, ntPathLookupTable);
+                    }
+                    catch (AggregateException ex3)
+                    {
+                        throw new AggregateException($"Failed to retrieve the process image name for process ID [{processId}] via all available methods.", (IEnumerable<Exception>)[ex1, .. ex3.InnerExceptions]);
+                    }
+                }
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the full image file name of a process from an already-open handle to it.
+        /// </summary>
+        /// <remarks>An open handle keeps the process object alive for the duration of the query, so unlike the
+        /// process identifier overloads this cannot fail because the process has since exited. Only the
+        /// handle-based methods are attempted, as the kernel API used by those overloads takes an identifier.</remarks>
+        /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to DOS drive letter paths. Built on demand when
+        /// not supplied.</param>
+        /// <returns>The full path to the process's executable image.</returns>
+        /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
+        /// of each failure encountered during the retrieval attempts.</exception>
+        internal static FileInfo GetProcessImageName(SafeHandle hProcess, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        {
+            // Get the process image name via the same waterfall the identifier overloads use once they have a handle.
+            ArgumentNullException.ThrowIfNull(hProcess);
+            ntPathLookupTable ??= FileSystemUtilities.MakeNtPathLookupTable();
+            try
+            {
+                // QueryFullProcessImageName is the standard API for this purpose.
+                return QueryFullProcessImageName(hProcess);
+            }
+            catch (Exception ex1)
+            {
+                try
+                {
+                    // Unlike the above, this provides the path in NT device format.
+                    return GetProcessImageFileName(hProcess, ntPathLookupTable);
+                }
+                catch (Exception ex2)
+                {
+                    // That failed too. Go back down to the kernel API level and see how we go.
+                    try
+                    {
+                        // This leverages the documented ProcessImageFileNameWin32 info class.
+                        return QueryProcessImageFileNameWin32(hProcess);
                     }
                     catch (Exception ex3)
                     {
-                        // That failed. Fall back to the Windows XP-era API.
+                        // The Win32 API call failed. Try the NT API directly as the last resort.
                         try
                         {
-                            // Unlike the above, this provides the path in NT device format.
-                            return GetProcessImageFileName(hProcess, ntPathLookupTable);
+                            // The NT device path will get translated internally for us.
+                            return QueryProcessImageFileName(hProcess, ntPathLookupTable);
                         }
                         catch (Exception ex4)
                         {
-                            // That failed too. Go back down to the kernel API level and see how we go.
-                            try
-                            {
-                                // This leverages the documented ProcessImageFileNameWin32 info class.
-                                return QueryProcessImageFileNameWin32(hProcess);
-                            }
-                            catch (Exception ex5)
-                            {
-                                // The Win32 API call failed. Try the NT API directly as the last resort.
-                                try
-                                {
-                                    // The NT device path will get translated internally for us.
-                                    return QueryProcessImageFileName(hProcess, ntPathLookupTable);
-                                }
-                                catch (Exception ex6)
-                                {
-                                    throw new AggregateException($"Failed to retrieve the process image name for process ID [{processId}] via all available methods.", ex1, ex3, ex4, ex5, ex6);
-                                }
-                                throw;
-                            }
-                            throw;
+                            throw new AggregateException("Failed to retrieve the process image name from the supplied handle via all available methods.", ex1, ex2, ex3, ex4);
                         }
                         throw;
                     }
