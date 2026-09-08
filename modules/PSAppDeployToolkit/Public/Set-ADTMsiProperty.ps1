@@ -127,7 +127,6 @@ function Set-ADTMsiProperty
                 $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($record)
             }
         }
-        $installer = New-Object -ComObject WindowsInstaller.Installer
     }
 
     process
@@ -137,6 +136,8 @@ function Set-ADTMsiProperty
         {
             return
         }
+
+        $installer = New-Object -ComObject WindowsInstaller.Installer
         try
         {
             try
@@ -163,11 +164,14 @@ function Set-ADTMsiProperty
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
         }
+        finally
+        {
+            $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
+        }
     }
 
     end
     {
-        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

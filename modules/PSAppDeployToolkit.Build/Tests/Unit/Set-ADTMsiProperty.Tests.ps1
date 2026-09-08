@@ -1,20 +1,11 @@
-﻿BeforeDiscovery {
-    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
-
-    # Windows keeps a cached copy of every installed package under its Installer directory, which is the
-    # only MSI guaranteed to be on hand. Reading it needs elevation, so the tests skip without it rather
-    # than shipping an MSI into the repository purely to be edited.
-    $script:HasMsi = (Test-ADTCallerElevated) -and !!(Get-ChildItem -LiteralPath "$env:SystemRoot\Installer" -Filter '*.msi' -ErrorAction Ignore | Select-Object -First 1)
-}
-
-BeforeAll {
+﻿BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
     # Mock Write-ADTLogEntry due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
-    function Copy-CachedMsi
+    function Copy-TestPackage
     {
         [CmdletBinding()]
         [OutputType([System.String])]
@@ -24,14 +15,14 @@ BeforeAll {
             [System.String]$Destination
         )
 
-        # The smallest cached package, since every test works against its own copy and the largest of them
-        # runs to hundreds of megabytes.
-        $source = Get-ChildItem -LiteralPath "$env:SystemRoot\Installer" -Filter '*.msi' | Sort-Object -Property Length | Select-Object -First 1
-        Copy-Item -LiteralPath $source.FullName -Destination $Destination -Force
+        # The package committed for these tests, rather than one of Windows' own cached copies. Reading
+        # those needs elevation, which had this whole file skipping on a session without it, and they
+        # run to hundreds of megabytes where this one is a couple of hundred kilobytes.
+        Copy-Item -LiteralPath "$PSScriptRoot\..\Assets\PSAppDeployToolkit Test MSI.msi" -Destination $Destination -Force
         return $Destination
     }
 }
-Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
+Describe 'Set-ADTMsiProperty' {
     BeforeAll {
         function Invoke-AgainstDatabase
         {
@@ -67,7 +58,7 @@ Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
     }
 
     BeforeEach {
-        $script:Package = Copy-CachedMsi -Destination "$TestDrive\Package$([System.Guid]::NewGuid().ToString('N')).msi"
+        $script:Package = Copy-TestPackage -Destination "$TestDrive\Package$([System.Guid]::NewGuid().ToString('N')).msi"
     }
 
     Context 'Functionality' {
@@ -108,6 +99,38 @@ Describe 'Set-ADTMsiProperty' -Skip:(!$script:HasMsi) {
 
         It 'Writes nothing with -WhatIf' {
             (Invoke-AgainstDatabase -Path $script:Package -Action { Set-ADTMsiProperty -Database $args[0] -PropertyName 'ADTTESTONLY' -PropertyValue 'a value' -WhatIf }).ContainsKey('ADTTESTONLY') | Should -BeFalse
+        }
+    }
+
+    Context 'Releasing the installer it creates' {
+        # The release cannot be seen from outside the function, so the installer is handed in through a
+        # mock and kept hold of here. Any further use of a released object throws, which is what makes
+        # the difference observable. The mock body is closed over so that it can reach the variable: a
+        # mock for a module runs in that module's scope, where a variable of this scope is not in sight.
+        It 'Releases it once the property is set' {
+            $installer = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))
+            Mock -ModuleName PSAppDeployToolkit New-Object { $installer }.GetNewClosure() -ParameterFilter { $ComObject -eq 'WindowsInstaller.Installer' }
+
+            $null = Invoke-AgainstDatabase -Path $script:Package -Action { Set-ADTMsiProperty -Database $args[0] -PropertyName 'ADTTESTONLY' -PropertyValue 'a value' }
+            { $installer.GetType().InvokeMember('CreateRecord', 'InvokeMethod', $null, $installer, @(1)) } | Should -Throw -ExceptionType ([System.Runtime.InteropServices.InvalidComObjectException])
+        }
+
+        It 'Releases it when the error is raised as terminating' {
+            # The path that used to leak. An error handled as terminating unwinds straight out of the
+            # function, so an end block never runs and anything released only there is left behind. The
+            # database handed in is a COM object the parameter accepts and the query engine then refuses.
+            $installer = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))
+            Mock -ModuleName PSAppDeployToolkit New-Object { $installer }.GetNewClosure() -ParameterFilter { $ComObject -eq 'WindowsInstaller.Installer' }
+            $notADatabase = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WindowsInstaller.Installer'))
+            try
+            {
+                { Set-ADTMsiProperty -Database $notADatabase -PropertyName 'ADTTESTONLY' -PropertyValue 'a value' -ErrorAction Stop } | Should -Throw
+                { $installer.GetType().InvokeMember('CreateRecord', 'InvokeMethod', $null, $installer, @(1)) } | Should -Throw -ExceptionType ([System.Runtime.InteropServices.InvalidComObjectException])
+            }
+            finally
+            {
+                $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($notADatabase)
+            }
         }
     }
 
