@@ -259,10 +259,22 @@ function Show-ADTInstallationRestartPrompt
     process
     {
         # Check if we are already displaying a restart prompt.
-        if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
+        $runningProcesses = Get-Process
+        try
         {
-            Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
-            return
+            if ($runningProcesses | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
+            {
+                Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
+                return
+            }
+        }
+        finally
+        {
+            # Every process on the machine came back here, and each one is the caller's to close.
+            foreach ($process in $runningProcesses)
+            {
+                $process.Dispose()
+            }
         }
 
         # If in non-interactive mode.

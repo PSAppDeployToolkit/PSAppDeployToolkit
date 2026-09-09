@@ -165,7 +165,8 @@ function Set-ADTRegistryKey
                         {
                             try
                             {
-                                $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
+                                # CreateSubKey hands back an open key of its own, which is of no use here beyond having been made.
+                                $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions).Dispose()
                             }
                             finally
                             {

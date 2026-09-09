@@ -108,6 +108,16 @@ function Test-ADTEspActive
                 # Re-writing the ErrorRecord with Write-Error ensures the correct PositionMessage is used.
                 Write-Error -ErrorRecord $_
             }
+            finally
+            {
+                # GetProcessesByName hands back a Process per match, each of which the caller owns. A
+                # foreach rather than a pipeline because the variable is unset if the call above threw,
+                # and piping $null runs the body once against nothing.
+                foreach ($process in $wwaHostProcess)
+                {
+                    $process.Dispose()
+                }
+            }
         }
         catch
         {

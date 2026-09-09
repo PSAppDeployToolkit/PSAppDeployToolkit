@@ -73,10 +73,22 @@ function Test-ADTPowerPoint
                 }
 
                 # Return early if we're not running PowerPoint or we can't interactively check.
-                if (!(Get-Process -Name POWERPNT -ErrorAction Ignore))
+                $powerPointProcesses = Get-Process -Name POWERPNT -ErrorAction Ignore
+                try
                 {
-                    Write-ADTLogEntry -Message 'There is no instance of PowerPoint running on this system.'
-                    return $false
+                    if (!$powerPointProcesses)
+                    {
+                        Write-ADTLogEntry -Message 'There is no instance of PowerPoint running on this system.'
+                        return $false
+                    }
+                }
+                finally
+                {
+                    # Only their presence was of interest, but each is a Process this caller owns.
+                    foreach ($process in $powerPointProcesses)
+                    {
+                        $process.Dispose()
+                    }
                 }
 
                 # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "PowerPoint-" for non-English language systems.
