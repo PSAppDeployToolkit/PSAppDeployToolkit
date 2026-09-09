@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Microsoft.Win32;
 using PSADT.Utilities;
 using Xunit;
 
@@ -561,6 +562,120 @@ namespace PSADT.Tests.Utilities
                 Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
                 Environment.SetEnvironmentVariable(name, value: null);
             }
+        }
+
+        /// <summary>
+        /// Verifies that appending to an expandable value leaves the references in it unexpanded.
+        /// </summary>
+        /// <remarks>
+        /// The framework's scoped read expands a REG_EXPAND_SZ value on the way out, so appending to what
+        /// it returns writes the expansion back and the indirection is gone for good. A user PATH holding
+        /// %USERPROFILE% would be rewritten with one account's profile directory baked into it, which is
+        /// wrong for a roaming or redirected profile and wrong again for anyone else reading it.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_AppendsWithoutExpandingWhatIsAlreadyThere()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                WriteUserValue(name, @"%SystemRoot%\A", RegistryValueKind.ExpandString);
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, @"C:\B", EnvironmentVariableTarget.User, expandable: false, append: true, remove: false);
+
+                // Assert
+                Assert.Equal($@"%SystemRoot%\A{Path.PathSeparator}C:\B", ReadUserValue(name, out RegistryValueKind kind));
+                Assert.Equal(RegistryValueKind.ExpandString, kind);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that removing from an expandable value leaves the references in it unexpanded.
+        /// </summary>
+        [Fact]
+        public void SetEnvironmentVariable_RemovesWithoutExpandingWhatIsLeft()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                WriteUserValue(name, $@"%SystemRoot%\A{Path.PathSeparator}C:\B", RegistryValueKind.ExpandString);
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, @"C:\B", EnvironmentVariableTarget.User, expandable: false, append: false, remove: true);
+
+                // Assert
+                Assert.Equal(@"%SystemRoot%\A", ReadUserValue(name, out RegistryValueKind kind));
+                Assert.Equal(RegistryValueKind.ExpandString, kind);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the caller's choice still decides the kind of a value being written for the
+        /// first time, since there is nothing there whose kind could be preserved instead.
+        /// </summary>
+        /// <param name="expandable">Whether the caller asked for an expandable value.</param>
+        /// <param name="expected">The kind that should be written.</param>
+        [Theory]
+        [InlineData(true, RegistryValueKind.ExpandString)]
+        [InlineData(false, RegistryValueKind.String)]
+        public void SetEnvironmentVariable_WritesTheRequestedKindForANewValue(bool expandable, RegistryValueKind expected)
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, @"%SystemRoot%\A", EnvironmentVariableTarget.User, expandable, append: false, remove: false);
+
+                // Assert
+                _ = ReadUserValue(name, out RegistryValueKind kind);
+                Assert.Equal(expected, kind);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+            }
+        }
+
+        /// <summary>
+        /// Writes a value into the user's environment key with a kind of the test's choosing, which the
+        /// framework's own setter does not allow.
+        /// </summary>
+        /// <param name="name">The variable to write.</param>
+        /// <param name="value">The value to write.</param>
+        /// <param name="kind">The kind to write it as.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the user's environment key is not there.</exception>
+        private static void WriteUserValue(string name, string value, RegistryValueKind kind)
+        {
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment", writable: true)
+                ?? throw new InvalidOperationException("The user's environment key is not there to write to.");
+            key.SetValue(name, value, kind);
+        }
+
+        /// <summary>
+        /// Reads a value out of the user's environment key exactly as it is stored.
+        /// </summary>
+        /// <param name="name">The variable to read.</param>
+        /// <param name="kind">The kind it is stored as.</param>
+        /// <returns>The unexpanded value.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the user's environment key is not there.</exception>
+        private static string? ReadUserValue(string name, out RegistryValueKind kind)
+        {
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment")
+                ?? throw new InvalidOperationException("The user's environment key is not there to read from.");
+            kind = key.GetValueKind(name);
+            return (string?)key.GetValue(name, defaultValue: null, RegistryValueOptions.DoNotExpandEnvironmentNames);
         }
 
         /// <summary>

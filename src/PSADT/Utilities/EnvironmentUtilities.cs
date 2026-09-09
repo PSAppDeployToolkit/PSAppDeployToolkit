@@ -201,12 +201,15 @@ namespace PSADT.Utilities
                 value = null;
             }
 
-            // Handle removing/appending values from/to semicolon-delimited lists.
+            // Handle removing/appending values from/to semicolon-delimited lists. The kind an existing
+            // persisted value already carries is tracked so that modifying it cannot rewrite it as
+            // something else; it stays Unknown when there is nothing there to preserve.
+            RegistryValueKind existingKind = RegistryValueKind.Unknown;
             if (remove)
             {
                 // If the existing value when split results in an empty list, remove it and return.
                 ArgumentNullException.ThrowIfNull(value);
-                string? existingValue = GetEnvironmentVariable(variable, target);
+                string? existingValue = GetStoredEnvironmentVariable(variable, target, out existingKind);
                 if (existingValue is null || string.IsNullOrWhiteSpace(existingValue))
                 {
                     return;
@@ -230,7 +233,7 @@ namespace PSADT.Utilities
             {
                 // Append the new value to the existing one if the existing value does not already contain it.
                 ArgumentNullException.ThrowIfNull(value);
-                string existingValue = GetEnvironmentVariable(variable, target) ?? string.Empty;
+                string existingValue = GetStoredEnvironmentVariable(variable, target, out existingKind) ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = existingValue + Path.PathSeparator + value;
@@ -258,28 +261,28 @@ namespace PSADT.Utilities
             {
                 case EnvironmentVariableTarget.Machine:
                     {
-                        using RegistryKey? registryKey = Registry.LocalMachine.OpenSubKey("System\\CurrentControlSet\\Control\\Session Manager\\Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for machine environment variables.");
+                        using RegistryKey? registryKey = Registry.LocalMachine.OpenSubKey(MachineEnvironmentKeyPath, writable: true) ?? throw new InvalidOperationException("Could not open registry key for machine environment variables.");
                         if (value is null)
                         {
                             registryKey.DeleteValue(variable, throwOnMissingValue: false);
                         }
                         else
                         {
-                            registryKey.SetValue(variable, value, expandable ? RegistryValueKind.ExpandString : RegistryValueKind.String);
+                            registryKey.SetValue(variable, value, GetValueKindToWrite(existingKind, expandable));
                         }
                         break;
                     }
                 case EnvironmentVariableTarget.User:
                     {
                         ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 255, nameof(variable));
-                        using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
+                        using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(UserEnvironmentKeyPath, writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
                         if (value is null)
                         {
                             registryKey.DeleteValue(variable, throwOnMissingValue: false);
                         }
                         else
                         {
-                            registryKey.SetValue(variable, value, expandable ? RegistryValueKind.ExpandString : RegistryValueKind.String);
+                            registryKey.SetValue(variable, value, GetValueKindToWrite(existingKind, expandable));
                         }
                         break;
                     }
@@ -335,5 +338,64 @@ namespace PSADT.Utilities
                 ? throw new ArgumentException("The input string cannot be null or whitespace.", nameof(name))
                 : Environment.ExpandEnvironmentVariables(name);
         }
+
+        /// <summary>
+        /// Reads an environment variable as it is actually stored, along with the kind it is stored as.
+        /// </summary>
+        /// <remarks>The framework's own scoped read expands a REG_EXPAND_SZ value before handing it back, so
+        /// appending to or removing from what it returns writes the
+        /// expansion into the hive and loses the indirection - a machine PATH holding
+        /// <c language="text">%SystemRoot%\system32</c> comes back out holding
+        /// <c language="text">C:\WINDOWS\system32</c>. A value being modified has to be read as it was written.
+        /// <para>The process scope is not held in the registry and has no kind, so it is read the ordinary way and
+        /// reported as <see cref="RegistryValueKind.Unknown"/>.</para></remarks>
+        /// <param name="variable">The name of the environment variable to read.</param>
+        /// <param name="target">The scope to read it from.</param>
+        /// <param name="kind">The kind the value is stored as, or <see cref="RegistryValueKind.Unknown"/> when there
+        /// is no value to preserve the kind of.</param>
+        /// <returns>The unexpanded value, or <see langword="null"/> if it is not set.</returns>
+        private static string? GetStoredEnvironmentVariable(string variable, EnvironmentVariableTarget target, out RegistryValueKind kind)
+        {
+            if (target is EnvironmentVariableTarget.Process)
+            {
+                kind = RegistryValueKind.Unknown;
+                return GetEnvironmentVariable(variable, target);
+            }
+            using RegistryKey? registryKey = target is EnvironmentVariableTarget.Machine ? Registry.LocalMachine.OpenSubKey(MachineEnvironmentKeyPath) : Registry.CurrentUser.OpenSubKey(UserEnvironmentKeyPath);
+            if (registryKey?.GetValue(variable, defaultValue: null, RegistryValueOptions.DoNotExpandEnvironmentNames) is not string value || string.IsNullOrWhiteSpace(value))
+            {
+                kind = RegistryValueKind.Unknown;
+                return null;
+            }
+            kind = registryKey.GetValueKind(variable);
+            return value;
+        }
+
+        /// <summary>
+        /// Determines the kind to write a persisted environment variable as.
+        /// </summary>
+        /// <remarks>A value that already exists keeps the kind it had, so that appending to or removing from an
+        /// expandable value does not quietly demote it to a plain one. The caller's preference decides the kind of a
+        /// value being written for the first time, and of one stored as something a string cannot be written back
+        /// as.</remarks>
+        /// <param name="existingKind">The kind the value already had, or <see cref="RegistryValueKind.Unknown"/>.</param>
+        /// <param name="expandable">Whether the caller asked for an expandable value.</param>
+        /// <returns>The kind to write.</returns>
+        private static RegistryValueKind GetValueKindToWrite(RegistryValueKind existingKind, bool expandable)
+        {
+            return existingKind is not RegistryValueKind.String and not RegistryValueKind.ExpandString
+                ? expandable ? RegistryValueKind.ExpandString : RegistryValueKind.String
+                : existingKind;
+        }
+
+        /// <summary>
+        /// The registry key holding the machine's environment variables.
+        /// </summary>
+        private const string MachineEnvironmentKeyPath = @"System\CurrentControlSet\Control\Session Manager\Environment";
+
+        /// <summary>
+        /// The registry key holding the current user's environment variables.
+        /// </summary>
+        private const string UserEnvironmentKeyPath = "Environment";
     }
 }
