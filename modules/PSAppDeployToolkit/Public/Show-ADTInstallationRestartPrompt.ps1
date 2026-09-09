@@ -271,9 +271,9 @@ function Show-ADTInstallationRestartPrompt
         finally
         {
             # Every process on the machine came back here, and each one is the caller's to close.
-            foreach ($process in $runningProcesses)
+            if ($runningProcesses)
             {
-                $process.Dispose()
+                $runningProcesses.Dispose()
             }
         }
 

@@ -84,10 +84,12 @@ function Test-ADTPowerPoint
                 }
                 finally
                 {
-                    # Only their presence was of interest, but each is a Process this caller owns.
-                    foreach ($process in $powerPointProcesses)
+                    # Only their presence was of interest, but each is a Process this caller owns. Guarded
+                    # because there may be none, and calling Dispose() on an empty result throws in here
+                    # and takes the real error with it.
+                    if ($powerPointProcesses)
                     {
-                        $process.Dispose()
+                        $powerPointProcesses.Dispose()
                     }
                 }
 

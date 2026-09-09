@@ -110,12 +110,12 @@ function Test-ADTEspActive
             }
             finally
             {
-                # GetProcessesByName hands back a Process per match, each of which the caller owns. A
-                # foreach rather than a pipeline because the variable is unset if the call above threw,
-                # and piping $null runs the body once against nothing.
-                foreach ($process in $wwaHostProcess)
+                # GetProcessesByName hands back a Process per match, each of which the caller owns.
+                # Guarded because it hands back an empty array when there are none and is unset if it
+                # threw, either of which makes Dispose() throw in here and lose the real error.
+                if ($wwaHostProcess)
                 {
-                    $process.Dispose()
+                    $wwaHostProcess.Dispose()
                 }
             }
         }
