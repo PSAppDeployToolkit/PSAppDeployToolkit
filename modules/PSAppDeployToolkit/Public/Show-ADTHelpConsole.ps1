@@ -43,8 +43,15 @@ function Show-ADTHelpConsole
         https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
     #>
 
+    # Bypass if no one's logged onto the device.
+    if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
+    {
+        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+        return
+    }
+
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
-    Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -NoWait -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{
+    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType HelpConsole -DialogStyle Classic -NoWait -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{
             ModuleHelpMap = Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
                 begin
                 {
