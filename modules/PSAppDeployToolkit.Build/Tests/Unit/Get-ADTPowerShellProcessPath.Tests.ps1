@@ -21,7 +21,10 @@ Describe 'Get-ADTPowerShellProcessPath' {
         }
 
         It 'Names the host actually running this test' {
-            [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName | Should -BeExactly (Get-ADTPowerShellProcessPath)
+            # Not -BeExactly: the two are derived independently and Windows paths are case-insensitive, so
+            # the casing is the machine's rather than anything either side promises. $PSHOME says
+            # C:\Windows where the loaded module reports whatever %SystemRoot% is spelt as, often C:\WINDOWS.
+            [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName | Should -Be (Get-ADTPowerShellProcessPath)
         }
 
         It 'Returns something that runs' {
