@@ -34,7 +34,7 @@ Describe 'Set-ADTRegistryKey' {
                     {
                         # Attempting to create a nonvolatile registry key under a volatile registry key will throw an error.
                         ## We use this behavior to validate that the registry key created by Set-ADTRegistryKey is volatile.
-                        $volatileKey.CreateSubKey('NonVolatile', $true, [Microsoft.Win32.RegistryOptions]::None)
+                        $volatileKey.CreateSubKey('NonVolatile', $true, [Microsoft.Win32.RegistryOptions]::None).Dispose()
                     }
                     finally
                     {

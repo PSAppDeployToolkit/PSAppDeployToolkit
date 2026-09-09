@@ -190,6 +190,55 @@ function Get-ADTCallerSid
 
 #-----------------------------------------------------------------------------
 #
+# MARK: Get-ADTCallerProcessPath
+#
+#-----------------------------------------------------------------------------
+
+function Get-ADTCallerProcessPath
+{
+    <#
+    .SYNOPSIS
+        Gets the path to the executable hosting the tests.
+
+    .DESCRIPTION
+        The `Get-ADTCallerProcessPath` function returns the file name of the current process's main module, without leaving the `Process` it was read from open. `Process` is disposable, which a test reading the path inline has no way of honouring.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
+
+        Returns the full path to the host executable.
+
+    .EXAMPLE
+        Get-ADTCallerProcessPath
+
+        Returns the path of the executable running the tests.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+    )
+
+    $process = [System.Diagnostics.Process]::GetCurrentProcess()
+    try
+    {
+        return $process.MainModule.FileName
+    }
+    finally
+    {
+        $process.Dispose()
+    }
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Resolve-ADTParameterName
 #
 #-----------------------------------------------------------------------------
@@ -766,4 +815,4 @@ function Remove-ADTTestApplicationEntries
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Get-ADTCallerSid, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Get-ADTCallerSid, Get-ADTCallerProcessPath, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries

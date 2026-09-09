@@ -14,16 +14,38 @@ Describe 'Test-ADTEspActive' {
         It 'Reports no enrolment status page when wwahost is not running' {
             # wwahost is what draws the page, and the function short-circuits on its absence, so this is the
             # first thing it decides.
-            if (![System.Diagnostics.Process]::GetProcessesByName('wwahost').Length)
+            $wwaHost = [System.Diagnostics.Process]::GetProcessesByName('wwahost')
+            try
             {
-                Test-ADTEspActive | Should -BeFalse
+                if (!$wwaHost.Length)
+                {
+                    Test-ADTEspActive | Should -BeFalse
+                }
+            }
+            finally
+            {
+                if ($wwaHost)
+                {
+                    $wwaHost.Dispose()
+                }
             }
         }
 
         It 'Cannot be active once the out-of-box experience has finished and no wwahost is running' {
-            if ((Test-ADTOobeCompleted) -and ![System.Diagnostics.Process]::GetProcessesByName('wwahost').Length)
+            $wwaHost = [System.Diagnostics.Process]::GetProcessesByName('wwahost')
+            try
             {
-                Test-ADTEspActive | Should -BeFalse
+                if ((Test-ADTOobeCompleted) -and !$wwaHost.Length)
+                {
+                    Test-ADTEspActive | Should -BeFalse
+                }
+            }
+            finally
+            {
+                if ($wwaHost)
+                {
+                    $wwaHost.Dispose()
+                }
             }
         }
     }

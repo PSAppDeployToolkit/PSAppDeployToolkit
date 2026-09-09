@@ -14,9 +14,20 @@ Describe 'Test-ADTPowerPoint' {
         It 'Reports no presentation when PowerPoint is not running' {
             # The check looks for a POWERPNT process before anything else, so with none running the answer
             # has to be false regardless of window state.
-            if (![System.Diagnostics.Process]::GetProcessesByName('POWERPNT').Length)
+            $powerPoint = [System.Diagnostics.Process]::GetProcessesByName('POWERPNT')
+            try
             {
-                Test-ADTPowerPoint | Should -BeFalse
+                if (!$powerPoint.Length)
+                {
+                    Test-ADTPowerPoint | Should -BeFalse
+                }
+            }
+            finally
+            {
+                if ($powerPoint)
+                {
+                    $powerPoint.Dispose()
+                }
             }
         }
     }

@@ -22,8 +22,17 @@ function Export-ADTScriptTemplate
             "-Name 'Template_v4' -Version 4"
             "-Name 'Template_v4_ZeroConfig' -Version 4 -ZeroConfig"
         )
+        $currentProcess = [System.Diagnostics.Process]::GetCurrentProcess()
+        try
+        {
+            $hostPath = $currentProcess.Path
+        }
+        finally
+        {
+            $currentProcess.Dispose()
+        }
         $spParams = @{
-            FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
+            FilePath = $hostPath
             ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -FullyQualifiedName @{ ModuleName = '$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleOutput))\$($Script:ModuleConstants.ModuleName).psd1'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }; $([System.String]::Join('; ', $templateArgs.ForEach({"New-ADTTemplate -Destination '$($Script:ModuleConstants.Paths.BuildOutput)' -Force $_"})))"
             NoNewWindow = $true
             Wait = $true

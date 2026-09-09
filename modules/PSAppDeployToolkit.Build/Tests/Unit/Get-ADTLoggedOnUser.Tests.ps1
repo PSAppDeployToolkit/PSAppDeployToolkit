@@ -24,7 +24,15 @@ Describe 'Get-ADTLoggedOnUser' {
             # belongs to.
             $current = @($script:Sessions | & { process { if ($_.IsCurrentSession) { return $_ } } })
             $current.Count | Should -Be 1
-            $current[0].SessionId | Should -Be ([System.Diagnostics.Process]::GetCurrentProcess().SessionId)
+            $process = [System.Diagnostics.Process]::GetCurrentProcess()
+            try
+            {
+                $current[0].SessionId | Should -Be $process.SessionId
+            }
+            finally
+            {
+                $process.Dispose()
+            }
         }
 
         It 'Identifies the account the test is running as' {
