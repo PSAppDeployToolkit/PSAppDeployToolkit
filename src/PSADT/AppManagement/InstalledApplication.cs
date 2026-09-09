@@ -97,8 +97,8 @@ namespace PSADT.AppManagement
             Is64BitApplication = is64BitApplication;
             if (UninstallString is not null)
             {
-                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString); string program = argumentList[0];
-                UninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
+                UninstallStringFilePath = argumentList[0];
                 if (argumentList.Count > 1)
                 {
                     UninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
@@ -106,8 +106,8 @@ namespace PSADT.AppManagement
             }
             if (QuietUninstallString is not null)
             {
-                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString); string program = argumentList[0];
-                QuietUninstallStringFilePathValue = new FileInfo(!Path.IsPathFullyQualified(program) ? Path.Join(Environment.SystemDirectory, program) : program).FullName;
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
+                QuietUninstallStringFilePath = argumentList[0];
                 if (argumentList.Count > 1)
                 {
                     QuietUninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
@@ -176,14 +176,13 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        /// <remarks>Recorded as a path and rebuilt on each read. A <see cref="FileInfo"/> does not override
-        /// equality, so holding one directly would make this record compare by reference and two descriptions of
-        /// the same application would never match.
-        /// <para>A program the uninstall string names without a path is resolved against the system directory,
-        /// which is where such an entry resolves in practice: it is a step in the process launcher's own search
-        /// order, so a registry value of nothing but "MsiExec.exe" starts msiexec wherever the caller happens to
-        /// be sitting.</para></remarks>
-        public FileInfo? UninstallStringFilePath => UninstallStringFilePathValue is string uninstallStringFilePath ? new(uninstallStringFilePath) : null;
+        /// <remarks>The program exactly as the uninstall string named it, which is not necessarily a path at
+        /// all: a registry command line is not obliged to say where its program lives and most do not, naming
+        /// nothing but "MsiExec.exe". Resolving such a name here would have to pick a directory, and no fixed
+        /// choice is right - the system directory suits msiexec, while a portable install from a package
+        /// manager depends on the launcher's own search order to find its uninstaller. So the name is passed
+        /// through untouched and the caller resolves it the way it intends to run it.</remarks>
+        public string? UninstallStringFilePath { get; }
 
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
@@ -201,8 +200,8 @@ namespace PSADT.AppManagement
         /// <summary>
         /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
-        /// <remarks>Resolved the same way as <see cref="UninstallStringFilePath"/>.</remarks>
-        public FileInfo? QuietUninstallStringFilePath => QuietUninstallStringFilePathValue is string quietUninstallStringFilePath ? new(quietUninstallStringFilePath) : null;
+        /// <remarks>Passed through untouched for the same reason as <see cref="UninstallStringFilePath"/>.</remarks>
+        public string? QuietUninstallStringFilePath { get; }
 
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
@@ -258,16 +257,6 @@ namespace PSADT.AppManagement
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
         public bool? Is64BitApplication { get; }
-
-        /// <summary>
-        /// The path recorded for <see cref="UninstallStringFilePath"/>.
-        /// </summary>
-        private readonly string? UninstallStringFilePathValue;
-
-        /// <summary>
-        /// The path recorded for <see cref="QuietUninstallStringFilePath"/>.
-        /// </summary>
-        private readonly string? QuietUninstallStringFilePathValue;
 
         /// <summary>
         /// The path recorded for <see cref="InstallSource"/>.

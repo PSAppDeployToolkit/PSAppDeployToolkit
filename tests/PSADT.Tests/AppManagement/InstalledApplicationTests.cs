@@ -31,30 +31,29 @@ namespace PSADT.Tests.AppManagement
             InstalledApplication application = Create(uninstallString: uninstallString);
 
             // Assert
-            Assert.Equal(expectedPath, application.UninstallStringFilePath?.FullName);
+            Assert.Equal(expectedPath, application.UninstallStringFilePath);
             Assert.Equal(expectedArguments, application.UninstallStringArgumentList);
         }
 
         /// <summary>
-        /// Verifies that an uninstall string naming no directory is resolved against the system
-        /// directory rather than against wherever the calling process happens to be.
+        /// Verifies that an uninstall string naming no directory is handed back as the bare name it was
+        /// written as, rather than resolved against a directory of this type's choosing.
         /// </summary>
         /// <remarks>
-        /// Worth stating outright because most registry uninstall strings are unrooted, nearly all of
-        /// them msiexec. The system directory is a step in the process launcher's own search order,
-        /// which is why such an entry starts anything at all, and it is a fixed answer: resolving
-        /// against the working directory instead gave a path that depended on the caller rather than
-        /// on anything the registry said.
+        /// Worth stating outright because most registry uninstall strings are unrooted, nearly all of them
+        /// msiexec, and it is tempting to fill the directory in. There is no right one to fill in: the
+        /// system directory suits msiexec and defeats a portable install whose uninstaller is found through
+        /// the launcher's search order, while the working directory answers differently in every process
+        /// that reads the registry. Handing back the name leaves that resolution to whoever runs it.
         /// </remarks>
         [Fact]
-        public void UninstallStringFilePath_ResolvesAnUnrootedNameAgainstTheSystemDirectory()
+        public void UninstallStringFilePath_KeepsAnUnrootedNameAsItWasWritten()
         {
             // Act
             InstalledApplication application = Create(uninstallString: "MsiExec.exe /X{12345678-1234-1234-1234-123456789012}");
 
             // Assert
-            Assert.Equal("MsiExec.exe", application.UninstallStringFilePath?.Name);
-            Assert.Equal(Environment.SystemDirectory, application.UninstallStringFilePath?.DirectoryName);
+            Assert.Equal("MsiExec.exe", application.UninstallStringFilePath);
         }
 
         /// <summary>
@@ -70,9 +69,9 @@ namespace PSADT.Tests.AppManagement
                 quietUninstallString: @"""C:\Program Files\App\uninstall.exe"" /silent /norestart");
 
             // Assert
-            Assert.Equal(@"C:\Program Files\App\uninstall.exe", application.UninstallStringFilePath?.FullName);
+            Assert.Equal(@"C:\Program Files\App\uninstall.exe", application.UninstallStringFilePath);
             Assert.Equal(["/interactive"], application.UninstallStringArgumentList);
-            Assert.Equal(@"C:\Program Files\App\uninstall.exe", application.QuietUninstallStringFilePath?.FullName);
+            Assert.Equal(@"C:\Program Files\App\uninstall.exe", application.QuietUninstallStringFilePath);
             Assert.Equal(["/silent", "/norestart"], application.QuietUninstallStringArgumentList);
         }
 
@@ -173,8 +172,8 @@ namespace PSADT.Tests.AppManagement
                 data.Add(@"C:\Program Files\App\uninstall.exe", @"C:\Program Files\App\uninstall.exe", []);
 
                 // The Windows Installer form, where the executable takes the product code and is named
-                // without a path, so the system directory it lives in is supplied.
-                data.Add("MsiExec.exe /X{12345678-1234-1234-1234-123456789012}", Path.Join(Environment.SystemDirectory, "MsiExec.exe"), ["/X{12345678-1234-1234-1234-123456789012}"]);
+                // without a path, which is left as it was written.
+                data.Add("MsiExec.exe /X{12345678-1234-1234-1234-123456789012}", "MsiExec.exe", ["/X{12345678-1234-1234-1234-123456789012}"]);
                 data.Add(@"C:\Windows\System32\msiexec.exe /x {12345678-1234-1234-1234-123456789012} /qn", @"C:\Windows\System32\msiexec.exe", ["/x", "{12345678-1234-1234-1234-123456789012}", "/qn"]);
 
                 // An argument that is itself a quoted path.
@@ -336,8 +335,8 @@ namespace PSADT.Tests.AppManagement
         /// Applications are collected into lists that are compared and deduplicated as a whole, so this
         /// has to hold. It did not for a long while: the record carried the uninstaller's path as a
         /// <see cref="FileInfo"/> and its arguments as a collection, and neither of those
-        /// compares by value, so no two records ever matched however alike they were. Both are recorded
-        /// in forms that compare by their contents instead.
+        /// compares by value, so no two records ever matched however alike they were. The path is a
+        /// string now, and the arguments a list that compares by its contents.
         /// </remarks>
         [Fact]
         public void Equality_IsByValueIncludingTheUninstallerAndItsArguments()

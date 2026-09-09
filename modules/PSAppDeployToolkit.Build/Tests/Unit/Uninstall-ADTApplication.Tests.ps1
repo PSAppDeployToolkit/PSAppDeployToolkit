@@ -133,9 +133,10 @@ Describe 'Uninstall-ADTApplication' {
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('No UninstallString found') } -Times 1 -Exactly
         }
 
-        It 'Runs an uninstall program the string named without a path' {
-            # A registry command line need not say where its program lives, and most name only msiexec. Such
-            # a name resolves against the system directory, which is where the process launcher finds it.
+        It 'Finds the uninstall program on the path when the string does not qualify it' {
+            # A registry command line need not say where its program lives, and most name only msiexec. The
+            # record hands the name over as it was written, so this is resolved against the search path -
+            # which is what lets a portable install's uninstaller be found where a fixed directory would not.
             $name = New-ADTTestApplicationName
             New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = Get-ADTTestUninstallCommand -Name $name -Unqualified }
             Uninstall-ADTApplication -Name $name -NameMatch Exact

@@ -351,6 +351,10 @@ function Uninstall-ADTApplication
                         continue
                     }
                     $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
+                    if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
+                    {
+                        $sapParams.FilePath = $commandPath.Source
+                    }
 
                     # Set up the ArgumentList for the uninstall.
                     if ($PSBoundParameters.ContainsKey('ArgumentList'))
