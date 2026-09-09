@@ -9,6 +9,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="[4.13.0,4.14.0)" />
     <PackageVersion Include="Microsoft.Extensions.StaticAnalysis" Version="10.9.0" />
+    <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="8.0.31" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="[7.4.19,7.5.0)" />

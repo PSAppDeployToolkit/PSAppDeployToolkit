@@ -12,6 +12,16 @@
     <ProjectReference Include="..\..\src\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
   </ItemGroup>
 
+  <!--
+    PublishTrimmed brings the linker in on its own, at whichever version the installed SDK pairs with this
+    project's runtime pack. That version is then written into the lock file, so a machine on a different SDK
+    patch resolves a different one and a locked restore refuses to run. Naming it makes the lock file say
+    what the repository chose rather than what the last machine to restore happened to have.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" />
+  </ItemGroup>
+
   <ItemGroup>
     <TrimmerRootAssembly Include="PSADT.WindowsRuntime" />
   </ItemGroup>
