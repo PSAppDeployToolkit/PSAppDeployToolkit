@@ -40,7 +40,7 @@ Describe 'Test-ADTRegistryValue' {
         It 'Should look under the user a SID names' {
             # The SID rewrites HKEY_CURRENT_USER to that user's hive under HKEY_USERS, so the caller's own
             # SID has to give the same answer as asking without one.
-            $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+            $sid = (Get-ADTCallerSid).Value
             Test-ADTRegistryValue -Key 'HKEY_CURRENT_USER\Software' -Name "ADTNeverExists$([System.Guid]::NewGuid().ToString('N'))" -SID $sid | Should -BeFalse
         }
     }

@@ -10,7 +10,8 @@ Describe 'Get-ADTUserProfiles' {
     Context 'Functionality' {
         BeforeAll {
             $script:Profiles = @(Get-ADTUserProfiles)
-            $script:Mine = $script:Profiles | & { process { if ($_.SID.Value.Equals([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) { return $_ } } } | Select-Object -First 1
+            $callerSid = (Get-ADTCallerSid).Value
+            $script:Mine = $script:Profiles | & { process { if ($_.SID.Value.Equals($callerSid)) { return $_ } } } | Select-Object -First 1
         }
 
         It 'Returns profiles with an account and a path' {

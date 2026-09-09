@@ -141,6 +141,55 @@ function Test-ADTCallerElevated
 
 #-----------------------------------------------------------------------------
 #
+# MARK: Get-ADTCallerSid
+#
+#-----------------------------------------------------------------------------
+
+function Get-ADTCallerSid
+{
+    <#
+    .SYNOPSIS
+        Gets the SID of the account the tests are running as.
+
+    .DESCRIPTION
+        The `Get-ADTCallerSid` function returns the security identifier of the caller, without leaving the identity it was read from open. `WindowsIdentity` holds a token handle and is disposable, which a test asking for a SID inline has no way of honouring.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.Security.Principal.SecurityIdentifier
+
+        Returns the caller's SID.
+
+    .EXAMPLE
+        Get-ADTCallerSid
+
+        Returns the SID of the account running the tests.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.Security.Principal.SecurityIdentifier])]
+    param
+    (
+    )
+
+    $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    try
+    {
+        return $identity.User
+    }
+    finally
+    {
+        $identity.Dispose()
+    }
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Resolve-ADTParameterName
 #
 #-----------------------------------------------------------------------------
@@ -717,4 +766,4 @@ function Remove-ADTTestApplicationEntries
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Get-ADTCallerSid, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries

@@ -29,7 +29,7 @@ Describe 'Get-ADTLoggedOnUser' {
 
         It 'Identifies the account the test is running as' {
             $current = $script:Sessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1
-            $current.SID.Value | Should -BeExactly ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
+            $current.SID.Value | Should -BeExactly ((Get-ADTCallerSid).Value)
             $current.UserName | Should -BeExactly $env:USERNAME
         }
 

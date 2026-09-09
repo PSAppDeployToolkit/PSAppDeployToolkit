@@ -117,13 +117,13 @@ Describe 'Set-ADTItemPermission' {
 
     Context 'Ownership' -Skip:(!$script:IsElevated) {
         It 'Sets the owner it was given' {
-            $me = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+            $me = Get-ADTCallerSid
             Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$($me.Value)"
             (Get-Acl -LiteralPath $script:Target).GetOwner([System.Security.Principal.SecurityIdentifier]) | Should -Be $me
         }
 
         It 'Hands ownership back again' {
-            $me = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+            $me = Get-ADTCallerSid
             Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$($me.Value)"
             Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$script:AdminsSid"
             (Get-Acl -LiteralPath $script:Target).GetOwner([System.Security.Principal.SecurityIdentifier]).Value | Should -BeExactly $script:AdminsSid
@@ -133,13 +133,13 @@ Describe 'Set-ADTItemPermission' {
             # Taking ownership to regain access is a step of its own, ahead of deciding what the rules
             # should become.
             $before = @((Get-Acl -LiteralPath $script:Target).Access).Count
-            Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"
+            Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$((Get-ADTCallerSid).Value)"
             @((Get-Acl -LiteralPath $script:Target).Access).Count | Should -Be $before
         }
 
         It 'Changes nothing with -WhatIf' {
             $before = (Get-Acl -LiteralPath $script:Target).GetOwner([System.Security.Principal.SecurityIdentifier])
-            Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)" -WhatIf
+            Set-ADTItemPermission -LiteralPath $script:Target -Owner "*$((Get-ADTCallerSid).Value)" -WhatIf
             (Get-Acl -LiteralPath $script:Target).GetOwner([System.Security.Principal.SecurityIdentifier]) | Should -Be $before
         }
     }

@@ -7,7 +7,7 @@
 
     # The caller's own profile, whose hive is loaded by definition, so nothing has to be mounted for it.
     # Every test runs with -SkipUnloadedProfiles so that no other user's hive is ever loaded either.
-    $script:CallerSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+    $script:CallerSid = Get-ADTCallerSid
     $script:CallerProfile = [PSADT.AccountManagement.UserProfileInfo]::new(
         $script:CallerSid.Translate([System.Security.Principal.NTAccount]),
         $script:CallerSid,
