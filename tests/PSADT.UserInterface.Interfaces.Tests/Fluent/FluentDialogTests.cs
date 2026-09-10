@@ -38,6 +38,11 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
     public sealed class FluentDialogTests
     {
         /// <summary>
+        /// Why the hyperlink tests do not run when LocalSystem is the one drawing the dialog.
+        /// </summary>
+        private const string SuppressedForSystem = "A dialog drawn by LocalSystem writes links as plain text on purpose, so there is no hyperlink to inspect.";
+
+        /// <summary>
         /// Verifies that text with no markup in it comes through as one plain run.
         /// </summary>
         [Fact]
@@ -248,7 +253,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that a bare link becomes a hyperlink showing its own address.
         /// </summary>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_TurnsABareLinkIntoAHyperlink()
         {
             // Act
@@ -262,7 +267,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that a described link shows the description and navigates to the address.
         /// </summary>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_TurnsADescribedLinkIntoAHyperlink()
         {
             // Act
@@ -283,7 +288,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// </remarks>
         /// <param name="written">The address as the deployment wrote it.</param>
         /// <param name="expected">The address the link should navigate to.</param>
-        [Theory]
+        [Theory(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         [InlineData("www.example.test", "http://www.example.test/")]
         [InlineData("ftp.example.test", "http://ftp.example.test/")]
         [InlineData("WWW.EXAMPLE.TEST", "http://www.example.test/")]
@@ -303,7 +308,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// The scheme is added for navigation only. Showing it back would mean a user reading an address
         /// the deployment did not write, and hovering already reveals the real target.
         /// </remarks>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_ShowsTheAddressAsItWasWritten()
         {
             // Act
@@ -316,7 +321,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that a mail address is left as it was written.
         /// </summary>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_LeavesAMailAddressAlone()
         {
             // Act
@@ -347,7 +352,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that a link carries a tooltip naming where it goes.
         /// </summary>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_TellsTheUserWhereALinkGoes()
         {
             // Act
@@ -360,7 +365,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that several links in one message each become their own hyperlink.
         /// </summary>
-        [Fact]
+        [Fact(Skip = SuppressedForSystem, SkipWhen = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
         public void FormatMessage_HandlesSeveralLinksInOneMessage()
         {
             // Act
@@ -370,6 +375,32 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
             Assert.Equal(2, links.Count);
             Assert.Equal("https://example.test/a", links[0].Uri);
             Assert.Equal("https://example.test/b", links[1].Uri);
+        }
+
+        /// <summary>
+        /// Verifies that a link is written as plain text, and not as something clickable, when LocalSystem
+        /// is the one drawing the dialog.
+        /// </summary>
+        /// <remarks>
+        /// Clicking a hyperlink hands the address to the shell, and the shell would open it as whoever drew
+        /// the window. A deployment runs as LocalSystem with somebody logged on, so a link in a dialog it
+        /// put on screen is a browser running as the machine, one click away from the person at the desk.
+        /// The text still has to appear - the message is being read either way - it just must not be a link.
+        /// <para>
+        /// This is the other side of the tests above, and only one of the two can run in any given session.
+        /// The deployment account is the one that matters, so this is the one that runs there.
+        /// </para>
+        /// </remarks>
+        [Fact(Skip = "Only LocalSystem drawing a dialog suppresses links, so there is nothing to suppress here.", SkipUnless = nameof(TestEnvironment.CallerIsSystemInteractive), SkipType = typeof(TestEnvironment))]
+        public void FormatMessage_WritesALinkAsPlainTextForSystem()
+        {
+            // Act
+            List<(string Text, string? Uri, object? ToolTip)> links = Links("see [url]https://example.test/help[/url] for details");
+            List<(string Text, FontWeight Weight, FontStyle Style, bool Accented)> runs = Runs("see [url]https://example.test/help[/url] for details");
+
+            // Assert
+            Assert.Empty(links);
+            Assert.Contains(runs, static run => run.Text.Contains("https://example.test/help", StringComparison.Ordinal));
         }
 
         /// <summary>
