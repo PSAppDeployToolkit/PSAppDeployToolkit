@@ -29,8 +29,14 @@ namespace PSADT.Tests.TerminalServices
     public sealed class SessionInfoTests
     {
         /// <summary>
-        /// Verifies that the caller's own session is described, and describes the caller.
+        /// Verifies that the session the caller sits in is described, and describes whoever is signed into it.
         /// </summary>
+        /// <remarks>
+        /// Which is not always the caller. A deployment runs as the local system account inside somebody
+        /// else's session, so the process belongs to the machine and the session belongs to them - the
+        /// toolkit's own scenario, and one where asserting the session describes the caller is asserting
+        /// the wrong thing.
+        /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
         public async Task GetAsync_DescribesTheCallersOwnSessionAsync()
@@ -43,12 +49,24 @@ namespace PSADT.Tests.TerminalServices
                 return;
             }
 
-            // Assert
+            // Assert: it is the session the caller is sitting in, whoever owns it
             Assert.Equal(AccountUtilities.CallerSessionId, session.SessionId);
             Assert.True(session.IsCurrentSession);
-            Assert.Equal(AccountUtilities.CallerSid, session.SID);
-            Assert.Equal(AccountUtilities.CallerUsername.Value, session.NTAccount.Value);
-            Assert.Equal(AccountUtilities.CallerIsAdmin, session.IsLocalAdmin);
+
+            // Assert: and it describes the account signed into it
+            if (AccountUtilities.CallerIsLocalSystem)
+            {
+                // The local system account owns no session of its own, so one it was handed back describes
+                // the person signed in there instead - still a real account, just not this one.
+                Assert.NotEqual(AccountUtilities.CallerSid, session.SID);
+                Assert.False(string.IsNullOrWhiteSpace(session.NTAccount.Value));
+            }
+            else
+            {
+                Assert.Equal(AccountUtilities.CallerSid, session.SID);
+                Assert.Equal(AccountUtilities.CallerUsername.Value, session.NTAccount.Value);
+                Assert.Equal(AccountUtilities.CallerIsAdmin, session.IsLocalAdmin);
+            }
         }
 
         /// <summary>
