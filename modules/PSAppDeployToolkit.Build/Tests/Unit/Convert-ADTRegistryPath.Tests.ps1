@@ -6,6 +6,12 @@ Describe 'Convert-ADTRegistryPath' {
     BeforeAll {
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+
+        # A SID that belongs to nobody, which is the point: converting a key for the account already behind
+        # HKEY_CURRENT_USER is a no-op by design, so naming the caller's own SID skips both the rewrite and
+        # the validation that goes with it. 'S-1-5-18' used to stand in for another user here and stopped
+        # doing so the moment the suite was run as LocalSystem.
+        $script:OtherUserSid = 'S-1-5-21-1111111111-2222222222-3333333333-1001'
     }
 
     Context 'Functionality' {
@@ -14,10 +20,18 @@ Describe 'Convert-ADTRegistryPath' {
             Convert-ADTRegistryPath -Key 'HKLM:\SOFTWARE' | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE'
             Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE'
         }
-        It 'Should return Microsoft.PowerShell.Core\Registry::HKEY_USERS\S-1-5-18\SOFTWARE' {
-            Convert-ADTRegistryPath -Key 'HKCU\SOFTWARE' -SID 'S-1-5-18' | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\S-1-5-18\SOFTWARE'
-            Convert-ADTRegistryPath -Key 'HKCU:\SOFTWARE' -SID 'S-1-5-18' | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\S-1-5-18\SOFTWARE'
-            Convert-ADTRegistryPath -Key 'HKEY_CURRENT_USER\SOFTWARE' -SID 'S-1-5-18' | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\S-1-5-18\SOFTWARE'
+        It 'Should rewrite a user key to the HKEY_USERS hive of the SID it was given' {
+            $expected = "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$script:OtherUserSid\SOFTWARE"
+            Convert-ADTRegistryPath -Key 'HKCU\SOFTWARE' -SID $script:OtherUserSid | Should -Be $expected
+            Convert-ADTRegistryPath -Key 'HKCU:\SOFTWARE' -SID $script:OtherUserSid | Should -Be $expected
+            Convert-ADTRegistryPath -Key 'HKEY_CURRENT_USER\SOFTWARE' -SID $script:OtherUserSid | Should -Be $expected
+        }
+
+        It 'Should leave a user key alone for the SID already behind it' {
+            # HKEY_CURRENT_USER is that account's hive already, so there is nothing to rewrite. This is the
+            # case the tests above used to hit by accident whenever the suite ran as the named account.
+            $caller = (Get-ADTCallerSid).Value
+            Convert-ADTRegistryPath -Key 'HKCU\SOFTWARE' -SID $caller | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE'
         }
         It 'Should return Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node' {
             Convert-ADTRegistryPath -Key 'HKLM\SOFTWARE' -Wow6432Node | Should -Be 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
@@ -52,11 +66,11 @@ Describe 'Convert-ADTRegistryPath' {
                 ExceptionType = [System.InvalidOperationException]
                 ErrorId = 'SidSpecifiedForNonUserRegistryHive,Convert-ADTRegistryPath'
             }
-            { Convert-ADTRegistryPath -Key 'HKLM\SOFTWARE' -SID 'S-1-5-18' } | Should @shouldParams
-            { Convert-ADTRegistryPath -Key 'HKLM:\SOFTWARE' -SID 'S-1-5-18' } | Should @shouldParams
-            { Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -SID 'S-1-5-18' } | Should @shouldParams
-            { Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE:\SOFTWARE' -SID 'S-1-5-18' } | Should @shouldParams
-            { Convert-ADTRegistryPath -Key 'HKEY_CURRENT_USER:\SOFTWARE' -SID 'S-1-5-18' } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key 'HKLM\SOFTWARE' -SID $script:OtherUserSid } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key 'HKLM:\SOFTWARE' -SID $script:OtherUserSid } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -SID $script:OtherUserSid } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE:\SOFTWARE' -SID $script:OtherUserSid } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key 'HKEY_CURRENT_USER:\SOFTWARE' -SID $script:OtherUserSid } | Should @shouldParams
         }
         It 'Should verify that the registry hive provided is a valid registry hive' {
             { Convert-ADTRegistryPath -Key 'HKCC:\TestLocation' } | Should -Not -Throw
