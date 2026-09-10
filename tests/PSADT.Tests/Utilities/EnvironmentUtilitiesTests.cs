@@ -621,6 +621,38 @@ namespace PSADT.Tests.Utilities
         }
 
         /// <summary>
+        /// Verifies that a caller asking for an expandable value gets one even where the value it is being
+        /// appended to was plain.
+        /// </summary>
+        /// <remarks>
+        /// The counterpart to the two above, and the reason the rule is not simply "keep the kind it had".
+        /// Only demotion loses something: it turns every reference the value holds into literal text.
+        /// Promotion is what the caller asked for, and is the only way the reference just appended is ever
+        /// expanded - left plain it would sit in the value as characters forever.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_AppendsAsExpandableWhenAskedEvenOntoAPlainValue()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                WriteUserValue(name, @"C:\A", RegistryValueKind.String);
+
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, @"%SystemRoot%\B", EnvironmentVariableTarget.User, expandable: true, append: true, remove: false);
+
+                // Assert
+                Assert.Equal($@"C:\A{Path.PathSeparator}%SystemRoot%\B", ReadUserValue(name, out RegistryValueKind kind));
+                Assert.Equal(RegistryValueKind.ExpandString, kind);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+            }
+        }
+
+        /// <summary>
         /// Verifies that the caller's choice still decides the kind of a value being written for the
         /// first time, since there is nothing there whose kind could be preserved instead.
         /// </summary>

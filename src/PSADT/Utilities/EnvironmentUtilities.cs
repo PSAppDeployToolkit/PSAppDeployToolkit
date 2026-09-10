@@ -374,18 +374,19 @@ namespace PSADT.Utilities
         /// <summary>
         /// Determines the kind to write a persisted environment variable as.
         /// </summary>
-        /// <remarks>A value that already exists keeps the kind it had, so that appending to or removing from an
-        /// expandable value does not quietly demote it to a plain one. The caller's preference decides the kind of a
-        /// value being written for the first time, and of one stored as something a string cannot be written back
-        /// as.</remarks>
+        /// <remarks>Expandable wins if either the value already was or the caller asked for it, because only one of
+        /// the two directions loses anything. Demoting an expandable value to a plain one turns every reference it
+        /// holds into literal text, which is why appending to or removing from one must not quietly do that.
+        /// Promoting is what the caller asked for and is the only way an appended reference is ever expanded: kept
+        /// plain, a `%VAR%` just written into the value would sit there as characters forever.</remarks>
         /// <param name="existingKind">The kind the value already had, or <see cref="RegistryValueKind.Unknown"/>.</param>
         /// <param name="expandable">Whether the caller asked for an expandable value.</param>
         /// <returns>The kind to write.</returns>
         private static RegistryValueKind GetValueKindToWrite(RegistryValueKind existingKind, bool expandable)
         {
-            return existingKind is not RegistryValueKind.String and not RegistryValueKind.ExpandString
-                ? expandable ? RegistryValueKind.ExpandString : RegistryValueKind.String
-                : existingKind;
+            return expandable || existingKind is RegistryValueKind.ExpandString
+                ? RegistryValueKind.ExpandString
+                : RegistryValueKind.String;
         }
 
         /// <summary>
