@@ -101,7 +101,7 @@ namespace PSADT.AppManagement
                 UninstallStringFilePath = argumentList[0];
                 if (argumentList.Count > 1)
                 {
-                    UninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
+                    UninstallStringArgumentListValue = new(argumentList.Skip(1));
                 }
             }
             if (QuietUninstallString is not null)
@@ -110,7 +110,7 @@ namespace PSADT.AppManagement
                 QuietUninstallStringFilePath = argumentList[0];
                 if (argumentList.Count > 1)
                 {
-                    QuietUninstallStringArgumentListValue = new EquatableList<string>([.. argumentList.Skip(1)]);
+                    QuietUninstallStringArgumentListValue = new(argumentList.Skip(1));
                 }
             }
         }

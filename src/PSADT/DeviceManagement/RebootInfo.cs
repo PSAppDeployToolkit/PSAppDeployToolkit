@@ -46,8 +46,8 @@ namespace PSADT.DeviceManagement
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperationsValue = new EquatableList<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
-            ErrorMsgValue = new EquatableList<string>([.. errorMsg]);
+            PendingFileRenameOperationsValue = new(pendingFileRenameOperations ?? []);
+            ErrorMsgValue = new(errorMsg);
         }
 
         /// <summary>

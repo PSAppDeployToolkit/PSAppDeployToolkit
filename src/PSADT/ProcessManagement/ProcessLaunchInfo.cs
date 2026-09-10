@@ -133,7 +133,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentListValue = new EquatableList<string>(argumentList is not null ? [.. argumentList] : []);
+            ArgumentListValue = new(argumentList ?? []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
@@ -181,7 +181,7 @@ namespace PSADT.ProcessManagement
                             ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                             WorkingDirectoryPath = new DirectoryInfo(ExpandEnvironmentVariables(workingDirectory)).FullName;
                         }
-                        ArgumentListValue = new EquatableList<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
+                        ArgumentListValue = new(ArgumentList.Select(ExpandEnvironmentVariables));
                         FilePath = ExpandEnvironmentVariables(FilePath);
                     }
                 }
@@ -192,7 +192,7 @@ namespace PSADT.ProcessManagement
                         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
                         WorkingDirectoryPath = new DirectoryInfo(EnvironmentUtilities.ExpandEnvironmentVariables(workingDirectory)).FullName;
                     }
-                    ArgumentListValue = new EquatableList<string>([.. ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables)]);
+                    ArgumentListValue = new(ArgumentList.Select(EnvironmentUtilities.ExpandEnvironmentVariables));
                     FilePath = EnvironmentUtilities.ExpandEnvironmentVariables(FilePath);
                 }
             }
@@ -257,8 +257,8 @@ namespace PSADT.ProcessManagement
             // Set remaining parameters.
             DenyUserTermination = denyUserTermination;
             RunAsInvoker = runAsInvoker;
-            StandardInputValue = new EquatableList<string>(standardInput is not null ? [.. standardInput] : []);
-            HandlesToInheritValues = new EquatableList<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
+            StandardInputValue = new(standardInput ?? []);
+            HandlesToInheritValues = new(handlesToInherit?.Select(static h => (long)h) ?? []);
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;

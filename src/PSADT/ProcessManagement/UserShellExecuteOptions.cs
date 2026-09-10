@@ -42,7 +42,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentListValue = new EquatableList<string>(argumentList is not null ? [.. argumentList] : []);
+            ArgumentListValue = new(argumentList ?? []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Create an arguments string out of our ArgumentList (ShellExecute needs this).

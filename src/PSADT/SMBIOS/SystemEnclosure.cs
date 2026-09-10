@@ -345,8 +345,8 @@ namespace PSADT.SMBIOS
             NumberOfPowerCords = numberOfPowerCords;
             ContainedElementCount = containedElementCount;
             ContainedElementRecordLength = containedElementRecordLength;
-            ContainedElementRecordsValue = new EquatableList<byte[]>([.. containedElementRecords ?? []]);
-            ContainedElementsValue = new EquatableList<SystemEnclosureContainedElement>([.. containedElements ?? []]);
+            ContainedElementRecordsValue = new(containedElementRecords ?? []);
+            ContainedElementsValue = new(containedElements ?? []);
             SkuNumber = !string.IsNullOrWhiteSpace(skuNumber) ? skuNumber : null;
             RackType = rackType;
             RackHeight = rackHeight;

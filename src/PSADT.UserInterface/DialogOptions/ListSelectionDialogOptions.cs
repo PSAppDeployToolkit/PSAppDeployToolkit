@@ -102,7 +102,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), selectedIndex, "SelectedIndex must be a valid index within ListItems.");
             }
-            ListItemsValue = new EquatableList<string>([.. listItems]);
+            ListItemsValue = new(listItems);
             SelectedIndex = selectedIndex;
             Strings = strings;
         }

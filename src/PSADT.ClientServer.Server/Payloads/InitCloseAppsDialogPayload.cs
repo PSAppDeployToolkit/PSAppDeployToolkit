@@ -22,7 +22,10 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="processDefinitions">The collection of process definitions to monitor, or null if no processes need to be monitored.</param>
         internal InitCloseAppsDialogPayload(IReadOnlyList<ProcessDefinition>? processDefinitions)
         {
-            ProcessDefinitionsValue = processDefinitions is not null ? new EquatableList<ProcessDefinition>([.. processDefinitions]) : null;
+            if (processDefinitions is not null)
+            {
+                ProcessDefinitionsValue = new(processDefinitions);
+            }
         }
 
         /// <summary>

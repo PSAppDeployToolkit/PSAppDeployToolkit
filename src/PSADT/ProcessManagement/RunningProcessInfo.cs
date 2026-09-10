@@ -107,7 +107,7 @@ namespace PSADT.ProcessManagement
                 {
                     if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        argv = [.. (new[] { filePath }).Concat(argv)];
+                        argv = [filePath, .. argv];
                     }
                     else
                     {
@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
             ProcessValue = new ProcessIdentity(process);
             Description = description;
             FileNameValue = new FileInfo(fileName).FullName;
-            ArgumentListValue = new EquatableList<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
+            ArgumentListValue = new(argumentList.Where(static a => !string.IsNullOrWhiteSpace(a)));
             SID = sid;
         }
 
