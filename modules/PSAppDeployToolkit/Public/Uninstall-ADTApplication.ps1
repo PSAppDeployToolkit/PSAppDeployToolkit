@@ -350,8 +350,9 @@ function Uninstall-ADTApplication
                         Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]. Skipping removal." -Severity Warning
                         continue
                     }
-                    $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
-                    if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
+
+                    # Get the file path from the relevant uninstall property. If the path is not resolvable, attempt to resolve it via `Get-Command`, escaping any PowerShell wildcard characters that are legal in file names along the way.
+                    $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"; if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name ([System.Management.Automation.WildcardPattern]::Escape($sapParams.FilePath)) -CommandType Application -ErrorAction Ignore | Select-Object -First 1) -and ![System.String]::IsNullOrWhiteSpace($commandPath.Source))
                     {
                         $sapParams.FilePath = $commandPath.Source
                     }

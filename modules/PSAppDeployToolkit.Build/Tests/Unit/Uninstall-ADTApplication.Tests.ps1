@@ -133,6 +133,17 @@ Describe 'Uninstall-ADTApplication' {
             Should -Invoke -ModuleName PSAppDeployToolkit Write-ADTLogEntry -ParameterFilter { ($Message -join [System.Environment]::NewLine).Contains('No UninstallString found') } -Times 1 -Exactly
         }
 
+        It 'Resolves a program name that a PowerShell alias also answers to' {
+            # `sc` is Set-Content's alias, and an alias reports no source at all, so looking the name up
+            # without restricting it to applications hands the launcher an empty path. Asserted through a
+            # mock because no program that shares a name with an alias can perform an uninstall.
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { }
+            $name = New-ADTTestApplicationName
+            New-ADTTestApplicationEntry -Name $name -Values @{ QuietUninstallString = 'sc query' }
+            Uninstall-ADTApplication -Name $name -NameMatch Exact
+            Should -Invoke -ModuleName PSAppDeployToolkit Start-ADTProcess -ParameterFilter { $FilePath.EndsWith('sc.exe', [System.StringComparison]::OrdinalIgnoreCase) } -Times 1 -Exactly
+        }
+
         It 'Finds the uninstall program on the path when the string does not qualify it' {
             # A registry command line need not say where its program lives, and most name only msiexec. The
             # record hands the name over as it was written, so this is resolved against the search path -
