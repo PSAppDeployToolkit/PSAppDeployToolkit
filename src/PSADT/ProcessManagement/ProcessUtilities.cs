@@ -469,7 +469,7 @@ namespace PSADT.ProcessManagement
                 throw new NotSupportedException("A 32-bit process cannot call NtQuerySystemInformation() with the [SystemProcessIdInformation] information class on a 64-bit system.");
             }
 
-            // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
+            // Set up initial buffer that we need to query the process information. A stackalloc buffer starts out undefined, so the whole structure is assigned rather than just the one field it carries.
             Span<byte> processIdInfoPtr = stackalloc byte[NativeMethods.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]];
             ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo = new() { ProcessId = (nint)processId };
