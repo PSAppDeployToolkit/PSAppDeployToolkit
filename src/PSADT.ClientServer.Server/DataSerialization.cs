@@ -415,9 +415,6 @@ namespace PSADT.ClientServer
                 // Used within Payloads.InitCloseAppsDialogPayload class.
                 typeof(Collections.EquatableList<ProcessManagement.ProcessDefinition>),
 
-                // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
-                typeof(Collections.EquatableDictionary<string, Collections.EquatableDictionary<string, string>>),
-
                 // XmlException serializes its own message arguments, so without this every failure out of
                 // ReadObject fails here instead, and the client aborts on its error handler's FailFast.
                 typeof(string[]),
