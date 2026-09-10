@@ -1,4 +1,14 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
+
+    # Dropping an elevated token back to the user's needs the caller to be that user, so a deployment
+    # running as LocalSystem inside somebody else's session is refused outright rather than de-elevated.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'CallerOwnsItsSession', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $script:CallerOwnsItsSession = (Get-ADTLoggedOnUser | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1 -ExpandProperty SID) -eq (Get-ADTCallerSid)
+}
+
+BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest -Force
 
@@ -211,8 +221,15 @@ Describe 'Start-ADTProcess' {
             (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'echo encoded' -CreateNoWindow -StreamEncoding ([System.Text.Encoding]::UTF8) -PassThru).StdOut | Should -Contain 'encoded'
         }
 
-        It 'Runs with an unelevated token when asked' {
+        It 'Runs with an unelevated token when asked' -Skip:(!$script:CallerOwnsItsSession) {
             (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken -PassThru).ExitCode | Should -Be 0
+        }
+
+        It 'Refuses to de-elevate into a session it does not own' -Skip:$script:CallerOwnsItsSession {
+            # The token being dropped to is the caller's own, so there is none to drop to when the caller
+            # is not the one signed in. A deployment running as LocalSystem is told so rather than handed
+            # somebody else's token.
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken } | Should -Throw -ExceptionType ([System.InvalidOperationException])
         }
 
         It 'Reports the installer being busy rather than queueing forever' {
