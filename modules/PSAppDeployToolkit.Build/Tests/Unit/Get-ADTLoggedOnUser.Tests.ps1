@@ -45,7 +45,7 @@ Describe 'Get-ADTLoggedOnUser' {
             if ((Get-ADTCallerSid).Value -ne 'S-1-5-18')
             {
                 $current.SID.Value | Should -BeExactly ((Get-ADTCallerSid).Value)
-                $current.UserName | Should -BeExactly (Get-ADTCallerUserName)
+                $current.UserName | Should -BeExactly (Get-ADTCallerAccountName)
             }
         }
 

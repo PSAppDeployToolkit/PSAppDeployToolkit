@@ -33,7 +33,7 @@ Describe 'Get-ADTEnvironmentTable' {
             # the same thing for every account: a process running as LocalSystem carries the machine account
             # in that variable where its token names it SYSTEM, and it is the token the table reports.
             $script:Environment.envComputerName | Should -Be ([System.Net.Dns]::GetHostName())
-            $script:Environment.envUserName | Should -BeExactly (Get-ADTCallerUserName)
+            $script:Environment.envUserName | Should -BeExactly (Get-ADTCallerAccountName)
         }
 
         It 'Resolves the toolkit paths it publishes' {
