@@ -180,7 +180,15 @@ function ConvertTo-ADTNTAccountOrSID
                 # Device likely is off the domain network and had no line of sight to a domain controller.
                 # Attempt to rummage through the group policy cache and see what's available to us.
                 # Failing this, throw out the original error as there's not much we can do otherwise.
-                if (!($TargetSid = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { process { if ($_.Username.Equals($TargetNtAccount)) { return $_.SID } } } | Select-Object -First 1))
+                $TargetSid = try
+                {
+                    [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { process { if ($_.Username.Equals($TargetNtAccount)) { return $_.SID } } } | Select-Object -First 1
+                }
+                catch
+                {
+                    $null = $null
+                }
+                if (!$TargetSid)
                 {
                     throw
                 }
