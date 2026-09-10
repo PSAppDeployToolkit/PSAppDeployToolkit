@@ -126,7 +126,7 @@ function Invoke-ADTDotNetCompilation
                     }
                 }
             }
-            else
+            elseif (!(Test-ADTCallerIsSystem))
             {
                 $buildConfigs.Add('Debug')
             }
