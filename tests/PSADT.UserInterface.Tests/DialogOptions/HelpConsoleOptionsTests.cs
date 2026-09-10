@@ -107,16 +107,26 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         }
 
         /// <summary>
-        /// Verifies that the view is rebuilt on each read rather than handed out.
+        /// Verifies that the map is handed out as it is held, at both levels.
         /// </summary>
+        /// <remarks>
+        /// It used to be rebuilt on every read, outer dictionary and inner alike, because a dictionary whose
+        /// values are declared as a concrete type is not a dictionary of that type's interface. Declaring the
+        /// inner values as the interface removes the need. Nothing is given up by handing the real thing over:
+        /// <c language="csharp">EquatableDictionary</c> offers no member that would change it, so there is
+        /// nothing to protect against and nothing to copy.
+        /// </remarks>
         [Fact]
-        public void ModuleHelpMap_IsRebuiltOnEachRead()
+        public void ModuleHelpMap_IsHandedOutAsItIsHeld()
         {
             // Act
             HelpConsoleOptions options = new(SampleOptions.HelpConsole());
 
             // Assert
-            Assert.NotSame(options.ModuleHelpMap, options.ModuleHelpMap);
+            Assert.Same(options.ModuleHelpMap, options.ModuleHelpMap);
+            Assert.Same(options.ModuleHelpMap["a module"], options.ModuleHelpMap["a module"]);
+            Assert.DoesNotContain(typeof(IDictionary<string, IReadOnlyDictionary<string, string>>), options.ModuleHelpMap.GetType().GetInterfaces());
+            Assert.DoesNotContain(typeof(IDictionary<string, string>), options.ModuleHelpMap["a module"].GetType().GetInterfaces());
         }
 
         /// <summary>

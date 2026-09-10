@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using PSADT.ClientServer.Payloads;
 using PSADT.ClientServer.Server.Tests.TestHelpers;
+using PSADT.Collections;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using Xunit;
@@ -140,6 +140,11 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
         /// The second half matters because of where these end up. PowerShell cannot work with an interface,
         /// so what a caller reads back has to be a dictionary it can index rather than something only the
         /// type system understands - at both levels of the help map.
+        /// <para>
+        /// The inner dictionaries are declared as the interface, which is what makes the map returnable
+        /// without rebuilding it. That leaves the serializer writing the concrete type onto the wire, so
+        /// asserting what comes back is also what proves the known type is still declared for it.
+        /// </para>
         /// </remarks>
         [Fact]
         public void ShowModalDialogPayload_SurvivesTheTripWithCollectionsIntact()
@@ -157,8 +162,8 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
             Assert.Equal(["alpha", "bravo"], Assert.IsType<ListSelectionDialogOptions>(restoredList.Options).ListItems);
             Assert.Equal(help, restoredHelp);
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> moduleHelpMap = Assert.IsType<HelpConsoleOptions>(restoredHelp.Options).ModuleHelpMap;
-            _ = Assert.IsType<ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>>(moduleHelpMap);
-            _ = Assert.IsType<ReadOnlyDictionary<string, string>>(moduleHelpMap["a module"]);
+            _ = Assert.IsType<EquatableDictionary<string, IReadOnlyDictionary<string, string>>>(moduleHelpMap);
+            _ = Assert.IsType<EquatableDictionary<string, string>>(moduleHelpMap["a module"]);
             Assert.Equal("what it does", moduleHelpMap["a module"]["a function"]);
         }
 

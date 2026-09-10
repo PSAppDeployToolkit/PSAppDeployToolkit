@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using PSADT.Collections;
@@ -12,6 +11,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for all dialogs.
     /// </summary>
     [DataContract]
+    [KnownType(typeof(EquatableDictionary<string, string>))]
     public sealed record class HelpConsoleOptions : IDialogOptions
     {
         /// <summary>
@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.DialogOptions
         private HelpConsoleOptions(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> moduleHelpMap)
         {
             ArgumentNullException.ThrowIfNull(moduleHelpMap);
-            ModuleHelpMapValue = new EquatableDictionary<string, EquatableDictionary<string, string>>(moduleHelpMap.Select(static module => new KeyValuePair<string, EquatableDictionary<string, string>>(module.Key, new EquatableDictionary<string, string>(module.Value))));
+            ModuleHelpMapValue = new(moduleHelpMap.Select(static module => new KeyValuePair<string, IReadOnlyDictionary<string, string>>(module.Key, new EquatableDictionary<string, string>(module.Value))));
         }
 
         /// <summary>
@@ -49,15 +49,17 @@ namespace PSADT.UserInterface.DialogOptions
         /// <para>Held as a <see cref="EquatableDictionary{TKey, TValue}"/>, inner dictionaries included, so that this
         /// record compares by the entries all the way down. Every dictionary the framework offers compares by
         /// reference, so holding one directly would make two consoles offering the same help unequal however alike
-        /// they were. Both levels are handed back wrapped rather than as they are held, since what is held is an
-        /// internal type that PowerShell could do nothing with.</para></remarks>
+        /// they were. The inner dictionaries are declared as the interface rather than as what they are, which is what
+        /// lets the whole thing be handed back as it is held: a dictionary of a concrete type is not a dictionary of
+        /// that type's interface, so declaring them concretely would leave no way to return this without rebuilding
+        /// both levels on every read.</para></remarks>
         [IgnoreDataMember]
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(ModuleHelpMapValue.ToDictionary(static module => module.Key, static module => (IReadOnlyDictionary<string, string>)new ReadOnlyDictionary<string, string>(module.Value.ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal)), StringComparer.Ordinal));
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap => ModuleHelpMapValue;
 
         /// <summary>
         /// The help recorded for <see cref="ModuleHelpMap"/>.
         /// </summary>
         [DataMember]
-        private readonly EquatableDictionary<string, EquatableDictionary<string, string>> ModuleHelpMapValue;
+        private readonly EquatableDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMapValue;
     }
 }
