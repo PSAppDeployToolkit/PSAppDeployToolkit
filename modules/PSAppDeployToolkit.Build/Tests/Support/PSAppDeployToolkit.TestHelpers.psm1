@@ -190,6 +190,55 @@ function Get-ADTCallerSid
 
 #-----------------------------------------------------------------------------
 #
+# MARK: Get-ADTCallerUserName
+#
+#-----------------------------------------------------------------------------
+
+function Get-ADTCallerUserName
+{
+    <#
+    .SYNOPSIS
+        Gets the unqualified name of the account the tests are running as.
+
+    .DESCRIPTION
+        The `Get-ADTCallerUserName` function returns the account name without its domain, resolved from the caller's own token. Not `$env:USERNAME`, which is not the same thing for every account: a process running as LocalSystem carries the machine account in that variable where its token names it SYSTEM.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
+
+        Returns the caller's account name, without a domain.
+
+    .EXAMPLE
+        Get-ADTCallerUserName
+
+        Returns the name of the account running the tests.
+    #>
+
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+    )
+
+    $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    try
+    {
+        return $identity.Name.Split('\')[-1]
+    }
+    finally
+    {
+        $identity.Dispose()
+    }
+}
+
+
+#-----------------------------------------------------------------------------
+#
 # MARK: Get-ADTCallerProcessPath
 #
 #-----------------------------------------------------------------------------
@@ -815,4 +864,4 @@ function Remove-ADTTestApplicationEntries
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Get-ADTCallerSid, Get-ADTCallerProcessPath, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries
+Export-ModuleMember -Function Import-ADTModuleUnderTest, Test-ADTCallerElevated, Get-ADTCallerSid, Get-ADTCallerUserName, Get-ADTCallerProcessPath, Test-ADTMandatoryParameter, Test-ADTParameterSetSatisfied, Initialize-ADTTestModule, Get-ADTTestApplicationKeyPath, New-ADTTestApplicationName, New-ADTTestApplicationEntry, Get-ADTTestUninstallCommand, Test-ADTTestApplicationEntry, Remove-ADTTestApplicationEntries

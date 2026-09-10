@@ -12,6 +12,13 @@ Describe 'Get-ADTUserProfiles' {
             $script:Profiles = @(Get-ADTUserProfiles)
             $callerSid = (Get-ADTCallerSid).Value
             $script:Mine = $script:Profiles | & { process { if ($_.SID.Value.Equals($callerSid)) { return $_ } } } | Select-Object -First 1
+
+            # The profile the filtering tests act on. Deliberately not the caller's: LocalSystem has no
+            # ordinary profile and is left out of this list by default, so there would be nothing to act on
+            # when the suite runs as it. What those tests need is a profile that is certainly in the set,
+            # not a particular person's - so any real one, which means anything but the default template,
+            # whose SID is the null one rather than an account's.
+            $script:Subject = $script:Profiles | & { process { if (!$_.SID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid)) { return $_ } } } | Select-Object -First 1
         }
 
         It 'Returns profiles with an account and a path' {
@@ -25,6 +32,15 @@ Describe 'Get-ADTUserProfiles' {
         }
 
         It 'Includes the account running the test' {
+            # Unless that account has no profile to include. LocalSystem's lives under the Windows
+            # directory and is a system profile, which this leaves out unless asked for them - so the
+            # thing to check there is that it was correctly left out.
+            if ((Get-ADTCallerSid).IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
+            {
+                $script:Mine | Should -BeNullOrEmpty
+                @(Get-ADTUserProfiles -IncludeSystemProfiles) | & { process { if ($_.SID.Value.Equals('S-1-5-18')) { return $_ } } } | Should -Not -BeNullOrEmpty
+                return
+            }
             $script:Mine | Should -Not -BeNullOrEmpty
             $script:Mine.ProfilePath | Should -BeExactly ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::UserProfile))
         }
@@ -41,19 +57,19 @@ Describe 'Get-ADTUserProfiles' {
         }
 
         It 'Drops an account named to -ExcludeNTAccount' {
-            $remaining = @(Get-ADTUserProfiles -ExcludeNTAccount $script:Mine.NTAccount)
+            $remaining = @(Get-ADTUserProfiles -ExcludeNTAccount $script:Subject.NTAccount)
             $remaining.Count | Should -Be ($script:Profiles.Count - 1)
-            $remaining.SID.Value | Should -Not -Contain $script:Mine.SID.Value
+            $remaining.SID.Value | Should -Not -Contain $script:Subject.SID.Value
         }
 
         It 'Returns just the profile asked for by -SID' {
-            $single = @(Get-ADTUserProfiles -SID $script:Mine.SID)
+            $single = @(Get-ADTUserProfiles -SID $script:Subject.SID)
             $single.Count | Should -Be 1
-            $single[0].SID.Value | Should -BeExactly $script:Mine.SID.Value
+            $single[0].SID.Value | Should -BeExactly $script:Subject.SID.Value
         }
 
         It 'Applies a -FilterScript' {
-            $script:WantedAccount = $script:Mine.NTAccount
+            $script:WantedAccount = $script:Subject.NTAccount
             $filtered = @(Get-ADTUserProfiles -FilterScript { $_.NTAccount -eq $script:WantedAccount })
             $filtered.Count | Should -Be 1
         }
@@ -61,16 +77,16 @@ Describe 'Get-ADTUserProfiles' {
         It 'Fills in the shell folder paths only with -LoadProfilePaths' {
             # Reading each profile's shell folders means loading its registry hive, so it is opt-in and the
             # paths are empty without it.
-            $script:Mine.DesktopPath | Should -BeNullOrEmpty
+            $script:Subject.DesktopPath | Should -BeNullOrEmpty
 
-            $wantedSid = $script:Mine.SID.Value
+            $wantedSid = $script:Subject.SID.Value
             $loaded = @(Get-ADTUserProfiles -LoadProfilePaths) | & { process { if ($_.SID.Value.Equals($wantedSid)) { return $_ } } } | Select-Object -First 1
             $loaded.AppDataPath | Should -Not -BeNullOrEmpty
             $loaded.DesktopPath | Should -Not -BeNullOrEmpty
         }
 
         It 'Rejects a repeated SID' {
-            { Get-ADTUserProfiles -SID $script:Mine.SID, $script:Mine.SID } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+            { Get-ADTUserProfiles -SID $script:Subject.SID, $script:Subject.SID } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
         }
 
         It 'Completes without erroring for <Switch>' -ForEach @(

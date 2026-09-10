@@ -35,10 +35,18 @@ Describe 'Get-ADTLoggedOnUser' {
             }
         }
 
-        It 'Identifies the account the test is running as' {
+        It 'Identifies the account signed into the session the test is running in' {
+            # Not always the account running the test. A deployment runs as LocalSystem inside somebody
+            # else's session: the process belongs to the machine and the session belongs to them, so what
+            # comes back describes them rather than the caller.
             $current = $script:Sessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1
-            $current.SID.Value | Should -BeExactly ((Get-ADTCallerSid).Value)
-            $current.UserName | Should -BeExactly $env:USERNAME
+            $current.SID.Value | Should -Not -BeNullOrEmpty
+            $current.UserName | Should -Not -BeNullOrEmpty
+            if ((Get-ADTCallerSid).Value -ne 'S-1-5-18')
+            {
+                $current.SID.Value | Should -BeExactly ((Get-ADTCallerSid).Value)
+                $current.UserName | Should -BeExactly (Get-ADTCallerUserName)
+            }
         }
 
         It 'Splits the account into its domain and user parts' {

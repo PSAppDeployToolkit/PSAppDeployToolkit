@@ -5,6 +5,17 @@
     # Mock Write-ADTLogEntry due to its expense when running via Pester.
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
+    # The name of somebody actually signed in, which is what -Username is resolved against. Not
+    # $env:USERNAME: a process running as LocalSystem carries the machine account in that variable, and no
+    # session belongs to the machine account, so the resolution finds nothing and the test fails against
+    # its own premise rather than against the code.
+    $script:Sessions = @(Get-ADTLoggedOnUser)
+    $script:LoggedOnUserName = $script:Sessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1 -ExpandProperty UserName
+    if ([System.String]::IsNullOrWhiteSpace($script:LoggedOnUserName))
+    {
+        $script:LoggedOnUserName = $script:Sessions | Select-Object -First 1 -ExpandProperty UserName
+    }
+
     function Invoke-Probe
     {
         param
@@ -45,7 +56,7 @@ Describe 'Update-ADTProcessAsUserBoundParameters' {
         It 'Removes the parameters the subsystem does not take' {
             # -Username and -ContinueWhenNoUserLoggedOn are translated away, because what the subsystem
             # wants is the resolved user object rather than either of them.
-            $probe = Invoke-Probe -BoundParameters @{ FilePath = 'cmd.exe'; Username = $env:USERNAME; ContinueWhenNoUserLoggedOn = $true }
+            $probe = Invoke-Probe -BoundParameters @{ FilePath = 'cmd.exe'; Username = $script:LoggedOnUserName; ContinueWhenNoUserLoggedOn = $true }
             $probe.BoundParameters.ContainsKey('Username') | Should -BeFalse
             $probe.BoundParameters.ContainsKey('ContinueWhenNoUserLoggedOn') | Should -BeFalse
         }
@@ -57,9 +68,9 @@ Describe 'Update-ADTProcessAsUserBoundParameters' {
         }
 
         It 'Resolves the named user when -Username is supplied' {
-            $probe = Invoke-Probe -BoundParameters @{ FilePath = 'cmd.exe'; Username = $env:USERNAME }
+            $probe = Invoke-Probe -BoundParameters @{ FilePath = 'cmd.exe'; Username = $script:LoggedOnUserName }
             $probe.Result | Should -BeTrue
-            $probe.BoundParameters['RunAsActiveUser'].UserName | Should -BeExactly $env:USERNAME
+            $probe.BoundParameters['RunAsActiveUser'].UserName | Should -BeExactly $script:LoggedOnUserName
         }
 
         It 'Returns false without erroring when nobody is logged on and the caller allows it' {

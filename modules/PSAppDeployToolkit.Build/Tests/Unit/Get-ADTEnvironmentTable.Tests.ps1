@@ -28,8 +28,12 @@ Describe 'Get-ADTEnvironmentTable' {
             # Compared without regard to case. What identifies the machine is the name, not how it is cased,
             # and the two do not always agree on that: a build agent reports its host name in lower case
             # where a workstation reports it upper.
+            #
+            # The user name is compared against the token's rather than against $env:USERNAME, which is not
+            # the same thing for every account: a process running as LocalSystem carries the machine account
+            # in that variable where its token names it SYSTEM, and it is the token the table reports.
             $script:Environment.envComputerName | Should -Be ([System.Net.Dns]::GetHostName())
-            $script:Environment.envUserName | Should -BeExactly $env:USERNAME
+            $script:Environment.envUserName | Should -BeExactly (Get-ADTCallerUserName)
         }
 
         It 'Resolves the toolkit paths it publishes' {
