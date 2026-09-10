@@ -763,12 +763,12 @@ namespace PSAppDeployToolkit.Tests.Foundation
 
             // Assert
             Assert.Equal(
-                $"{session.InstallName}_Discriminator_{session.DeploymentType}{(environment.IsLocalSystemAccount ? null : $"_{environment.EnvUserName}")}.log",
+                $"{session.InstallName}_Discriminator_{session.DeploymentType}{(environment.IsAdmin ? null : $"_{environment.EnvUserName}")}.log",
                 name,
                 StringComparer.Ordinal);
 
-            // Assert: the user's name is there for every account but LocalSystem, which owns the unsuffixed file.
-            Assert.Equal(!environment.IsLocalSystemAccount, name.Contains($"_{environment.EnvUserName}.", StringComparison.OrdinalIgnoreCase));
+            // Assert: the user's name is there exactly when the deployment could not write over another's file.
+            Assert.Equal(!environment.IsAdmin, name.Contains($"_{environment.EnvUserName}.", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

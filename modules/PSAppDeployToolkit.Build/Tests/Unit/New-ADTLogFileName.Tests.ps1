@@ -21,7 +21,7 @@ Describe 'New-ADTLogFileName' {
     Context 'With a session open' {
         BeforeAll {
             $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppVendor 'Vend' -AppName 'Prod' -AppVersion '1.2' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
-            $script:ExpectedName = "Vend_Prod_1.2_Disc_Install$(if (!($adtEnv = Get-ADTEnvironmentTable).IsLocalSystemAccount) { "_$($adtEnv.EnvUserName)" }).log"
+            $script:ExpectedName = "Vend_Prod_1.2_Disc_Install$(if (!($adtEnv = Get-ADTEnvironmentTable).IsAdmin) { "_$($adtEnv.EnvUserName)" }).log"
         }
 
         AfterAll {
