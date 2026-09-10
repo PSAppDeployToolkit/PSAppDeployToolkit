@@ -1,10 +1,15 @@
 ﻿BeforeDiscovery {
     # One case per character .NET considers invalid, so the set is read from the framework rather than
-    # listed here. Each is embedded between two letters: a character that is white space on its own would
-    # be rejected by the parameter's validator before the function ever saw it.
+    # listed here.
+    #
+    # The character itself is deliberately not carried in the case data. A test that never runs, because
+    # a setup above it failed, is written to the NUnit report with its data appended to its name - and one
+    # of these characters is NUL, which no XML attribute can hold. That fails the report for the entire
+    # run rather than the one test, and takes the summary with it. The code point travels instead, and the
+    # character is rebuilt from it where it is used.
     $script:InvalidCharacters = foreach ($character in [System.IO.Path]::GetInvalidFileNameChars())
     {
-        @{ Name = "a$([System.String]$character)b"; CodePoint = '0x{0:X2}' -f [System.Int32]$character }
+        @{ CodePoint = '0x{0:X2}' -f [System.Int32]$character; Value = [System.Int32]$character }
     }
 }
 
@@ -20,7 +25,9 @@ Describe 'Remove-ADTInvalidFileNameChars' {
         }
 
         It 'Removes the character at <CodePoint>' -ForEach $script:InvalidCharacters {
-            Remove-ADTInvalidFileNameChars -Name $Name | Should -BeExactly 'ab'
+            # Embedded between two letters: a character that is white space on its own would be rejected by
+            # the parameter's validator before the function ever saw it.
+            Remove-ADTInvalidFileNameChars -Name "a$([System.Char]$Value)b" | Should -BeExactly 'ab'
         }
 
         It 'Leaves a name that is already valid alone' {
