@@ -73,6 +73,15 @@ Describe 'Start-ADTProcess' {
             { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 3' -CreateNoWindow } | Should -Throw -ErrorId 'ProcessExitCodeError,Start-ADTProcess'
         }
 
+        It 'Reports the exit code rather than a binding failure when the arguments are secured' {
+            # Securing the arguments means the error resolver has to be told which properties to print, so
+            # that the command line does not reach the log through the position message. That list belongs
+            # to a parameter set the silent handler is not in, and a failing process is handled silently -
+            # so the two together used to resolve to no parameter set at all and the caller was told
+            # "Parameter set cannot be resolved" instead of what the process actually did.
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 1' -CreateNoWindow -SecureArgumentList } | Should -Throw -ErrorId 'ProcessExitCodeError,Start-ADTProcess'
+        }
+
         It 'Accepts an exit code nominated as success' {
             # Installers signalling "already installed" with their own code are the norm, not the exception.
             (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 3' -CreateNoWindow -PassThru -SuccessExitCodes 3).ExitCode | Should -Be 3

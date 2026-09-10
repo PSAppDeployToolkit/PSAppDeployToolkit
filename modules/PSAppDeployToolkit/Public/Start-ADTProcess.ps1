@@ -1073,11 +1073,6 @@ function Start-ADTProcess
                 SessionState = $ExecutionContext.SessionState
                 ErrorRecord = $_
             }
-            if ($SecureArgumentList)
-            {
-                $iafehParams.Add('ResolveErrorProperties', ($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if (!$_.Equals('PositionMessage')) { return $_ } } }))
-            }
-
             # Switch on the exception type's name.
             $sessionClosed = if (($_.Exception -is [System.Runtime.InteropServices.ExternalException]) -and ($null -ne $result))
             {
@@ -1108,12 +1103,17 @@ function Start-ADTProcess
                 {
                     $iafehParams.ErrorAction = $TimeoutAction
                 }
-                $null = $iafehParams.Remove('ResolveErrorProperties')
                 Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
             }
             else
             {
-                # This is the handler for any other error/exception that may occur.
+                # This is the handler for any other error/exception that may occur. Only this branch resolves
+                # the error into the log, so only this one has to keep the command line out of it - and the
+                # property list belongs to a parameter set that -Silent and -DisableErrorResolving are not in.
+                if ($SecureArgumentList)
+                {
+                    $iafehParams.Add('ResolveErrorProperties', ($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if (!$_.Equals('PositionMessage')) { return $_ } } }))
+                }
                 Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -ErrorAction Stop
             }
 
