@@ -1,4 +1,14 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+
+    # The User target is written for whoever is signed in, not for the process, so the two are the same
+    # only when the caller has a session of its own. LocalSystem does not, and the write lands in the
+    # signed-in user's hive where .NET would set up and read back the service profile's.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'UserTargetIsTheCallers', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $script:UserTargetIsTheCallers = !(Get-ADTCallerSid).IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid)
+}
+
+BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
@@ -69,9 +79,14 @@ Describe 'Set-ADTEnvironmentVariable' {
         }
     }
 
-    Context 'A target that is not this process' {
+    Context 'A target that is not this process' -Skip:(!$script:UserTargetIsTheCallers) {
         # Append and remove read the current value before writing back, and that read must come from the
         # target scope. The tests above all use the process scope, where the distinction cannot show up.
+        #
+        # Skipped when the caller has no session of its own, because the User target then means somebody
+        # else's hive: setting the value up through .NET and reading it back the same way would be looking
+        # at the service profile while the toolkit wrote to the signed-in user. Covering that properly
+        # means writing into another user's hive, which is a larger thing to do than these tests warrant.
         AfterEach {
             [System.Environment]::SetEnvironmentVariable($script:Variable, $null, [System.EnvironmentVariableTarget]::User)
         }
