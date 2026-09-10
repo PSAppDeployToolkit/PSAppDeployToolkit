@@ -229,7 +229,11 @@ Describe 'Start-ADTProcess' {
             # The token being dropped to is the caller's own, so there is none to drop to when the caller
             # is not the one signed in. A deployment running as LocalSystem is told so rather than handed
             # somebody else's token.
-            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken } | Should -Throw -ExceptionType ([System.InvalidOperationException])
+            #
+            # Matched on the message rather than the type: the refusal is an InvalidOperationException
+            # raised inside a .NET method, and PowerShell hands those to the caller wrapped in a
+            # MethodInvocationException, so the type that arrives says nothing about which refusal it was.
+            { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken } | Should -Throw -ExpectedMessage '*unelevated token*different user*session*'
         }
 
         It 'Reports the installer being busy rather than queueing forever' {
