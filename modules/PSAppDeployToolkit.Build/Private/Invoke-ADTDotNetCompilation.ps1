@@ -25,7 +25,7 @@ function Invoke-ADTDotNetCompilation
 
     # Initialise the module build function.
     Initialize-ADTModuleBuildFunction
-    $testFileChanges = $true
+    $testFileChanges = !(Test-ADTCallerIsSystem)
     try
     {
         # Confirm whether we've got dotnet available and it's of a compatible version.
@@ -48,7 +48,7 @@ function Invoke-ADTDotNetCompilation
             Write-ADTBuildLogEntry -Message "Unable to locate git.exe on this system, compiling C# project sources unconditionally." -ForegroundColor Yellow
             $testFileChanges = $false
         }
-        if ($testFileChanges -and !$(try { & $git -C $Script:PSScriptRoot rev-parse --is-inside-work-tree 2>&1 } catch { 'false' }).Equals('true'))
+        if ($testFileChanges -and !$(try { & $git -C $Script:ModuleConstants.Paths.Repository rev-parse --is-inside-work-tree 2>&1 } catch { 'false' }).Equals('true'))
         {
             Write-ADTBuildLogEntry -Message "Not currently building from a git repository, compiling C# project sources unconditionally." -ForegroundColor Yellow
             $testFileChanges = $false
