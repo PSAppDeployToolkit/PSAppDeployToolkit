@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Windows.Foundation.Metadata;
 using Windows.UI.Shell;
 
 namespace PSADT.WindowsRuntime.UI.Shell
@@ -13,24 +12,18 @@ namespace PSADT.WindowsRuntime.UI.Shell
         /// <summary>
         /// Attempts to determine whether a Windows Focus Session is currently active.
         /// </summary>
-        /// <remarks>This method checks for the presence and support of the Windows Focus Session API
-        /// before attempting to retrieve the session state. If the API is unavailable or unsupported, <paramref
-        /// name="isActive"/> is set to <see langword="false"/> and the method returns <see
-        /// langword="false"/>.
-        /// <para>Being supported is not the same as being callable, so a refusal from the manager itself is reported
-        /// the same way. Caught without naming the types for the same reason as the toast notification mode: the two
-        /// runtimes raise different ones for the same HRESULT.</para></remarks>
+        /// <remarks>Asking is the check, for the reason given on the toast notification mode: probing for the API
+        /// only covers it being absent, where being present, supported and still refused is the other way this fails,
+        /// and both are the same answer to whether the state could be read. Unlike the notification mode this one is
+        /// not known to be refused - the focus session manager answers for the machine rather than for a user, and it
+        /// answered from LocalSystem - so this is the contract being honoured rather than a fault being handled.
+        /// <para>Caught without naming the types because the two runtimes do not agree on them.</para></remarks>
         /// <param name="isActive">When this method returns, contains <see langword="true"/> if a Focus Session is active; otherwise, <see
         /// langword="false"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
         internal static bool TryGetFocusSessionActive([NotNullWhen(true)] out bool? isActive)
         {
-            if (!ApiInformation.IsTypePresent("Windows.UI.Shell.FocusSessionManager") || !FocusSessionManager.IsSupported)
-            {
-                isActive = null;
-                return false;
-            }
             try
             {
                 isActive = FocusSessionManager.GetDefault().IsFocusActive;

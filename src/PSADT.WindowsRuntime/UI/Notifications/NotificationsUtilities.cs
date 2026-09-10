@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Windows.Foundation.Metadata;
 using Windows.UI.Notifications;
 
 namespace PSADT.WindowsRuntime.UI.Notifications
@@ -13,26 +12,20 @@ namespace PSADT.WindowsRuntime.UI.Notifications
         /// <summary>
         /// Attempts to retrieve the current toast notification mode for the user.
         /// </summary>
-        /// <remarks>This method checks for the presence of required Windows Runtime APIs before
-        /// attempting to retrieve the notification mode. If the necessary APIs are not available, the method returns
-        /// false and the value of the mode parameter is undefined.
-        /// <para>The presence of the API is not the same as being able to call it. A caller with no user of its own -
-        /// a service running as LocalSystem, for instance - passes every check above and is then refused by the
-        /// manager itself, which is a failure to report rather than one to raise: this says whether a mode could be
-        /// read, and the caller's own answer for "could not" is already the one it wants. Caught without naming the
-        /// types because the two runtimes do not agree on them: .NET raises a <c language="csharp">COMException</c>
-        /// where .NET Framework raises a plain <c language="csharp">Exception</c> carrying the same HRESULT
-        /// (0x8000FFFF, observed from LocalSystem).</para></remarks>
+        /// <remarks>Asking is the check. An <c language="csharp">ApiInformation</c> probe would only cover the API
+        /// being absent, which is one of two ways this fails and the rarer one: the manager is per-user, so a caller
+        /// with no user of its own - a service running as LocalSystem, for instance - is refused outright on a system
+        /// that has the API and passes every such probe. Both are the same answer here, since this reports whether a
+        /// mode could be read and the sole caller already treats "could not" as its own answer.
+        /// <para>Caught without naming the types because the two runtimes do not agree on them: .NET raises a
+        /// <c language="csharp">COMException</c> where .NET Framework raises a plain
+        /// <c language="csharp">Exception</c> carrying the same HRESULT (0x8000FFFF, observed from
+        /// LocalSystem).</para></remarks>
         /// <param name="mode">When this method returns, contains the current toast notification mode if the operation succeeds; otherwise,
         /// contains an undefined value.</param>
         /// <returns>true if the notification mode was successfully retrieved; otherwise, false.</returns>
         internal static bool TryGetNotificationMode([NotNullWhen(true)] out ToastNotificationMode? mode)
         {
-            if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationManagerForUser") || !ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationMode") || !ApiInformation.IsMethodPresent("Windows.UI.Notifications.ToastNotificationManager", "GetDefault") || !ApiInformation.IsPropertyPresent("Windows.UI.Notifications.ToastNotificationManagerForUser", "NotificationMode"))
-            {
-                mode = null;
-                return false;
-            }
             try
             {
                 mode = ToastNotificationManager.GetDefault().NotificationMode;
