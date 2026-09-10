@@ -16,7 +16,10 @@ namespace PSADT.WindowsRuntime.UI.Shell
         /// <remarks>This method checks for the presence and support of the Windows Focus Session API
         /// before attempting to retrieve the session state. If the API is unavailable or unsupported, <paramref
         /// name="isActive"/> is set to <see langword="false"/> and the method returns <see
-        /// langword="false"/>.</remarks>
+        /// langword="false"/>.
+        /// <para>Being supported is not the same as being callable, so a refusal from the manager itself is reported
+        /// the same way. Caught without naming the types for the same reason as the toast notification mode: the two
+        /// runtimes raise different ones for the same HRESULT.</para></remarks>
         /// <param name="isActive">When this method returns, contains <see langword="true"/> if a Focus Session is active; otherwise, <see
         /// langword="false"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
@@ -28,8 +31,17 @@ namespace PSADT.WindowsRuntime.UI.Shell
                 isActive = null;
                 return false;
             }
-            isActive = FocusSessionManager.GetDefault().IsFocusActive;
-            return true;
+            try
+            {
+                isActive = FocusSessionManager.GetDefault().IsFocusActive;
+                return true;
+            }
+            catch
+            {
+                isActive = null;
+                return false;
+                throw;
+            }
         }
     }
 }

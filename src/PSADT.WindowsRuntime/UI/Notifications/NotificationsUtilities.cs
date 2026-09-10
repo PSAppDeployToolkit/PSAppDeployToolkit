@@ -15,7 +15,14 @@ namespace PSADT.WindowsRuntime.UI.Notifications
         /// </summary>
         /// <remarks>This method checks for the presence of required Windows Runtime APIs before
         /// attempting to retrieve the notification mode. If the necessary APIs are not available, the method returns
-        /// false and the value of the mode parameter is undefined.</remarks>
+        /// false and the value of the mode parameter is undefined.
+        /// <para>The presence of the API is not the same as being able to call it. A caller with no user of its own -
+        /// a service running as LocalSystem, for instance - passes every check above and is then refused by the
+        /// manager itself, which is a failure to report rather than one to raise: this says whether a mode could be
+        /// read, and the caller's own answer for "could not" is already the one it wants. Caught without naming the
+        /// types because the two runtimes do not agree on them: .NET raises a <c language="csharp">COMException</c>
+        /// where .NET Framework raises a plain <c language="csharp">Exception</c> carrying the same HRESULT
+        /// (0x8000FFFF, observed from LocalSystem).</para></remarks>
         /// <param name="mode">When this method returns, contains the current toast notification mode if the operation succeeds; otherwise,
         /// contains an undefined value.</param>
         /// <returns>true if the notification mode was successfully retrieved; otherwise, false.</returns>
@@ -26,8 +33,17 @@ namespace PSADT.WindowsRuntime.UI.Notifications
                 mode = null;
                 return false;
             }
-            mode = ToastNotificationManager.GetDefault().NotificationMode;
-            return true;
+            try
+            {
+                mode = ToastNotificationManager.GetDefault().NotificationMode;
+                return true;
+            }
+            catch
+            {
+                mode = null;
+                return false;
+                throw;
+            }
         }
     }
 }

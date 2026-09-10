@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace PSADT.WindowsRuntime.Tests.TestHelpers
@@ -15,8 +16,10 @@ namespace PSADT.WindowsRuntime.Tests.TestHelpers
     /// because on .NET Framework that property reports what the process manifest permits it to report
     /// rather than what is running.
     /// <para>
-    /// Nothing in this assembly is privilege-gated, so there is no elevation probe here. Both APIs are
-    /// per-user reads that any caller may make.
+    /// Nothing here is privilege-gated, but one of the two wrapped APIs needs a user to answer for. The
+    /// toast notification manager is per-user and refuses a caller that has none, where the focus session
+    /// manager answers for the machine and does not - measured from LocalSystem, where every focus session
+    /// read succeeded and every notification mode read was refused.
     /// </para>
     /// </remarks>
     public static class TestEnvironment
@@ -40,6 +43,32 @@ namespace PSADT.WindowsRuntime.Tests.TestHelpers
         /// Whether the running system is new enough to carry both of the wrapped APIs.
         /// </summary>
         public static bool HasFocusSessionsAndNotificationMode { get; } = OperatingSystemBuild >= FirstBuildWithFocusSessionsAndNotificationMode;
+
+        /// <summary>
+        /// Whether the caller has a user of its own for a per-user API to answer for.
+        /// </summary>
+        /// <remarks>
+        /// Read off the process token rather than by trying the API, for the same reason the build number is
+        /// read from the registry: a test gated on the implementation's own answer agrees with it whether or
+        /// not either is right.
+        /// </remarks>
+        public static bool CallerHasAUserContext { get; } = GetCallerHasAUserContext();
+
+        /// <summary>
+        /// Whether the notification mode can be read here: the API has to be present and there has to be a
+        /// user for it to answer for.
+        /// </summary>
+        public static bool CanReadTheNotificationMode => HasFocusSessionsAndNotificationMode && CallerHasAUserContext;
+
+        /// <summary>
+        /// Determines whether the caller runs as an account with a user profile behind it.
+        /// </summary>
+        /// <returns><see langword="true"/> unless the caller is LocalSystem.</returns>
+        private static bool GetCallerHasAUserContext()
+        {
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            return identity.User?.IsWellKnown(WellKnownSidType.LocalSystemSid) is not true;
+        }
 
         /// <summary>
         /// Reads the operating system's build number from the registry.

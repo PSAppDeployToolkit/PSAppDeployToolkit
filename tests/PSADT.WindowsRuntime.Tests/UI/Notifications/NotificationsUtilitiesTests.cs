@@ -34,7 +34,7 @@ namespace PSADT.WindowsRuntime.Tests.UI.Notifications
         /// <summary>
         /// The reason the tests that read the notification mode skip on an older system.
         /// </summary>
-        private const string RequiresNotificationMode = "Requires Windows 10 version 1903 or later, which is where the notification mode API shipped.";
+        private const string RequiresNotificationMode = "Requires Windows 10 version 1903 or later, where the notification mode API shipped, and a caller with a user for it to answer for.";
 
         /// <summary>
         /// Verifies that on a system without the notification mode API the wrapper returns false rather
@@ -63,7 +63,7 @@ namespace PSADT.WindowsRuntime.Tests.UI.Notifications
         /// its guards answer false for an API that is absent and for an API that is present but asked
         /// about wrongly, so on a system known to have the API this is the test that separates the two.
         /// </summary>
-        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.HasFocusSessionsAndNotificationMode), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.CanReadTheNotificationMode), SkipType = typeof(TestEnvironment))]
         public void TryGetNotificationMode_SucceedsOnASystemThatHasTheApi()
         {
             // Act
@@ -78,7 +78,7 @@ namespace PSADT.WindowsRuntime.Tests.UI.Notifications
         /// Verifies that the wrapper reports the mode the notification manager reports, rather than a
         /// constant or some other property of the same object.
         /// </summary>
-        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.HasFocusSessionsAndNotificationMode), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.CanReadTheNotificationMode), SkipType = typeof(TestEnvironment))]
         public void TryGetNotificationMode_ReportsWhatTheNotificationManagerReports()
         {
             // Arrange
@@ -98,7 +98,7 @@ namespace PSADT.WindowsRuntime.Tests.UI.Notifications
         /// other side to interpret, so a value outside the enumeration would travel as a number nothing
         /// can decode rather than fail here.
         /// </summary>
-        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.HasFocusSessionsAndNotificationMode), SkipType = typeof(TestEnvironment))]
+        [Fact(Skip = RequiresNotificationMode, SkipUnless = nameof(TestEnvironment.CanReadTheNotificationMode), SkipType = typeof(TestEnvironment))]
         public void TryGetNotificationMode_ReportsADeclaredMode()
         {
             // Act
