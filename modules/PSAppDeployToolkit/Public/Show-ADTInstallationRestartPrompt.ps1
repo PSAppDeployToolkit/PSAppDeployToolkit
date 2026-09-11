@@ -145,6 +145,7 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
