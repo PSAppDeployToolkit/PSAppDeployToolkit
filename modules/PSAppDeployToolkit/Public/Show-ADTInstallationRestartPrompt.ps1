@@ -96,9 +96,11 @@ function Show-ADTInstallationRestartPrompt
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownSilentRestart')]
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
         [Alias('CountdownSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -112,6 +114,7 @@ function Show-ADTInstallationRestartPrompt
         [System.TimeSpan]$Countdown = [System.TimeSpan]::FromSeconds(60),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
         [Alias('CountdownNoHideSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -124,10 +127,12 @@ function Show-ADTInstallationRestartPrompt
             })]
         [System.TimeSpan]$CountdownNoHide = [System.TimeSpan]::FromSeconds(30),
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'CountdownSilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownSilentRestart')]
         [System.Management.Automation.SwitchParameter]$SilentRestart,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdownSilentRestart')]
         [Alias('SilentCountdownSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -140,8 +145,7 @@ function Show-ADTInstallationRestartPrompt
             })]
         [System.TimeSpan]$SilentCountdown = [System.TimeSpan]::FromSeconds(5),
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false)]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
@@ -159,17 +163,14 @@ function Show-ADTInstallationRestartPrompt
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false)]
         [Alias('CustomText')]
         [System.Management.Automation.SwitchParameter]$CustomMessage,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$CustomMessageText,
 
@@ -179,8 +180,7 @@ function Show-ADTInstallationRestartPrompt
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowMove,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowCancel
     )
 
