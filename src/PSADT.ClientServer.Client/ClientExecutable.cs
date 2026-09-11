@@ -744,7 +744,12 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Delay", out string? delayArg) || !TimeSpan.TryParse(delayArg, CultureInfo.InvariantCulture, out TimeSpan delayValue))
+                    // Parse the argument list and initialise required variables.
+                    ReadOnlyDictionary<string, string> arguments = ArgvToDictionary(argv);
+                    bool noForceCloseApps = false;
+
+                    // Parse the command line arguments and perform the requested operation.
+                    if (!arguments.TryGetValue("Delay", out string? delayArg) || !TimeSpan.TryParse(delayArg, CultureInfo.InvariantCulture, out TimeSpan delayValue))
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
@@ -752,9 +757,13 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("An invalid ShutdownReasonText was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
+                    if (arguments.TryGetValue("NoForceCloseApps", out string? noForceCloseAppsStr) && !bool.TryParse(noForceCloseAppsStr, out noForceCloseApps))
+                    {
+                        throw new ClientException("An invalid NoForceCloseApps was specified on the command line. If provided, it must be parsable as a boolean.", ClientExitCode.InvalidArguments);
+                    }
                     ClientServerUtilities.SetOperationSuccessFlag();
                     await Task.Delay(delayValue, default).ConfigureAwait(false);
-                    await DeviceUtilities.RestartComputerAsync(shutdownReason).ConfigureAwait(false);
+                    await DeviceUtilities.RestartComputerAsync(shutdownReason, noForceCloseApps).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }

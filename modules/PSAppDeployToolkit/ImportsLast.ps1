@@ -4767,6 +4767,7 @@ try
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ShutdownReasonText = $null
+            ShutdownNoForceCloseApps = $false
             ClientServerProcess = $null
             Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
             Environment = $null

@@ -109,13 +109,14 @@ namespace PSADT.DeviceManagement
         /// Reboots the computer and terminates this process.
         /// </summary>
         /// <param name="shutdownReasonText">An optional string that specifies the reason for the shutdown, which will be logged in the system event log. If <see langword="null"/> or empty, no reason will be logged.</param>
+        /// <param name="noForceCloseApps">Whether to omit shutdown.exe's '/f' switch, which is otherwise passed to force running applications closed without forewarning users. When <see langword="true"/>, an application with unsaved work can block the restart.</param>
         /// <exception cref="InvalidOperationException">Thrown if the attempt to restart the computer fails or if shutdown.exe returns a non-zero exit code.</exception>
         /// <exception cref="InvalidProgramException">Thrown if the 'Environment.Exit()' method does not terminate the process as expected.</exception>
         [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
-        internal static async ValueTask RestartComputerAsync(string? shutdownReasonText)
+        internal static async ValueTask RestartComputerAsync(string? shutdownReasonText, bool noForceCloseApps = false)
         {
-            List<string> argumentList = ["/r", "/f", "/t", "0"];
+            List<string> argumentList = noForceCloseApps ? ["/r", "/t", "0"] : ["/r", "/f", "/t", "0"];
             if (shutdownReasonText is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(shutdownReasonText);

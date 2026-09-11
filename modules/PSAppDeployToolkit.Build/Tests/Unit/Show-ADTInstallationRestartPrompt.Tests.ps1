@@ -56,5 +56,16 @@ Describe 'Show-ADTInstallationRestartPrompt' {
         It 'Refuses a silent countdown without a silent restart' {
             Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter SilentCountdown, Title, Subtitle | Should -BeFalse
         }
+
+        # -NoForceCloseApps has to reach every path that ends in a restart, and each of those paths sits
+        # in a different parameter set. A set it was left out of would bind nothing and drop the opt-out
+        # silently, so the shape of the call is worth asserting rather than assuming.
+        It 'Accepts a restart that does not force applications closed for the <Name> path' -ForEach @(
+            @{ Name = 'countdown'; Parameter = 'Countdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'no countdown'; Parameter = 'NoCountdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'silent restart'; Parameter = 'SilentRestart', 'NoForceCloseApps', 'Title', 'Subtitle' }
+        ) {
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter $Parameter | Should -BeTrue
+        }
     }
 }

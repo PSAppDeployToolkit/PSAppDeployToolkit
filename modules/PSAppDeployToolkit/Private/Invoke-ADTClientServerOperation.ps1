@@ -168,6 +168,9 @@ function Private:Invoke-ADTClientServerOperation
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ShutdownReasonText,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
