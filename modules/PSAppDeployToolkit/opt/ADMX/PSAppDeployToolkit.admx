@@ -264,6 +264,16 @@
 				<delete />
 			</disabledValue>
 		</policy>
+		<policy name="PathsBasedOnSystemContext" class="Machine" displayName="$(string.PathsBasedOnSystemContext_Display)" explainText="$(string.PathsBasedOnSystemContext_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="PathsBasedOnSystemContext">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<delete />
+			</disabledValue>
+		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

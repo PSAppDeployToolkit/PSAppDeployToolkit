@@ -178,8 +178,8 @@ function Private:Import-ADTConfig
     ($adtEnv = Get-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath
 
-    # Change paths to user accessible ones if user isn't an admin.
-    if (!$adtEnv.IsAdmin)
+    # Change paths to user accessible ones if the caller doesn't own the configured ones.
+    if (!(Test-ADTCallerOwnsConfiguredPaths -Config $config))
     {
         if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.TempPathNoAdminRights))
         {

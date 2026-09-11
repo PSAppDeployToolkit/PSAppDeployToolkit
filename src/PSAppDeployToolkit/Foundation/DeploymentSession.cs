@@ -490,8 +490,11 @@ namespace PSAppDeployToolkit.Foundation
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
-                // Generate the log filename to use. Append the username unless running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!AccountUtilities.CallerIsAdmin ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
+                // Establish whether the caller owns the configured log path. This mirrors the redirection Import-ADTConfig performs, so that the file name matches wherever the path ended up.
+                bool callerOwnsLogPath = (bool)configToolkit["PathsBasedOnSystemContext"]! ? AccountUtilities.CallerIsLocalSystem : AccountUtilities.CallerIsAdmin;
+
+                // Generate the log filename to use. Append the username unless the caller owns the log path, since everybody else lacks the rights to modify files within it that belong to other users.
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!callerOwnsLogPath ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
