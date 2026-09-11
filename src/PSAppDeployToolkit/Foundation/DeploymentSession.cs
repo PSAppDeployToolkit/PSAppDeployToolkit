@@ -1007,8 +1007,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>The exit code.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         public int Close(string? exitMessage = null)
         {
             // Throw if this object has already been disposed.

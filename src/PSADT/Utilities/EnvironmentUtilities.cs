@@ -287,7 +287,6 @@ namespace PSADT.Utilities
                         break;
                     }
                 case EnvironmentVariableTarget.Process:
-                    throw new NotSupportedException("Process target should be handled separately.");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, $"Illegal enum value: {target}.");
             }

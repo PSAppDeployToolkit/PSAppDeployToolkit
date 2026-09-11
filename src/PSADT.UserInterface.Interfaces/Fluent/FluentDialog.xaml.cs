@@ -771,8 +771,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <see cref="OffscreenCoordinate"/> until the first-show reveal in
         /// <see cref="OnContentRendered"/>.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         private void PositionWindow()
         {
             if (_firstShowPending)
