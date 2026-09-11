@@ -333,6 +333,10 @@ function Show-ADTInstallationRestartPrompt
                     Delay = $SilentCountdown
                     NoWait = $true
                 }
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $icsoParams.Add('ShutdownReasonText', $ShutdownReasonText)
+                }
                 if ($NoForceCloseApps)
                 {
                     $icsoParams.Add('NoForceCloseApps', $true)
