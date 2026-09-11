@@ -13,7 +13,12 @@ namespace PSADT.Invoke.Tests
     /// </summary>
     public sealed class ProgramExitCodeTests
     {
-        private const int ProcessTimeoutMilliseconds = 30000;
+        /// <summary>
+        /// How long a launcher is given to exit. A guard against a hang, not an assertion about speed: a case
+        /// that takes under a second on an idle machine was measured at fourteen under a parallel suite.
+        /// </summary>
+        private const int ProcessTimeoutMilliseconds = 120000;
+
         private const string DefaultMode = "Default";
         private const string DirectScriptMode = "DirectScript";
         private const string FileMode = "File";
