@@ -245,8 +245,8 @@ namespace PSAppDeployToolkit.Tests.Utilities
             IDictionary<string, object> values = PowerShellUtilities.ConvertValuesFromRemainingArguments(["-Force:", true]);
 
             // Assert
-            Assert.True(values.ContainsKey("Force"));
-            Assert.True((bool)values["Force"]);
+            Assert.True(values.TryGetValue("Force", out object? forceValue));
+            Assert.True((bool)forceValue);
         }
 
         /// <summary>
