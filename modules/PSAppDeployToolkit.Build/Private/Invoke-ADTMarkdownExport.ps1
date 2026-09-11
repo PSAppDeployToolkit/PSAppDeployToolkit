@@ -192,7 +192,7 @@ function Invoke-ADTMarkdownExport
         if ($PSVersionTable.PSVersion -ge [version]'7.4.0')
         {
             Write-ADTBuildLogEntry -Message "Performing repairs for PowerShell 7.4.0 and later."
-            Repair-PlatyPSMarkdown -Path (Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.MarkdownOutput -File).FullName
+            Repair-ADTMarkdownExport -Path (Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.MarkdownOutput -File).FullName
         }
 
         # Validate nothing is missing.
