@@ -1,4 +1,14 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
+
+    # Every assertion below enumerates the windows of the logged-on session, and the context stands one of its
+    # own up to assert against. A run with nobody logged on, or one from session zero, has neither available.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'CallerOwnsItsSession', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $script:CallerOwnsItsSession = (Get-ADTLoggedOnUser | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1 -ExpandProperty SID) -eq (Get-ADTCallerSid)
+}
+
+BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
@@ -7,7 +17,7 @@
 }
 
 Describe 'Get-ADTWindowTitle' {
-    Context 'Functionality' {
+    Context 'Functionality' -Skip:(!$script:CallerOwnsItsSession) {
         BeforeAll {
             # Stand up a window this test owns. Sampling whichever window happened to sort first meant asserting
             # against a title that any application is free to change while the run is still in progress.
