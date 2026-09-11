@@ -127,20 +127,27 @@ function Get-ADTInstalledModuleFromModulePath
                         return
                     }
 
+                    # Just return what we have if we're matching on any version.
+                    if ($AllVersions)
+                    {
+                        return $_
+                    }
+
                     # Handle the various versioning options.
-                    if ($AllVersions -or (!$MinimumVersion -and !$RequiredVersion -and !$MaximumVersion))
+                    $versionMatches = $true
+                    if ($MinimumVersion)
                     {
-                        return $_
+                        $versionMatches = $versionMatches -and ($version -ge $MinimumVersion)
                     }
-                    if ($MinimumVersion -and ($version -ge $MinimumVersion))
+                    if ($MaximumVersion)
                     {
-                        return $_
+                        $versionMatches = $versionMatches -and ($version -le $MaximumVersion)
                     }
-                    if ($RequiredVersion -and ($version -eq $RequiredVersion))
+                    if ($RequiredVersion)
                     {
-                        return $_
+                        $versionMatches = $versionMatches -and ($version -eq $RequiredVersion)
                     }
-                    if ($MaximumVersion -and ($version -le $MaximumVersion))
+                    if ($versionMatches)
                     {
                         return $_
                     }
