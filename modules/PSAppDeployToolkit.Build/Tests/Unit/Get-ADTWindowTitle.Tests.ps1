@@ -9,8 +9,39 @@
 Describe 'Get-ADTWindowTitle' {
     Context 'Functionality' {
         BeforeAll {
+            # Stand up a window this test owns. Sampling whichever window happened to sort first meant asserting
+            # against a title that any application is free to change while the run is still in progress.
+            $script:SampleTitle = "ADTWindowTitleTest_$([System.Guid]::NewGuid().ToString('N'))"
+            $script:SampleProcess = Start-Process -FilePath (Get-ADTPowerShellProcessPath) -PassThru -ArgumentList @(
+                '-NoProfile'
+                '-NonInteractive'
+                '-Command'
+                "Add-Type -AssemblyName System.Windows.Forms; `$form = [System.Windows.Forms.Form]::new(); `$form.Text = '$script:SampleTitle'; [System.Void]`$form.ShowDialog()"
+            )
+
+            # The child has to load WinForms and show the form before the window can be enumerated.
+            $deadline = [System.DateTime]::UtcNow.AddSeconds(30)
+            while ([System.DateTime]::UtcNow -lt $deadline)
+            {
+                if (($script:Sample = @(Get-ADTWindowTitle -WindowTitle $script:SampleTitle) | Select-Object -First 1))
+                {
+                    break
+                }
+                Start-Sleep -Milliseconds 250
+            }
+            if (!$script:Sample)
+            {
+                throw "The test window [$script:SampleTitle] did not appear within 30 seconds."
+            }
             $script:Windows = @(Get-ADTWindowTitle)
-            $script:Sample = $script:Windows | & { process { if (![System.String]::IsNullOrWhiteSpace($_.WindowTitle)) { return $_ } } } | Select-Object -First 1
+        }
+
+        AfterAll {
+            if ($script:SampleProcess -and !$script:SampleProcess.HasExited)
+            {
+                $script:SampleProcess.Kill()
+                $null = $script:SampleProcess.WaitForExit(5000)
+            }
         }
 
         It 'Returns the windows open in the user session' {
