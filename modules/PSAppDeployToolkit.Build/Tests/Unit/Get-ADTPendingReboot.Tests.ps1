@@ -65,7 +65,10 @@ Describe 'Get-ADTPendingReboot' {
         }
 
         It 'Sets the overall flag when any individual one is set' {
+            # HasPendingReboot is the aggregate. IsSystemRebootPending is a source in its own right, and reads
+            # false on a machine whose only pending reboot came from elsewhere, such as the Intune client.
             $individual = @(
+                $script:Reboot.IsSystemRebootPending
                 $script:Reboot.IsCBServicingRebootPending
                 $script:Reboot.IsWindowsUpdateRebootPending
                 $script:Reboot.IsSCCMClientRebootPending
@@ -73,7 +76,7 @@ Describe 'Get-ADTPendingReboot' {
                 $script:Reboot.IsAppVRebootPending
                 $script:Reboot.IsFileRenameRebootPending
             )
-            $script:Reboot.IsSystemRebootPending | Should -Be ($individual -contains $true)
+            $script:Reboot.HasPendingReboot() | Should -Be ($individual -contains $true)
         }
 
         It 'Lists the pending renames only when it says renames are pending' {
