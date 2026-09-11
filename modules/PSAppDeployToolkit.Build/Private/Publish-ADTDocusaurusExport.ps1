@@ -12,10 +12,12 @@ function Publish-ADTDocusaurusExport
     {
         # Clone the destination repo.
         Write-ADTBuildLogEntry -Message "Cloning destination repository, this may take a while."
-        $dstBnch = 'main'; $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
+        $dstBnch = 'main'; $dstRepo = "https://github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
+        $gitAuthToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("x-access-token:$env:API_TOKEN_GITHUB"))
+        $gitAuthHeader = "AUTHORIZATION: basic $gitAuthToken"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         $dstPath = "$dstBase\docs\reference\functions"
-        $null = git clone -q -b $dstBnch $dstRepo $dstBase
+        $null = git -c "http.https://github.com/.extraheader=$gitAuthHeader" clone -q -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
         {
             throw "The cloning of the destination repository failed."
@@ -49,7 +51,7 @@ function Publish-ADTDocusaurusExport
 
                 # Push it to the website.
                 Write-ADTBuildLogEntry -Message "Pushing committed changes to origin."
-                $null = git push origin -q
+                $null = git -c "http.https://github.com/.extraheader=$gitAuthHeader" push origin -q
                 if ($Global:LASTEXITCODE)
                 {
                     throw "The pushing of commits from destination repo failed."
