@@ -118,13 +118,52 @@ namespace PSADT.Tests.Foundation
         }
 
         /// <summary>
-        /// Verifies that a local build directory is not mistaken for a network one, since that decides
-        /// whether the local system account's access has to be repaired before a client can be launched.
+        /// Verifies that a build on a fixed local drive is not mistaken for a network one, since that
+        /// decides whether a user's token can be brokered at all.
         /// </summary>
-        [Fact(Skip = SkipReason, SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
-        public void ClientServerOnUncPath_AgreesWithTheDirectoryItWasDerivedFrom()
+        /// <remarks>
+        /// The drive's own type is the oracle here rather than the shape of the path, because the shape
+        /// cannot tell the two apart: a mapped drive is spelled exactly like a local one.
+        /// </remarks>
+        [Fact]
+        public void ClientServerOnNetworkPath_IsFalseForABuildOnAFixedDrive()
         {
-            Assert.Equal(new Uri(ClientServerUtilities.ClientServerDirectory.FullName).IsUnc, ClientServerUtilities.ClientServerOnUncPath);
+            Assert.SkipUnless(TestEnvironment.ClientServerExecutablesPresent, SkipReason);
+            Assert.SkipUnless(DriveBehindTheClient()?.DriveType is DriveType.Fixed, "Requires a build on a fixed local drive.");
+            Assert.False(ClientServerUtilities.ClientServerOnNetworkPath, "A fixed local drive was mistaken for a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that a build on a share is recognised as a network one, which is the case the whole
+        /// distinction exists for.
+        /// </summary>
+        /// <remarks>
+        /// Only the share form is asserted, since it is the one form a path can be read for without
+        /// asking the drive. A build on a mapped drive is the other half of the same case and is covered
+        /// by the same code, but has no oracle independent of the implementation to assert against.
+        /// </remarks>
+        [Fact]
+        public void ClientServerOnNetworkPath_IsTrueForABuildOnAShare()
+        {
+            Assert.SkipUnless(TestEnvironment.ClientServerExecutablesPresent, SkipReason);
+            Assert.SkipUnless(new Uri(ClientServerUtilities.ClientServerDirectory.FullName).IsUnc, "Requires a build on a share.");
+            Assert.True(ClientServerUtilities.ClientServerOnNetworkPath, "A share was not recognised as a network path.");
+        }
+
+        /// <summary>
+        /// Resolves the drive the client/server executables were laid down on.
+        /// </summary>
+        /// <returns>The drive, or <see langword="null"/> if the path names no drive, as a share does.</returns>
+        private static DriveInfo? DriveBehindTheClient()
+        {
+            try
+            {
+                return Path.GetPathRoot(ClientServerUtilities.ClientServerDirectory.FullName) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) ? new DriveInfo(pathRoot) : null;
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
         }
 
         /// <summary>

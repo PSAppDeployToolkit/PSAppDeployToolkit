@@ -31,7 +31,10 @@ namespace PSADT.Security
         /// <summary>
         /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
         /// </summary>
-        internal static readonly bool CanGetUserPrimaryToken = AccountUtilities.CallerIsLocalSystem || (AccountUtilities.CallerIsAdmin && (!ClientServerUtilities.ClientServerOnUncPath || ClientServerPermissions.SystemAccountHasPermissions()));
+        /// <remarks>An administrator brokers via a scheduled task running as the Local System account, which reaches a network
+        /// path as the computer account rather than as itself. Whether that succeeds is decided by the share's own permissions,
+        /// which cannot be determined from this side, so brokering is refused outright for a client/server directory on one.</remarks>
+        internal static readonly bool CanGetUserPrimaryToken = AccountUtilities.CallerIsLocalSystem || (AccountUtilities.CallerIsAdmin && !ClientServerUtilities.ClientServerOnNetworkPath);
 
         /// <summary>
         /// Retrieves the primary access token for a user in the specified session, optionally requesting an elevated

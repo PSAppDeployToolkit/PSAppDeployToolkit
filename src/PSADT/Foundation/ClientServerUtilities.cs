@@ -57,8 +57,32 @@ namespace PSADT.Foundation
                 || callingProcessPath.Equals(ClientLauncherCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase);
             CallerIsClientServerExecutable = CallerIsClientServerClient || CallerIsClientServerClientLauncher;
 
-            // Determine whether the client/server executables are on a UNC path or not.
-            ClientServerOnUncPath = new Uri(ClientServerDirectory.FullName).IsUnc;
+            // Determine whether the client/server executables are on a network path or not.
+            ClientServerOnNetworkPath = GetPathIsNetworked(ClientServerDirectory);
+        }
+
+        /// <summary>
+        /// Determines whether the specified directory resides on a network location.
+        /// </summary>
+        /// <remarks>A mapped drive is a network location but does not answer to <see cref="Uri.IsUnc"/>, which knows only
+        /// the <c language="text">\\server\share</c> form, so the drive behind the path is asked as well. A root that names no drive at all
+        /// cannot be a mapped one, and is reported as local rather than allowed to fault this type's initialisation.</remarks>
+        /// <param name="path">The directory to test.</param>
+        /// <returns><see langword="true"/> if the directory resides on a network location; otherwise, <see langword="false"/>.</returns>
+        private static bool GetPathIsNetworked(DirectoryInfo path)
+        {
+            if (new Uri(path.FullName).IsUnc)
+            {
+                return true;
+            }
+            try
+            {
+                return Path.GetPathRoot(path.FullName) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -260,9 +284,10 @@ namespace PSADT.Foundation
         internal static readonly DirectoryInfo ClientServerDirectory;
 
         /// <summary>
-        /// Indicates whether the client-server executables are located on a UNC path, which can affect how they are launched and executed.
+        /// Indicates whether the client-server executables are located on a network path, which can affect how they are launched and executed.
         /// </summary>
-        internal static readonly bool ClientServerOnUncPath;
+        /// <remarks>Covers a mapped drive as well as a UNC path, as both are reached by the Local System account as the computer account.</remarks>
+        internal static readonly bool ClientServerOnNetworkPath;
 
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.

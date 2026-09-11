@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.Foundation;
 using PSADT.Security;
 using PSADT.Tests.TestHelpers;
 using Windows.Win32.Security;
@@ -200,6 +201,43 @@ namespace PSADT.Tests.Security
             {
                 Assert.True(AccountUtilities.CallerIsAdmin || AccountUtilities.CallerIsLocalSystem, "Brokering was reported as possible for a caller that is neither an administrator nor the local system.");
             }
+        }
+
+        /// <summary>
+        /// Verifies that brokering is refused for a client on a network path, which the broker reaches as
+        /// the machine rather than as the caller.
+        /// </summary>
+        /// <remarks>
+        /// Asserted only for a caller that is not the local system account, which brokers by asking Windows
+        /// directly and never crosses the network at all. Every other caller brokers through a scheduled
+        /// task running as the local system account, and whether that account reaches a network path is
+        /// decided by the share's own permissions, which cannot be determined from this side.
+        /// </remarks>
+        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
+        public void CanGetUserPrimaryToken_IsFalseForAClientOnANetworkPath()
+        {
+            if (ClientServerUtilities.ClientServerOnNetworkPath && !AccountUtilities.CallerIsLocalSystem)
+            {
+                Assert.False(TokenManager.CanGetUserPrimaryToken, "Brokering was reported as possible for a client the local system account may not reach.");
+            }
+        }
+
+        /// <summary>
+        /// Verifies that brokering remains available to an elevated caller on a local path, which is the
+        /// arrangement every managed deployment runs under.
+        /// </summary>
+        /// <remarks>
+        /// The companion to the refusal above, and the reason that refusal is scoped to network paths
+        /// rather than applied to every elevated caller: a local install has no share in the way, so the
+        /// broker reaches the executables as itself and there is nothing to refuse.
+        /// </remarks>
+        [Fact]
+        public void CanGetUserPrimaryToken_IsTrueForAnElevatedCallerOnALocalPath()
+        {
+            Assert.SkipUnless(TestEnvironment.ClientServerExecutablesPresent, "Requires the client/server executables alongside the test assembly.");
+            Assert.SkipUnless(TestEnvironment.IsElevated, "Requires an elevated caller.");
+            Assert.SkipUnless(!ClientServerUtilities.ClientServerOnNetworkPath, "Requires a client that is not on a network path.");
+            Assert.True(TokenManager.CanGetUserPrimaryToken, "Brokering was refused for an elevated caller on a local path.");
         }
 
         /// <summary>
