@@ -68,7 +68,7 @@ namespace PSADT.Invoke.Tests
             bool completed = process.WaitForExit(ProcessTimeoutMilliseconds);
             if (!completed)
             {
-                process.Kill();
+                KillProcessTree(process.Id);
             }
 
             Assert.True(completed);
@@ -113,6 +113,33 @@ namespace PSADT.Invoke.Tests
                 File.Copy(sourceFilePath, Path.Join(directoryPath, Path.GetFileName(sourceFilePath)));
             }
             return Path.Join(directoryPath, InvokerFileName);
+        }
+
+        /// <summary>
+        /// Terminates a process and everything it started.
+        /// </summary>
+        /// <remarks>
+        /// The launcher starts PowerShell through ShellExecute, so no job object ties the two together and
+        /// <c language="csharp">Process.Kill</c> takes only the launcher. An abandoned child holds the test's temporary
+        /// directory open and competes for the runner for the rest of the job. The .NET Framework has no
+        /// entireProcessTree overload, so the walk is taskkill's.
+        /// </remarks>
+        /// <param name="processId">The identifier of the process at the root of the tree.</param>
+        /// <exception cref="InvalidOperationException">Thrown if taskkill cannot be started.</exception>
+        private static void KillProcessTree(int processId)
+        {
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "taskkill.exe",
+                Arguments = "/T /F /PID " + processId.ToString(CultureInfo.InvariantCulture),
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start taskkill.exe.");
+            _ = process.WaitForExit(ProcessTimeoutMilliseconds);
         }
 
         private static string GetExitScript(int exitCode)
