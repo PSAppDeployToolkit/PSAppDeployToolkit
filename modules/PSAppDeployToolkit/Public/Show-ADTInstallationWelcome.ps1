@@ -838,6 +838,19 @@ function Show-ADTInstallationWelcome
             Retries = 0
         }
 
+        # Throw if we can't check the disk space (i.e. requested but there's no session).
+        if ($CheckDiskSpace -and !$adtSession)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The [-CheckDiskSpace] parameter is only valid when a deployment session is active.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'CheckDiskSpaceWithNoActiveSession'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please review your deployment and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
         # Set up DeploymentType if not specified.
         $DeploymentType = if (!$adtSession)
         {
@@ -987,7 +1000,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check disk space requirements if specified
-                if ($adtSession -and $CheckDiskSpace)
+                if ($CheckDiskSpace)
                 {
                     if (!$PSBoundParameters.ContainsKey('RequiredDiskSpace') -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }) -and (Get-ChildItem -LiteralPath $scriptDir -Force -ErrorAction Ignore))
                     {
