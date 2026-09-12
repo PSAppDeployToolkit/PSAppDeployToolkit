@@ -1175,16 +1175,13 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('DialogAllowMinimize', !!$AllowMinimize)
                     }
-                    if ($CustomMessage)
+                    if ($PSBoundParameters.ContainsKey('CustomMessageText'))
                     {
-                        if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
-                        {
-                            $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
-                        }
-                        else
-                        {
-                            $dialogOptions.Add('CustomMessageText', $CustomMessageText)
-                        }
+                        $dialogOptions.Add('CustomMessageText', $CustomMessageText)
+                    }
+                    elseif ($CustomMessage)
+                    {
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
                     }
                     if ($null -ne $CloseProcesses)
                     {
