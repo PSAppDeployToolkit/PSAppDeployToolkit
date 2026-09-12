@@ -58,7 +58,7 @@ function Convert-ADTRegistryPath
         https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTRegistryPath
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Convert-ADTRegistryPath.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Convert-ADTRegistryPath.ps1
     #>
 
     [CmdletBinding()]

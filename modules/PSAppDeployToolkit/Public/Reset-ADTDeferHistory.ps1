@@ -38,7 +38,7 @@ function Reset-ADTDeferHistory
         https://psappdeploytoolkit.com/docs/reference/functions/Reset-ADTDeferHistory
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Reset-ADTDeferHistory.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Reset-ADTDeferHistory.ps1
 
     #>
 

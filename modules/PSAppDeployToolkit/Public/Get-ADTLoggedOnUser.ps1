@@ -82,7 +82,7 @@ function Get-ADTLoggedOnUser
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTLoggedOnUser
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTLoggedOnUser.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTLoggedOnUser.ps1
     #>
 
     [CmdletBinding()]

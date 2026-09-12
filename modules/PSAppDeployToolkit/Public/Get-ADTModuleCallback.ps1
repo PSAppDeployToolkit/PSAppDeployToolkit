@@ -57,7 +57,7 @@ function Get-ADTModuleCallback
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTModuleCallback
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTModuleCallback.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTModuleCallback.ps1
     #>
 
     [CmdletBinding()]

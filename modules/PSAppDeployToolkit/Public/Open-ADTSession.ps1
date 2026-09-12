@@ -179,7 +179,7 @@ function Open-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Open-ADTSession
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Open-ADTSession.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Open-ADTSession.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]

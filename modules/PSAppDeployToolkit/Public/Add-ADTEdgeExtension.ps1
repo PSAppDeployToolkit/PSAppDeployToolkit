@@ -58,7 +58,7 @@ function Add-ADTEdgeExtension
         https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTEdgeExtension
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Add-ADTEdgeExtension.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Add-ADTEdgeExtension.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

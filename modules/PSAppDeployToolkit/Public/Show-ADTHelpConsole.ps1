@@ -40,7 +40,7 @@ function Show-ADTHelpConsole
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
     #>
 
     # Bypass if no one's logged onto the device.

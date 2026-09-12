@@ -45,7 +45,7 @@ function Show-ADTNotifyIcon
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTNotifyIcon
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTNotifyIcon.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTNotifyIcon.ps1
     #>
 
     [CmdletBinding()]

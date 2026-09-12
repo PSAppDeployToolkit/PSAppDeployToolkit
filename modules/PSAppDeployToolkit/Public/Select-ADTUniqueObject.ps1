@@ -56,7 +56,7 @@ function Select-ADTUniqueObject
         https://psappdeploytoolkit.com/docs/reference/functions/Select-ADTUniqueObject
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Select-ADTUniqueObject.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Select-ADTUniqueObject.ps1
     #>
 
     [CmdletBinding()]

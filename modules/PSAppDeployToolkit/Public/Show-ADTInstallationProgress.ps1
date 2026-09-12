@@ -78,7 +78,7 @@ function Show-ADTInstallationProgress
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationProgress
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationProgress.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationProgress.ps1
     #>
 
     [CmdletBinding()]

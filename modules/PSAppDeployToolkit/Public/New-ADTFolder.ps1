@@ -48,7 +48,7 @@ function New-ADTFolder
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTFolder
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTFolder.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/New-ADTFolder.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -127,7 +127,7 @@ function Show-ADTInstallationPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationPrompt
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationPrompt.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationPrompt.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'ShowCustomDialog')]

@@ -48,7 +48,7 @@ function Get-ADTIniSection
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSection
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTIniSection.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTIniSection.ps1
     #>
 
     [CmdletBinding()]

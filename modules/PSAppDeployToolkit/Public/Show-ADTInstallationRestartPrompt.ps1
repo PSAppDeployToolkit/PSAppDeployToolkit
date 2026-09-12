@@ -89,7 +89,7 @@ function Show-ADTInstallationRestartPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationRestartPrompt
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Countdown')]

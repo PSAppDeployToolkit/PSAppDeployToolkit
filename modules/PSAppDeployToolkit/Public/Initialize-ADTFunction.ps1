@@ -46,7 +46,7 @@ function Initialize-ADTFunction
         https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTFunction
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Initialize-ADTFunction.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Initialize-ADTFunction.ps1
     #>
 
     [CmdletBinding()]

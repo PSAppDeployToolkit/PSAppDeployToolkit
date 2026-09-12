@@ -79,7 +79,7 @@ function Get-ADTWindowTitle
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTWindowTitle
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTWindowTitle.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTWindowTitle.ps1
     #>
 
     [CmdletBinding()]

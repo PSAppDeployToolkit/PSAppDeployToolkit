@@ -51,7 +51,7 @@ function Set-ADTMsiProperty
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTMsiProperty
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTMsiProperty.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTMsiProperty.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -51,7 +51,7 @@ function Get-ADTIniValue
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniValue
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTIniValue.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTIniValue.ps1
     #>
 
     [CmdletBinding()]

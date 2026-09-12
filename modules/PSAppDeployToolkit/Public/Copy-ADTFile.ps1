@@ -87,7 +87,7 @@ function Copy-ADTFile
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFile
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Copy-ADTFile.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Copy-ADTFile.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -59,7 +59,7 @@ function Clear-ADTModuleCallback
         https://psappdeploytoolkit.com/docs/reference/functions/Clear-ADTModuleCallback
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Clear-ADTModuleCallback.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Clear-ADTModuleCallback.ps1
     #>
 
     [CmdletBinding()]

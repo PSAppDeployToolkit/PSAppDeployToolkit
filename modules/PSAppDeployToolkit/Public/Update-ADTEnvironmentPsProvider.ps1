@@ -42,7 +42,7 @@ function Update-ADTEnvironmentPsProvider
         https://psappdeploytoolkit.com/docs/reference/functions/Update-ADTEnvironmentPsProvider
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Update-ADTEnvironmentPsProvider.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Update-ADTEnvironmentPsProvider.ps1
     #>
 
     [CmdletBinding()]

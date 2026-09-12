@@ -57,7 +57,7 @@ function Test-ADTMutexAvailability
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTMutexAvailability
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTMutexAvailability.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTMutexAvailability.ps1
     #>
 
     [CmdletBinding()]

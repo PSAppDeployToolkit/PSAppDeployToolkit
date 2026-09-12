@@ -77,7 +77,7 @@ function Copy-ADTContentToCache
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTContentToCache
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Copy-ADTContentToCache.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Copy-ADTContentToCache.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
