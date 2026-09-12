@@ -238,6 +238,21 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Displays an input dialog whose typing is masked, and returns the result of the interaction.
+        /// </summary>
+        /// <remarks>Shares its dialog and its options with <see cref="ShowInputDialogAsync"/>; only the result type
+        /// differs, so that the answer comes back as a <see cref="System.Security.SecureString"/> rather than as a
+        /// string. The value crosses the channel as unprotected UTF-16 under the channel's own encryption, because a
+        /// <see cref="System.Security.SecureString"/> cannot cross a process boundary.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the input dialog, such as the prompt text and button captions.</param>
+        /// <returns>A <see cref="SecureInputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        public ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        {
+            return ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options);
+        }
+
+        /// <summary>
         /// Displays a restart dialog to the user and returns the user's input as a string.
         /// </summary>
         /// <remarks>This method displays a modal dialog of type <see cref="DialogType.RestartDialog"/> and

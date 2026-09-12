@@ -439,6 +439,11 @@ function Private:Invoke-ADTClientServerOperation
                         [System.String]
                         break
                     }
+                    SecureInputDialog
+                    {
+                        [PSADT.UserInterface.DialogResults.SecureInputDialogResult]
+                        break
+                    }
                     default
                     {
                         $naerParams = @{

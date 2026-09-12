@@ -224,6 +224,7 @@ namespace PSADT.UserInterface.Tests
                 CustomDialogResult.DefaultResult,
                 InputDialogResult.DefaultResult,
                 ListSelectionDialogResult.DefaultResult,
+                SecureInputDialogResult.DefaultResult,
                 CloseAppsDialogResult.Defer,
                 DialogBoxResult.Yes,
             ];

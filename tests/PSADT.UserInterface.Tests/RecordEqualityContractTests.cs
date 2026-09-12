@@ -109,6 +109,7 @@ namespace PSADT.UserInterface.Tests
                 ["CustomDialogDerivative"] = "shares its base's hand-written equality",
                 ["InputDialogResult"] = "hand-written equality, matching its base",
                 ["ListSelectionDialogResult"] = "hand-written equality, matching its base",
+                ["SecureInputDialogResult"] = "hand-written equality, matching its base, and deliberately blind to the value it carries",
                 ["CloseAppsDialogResult"] = "a TypedConstant, whose members are shared singletons",
                 ["DialogBoxResult"] = "a TypedConstant, whose members are shared singletons",
                 ["BaseDialogState"] = "state rather than a value; it has identity and a lifetime",

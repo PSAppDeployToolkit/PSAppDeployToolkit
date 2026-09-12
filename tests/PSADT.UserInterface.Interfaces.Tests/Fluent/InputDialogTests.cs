@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Windows;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -223,6 +225,12 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// <summary>
         /// Verifies that the answer comes from the masked box when the typing was masked.
         /// </summary>
+        /// <remarks>
+        /// Masked typing reports a <see cref="SecureInputDialogResult"/> rather than an
+        /// <see cref="InputDialogResult"/>. The type is asserted as well as the value, because the two ends of
+        /// the client/server channel agree on which one to expect from the dialog type alone - a dialog
+        /// reporting the plain result here would fail to deserialize on the far side.
+        /// </remarks>
         [Fact]
         public void ButtonClick_ReadsTheAnswerFromTheMaskedBoxForSecureInput()
         {
@@ -235,8 +243,65 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
             {
                 dialog.InputBoxPassword.Password = "a secret";
                 FluentControls.Click(dialog.ButtonLeft);
-                Assert.Equal(new InputDialogResult("Continue", "a secret"), dialog.DialogResult);
+
+                SecureInputDialogResult result = Assert.IsType<SecureInputDialogResult>(dialog.DialogResult);
+                Assert.Equal("Continue", result.Result);
+                Assert.NotNull(result.Text);
+                Assert.Equal("a secret", Unprotect(result.Text));
             });
+        }
+
+        /// <summary>
+        /// Verifies that the masked dialog starts out reporting its own kind of timeout.
+        /// </summary>
+        /// <remarks>
+        /// The two results report a timeout the same way but are not interchangeable, so a masked dialog that
+        /// started out holding the plain default would report the wrong type to a user who dismissed it.
+        /// </remarks>
+        [Fact]
+        public void Constructor_StartsOutReportingAMaskedTimeoutForSecureInput()
+        {
+            // Arrange
+            Hashtable table = Options();
+            table["SecureInput"] = true;
+
+            // Act & Assert
+            WithDialog(table, static dialog => Assert.Equal(SecureInputDialogResult.DefaultResult, dialog.DialogResult));
+        }
+
+        /// <summary>
+        /// Verifies that ordinary input still reports the plain result.
+        /// </summary>
+        [Fact]
+        public void ButtonClick_ReportsThePlainResultForOrdinaryInput()
+        {
+            // Act & Assert
+            WithDialog(Options(), static dialog =>
+            {
+                dialog.InputBoxText.Text = "server1.contoso.test";
+                FluentControls.Click(dialog.ButtonLeft);
+
+                InputDialogResult result = Assert.IsType<InputDialogResult>(dialog.DialogResult);
+                Assert.Equal("server1.contoso.test", result.Text);
+            });
+        }
+
+        /// <summary>
+        /// Unprotects a masked value so that a test can assert on what it holds.
+        /// </summary>
+        /// <param name="value">The value to read.</param>
+        /// <returns>The text the value holds.</returns>
+        private static string Unprotect(SecureString value)
+        {
+            IntPtr ptr = Marshal.SecureStringToBSTR(value);
+            try
+            {
+                return Marshal.PtrToStringBSTR(ptr);
+            }
+            finally
+            {
+                Marshal.ZeroFreeBSTR(ptr);
+            }
         }
 
         /// <summary>

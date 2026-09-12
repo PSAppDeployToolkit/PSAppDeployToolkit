@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
@@ -283,6 +284,38 @@ namespace PSADT.UserInterface.Interfaces
         }
 
         /// <summary>
+        /// Displays an input dialog box whose typing is masked, and returns the result.
+        /// </summary>
+        /// <remarks>Shares its dialog and its options with <see cref="ShowInputDialogAsync"/>; only the result type
+        /// differs, so that the answer comes back as a <see cref="SecureString"/> rather than as a string.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options for configuring the input dialog, such as the prompt text and button captions.</param>
+        /// <returns>A <see cref="SecureInputDialogResult"/> object containing the user's input and the dialog result.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the caller is using ServiceUI, as input dialogs are not supported in that context.</exception>
+        internal static async ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        {
+            if (AccountUtilities.CallerUsingServiceUI)
+            {
+                throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
+            }
+            if (options.MinimizeWindows)
+            {
+                DesktopUtilities.MinimizeAllWindows();
+            }
+            try
+            {
+                return await ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (options.MinimizeWindows)
+                {
+                    DesktopUtilities.RestoreAllWindows();
+                }
+            }
+        }
+
+        /// <summary>
         /// Displays a modal dialog prompting the user to restart the application.
         /// </summary>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
@@ -512,11 +545,13 @@ namespace PSADT.UserInterface.Interfaces
                     (DialogStyle.Classic, DialogType.InputDialog) => new Classic.InputDialog((InputDialogOptions)options),
                     (DialogStyle.Classic, DialogType.ListSelectionDialog) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options),
                     (DialogStyle.Classic, DialogType.RestartDialog) => new Classic.RestartDialog((RestartDialogOptions)options),
+                    (DialogStyle.Classic, DialogType.SecureInputDialog) => new Classic.InputDialog((InputDialogOptions)options),
                     (DialogStyle.Fluent, DialogType.CloseAppsDialog) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))),
                     (DialogStyle.Fluent, DialogType.CustomDialog) => new Fluent.CustomDialog((CustomDialogOptions)options),
                     (DialogStyle.Fluent, DialogType.InputDialog) => new Fluent.InputDialog((InputDialogOptions)options),
                     (DialogStyle.Fluent, DialogType.ListSelectionDialog) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options),
                     (DialogStyle.Fluent, DialogType.RestartDialog) => new Fluent.RestartDialog((RestartDialogOptions)options),
+                    (DialogStyle.Fluent, DialogType.SecureInputDialog) => new Fluent.InputDialog((InputDialogOptions)options),
                     _ => throw new NotSupportedException($"Dialog style '{dialogStyle}' is not supported for dialog type '{dialogType}'."),
                 };
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;

@@ -407,6 +407,7 @@ namespace PSADT.ClientServer
                                                 await WriteSuccessAsync(payload.Options switch
                                                 {
                                                     CloseAppsDialogOptions closeAppsDialogOptions => await DialogManager.ShowCloseAppsDialogAsync(payload.DialogStyle, closeAppsDialogOptions, closeAppsDialogStateManager.State ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
+                                                    InputDialogOptions secureInputDialogOptions when payload.DialogType is DialogType.SecureInputDialog => await DialogManager.ShowSecureInputDialogAsync(payload.DialogStyle, secureInputDialogOptions).ConfigureAwait(false),
                                                     InputDialogOptions inputDialogOptions => await DialogManager.ShowInputDialogAsync(payload.DialogStyle, inputDialogOptions).ConfigureAwait(false),
                                                     ListSelectionDialogOptions listSelectionDialogOptions => await DialogManager.ShowListSelectionDialogAsync(payload.DialogStyle, listSelectionDialogOptions).ConfigureAwait(false),
                                                     CustomDialogOptions customDialogOptions => await DialogManager.ShowCustomDialogAsync(payload.DialogStyle, customDialogOptions).ConfigureAwait(false),
@@ -652,6 +653,7 @@ namespace PSADT.ClientServer
                         DialogType.DialogBox => await DialogManager.ShowDialogBoxAsync(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.HelpConsole => await DialogManager.ShowHelpConsoleAsync(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.InputDialog => await DialogManager.ShowInputDialogAsync(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
+                        DialogType.SecureInputDialog => await DialogManager.ShowSecureInputDialogAsync(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.ListSelectionDialog => await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DeserializeString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.RestartDialog => await DialogManager.ShowRestartDialogAsync(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.CloseAppsDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported by the current implementation.", ClientExitCode.UnsupportedDialog),

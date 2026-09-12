@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Tests.TestHelpers;
@@ -34,6 +35,7 @@ namespace PSADT.UserInterface.Tests
                 ("ListSelectionDialog", 5),
                 ("ProgressDialog", 6),
                 ("RestartDialog", 7),
+                ("SecureInputDialog", 8),
             ];
 
             // Assert
@@ -49,15 +51,26 @@ namespace PSADT.UserInterface.Tests
         /// client was asked to show that dialog. <c language="csharp">HelpConsole</c> is the exception the naming does not
         /// cover, since its options type is <c language="csharp">HelpConsoleOptions</c> rather than
         /// <c language="csharp">HelpConsoleDialogOptions</c>.
+        /// <para>
+        /// A member may also share another kind's options on purpose, which the pairing cannot express. Those
+        /// are listed below with their reason, so that a deliberate sharing stays distinguishable from the
+        /// omission this test is here to catch.
+        /// </para>
         /// </remarks>
         [Fact]
         public void Members_EachNameAnOptionsTypeThatExists()
         {
+            // Arrange - the members that deliberately share another kind's options, and why.
+            Dictionary<string, string> shared = new(StringComparer.Ordinal)
+            {
+                ["SecureInputDialog"] = "shares InputDialogOptions with InputDialog; the dialog and its options are the same, and only the result type differs so that a masked answer comes back as a SecureString",
+            };
+
             // Act
             string[] missing =
             [
                 .. EnumValues.DeclaredNames<DialogType>()
-                    .Where(static name => typeof(BaseDialogOptions).Assembly
+                    .Where(name => !shared.ContainsKey(name) && typeof(BaseDialogOptions).Assembly
                         .GetType($"PSADT.UserInterface.DialogOptions.{name}Options", throwOnError: false) is null),
             ];
 
