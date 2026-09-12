@@ -216,14 +216,18 @@ namespace PSADT.UserInterface.Tests
         /// </summary>
         /// <remarks>
         /// Iterator state machines, closures and the like hold fields and are not records, so they would
-        /// otherwise have to be listed as deliberate exceptions.
+        /// otherwise have to be listed as deliberate exceptions. The markers sit on the type the compiler
+        /// emitted and not on anything nested inside it, so a synthesised type's own enumerator is judged by
+        /// its declaring chain rather than by a name that looks perfectly ordinary on its own.
         /// </remarks>
         /// <param name="type">The type to judge.</param>
         /// <returns><see langword="true"/> if the compiler generated it; otherwise, <see langword="false"/>.</returns>
         private static bool IsCompilerGenerated(Type type)
         {
+            // A nested type carries none of the markers itself, so the declaring chain decides it.
             return Attribute.IsDefined(type, typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))
-                || type.Name.Contains('<', StringComparison.Ordinal);
+                || type.Name.Contains('<', StringComparison.Ordinal)
+                || (type.DeclaringType is not null && IsCompilerGenerated(type.DeclaringType));
         }
     }
 }
