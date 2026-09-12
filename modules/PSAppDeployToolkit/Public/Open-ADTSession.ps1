@@ -374,7 +374,7 @@ function Open-ADTSession
                 }
                 if (![PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.IsMatch($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does not match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
                 }
                 return $_
             })]
