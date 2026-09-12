@@ -261,25 +261,49 @@ namespace PSADT.ClientServer
                     }
 
                     // Set up writer helper methods.
-                    ValueTask WriteSuccessAsync<T>(T result)
+                    async ValueTask WriteSuccessAsync<T>(T result)
                     {
                         byte[] data = SerializeToBytes(result);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Success;
                         data.CopyTo(response.AsSpan(1));
-                        return ioEncryption.WriteEncryptedAsync(outputPipeClient, response);
+                        CryptographicUtilities.SecureZeroMemory(data);
+                        try
+                        {
+                            await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            CryptographicUtilities.SecureZeroMemory(response);
+                        }
                     }
-                    ValueTask WriteErrorAsync(Exception ex)
+                    async ValueTask WriteErrorAsync(Exception ex)
                     {
                         byte[] data = SerializeToBytes(ex);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Error;
                         data.CopyTo(response.AsSpan(1));
-                        return ioEncryption.WriteEncryptedAsync(outputPipeClient, response);
+                        CryptographicUtilities.SecureZeroMemory(data);
+                        try
+                        {
+                            await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            CryptographicUtilities.SecureZeroMemory(response);
+                        }
                     }
-                    ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
+                    async ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
                     {
-                        return logEncryption.WriteEncryptedAsync(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source)));
+                        byte[] data = SerializeToBytes(new LogMessagePayload(message, severity, source));
+                        try
+                        {
+                            await logEncryption.WriteEncryptedAsync(logPipeClient, data).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            CryptographicUtilities.SecureZeroMemory(data);
+                        }
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -578,6 +602,11 @@ namespace PSADT.ClientServer
                                     await WriteErrorAsync(ex).ConfigureAwait(false);
                                     continue;
                                     throw;
+                                }
+                                finally
+                                {
+                                    // Every command has read what it needs by now, so the decrypted request can go.
+                                    CryptographicUtilities.SecureZeroMemory(requestBytes);
                                 }
                             }
                             catch (EndOfStreamException)

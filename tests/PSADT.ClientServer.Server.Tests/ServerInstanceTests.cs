@@ -505,12 +505,16 @@ namespace PSADT.ClientServer.Server.Tests
         [Fact]
         public async Task ReadLogFrameAsync_FaultsOnAFrameThatIsNotALogMessage()
         {
-            // Arrange: a frame that reads back perfectly well as something else entirely.
-            byte[] frame = DataSerialization.SerializeToBytes(new EnvironmentVariablePayload("PATH"));
+            // Arrange: a frame that reads back perfectly well as something else entirely. Built afresh for each
+            // read, because reading one overwrites it, and a zeroed buffer would fail for the wrong reason.
+            static byte[] Frame()
+            {
+                return DataSerialization.SerializeToBytes(new EnvironmentVariablePayload("PATH"));
+            }
 
             // Assert: with nothing to write to, the frame is never deserialised and nothing is noticed.
             Assert.False(ModuleDatabase.IsDeploymentSessionActive());
-            Assert.Null(await Record.ExceptionAsync(async () => await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true)).ConfigureAwait(true));
+            Assert.Null(await Record.ExceptionAsync(static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true));
 
             // Arrange: and again with a session seated.
             using IDisposable scope = powerShell.Enter();
@@ -524,7 +528,7 @@ namespace PSADT.ClientServer.Server.Tests
 
                 // Assert: now it is deserialised, and says so rather than writing something meaningless.
                 _ = await Assert.ThrowsAsync<SerializationException>(
-                    async () => await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true)).ConfigureAwait(true);
+                    static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true);
                 Assert.Equal(written, session.GetLogBuffer().Count);
             }
             finally

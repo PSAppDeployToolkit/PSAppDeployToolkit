@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace PSADT.Utilities
 {
@@ -24,6 +25,28 @@ namespace PSADT.Utilities
             using RandomNumberGenerator rng = RandomNumberGenerator.Create();
             byte[] randomBytes = new byte[16]; rng.GetBytes(randomBytes);
             return new(randomBytes);
+        }
+
+        /// <summary>
+        /// Overwrites a buffer that held unprotected data.
+        /// </summary>
+        /// <remarks>Callers hand plaintext to the serializer and the cipher in ordinary managed arrays, which the
+        /// garbage collector will neither scrub nor keep still. Overwriting one as soon as it has served its purpose
+        /// is the only control available over how long its contents remain legible in the process.</remarks>
+        /// <param name="data">The buffer to overwrite. A null buffer is ignored.</param>
+        internal static void SecureZeroMemory(byte[]? data)
+        {
+            if (data is null)
+            {
+                return;
+            }
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = 0;
+            }
+
+            // Barrier stops the loop above being optimised away as a dead store.
+            Thread.MemoryBarrier();
         }
 
         /// <summary>

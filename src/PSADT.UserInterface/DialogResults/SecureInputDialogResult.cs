@@ -42,15 +42,28 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets or sets the transported form of <see cref="Text"/>.
         /// </summary>
-        /// <remarks>The getter unprotects only for the duration of the write, so a sender never retains the
-        /// bytes. The setter stages them for <see cref="OnDeserialized"/> to consume and discard.</remarks>
+        /// <remarks>The getter unprotects for the duration of the write and keeps hold of what it handed out so
+        /// that <see cref="OnSerialized"/> can overwrite it afterwards; it unprotects afresh each time, so a result
+        /// may be sent more than once. The setter stages the bytes for <see cref="OnDeserialized"/> to consume and
+        /// discard.</remarks>
         [DataMember(Name = nameof(Text))]
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Read and written by the serializer rather than by any caller.")]
         [SuppressMessage("Redundancy", "RCS1213:Remove unused member declaration", Justification = "Read and written by the serializer rather than by any caller.")]
         private byte[]? TextBytes
         {
-            get => Text is not null ? SecureStringUtilities.ToUtf16Bytes(Text) : null;
+            get => _sentText = Text is not null ? SecureStringUtilities.ToUtf16Bytes(Text) : null;
             set => _stagedText = value;
+        }
+
+        /// <summary>
+        /// Discards the transported bytes once the serializer has written them.
+        /// </summary>
+        /// <param name="context">The streaming context supplied by the serializer.</param>
+        [OnSerialized]
+        private void OnSerialized(StreamingContext context)
+        {
+            CryptographicUtilities.SecureZeroMemory(_sentText);
+            _sentText = null;
         }
 
         /// <summary>
@@ -63,7 +76,7 @@ namespace PSADT.UserInterface.DialogResults
             if (_stagedText is not null)
             {
                 Text = SecureStringUtilities.FromUtf16Bytes(_stagedText);
-                SecureStringUtilities.SecureZeroMemory(_stagedText);
+                CryptographicUtilities.SecureZeroMemory(_stagedText);
                 _stagedText = null;
             }
         }
@@ -96,5 +109,10 @@ namespace PSADT.UserInterface.DialogResults
         /// Holds the transported bytes between deserialization and the callback that consumes them.
         /// </summary>
         private byte[]? _stagedText;
+
+        /// <summary>
+        /// Holds the transported bytes between serialization and the callback that overwrites them.
+        /// </summary>
+        private byte[]? _sentText;
     }
 }

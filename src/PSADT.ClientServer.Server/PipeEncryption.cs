@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using PSADT.Utilities;
 
 namespace PSADT.ClientServer
 {
@@ -63,7 +64,8 @@ namespace PSADT.ClientServer
         /// Writes encrypted data to the stream.
         /// </summary>
         /// <param name="stream">The output stream.</param>
-        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
+        /// <param name="plaintext">The plaintext bytes to encrypt and write. Left as it was found; whoever built it
+        /// overwrites it once this returns.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
         internal ValueTask WriteEncryptedAsync(Stream stream, byte[] plaintext)
         {
@@ -272,7 +274,7 @@ namespace PSADT.ClientServer
             _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
 
             // Clear sensitive data
-            SecureZeroMemory(sharedSecret);
+            CryptographicUtilities.SecureZeroMemory(sharedSecret);
         }
 
         /// <summary>
@@ -360,25 +362,9 @@ namespace PSADT.ClientServer
             }
             finally
             {
-                SecureZeroMemory(prk);
+                CryptographicUtilities.SecureZeroMemory(prk);
             }
             return output;
-        }
-
-        /// <summary>
-        /// Securely zeros a byte array to clear sensitive data from memory.
-        /// </summary>
-        /// <param name="data">The byte array to zero.</param>
-        private static void SecureZeroMemory(byte[] data)
-        {
-            // Use volatile write to prevent compiler optimization from removing the zeroing operation
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = 0;
-            }
-
-            // Memory barrier to ensure the writes are visible
-            System.Threading.Thread.MemoryBarrier();
         }
 
         /// <summary>
@@ -394,7 +380,7 @@ namespace PSADT.ClientServer
             {
                 if (_encryptionKey is not null)
                 {
-                    SecureZeroMemory(_encryptionKey);
+                    CryptographicUtilities.SecureZeroMemory(_encryptionKey);
                     _encryptionKey = null;
                 }
             }

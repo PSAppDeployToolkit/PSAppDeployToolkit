@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml;
+using PSADT.Utilities;
 
 namespace PSADT.ClientServer
 {
@@ -36,13 +37,21 @@ namespace PSADT.ClientServer
                 ArgumentException.ThrowIfNullOrWhiteSpace(str, nameof(obj));
             }
             using MemoryStream ms = new();
-            using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(ms))
+            try
             {
-                GetSerializer(typeof(T)).WriteObject(writer, obj);
+                using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(ms))
+                {
+                    GetSerializer(typeof(T)).WriteObject(writer, obj);
+                }
+                return ms.ToArray() is not { Length: > 0 } result
+                    ? throw new SerializationException("Serialization returned an empty result.")
+                    : result;
             }
-            return ms.ToArray() is not { Length: > 0 } result
-                ? throw new SerializationException("Serialization returned an empty result.")
-                : result;
+            finally
+            {
+                // The stream's own buffer holds everything just written, and disposing it does not scrub it.
+                CryptographicUtilities.SecureZeroMemory(ms.GetBuffer());
+            }
         }
 
         /// <summary>

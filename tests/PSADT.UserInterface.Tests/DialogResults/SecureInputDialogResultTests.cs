@@ -69,6 +69,31 @@ namespace PSADT.UserInterface.Tests.DialogResults
         }
 
         /// <summary>
+        /// Verifies that a result can be sent more than once.
+        /// </summary>
+        /// <remarks>
+        /// The bytes handed to the serializer are overwritten once it has written them, so the property
+        /// that produces them unprotects afresh on every read rather than holding a copy. Were it to hand
+        /// out the same array twice, the second send would carry the zeroes left by the first - and the
+        /// first trip would still pass, so only sending twice catches it.
+        /// </remarks>
+        [Fact]
+        public void Serialization_CanBeRepeated()
+        {
+            // Arrange
+            using SecureString secret = Protect("a secret");
+            SecureInputDialogResult sent = new("Continue", secret);
+
+            // Act
+            _ = RoundTrip(sent);
+            SecureInputDialogResult received = RoundTrip(sent);
+
+            // Assert
+            Assert.NotNull(received.Text);
+            Assert.Equal("a secret", Unprotect(received.Text));
+        }
+
+        /// <summary>
         /// Verifies that a result carrying nothing survives the trip as well.
         /// </summary>
         /// <remarks>

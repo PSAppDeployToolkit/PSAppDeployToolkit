@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Threading;
 
 namespace PSADT.Utilities
 {
@@ -74,23 +73,5 @@ namespace PSADT.Utilities
             }
         }
 
-        /// <summary>
-        /// Overwrites a buffer that held unprotected data.
-        /// </summary>
-        /// <param name="data">The buffer to overwrite. A null buffer is ignored.</param>
-        internal static void SecureZeroMemory(byte[]? data)
-        {
-            if (data is null)
-            {
-                return;
-            }
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = 0;
-            }
-
-            // Barrier stops the loop above being optimised away as a dead store.
-            Thread.MemoryBarrier();
-        }
     }
 }

@@ -13,6 +13,7 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
+using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Foundation;
 
@@ -759,6 +760,7 @@ namespace PSADT.ClientServer
             byte[] request = new byte[payloadBytes.Length + 1];
             request[0] = (byte)command;
             payloadBytes.CopyTo(request.AsSpan(1));
+            CryptographicUtilities.SecureZeroMemory(payloadBytes);
             try
             {
                 await _ioEncryption.WriteEncryptedAsync(_outputServer, request).ConfigureAwait(false);
@@ -766,6 +768,10 @@ namespace PSADT.ClientServer
             catch (Exception ex)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(request);
             }
             return await ReadResponseAsync<TResult>().ConfigureAwait(false);
         }
@@ -794,10 +800,17 @@ namespace PSADT.ClientServer
                 throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }
 
-            // Deserialize based on the success marker.
-            return response[0] != (byte)ResponseMarker.Success
-                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
-                : DataSerialization.DeserializeFromBytes<T>(response, 1);
+            // Deserialize based on the success marker, overwriting the decrypted response once it has been read.
+            try
+            {
+                return response[0] != (byte)ResponseMarker.Success
+                    ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
+                    : DataSerialization.DeserializeFromBytes<T>(response, 1);
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(response);
+            }
         }
 
         /// <summary>
@@ -831,16 +844,26 @@ namespace PSADT.ClientServer
         /// the stream either way; gating the read on there being a session would leave the stream undrained and
         /// eventually block the client on it. Separated from the loop that calls it so that ordering can be
         /// asserted, which it cannot be from outside.</remarks>
-        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream.</param>
+        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream. The frame it returns
+        /// is overwritten once read, so it must hand back a buffer it owns and no caller may reuse one.</param>
         /// <returns>A task that completes once the frame has been read and, where there was somewhere to put it,
         /// written.</returns>
         internal static async Task ReadLogFrameAsync(Func<ValueTask<byte[]>> readFrameAsync)
         {
-            if (await readFrameAsync().ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
+            // The read stays first and unconditional, for the reason given above.
+            byte[] decrypted = await readFrameAsync().ConfigureAwait(false);
+            try
             {
-                // Deserialize the log message DTO.
-                LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
-                ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
+                if (decrypted is { Length: > 0 } && ModuleDatabase.IsDeploymentSessionActive())
+                {
+                    // Deserialize the log message DTO.
+                    LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
+                    ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
+                }
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(decrypted);
             }
         }
 
