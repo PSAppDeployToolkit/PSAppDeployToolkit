@@ -390,7 +390,7 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (!$_.BaseType.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
+                if (![PSAppDeployToolkit.Foundation.DeploymentSession].IsAssignableFrom($_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
                 }
