@@ -120,9 +120,9 @@ function Show-ADTInstallationWelcome
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        PSADT.UserInterface.DialogResults.CloseAppsDialogResult
 
-        This function does not return any output.
+        When `-PassThru` is specified, returns a `CloseAppsDialogResult` indicating the user's choice (for example: `Timeout`, `Defer`, or continue/close action) so callers can make follow-up decisions.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel
@@ -179,6 +179,7 @@ function Show-ADTInstallationWelcome
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Interactive, with no modifying options.')]
+    [OutputType([PSADT.UserInterface.DialogResults.CloseAppsDialogResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
