@@ -222,7 +222,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Establish conditions for whether to go the client/server route, or standalone.
-    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType)
+    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or [PSADT.UserInterface.DialogType]::SecureInputDialog.Equals($DialogType)
     $canUseClientServer = !$PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess') -and !$NoWait -and (((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser)) -or ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User)))
 
     # Go into client/server mode if a session is active and we're not asked to wait.
@@ -437,11 +437,6 @@ function Private:Invoke-ADTClientServerOperation
                     RestartDialog
                     {
                         [System.String]
-                        break
-                    }
-                    SecureInputDialog
-                    {
-                        [PSADT.UserInterface.DialogResults.SecureInputDialogResult]
                         break
                     }
                     default

@@ -682,10 +682,9 @@ namespace PSADT.ClientServer
                         DialogType.DialogBox => await DialogManager.ShowDialogBoxAsync(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.HelpConsole => await DialogManager.ShowHelpConsoleAsync(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.InputDialog => await DialogManager.ShowInputDialogAsync(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.SecureInputDialog => await DialogManager.ShowSecureInputDialogAsync(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.ListSelectionDialog => await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DeserializeString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                         DialogType.RestartDialog => await DialogManager.ShowRestartDialogAsync(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                        DialogType.CloseAppsDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported by the current implementation.", ClientExitCode.UnsupportedDialog),
+                        DialogType.SecureInputDialog or DialogType.CloseAppsDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported by the current implementation.", ClientExitCode.UnsupportedDialog),
                     }));
                     return (int)ClientExitCode.Success;
                 }

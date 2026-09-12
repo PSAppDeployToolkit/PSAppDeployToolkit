@@ -106,6 +106,43 @@ namespace PSADT.UserInterface.Interfaces.Tests
         }
 
         /// <summary>
+        /// Verifies that the plain input dialog refuses options asking for masked typing.
+        /// </summary>
+        /// <remarks>
+        /// Which result an input dialog reports is decided by its options, and which one the caller expects is
+        /// decided by the method it called. Nothing holds the two together, so a mismatch would get as far as
+        /// the user answering the dialog and then fail as a cast, in the client, a process away from whoever
+        /// asked for it. Refusing it before anything is shown turns that into an argument the caller can see.
+        /// </remarks>
+        [Fact]
+        public void ShowInputDialog_RefusesOptionsAskingForMaskedTyping()
+        {
+            // Arrange
+            Hashtable table = SampleOptions.InputDialog(); table["SecureInput"] = true;
+            InputDialogOptions options = new(table);
+
+            // Act & Assert
+            ArgumentException thrown = Assert.Throws<ArgumentException>(Calling(() => DialogManager.ShowInputDialogAsync(DialogStyle.Fluent, options).AsTask()));
+            Assert.Contains("ShowSecureInputDialogAsync", thrown.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that the masked input dialog refuses options that do not ask for masked typing.
+        /// </summary>
+        /// <remarks>The same mismatch from the other side, and the one a caller reaches by accident: the flag
+        /// is absent from an options dictionary rather than wrongly set, and defaults to false.</remarks>
+        [Fact]
+        public void ShowSecureInputDialog_RefusesOptionsThatDoNotAskForIt()
+        {
+            // Arrange
+            InputDialogOptions options = new(SampleOptions.InputDialog());
+
+            // Act & Assert
+            ArgumentException thrown = Assert.Throws<ArgumentException>(Calling(() => DialogManager.ShowSecureInputDialogAsync(DialogStyle.Fluent, options).AsTask()));
+            Assert.Contains("SecureInput", thrown.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that showing a balloon tip with no tray icon behind it is refused.
         /// </summary>
         /// <remarks>

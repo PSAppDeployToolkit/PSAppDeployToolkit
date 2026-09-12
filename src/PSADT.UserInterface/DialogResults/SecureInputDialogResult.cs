@@ -73,9 +73,17 @@ namespace PSADT.UserInterface.DialogResults
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (_stagedText is not null)
+            if (_stagedText is null)
             {
+                return;
+            }
+            try
+            {
+                // Rebuilding refuses a buffer holding a partial character, so the discard cannot wait on it.
                 Text = SecureStringUtilities.FromUtf16Bytes(_stagedText);
+            }
+            finally
+            {
                 CryptographicUtilities.SecureZeroMemory(_stagedText);
                 _stagedText = null;
             }
@@ -84,25 +92,32 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Determines whether the specified object is equal to the current instance.
         /// </summary>
-        /// <remarks>Compares the Result only. <see cref="Text"/> is deliberately excluded: comparing two masked
-        /// values would mean unprotecting both, so two results differing only in what was typed compare as equal.
-        /// <see cref="InputDialogResult"/> does compare its text, because a plain answer costs nothing to read.</remarks>
+        /// <remarks>Compares the Result, and whether there is an answer at all. What the answer holds is not
+        /// compared, because reading two masked values to tell them apart would mean unprotecting both; two
+        /// results differing only in what was typed are equal.
+        /// <para>
+        /// Whether an answer is present has to count, because the module tests a result against
+        /// <see cref="DefaultResult"/> to decide a dialog timed out and may end the deployment on the strength of
+        /// it. Button captions are free text, so a deployment may label one "Timeout" - and on Result alone, a
+        /// user who typed a password and pressed it would be read as having answered nothing at all.
+        /// </para></remarks>
         /// <param name="obj">The object to compare with the current instance.</param>
-        /// <returns>true if the specified object is a SecureInputDialogResult with an equal Result value; otherwise, false.</returns>
+        /// <returns>true if the specified object is a SecureInputDialogResult with an equal Result value and the same presence or absence of an answer; otherwise, false.</returns>
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return obj is SecureInputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal);
+            return obj is SecureInputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && (Text is null) == (other.Text is null);
         }
 
         /// <summary>
         /// Returns a hash code for the current instance.
         /// </summary>
-        /// <remarks><see cref="Text"/> is excluded for the reason given on <see cref="Equals(object?)"/>, and
-        /// because feeding a secret to a non-cryptographic hash puts it somewhere it does not belong.</remarks>
-        /// <returns>A hash code derived from Result.</returns>
+        /// <remarks>Combines the same two values <see cref="Equals(object?)"/> compares. What the answer holds is
+        /// excluded for the reason given there, and because feeding a secret to a non-cryptographic hash puts it
+        /// somewhere it does not belong; whether there is one is already plain from the property.</remarks>
+        /// <returns>A hash code combining Result and whether there is an answer.</returns>
         public override int GetHashCode()
         {
-            return Result.GetHashCode(StringComparison.Ordinal);
+            return CryptographicUtilities.GenerateHashCode(Result, Text is not null);
         }
 
         /// <summary>

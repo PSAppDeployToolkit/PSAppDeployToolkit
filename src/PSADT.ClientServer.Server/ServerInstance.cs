@@ -233,9 +233,15 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> asks for masked input, which reports a different result type.</exception>
         public ValueTask<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            return ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+            // The dialog reports its result type from the options, and this reads it back from the method that was
+            // called. Disagreeing would surface a process away as a failed cast, so it is refused here instead.
+            ArgumentNullException.ThrowIfNull(options); return options.SecureInput
+                ? throw new ArgumentException("Masked input must be shown with ShowSecureInputDialogAsync, which reports a SecureInputDialogResult.", nameof(options))
+                : ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -248,9 +254,14 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the input dialog, such as the prompt text and button captions.</param>
         /// <returns>A <see cref="SecureInputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> does not ask for masked input, which reports a different result type.</exception>
         public ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            return ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options);
+            // As above, in the other direction.
+            ArgumentNullException.ThrowIfNull(options); return !options.SecureInput
+                ? throw new ArgumentException("Options for a masked dialog must set SecureInput; plain input is shown with ShowInputDialogAsync.", nameof(options))
+                : ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options);
         }
 
         /// <summary>

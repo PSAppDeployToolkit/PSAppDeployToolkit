@@ -143,6 +143,27 @@ namespace PSADT.UserInterface.Tests.DialogResults
         }
 
         /// <summary>
+        /// Verifies that an answered prompt is not mistaken for the timeout that shares its outcome.
+        /// </summary>
+        /// <remarks>
+        /// The module decides a dialog timed out by testing the result against
+        /// <see cref="SecureInputDialogResult.DefaultResult"/>, and ends the deployment on the strength of it.
+        /// Button captions are free text, so a deployment may label one "Timeout" - and on the outcome alone, a
+        /// user who typed a password and pressed that button would be read as having never answered, and have
+        /// the session closed under them. Comparing whether there is an answer separates the two without
+        /// reading either.
+        /// </remarks>
+        [Fact]
+        public void Equality_DistinguishesAnAnsweredPromptFromTheTimeout()
+        {
+            // Arrange
+            using SecureString secret = Protect("a secret");
+
+            // Assert
+            Assert.NotEqual(SecureInputDialogResult.DefaultResult, new SecureInputDialogResult("Timeout", secret));
+        }
+
+        /// <summary>
         /// Verifies that a masked result is not equal to the plain sibling reporting the same button.
         /// </summary>
         /// <remarks>

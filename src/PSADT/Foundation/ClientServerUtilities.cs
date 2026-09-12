@@ -58,28 +58,29 @@ namespace PSADT.Foundation
             CallerIsClientServerExecutable = CallerIsClientServerClient || CallerIsClientServerClientLauncher;
 
             // Determine whether the client/server executables are on a network path or not.
-            ClientServerOnNetworkPath = GetPathIsNetworked(ClientServerDirectory);
+            ClientServerOnNetworkPath = GetPathIsNetworked(ClientServerDirectory.FullName);
         }
 
         /// <summary>
-        /// Determines whether the specified directory resides on a network location.
+        /// Determines whether the specified path resides on a network location.
         /// </summary>
-        /// <remarks>A mapped drive is a network location but does not answer to <see cref="Uri.IsUnc"/>, which knows only
-        /// the <c language="text">\\server\share</c> form, so the drive behind the path is asked as well. A root that names no drive at all
-        /// cannot be a mapped one, and is reported as local rather than allowed to fault this type's initialisation.</remarks>
-        /// <param name="path">The directory to test.</param>
-        /// <returns><see langword="true"/> if the directory resides on a network location; otherwise, <see langword="false"/>.</returns>
-        private static bool GetPathIsNetworked(DirectoryInfo path)
+        /// <remarks>A share is visible only in the shape of the path, and a mapped drive only in the drive behind it, so both
+        /// are asked. Either question can refuse a path outright rather than answering it, as an extended-length path is not a
+        /// <see cref="Uri"/> and its root names no drive; such a path cannot be a mapped drive, and is reported as local rather
+        /// than allowed to fault this type's initialisation.</remarks>
+        /// <param name="path">The fully qualified path to test.</param>
+        /// <returns><see langword="true"/> if the path resides on a network location; otherwise, <see langword="false"/>.</returns>
+        internal static bool GetPathIsNetworked(string path)
         {
-            if (new Uri(path.FullName).IsUnc)
-            {
-                return true;
-            }
             try
             {
-                return Path.GetPathRoot(path.FullName) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network;
+                return new Uri(path).IsUnc || (Path.GetPathRoot(path) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network);
             }
             catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (FormatException)
             {
                 return false;
             }

@@ -547,6 +547,14 @@ function Show-ADTInstallationPrompt
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
+        finally
+        {
+            # Close the client/server process if we're running without a session.
+            if (!$adtSession -and $Script:ADT.ClientServerProcess)
+            {
+                Close-ADTClientServerProcess
+            }
+        }
     }
 
     end

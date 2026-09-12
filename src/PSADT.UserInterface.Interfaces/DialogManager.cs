@@ -260,27 +260,36 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
         /// <exception cref="NotSupportedException">Thrown if the caller is using ServiceUI, as input dialogs are not supported in that context.</exception>
-        internal static async ValueTask<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> asks for masked input, which reports a different result type.</exception>
+        internal static ValueTask<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            if (AccountUtilities.CallerUsingServiceUI)
-            {
-                throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
-            }
-            if (options.MinimizeWindows)
-            {
-                DesktopUtilities.MinimizeAllWindows();
-            }
-            try
-            {
-                return await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options).ConfigureAwait(false);
-            }
-            finally
+            // Internal implementation method.
+            static async ValueTask<InputDialogResult> ShowInputDialogImplAsync(DialogStyle dialogStyle, InputDialogOptions options)
             {
                 if (options.MinimizeWindows)
                 {
-                    DesktopUtilities.RestoreAllWindows();
+                    DesktopUtilities.MinimizeAllWindows();
+                }
+                try
+                {
+                    return await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (options.MinimizeWindows)
+                    {
+                        DesktopUtilities.RestoreAllWindows();
+                    }
                 }
             }
+
+            // Refuse a mismatch before anything reaches the screen, and before the task exists.
+            ArgumentNullException.ThrowIfNull(options); return options.SecureInput
+                ? throw new ArgumentException("Masked input must be shown with ShowSecureInputDialogAsync, which reports a SecureInputDialogResult.", nameof(options))
+                : AccountUtilities.CallerUsingServiceUI
+                ? throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.")
+                : ShowInputDialogImplAsync(dialogStyle, options);
         }
 
         /// <summary>
@@ -292,27 +301,36 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="options">The options for configuring the input dialog, such as the prompt text and button captions.</param>
         /// <returns>A <see cref="SecureInputDialogResult"/> object containing the user's input and the dialog result.</returns>
         /// <exception cref="NotSupportedException">Thrown if the caller is using ServiceUI, as input dialogs are not supported in that context.</exception>
-        internal static async ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> does not ask for masked input, which reports a different result type.</exception>
+        internal static ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            if (AccountUtilities.CallerUsingServiceUI)
-            {
-                throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
-            }
-            if (options.MinimizeWindows)
-            {
-                DesktopUtilities.MinimizeAllWindows();
-            }
-            try
-            {
-                return await ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options).ConfigureAwait(false);
-            }
-            finally
+            // Internal implementation method.
+            static async ValueTask<SecureInputDialogResult> ShowSecureInputDialogImplAsync(DialogStyle dialogStyle, InputDialogOptions options)
             {
                 if (options.MinimizeWindows)
                 {
-                    DesktopUtilities.RestoreAllWindows();
+                    DesktopUtilities.MinimizeAllWindows();
+                }
+                try
+                {
+                    return await ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (options.MinimizeWindows)
+                    {
+                        DesktopUtilities.RestoreAllWindows();
+                    }
                 }
             }
+
+            // As above, in the other direction.
+            ArgumentNullException.ThrowIfNull(options); return !options.SecureInput
+                ? throw new ArgumentException("Options for a masked dialog must set SecureInput; plain input is shown with ShowInputDialogAsync.", nameof(options))
+                : AccountUtilities.CallerUsingServiceUI
+                ? throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.")
+                : ShowSecureInputDialogImplAsync(dialogStyle, options);
         }
 
         /// <summary>
