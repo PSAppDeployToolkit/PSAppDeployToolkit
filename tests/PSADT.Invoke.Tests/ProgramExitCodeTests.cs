@@ -65,13 +65,12 @@ namespace PSADT.Invoke.Tests
             File.WriteAllText(scriptPath, GetExitScript(expectedExitCode), Encoding.UTF8);
 
             using Process process = StartInvoker(invokerPath, invocationMode, scriptPath);
-            bool completed = process.WaitForExit(ProcessTimeoutMilliseconds);
-            if (!completed)
+            if (!process.WaitForExit(ProcessTimeoutMilliseconds))
             {
-                KillProcessTree(process.Id);
+                string survivors = KillProcessTree(process.Id);
+                Assert.Fail($"[{invocationMode}] did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
             }
 
-            Assert.True(completed);
             Assert.Equal(expectedExitCode, process.ExitCode);
         }
 
@@ -125,8 +124,12 @@ namespace PSADT.Invoke.Tests
         /// entireProcessTree overload, so the walk is taskkill's.
         /// </remarks>
         /// <param name="processId">The identifier of the process at the root of the tree.</param>
+        /// <returns>
+        /// What taskkill reported, which names every process it found. A timeout otherwise says only that the
+        /// launcher did not exit, where the useful question is whether it ever reached starting PowerShell.
+        /// </returns>
         /// <exception cref="InvalidOperationException">Thrown if taskkill cannot be started.</exception>
-        private static void KillProcessTree(int processId)
+        private static string KillProcessTree(int processId)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -138,8 +141,26 @@ namespace PSADT.Invoke.Tests
                 UseShellExecute = false,
                 WindowStyle = ProcessWindowStyle.Hidden,
             };
+            StringBuilder output = new();
+            void AppendLine(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _ = output.AppendLine(e.Data);
+                }
+            }
+
             using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start taskkill.exe.");
-            _ = process.WaitForExit(ProcessTimeoutMilliseconds);
+            process.ErrorDataReceived += AppendLine;
+            process.OutputDataReceived += AppendLine;
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            if (process.WaitForExit(ProcessTimeoutMilliseconds))
+            {
+                // The overload taking a timeout returns before the redirected streams have finished.
+                process.WaitForExit();
+            }
+            return output.ToString().Trim();
         }
 
         private static string GetExitScript(int exitCode)
