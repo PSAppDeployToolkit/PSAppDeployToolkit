@@ -109,6 +109,81 @@ Describe 'Import-ADTConfig' {
         }
     }
 
+    Context 'Path redirection' {
+        It 'Leaves the redirection on admin rights by default' {
+            # The mode has to be opt-in, since turning it on moves an administrator's deferral history to HKCU.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                (Import-ADTConfig -BaseDirectory $null).Toolkit.PathsBasedOnSystemContext | Should -BeFalse
+            }
+        }
+
+        It 'Redirects every path on <Decider> when PathsBasedOnSystemContext is <Mode>' -ForEach @(
+            @{ Mode = $false; Decider = 'IsAdmin' }
+            @{ Mode = $true; Decider = 'IsLocalSystemAccount' }
+        ) {
+            # All five redirections move as one. A deployment logging to the user's path while its deferral history
+            # stayed machine-wide would be writing half its state in each place.
+            # Asserted as an equivalence rather than for one case, so it holds whatever account the tests run under.
+            $dir = "$TestDrive\Redirect$Mode"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value @"
+@{
+    Toolkit = @{
+        PathsBasedOnSystemContext = `$$Mode
+        TempPath = 'C:\Owned\Temp'
+        TempPathNoAdminRights = 'C:\Redirected\Temp'
+        RegPath = 'HKLM:\Owned'
+        RegPathNoAdminRights = 'HKLM:\Redirected'
+        LogPath = 'C:\Owned\Logs'
+        LogPathNoAdminRights = 'C:\Redirected\Logs'
+        CachePath = 'C:\Owned\Cache'
+        CachePathNoAdminRights = 'C:\Redirected\Cache'
+    }
+    MSI = @{
+        LogPath = 'C:\Owned\MsiLogs'
+        LogPathNoAdminRights = 'C:\Redirected\MsiLogs'
+    }
+}
+"@
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir; Decider = $Decider } {
+                $config = Import-ADTConfig -BaseDirectory $Dir
+                $expected = if ((Get-ADTEnvironmentTable).$Decider)
+                {
+                    'Owned'
+                }
+                else
+                {
+                    'Redirected'
+                }
+                $config.Toolkit.TempPath | Should -BeLike "C:\$expected\Temp\*"
+                $config.Toolkit.RegPath | Should -BeExactly "HKLM:\$expected"
+                $config.Toolkit.LogPath | Should -BeExactly "C:\$expected\Logs"
+                $config.Toolkit.CachePath | Should -BeExactly "C:\$expected\Cache"
+                $config.MSI.LogPath | Should -BeExactly "C:\$expected\MsiLogs"
+            }
+        }
+
+        It 'Keeps a configured path when its counterpart is unset' {
+            # MSI.LogPathNoAdminRights ships as null, so each redirection has to be conditional on its own
+            # counterpart rather than on the mode alone. Holds under any account, as neither branch redirects here.
+            $dir = "$TestDrive\RedirectUnset"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value @'
+@{
+    Toolkit = @{
+        PathsBasedOnSystemContext = $true
+    }
+    MSI = @{
+        LogPath = 'C:\Owned\MsiLogs'
+    }
+}
+'@
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
+                (Import-ADTConfig -BaseDirectory $Dir).MSI.LogPath | Should -BeExactly 'C:\Owned\MsiLogs'
+            }
+        }
+    }
+
     Context 'Input Validation' {
         It 'Refuses an interval of <Value>' -ForEach @(
             @{ Value = 0 }

@@ -40,7 +40,7 @@ function Show-ADTHelpConsole
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
     #>
 
     # Bypass if no one's logged onto the device.
@@ -70,7 +70,7 @@ function Show-ADTHelpConsole
                     $help = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
                     foreach ($exportedCommand in $_.ExportedCommands.Keys)
                     {
-                        $help.Add($exportedCommand, [System.String]::Join([System.Environment]::NewLine, ((Get-Help -Name $exportedCommand -Full | Out-String -Width ([System.Int16]::MaxValue) -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::Value) + [System.Environment]::NewLine)
+                        $help.Add($exportedCommand, [System.String]::Join([System.Environment]::NewLine, ((Get-Help -Name $exportedCommand -Full | Out-String -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::Value) + [System.Environment]::NewLine)
                     }
 
                     # Add the dictionary of commands and their help to the collector.

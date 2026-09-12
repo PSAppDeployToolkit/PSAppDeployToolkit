@@ -82,7 +82,7 @@ function Remove-ADTRegistryKey
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTRegistryKey
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTRegistryKey.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Remove-ADTRegistryKey.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -120,9 +120,9 @@ function Show-ADTInstallationWelcome
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        PSADT.UserInterface.DialogResults.CloseAppsDialogResult
 
-        This function does not return any output.
+        When `-PassThru` is specified, returns a `CloseAppsDialogResult` indicating the user's choice (for example: `Timeout`, `Defer`, or continue/close action) so callers can make follow-up decisions.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel
@@ -175,10 +175,11 @@ function Show-ADTInstallationWelcome
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationWelcome.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationWelcome.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Interactive, with no modifying options.')]
+    [OutputType([PSADT.UserInterface.DialogResults.CloseAppsDialogResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
@@ -837,6 +838,19 @@ function Show-ADTInstallationWelcome
             Retries = 0
         }
 
+        # Throw if we can't check the disk space (i.e. requested but there's no session).
+        if (($CheckDiskSpace -or $PSBoundParameters.ContainsKey('RequiredDiskSpace')) -and !$adtSession)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The [-CheckDiskSpace] parameter is only valid when a deployment session is active.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'CheckDiskSpaceWithNoActiveSession'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please review your deployment and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
         # Set up DeploymentType if not specified.
         $DeploymentType = if (!$adtSession)
         {
@@ -986,7 +1000,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check disk space requirements if specified
-                if ($adtSession -and $CheckDiskSpace)
+                if ($CheckDiskSpace -or $PSBoundParameters.ContainsKey('RequiredDiskSpace'))
                 {
                     if (!$PSBoundParameters.ContainsKey('RequiredDiskSpace') -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }) -and (Get-ChildItem -LiteralPath $scriptDir -Force -ErrorAction Ignore))
                     {
@@ -1161,16 +1175,13 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('DialogAllowMinimize', !!$AllowMinimize)
                     }
-                    if ($CustomMessage)
+                    if ($PSBoundParameters.ContainsKey('CustomMessageText'))
                     {
-                        if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
-                        {
-                            $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
-                        }
-                        else
-                        {
-                            $dialogOptions.Add('CustomMessageText', $CustomMessageText)
-                        }
+                        $dialogOptions.Add('CustomMessageText', $CustomMessageText)
+                    }
+                    elseif ($CustomMessage)
+                    {
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
                     }
                     if ($null -ne $CloseProcesses)
                     {

@@ -42,7 +42,7 @@ function Get-ADTPresentationSettingsEnabledUsers
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPresentationSettingsEnabledUsers
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTPresentationSettingsEnabledUsers.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTPresentationSettingsEnabledUsers.ps1
     #>
 
     [CmdletBinding()]

@@ -13,6 +13,7 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
+using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Foundation;
 
@@ -232,9 +233,35 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> asks for masked input, which reports a different result type.</exception>
         public ValueTask<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            return ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+            // The dialog reports its result type from the options, and this reads it back from the method that was
+            // called. Disagreeing would surface a process away as a failed cast, so it is refused here instead.
+            ArgumentNullException.ThrowIfNull(options); return options.SecureInput
+                ? throw new ArgumentException("Masked input must be shown with ShowSecureInputDialogAsync, which reports a SecureInputDialogResult.", nameof(options))
+                : ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+        }
+
+        /// <summary>
+        /// Displays an input dialog whose typing is masked, and returns the result of the interaction.
+        /// </summary>
+        /// <remarks>Shares its dialog and its options with <see cref="ShowInputDialogAsync"/>; only the result type
+        /// differs, so that the answer comes back as a <see cref="System.Security.SecureString"/> rather than as a
+        /// string. The value crosses the channel as unprotected UTF-16 under the channel's own encryption, because a
+        /// <see cref="System.Security.SecureString"/> cannot cross a process boundary.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the input dialog, such as the prompt text and button captions.</param>
+        /// <returns>A <see cref="SecureInputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="options"/> does not ask for masked input, which reports a different result type.</exception>
+        public ValueTask<SecureInputDialogResult> ShowSecureInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        {
+            // As above, in the other direction.
+            ArgumentNullException.ThrowIfNull(options); return !options.SecureInput
+                ? throw new ArgumentException("Options for a masked dialog must set SecureInput; plain input is shown with ShowInputDialogAsync.", nameof(options))
+                : ShowModalDialogAsync<SecureInputDialogResult>(DialogType.SecureInputDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -744,6 +771,7 @@ namespace PSADT.ClientServer
             byte[] request = new byte[payloadBytes.Length + 1];
             request[0] = (byte)command;
             payloadBytes.CopyTo(request.AsSpan(1));
+            CryptographicUtilities.SecureZeroMemory(payloadBytes);
             try
             {
                 await _ioEncryption.WriteEncryptedAsync(_outputServer, request).ConfigureAwait(false);
@@ -751,6 +779,10 @@ namespace PSADT.ClientServer
             catch (Exception ex)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(request);
             }
             return await ReadResponseAsync<TResult>().ConfigureAwait(false);
         }
@@ -779,10 +811,17 @@ namespace PSADT.ClientServer
                 throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }
 
-            // Deserialize based on the success marker.
-            return response[0] != (byte)ResponseMarker.Success
-                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
-                : DataSerialization.DeserializeFromBytes<T>(response, 1);
+            // Deserialize based on the success marker, overwriting the decrypted response once it has been read.
+            try
+            {
+                return response[0] != (byte)ResponseMarker.Success
+                    ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
+                    : DataSerialization.DeserializeFromBytes<T>(response, 1);
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(response);
+            }
         }
 
         /// <summary>
@@ -816,16 +855,26 @@ namespace PSADT.ClientServer
         /// the stream either way; gating the read on there being a session would leave the stream undrained and
         /// eventually block the client on it. Separated from the loop that calls it so that ordering can be
         /// asserted, which it cannot be from outside.</remarks>
-        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream.</param>
+        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream. The frame it returns
+        /// is overwritten once read, so it must hand back a buffer it owns and no caller may reuse one.</param>
         /// <returns>A task that completes once the frame has been read and, where there was somewhere to put it,
         /// written.</returns>
         internal static async Task ReadLogFrameAsync(Func<ValueTask<byte[]>> readFrameAsync)
         {
-            if (await readFrameAsync().ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
+            // The read stays first and unconditional, for the reason given above.
+            byte[] decrypted = await readFrameAsync().ConfigureAwait(false);
+            try
             {
-                // Deserialize the log message DTO.
-                LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
-                ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
+                if (decrypted is { Length: > 0 } && ModuleDatabase.IsDeploymentSessionActive())
+                {
+                    // Deserialize the log message DTO.
+                    LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
+                    ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
+                }
+            }
+            finally
+            {
+                CryptographicUtilities.SecureZeroMemory(decrypted);
             }
         }
 

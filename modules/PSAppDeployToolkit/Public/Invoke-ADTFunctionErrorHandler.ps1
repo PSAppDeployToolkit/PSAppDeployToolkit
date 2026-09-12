@@ -69,7 +69,7 @@ function Invoke-ADTFunctionErrorHandler
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTFunctionErrorHandler
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Invoke-ADTFunctionErrorHandler.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Invoke-ADTFunctionErrorHandler.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]

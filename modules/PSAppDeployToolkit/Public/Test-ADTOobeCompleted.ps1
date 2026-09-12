@@ -40,7 +40,7 @@ function Test-ADTOobeCompleted
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTOobeCompleted
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTOobeCompleted.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTOobeCompleted.ps1
     #>
 
     [CmdletBinding()]

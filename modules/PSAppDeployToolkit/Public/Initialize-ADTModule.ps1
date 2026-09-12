@@ -46,7 +46,7 @@ function Initialize-ADTModule
         https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModule
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Initialize-ADTModule.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Initialize-ADTModule.ps1
     #>
 
     [CmdletBinding()]
@@ -141,6 +141,8 @@ function Initialize-ADTModule
                 $Script:ADT.Language = Get-ADTStringLanguage
                 $Script:ADT.Strings = Import-ADTStringTable -BaseDirectory $Script:ADT.Directories.Strings -UICulture $Script:ADT.Language
                 $Script:ADT.RestartOnExitCountdown = $null
+                $Script:ADT.ShutdownReasonText = $null
+                $Script:ADT.ShutdownNoForceCloseApps = $false
                 $Script:ADT.LastExitCode = 0
 
                 # Calculate how long this process took before finishing.

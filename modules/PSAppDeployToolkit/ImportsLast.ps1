@@ -108,6 +108,9 @@ try
                                                 # This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).
                                                 LogHostOutputToStdStreams = $false
 
+                                                # Specify that the "NoAdminRights" paths should be used whenever the caller isn't the LocalSystem account, rather than whenever the caller isn't an admin. This keeps an administrator's deployment out of the machine-wide paths that LocalSystem writes to, at the cost of its deferral history no longer being shared with LocalSystem's.
+                                                PathsBasedOnSystemContext = $false
+
                                                 # Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.
                                                 RegPath = 'HKLM:\SOFTWARE'
 
@@ -4767,6 +4770,7 @@ try
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ShutdownReasonText = $null
+            ShutdownNoForceCloseApps = $false
             ClientServerProcess = $null
             Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
             Environment = $null

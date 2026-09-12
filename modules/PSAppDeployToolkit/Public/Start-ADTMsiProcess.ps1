@@ -202,7 +202,7 @@ function Start-ADTMsiProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTMsiProcess.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Start-ADTMsiProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -729,12 +729,13 @@ function Start-ADTMsiProcess
                         $logPath += "_$Action"
                     }
 
-                    # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                    # Append the username to the log file name, either the user the MSI runs as, or the caller when it
+                    # doesn't own the log path. This is the same rule DeploymentSession names its own log file by.
                     if ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)"
                     }
-                    elseif ((![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -and [System.Environment]::UserInteractive) -or !(Test-ADTCallerIsAdmin))
+                    elseif (!(Test-ADTCallerOwnsConfiguredPaths))
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))"
                     }

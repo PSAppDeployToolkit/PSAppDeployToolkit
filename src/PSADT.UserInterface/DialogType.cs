@@ -48,5 +48,12 @@
         /// Represents the RestartDialog type.
         /// </summary>
         RestartDialog = 7,
+
+        /// <summary>
+        /// Represents the InputDialog type when its typing is masked.
+        /// </summary>
+        /// <remarks>Shares its dialog and its options with <see cref="InputDialog"/>, and exists to tell both ends
+        /// of the client/server channel to expect a <see cref="DialogResults.SecureInputDialogResult"/>.</remarks>
+        SecureInputDialog = 8,
     }
 }

@@ -53,19 +53,7 @@ namespace PSADT.ClientServer.Server.Tests
         public void EveryPayloadMember_IsSaidToBeCarriedOrIgnored()
         {
             // Arrange
-            List<string> undecided = [];
-
-            // Act
-            foreach (Type payload in Payloads)
-            {
-                foreach (MemberInfo member in SerializableMembers(payload))
-                {
-                    if (!Attribute.IsDefined(member, typeof(DataMemberAttribute)) && !Attribute.IsDefined(member, typeof(IgnoreDataMemberAttribute)))
-                    {
-                        undecided.Add($"{payload.Name}.{member.Name}");
-                    }
-                }
-            }
+            List<string> undecided = [.. Payloads.SelectMany(static payload => SerializableMembers(payload).Where(static member => !Attribute.IsDefined(member, typeof(DataMemberAttribute)) && !Attribute.IsDefined(member, typeof(IgnoreDataMemberAttribute))).Select(member => $"{payload.Name}.{member.Name}"))];
 
             // Assert
             Assert.True(undecided.Count is 0, $"Neither carried nor ignored: {string.Join(", ", undecided)}.");

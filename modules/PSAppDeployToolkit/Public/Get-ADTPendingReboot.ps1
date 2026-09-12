@@ -65,7 +65,7 @@ function Get-ADTPendingReboot
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPendingReboot
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTPendingReboot.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTPendingReboot.ps1
     #>
 
     [CmdletBinding()]
@@ -141,7 +141,7 @@ function Get-ADTPendingReboot
                     $PendingFileRenameOperations,
                     $PendRebootErrorMsg.AsReadOnly()
                 )
-                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String -Width ([System.Int16]::MaxValue))"
+                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String)"
                 return $PendingRebootInfo
             }
             catch

@@ -64,9 +64,9 @@
 			<string id="LogWriteToHost_Display">LogWriteToHost</string>
 			<string id="LogWriteToHost_Explain">Specify if log messages should be written to the console.</string>
 			<string id="LogHostOutputToStdStreams_Display">LogHostOutputToStdStreams</string>
-			<string id="LogHostOutputToStdStreams_Explain">Specify if console log messages should bypass PowerShell's subsystems and be sent direct to stdout/stderr.
-
-This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).</string>
+			<string id="LogHostOutputToStdStreams_Explain">Specify if console log messages should bypass PowerShell's subsystems and be sent direct to stdout/stderr. This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).</string>
+			<string id="PathsBasedOnSystemContext_Display">PathsBasedOnSystemContext</string>
+			<string id="PathsBasedOnSystemContext_Explain">Specify that the "NoAdminRights" paths should be used whenever the caller is not the LocalSystem account, rather than whenever the caller is not an admin. This keeps an administrator's deployment out of the machine-wide paths that LocalSystem writes to, at the cost of its deferral history no longer being shared with LocalSystem's.</string>
 			<string id="RegPath_Display">RegPath</string>
 			<string id="RegPath_Explain">Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.</string>
 			<string id="RegPathNoAdminRights_Display">RegPathNoAdminRights</string>

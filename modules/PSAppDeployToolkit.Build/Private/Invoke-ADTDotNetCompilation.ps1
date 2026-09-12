@@ -26,6 +26,9 @@ function Invoke-ADTDotNetCompilation
     # Initialise the module build function.
     Initialize-ADTModuleBuildFunction
     $testFileChanges = !(Test-ADTCallerIsSystem)
+
+    # dotnet.exe resolves global.json from the working directory and not the provided solution path, so anchor it to the repository.
+    Push-Location -LiteralPath $Script:ModuleConstants.Paths.Repository
     try
     {
         # Confirm whether we've got dotnet available and it's of a compatible version.
@@ -146,19 +149,10 @@ function Invoke-ADTDotNetCompilation
                     throw "Failed to build solution [$($buildItem.SolutionPath -replace '^.+\\')] with exit code [$Global:LASTEXITCODE]."
                 }
 
-                # We need to push the repository location so Microsoft.Testing.Platform can find our global.json file.
-                Push-Location -LiteralPath $Script:ModuleConstants.Paths.Repository
-                try
+                & $dotnet test --solution $buildItem.SolutionPath --configuration $buildType --no-build --no-restore --report-trx | Write-ADTDotNetOutputBuildLogEntry
+                if ($Global:LASTEXITCODE)
                 {
-                    & $dotnet test --solution $buildItem.SolutionPath --configuration $buildType --no-build --no-restore --report-trx | Write-ADTDotNetOutputBuildLogEntry
-                    if ($Global:LASTEXITCODE)
-                    {
-                        throw "Unit testing solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
-                    }
-                }
-                finally
-                {
-                    Pop-Location
+                    throw "Unit testing solution [$($buildItem.SolutionPath -replace '^.+\\')] failed with exit code [$Global:LASTEXITCODE]."
                 }
 
                 # Run any publish actions if present.
@@ -217,5 +211,9 @@ function Invoke-ADTDotNetCompilation
     {
         Complete-ADTModuleBuildFunction -ErrorRecord $_
         throw
+    }
+    finally
+    {
+        Pop-Location
     }
 }

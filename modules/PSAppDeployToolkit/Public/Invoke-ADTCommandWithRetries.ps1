@@ -79,7 +79,7 @@ function Invoke-ADTCommandWithRetries
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTCommandWithRetries
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Invoke-ADTCommandWithRetries.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Invoke-ADTCommandWithRetries.ps1
     #>
 
     [CmdletBinding()]

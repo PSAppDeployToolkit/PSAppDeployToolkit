@@ -60,10 +60,20 @@ function Invoke-ADTModuleBuild
             }
             Invoke-ADTModuleCompilation
             Export-ADTScriptTemplate
-            if ($Steps -contains 'IntegrationTests')
+        }
+        if ($Steps -contains 'IntegrationTests')
+        {
+            if (!$imported)
             {
-                Invoke-ADTPesterIntegrationTesting
+                Import-ADTDevelopmentModule
+                $imported = $true
             }
+            if ($Steps -notcontains 'Build')
+            {
+                Invoke-ADTModuleCompilation
+                Export-ADTScriptTemplate
+            }
+            Invoke-ADTPesterIntegrationTesting
         }
         Complete-ADTModuleBuild
     }

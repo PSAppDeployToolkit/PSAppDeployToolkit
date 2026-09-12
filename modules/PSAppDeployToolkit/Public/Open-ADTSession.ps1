@@ -54,8 +54,9 @@ function Open-ADTSession
 
     .PARAMETER AppProcessesToClose
         Specifies one or more processes that require closing to ensure a successful deployment. Provide either the bare process name (do not include the `.exe`), or the full path to a specific executable if you need to distinguish between two processes that share the same name (for example, two different vendors' `javaw.exe`). Wildcards (`*`) are supported in either form.
+
         Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`. The `Description` property is purely cosmetic - it does not filter or restrict which running processes are matched.
-    
+
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
@@ -178,7 +179,7 @@ function Open-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Open-ADTSession
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Open-ADTSession.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Open-ADTSession.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
@@ -373,7 +374,7 @@ function Open-ADTSession
                 }
                 if (![PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.IsMatch($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does not match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
                 }
                 return $_
             })]
@@ -389,7 +390,7 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (!$_.BaseType.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
+                if (![PSAppDeployToolkit.Foundation.DeploymentSession].IsAssignableFrom($_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
                 }

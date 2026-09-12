@@ -11,7 +11,7 @@ function Import-ADTReleaseModule
     try
     {
         # This assumes the release module has been built ahead of time.
-        Write-ADTBuildLogEntry -Message "Importing PSApppDeployToolkit release module."
+        Write-ADTBuildLogEntry -Message "Importing PSAppDeployToolkit release module."
         Import-Module -Name ([System.IO.Path]::Combine($Script:ModuleConstants.Paths.ModuleOutput, $Script:ModuleConstants.ModuleName)) -Global -Force
         Complete-ADTModuleBuildFunction
     }

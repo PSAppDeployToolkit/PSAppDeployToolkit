@@ -57,7 +57,7 @@ function Initialize-ADTModuleIfUninitialized
         https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModuleIfUninitialized
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Initialize-ADTModuleIfUninitialized.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Initialize-ADTModuleIfUninitialized.ps1
     #>
 
     [CmdletBinding()]

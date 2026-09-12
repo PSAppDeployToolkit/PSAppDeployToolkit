@@ -98,7 +98,7 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTShortcut.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTShortcut.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

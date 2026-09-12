@@ -118,13 +118,117 @@ namespace PSADT.Tests.Foundation
         }
 
         /// <summary>
-        /// Verifies that a local build directory is not mistaken for a network one, since that decides
-        /// whether the local system account's access has to be repaired before a client can be launched.
+        /// Verifies that a share is recognised as a network location, which is the case the whole
+        /// distinction exists for.
         /// </summary>
-        [Fact(Skip = SkipReason, SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
-        public void ClientServerOnUncPath_AgreesWithTheDirectoryItWasDerivedFrom()
+        /// <remarks>
+        /// Asserted against a path rather than against this machine's build, so that it holds on every
+        /// run instead of only on a run that happens to have been laid down on a share. Nothing needs to
+        /// exist at the path: a share is recognised from its shape alone.
+        /// </remarks>
+        [Fact]
+        public void GetPathIsNetworked_IsTrueForAShare()
         {
-            Assert.Equal(new Uri(ClientServerUtilities.ClientServerDirectory.FullName).IsUnc, ClientServerUtilities.ClientServerOnUncPath);
+            Assert.True(ClientServerUtilities.GetPathIsNetworked(@"\\server\share\dir"), "A share was not recognised as a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that a mapped drive is recognised as a network location, which no reading of the path
+        /// can reveal since a mapped drive is spelled exactly like a local one.
+        /// </summary>
+        /// <remarks>
+        /// Runs only where the machine has a mapped drive, since the alternative is for the test to map
+        /// one itself - a change to the machine that would outlive a run that died partway through.
+        /// </remarks>
+        [Fact]
+        public void GetPathIsNetworked_IsTrueForAMappedDrive()
+        {
+            string mappedRoot = FindRootOfType(DriveType.Network);
+            Assert.SkipUnless(mappedRoot.Length > 0, "Requires a mapped network drive on the machine.");
+            Assert.True(ClientServerUtilities.GetPathIsNetworked(mappedRoot), "A mapped drive was not recognised as a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that a fixed local drive is not mistaken for a network one, since that decides
+        /// whether a user's token can be brokered at all.
+        /// </summary>
+        [Fact]
+        public void GetPathIsNetworked_IsFalseForAFixedDrive()
+        {
+            string fixedRoot = FindRootOfType(DriveType.Fixed);
+            Assert.SkipUnless(fixedRoot.Length > 0, "Requires a fixed drive on the machine.");
+            Assert.False(ClientServerUtilities.GetPathIsNetworked(fixedRoot), "A fixed local drive was mistaken for a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that a root naming a drive the machine does not have is reported as local, rather
+        /// than faulting on a drive that cannot be asked about.
+        /// </summary>
+        [Fact]
+        public void GetPathIsNetworked_IsFalseForARootThatNamesNoDrive()
+        {
+            string unusedRoot = FindUnusedDriveRoot();
+            Assert.SkipUnless(unusedRoot.Length > 0, "Requires at least one unused drive letter.");
+            Assert.False(ClientServerUtilities.GetPathIsNetworked(unusedRoot), "A root naming no drive was reported as a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that a path neither question can parse is reported as local rather than thrown over.
+        /// </summary>
+        /// <remarks>
+        /// An extended-length path is not a <see cref="Uri"/> and its root names no drive, so both
+        /// questions refuse it. The answer is reached from a static constructor, so a path that throws
+        /// here does not fail one call: it fails the type, and everything that reads it.
+        /// </remarks>
+        [Fact]
+        public void GetPathIsNetworked_IsFalseForAPathItCannotParse()
+        {
+            Assert.False(ClientServerUtilities.GetPathIsNetworked(@"\\?\C:\Windows"), "An unparseable path was reported as a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that the answer held for this build is the one its own directory gives, tying the
+        /// value every caller reads to the classification covered above.
+        /// </summary>
+        [Fact]
+        public void ClientServerOnNetworkPath_AgreesWithTheDirectoryItWasDerivedFrom()
+        {
+            Assert.SkipUnless(TestEnvironment.ClientServerExecutablesPresent, SkipReason);
+            Assert.Equal(ClientServerUtilities.GetPathIsNetworked(ClientServerUtilities.ClientServerDirectory.FullName), ClientServerUtilities.ClientServerOnNetworkPath);
+        }
+
+        /// <summary>
+        /// Finds the root of the first drive of the given type.
+        /// </summary>
+        /// <param name="driveType">The type of drive to look for.</param>
+        /// <returns>The drive's root, or an empty string if the machine has no drive of that type.</returns>
+        private static string FindRootOfType(DriveType driveType)
+        {
+            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            {
+                if (drive.DriveType == driveType)
+                {
+                    return drive.Name;
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Finds the root of a drive letter the machine is not using.
+        /// </summary>
+        /// <returns>The unused root, or an empty string if every letter tried is in use.</returns>
+        private static string FindUnusedDriveRoot()
+        {
+            for (char letter = 'Z'; letter >= 'D'; letter--)
+            {
+                string root = $"{letter}:\\";
+                if (new DriveInfo(root).DriveType is DriveType.NoRootDirectory)
+                {
+                    return root;
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>

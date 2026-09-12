@@ -40,7 +40,7 @@ function Get-ADTEnvironmentTable
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTEnvironmentTable
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTEnvironmentTable.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTEnvironmentTable.ps1
     #>
 
     [CmdletBinding()]

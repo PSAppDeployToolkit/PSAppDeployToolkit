@@ -51,7 +51,7 @@ function Get-ADTEnvironmentVariable
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTEnvironmentVariable
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTEnvironmentVariable.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTEnvironmentVariable.ps1
     #>
 
     [CmdletBinding()]

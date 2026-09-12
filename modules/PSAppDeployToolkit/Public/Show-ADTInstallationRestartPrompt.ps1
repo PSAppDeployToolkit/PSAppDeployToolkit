@@ -34,6 +34,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER ShutdownReasonText
         Specifies the shutdown comment to provide to the underlying `shutdown.exe` call when triggering the restart.
 
+    .PARAMETER NoForceCloseApps
+        Specifies that the underlying `shutdown.exe` call should omit its `/f` switch, which is otherwise passed to force running applications closed without forewarning users. Note that an application with unsaved work can then block the restart entirely.
+
     .PARAMETER PersistPrompt
         Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
@@ -89,7 +92,7 @@ function Show-ADTInstallationRestartPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationRestartPrompt
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Countdown')]
@@ -142,6 +145,7 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
@@ -154,6 +158,11 @@ function Show-ADTInstallationRestartPrompt
                 return !!$_
             })]
         [System.String]$ShutdownReasonText,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -288,6 +297,10 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
                 }
+                if ($NoForceCloseApps)
+                {
+                    $Script:ADT.ShutdownNoForceCloseApps = $true
+                }
             }
             else
             {
@@ -307,10 +320,28 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
                 }
+                if ($NoForceCloseApps)
+                {
+                    $Script:ADT.ShutdownNoForceCloseApps = $true
+                }
             }
             else
             {
-                Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdown -NoWait
+                $icsoParams = @{
+                    User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                    SilentRestart = $true
+                    Delay = $SilentCountdown
+                    NoWait = $true
+                }
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $icsoParams.Add('ShutdownReasonText', $ShutdownReasonText)
+                }
+                if ($NoForceCloseApps)
+                {
+                    $icsoParams.Add('NoForceCloseApps', $true)
+                }
+                Invoke-ADTClientServerOperation @icsoParams
             }
             return
         }
@@ -340,6 +371,10 @@ function Show-ADTInstallationRestartPrompt
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
                     $dialogOptions.Add('ShutdownReasonText', $ShutdownReasonText)
+                }
+                if ($NoForceCloseApps)
+                {
+                    $dialogOptions.Add('NoForceCloseApps', $true)
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {

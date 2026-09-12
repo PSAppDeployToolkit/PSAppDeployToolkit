@@ -101,7 +101,7 @@ function Set-ADTActiveSetup
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTActiveSetup
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTActiveSetup.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTActiveSetup.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Create')]

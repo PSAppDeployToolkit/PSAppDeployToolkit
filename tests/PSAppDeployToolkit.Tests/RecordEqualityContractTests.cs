@@ -37,17 +37,7 @@ namespace PSAppDeployToolkit.Tests
         public void Records_DoNotHoldFieldsThatCompareByReference()
         {
             // Act
-            List<string> offenders = [];
-            foreach (Type record in RecordTypes())
-            {
-                foreach (FieldInfo instanceField in record.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-                {
-                    if (ComparesByReference(instanceField.FieldType) && !Allowed.Contains($"{record.FullName}.{instanceField.Name}"))
-                    {
-                        offenders.Add($"{record.Name}.{FieldDescription(instanceField)} is a {instanceField.FieldType.Name}, which compares by reference");
-                    }
-                }
-            }
+            List<string> offenders = [.. RecordTypes().SelectMany(static record => record.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(instanceField => ComparesByReference(instanceField.FieldType) && !Allowed.Contains($"{record.FullName}.{instanceField.Name}")).Select(instanceField => $"{record.Name}.{FieldDescription(instanceField)} is a {instanceField.FieldType.Name}, which compares by reference"))];
 
             // Assert
             Assert.True(offenders.Count is 0, $"These record members do not compare by value:{Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", offenders)}");

@@ -490,8 +490,11 @@ namespace PSAppDeployToolkit.Foundation
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
-                // Generate the log filename to use. Append the username unless running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!AccountUtilities.CallerIsAdmin ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
+                // Establish whether the caller owns the configured log path. This mirrors the redirection Import-ADTConfig performs, so that the file name matches wherever the path ended up.
+                bool callerOwnsLogPath = (bool)configToolkit["PathsBasedOnSystemContext"]! ? AccountUtilities.CallerIsLocalSystem : AccountUtilities.CallerIsAdmin;
+
+                // Generate the log filename to use. Append the username unless the caller owns the log path, since everybody else lacks the rights to modify files within it that belong to other users.
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!callerOwnsLogPath ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -1007,8 +1010,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>The exit code.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         public int Close(string? exitMessage = null)
         {
             // Throw if this object has already been disposed.

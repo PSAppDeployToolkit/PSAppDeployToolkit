@@ -149,7 +149,7 @@ function New-ADTTemplate
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTTemplate
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTTemplate.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/New-ADTTemplate.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]

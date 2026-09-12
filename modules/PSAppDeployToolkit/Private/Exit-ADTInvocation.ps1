@@ -74,14 +74,21 @@ function Private:Exit-ADTInvocation
     # Invoke a silent restart on the device if specified.
     if ($null -ne $Script:ADT.RestartOnExitCountdown)
     {
+        $icsoParams = @{
+            User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+            SilentRestart = $true
+            Delay = $Script:ADT.RestartOnExitCountdown
+            NoWait = $true
+        }
         if ($null -ne $Script:ADT.ShutdownReasonText)
         {
-            Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $Script:ADT.RestartOnExitCountdown -ShutdownReasonText $Script:ADT.ShutdownReasonText -NoWait
+            $icsoParams.Add('ShutdownReasonText', $Script:ADT.ShutdownReasonText)
         }
-        else
+        if ($Script:ADT.ShutdownNoForceCloseApps)
         {
-            Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $Script:ADT.RestartOnExitCountdown -NoWait
+            $icsoParams.Add('NoForceCloseApps', $true)
         }
+        Invoke-ADTClientServerOperation @icsoParams
     }
 
     # If a callback failed and we're in a proper console, forcibly exit the process.

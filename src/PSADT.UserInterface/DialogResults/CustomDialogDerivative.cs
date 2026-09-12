@@ -12,6 +12,7 @@ namespace PSADT.UserInterface.DialogResults
     [DataContract]
     [KnownType(typeof(InputDialogResult))]
     [KnownType(typeof(ListSelectionDialogResult))]
+    [KnownType(typeof(SecureInputDialogResult))]
     public abstract class CustomDialogDerivative : CustomDialogResult
     {
         /// <summary>

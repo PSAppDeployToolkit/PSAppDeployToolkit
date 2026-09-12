@@ -168,10 +168,13 @@ function Private:Invoke-ADTClientServerOperation
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ShutdownReasonText,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
@@ -219,7 +222,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Establish conditions for whether to go the client/server route, or standalone.
-    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType)
+    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or [PSADT.UserInterface.DialogType]::SecureInputDialog.Equals($DialogType)
     $canUseClientServer = !$PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess') -and !$NoWait -and (((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser)) -or ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User)))
 
     # Go into client/server mode if a session is active and we're not asked to wait.

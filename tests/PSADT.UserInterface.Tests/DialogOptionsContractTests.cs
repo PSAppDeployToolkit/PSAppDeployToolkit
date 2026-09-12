@@ -38,14 +38,7 @@ namespace PSADT.UserInterface.Tests
         public void EveryOptionsType_RefusesANullDictionary()
         {
             // Act
-            List<string> offenders = [];
-            foreach (Type type in OptionsTypes())
-            {
-                if (ThrownBy(type, dictionary: null) is Exception thrown and not ArgumentNullException)
-                {
-                    offenders.Add($"{type.Name} threw {thrown.GetType().Name}");
-                }
-            }
+            List<string> offenders = [.. OptionsTypes().Select(static type => (Type: type, Thrown: ThrownBy(type, dictionary: null))).Where(static item => item.Thrown is not null and not ArgumentNullException).Select(static item => $"{item.Type.Name} threw {item.Thrown!.GetType().Name}")];
 
             // Assert
             Assert.True(offenders.Count is 0, $"These types do not report a null dictionary as ArgumentNullException:{Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", offenders)}");

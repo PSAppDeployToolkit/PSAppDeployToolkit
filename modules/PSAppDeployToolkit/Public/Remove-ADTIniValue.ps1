@@ -58,7 +58,7 @@ function Remove-ADTIniValue
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniValue
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTIniValue.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Remove-ADTIniValue.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

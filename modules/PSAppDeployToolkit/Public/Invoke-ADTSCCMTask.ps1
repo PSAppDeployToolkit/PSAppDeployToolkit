@@ -50,7 +50,7 @@ function Invoke-ADTSCCMTask
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTSCCMTask
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Invoke-ADTSCCMTask.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Invoke-ADTSCCMTask.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

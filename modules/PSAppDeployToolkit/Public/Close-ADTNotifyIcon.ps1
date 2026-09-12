@@ -40,7 +40,7 @@ function Close-ADTNotifyIcon
         https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTNotifyIcon
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Close-ADTNotifyIcon.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Close-ADTNotifyIcon.ps1
     #>
 
     [CmdletBinding()]

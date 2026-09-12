@@ -77,7 +77,7 @@ function Copy-ADTContentToCache
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTContentToCache
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Copy-ADTContentToCache.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Copy-ADTContentToCache.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -147,8 +147,9 @@ function Copy-ADTContentToCache
             return
         }
 
-        # When running with admin rights, if the cache folder is a parent of LiteralPath, set the owner to Administrators group and reset any applied permissions
-        if ((Get-ADTEnvironmentTable).IsAdmin -and (Test-Path -LiteralPath $cachePath -PathType Container) -and [System.IO.Path]::GetFullPath($LiteralPath).StartsWith("$cachePath\", [System.StringComparison]::OrdinalIgnoreCase))
+        # When the caller owns the cache folder, if it is a parent of LiteralPath, set the owner to Administrators group and reset any applied permissions.
+        # This is deliberately the same test Import-ADTConfig redirects the path on, so that a cache folder within the caller's own profile is left alone.
+        if ((Test-ADTCallerOwnsConfiguredPaths) -and (Test-Path -LiteralPath $cachePath -PathType Container) -and [System.IO.Path]::GetFullPath($LiteralPath).StartsWith("$cachePath\", [System.StringComparison]::OrdinalIgnoreCase))
         {
             try
             {

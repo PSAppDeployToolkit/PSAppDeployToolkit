@@ -131,7 +131,7 @@ function Start-ADTMspProcessAsUser
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMspProcessAsUser
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTMspProcessAsUser.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Start-ADTMspProcessAsUser.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
