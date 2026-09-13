@@ -118,6 +118,33 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that an array nested inside a value that is itself structural is still compared by its
+        /// contents.
+        /// </summary>
+        /// <remarks>
+        /// A tuple has contents without being an array, so asking a value whether it is an <see cref="Array"/>
+        /// would send this one to the framework's comparison - which compares a tuple's elements with their own
+        /// default comparers, putting the array back to comparing by reference one level further down than where
+        /// this started. Asking whether it is <see cref="System.Collections.IStructuralEquatable"/> instead costs the same and takes
+        /// the tuple down the structural path, where the comparison recurses and reaches the array.
+        /// </remarks>
+        [Fact]
+        public void Default_ComparesAnArrayNestedInsideAStructuralValue()
+        {
+            // Arrange: equal contents, different arrays, wrapped in tuples and held as object
+            object first = Tuple.Create(1, new byte[] { 1, 2, 3 });
+            object second = Tuple.Create(1, new byte[] { 1, 2, 3 });
+            object other = Tuple.Create(1, new byte[] { 1, 2, 4 });
+
+            // Assert
+            Assert.True(ElementEqualityComparer<object>.Default.Equals(first, second));
+            Assert.Equal(
+                ElementEqualityComparer<object>.Default.GetHashCode(first),
+                ElementEqualityComparer<object>.Default.GetHashCode(second));
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(first, other));
+        }
+
+        /// <summary>
         /// Verifies that a type keeps a comparison it has put on <see cref="IEquatable{T}"/> alone, even when it
         /// is held under an interface and therefore on the structural path.
         /// </summary>
