@@ -102,6 +102,31 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that an array element is compared by its contents even where the element type does not say
+        /// it is an array.
+        /// </summary>
+        /// <remarks>
+        /// The comparison has to be chosen from what the declared type could hold rather than from what it is: a
+        /// byte array is still a byte array when it is declared as <see cref="object"/>, and comparing it by
+        /// reference there would be the same fault as comparing it by reference anywhere else. What made this
+        /// worth pinning is that it used to fail inconsistently - an element typed as <c language="csharp">object[]</c> was
+        /// compared by its contents, because the outer array is structural and recurses, while the same array
+        /// typed as <c language="csharp">object</c> was not.
+        /// </remarks>
+        [Fact]
+        public void Equals_ComparesArrayElementsHeldUnderAnotherType()
+        {
+            // Arrange: equal contents, different arrays, declared as something other than an array
+            EquatableList<object> first = new([new byte[] { 1, 2, 3 }]);
+            EquatableList<object> second = new([new byte[] { 1, 2, 3 }]);
+
+            // Assert
+            Assert.Equal(first, second);
+            Assert.Equal(first.GetHashCode(), second.GetHashCode());
+            Assert.NotEqual(first, new EquatableList<object>([new byte[] { 1, 2, 4 }]));
+        }
+
+        /// <summary>
         /// Verifies that a null element is held and compared rather than failing.
         /// </summary>
         [Fact]
@@ -115,6 +140,50 @@ namespace PSADT.Tests.Collections
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
             Assert.NotEqual(first, new EquatableList<string?>(["alpha", "bravo", "charlie"]));
+        }
+
+        /// <summary>
+        /// Verifies that the operators compare by the elements, and that nothing at all on either side is
+        /// answered rather than thrown on.
+        /// </summary>
+        /// <remarks>
+        /// Nothing in the library reaches for them - a record compares its fields through <see
+        /// cref="EqualityComparer{T}"/>, which calls <c language="csharp">Equals</c> - so this is the only thing holding the
+        /// operator and the method in step. Left undefined, the operator would compare references, which is
+        /// the fault this whole type exists to prevent.
+        /// </remarks>
+        [Fact]
+        public void Operators_CompareByTheElements()
+        {
+            // Arrange
+            EquatableList<string> list = new(["alpha", "bravo"]);
+            EquatableList<string> same = new(["alpha", "bravo"]);
+            EquatableList<string> different = new(["alpha", "charlie"]);
+
+            // Assert
+            AssertOperators(list, same, equal: true);
+            AssertOperators(list, different, equal: false);
+            AssertOperators(list, right: null, equal: false);
+            AssertOperators(left: null, list, equal: false);
+            AssertOperators(left: null, right: null, equal: true);
+        }
+
+        /// <summary>
+        /// Asserts what both operators make of a pair of lists.
+        /// </summary>
+        /// <remarks>
+        /// The pair is taken as parameters rather than compared where it is built, so that the operands are not
+        /// values the analysis can work out for itself. A comparison it can answer without running reads to it as
+        /// dead code, and the pairs worth asserting most here - a list against nothing at all, and nothing against
+        /// nothing - are exactly the ones it can answer.
+        /// </remarks>
+        /// <param name="left">The first list, which may be nothing at all.</param>
+        /// <param name="right">The second list, which may be nothing at all.</param>
+        /// <param name="equal">Whether the two are expected to compare equal.</param>
+        private static void AssertOperators(EquatableList<string>? left, EquatableList<string>? right, bool equal)
+        {
+            Assert.Equal(equal, left == right);
+            Assert.Equal(!equal, left != right);
         }
 
         /// <summary>

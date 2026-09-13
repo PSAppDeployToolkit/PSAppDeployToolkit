@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace PSADT.Collections
@@ -17,7 +16,10 @@ namespace PSADT.Collections
     /// generated equality picks up the entries while the type's callers see no difference.
     /// <para> Order is not part of the comparison, since two dictionaries holding the same entries describe the same
     /// thing however they were filled. Keys and values are both compared the way <see cref="ElementEqualityComparer{T}"/>
-    /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references.
+    /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references. That
+    /// cuts both ways for a key: a caller that holds on to an array it used as one and then writes to it changes what
+    /// that key hashes to, and the entry it opened is no longer reachable. Only the entries are copied in, not the
+    /// keys themselves, so a key has to be left alone once it has been handed over.
     /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
     /// Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented, so there is no member on any surface that
     /// would change it. <see cref="DataContractAttribute"/> is what allows that: the data contract serializer would
@@ -71,7 +73,26 @@ namespace PSADT.Collections
         /// <returns><see langword="true"/> if the two hold the same entries; otherwise, <see langword="false"/>.</returns>
         public bool Equals([NotNullWhen(true)] EquatableDictionary<TKey, TValue>? other)
         {
-            return ReferenceEquals(this, other) || (other is not null && _items.Count == other._items.Count && _items.All(entry => other._items.TryGetValue(entry.Key, out TValue? value) && ValueComparer.Equals(entry.Value, value)));
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            if (other is null || _items.Count != other._items.Count)
+            {
+                return false;
+            }
+
+            // Walked rather than run through a query, which would capture the other dictionary into a closure and
+            // box this one's enumerator on every comparison. The counts match, so every entry held there being held
+            // here is enough - nothing there is left over.
+            foreach (KeyValuePair<TKey, TValue> entry in _items)
+            {
+                if (!other._items.TryGetValue(entry.Key, out TValue? value) || !ValueComparer.Equals(entry.Value, value))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <inheritdoc/>
@@ -91,6 +112,30 @@ namespace PSADT.Collections
                 _hashCode = ComputeHashCode();
             }
             return _hashCode;
+        }
+
+        /// <summary>
+        /// Determines whether two dictionaries hold the same entries under the same keys.
+        /// </summary>
+        /// <remarks>Defined so that the operator cannot quietly disagree with <see cref="Equals(EquatableDictionary{TKey, TValue})"/>,
+        /// which it would if it were left comparing references as a reference type's operator does by default.</remarks>
+        /// <param name="left">The first dictionary, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second dictionary, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two hold the same entries, or both are <see langword="null"/>; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==(EquatableDictionary<TKey, TValue>? left, EquatableDictionary<TKey, TValue>? right)
+        {
+            return left is not null ? left.Equals(right) : right is null;
+        }
+
+        /// <summary>
+        /// Determines whether two dictionaries differ in their entries or in the keys they are held under.
+        /// </summary>
+        /// <param name="left">The first dictionary, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second dictionary, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two differ, or one is <see langword="null"/> and the other is not; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=(EquatableDictionary<TKey, TValue>? left, EquatableDictionary<TKey, TValue>? right)
+        {
+            return !(left == right);
         }
 
         /// <inheritdoc/>

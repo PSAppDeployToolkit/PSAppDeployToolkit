@@ -67,6 +67,30 @@ namespace PSADT.Collections
             return _hashCode;
         }
 
+        /// <summary>
+        /// Determines whether two lists hold the same elements in the same order.
+        /// </summary>
+        /// <remarks>Defined so that the operator cannot quietly disagree with <see cref="Equals(EquatableList{T})"/>,
+        /// which it would if it were left comparing references as a reference type's operator does by default.</remarks>
+        /// <param name="left">The first list, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second list, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two hold the same elements, or both are <see langword="null"/>; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==(EquatableList<T>? left, EquatableList<T>? right)
+        {
+            return left is not null ? left.Equals(right) : right is null;
+        }
+
+        /// <summary>
+        /// Determines whether two lists differ in their elements or in the order of them.
+        /// </summary>
+        /// <param name="left">The first list, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second list, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two differ, or one is <see langword="null"/> and the other is not; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=(EquatableList<T>? left, EquatableList<T>? right)
+        {
+            return !(left == right);
+        }
+
         /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {

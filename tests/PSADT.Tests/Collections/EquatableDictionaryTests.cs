@@ -159,6 +159,27 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that an array value is compared by its contents even where the value type does not say it is
+        /// an array.
+        /// </summary>
+        /// <remarks>
+        /// The case the list pins for its elements, and the one that matters most here: a bag of properties is
+        /// usually declared <see cref="object"/>, so this is the shape a caller is most likely to reach for.
+        /// </remarks>
+        [Fact]
+        public void Equals_ComparesArrayValuesHeldUnderAnotherType()
+        {
+            // Arrange: equal contents, different arrays, declared as something other than an array
+            EquatableDictionary<string, object> first = new([new("alpha", new byte[] { 1, 2, 3 })]);
+            EquatableDictionary<string, object> second = new([new("alpha", new byte[] { 1, 2, 3 })]);
+
+            // Assert
+            Assert.Equal(first, second);
+            Assert.Equal(first.GetHashCode(), second.GetHashCode());
+            Assert.NotEqual(first, new EquatableDictionary<string, object>([new("alpha", new byte[] { 1, 2, 4 })]));
+        }
+
+        /// <summary>
         /// Verifies that a null value is held and compared rather than failing.
         /// </summary>
         [Fact]
@@ -193,6 +214,50 @@ namespace PSADT.Tests.Collections
             Assert.Equal(first, second);
             Assert.Equal(first.GetHashCode(), second.GetHashCode());
             Assert.NotEqual(first, new EquatableDictionary<string, EquatableDictionary<string, string>>([new("module", new([new("topic", "other")]))]));
+        }
+
+        /// <summary>
+        /// Verifies that the operators compare by the entries, and that nothing at all on either side is
+        /// answered rather than thrown on.
+        /// </summary>
+        /// <remarks>
+        /// Nothing in the library reaches for them - a record compares its fields through <see
+        /// cref="EqualityComparer{T}"/>, which calls <c language="csharp">Equals</c> - so this is the only thing holding the
+        /// operator and the method in step. Left undefined, the operator would compare references, which is
+        /// the fault this whole type exists to prevent.
+        /// </remarks>
+        [Fact]
+        public void Operators_CompareByTheEntries()
+        {
+            // Arrange
+            EquatableDictionary<string, string> dictionary = new([new("alpha", "one")]);
+            EquatableDictionary<string, string> same = new([new("alpha", "one")]);
+            EquatableDictionary<string, string> different = new([new("alpha", "two")]);
+
+            // Assert
+            AssertOperators(dictionary, same, equal: true);
+            AssertOperators(dictionary, different, equal: false);
+            AssertOperators(dictionary, right: null, equal: false);
+            AssertOperators(left: null, dictionary, equal: false);
+            AssertOperators(left: null, right: null, equal: true);
+        }
+
+        /// <summary>
+        /// Asserts what both operators make of a pair of dictionaries.
+        /// </summary>
+        /// <remarks>
+        /// The pair is taken as parameters rather than compared where it is built, so that the operands are not
+        /// values the analysis can work out for itself. A comparison it can answer without running reads to it as
+        /// dead code, and the pairs worth asserting most here - a dictionary against nothing at all, and nothing against
+        /// nothing - are exactly the ones it can answer.
+        /// </remarks>
+        /// <param name="left">The first dictionary, which may be nothing at all.</param>
+        /// <param name="right">The second dictionary, which may be nothing at all.</param>
+        /// <param name="equal">Whether the two are expected to compare equal.</param>
+        private static void AssertOperators(EquatableDictionary<string, string>? left, EquatableDictionary<string, string>? right, bool equal)
+        {
+            Assert.Equal(equal, left == right);
+            Assert.Equal(!equal, left != right);
         }
 
         /// <summary>
