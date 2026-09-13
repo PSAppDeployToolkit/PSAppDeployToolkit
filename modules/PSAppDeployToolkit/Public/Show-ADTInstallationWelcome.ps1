@@ -159,12 +159,17 @@ function Show-ADTInstallationWelcome
 
         Close Word and Excel and prevent the user from launching the applications while the deployment is in progress. Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first. When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
+    .EXAMPLE
+        Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel -Title 'Application Installation' -Subtitle 'Please close the following applications'
+
+        Prompt the user to close Internet Explorer, Word and Excel.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
         The process descriptions are retrieved via `Get-Process`, with a fallback on the process name if no description is available. Alternatively, you can specify the description yourself by providing a hashtable that is converted to a ProcessDefinition object, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
 
-        The dialog box will timeout after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The dialog box will time out after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

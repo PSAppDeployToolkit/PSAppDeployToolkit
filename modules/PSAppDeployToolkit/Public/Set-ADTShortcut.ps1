@@ -58,9 +58,9 @@ function Set-ADTShortcut
     .INPUTS
         PSADT.ShortcutManagement.IShortcutLinkInfo
 
-        You can pipe a IShortcutLinkInfo object into this function to specify the shortcut to modify.
+        You can pipe an IShortcutLinkInfo object into this function to specify the shortcut to modify.
 
-        When piping a IShortcutLinkInfo object into this function, the only properties modified are the ones explicitly specified via this function's parameters.
+        When piping an IShortcutLinkInfo object into this function, the only properties modified are the ones explicitly specified via this function's parameters.
 
     .OUTPUTS
         None
@@ -70,7 +70,7 @@ function Set-ADTShortcut
     .OUTPUTS
         PSADT.ShortcutManagement.IShortcutLinkInfo
 
-        When the `-PassThru` parameter is provided, this function returns a IShortcutLinkInfo object representing the modified shortcut.
+        When the `-PassThru` parameter is provided, this function returns an IShortcutLinkInfo object representing the modified shortcut.
 
     .EXAMPLE
         Set-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
