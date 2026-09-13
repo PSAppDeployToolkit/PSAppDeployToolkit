@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Serialization;
 using PSADT.Utilities;
 
 namespace PSADT.Collections
@@ -20,28 +21,20 @@ namespace PSADT.Collections
     /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references.
     /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
     /// Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented, so there is no member on any surface that
-    /// would change it. The parameterless constructor and <see cref="Add"/> are private and exist solely for the data
-    /// contract serializer, which builds a collection by constructing an empty one and adding to it, reaches both by
-    /// reflection, and refuses a type offering no way to do it. Being private is the point: a dictionary that changed
-    /// after the record holding it was built would change that record's hash code underneath whatever was holding it,
-    /// so nothing outside this type can. </para><para> <see cref="Add"/> takes a <see cref="KeyValuePair{TKey,
-    /// TValue}"/> rather than a key and a value because that is what the serializer looks for once a type is not an
-    /// <c language="csharp">IDictionary</c>: it treats this as a collection of pairs and wants the pair. </para></remarks>
+    /// would change it. <see cref="DataContractAttribute"/> is what allows that: the data contract serializer would
+    /// otherwise see <see cref="IEnumerable{T}"/>, take this for a collection of pairs, and refuse one that offers no
+    /// <c language="csharp">Add</c> for it to fill. Carrying the attribute sends it down the ordinary class path instead, where it
+    /// writes the one field and rebuilds the type without running a constructor. </para><para> What that path does not
+    /// carry over is the comparer, and the entries are looked up through it - so <see cref="OnDeserialized"/> puts it
+    /// back before anything reads them. Without it a dictionary keyed by arrays would come off the wire looking its
+    /// keys up by reference, and two that had just been sent as equal would arrive unequal. </para></remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "The Dictionary suffix is the correct one and is already present.")]
     [SuppressMessage("Design", "MA0182:Avoid unused internal types", Justification = "This is used across InternalsVisibleTo boundaries, by PSADT.UserInterface and by the tests.")]
+    [DataContract]
     internal sealed class EquatableDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IEquatable<EquatableDictionary<TKey, TValue>> where TKey : notnull
     {
-        /// <summary>
-        /// Initializes a new, empty instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class.
-        /// </summary>
-        /// <remarks>For the data contract serializer, which fills it through <see cref="Add"/>.</remarks>
-        private EquatableDictionary()
-        {
-            _items = new(KeyComparer);
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class holding the specified
         /// entries.
@@ -60,15 +53,16 @@ namespace PSADT.Collections
         }
 
         /// <summary>
-        /// Adds an entry.
+        /// Puts the comparer back once the serializer has rebuilt the entries.
         /// </summary>
-        /// <remarks>For the data contract serializer. See the remarks on the type.</remarks>
-        /// <param name="item">The entry to add.</param>
-        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "The data contract serializer calls this by reflection, which the compiler cannot see.")]
-        private void Add(KeyValuePair<TKey, TValue> item)
+        /// <remarks>The serializer rebuilds the entries into a dictionary of its own making, which is a dictionary
+        /// with the framework's comparer. Putting the comparer back here rather than at each read is what makes a
+        /// dictionary off the wire the same dictionary as one that was built.</remarks>
+        /// <param name="context">The deserialization context.</param>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
         {
-            _items.Add(item.Key, item.Value);
-            _hashCode = null;
+            _items = new(_items, KeyComparer);
         }
 
         /// <summary>
@@ -93,7 +87,7 @@ namespace PSADT.Collections
         /// reduced to a hash of its key and value, and those are then sorted before being combined, so that two
         /// dictionaries holding the same entries hash alike however they were filled - which is what makes this agree
         /// with the comparison above, where order does not count. </para></remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The dictionary is filled once and then left alone, which is what the remarks on the type describe; the cache is cleared if the serializer does add.")]
+        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The cache is the only mutable field read, and it is only ever filled with what the entries already hash to.")]
         public override int GetHashCode()
         {
             // Combined through the shared helper rather than here, so that every hash this library produces
@@ -162,7 +156,9 @@ namespace PSADT.Collections
         /// <summary>
         /// The entries held.
         /// </summary>
-        private readonly Dictionary<TKey, TValue> _items;
+        /// <remarks>Not read-only, since <see cref="OnDeserialized"/> replaces it once to put the comparer back.</remarks>
+        [DataMember]
+        private Dictionary<TKey, TValue> _items;
 
         /// <summary>
         /// The hash code of the entries, worked out on first use.

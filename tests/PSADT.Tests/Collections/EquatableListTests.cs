@@ -16,7 +16,8 @@ namespace PSADT.Tests.Collections
     /// reference, which quietly breaks the equality a record advertises. So the tests are about the
     /// comparison rather than about the list: that two holding the same elements match, that two holding
     /// different ones do not, and that a list of arrays is compared by the arrays' contents rather than
-    /// by their references - which is the case a naive implementation gets wrong.
+    /// by their references - which is the case a naive implementation gets wrong. The round trip is in
+    /// here too, since the attribute that makes it work is the one part of the type that looks removable.
     /// </remarks>
     public sealed class EquatableListTests
     {
@@ -151,41 +152,15 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
-        /// Verifies that appending changes the comparison, since the hash is worked out once and kept and
-        /// a stale one would leave the list findable under the wrong key.
+        /// Verifies that a list survives a data contract round trip, which is the only reason the type
+        /// carries <see cref="DataContractAttribute"/> at all.
         /// </summary>
         /// <remarks>
-        /// Reached by reflection because that is the only way it is reached at all: the member is private
-        /// so that nothing but the serializer can call it, and the serializer calls it reflectively. The
-        /// cost of getting the cache wrong is a list that cannot be found in the dictionary it was put
-        /// into, which is the kind of fault that surfaces a long way from its cause.
-        /// </remarks>
-        [Fact]
-        public void Add_IsReflectedInTheComparison()
-        {
-            // Arrange
-            EquatableList<string> list = new(["alpha"]);
-            int before = list.GetHashCode();
-            MethodInfo? add = typeof(EquatableList<string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(add);
-
-            // Act
-            _ = add.Invoke(list, ["bravo"]);
-
-            // Assert
-            Assert.Equal(new EquatableList<string>(["alpha", "bravo"]), list);
-            Assert.Equal(new EquatableList<string>(["alpha", "bravo"]).GetHashCode(), list.GetHashCode());
-            Assert.NotEqual(before, list.GetHashCode());
-        }
-
-        /// <summary>
-        /// Verifies that a list survives a data contract round trip, which is the only reason the
-        /// parameterless constructor and <c language="csharp">Add</c> exist at all.
-        /// </summary>
-        /// <remarks>
-        /// The serializer rebuilds a collection by constructing an empty one and adding to it, reaches
-        /// both by reflection, and refuses a collection type offering no way to do it. Asserted because
-        /// both members are private, so nothing the compiler can see would notice them going missing.
+        /// The serializer takes anything implementing <see cref="IEnumerable{T}"/> for a collection and
+        /// refuses one offering no <c language="csharp">Add</c> for it to fill. The attribute sends it down the ordinary
+        /// class path instead, where the single field is written and read straight back. Asserted because
+        /// the attribute reads as redundant on a type that declares no other contract member, and taking
+        /// it off turns every payload carrying a list into an <see cref="InvalidDataContractException"/>.
         /// </remarks>
         [Fact]
         public void Serialization_RoundTripsEveryElement()
@@ -212,20 +187,25 @@ namespace PSADT.Tests.Collections
         /// Verifies that no mutable surface is offered, since the type stands in for a value.
         /// </summary>
         /// <remarks>
-        /// Implementing <see cref="ICollection{T}"/> would put an <c language="csharp">Add</c> on the type that callers could
-        /// reach, and would also stop the serializer working: it binds to that interface's member in
-        /// preference to the private one, and a read-only implementation of it throws.
+        /// Asserted on every surface rather than the public one, since the serializer no longer needs an
+        /// <c language="csharp">Add</c> to reach: a private one reappearing would be the type going back to being filled
+        /// after it was built. Implementing <see cref="ICollection{T}"/> would put one within a caller's
+        /// reach as well.
         /// </remarks>
         [Fact]
         public void EquatableList_OffersNoMutableSurface()
         {
+            // Arrange
+            const BindingFlags surface = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
             // Assert
             Assert.DoesNotContain(typeof(ICollection<string>), typeof(EquatableList<string>).GetInterfaces());
             Assert.DoesNotContain(typeof(IList<string>), typeof(EquatableList<string>).GetInterfaces());
-            Assert.Null(typeof(EquatableList<string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public));
-            Assert.Null(typeof(EquatableList<string>).GetMethod("Insert", BindingFlags.Instance | BindingFlags.Public));
-            Assert.Null(typeof(EquatableList<string>).GetMethod("Remove", BindingFlags.Instance | BindingFlags.Public));
-            Assert.Null(typeof(EquatableList<string>).GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public));
+            Assert.Null(typeof(EquatableList<string>).GetMethod("Add", surface));
+            Assert.Null(typeof(EquatableList<string>).GetMethod("Insert", surface));
+            Assert.Null(typeof(EquatableList<string>).GetMethod("Remove", surface));
+            Assert.Null(typeof(EquatableList<string>).GetMethod("Clear", surface));
+            Assert.Null(typeof(EquatableList<string>).GetConstructor(surface, binder: null, Type.EmptyTypes, modifiers: null));
         }
 
         /// <summary>

@@ -256,33 +256,6 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
-        /// Verifies that adding changes the comparison, since the hash is worked out once and kept and a
-        /// stale one would leave the dictionary findable under the wrong key.
-        /// </summary>
-        /// <remarks>
-        /// Reached by reflection because that is the only way it is reached at all: the member is private
-        /// so that nothing but the serializer can call it, and the serializer calls it reflectively.
-        /// Asserted for the same reason the list asserts it.
-        /// </remarks>
-        [Fact]
-        public void Add_IsReflectedInTheComparison()
-        {
-            // Arrange
-            EquatableDictionary<string, string> dictionary = new([new("alpha", "one")]);
-            int before = dictionary.GetHashCode();
-            MethodInfo? add = typeof(EquatableDictionary<string, string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(add);
-
-            // Act
-            _ = add.Invoke(dictionary, [new KeyValuePair<string, string>("bravo", "two")]);
-
-            // Assert
-            Assert.Equal(new EquatableDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]), dictionary);
-            Assert.Equal(new EquatableDictionary<string, string>([new("alpha", "one"), new("bravo", "two")]).GetHashCode(), dictionary.GetHashCode());
-            Assert.NotEqual(before, dictionary.GetHashCode());
-        }
-
-        /// <summary>
         /// Verifies that no mutable surface is offered, since the type stands in for a value.
         /// </summary>
         /// <remarks>
@@ -291,31 +264,41 @@ namespace PSADT.Tests.Collections
         /// cref="IDictionary{TKey, TValue}"/> is what used to put those members within reach, and it also
         /// made <c language="csharp">Keys</c> and <c language="csharp">Values</c> hand out the underlying dictionary's own mutable
         /// collections. Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented now.
+        /// <para>
+        /// Asserted on every surface rather than the public one, since the serializer no longer needs an
+        /// <c language="csharp">Add</c> to reach: a private one reappearing would be the type going back to being filled
+        /// after it was built, and the empty constructor it was filled through is gone with it.
+        /// </para>
         /// </remarks>
         [Fact]
         public void EquatableDictionary_OffersNoMutableSurface()
         {
             // Arrange
             Type[] interfaces = typeof(EquatableDictionary<string, string>).GetInterfaces();
+            const BindingFlags surface = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             // Assert
             Assert.DoesNotContain(typeof(IDictionary<string, string>), interfaces);
             Assert.DoesNotContain(typeof(ICollection<KeyValuePair<string, string>>), interfaces);
             Assert.Contains(typeof(IReadOnlyDictionary<string, string>), interfaces);
-            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public));
-            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Remove", BindingFlags.Instance | BindingFlags.Public));
-            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Add", surface));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Remove", surface));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetMethod("Clear", surface));
+            Assert.Null(typeof(EquatableDictionary<string, string>).GetConstructor(surface, binder: null, Type.EmptyTypes, modifiers: null));
         }
 
         /// <summary>
-        /// Verifies that a dictionary survives a data contract round trip, which is the only reason the
-        /// parameterless constructor and <c language="csharp">Add</c> exist at all.
+        /// Verifies that a dictionary survives a data contract round trip, which is the only reason the type
+        /// carries <see cref="DataContractAttribute"/> at all.
         /// </summary>
         /// <remarks>
-        /// The serializer rebuilds a collection by constructing an empty one and adding to it, reaches
-        /// both by reflection, and refuses a type offering no way to do it. Nesting one inside another is
-        /// asserted because that is the shape the help console's module map takes over the wire. Both
-        /// members are private, so nothing the compiler can see would notice them going missing.
+        /// The serializer takes anything implementing <see cref="IEnumerable{T}"/> for a collection and
+        /// refuses one offering no <c language="csharp">Add</c> for it to fill. The attribute sends it down the ordinary
+        /// class path instead, where the single field is written and read straight back. Asserted because
+        /// the attribute reads as redundant on a type that declares no other contract member, and taking it
+        /// off turns every payload carrying a dictionary into an <see cref="InvalidDataContractException"/>.
+        /// Nesting one inside another is asserted because that is the shape the help console's module map
+        /// takes over the wire, and because the callback that repairs the comparer has to run at both levels.
         /// </remarks>
         [Fact]
         public void Serialization_RoundTripsEveryEntry()
@@ -340,6 +323,40 @@ namespace PSADT.Tests.Collections
             Assert.Equal(original, restored);
             Assert.Equal(original.GetHashCode(), restored.GetHashCode());
             Assert.Equal("help", restored["module"]["topic"]);
+        }
+
+        /// <summary>
+        /// Verifies that a dictionary keyed by arrays still finds its keys by their contents after a round
+        /// trip, rather than by the references the serializer hands back.
+        /// </summary>
+        /// <remarks>
+        /// This is the one thing the class contract does not carry over on its own. The serializer rebuilds
+        /// the entries into a framework dictionary with the framework's comparer, and every lookup this type
+        /// makes - the comparison included - goes through that comparer, so without the callback that puts
+        /// it back two dictionaries sent as equal would arrive unequal. Nothing else here would notice: the
+        /// entries all survive, and a dictionary keyed by strings behaves the same either way.
+        /// </remarks>
+        [Fact]
+        public void Serialization_KeepsTheKeyComparer()
+        {
+            // Arrange
+            EquatableDictionary<byte[], string> original = new([new([1, 2, 3], "alpha"), new([4, 5, 6], "bravo")]);
+            DataContractSerializer serializer = new(typeof(EquatableDictionary<byte[], string>));
+
+            // Act
+            using MemoryStream stream = new();
+            serializer.WriteObject(stream, original);
+            stream.Position = 0;
+            object? deserialized = serializer.ReadObject(stream);
+            Assert.NotNull(deserialized);
+            EquatableDictionary<byte[], string> restored = (EquatableDictionary<byte[], string>)deserialized;
+
+            // Assert: the keys asked for are different arrays to the ones that came back
+            byte[] lookup = [4, 5, 6];
+            Assert.True(restored.ContainsKey([1, 2, 3]));
+            Assert.Equal("bravo", restored[lookup]);
+            Assert.Equal(original, restored);
+            Assert.Equal(original.GetHashCode(), restored.GetHashCode());
         }
 
         /// <summary>
