@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <returns>A hash code combining Result and whether there is an answer.</returns>
         public override int GetHashCode()
         {
-            return CryptographicUtilities.GenerateHashCode(Result, Text is not null);
+            return HashCode.Combine(Result, Text is not null);
         }
 
         /// <summary>

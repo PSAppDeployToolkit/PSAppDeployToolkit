@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -51,7 +50,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <returns>A hash code combining Result and Text.</returns>
         public override int GetHashCode()
         {
-            return CryptographicUtilities.GenerateHashCode(Result, Text);
+            return HashCode.Combine(Result, Text);
         }
     }
 }

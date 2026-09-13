@@ -87,6 +87,7 @@
       T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
       T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
       T:System.Diagnostics.StackTraceHiddenAttribute|
+      T:System.HashCode|
       T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
       T:System.Runtime.CompilerServices.DefaultInterpolatedStringHandler|
       T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute|

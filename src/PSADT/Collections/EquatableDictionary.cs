@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
-using PSADT.Utilities;
 
 namespace PSADT.Collections
 {
@@ -83,16 +82,15 @@ namespace PSADT.Collections
 
         /// <inheritdoc/>
         /// <remarks>Worked out once and kept, since a record holding this asks for it every time it is put in a
-        /// dictionary or a set and the dictionary itself does not change after it has been built. <para> Each entry is
-        /// reduced to a hash of its key and value, and those are then sorted before being combined, so that two
-        /// dictionaries holding the same entries hash alike however they were filled - which is what makes this agree
-        /// with the comparison above, where order does not count. </para></remarks>
+        /// dictionary or a set and the dictionary itself does not change after it has been built.</remarks>
         [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The cache is the only mutable field read, and it is only ever filled with what the entries already hash to.")]
         public override int GetHashCode()
         {
-            // Combined through the shared helper rather than here, so that every hash this library produces
-            // from a sequence of values is produced the same way.
-            return _hashCode ??= CryptographicUtilities.GenerateHashCode(GetSortedEntryHashCodes(), EqualityComparer<int>.Default);
+            if (_hashCode is 0)
+            {
+                _hashCode = ComputeHashCode();
+            }
+            return _hashCode;
         }
 
         /// <inheritdoc/>
@@ -121,24 +119,29 @@ namespace PSADT.Collections
         }
 
         /// <summary>
-        /// Reduces each entry to a hash of its key and value, and sorts them.
+        /// Combines the entries into a hash code.
         /// </summary>
-        /// <remarks>Sorting is what makes the result independent of the order the dictionary was filled in,
-        /// which the comparison requires and which the combining helper - being a running total over a sequence - does
-        /// not provide on its own.</remarks>
-        /// <returns>The entries' hash codes, in ascending order.</returns>
-        private List<int> GetSortedEntryHashCodes()
+        /// <remarks>Each entry is reduced to a hash of its key and value, and those are added together rather than
+        /// folded one after another, since addition is what makes the result the same however the dictionary was
+        /// filled - which the comparison requires, order not counting there either. The sum is allowed to wrap, a hash
+        /// being a bit pattern rather than a number. The count seeds it so that entries hashing to zero still tell one
+        /// size of dictionary from another. <para> The comparers are handed to the combiner rather than asked for a
+        /// hash here, so that a null value is answered the same way the list answers a null element. </para></remarks>
+        /// <returns>The hash code of the entries.</returns>
+        private int ComputeHashCode()
         {
-            List<int> hashCodes = new(_items.Count);
-            foreach (KeyValuePair<TKey, TValue> entry in _items)
+            unchecked
             {
-                unchecked
+                int hashCode = _items.Count;
+                foreach (KeyValuePair<TKey, TValue> entry in _items)
                 {
-                    hashCodes.Add((KeyComparer.GetHashCode(entry.Key) * 31) + (entry.Value is not null ? ValueComparer.GetHashCode(entry.Value) : 0));
+                    HashCode entryHashCode = new();
+                    entryHashCode.Add(entry.Key, KeyComparer);
+                    entryHashCode.Add(entry.Value, ValueComparer);
+                    hashCode += entryHashCode.ToHashCode();
                 }
+                return hashCode;
             }
-            hashCodes.Sort();
-            return hashCodes;
         }
 
         /// <inheritdoc/>
@@ -161,9 +164,13 @@ namespace PSADT.Collections
         private Dictionary<TKey, TValue> _items;
 
         /// <summary>
-        /// The hash code of the entries, worked out on first use.
+        /// The hash code of the entries, worked out on first use, with zero standing for not worked out yet.
         /// </summary>
-        private int? _hashCode;
+        /// <remarks>A plain <see cref="int"/> rather than a nullable one because a read of it can race a write: a
+        /// <see cref="Nullable{T}"/> is two fields and nothing guarantees the pair is written as one, where an aligned
+        /// <see cref="int"/> is. The cost is that entries hashing to zero are worked out again on every call, which is
+        /// the same answer each time.</remarks>
+        private int _hashCode;
 
         /// <summary>
         /// Compares two keys.

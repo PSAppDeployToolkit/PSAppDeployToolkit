@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
-using PSADT.Utilities;
 
 namespace PSADT.Collections
 {
@@ -61,10 +60,11 @@ namespace PSADT.Collections
         [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The cache is the only mutable field read, and it is only ever filled with what the elements already hash to.")]
         public override int GetHashCode()
         {
-            // Combined through the shared helper rather than here, so that every hash this library produces
-            // from a sequence of values is produced the same way. The comparer is handed over with it because
-            // an element that is an array has to be hashed by its contents rather than by its reference.
-            return _hashCode ??= CryptographicUtilities.GenerateHashCode(_items, ElementComparer);
+            if (_hashCode is 0)
+            {
+                _hashCode = ComputeHashCode();
+            }
+            return _hashCode;
         }
 
         /// <inheritdoc/>
@@ -77,6 +77,22 @@ namespace PSADT.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _items.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Combines the elements into a hash code.
+        /// </summary>
+        /// <remarks>The comparer is handed to each element rather than left to the combiner's own, because an
+        /// element that is an array has to be hashed by its contents rather than by its reference.</remarks>
+        /// <returns>The hash code of the elements.</returns>
+        private int ComputeHashCode()
+        {
+            HashCode hashCode = new();
+            foreach (T item in _items)
+            {
+                hashCode.Add(item, ElementComparer);
+            }
+            return hashCode.ToHashCode();
         }
 
         /// <inheritdoc/>
@@ -100,9 +116,13 @@ namespace PSADT.Collections
         private readonly T[] _items;
 
         /// <summary>
-        /// The hash code of the elements, worked out on first use.
+        /// The hash code of the elements, worked out on first use, with zero standing for not worked out yet.
         /// </summary>
-        private int? _hashCode;
+        /// <remarks>A plain <see cref="int"/> rather than a nullable one because a read of it can race a write: a
+        /// <see cref="Nullable{T}"/> is two fields and nothing guarantees the pair is written as one, where an aligned
+        /// <see cref="int"/> is. The cost is that elements hashing to zero are worked out again on every call, which is
+        /// the same answer each time.</remarks>
+        private int _hashCode;
 
         /// <summary>
         /// Compares two elements.
