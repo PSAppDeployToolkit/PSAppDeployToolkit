@@ -36,12 +36,19 @@ namespace PSADT.Collections
         /// virtual <see cref="object.Equals(object)"/> otherwise, which is not where a type has put its comparison
         /// when it implements <see cref="IEquatable{T}"/> and leaves <see cref="object.Equals(object)"/> alone. Such
         /// a type would compare by reference while still hashing by its contents, so two equal values would reach
-        /// the right bucket and be turned away on the comparison. <para> An array goes to
+        /// the right bucket and be turned away on the comparison. <para> One operand being structural is enough to
+        /// take the pair down that route, rather than both, so that the two values of a comparison are never reached
+        /// by routes the single value of a hash could not have been. Structural against not-structural is answered by
+        /// the structural one, which refuses anything that is not its own kind - where leaving that pair to the
+        /// framework would answer it by a comparison the hash of either side never sees. </para><para> An array goes to
         /// <see cref="StructuralArrayComparer"/> rather than to the framework, because the framework's structural
         /// comparison reaches an array's elements through that same fallback and so puts the fault back one level
-        /// down inside every array. Anything else structural - a tuple - still goes to the framework, which compares
-        /// a tuple holding an array by that array's contents. The seam left there is an array of a type that compares
-        /// only through <see cref="IEquatable{T}"/> held inside a tuple, which nothing here is shaped like.
+        /// down inside every array. One of the pair being an array is enough to send it there, and both being one is
+        /// what the answer then turns on: an array against something else is no, whichever of the two was asked first,
+        /// rather than the other value deciding it with its own comparison whenever the array happens to be second.
+        /// </para><para> Anything else structural - a tuple - still goes to the framework, which compares a tuple
+        /// holding an array by that array's contents. The seam left there is an array of a type that compares only
+        /// through <see cref="IEquatable{T}"/> held inside a tuple, which nothing here is shaped like.
         /// </para></remarks>
         private sealed class StructuralComparer : IEqualityComparer<T>
         {
@@ -51,8 +58,8 @@ namespace PSADT.Collections
                 // Answered here rather than left to either comparer, so that what is handed on is known to be
                 // there: net472 declares both of them as taking a plain T, and will not accept a maybe-null one.
                 return x is null || y is null ? x is null && y is null
-                    : x is Array left && y is Array right ? StructuralArrayComparer.AreEqual(left, right)
-                    : x is IStructuralEquatable && y is IStructuralEquatable ? StructuralComparisons.StructuralEqualityComparer.Equals(x, y)
+                    : x is Array || y is Array ? x is Array left && y is Array right && StructuralArrayComparer.AreEqual(left, right)
+                    : x is IStructuralEquatable || y is IStructuralEquatable ? StructuralComparisons.StructuralEqualityComparer.Equals(x, y)
                     : EqualityComparer<T>.Default.Equals(x, y);
             }
 

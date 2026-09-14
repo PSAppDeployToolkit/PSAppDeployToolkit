@@ -254,6 +254,28 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that an array compared against something that is not one answers the same whichever of the
+        /// two was handed over first.
+        /// </summary>
+        /// <remarks>
+        /// An array compares by reference and so refuses anything that is not an array like it. A value that is
+        /// not an array answers with whatever comparison it declares, and nothing stops that one accepting an
+        /// array. Either of the pair being an array is what sends it down the array route, where both being one
+        /// is what the answer turns on - so the order the two arrived in cannot change it.
+        /// </remarks>
+        [Fact]
+        public void Default_ComparesAnArrayAgainstANonArrayTheSameEitherWayRound()
+        {
+            // Arrange
+            object array = new byte[] { 1, 2, 3 };
+            object accommodating = new AcceptsAnyArray();
+
+            // Assert
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(array, accommodating));
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(accommodating, array));
+        }
+
+        /// <summary>
         /// Verifies that nothing at all is compared and hashed rather than thrown on, since a collection is
         /// free to hold a null element.
         /// </summary>
@@ -319,6 +341,28 @@ namespace PSADT.Tests.Collections
             public override int GetHashCode()
             {
                 return Value;
+            }
+        }
+
+        /// <summary>
+        /// A value that says it equals any array at all.
+        /// </summary>
+        /// <remarks>
+        /// Contrived on purpose. Nothing sensible compares this way, but nothing stops a type doing it either,
+        /// and it is the only way to see which of the two operands a comparison actually asked.
+        /// </remarks>
+        private sealed class AcceptsAnyArray
+        {
+            /// <inheritdoc/>
+            public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object? obj)
+            {
+                return obj is Array;
+            }
+
+            /// <inheritdoc/>
+            public override int GetHashCode()
+            {
+                return 0;
             }
         }
     }

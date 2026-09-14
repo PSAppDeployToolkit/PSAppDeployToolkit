@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace PSADT.Collections
@@ -45,7 +44,25 @@ namespace PSADT.Collections
         /// <returns><see langword="true"/> if the two hold the same elements; otherwise, <see langword="false"/>.</returns>
         public bool Equals([NotNullWhen(true)] EquatableList<T>? other)
         {
-            return ReferenceEquals(this, other) || (other is not null && _items.Length == other._items.Length && _items.SequenceEqual(other._items, ElementComparer));
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            if (other is null || _items.Length != other._items.Length)
+            {
+                return false;
+            }
+
+            // Walked rather than run through a query, so that comparing two lists allocates nothing: a query asks
+            // each array for an enumerator, and an array hands back an object to do it.
+            for (int index = 0; index < _items.Length; index++)
+            {
+                if (!ElementComparer.Equals(_items[index], other._items[index]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <inheritdoc/>
