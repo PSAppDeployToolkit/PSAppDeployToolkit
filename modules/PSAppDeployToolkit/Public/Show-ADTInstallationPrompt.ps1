@@ -24,6 +24,8 @@ function Show-ADTInstallationPrompt
 
         Changes the returned type to `SecureInputDialogResult`, whose `Text` property is a `System.Security.SecureString` rather than a string. The value is protected across the client/server boundary by the encrypted channel the two processes negotiate; it cannot be carried as a `SecureString` itself, because that type's memory protection is scoped to the process that created it.
 
+        Requires the Fluent dialog style, as `-RequestInput` does on its own. Under `DialogStyle = Classic` the dialog throws at runtime, since an input dialog is only implemented for Fluent.
+
     .PARAMETER Message
         The message text to be displayed on the prompt.
 
