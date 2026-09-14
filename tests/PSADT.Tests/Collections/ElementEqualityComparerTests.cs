@@ -118,6 +118,36 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that an array of more than one dimension is compared by its contents and by its shape.
+        /// </summary>
+        /// <remarks>
+        /// Worth pinning because the obvious way to handle a rank this comparer cannot index - handing it to the
+        /// framework's structural comparison - does not merely answer wrongly: that one reads an array by a single
+        /// index and throws on anything of a higher rank, so a collection holding one would fail rather than
+        /// compare. The shape is asserted alongside because one type and one total length do not settle it: the two
+        /// arrays below are both four <see cref="int"/> laid out in the same order, and are not the same array.
+        /// </remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "A multidimensional array is the shape under test.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3967:Multidimensional arrays should not be used", Justification = "A multidimensional array is the shape under test.")]
+        [Fact]
+        public void Default_ComparesAnArrayOfMoreThanOneDimension()
+        {
+            // Arrange
+            int[,] first = { { 1, 2 }, { 3, 4 } };
+            int[,] second = { { 1, 2 }, { 3, 4 } };
+            int[,] other = { { 1, 2 }, { 3, 5 } };
+            int[,] reshaped = { { 1 }, { 2 }, { 3 }, { 4 } };
+
+            // Assert
+            Assert.True(ElementEqualityComparer<object>.Default.Equals(first, second));
+            Assert.Equal(
+                ElementEqualityComparer<object>.Default.GetHashCode(first),
+                ElementEqualityComparer<object>.Default.GetHashCode(second));
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(first, other));
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(first, reshaped));
+        }
+
+        /// <summary>
         /// Verifies that an array nested inside a value that is itself structural is still compared by its
         /// contents.
         /// </summary>
@@ -142,6 +172,57 @@ namespace PSADT.Tests.Collections
                 ElementEqualityComparer<object>.Default.GetHashCode(first),
                 ElementEqualityComparer<object>.Default.GetHashCode(second));
             Assert.False(ElementEqualityComparer<object>.Default.Equals(first, other));
+        }
+
+        /// <summary>
+        /// Verifies that an array of a type whose comparison lives on <see cref="IEquatable{T}"/> is compared by
+        /// its elements rather than by their references.
+        /// </summary>
+        /// <remarks>
+        /// The same fault the direct case pins, one level down. The framework's structural comparison reaches an
+        /// array's elements through the virtual <see cref="object.Equals(object)"/>, so handing an array to it puts
+        /// back exactly what asking the value rather than the declared type was meant to fix. What makes it worth
+        /// pinning separately is the shape of the failure: the elements hash by value while comparing by reference,
+        /// so two equal arrays land in one bucket and are turned away on the comparison.
+        /// </remarks>
+        [Fact]
+        public void Default_ComparesAnArrayOfAnIEquatableTypeByItsElements()
+        {
+            // Arrange: equal by the interface's own comparison, different instances, different arrays
+            IValued[] first = [new Valued(1), new Valued(2)];
+            IValued[] second = [new Valued(1), new Valued(2)];
+            IValued[] other = [new Valued(1), new Valued(3)];
+
+            // Assert
+            Assert.True(ElementEqualityComparer<IValued[]>.Default.Equals(first, second));
+            Assert.True(ElementEqualityComparer<object>.Default.Equals(first, second));
+            Assert.Equal(
+                ElementEqualityComparer<object>.Default.GetHashCode(first),
+                ElementEqualityComparer<object>.Default.GetHashCode(second));
+            Assert.False(ElementEqualityComparer<object>.Default.Equals(first, other));
+        }
+
+        /// <summary>
+        /// Verifies that every element of an array takes part in its hash code, not merely the last of them.
+        /// </summary>
+        /// <remarks>
+        /// The framework's structural hash reads only the last eight elements, which is legal - two values that
+        /// are not equal may hash alike - but leaves a set or a dictionary keyed on long arrays with every entry
+        /// in one bucket, and those are the arrays the cost of hashing them was supposed to buy something for.
+        /// </remarks>
+        [Fact]
+        public void Default_HashesEveryElementOfAnArray()
+        {
+            // Arrange: long enough that only the tail would otherwise be read, differing at the very front
+            byte[] first = new byte[64];
+            byte[] second = new byte[64];
+            first[0] = 1;
+
+            // Assert
+            Assert.False(ElementEqualityComparer<byte[]>.Default.Equals(first, second));
+            Assert.NotEqual(
+                ElementEqualityComparer<byte[]>.Default.GetHashCode(first),
+                ElementEqualityComparer<byte[]>.Default.GetHashCode(second));
         }
 
         /// <summary>

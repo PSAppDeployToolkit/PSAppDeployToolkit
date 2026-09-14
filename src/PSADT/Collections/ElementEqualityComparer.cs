@@ -36,12 +36,13 @@ namespace PSADT.Collections
         /// virtual <see cref="object.Equals(object)"/> otherwise, which is not where a type has put its comparison
         /// when it implements <see cref="IEquatable{T}"/> and leaves <see cref="object.Equals(object)"/> alone. Such
         /// a type would compare by reference while still hashing by its contents, so two equal values would reach
-        /// the right bucket and be turned away on the comparison. <para> The question asked of a value is whether it
-        /// is <see cref="IStructuralEquatable"/> rather than whether it is an <see cref="Array"/>, which is the wider
-        /// of the two and costs the same to ask. A tuple is structural without being an array, and comparing one
-        /// through the framework would compare its own elements with their own default comparers - so a tuple holding
-        /// an array would be back to comparing that array by reference, one level further down than where this
-        /// started. </para></remarks>
+        /// the right bucket and be turned away on the comparison. <para> An array goes to
+        /// <see cref="StructuralArrayComparer"/> rather than to the framework, because the framework's structural
+        /// comparison reaches an array's elements through that same fallback and so puts the fault back one level
+        /// down inside every array. Anything else structural - a tuple - still goes to the framework, which compares
+        /// a tuple holding an array by that array's contents. The seam left there is an array of a type that compares
+        /// only through <see cref="IEquatable{T}"/> held inside a tuple, which nothing here is shaped like.
+        /// </para></remarks>
         private sealed class StructuralComparer : IEqualityComparer<T>
         {
             /// <inheritdoc/>
@@ -50,6 +51,7 @@ namespace PSADT.Collections
                 // Answered here rather than left to either comparer, so that what is handed on is known to be
                 // there: net472 declares both of them as taking a plain T, and will not accept a maybe-null one.
                 return x is null || y is null ? x is null && y is null
+                    : x is Array left && y is Array right ? StructuralArrayComparer.AreEqual(left, right)
                     : x is IStructuralEquatable && y is IStructuralEquatable ? StructuralComparisons.StructuralEqualityComparer.Equals(x, y)
                     : EqualityComparer<T>.Default.Equals(x, y);
             }
@@ -57,9 +59,9 @@ namespace PSADT.Collections
             /// <inheritdoc/>
             public int GetHashCode(T obj)
             {
-                return obj is not null ? obj is IStructuralEquatable
-                    ? StructuralComparisons.StructuralEqualityComparer.GetHashCode(obj)
-                    : EqualityComparer<T>.Default.GetHashCode(obj)
+                return obj is Array array ? StructuralArrayComparer.Hash(array)
+                    : obj is IStructuralEquatable ? StructuralComparisons.StructuralEqualityComparer.GetHashCode(obj)
+                    : obj is not null ? EqualityComparer<T>.Default.GetHashCode(obj)
                     : 0;
             }
         }
