@@ -588,7 +588,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             textBlock.Inlines.Add(run);
         }
 
-
         /// <summary>
         /// Creates a hyperlink with the specified URL and display text.
         /// </summary>

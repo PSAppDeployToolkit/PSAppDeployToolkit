@@ -102,7 +102,6 @@ namespace PSAppDeployToolkit.Attributes
             }
         }
 
-
         /// <summary>
         /// Validates a dictionary's values by the same rules as a collection's elements.
         /// </summary>

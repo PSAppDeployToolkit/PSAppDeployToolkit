@@ -106,7 +106,6 @@ namespace PSADT.UserInterface.DialogOptions
             CustomMessageText = customMessageText;
         }
 
-
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>

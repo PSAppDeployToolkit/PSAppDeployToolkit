@@ -133,7 +133,6 @@ namespace PSAppDeployToolkit.Attributes
             }
         }
 
-
         /// <summary>
         /// Try to extract the SID from a LocalPrincipal type using reflection. The LocalPrincipal type is used within the Microsoft.PowerShell.LocalAccounts module.
         /// </summary>

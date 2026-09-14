@@ -1687,7 +1687,6 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal(expected, result);
         }
 
-
         /// <summary>
         /// Tests full round-trip for 7-Zip style flag+path arguments.
         /// Parses the command line, converts back, and verifies the format is correct.
