@@ -10,14 +10,18 @@ function Publish-ADTDocusaurusExport
     Initialize-ADTModuleBuildFunction
     try
     {
-        # Clone the destination repo.
+        # Clone the destination repo. The authorization header reaches git through the environment rather than
+        # through -c or git config, both of which pass it as an argument and so put it in the runner's process list
+        # for anything able to read one. Every git call below inherits it, and the finally clause takes it away again.
         Write-ADTBuildLogEntry -Message "Cloning destination repository, this may take a while."
-        $destBranch = 'main'; $dstRepo = "https://github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
+        $destBranch = 'main'; $destRepo = "https://github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $gitAuthToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("x-access-token:$env:API_TOKEN_GITHUB"))
-        $gitAuthHeader = "AUTHORIZATION: basic $gitAuthToken"
         $destBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         $destPath = "$destBase\docs\reference\functions"
-        $null = git -c "http.https://github.com/.extraheader=$gitAuthHeader" clone -q -b $destBranch $dstRepo $destBase
+        $env:GIT_CONFIG_COUNT = '1'
+        $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
+        $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $gitAuthToken"
+        $null = git clone -q -b $destBranch $destRepo $destBase
         if ($Global:LASTEXITCODE)
         {
             throw "The cloning of the destination repository failed."
@@ -51,7 +55,7 @@ function Publish-ADTDocusaurusExport
 
                 # Push it to the website.
                 Write-ADTBuildLogEntry -Message "Pushing committed changes to origin."
-                $null = git -c "http.https://github.com/.extraheader=$gitAuthHeader" push origin -q
+                $null = git push origin -q
                 if ($Global:LASTEXITCODE)
                 {
                     throw "The pushing of commits from destination repo failed."
@@ -72,5 +76,9 @@ function Publish-ADTDocusaurusExport
     {
         Complete-ADTModuleBuildFunction -ErrorRecord $_
         throw
+    }
+    finally
+    {
+        Remove-Item -LiteralPath Env:GIT_CONFIG_COUNT, Env:GIT_CONFIG_KEY_0, Env:GIT_CONFIG_VALUE_0 -ErrorAction Ignore
     }
 }
