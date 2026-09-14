@@ -21,8 +21,7 @@ namespace PSADT.Collections
     /// can change what this compares as. <see cref="DataContractAttribute"/> is what allows that: the data contract
     /// serializer would otherwise see <see cref="IEnumerable{T}"/>, take this for a collection, and refuse one that
     /// offers no <c language="csharp">Add</c> for it to fill. Carrying the attribute sends it down the ordinary class path instead,
-    /// where it writes the one field and rebuilds the type without running a constructor. That bypassed
-    /// constructor is also why the hash code is worked out on first use rather than up front. </para></remarks>
+    /// where it writes the one field and rebuilds the type without running a constructor. </para></remarks>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [DataContract]
     internal sealed class EquatableList<T> : IReadOnlyList<T>, IEquatable<EquatableList<T>>
@@ -72,16 +71,15 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>Worked out once and kept, since a record holding this asks for it every time it is put in a
-        /// dictionary or a set and the array it reads is never replaced.</remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The cache is the only mutable field read, and it is only ever filled with what the elements already hash to.")]
+        /// <remarks>Worked out on every call rather than once and kept. A kept one would be worth something only
+        /// where the same list is hashed more than once, which nothing here does. What it would cost is a hash that
+        /// stops describing what the list holds: an element that is itself an array is handed out by the indexer and
+        /// is writable through it, and a kept hash would go on reporting what that element used to be. Worked out on
+        /// demand the two always agree, and a caller that writes to something it was handed has broken the rule every
+        /// hash container has rather than found a fault in this one.</remarks>
         public override int GetHashCode()
         {
-            if (_hashCode is 0)
-            {
-                _hashCode = ComputeHashCode();
-            }
-            return _hashCode;
+            return ComputeHashCode();
         }
 
         /// <summary>
@@ -155,15 +153,6 @@ namespace PSADT.Collections
         /// </summary>
         [DataMember]
         private readonly T[] _items;
-
-        /// <summary>
-        /// The hash code of the elements, worked out on first use, with zero standing for not worked out yet.
-        /// </summary>
-        /// <remarks>A plain <see cref="int"/> rather than a nullable one because a read of it can race a write: a
-        /// <see cref="Nullable{T}"/> is two fields and nothing guarantees the pair is written as one, where an aligned
-        /// <see cref="int"/> is. The cost is that elements hashing to zero are worked out again on every call, which is
-        /// the same answer each time.</remarks>
-        private int _hashCode;
 
         /// <summary>
         /// Compares two elements.

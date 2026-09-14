@@ -20,9 +20,8 @@ namespace PSADT.Collections
     /// cuts both ways for a key: a caller that holds on to an array it used as one and then writes to it changes what
     /// that key hashes to, and the entry it opened is no longer reachable. Only the entries are copied in, not the
     /// keys themselves, so a key has to be left alone once it has been handed over.
-    /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
-    /// Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented, so there is no member on any surface that
-    /// would change it. <see cref="DataContractAttribute"/> is what allows that: the data contract serializer would
+    /// </para><para> It is filled once and then left alone. Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is
+    /// implemented, so there is no member on any surface that would change it. <see cref="DataContractAttribute"/> is what allows that: the data contract serializer would
     /// otherwise see <see cref="IEnumerable{T}"/>, take this for a collection of pairs, and refuse one that offers no
     /// <c language="csharp">Add</c> for it to fill. Carrying the attribute sends it down the ordinary class path instead, where it
     /// writes the one field and rebuilds the type without running a constructor. </para><para> What that path does not
@@ -102,16 +101,15 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>Worked out once and kept, since a record holding this asks for it every time it is put in a
-        /// dictionary or a set and the dictionary itself does not change after it has been built.</remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The cache is the only mutable field read, and it is only ever filled with what the entries already hash to.")]
+        /// <remarks>Worked out on every call rather than once and kept. A kept one would be worth something only
+        /// where the same dictionary is hashed more than once, which nothing here does. What it would cost is a hash
+        /// that stops describing what the dictionary holds: a value that is itself an array is handed out by the
+        /// indexer and is writable through it, and a kept hash would go on reporting what that value used to be.
+        /// Worked out on demand the two always agree, and a caller that writes to something it was handed has broken
+        /// the rule every hash container has rather than found a fault in this one.</remarks>
         public override int GetHashCode()
         {
-            if (_hashCode is 0)
-            {
-                _hashCode = ComputeHashCode();
-            }
-            return _hashCode;
+            return ComputeHashCode();
         }
 
         /// <summary>
@@ -207,15 +205,6 @@ namespace PSADT.Collections
         /// <remarks>Not read-only, since <see cref="OnDeserialized"/> replaces it once to put the comparer back.</remarks>
         [DataMember]
         private Dictionary<TKey, TValue> _items;
-
-        /// <summary>
-        /// The hash code of the entries, worked out on first use, with zero standing for not worked out yet.
-        /// </summary>
-        /// <remarks>A plain <see cref="int"/> rather than a nullable one because a read of it can race a write: a
-        /// <see cref="Nullable{T}"/> is two fields and nothing guarantees the pair is written as one, where an aligned
-        /// <see cref="int"/> is. The cost is that entries hashing to zero are worked out again on every call, which is
-        /// the same answer each time.</remarks>
-        private int _hashCode;
 
         /// <summary>
         /// Compares two keys.
