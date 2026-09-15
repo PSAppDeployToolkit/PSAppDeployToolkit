@@ -340,9 +340,15 @@ namespace PSADT.FileSystem
                         try
                         {
                             // Start the thread to retrieve the object name and wait for the outcome.
+                            // Created without the DLL thread attach notifications, which is what keeps
+                            // this thread from taking the loader lock on its way in. One terminated
+                            // below while holding that lock orphans it, and every later library load,
+                            // COM activation and thread start then waits forever. The start routine
+                            // calls NtQueryObject and ExitThread through addresses already baked into
+                            // it, so it needs nothing the notifications would have set up.
                             fileDupHandle.DangerousAddRef(ref fileDupHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                             PatchStartRoutineBuffer(startRoutineBuffer, fileDupHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                            _ = NativeMethods.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                            _ = NativeMethods.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer, CreateFlags: THREAD_CREATE_FLAGS.THREAD_CREATE_FLAGS_SKIP_THREAD_ATTACH);
                             NTSTATUS res;
                             using (hThread)
                             {
