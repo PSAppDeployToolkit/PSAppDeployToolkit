@@ -208,28 +208,71 @@ namespace PSADT.Tests.Security
         /// context rather than only for the one this run happens to be in.
         /// </summary>
         /// <remarks>
-        /// The row that matters is an administrator on a network path, which must be refused: the broker
-        /// runs as the local system account and reaches a share as the machine rather than as the caller,
-        /// and whether that succeeds is decided by the share's own permissions, which cannot be determined
-        /// from this side. That row is unreachable on a local checkout, so asking the decision directly is
-        /// the only way it is ever asserted.
+        /// An administrator on a network path now depends on the local system account's file access.
+        /// Supplying that answer keeps both outcomes covered independently of the checkout's permissions.
+        /// All other contexts must short-circuit without asking for access, including a local system caller
+        /// that retrieves tokens directly rather than brokering them.
         /// </remarks>
         /// <param name="callerIsLocalSystem">Whether the caller is the local system account.</param>
         /// <param name="callerIsAdmin">Whether the caller is an administrator.</param>
         /// <param name="onNetworkPath">Whether the client/server directory is on a network path.</param>
+        /// <param name="systemAccountHasAccess">Whether the local system account has the required file access.</param>
         /// <param name="expected">Whether brokering should be reported as possible.</param>
         [Theory]
-        [InlineData(true, true, true, true)]
-        [InlineData(true, true, false, true)]
-        [InlineData(true, false, true, true)]
-        [InlineData(true, false, false, true)]
-        [InlineData(false, true, true, false)]
-        [InlineData(false, true, false, true)]
-        [InlineData(false, false, true, false)]
-        [InlineData(false, false, false, false)]
-        public void GetCanGetUserPrimaryToken_AnswersForEveryExecutionContext(bool callerIsLocalSystem, bool callerIsAdmin, bool onNetworkPath, bool expected)
+        [InlineData(true, true, true, true, true)]
+        [InlineData(true, true, true, false, true)]
+        [InlineData(true, true, false, true, true)]
+        [InlineData(true, true, false, false, true)]
+        [InlineData(true, false, true, true, true)]
+        [InlineData(true, false, true, false, true)]
+        [InlineData(true, false, false, true, true)]
+        [InlineData(true, false, false, false, true)]
+        [InlineData(false, true, true, true, true)]
+        [InlineData(false, true, true, false, false)]
+        [InlineData(false, true, false, true, true)]
+        [InlineData(false, true, false, false, true)]
+        [InlineData(false, false, true, true, false)]
+        [InlineData(false, false, true, false, false)]
+        [InlineData(false, false, false, true, false)]
+        [InlineData(false, false, false, false, false)]
+        public void GetCanGetUserPrimaryToken_AnswersForEveryExecutionContext(bool callerIsLocalSystem, bool callerIsAdmin, bool onNetworkPath, bool systemAccountHasAccess, bool expected)
         {
-            Assert.Equal(expected, TokenManager.GetCanGetUserPrimaryToken(callerIsLocalSystem, callerIsAdmin, onNetworkPath));
+            // Arrange
+            int accessChecks = 0;
+
+            // Act
+            bool actual = TokenManager.GetCanGetUserPrimaryToken(callerIsLocalSystem, callerIsAdmin, onNetworkPath, () =>
+            {
+                ++accessChecks;
+                return systemAccountHasAccess;
+            });
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(!callerIsLocalSystem && callerIsAdmin && onNetworkPath ? 1 : 0, accessChecks);
+        }
+
+        /// <summary>
+        /// Verifies that the default network-path decision uses the restored check of the local system
+        /// account's access rather than always allowing or refusing an administrator.
+        /// </summary>
+        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
+        public void GetCanGetUserPrimaryToken_UsesSystemAccountAccessOnANetworkPath()
+        {
+            Assert.Equal(ClientServerPermissions.SystemAccountHasAccess(), TokenManager.GetCanGetUserPrimaryToken(callerIsLocalSystem: false, callerIsAdmin: true, clientServerOnNetworkPath: true));
+        }
+
+        /// <summary>
+        /// Verifies that a failed access check is not silently treated as permission to broker a token.
+        /// </summary>
+        [Fact]
+        public void GetCanGetUserPrimaryToken_PropagatesAccessCheckFailures()
+        {
+            // Arrange
+            UnauthorizedAccessException failure = new("Cannot read the client/server permissions.");
+
+            // Act & Assert
+            Assert.Same(failure, Assert.Throws<UnauthorizedAccessException>(() => TokenManager.GetCanGetUserPrimaryToken(callerIsLocalSystem: false, callerIsAdmin: true, clientServerOnNetworkPath: true, () => throw failure)));
         }
 
         /// <summary>

@@ -32,8 +32,8 @@ namespace PSADT.Security
         /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
         /// </summary>
         /// <remarks>An administrator brokers via a scheduled task running as the Local System account, which reaches a network
-        /// path as the computer account rather than as itself. Whether that succeeds is decided by the share's own permissions,
-        /// which cannot be determined from this side, so brokering is refused outright for a client/server directory on one.</remarks>
+        /// path as the computer account rather than as itself. On a network path, brokering is allowed only when the Local System
+        /// account has the required file system access to the client/server assemblies. This does not verify the share's permissions.</remarks>
         internal static readonly bool CanGetUserPrimaryToken = GetCanGetUserPrimaryToken(AccountUtilities.CallerIsLocalSystem, AccountUtilities.CallerIsAdmin, ClientServerUtilities.ClientServerOnNetworkPath);
 
         /// <summary>
@@ -43,11 +43,12 @@ namespace PSADT.Security
         /// one the caller happens to be running in, which is otherwise fixed for the life of the process.</remarks>
         /// <param name="callerIsLocalSystem">Whether the caller is the Local System account, which asks Windows for a token directly.</param>
         /// <param name="callerIsAdmin">Whether the caller is an administrator, without which no other user's token can be had at all.</param>
-        /// <param name="clientServerOnNetworkPath">Whether the client/server directory resides on a network path the broker may not reach.</param>
+        /// <param name="clientServerOnNetworkPath">Answers whether the client/server directory resides on a network path the broker may not reach.</param>
+        /// <param name="systemAccountHasAccess">An optional file system access check, evaluated only for an administrator other than Local System on a network path. Defaults to checking the client/server assemblies.</param>
         /// <returns><see langword="true"/> if a user's token can be brokered in that context; otherwise, <see langword="false"/>.</returns>
-        internal static bool GetCanGetUserPrimaryToken(bool callerIsLocalSystem, bool callerIsAdmin, bool clientServerOnNetworkPath)
+        internal static bool GetCanGetUserPrimaryToken(bool callerIsLocalSystem, bool callerIsAdmin, bool clientServerOnNetworkPath, Func<bool>? systemAccountHasAccess = null)
         {
-            return callerIsLocalSystem || (callerIsAdmin && !clientServerOnNetworkPath);
+            return callerIsLocalSystem || (callerIsAdmin && (!clientServerOnNetworkPath || (systemAccountHasAccess?.Invoke() ?? ClientServerPermissions.SystemAccountHasAccess())));
         }
 
         /// <summary>

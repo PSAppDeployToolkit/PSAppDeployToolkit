@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -15,13 +16,13 @@ namespace PSADT.Tests.Foundation
     /// Tests granting a user the access they need to the client executables.
     /// </summary>
     /// <remarks>
-    /// Only the cases that find the access already in place are covered, never the repair. Repairing
+    /// Remediation tests cover only the cases that find the access already in place, never the repair. Repairing
     /// rewrites the access control on the module's own directory, which is a change to the machine that
     /// would outlive the test run and could not be put back accurately - the access it replaces is
-    /// whatever the site's own policy left there. Every test here therefore asserts up front that the
+    /// whatever the site's own policy left there. Every remediation test therefore asserts up front that the
     /// caller already reaches the client, and skips rather than reaching the repair.
     /// <para>
-    /// All of them are unelevated, which is the only way to ask for a user's access without a token being
+    /// Those tests are unelevated, which is the only way to ask for a user's access without a token being
     /// brokered for it: brokering registers a scheduled task running as the local system account, which is
     /// another change to the machine. That gate is also what makes the refusals below observable, since
     /// brokering refuses an unelevated caller before it registers anything.
@@ -56,6 +57,39 @@ namespace PSADT.Tests.Foundation
         /// returning false for a file that does not exist.
         /// </remarks>
         private static readonly bool CallerReachesTheClient = TestEnvironment.ClientServerExecutablesPresent && CallerReachesTheClientImpl();
+
+        /// <summary>
+        /// Verifies that the local system account needs read and execute access to every client/server
+        /// file, including files in subdirectories, and that testing it leaves access control untouched.
+        /// </summary>
+        /// <remarks>
+        /// Uses the effective rights actually granted rather than assuming the checkout grants access.
+        /// Unlike remediation, this check uses a well-known identifier and never brokers a token or repairs permissions.
+        /// </remarks>
+        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
+        public void SystemAccountHasAccess_RequiresReadAndExecuteOnEveryFileWithoutChangingAccessControl()
+        {
+            // Arrange
+            FileInfo[] files = ClientServerUtilities.ClientServerDirectory.GetFiles("*", SearchOption.AllDirectories);
+            Assert.NotEmpty(files);
+            FileSystemRights granted = FileSystemRights.ReadAndExecute;
+            Dictionary<FileInfo, string> accessControl = [];
+            foreach (FileInfo file in files)
+            {
+                granted &= FileSystemUtilities.GetEffectiveAccess(file, AccountUtilities.LocalSystemSid, FileSystemRights.ReadAndExecute);
+                accessControl.Add(file, FileSystemUtilities.GetAccessControl(file, AccessControlSections.Access).GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+            }
+
+            // Act
+            bool actual = ClientServerPermissions.SystemAccountHasAccess();
+
+            // Assert
+            Assert.Equal(granted.HasFlag(FileSystemRights.ReadAndExecute), actual);
+            foreach (KeyValuePair<FileInfo, string> entry in accessControl)
+            {
+                Assert.Equal(entry.Value, FileSystemUtilities.GetAccessControl(entry.Key, AccessControlSections.Access).GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+            }
+        }
 
         /// <summary>
         /// Verifies that a token is not brokered for another user when brokering is unavailable, and that

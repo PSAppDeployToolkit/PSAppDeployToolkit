@@ -80,6 +80,15 @@ namespace PSADT.Foundation
         }
 
         /// <summary>
+        /// Determines whether the Local System account has the required file system permissions for all client/server assembly files.
+        /// </summary>
+        /// <returns>True if the Local System account has the required permissions; otherwise, false.</returns>
+        internal static bool SystemAccountHasAccess()
+        {
+            return _assemblies.All(static path => FileSystemUtilities.TestEffectiveAccess(path, AccountUtilities.LocalSystemSid, _requiredPermissions));
+        }
+
+        /// <summary>
         /// Gets the token that the specified user's effective access should be tested with.
         /// </summary>
         /// <remarks>Ordered by cost. Our own token is exact for our own session and opens with a single call, so it is
