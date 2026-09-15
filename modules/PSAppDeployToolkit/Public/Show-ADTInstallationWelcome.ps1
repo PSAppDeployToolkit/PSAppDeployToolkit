@@ -108,9 +108,6 @@ function Show-ADTInstallationWelcome
 
         If this parameter is specified without the `-RequiredDiskSpace` parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 
-    .PARAMETER RequiredDiskSpace
-        Specify required disk space in MB, used in combination with the `-CheckDiskSpace` parameter.
-
     .PARAMETER PassThru
         Returns the user's prompt choice to the caller for further decision making.
 
@@ -746,25 +743,6 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the [-RequiredDiskSpace] parameter, the required disk space is calculated automatically based on the size of the script source and associated files.')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, with a continue countdown irrespective of deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Silent, and with a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.UInt32]$RequiredDiskSpace,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
@@ -829,6 +807,12 @@ function Show-ADTInstallationWelcome
                     [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
+        $paramDictionary.Add('RequiredDiskSpace', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'RequiredDiskSpace', [System.UInt32], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $PSBoundParameters.ContainsKey('CheckDiskSpace') -and $PSBoundParameters.CheckDiskSpace -and !$adtSession; HelpMessage = "Specify required disk space in MB, used in combination with the `-CheckDiskSpace` parameter." }
+                    [PSAppDeployToolkit.Attributes.ValidateGreaterThanZeroAttribute]::new()
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -841,19 +825,6 @@ function Show-ADTInstallationWelcome
         $welcomeState = @{
             Initialized = $false
             Retries = 0
-        }
-
-        # Throw if we can't check the disk space (i.e. requested but there's no session).
-        if (($CheckDiskSpace -or $PSBoundParameters.ContainsKey('RequiredDiskSpace')) -and !$adtSession)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The [-CheckDiskSpace] parameter is only valid when a deployment session is active.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                ErrorId = 'CheckDiskSpaceWithNoActiveSession'
-                TargetObject = $PSBoundParameters
-                RecommendedAction = "Please review your deployment and try again."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Set up DeploymentType if not specified.
@@ -874,6 +845,10 @@ function Show-ADTInstallationWelcome
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
             $PSBoundParameters.Add('Subtitle', $adtStrings.CloseAppsPrompt.Fluent.Subtitle.($DeploymentType.ToString()))
+        }
+        $RequiredDiskSpace = if ($PSBoundParameters.ContainsKey('RequiredDiskSpace'))
+        {
+            $PSBoundParameters.RequiredDiskSpace
         }
 
         # Instantiate new object to hold all data needed within this call.
