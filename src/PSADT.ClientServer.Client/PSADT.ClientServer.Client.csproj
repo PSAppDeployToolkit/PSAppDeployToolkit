@@ -78,6 +78,10 @@
     redirects, and a client launched without one dies on an assembly version mismatch before it can report
     anything.
 
+    Copy-local dependencies must accompany the variants too. A consumer with ReferenceOutputAssembly=false
+    does not receive the client's dependency graph, so copying only executables and configs leaves a broker
+    that passes file-presence checks but crashes before connecting to its pipe.
+
     It depends on the builds that produce what it reports rather than on the caller having ordered them.
     The variants are built from inside this project, so a ProjectReference orders the outer build alone
     and a caller can otherwise reach the copy before the rest exist. Both targets are reached on the
@@ -87,6 +91,7 @@
     <ItemGroup>
       <ClientVariantOutput Include="@(ClientVariant->'$(TargetDir)PSADT.ClientServer.%(Identity).exe')" />
       <ClientVariantOutput Include="@(ClientVariant->'$(TargetDir)PSADT.ClientServer.%(Identity).exe.config')" />
+      <ClientVariantOutput Include="@(ReferenceCopyLocalPaths)" />
     </ItemGroup>
   </Target>
 

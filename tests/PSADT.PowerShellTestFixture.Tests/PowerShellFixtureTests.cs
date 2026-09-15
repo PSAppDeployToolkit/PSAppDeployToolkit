@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Management.Automation.Runspaces;
 using PSADT.PowerShellTestFixture.Tests.TestHelpers;
 using Xunit;
@@ -18,6 +19,27 @@ namespace PSADT.PowerShellTestFixture.Tests
     [Collection(PowerShellCollection.Name)]
     public sealed class PowerShellFixtureTests(PowerShellFixture powerShell)
     {
+        /// <summary>
+        /// Ensures the broker deployment contains dependencies not referenced by the fixture itself.
+        /// </summary>
+        /// <param name="fileName">The runtime dependency required by the client.</param>
+        [Theory]
+        [InlineData("PSADT.ClientServer.Server.dll")]
+        [InlineData("PSADT.UserInterface.dll")]
+        [InlineData("PSADT.UserInterface.Interfaces.dll")]
+        [InlineData("PSADT.WindowsRuntime.dll")]
+        [InlineData("Fluence.Wpf.dll")]
+        [InlineData("Microsoft.Bcl.Cryptography.dll")]
+        [InlineData("System.Drawing.Common.dll")]
+        [InlineData("System.Formats.Asn1.dll")]
+        public void ClientDeployment_ContainsBrokerRuntimeDependencies(string fileName)
+        {
+            string? fixtureDirectory = Path.GetDirectoryName(powerShell.ScriptModulePath);
+            Assert.NotNull(fixtureDirectory);
+            string clientDirectory = Path.GetFullPath(Path.Join(fixtureDirectory, "..", "net472"));
+            Assert.True(File.Exists(Path.Join(clientDirectory, fileName)), $"Missing client runtime dependency: {fileName}");
+        }
+
         /// <summary>
         /// Verifies that leaving the scope gives the thread back the default runspace it had, having none.
         /// </summary>
