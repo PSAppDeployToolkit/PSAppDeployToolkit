@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings applied to every test run in this repository.
+
+  The testing platform reports telemetry through Application Insights, and sends it from a timer thread
+  part way through a run rather than at startup. Transmitting builds an HTTP handler and compresses the
+  payload, both of which load assemblies for the first time, and a load holds the loader lock for as long
+  as it takes.
+
+  FileHandleManager.GetOpenHandles() starts a thread per file handle on the machine, upwards of thirteen
+  thousand of them for one call, and every one takes that same lock on its way in. A load that holds it
+  for longer than the half second the sweep allows a thread leaves all of those threads to be terminated
+  where they wait, and a thread killed while holding the loader lock orphans it: every later library load,
+  COM activation and thread start in that process then waits forever. Two dumps of a hung run on
+  15/09/2026 had the telemetry transmitter on one thread and the sweep blocked on the rest.
+
+  Opting out removes the transmission, and with it the one long hold that was actually observed. It is set
+  here rather than per machine so that every run gets it, build agents included.
+-->
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <TESTINGPLATFORM_TELEMETRY_OPTOUT>1</TESTINGPLATFORM_TELEMETRY_OPTOUT>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
