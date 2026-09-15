@@ -16,3 +16,12 @@ TOKEN_ELEVATION_TYPE
 TOKEN_LINKED_TOKEN
 TOKEN_MANDATORY_LABEL
 WTSINFOEXW
+DuplicateTokenEx
+CreateEnvironmentBlock
+DestroyEnvironmentBlock
+CreateProcessAsUser
+CreateProcessWithToken
+ResumeThread
+WaitForSingleObject
+GetExitCodeProcess
+TerminateProcess

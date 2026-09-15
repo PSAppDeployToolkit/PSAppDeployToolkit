@@ -16,9 +16,9 @@ using Windows.Win32.System.Threading;
 namespace PSADT.TokenDiagnostics
 {
     /// <summary>
-    /// Query-only wrappers for the diagnostic's generated Windows APIs.
+    /// Native wrappers for read-only diagnostics and the separately opted-in launch probe.
     /// </summary>
-    internal static class NativeMethods
+    internal static partial class NativeMethods
     {
         /// <summary>
         /// Reads the WTS session owner without using a candidate token to determine their identity.
