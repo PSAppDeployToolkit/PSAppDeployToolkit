@@ -516,7 +516,7 @@ namespace PSADT.Tests.Utilities
             string name = NewVariableName();
             try
             {
-                Environment.SetEnvironmentVariable(name, "target", EnvironmentVariableTarget.User);
+                WriteUserValue(name, "target", RegistryValueKind.String);
                 Environment.SetEnvironmentVariable(name, "process");
 
                 // Act
@@ -527,7 +527,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
                 Environment.SetEnvironmentVariable(name, value: null);
             }
         }
@@ -548,7 +548,7 @@ namespace PSADT.Tests.Utilities
             string name = NewVariableName();
             try
             {
-                Environment.SetEnvironmentVariable(name, $"keep{Path.PathSeparator}drop", EnvironmentVariableTarget.User);
+                WriteUserValue(name, $"keep{Path.PathSeparator}drop", RegistryValueKind.String);
                 Environment.SetEnvironmentVariable(name, $"process{Path.PathSeparator}drop");
 
                 // Act
@@ -559,7 +559,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
                 Environment.SetEnvironmentVariable(name, value: null);
             }
         }
@@ -591,7 +591,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -616,7 +616,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -648,7 +648,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -676,7 +676,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -693,6 +693,23 @@ namespace PSADT.Tests.Utilities
             using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment", writable: true)
                 ?? throw new InvalidOperationException("The user's environment key is not there to write to.");
             key.SetValue(name, value, kind);
+        }
+
+        /// <summary>
+        /// Takes a value back out of the user's environment key, whether or not it is there.
+        /// </summary>
+        /// <remarks>
+        /// The framework's scoped setter would do this too, but it broadcasts the change with a call that
+        /// waits on every top-level window that is slow to answer - seconds per call on an ordinary desktop,
+        /// and this file would pay it once or twice per test. Nothing here is listening for the broadcast,
+        /// so the write is made where the wrapper makes it and the notification is left out.
+        /// </remarks>
+        /// <param name="name">The variable to take away.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the user's environment key is not there.</exception>
+        private static void RemoveUserValue(string name)
+        {
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("The user's environment key is not there to write to.");
+            key.DeleteValue(name, throwOnMissingValue: false);
         }
 
         /// <summary>
