@@ -23,6 +23,7 @@ namespace PSADT.Tests.FileSystem
     /// away from them.
     /// </para>
     /// </remarks>
+    [Collection(FileHandleSweepCollection.Name)]
     public sealed class FileHandleManagerTests
     {
         /// <summary>
