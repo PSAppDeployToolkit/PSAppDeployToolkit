@@ -68,3 +68,9 @@ The main build dependency is a current .NET SDK. Visual Studio is recommended fo
 
 - Expect accurate, well-researched answers about Windows APIs and COM interfaces. Do not fabricate API names or suggest hacky workarounds when proper documented APIs exist (e.g., Appx COM interfaces for reading package identity).
 - Acknowledge uncertainty rather than inventing answers.
+- Investigate and verify Windows API guarantees and security assumptions before implementation, especially for token and session identity handling.
+
+## TokenManager Process Guidelines
+
+- For a proposed TokenManager process-token fast path, validate candidates from all processes in the target session rather than relying on explorer.exe.
+- Require the logged-on user's identity and requested elevation, reject other runas identities in the same session, and retain the SYSTEM token broker as fallback.
