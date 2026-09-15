@@ -118,6 +118,34 @@ namespace PSADT.Tests.Collections
         }
 
         /// <summary>
+        /// Verifies that a type keeps a comparison it has put on <see cref="IEquatable{T}"/> alone, even when it
+        /// is held under an interface and therefore on the structural path.
+        /// </summary>
+        /// <remarks>
+        /// This is the case that separates asking the value whether it is an array from asking the declared type.
+        /// An interface has to be on the structural path because it could be holding an array, but treating
+        /// everything on that path as structural is wrong for the rest of it: the framework's structural comparer
+        /// falls back to the virtual <see cref="object.Equals(object)"/>, which a type implementing
+        /// <see cref="IEquatable{T}"/> and nothing else has not overridden. Left that way these two values compare
+        /// unequal while hashing alike, so they reach the right bucket in a dictionary and are turned away on the
+        /// comparison - the same fault, in the same shape, that the collections in this namespace exist to prevent.
+        /// </remarks>
+        [Fact]
+        public void Default_KeepsAnIEquatableComparisonHeldUnderAnInterface()
+        {
+            // Arrange: equal by the interface's own comparison, different instances
+            IValued first = new Valued(1);
+            IValued second = new Valued(1);
+
+            // Assert
+            Assert.True(ElementEqualityComparer<IValued>.Default.Equals(first, second));
+            Assert.Equal(
+                ElementEqualityComparer<IValued>.Default.GetHashCode(first),
+                ElementEqualityComparer<IValued>.Default.GetHashCode(second));
+            Assert.False(ElementEqualityComparer<IValued>.Default.Equals(first, new Valued(2)));
+        }
+
+        /// <summary>
         /// Verifies that nothing at all is compared and hashed rather than thrown on, since a collection is
         /// free to hold a null element.
         /// </summary>
@@ -137,6 +165,53 @@ namespace PSADT.Tests.Collections
             Assert.True(ElementEqualityComparer<object>.Default.Equals(null!, null!));
             Assert.False(ElementEqualityComparer<object>.Default.Equals(null!, "alpha"));
             Assert.Equal(0, ElementEqualityComparer<object>.Default.GetHashCode(null!));
+        }
+
+        /// <summary>
+        /// An interface that carries its own comparison, which <see cref="IEquatable{T}"/> allows an interface to do.
+        /// </summary>
+        private interface IValued : IEquatable<IValued>
+        {
+            /// <summary>
+            /// Gets the value that decides equality.
+            /// </summary>
+            int Value { get; }
+        }
+
+        /// <summary>
+        /// An implementation that leaves its comparison where the interface put it.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="object.Equals(object)"/> is deliberately left alone, which is what makes this worth having: a
+        /// type that overrode it would compare the same whichever way the comparer dispatched, and so would not tell
+        /// the two apart.
+        /// </remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1067:Override Object.Equals(object) when implementing IEquatable<T>", Justification = "Not overriding it is the condition under test; see the remarks on the type.")]
+        private sealed class Valued : IValued
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Valued"/> class.
+            /// </summary>
+            /// <param name="value">The value that decides equality.</param>
+            internal Valued(int value)
+            {
+                Value = value;
+            }
+
+            /// <inheritdoc/>
+            public int Value { get; }
+
+            /// <inheritdoc/>
+            public bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] IValued? other)
+            {
+                return other is not null && other.Value == Value;
+            }
+
+            /// <inheritdoc/>
+            public override int GetHashCode()
+            {
+                return Value;
+            }
         }
     }
 }

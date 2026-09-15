@@ -65,16 +65,24 @@ namespace PSADT.Foundation
         /// Determines whether the specified path resides on a network location.
         /// </summary>
         /// <remarks>A share is visible only in the shape of the path, and a mapped drive only in the drive behind it, so both
-        /// are asked. Either question can refuse a path outright rather than answering it, as an extended-length path is not a
-        /// <see cref="Uri"/> and its root names no drive; such a path cannot be a mapped drive, and is reported as local rather
-        /// than allowed to fault this type's initialisation.</remarks>
+        /// are asked. Neither question understands an extended-length path, which is therefore reduced to the path it extends
+        /// before either is put; anything left that they still refuse names no drive and cannot be a mapped one, so it is
+        /// reported as local rather than allowed to fault this type's initialisation.</remarks>
         /// <param name="path">The fully qualified path to test.</param>
         /// <returns><see langword="true"/> if the path resides on a network location; otherwise, <see langword="false"/>.</returns>
         internal static bool GetPathIsNetworked(string path)
         {
+            // The extended-length UNC form can only ever name a share, and its local counterpart reduces to a normal path.
+            const string extendedPrefix = @"\\?\";
+            const string extendedUncPrefix = @"\\?\UNC\";
+            if (path.StartsWith(extendedUncPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            string testPath = path.StartsWith(extendedPrefix, StringComparison.Ordinal) ? path[extendedPrefix.Length..] : path;
             try
             {
-                return new Uri(path).IsUnc || (Path.GetPathRoot(path) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network);
+                return new Uri(testPath).IsUnc || (Path.GetPathRoot(testPath) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network);
             }
             catch (ArgumentException)
             {

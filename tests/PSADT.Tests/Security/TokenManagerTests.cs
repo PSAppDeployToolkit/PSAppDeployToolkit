@@ -204,22 +204,44 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
-        /// Verifies that brokering is refused for a client on a network path, which the broker reaches as
-        /// the machine rather than as the caller.
+        /// Verifies the whole of the decision about whether a token can be brokered, for every execution
+        /// context rather than only for the one this run happens to be in.
         /// </summary>
         /// <remarks>
-        /// Asserted only for a caller that is not the local system account, which brokers by asking Windows
-        /// directly and never crosses the network at all. Every other caller brokers through a scheduled
-        /// task running as the local system account, and whether that account reaches a network path is
-        /// decided by the share's own permissions, which cannot be determined from this side.
+        /// The row that matters is an administrator on a network path, which must be refused: the broker
+        /// runs as the local system account and reaches a share as the machine rather than as the caller,
+        /// and whether that succeeds is decided by the share's own permissions, which cannot be determined
+        /// from this side. That row is unreachable on a local checkout, so asking the decision directly is
+        /// the only way it is ever asserted.
         /// </remarks>
-        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
-        public void CanGetUserPrimaryToken_IsFalseForAClientOnANetworkPath()
+        /// <param name="callerIsLocalSystem">Whether the caller is the local system account.</param>
+        /// <param name="callerIsAdmin">Whether the caller is an administrator.</param>
+        /// <param name="onNetworkPath">Whether the client/server directory is on a network path.</param>
+        /// <param name="expected">Whether brokering should be reported as possible.</param>
+        [Theory]
+        [InlineData(true, true, true, true)]
+        [InlineData(true, true, false, true)]
+        [InlineData(true, false, true, true)]
+        [InlineData(true, false, false, true)]
+        [InlineData(false, true, true, false)]
+        [InlineData(false, true, false, true)]
+        [InlineData(false, false, true, false)]
+        [InlineData(false, false, false, false)]
+        public void GetCanGetUserPrimaryToken_AnswersForEveryExecutionContext(bool callerIsLocalSystem, bool callerIsAdmin, bool onNetworkPath, bool expected)
         {
-            if (ClientServerUtilities.ClientServerOnNetworkPath && !AccountUtilities.CallerIsLocalSystem)
-            {
-                Assert.False(TokenManager.CanGetUserPrimaryToken, "Brokering was reported as possible for a client the local system account may not reach.");
-            }
+            Assert.Equal(expected, TokenManager.GetCanGetUserPrimaryToken(callerIsLocalSystem, callerIsAdmin, onNetworkPath));
+        }
+
+        /// <summary>
+        /// Verifies that the answer held for this process is the one its own context gives, tying the
+        /// value every caller reads to the decision covered above.
+        /// </summary>
+        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
+        public void CanGetUserPrimaryToken_AgreesWithTheContextItWasDerivedFrom()
+        {
+            Assert.Equal(
+                TokenManager.GetCanGetUserPrimaryToken(AccountUtilities.CallerIsLocalSystem, AccountUtilities.CallerIsAdmin, ClientServerUtilities.ClientServerOnNetworkPath),
+                TokenManager.CanGetUserPrimaryToken);
         }
 
         /// <summary>

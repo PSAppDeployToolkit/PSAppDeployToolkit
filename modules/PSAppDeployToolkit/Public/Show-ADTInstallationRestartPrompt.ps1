@@ -297,10 +297,7 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
                 }
-                if ($NoForceCloseApps)
-                {
-                    $Script:ADT.ShutdownNoForceCloseApps = $true
-                }
+                $Script:ADT.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {
@@ -320,10 +317,7 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
                 }
-                if ($NoForceCloseApps)
-                {
-                    $Script:ADT.ShutdownNoForceCloseApps = $true
-                }
+                $Script:ADT.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {

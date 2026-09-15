@@ -41,7 +41,7 @@ namespace PSADT.Foundation
             using SafeHandle? hPrimaryToken = await GetEffectiveAccessTokenAsync(runAsActiveUser, elevatedTokenType).ConfigureAwait(false);
             if (hPrimaryToken is null && runAsActiveUser.SessionId != uint.MaxValue)
             {
-                throw new NotSupportedException("Cannot remediate another user's session as the SYSTEM account does not have access to the PSAppDeployToolkit module.");
+                throw new NotSupportedException("Cannot remediate another user's session as their token cannot be brokered in this execution context.");
             }
             Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null
                 ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)

@@ -173,17 +173,32 @@ namespace PSADT.Tests.Foundation
         }
 
         /// <summary>
-        /// Verifies that a path neither question can parse is reported as local rather than thrown over.
+        /// Verifies that an extended-length local path is reported as local rather than thrown over.
         /// </summary>
         /// <remarks>
         /// An extended-length path is not a <see cref="Uri"/> and its root names no drive, so both
-        /// questions refuse it. The answer is reached from a static constructor, so a path that throws
-        /// here does not fail one call: it fails the type, and everything that reads it.
+        /// questions refuse it as spelled. The answer is reached from a static constructor, so a path
+        /// that throws here does not fail one call: it fails the type, and everything that reads it.
         /// </remarks>
         [Fact]
-        public void GetPathIsNetworked_IsFalseForAPathItCannotParse()
+        public void GetPathIsNetworked_IsFalseForAnExtendedLengthLocalPath()
         {
-            Assert.False(ClientServerUtilities.GetPathIsNetworked(@"\\?\C:\Windows"), "An unparseable path was reported as a network path.");
+            Assert.False(ClientServerUtilities.GetPathIsNetworked(@"\\?\C:\Windows"), "An extended-length local path was reported as a network path.");
+        }
+
+        /// <summary>
+        /// Verifies that an extended-length share is recognised as a network location, rather than being
+        /// reported as local because neither question could parse it.
+        /// </summary>
+        /// <remarks>
+        /// The dangerous half of the pair above. Refusing to answer defaults to local, and answering
+        /// local for a share is what re-opens the very hole this classification exists to close: it lets
+        /// a token be brokered through a share the local system account may have no access to.
+        /// </remarks>
+        [Fact]
+        public void GetPathIsNetworked_IsTrueForAnExtendedLengthShare()
+        {
+            Assert.True(ClientServerUtilities.GetPathIsNetworked(@"\\?\UNC\server\share\dir"), "An extended-length share was reported as a local path.");
         }
 
         /// <summary>
