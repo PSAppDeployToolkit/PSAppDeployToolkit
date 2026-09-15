@@ -816,7 +816,7 @@ function Start-ADTProcess
                         {
                             [PSADT.Security.ElevatedTokenType]::HighestAvailable
                         }
-                        elseif ($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser)
+                        elseif (($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -and [PSADT.AccountManagement.AccountUtilities]::CallerIsLoggedOnUser)
                         {
                             [PSADT.Security.ElevatedTokenType]::None
                         }
