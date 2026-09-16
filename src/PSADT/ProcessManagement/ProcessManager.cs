@@ -433,6 +433,11 @@ namespace PSADT.ProcessManagement
                     }
                 }
             }
+            catch
+            {
+                return;
+                throw;
+            }
             finally
             {
                 if (pinnedUserSidAddRef)
