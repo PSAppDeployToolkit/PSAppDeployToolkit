@@ -46,7 +46,7 @@ namespace PSADT.Interop.Tests
             // Act
             foreach (KeyValuePair<string, long> member in EnumMembers.Get(typeof(SE_PRIVILEGE)))
             {
-                if (string.Equals(member.Key, nameof(SE_PRIVILEGE.SeUnsolicitedInputPrivilege), StringComparison.Ordinal))
+                if (nameof(SE_PRIVILEGE.SeUnsolicitedInputPrivilege).Equals(member.Key, StringComparison.Ordinal))
                 {
                     // SE_UNSOLICITED_INPUT_NAME is in the Windows headers but was never implemented, so
                     // the authority has no entry and the lookup fails with ERROR_NO_SUCH_PRIVILEGE.

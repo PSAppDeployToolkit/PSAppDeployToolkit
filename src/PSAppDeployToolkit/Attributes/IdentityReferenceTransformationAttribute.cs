@@ -142,12 +142,12 @@ namespace PSAppDeployToolkit.Attributes
         private static bool TryConvertPowerShellCommandObject(object identityObject, [NotNullWhen(true)] out SecurityIdentifier? identity)
         {
             Type objectType = identityObject.GetType();
-            if (!string.Equals(objectType.Namespace, "Microsoft.PowerShell.Commands", StringComparison.Ordinal))
+            if (!"Microsoft.PowerShell.Commands".Equals(objectType.Namespace, StringComparison.Ordinal))
             {
                 identity = null;
                 return false;
             }
-            if (string.Equals(objectType.Name, "LocalPrincipal", StringComparison.Ordinal)
+            if ("LocalPrincipal".Equals(objectType.Name, StringComparison.Ordinal)
                 && objectType.GetProperty("SID", typeof(SecurityIdentifier)) is PropertyInfo directProperty
                 && directProperty.GetValue(identityObject) is SecurityIdentifier directSid)
             {
@@ -155,7 +155,7 @@ namespace PSAppDeployToolkit.Attributes
                 return true;
             }
             if (objectType.BaseType is Type baseType
-                && string.Equals(baseType.Name, "LocalPrincipal", StringComparison.Ordinal)
+                && "LocalPrincipal".Equals(baseType.Name, StringComparison.Ordinal)
                 && objectType.GetProperty("SID", typeof(SecurityIdentifier)) is PropertyInfo baseProperty
                 && baseProperty.GetValue(identityObject) is SecurityIdentifier baseSid)
             {

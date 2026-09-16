@@ -161,7 +161,7 @@ namespace PSADT.Tests.FileSystem
                 Assert.False(string.IsNullOrWhiteSpace(h.NtPath));
                 Assert.False(string.IsNullOrWhiteSpace(h.ProcessName));
                 Assert.True(
-                    string.Equals(h.HandleType, "File", StringComparison.Ordinal) || string.Equals(h.HandleType, "Directory", StringComparison.Ordinal),
+                    "File".Equals(h.HandleType, StringComparison.Ordinal) || "Directory".Equals(h.HandleType, StringComparison.Ordinal),
                     $"Unexpected handle type '{h.HandleType}'.");
             });
         }

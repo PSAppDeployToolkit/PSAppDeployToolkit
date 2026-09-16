@@ -30,7 +30,7 @@ namespace PSADT.Interop.Tests
         public void Values_AreConsecutiveBitsAndTheMaskExcludesTheUnofficialOnes()
         {
             // Arrange
-            KeyValuePair<string, long>[] members = [.. EnumMembers.Get(typeof(OBJECT_ATTRIBUTES)).Where(static m => !string.Equals(m.Key, nameof(OBJECT_ATTRIBUTES.OBJ_VALID_ATTRIBUTES), StringComparison.Ordinal))];
+            KeyValuePair<string, long>[] members = [.. EnumMembers.Get(typeof(OBJECT_ATTRIBUTES)).Where(static m => !nameof(OBJECT_ATTRIBUTES.OBJ_VALID_ATTRIBUTES).Equals(m.Key, StringComparison.Ordinal))];
             long[] unofficial =
             [
                 (long)OBJECT_ATTRIBUTES.OBJ_PROTECT_CLOSE,

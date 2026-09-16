@@ -257,9 +257,9 @@ namespace PSAppDeployToolkit.Tests.Foundation
 
             // Assert
             Assert.Equal(1, kinds.Count(static kind => kind));
-            Assert.Equal(table.IsWorkstationOS, string.Equals(table.EnvOSProductTypeName, "Workstation", StringComparison.Ordinal));
-            Assert.Equal(table.IsDomainControllerOS, string.Equals(table.EnvOSProductTypeName, "Domain Controller", StringComparison.Ordinal));
-            Assert.Equal(table.IsServerOS, string.Equals(table.EnvOSProductTypeName, "Server", StringComparison.Ordinal));
+            Assert.Equal(table.IsWorkstationOS, "Workstation".Equals(table.EnvOSProductTypeName, StringComparison.Ordinal));
+            Assert.Equal(table.IsDomainControllerOS, "Domain Controller".Equals(table.EnvOSProductTypeName, StringComparison.Ordinal));
+            Assert.Equal(table.IsServerOS, "Server".Equals(table.EnvOSProductTypeName, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
 
             // Assert: physical or prefixed, with nothing in between.
             Assert.True(
-                string.Equals(table.EnvHardwareType, "Physical", StringComparison.Ordinal) || table.EnvHardwareType.StartsWith("Virtual", StringComparison.Ordinal),
+                "Physical".Equals(table.EnvHardwareType, StringComparison.Ordinal) || table.EnvHardwareType.StartsWith("Virtual", StringComparison.Ordinal),
                 table.EnvHardwareType);
         }
 
