@@ -265,7 +265,11 @@ namespace PSADT.ShortcutManagement
                 {
                     return iconFile;
                 }
-                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH];
+
+                // Sized from the URL rather than MAX_PATH, which a path outgrew long ago and which fails the
+                // conversion rather than truncating it. Converting a URL only ever shortens it, so this always
+                // has the room. On the heap because the length is the file's to choose rather than ours.
+                Span<char> buffer = new char[Math.Max((int)PInvoke.MAX_PATH, iconFile.Length + 1)];
                 _ = NativeMethods.PathCreateFromUrl(iconFile, buffer, out uint bufferLength);
                 return buffer[..(int)bufferLength].ToString();
             }

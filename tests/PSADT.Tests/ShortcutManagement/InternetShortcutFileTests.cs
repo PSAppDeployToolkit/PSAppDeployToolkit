@@ -607,6 +607,34 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that an icon path too long for MAX_PATH is still read back.
+        /// </summary>
+        /// <remarks>
+        /// The shell hands the icon back as a file URL and the getter converts it to a path. A buffer too small
+        /// for the answer fails that conversion rather than truncating it, and the failure comes out of the
+        /// getter, so one long icon path made every other property of the shortcut unreadable along with it.
+        /// Windows has not bounded a path at MAX_PATH for a long time.
+        /// </remarks>
+        [Fact]
+        public void IconFile_IsReadBackWhenLongerThanMaxPath()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange: written as a file URL by hand, so that the conversion is reached with a value past
+                // MAX_PATH whatever form the shell would otherwise have chosen to store the icon in
+                string segment = new('a', 60);
+                string longIconPath = $@"C:\{segment}\{segment}\{segment}\{segment}\{segment}\icon.dll";
+                Assert.True(longIconPath.Length > 260, "The icon path has to exceed MAX_PATH for this to test anything.");
+                using TempDirectory temp = new();
+                string shortcutPath = temp.WriteFile("longicon.url", $"[InternetShortcut]\r\nURL=https://psappdeploytoolkit.com/\r\nIconFile={longIconPath.Replace('\\', '/').Insert(0, "file:///")}\r\nIconIndex=0\r\n");
+
+                // Assert
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                Assert.Equal(longIconPath, loaded.IconFile, ignoreCase: true);
+            });
+        }
+
+        /// <summary>
         /// The address used throughout, chosen so nothing is ever resolved over the network.
         /// </summary>
         private static Uri Url { get; } = new("https://psappdeploytoolkit.com/");
