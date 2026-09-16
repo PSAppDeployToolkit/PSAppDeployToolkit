@@ -89,8 +89,13 @@ Describe 'Set-ADTServiceStartMode' {
         It 'Surfaces the failure to the caller' {
             Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { [PSADT.ProcessManagement.ProcessResult]::new(5, $null, [System.String[]]('[SC] OpenService FAILED 5:'), [System.String[]]('[SC] OpenService FAILED 5:')) }
             Set-ADTServiceStartMode -Name $script:Subject.ServiceName -StartMode $script:WantedMode -ErrorAction SilentlyContinue -ErrorVariable scError
-            $scError | Should -Not -BeNullOrEmpty
-            $scError.Exception.Message | Should -BeLike '*OpenService FAILED 5*'
+            # The error variable also collects the intermediate objects each record passes through on its way
+            # out, one of which is not an ErrorRecord at all, so the reported failure has to be picked out of
+            # it rather than read off the whole collection.
+            $reported = @($scError | & { process { if (($_ -is [System.Management.Automation.ErrorRecord]) -and $_.FullyQualifiedErrorId.Equals('ScConfigFailure,Set-ADTServiceStartMode')) { return $_ } } })
+            $reported | Should -Not -BeNullOrEmpty
+            $reported[0].Exception | Should -BeOfType ([PSADT.ProcessManagement.ProcessException])
+            $reported[0].Exception.Message | Should -BeLike '*OpenService FAILED 5*'
         }
 
         It 'Returns nothing for a service it could not set' {
