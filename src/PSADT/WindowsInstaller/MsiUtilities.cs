@@ -301,8 +301,9 @@ namespace PSADT.WindowsInstaller
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, szXMLData: null, out uint requiredLength);
-            Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
+            Span<char> bufSpan = new char[(int)requiredLength + 1];
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan[..(int)requiredLength].ToString());
         }
@@ -537,12 +538,13 @@ namespace PSADT.WindowsInstaller
         /// not set.</returns>
         internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, szValueBuf: null, out uint requiredSize);
             if (requiredSize == 0)
             {
                 return null;
             }
-            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            Span<char> bufSpan = new char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
             return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan ? resSpan.ToString() : null;
         }
@@ -674,8 +676,9 @@ namespace PSADT.WindowsInstaller
         /// <returns>The string value of the specified field if it exists; otherwise, null if the field is empty or not found.</returns>
         private static string? GetRecordString(MsiCloseHandleSafeHandle hRecord, uint field)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiRecordGetString(hRecord, field, szValueBuf: null, out uint requiredSize);
-            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            Span<char> bufSpan = new char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
             return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan
                 ? resSpan.ToString()
