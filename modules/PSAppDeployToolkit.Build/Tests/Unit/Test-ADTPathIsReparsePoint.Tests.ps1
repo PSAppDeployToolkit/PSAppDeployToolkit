@@ -21,6 +21,11 @@ Describe 'Test-ADTPathIsReparsePoint' {
         $null = cmd.exe /c mklink /J "$script:Junction" "$script:LinkTarget"
         $null = cmd.exe /c mklink /J "$script:DanglingJunction" "$script:DanglingTarget"
         Remove-Item -LiteralPath $script:DanglingTarget -Recurse -Force
+
+        # A real directory reached through the junction, so that nothing along the way is a reparse point
+        # except the ancestor. This is what a standard user leaves behind when the path an elevated process
+        # was told to write to is itself unremarkable.
+        $script:BeneathJunction = (New-Item -Path "$script:LinkTarget\Beneath" -ItemType Directory -Force).FullName.Replace($script:LinkTarget, $script:Junction)
     }
 
     AfterAll {
@@ -65,6 +70,27 @@ Describe 'Test-ADTPathIsReparsePoint' {
             # Nothing to redirect through, and the caller deals with the absence on its own terms.
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Path = "$TestDrive\NeverExisted" } {
                 Test-ADTPathIsReparsePoint -LiteralPath $Path | Should -BeFalse
+            }
+        }
+
+        It 'Reports a real directory reached through a junction' {
+            # The directory itself carries no reparse point, so testing only the path named would let an
+            # elevated write through to wherever the junction above it points.
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Path = $script:BeneathJunction } {
+                Test-ADTPathIsReparsePoint -LiteralPath $Path | Should -BeTrue
+            }
+        }
+
+        It 'Reports a path that is not there yet beneath a junction' {
+            # What the mount path looks like before anything creates it, which is when it is first checked.
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Path = "$script:Junction\NotCreatedYet" } {
+                Test-ADTPathIsReparsePoint -LiteralPath $Path | Should -BeTrue
+            }
+        }
+
+        It 'Reports a path beneath a junction whose target has gone' {
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Path = "$script:DanglingJunction\Beneath" } {
+                Test-ADTPathIsReparsePoint -LiteralPath $Path | Should -BeTrue
             }
         }
     }

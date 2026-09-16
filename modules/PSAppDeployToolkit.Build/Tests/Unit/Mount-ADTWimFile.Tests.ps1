@@ -57,6 +57,12 @@ Describe 'Mount-ADTWimFile' {
             { Mount-ADTWimFile -ImagePath $script:DummyImage -Path $script:JunctionMountPath -Index 1 } | Should -Throw -ErrorId 'InvalidPathParameterValue,Mount-ADTWimFile'
         }
 
+        It 'Refuses a mount path reached through a junction' {
+            # The redirection is the same whether the junction stands at the mount point or above it, and
+            # a mount point that does not exist yet is the state this is first checked in.
+            { Mount-ADTWimFile -ImagePath $script:DummyImage -Path "$script:JunctionMountPath\Beneath" -Index 1 } | Should -Throw -ErrorId 'InvalidPathParameterValue,Mount-ADTWimFile'
+        }
+
         It 'Accepts the directory the junction points at' {
             # The refusal has to be about the redirection rather than about the target being unusable,
             # so the same directory named directly must get past the mount path validation.
