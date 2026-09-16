@@ -2131,6 +2131,29 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that an argument carrying quotes of its own reaches the executable with them intact.
+        /// </summary>
+        /// <remarks>
+        /// 7-Zip's self-extractor takes its output directory attached to the flag, quotes and all, so the
+        /// quotes here are part of what the executable is being told rather than the caller saying where the
+        /// argument ends. The rule for that shape used to join the flag, which ends on one of those quotes,
+        /// onto a separately escaped value, leaving the quoting unbalanced and the argument in three pieces.
+        /// Escaping the whole thing keeps it one argument and keeps every character of it.
+        /// </remarks>
+        [Fact]
+        public void ArgumentListToCommandLine_KeepsAFlagsOwnQuotes()
+        {
+            // Arrange
+            const string Argument = "-sfx_o\"C:\\Path\" /S";
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(["program", Argument]);
+
+            // Assert
+            Assert.Equal(["program", Argument], CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true));
+        }
+
+        /// <summary>
         /// Verifies that a value which genuinely is one quoted token is still written out as it stands.
         /// </summary>
         /// <remarks>These are why the verbatim path exists. Counting quotes would not separate them from the
