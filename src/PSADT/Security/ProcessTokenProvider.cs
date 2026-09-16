@@ -25,16 +25,6 @@ namespace PSADT.Security
     internal static class ProcessTokenProvider
     {
         /// <summary>
-        /// Validates that the session identifier is neither zero nor the maximum value, which are reserved and invalid for user sessions.
-        /// </summary>
-        /// <param name="sessionId">The session identifier to validate.</param>
-        /// <returns>Whether the session identifier is valid.</returns>
-        internal static bool SessionIdIsSupported(uint sessionId)
-        {
-            return TokenManager.SessionIdIsValidForVending(sessionId);
-        }
-
-        /// <summary>
         /// Searches accessible processes and their linked tokens for the requested capabilities.
         /// </summary>
         /// <param name="sessionId">The requested desktop session.</param>

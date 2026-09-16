@@ -23,6 +23,11 @@ namespace PSADT.Tests.Security
     /// which are the part that matters: a token handed out in error is a privilege escalation, and the
     /// refusals all happen before any part of the brokering is set in motion.
     /// </para>
+    /// <para>
+    /// The identity check on the <see cref="RunAsActiveUser"/> entry point falls under the same exclusion.
+    /// It compares a token that has already been acquired, so reaching it needs an acquisition that
+    /// succeeds, which needs the second session and the broker run that are ruled out above.
+    /// </para>
     /// </remarks>
     public sealed class TokenManagerTests
     {
@@ -42,15 +47,60 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
-        /// Reports acquisition eligibility for valid desktop sessions without acquiring a token.
+        /// Reports acquisition eligibility without acquiring a token, which needs both a vendable session
+        /// and a caller with a route to one rather than either on its own.
         /// </summary>
+        /// <remarks>
+        /// The caller half is a fact about the machine the run landed on, so the expectation is derived
+        /// rather than fixed. An unelevated caller has no route at all - no process it may open, no broker
+        /// it may start, and no WTS - so every session is refused, and asserting that beside the elevated
+        /// answer is what proves the two are combined rather than alternatives.
+        /// </remarks>
         /// <param name="session">The requested session.</param>
+        /// <param name="vendable">Whether the session itself may be vended.</param>
         [Theory]
-        [InlineData(5u)]
-        [InlineData(6u)]
-        public void CanGetUserPrimaryToken_AcceptsValidSession(uint session)
+        [InlineData(5u, true)]
+        [InlineData(6u, true)]
+        [InlineData(0u, false)]
+        [InlineData(uint.MaxValue, false)]
+        public void CanGetUserPrimaryToken_RequiresAVendableSessionAndAnEligibleCaller(uint session, bool vendable)
         {
-            Assert.True(TokenManager.CanGetUserPrimaryToken(session));
+            Assert.Equal(vendable && TestEnvironment.IsElevated, TokenManager.CanGetUserPrimaryToken(session));
+        }
+
+        /// <summary>
+        /// Reports the absence of a token rather than raising it, on both entry points.
+        /// </summary>
+        /// <remarks>
+        /// The sessions are ineligible ones, which is the only refusal a test can arrange on a single
+        /// session machine: a caller that may attempt acquisition still cannot be made to fail on demand,
+        /// as that needs a session holding no suitable process and a broker that cannot be started.
+        /// <para>
+        /// A caller error still raises, and that is asserted here too, because the whole value of the
+        /// member is in which outcomes it absorbs and an undefined elevation is not one of them.
+        /// </para>
+        /// </remarks>
+        /// <param name="session">The ineligible session.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(0u)]
+        [InlineData(uint.MaxValue)]
+        public async Task TryGetUserPrimaryTokenAsync_ReportsRefusalButRaisesCallerErrorAsync(uint session)
+        {
+            RunAsActiveUser user = new(new NTAccount("TokenValidationTest"), new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), session, isLocalAdmin: null);
+            using (SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(session).ConfigureAwait(true))
+            {
+                Assert.Null(token);
+            }
+            using (SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(user).ConfigureAwait(true))
+            {
+                Assert.Null(token);
+            }
+            ArgumentOutOfRangeException failure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(static async () =>
+            {
+                using SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(5u, (ElevatedTokenType)99).ConfigureAwait(false);
+            }).ConfigureAwait(true);
+            Assert.Equal("elevatedTokenType", failure.ParamName);
         }
 
         /// <summary>

@@ -105,11 +105,9 @@ namespace PSADT.Foundation
                 return TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
             }
 
-            // A user with no session of their own has no token to get. Other users require an available
-            // process-token or broker route; otherwise leave the identifier to test with.
-            return runAsActiveUser.SessionId != uint.MaxValue && TokenManager.CanGetUserPrimaryToken(runAsActiveUser.SessionId)
-                ? await TokenManager.GetUserPrimaryTokenAsync(runAsActiveUser, elevatedTokenType).ConfigureAwait(false)
-                : null;
+            // A user with no session of their own has no token to get, and nor has one whose token cannot be
+            // reached from here. Either way the identifier is left to test with.
+            return await TokenManager.TryGetUserPrimaryTokenAsync(runAsActiveUser, elevatedTokenType).ConfigureAwait(false);
         }
 
         /// <summary>

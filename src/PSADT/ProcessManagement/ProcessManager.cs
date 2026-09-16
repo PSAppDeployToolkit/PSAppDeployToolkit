@@ -143,7 +143,7 @@ namespace PSADT.ProcessManagement
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                     if (!TokenManager.CanGetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId))
                     {
-                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
+                        throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                     }
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
@@ -168,7 +168,7 @@ namespace PSADT.ProcessManagement
                     }
                     if (!TokenManager.CanGetUserPrimaryToken(AccountUtilities.CallerSessionId))
                     {
-                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
+                        throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                     }
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerRunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, launchInfo.RunAsInvoker, in startupInfo, out pi);

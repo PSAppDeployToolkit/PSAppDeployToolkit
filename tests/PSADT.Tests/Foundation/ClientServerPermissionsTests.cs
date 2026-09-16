@@ -119,11 +119,24 @@ namespace PSADT.Tests.Foundation
         }
 
         /// <summary>
-        /// Propagates acquisition refusal when the desktop identity mismatches and brokering is unavailable.
+        /// Refuses another user on a perfectly good session when the caller has no route to a token.
         /// </summary>
+        /// <remarks>
+        /// The companion to the session case above, holding the session valid and varying the caller
+        /// instead: eligibility is the conjunction of the two, so a run that only ever refused an
+        /// ineligible session would leave half of it unasserted.
+        /// <para>
+        /// This used to expect the refusal to come out of acquisition itself, because a valid session
+        /// alone was enough to send the code brokering and the administrator check inside it was what
+        /// turned the caller away. Eligibility is now settled before anything is attempted, which is the
+        /// point of the change and is why this can no longer assert on the identity check: that needs a
+        /// token to have been acquired, so it is reachable only with a second session logged on and a
+        /// broker allowed to run, and a test may arrange neither.
+        /// </para>
+        /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task RemediateAsync_PropagatesTokenAcquisitionFailureAsync()
+        public async Task RemediateAsync_RefusesAnotherUserWhenTheCallerHasNoTokenRouteAsync()
         {
             Assert.SkipUnless(CallerReachesTheClient, ClientAccessRequired);
             Assert.SkipUnless(!TestEnvironment.IsElevated, UnelevatedRequired);
@@ -131,7 +144,7 @@ namespace PSADT.Tests.Foundation
             RunAsActiveUser mismatchedUser = new(AccountUtilities.CallerUsername,
                 new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), AccountUtilities.CallerSessionId, AccountUtilities.CallerIsAdmin);
 
-            _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => ClientServerPermissions.RemediateAsync(mismatchedUser).AsTask()).ConfigureAwait(true);
+            _ = await Assert.ThrowsAsync<NotSupportedException>(() => ClientServerPermissions.RemediateAsync(mismatchedUser).AsTask()).ConfigureAwait(true);
         }
 
         /// <summary>

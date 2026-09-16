@@ -41,13 +41,72 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Checks whether either token acquisition route may serve the request.
+        /// Checks whether any acquisition route may serve the request.
         /// </summary>
+        /// <remarks>Named as the union of the routes rather than reduced to the administrator test they currently share, so that
+        /// it continues to describe every route if any of them changes. Process discovery is a search of the target session and
+        /// can come up empty, so a caller that holds a no-token fallback wants
+        /// <see cref="TryGetUserPrimaryTokenAsync(uint, ElevatedTokenType, bool)"/>, which reaches that fallback rather than
+        /// answering a question no check can settle in advance.</remarks>
         /// <param name="sessionId">The requested desktop session.</param>
         /// <returns>Whether acquisition may be attempted.</returns>
         internal static bool CanGetUserPrimaryToken(uint sessionId)
         {
-            return ProcessTokenProvider.SessionIdIsSupported(sessionId) || CanGetTokenViaWtsOrBroker;
+            return (CanGetTokenFromProcess || CallerCanRetrieveTokens) && SessionIdIsValidForVending(sessionId);
+        }
+
+        /// <summary>
+        /// Retrieves a session token, reporting the absence of one rather than raising it.
+        /// </summary>
+        /// <remarks>For a caller holding a fallback to use when no token can be had. Absorbs a refusal and an environmental
+        /// failure, which are the outcomes a fallback exists for; an undefined elevation is a caller error and still raises.</remarks>
+        /// <param name="sessionId">The requested desktop session.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is requested.</param>
+        /// <returns>The owned primary token, or <see langword="null"/> if none could be had.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">The elevation value is not defined.</exception>
+        internal static async Task<SafeFileHandle?> TryGetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        {
+            if (!SessionIdIsValidForVending(sessionId))
+            {
+                return null;
+            }
+            try
+            {
+                return await GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException)
+            {
+                return null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a primary token for the expected user, reporting the absence of one rather than raising it.
+        /// </summary>
+        /// <remarks>Absorbs the identity check as well as the refusals, as a session that has changed hands has no token for the
+        /// user who was asked about.</remarks>
+        /// <param name="user">The expected desktop user.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is requested.</param>
+        /// <returns>The owned token for the expected user, or <see langword="null"/> if none could be had.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">The elevation value is not defined.</exception>
+        internal static async ValueTask<SafeFileHandle?> TryGetUserPrimaryTokenAsync(RunAsActiveUser user, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        {
+            if (!SessionIdIsValidForVending(user.SessionId))
+            {
+                return null;
+            }
+            try
+            {
+                return await GetUserPrimaryTokenAsync(user, elevatedTokenType, uiAccess).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException)
+            {
+                return null;
+                throw;
+            }
         }
 
         /// <summary>
@@ -238,10 +297,13 @@ namespace PSADT.Security
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is required.</param>
         /// <returns>A SafeFileHandle representing the user's primary access token, or null if the token could not be retrieved.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the session ID is not valid for vending.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator.</exception>
         private static SafeFileHandle? GetUserPrimaryTokenFromProcess(uint sessionId, SecurityIdentifier? sessionSid, ElevatedTokenType elevatedTokenType, bool uiAccess)
         {
-            return ProcessTokenProvider.TryGetToken(sessionId, sessionSid, elevatedTokenType, uiAccess, out SafeFileHandle? token)
-                ? token
+            return !SessionIdIsValidForVending(sessionId) ? throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.")
+                : !CanGetTokenFromProcess ? throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.")
+                : ProcessTokenProvider.TryGetToken(sessionId, sessionSid, elevatedTokenType, uiAccess, out SafeFileHandle? token) ? token
                 : null;
         }
 
@@ -441,9 +503,8 @@ namespace PSADT.Security
 
             // Validate state before proceeding.
             return !SessionIdIsValidForVending(sessionId) ? throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.")
-                : !AccountUtilities.CallerIsAdmin ? throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.")
                 : AccountUtilities.CallerIsLocalSystem ? throw new UnauthorizedAccessException("Local System must retrieve user tokens through WTS directly.")
-                : !CanGetTokenViaWtsOrBroker ? throw new UnauthorizedAccessException("The token broker cannot access the client/server assemblies.")
+                : !CanGetTokenViaBroker ? throw new UnauthorizedAccessException("The token broker cannot access the client/server assemblies.")
                 : GetUserPrimaryTokenViaBrokerImplAsync(sessionId, elevatedTokenType, uiAccess);
         }
 
@@ -463,7 +524,7 @@ namespace PSADT.Security
             {
                 throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.");
             }
-            if (!AccountUtilities.CallerIsLocalSystem)
+            if (!CanGetTokenViaWts)
             {
                 throw new UnauthorizedAccessException("Direct WTS token acquisition requires Local System.");
             }
@@ -490,11 +551,31 @@ namespace PSADT.Security
         }
 
         /// <summary>
+        /// Indicates whether the current execution context can retrieve user tokens from other sessions through process discovery.
+        /// </summary>
+        private static readonly bool CanGetTokenFromProcess = AccountUtilities.CallerIsAdmin;
+
+        /// <summary>
         /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
         /// </summary>
         /// <remarks>An administrator brokers via a scheduled task running as the Local System account, which reaches a network
         /// path as the computer account rather than as itself. On a network path, brokering is allowed only when the Local System
         /// account has the required file system access to the client/server assemblies. This does not verify the share's permissions.</remarks>
-        private static readonly bool CanGetTokenViaWtsOrBroker = AccountUtilities.CallerIsLocalSystem || (AccountUtilities.CallerIsAdmin && (!ClientServerUtilities.ClientServerOnNetworkPath || ClientServerPermissions.SystemAccountHasAccess()));
+        private static readonly bool CanGetTokenViaBroker = AccountUtilities.CallerIsAdmin && (!ClientServerUtilities.ClientServerOnNetworkPath || ClientServerPermissions.SystemAccountHasAccess());
+
+        /// <summary>
+        /// Indicates whether the current execution context can utilize WTS to retrieve user tokens from other sessions.
+        /// </summary>
+        private static readonly bool CanGetTokenViaWts = AccountUtilities.CallerIsLocalSystem;
+
+        /// <summary>
+        /// Indicates whether the current execution context has a token acquisition route that is available irrespective of what
+        /// the target session happens to be running.
+        /// </summary>
+        /// <remarks>Process discovery is deliberately not named here. It searches the target session for a suitable process, so
+        /// it can come up empty against a session that is otherwise perfectly serviceable, and acquisition then falls through to
+        /// the broker. Naming it would report a route as available to every administrator, including one running from a network
+        /// path the Local System account cannot read, where that fall through is refused.</remarks>
+        private static readonly bool CallerCanRetrieveTokens = CanGetTokenViaBroker || CanGetTokenViaWts;
     }
 }
