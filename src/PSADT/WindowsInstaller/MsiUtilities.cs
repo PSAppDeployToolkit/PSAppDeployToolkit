@@ -650,12 +650,13 @@ namespace PSADT.WindowsInstaller
         /// <summary>
         /// Fetches the next record from the specified Windows Installer view.
         /// </summary>
-        /// <remarks>If the fetch operation fails, the method returns null without throwing an exception.
-        /// Ensure that the view handle is properly initialized before calling this method.</remarks>
+        /// <remarks>The end of a view is reported by the native call as a failure, so it is caught here and
+        /// returned as an absent row. Nothing else is: a read that fails for any other reason has to stay
+        /// distinguishable from a view that simply had nothing more in it, or a table that could not be read
+        /// reads as a table that was empty. Ensure the view handle is initialized before calling this.</remarks>
         /// <param name="hView">The handle to the view from which to fetch the record. This handle must be valid and opened with the
         /// appropriate permissions.</param>
-        /// <returns>A handle to the fetched record, or null if no more records are available or an error occurs during the fetch
-        /// operation.</returns>
+        /// <returns>A handle to the fetched record, or null if there are no more records.</returns>
         private static MsiCloseHandleSafeHandle? ViewFetch(MsiCloseHandleSafeHandle hView)
         {
             try
@@ -663,10 +664,9 @@ namespace PSADT.WindowsInstaller
                 _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle hRecord);
                 return hRecord;
             }
-            catch
+            catch (Win32Exception ex) when (ex.NativeErrorCode is (int)WIN32_ERROR.ERROR_NO_MORE_ITEMS)
             {
                 return null;
-                throw;
             }
         }
 
