@@ -395,6 +395,39 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that the remaining exception types carrying a member of their own kind are writable.
+        /// </summary>
+        /// <remarks>
+        /// Each serializes something the contract names nowhere else - an array of its own kind, or an enum
+        /// of its own - and the resolver refuses what it cannot name, so being in the known types is not on
+        /// its own enough to make a type writable. Neither of these can arise from this client, which uses
+        /// neither SMTP nor websockets, but a type declared as supported and silently unserializable is
+        /// worse than one that was never declared at all.
+        /// <para>
+        /// What survives is the type and the message. WebSocketException's own error code does not: the
+        /// framework stopped carrying it through GetObjectData, so it comes back as the default whatever it
+        /// was set to, and asserting otherwise would be asserting against the framework rather than this.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void Exception_RoundTripsTypesCarryingAMemberOfTheirOwnKind()
+        {
+            // Arrange
+            System.Net.Mail.SmtpFailedRecipientsException smtp = new("delivery failed", [new System.Net.Mail.SmtpFailedRecipientException(System.Net.Mail.SmtpStatusCode.MailboxBusy, "someone@example.test")]);
+            System.Net.WebSockets.WebSocketException socket = new(System.Net.WebSockets.WebSocketError.InvalidState, "the socket was not open");
+
+            // Act
+            Exception restoredSmtp = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(smtp));
+            Exception restoredSocket = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(socket));
+
+            // Assert
+            _ = Assert.IsType<System.Net.Mail.SmtpFailedRecipientsException>(restoredSmtp);
+            Assert.Equal("delivery failed", restoredSmtp.Message);
+            _ = Assert.IsType<System.Net.WebSockets.WebSocketException>(restoredSocket);
+            Assert.Equal("the socket was not open", restoredSocket.Message);
+        }
+
+        /// <summary>
         /// Verifies that an aggregate nested inside another survives, since a task awaiting tasks produces
         /// exactly that and it is the case the array type is reached through twice.
         /// </summary>

@@ -458,6 +458,11 @@ namespace PSADT.ClientServer
                 // AggregateException puts its InnerExceptions on the wire as one of these, so without it the
                 // type above cannot be written at all and a faulted task's failure never reaches the far end.
                 typeof(Exception[]),
+
+                // The remaining members that exception types in this list serialize and cannot name without.
+                // Each one is the reason its own exception is writable at all, the same as the two above.
+                typeof(System.Net.Mail.SmtpFailedRecipientException[]),
+                typeof(System.Net.WebSockets.WebSocketError),
             ]),
         };
 
