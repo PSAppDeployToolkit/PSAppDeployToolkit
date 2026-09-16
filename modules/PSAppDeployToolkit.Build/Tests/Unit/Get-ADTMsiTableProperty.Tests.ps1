@@ -63,4 +63,65 @@ Describe 'Get-ADTMsiTableProperty' {
             { Get-ADTMsiTableProperty -LiteralPath $script:MsiPath -Table 'Property' -GetSummaryInformation } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
         }
     }
+
+    Context 'Packages whose property names repeat' {
+        BeforeAll {
+            # A copy of the committed package carrying one extra row whose name differs from an existing one
+            # only by a trailing space. The installer keeps the two apart, property names being whatever the
+            # database says they are, but they are read with that whitespace removed and so arrive as one.
+            $script:DuplicateMsiPath = "$TestDrive\duplicate.msi"
+            Copy-Item -LiteralPath $script:MsiPath -Destination $script:DuplicateMsiPath
+            Set-ItemProperty -LiteralPath $script:DuplicateMsiPath -Name IsReadOnly -Value $false
+
+            $installer = New-Object -ComObject WindowsInstaller.Installer
+            try
+            {
+                # msiOpenDatabaseModeTransact, so the change is written back to the copy on commit.
+                $database = $installer.GetType().InvokeMember('OpenDatabase', 'InvokeMethod', $null, $installer, @($script:DuplicateMsiPath, 1))
+                $view = $database.GetType().InvokeMember('OpenView', 'InvokeMethod', $null, $database, @('INSERT INTO `Property` (`Property`, `Value`) VALUES (''ProductName '', ''A repeated name'')'))
+                $null = $view.GetType().InvokeMember('Execute', 'InvokeMethod', $null, $view, $null)
+                $null = $view.GetType().InvokeMember('Close', 'InvokeMethod', $null, $view, $null)
+                $null = $database.GetType().InvokeMember('Commit', 'InvokeMethod', $null, $database, $null)
+            }
+            finally
+            {
+                foreach ($comObject in $view, $database, $installer)
+                {
+                    if ($comObject)
+                    {
+                        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($comObject)
+                    }
+                }
+            }
+        }
+
+        It 'Reads the package anyway, keeping the last row read' {
+            # The repeat used to take the whole table with it, so nothing at all could be read from a package
+            # like this - not the name that repeated, and not any of the other properties either.
+            $properties = Get-ADTMsiTableProperty -LiteralPath $script:DuplicateMsiPath
+            $properties.ProductName | Should -BeExactly 'A repeated name'
+            $properties.ProductCode | Should -BeExactly $script:Properties.ProductCode
+        }
+
+        It 'Refuses the package with -NoClobber' {
+            { Get-ADTMsiTableProperty -LiteralPath $script:DuplicateMsiPath -NoClobber } | Should -Throw
+        }
+
+        It 'Names what repeated when it refuses' {
+            # A caller who asked to be told needs to know which property it was, the refusal otherwise being
+            # no more use than the one it replaced.
+            { Get-ADTMsiTableProperty -LiteralPath $script:DuplicateMsiPath -NoClobber } | Should -Throw -ExpectedMessage '*ProductName*'
+        }
+
+        It 'Reads a package whose names are unique with -NoClobber' {
+            # The switch has to be free to leave on, or a caller wanting it has to know in advance which
+            # packages can stand it.
+            (Get-ADTMsiTableProperty -LiteralPath $script:MsiPath -NoClobber).ProductCode | Should -BeExactly $script:Properties.ProductCode
+        }
+
+        It 'Rejects -NoClobber alongside -GetSummaryInformation' {
+            # Summary information is a different stream with no table to key on, so the two cannot go together.
+            { Get-ADTMsiTableProperty -LiteralPath $script:MsiPath -GetSummaryInformation -NoClobber } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+        }
+    }
 }

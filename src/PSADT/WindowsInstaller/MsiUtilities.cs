@@ -48,10 +48,13 @@ namespace PSADT.WindowsInstaller
         /// <param name="valueColumn">The zero-based index of the column to use as the value in the resulting dictionary.</param>
         /// <param name="szTransformFiles">An optional collection of transform files to apply when opening the database. May be null if no transforms
         /// are required.</param>
+        /// <param name="noClobber">Whether to refuse a key column that holds the same value on more than one row, rather than letting the
+        /// later row replace the earlier one.</param>
         /// <returns>A read-only dictionary containing the key-value pairs from the specified table and columns, or null if no
         /// properties are found.</returns>
-        /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database.</exception>
-        public static IReadOnlyDictionary<string, object>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null)
+        /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database, or if
+        /// <paramref name="noClobber"/> is set and the key column holds the same value more than once.</exception>
+        public static IReadOnlyDictionary<string, object>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null, bool noClobber = false)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -74,6 +77,7 @@ namespace PSADT.WindowsInstaller
             {
                 _ = NativeMethods.MsiViewExecute(hView);
                 Dictionary<string, object> result = new(StringComparer.Ordinal);
+                string? repeatedKey = null;
                 while (true)
                 {
                     using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
@@ -83,17 +87,28 @@ namespace PSADT.WindowsInstaller
                     }
                     if (GetRecordString(hRecord, 1) is string key)
                     {
+                        // Which column to key on is the caller's to choose, and nothing says the one they chose
+                        // holds a value only once. By default the later row wins, which is what this has always
+                        // done; a caller who needs to know instead gets it raised below, once the record this
+                        // was read from has been disposed of and the failure can name the table and the column.
+                        if (noClobber && result.ContainsKey(key))
+                        {
+                            repeatedKey = key;
+                            break;
+                        }
                         if (GetRecordInteger(hRecord, 2) is int intValue)
                         {
-                            result.Add(key, intValue);
+                            result[key] = intValue;
                         }
                         else if (GetRecordString(hRecord, 2) is string stringValue)
                         {
-                            result.Add(key, stringValue);
+                            result[key] = stringValue;
                         }
                     }
                 }
-                return result.Count > 0 ? new ReadOnlyDictionary<string, object>(result) : null;
+                return repeatedKey is not null
+                    ? throw new InvalidDataException($"The '{resolvedTableName}' table holds more than one row with a '{keyColumnName}' of '{repeatedKey}', so it cannot be read as a dictionary keyed on that column.")
+                    : result.Count > 0 ? new ReadOnlyDictionary<string, object>(result) : null;
             }
         }
 
