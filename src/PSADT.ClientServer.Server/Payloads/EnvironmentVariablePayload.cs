@@ -62,5 +62,26 @@ namespace PSADT.ClientServer.Payloads
             Append = append;
             Remove = remove;
         }
+
+        /// <summary>
+        /// Confirms the payload's invariants once it has been read off the wire.
+        /// </summary>
+        /// <remarks>DataContractSerializer allocates without running a constructor, so a member the sender left
+        /// out keeps its CLR default and what the constructor refuses arrives unrefused. A name is required; a
+        /// value is not, but where one is given it has to say something.</remarks>
+        /// <param name="context">The streaming context, which is not used.</param>
+        /// <exception cref="SerializationException">Thrown if the payload arrived without a name, or with a blank value.</exception>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                throw new SerializationException($"The deserialized {nameof(EnvironmentVariablePayload)} has no name.");
+            }
+            if (Value is not null && string.IsNullOrWhiteSpace(Value))
+            {
+                throw new SerializationException($"The deserialized {nameof(EnvironmentVariablePayload)} has a blank value.");
+            }
+        }
     }
 }

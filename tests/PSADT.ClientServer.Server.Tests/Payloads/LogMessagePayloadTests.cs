@@ -97,5 +97,30 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
             Assert.Equal("  something happened  ", restored.Message);
             Assert.Equal(LogSeverity.Error, restored.Severity);
         }
+
+        /// <summary>
+        /// Verifies that a payload arriving without a member it requires is refused rather than used.
+        /// </summary>
+        /// <remarks>
+        /// The refusals above are the constructor's, and nothing off the wire runs one: DataContractSerializer
+        /// allocates the object and assigns the members it finds, so one the sender left out keeps its CLR
+        /// default. The sender is the client, which runs in the logged-on user's session, and the server takes
+        /// the message straight out of this and trims it, so a missing one is dereferenced on arrival.
+        /// </remarks>
+        /// <param name="memberName">The member to blank before the payload is written.</param>
+        [Theory]
+        [InlineData(nameof(LogMessagePayload.Message))]
+        [InlineData(nameof(LogMessagePayload.Source))]
+        public void LogMessagePayload_RefusesAPayloadMissingARequiredMember(string memberName)
+        {
+            // Arrange: a payload with one member blanked, which is what a sender omitting it puts on the wire
+            LogMessagePayload payload = new("something happened", LogSeverity.Warning, "a source");
+            System.Reflection.FieldInfo? member = typeof(LogMessagePayload).GetField(memberName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(member);
+            member.SetValue(payload, value: null);
+
+            // Assert
+            _ = Assert.ThrowsAny<System.Runtime.Serialization.SerializationException>(() => DataSerialization.DeserializeFromBytes<LogMessagePayload>(DataSerialization.SerializeToBytes(payload)));
+        }
     }
 }

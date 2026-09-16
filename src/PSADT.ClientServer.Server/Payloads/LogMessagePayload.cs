@@ -42,5 +42,27 @@ namespace PSADT.ClientServer.Payloads
             Severity = severity;
             Source = source;
         }
+
+        /// <summary>
+        /// Confirms the payload's invariants once it has been read off the wire.
+        /// </summary>
+        /// <remarks>DataContractSerializer allocates without running a constructor and assigns the members it
+        /// finds, so a member the sender simply left out keeps its CLR default and everything the constructor
+        /// refuses arrives unrefused. The sender is the client, which runs in the logged-on user's session and
+        /// is therefore theirs, so this is the only point at which what it chose is tested at all.</remarks>
+        /// <param name="context">The streaming context, which is not used.</param>
+        /// <exception cref="SerializationException">Thrown if the payload arrived without a message or a source.</exception>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            if (string.IsNullOrWhiteSpace(Message))
+            {
+                throw new SerializationException($"The deserialized {nameof(LogMessagePayload)} has no message.");
+            }
+            if (string.IsNullOrWhiteSpace(Source))
+            {
+                throw new SerializationException($"The deserialized {nameof(LogMessagePayload)} has no source.");
+            }
+        }
     }
 }
