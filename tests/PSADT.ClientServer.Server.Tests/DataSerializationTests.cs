@@ -370,6 +370,62 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that an exception chain deeper than the reader's quota is refused rather than descended.
+        /// </summary>
+        /// <remarks>
+        /// The client runs in the logged-on user's session and is therefore theirs to control, so what it
+        /// writes back is chosen by an unprivileged caller. Reading it recursively without a depth limit
+        /// hands that caller the server's stack: a graph nested far enough to exhaust it fits inside the
+        /// pipe's 16MB frame cap several times over, and a StackOverflowException cannot be caught, so the
+        /// SYSTEM process would go without the error path ever running. Refusing the read is the point.
+        /// </remarks>
+        [Fact]
+        public void DeserializeFromBytes_RefusesAnExceptionChainDeeperThanTheQuota()
+        {
+            // Arrange
+            Exception original = new InvalidOperationException("the innermost failure");
+            for (int i = 0; i < 1000; i++)
+            {
+                original = new InvalidOperationException("an outer failure", original);
+            }
+            byte[] serialized = DataSerialization.SerializeToBytes(original);
+
+            // Act
+            SerializationException failure = Assert.Throws<SerializationException>(() => DataSerialization.DeserializeFromBytes<Exception>(serialized));
+
+            // Assert
+            Assert.NotNull(failure);
+        }
+
+        /// <summary>
+        /// Verifies that an exception chain of the depth a real failure carries still survives the trip.
+        /// </summary>
+        /// <remarks>The quota has to sit above anything worth reporting, or the limit that stops a hostile
+        /// client also throws away the diagnostics the server exists to relay.</remarks>
+        [Fact]
+        public void Exception_RoundTripsANestedChain()
+        {
+            // Arrange
+            Exception original = new InvalidOperationException("the innermost failure");
+            for (int i = 0; i < 8; i++)
+            {
+                original = new InvalidOperationException("an outer failure", original);
+            }
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes(original));
+
+            // Assert
+            int depth = 0;
+            for (Exception? current = restored; current is not null; current = current.InnerException)
+            {
+                depth++;
+            }
+            Assert.Equal(9, depth);
+            Assert.Equal("the innermost failure", restored.GetBaseException().Message);
+        }
+
+        /// <summary>
         /// Verifies that a collection survives the trip with its contents, which is the case a serializer
         /// is most likely to get half right.
         /// </summary>

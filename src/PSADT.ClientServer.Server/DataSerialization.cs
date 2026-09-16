@@ -175,7 +175,7 @@ namespace PSADT.ClientServer
             }
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
             using MemoryStream ms = new(bytes, offset, bytes.Length - offset, writable: false);
-            using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
+            using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, ReaderQuotas);
             return GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result
                 ? throw new SerializationException("Deserialization returned a null result.")
                 : deserializingException && result is not Exception
@@ -192,6 +192,32 @@ namespace PSADT.ClientServer
         {
             return new(type, DataContractSerializerSettings);
         }
+
+        /// <summary>
+        /// The quotas applied to every reader this class creates.
+        /// </summary>
+        /// <remarks>Only the nesting depth is constrained. The other quotas govern how many bytes a document may
+        /// carry, which the pipe already bounds by refusing a frame over 16MB, whereas nesting costs stack rather
+        /// than bytes: <see cref="Exception"/> is <see cref="ISerializable"/> with an
+        /// <see cref="Exception.InnerException"/> of its own, so the contract is self-referential and the reader
+        /// descends it recursively. A graph nested deeply enough to exhaust the stack fits in a fraction of that
+        /// cap, and a <see cref="StackOverflowException"/> cannot be caught.
+        /// <para>
+        /// Measured on this contract, one wrapped exception costs one level of depth and about 350 bytes, so the
+        /// limit below allows a chain of roughly 254. A real chain is nothing like that: an original fault behind
+        /// a TargetInvocationException behind a TypeInitializationException is four, and a stack unwinding through
+        /// any number of frames is still one exception, since depth grows only where something catches and rewraps.
+        /// The stack goes at somewhere near six thousand, so this sits an order of magnitude clear of the failure
+        /// it exists to prevent and two orders above anything a deployment would legitimately send.
+        /// </para></remarks>
+        private static readonly XmlDictionaryReaderQuotas ReaderQuotas = new()
+        {
+            MaxDepth = 256,
+            MaxStringContentLength = int.MaxValue,
+            MaxArrayLength = int.MaxValue,
+            MaxBytesPerRead = int.MaxValue,
+            MaxNameTableCharCount = int.MaxValue,
+        };
 
         /// <summary>
         /// Provides the default settings for the DataContractSerializer used to serialize and deserialize known
