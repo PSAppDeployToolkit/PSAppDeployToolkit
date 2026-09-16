@@ -174,7 +174,6 @@ namespace PSADT.WindowsInstaller
         /// name="transformProperties"/> is empty or contains null or empty keys, or if <paramref name="tempMsiPath"/>
         /// already exists.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the specified temp MSI path already exists or if the directory for the temp MSI path cannot be created.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "This isn't supported on net472.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {

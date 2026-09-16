@@ -140,6 +140,7 @@ IShellLinkDataList
 IShellLinkW
 IsIconic
 IsProcessInJob
+IsTokenRestricted
 IsWindow
 IsWindowEnabled
 IsWindowVisible
@@ -167,7 +168,10 @@ LocalFree
 LookupPrivilegeName
 LookupPrivilegeValue
 LOWORD
+LsaEnumerateLogonSessions
 LsaFreeMemory
+LsaFreeReturnBuffer
+LsaGetLogonSessionData
 LsaOpenPolicy
 LsaQueryInformationPolicy
 MAX_PATH
@@ -370,6 +374,7 @@ SC_SIZE
 SC_TASKLIST
 SC_VSCROLL
 SCF_ISSECURE
+SECURITY_LOGON_TYPE
 SendMessage
 SendNotifyMessage
 SERVICE_ALL_ACCESS
@@ -2088,7 +2093,11 @@ TD_SHIELD_ICON
 TD_WARNING_ICON
 TerminateJobObject
 THREAD_ACCESS_RIGHTS
+TOKEN_ELEVATION
+TOKEN_ELEVATION_TYPE
 TOKEN_LINKED_TOKEN
+TOKEN_MANDATORY_LABEL
+TOKEN_STATISTICS
 TOKEN_USER
 TreeResetNamedSecurityInfo
 UNICODE_STRING

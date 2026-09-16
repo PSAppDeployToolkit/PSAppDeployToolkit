@@ -63,9 +63,11 @@
       M:System.Diagnostics.Process.WaitForExitAsync|
       M:System.Enum.GetNames`|
       M:System.Enum.GetValues`|
+      M:System.Enum.IsDefined`|
       M:System.Int32.TryParse(System.ReadOnlySpan{System.Char},System.IFormatProvider,|
       M:System.IO.Path.IsPathFullyQualified|
       M:System.IO.Path.Join|
+      M:System.IO.Stream.Read(System.Span{System.Byte})|
       M:System.IO.StreamReader.ReadLineAsync|
       M:System.Nullable.GetValueRefOrDefaultRef|
       M:System.ObjectDisposedException.ThrowIf(System.Boolean,System.Object)|

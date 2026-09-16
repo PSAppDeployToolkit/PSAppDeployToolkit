@@ -2,8 +2,10 @@
 using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -29,34 +31,224 @@ namespace PSADT.Security
     internal static class TokenManager
     {
         /// <summary>
-        /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
+        /// Determines whether the specified session ID is valid for token acquisition requests.
         /// </summary>
-        /// <remarks>An administrator brokers via a scheduled task running as the Local System account, which reaches a network
-        /// path as the computer account rather than as itself. On a network path, brokering is allowed only when the Local System
-        /// account has the required file system access to the client/server assemblies. This does not verify the share's permissions.</remarks>
-        internal static readonly bool CanGetUserPrimaryToken = GetCanGetUserPrimaryToken(AccountUtilities.CallerIsLocalSystem, AccountUtilities.CallerIsAdmin, ClientServerUtilities.ClientServerOnNetworkPath);
-
-        /// <summary>
-        /// Determines whether token brokering is possible for the described execution context.
-        /// </summary>
-        /// <remarks>Separated from the context it is asked about so that the decision can be put for contexts other than the
-        /// one the caller happens to be running in, which is otherwise fixed for the life of the process.</remarks>
-        /// <param name="callerIsLocalSystem">Whether the caller is the Local System account, which asks Windows for a token directly.</param>
-        /// <param name="callerIsAdmin">Whether the caller is an administrator, without which no other user's token can be had at all.</param>
-        /// <param name="clientServerOnNetworkPath">Answers whether the client/server directory resides on a network path the broker may not reach.</param>
-        /// <param name="systemAccountHasAccess">An optional file system access check, evaluated only for an administrator other than Local System on a network path. Defaults to checking the client/server assemblies.</param>
-        /// <returns><see langword="true"/> if a user's token can be brokered in that context; otherwise, <see langword="false"/>.</returns>
-        internal static bool GetCanGetUserPrimaryToken(bool callerIsLocalSystem, bool callerIsAdmin, bool clientServerOnNetworkPath, Func<bool>? systemAccountHasAccess = null)
+        /// <param name="sessionId">The session identifier to validate.</param>
+        /// <returns>Whether the session identifier is valid for token requests.</returns>
+        internal static bool SessionIdIsValidForVending(uint sessionId)
         {
-            return callerIsLocalSystem || (callerIsAdmin && (!clientServerOnNetworkPath || (systemAccountHasAccess?.Invoke() ?? ClientServerPermissions.SystemAccountHasAccess())));
+            return sessionId is not (0 or uint.MaxValue);
         }
 
         /// <summary>
-        /// Retrieves the primary access token for a user in the specified session, optionally requesting an elevated
-        /// token type.
+        /// Checks whether either token acquisition route may serve the request.
         /// </summary>
-        /// <remarks>This method requires administrative privileges. When called from a non-local system
-        /// context, a token broker process is used to obtain the token. The returned handle can be used to perform
+        /// <param name="sessionId">The requested desktop session.</param>
+        /// <returns>Whether acquisition may be attempted.</returns>
+        internal static bool CanGetUserPrimaryToken(uint sessionId)
+        {
+            return ProcessTokenProvider.SessionIdIsSupported(sessionId) || CanGetTokenViaWtsOrBroker;
+        }
+
+        /// <summary>
+        /// Retrieves a session token through WTS for SYSTEM, or through process discovery with broker fallback for other callers.
+        /// </summary>
+        /// <param name="sessionId">The requested desktop session.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is requested.</param>
+        /// <returns>The owned primary token.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">The elevation value is not defined.</exception>
+        internal static Task<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        {
+            return GetUserPrimaryTokenAsync(sessionId, sessionSid: null, elevatedTokenType, uiAccess);
+        }
+
+        /// <summary>
+        /// Retrieves a primary token while validating the expected user's identity on either route.
+        /// </summary>
+        /// <param name="user">The expected desktop user.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is requested.</param>
+        /// <returns>The owned token for the expected user.</returns>
+        /// <exception cref="UnauthorizedAccessException">The session now belongs to a different account.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The elevation value is not defined.</exception>
+        internal static async ValueTask<SafeFileHandle> GetUserPrimaryTokenAsync(RunAsActiveUser user, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        {
+            SafeFileHandle token = await GetUserPrimaryTokenAsync(user.SessionId, user.SID, elevatedTokenType, uiAccess).ConfigureAwait(false);
+            try
+            {
+                return TokenUtilities.GetTokenSid(token) != user.SID || TokenUtilities.GetTokenSessionId(token) != user.SessionId
+                    ? throw new UnauthorizedAccessException("The acquired token does not belong to the expected desktop user.")
+                    : token;
+            }
+            catch (Exception ex)
+            {
+                token.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the access token for the current process with the specified desired access rights.
+        /// </summary>
+        /// <param name="DesiredAccess">The desired access rights for the token.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the access token for the current process.</returns>
+        internal static SafeFileHandle GetCurrentProcessToken(TOKEN_ACCESS_MASK DesiredAccess)
+        {
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            _ = NativeMethods.OpenProcessToken(hProcess, DesiredAccess, out SafeFileHandle hToken);
+            return hToken;
+        }
+
+        /// <summary>
+        /// Retrieves the primary token associated with the specified security token handle.
+        /// </summary>
+        /// <remarks>This method duplicates the specified security token to create a primary token, which
+        /// can be used for impersonation or other security-related operations. Ensure that the caller has appropriate
+        /// permissions to access and duplicate the token.</remarks>
+        /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>
+        internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
+        {
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, lpTokenAttributes: null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            try
+            {
+                if (uiAccess)
+                {
+                    if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+                    {
+                        throw new UnauthorizedAccessException("The calling account must have SeTcbPrivilege to set UIAccess on the token.");
+                    }
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                    unsafe
+                    {
+                        int tokenValue = 1; ReadOnlySpan<byte> tokenInformation = MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&tokenValue, 1));
+                        _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
+                    }
+                }
+                return hPrimaryToken;
+            }
+            catch (Exception ex)
+            {
+                hPrimaryToken.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the linked token associated with the specified token handle.
+        /// </summary>
+        /// <remarks>This method retrieves the linked token, which is typically used in scenarios
+        /// involving user impersonation or elevated privileges. The caller must ensure that the provided token handle
+        /// is valid and has the necessary permissions to query linked token information.</remarks>
+        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked token is to be retrieved.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the linked token associated with the specified token
+        /// handle.</returns>
+        internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
+        {
+            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<TOKEN_LINKED_TOKEN>()];
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+            ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
+            return new(tokenLinkedToken.LinkedToken, ownsHandle: true);
+        }
+
+        /// <summary>
+        /// Retrieves the primary token linked to the specified token handle.
+        /// </summary>
+        /// <remarks>This method uses the provided token handle to obtain a linked token and then
+        /// retrieves its primary token. The caller is responsible for ensuring the validity of the input token
+        /// handle.</remarks>
+        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked primary token is to be
+        /// retrieved.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the linked primary token.</returns>
+        internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
+        {
+            using SafeFileHandle linkedToken = GetLinkedToken(tokenHandle);
+            return GetPrimaryToken(linkedToken, uiAccess);
+        }
+
+        /// <summary>
+        /// Retrieves the highest available primary token associated with the specified token handle.
+        /// </summary>
+        /// <remarks>This method attempts to retrieve the linked primary token associated with the
+        /// specified token handle. If the linked token is unavailable, it falls back to retrieving the primary token of
+        /// the original token handle.</remarks>
+        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the primary token is to be retrieved.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the highest available primary token.</returns>
+        internal static SafeFileHandle GetHighestPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
+        {
+            try
+            {
+                return GetLinkedPrimaryToken(tokenHandle, uiAccess);
+            }
+            catch
+            {
+                return GetPrimaryToken(tokenHandle, uiAccess);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Shares caller-based acquisition, using WTS directly for SYSTEM and process-first acquisition otherwise.
+        /// </summary>
+        /// <param name="sessionId">The requested session.</param>
+        /// <param name="sessionSid">The optional expected owner.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is required.</param>
+        /// <returns>The acquired primary token.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">The session cannot be vended or the elevation value is not defined.</exception>
+        /// <exception cref="UnauthorizedAccessException">The caller must be an administrator to retrieve another user's primary token.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using a conditional expression here gives a CA2000 warning, the more severe of the two.")]
+        private static Task<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, SecurityIdentifier? sessionSid, ElevatedTokenType elevatedTokenType, bool uiAccess)
+        {
+            if (!SessionIdIsValidForVending(sessionId))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.");
+            }
+            if (!Enum.IsDefined(elevatedTokenType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(elevatedTokenType), elevatedTokenType, "The elevation value is not defined.");
+            }
+            if (!AccountUtilities.CallerIsAdmin)
+            {
+                throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.");
+            }
+            if (AccountUtilities.CallerIsLocalSystem)
+            {
+                return Task.FromResult(GetUserPrimaryTokenViaWts(sessionId, elevatedTokenType, uiAccess));
+            }
+            if (GetUserPrimaryTokenFromProcess(sessionId, sessionSid, elevatedTokenType, uiAccess) is not SafeFileHandle token)
+            {
+                return GetUserPrimaryTokenViaBrokerAsync(sessionId, elevatedTokenType, uiAccess);
+            }
+            return Task.FromResult(token);
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the primary token for a user in the specified session through process discovery.
+        /// </summary>
+        /// <param name="sessionId">The identifier of the session for the user whose primary token is to be retrieved. Must correspond to a valid user session.</param>
+        /// <param name="sessionSid">The optional expected owner.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is required.</param>
+        /// <returns>A SafeFileHandle representing the user's primary access token, or null if the token could not be retrieved.</returns>
+        private static SafeFileHandle? GetUserPrimaryTokenFromProcess(uint sessionId, SecurityIdentifier? sessionSid, ElevatedTokenType elevatedTokenType, bool uiAccess)
+        {
+            return ProcessTokenProvider.TryGetToken(sessionId, sessionSid, elevatedTokenType, uiAccess, out SafeFileHandle? token)
+                ? token
+                : null;
+        }
+
+        /// <summary>
+        /// Retrieves the primary access token for a user in the specified session through the token broker.
+        /// </summary>
+        /// <remarks>This method requires a non-SYSTEM administrator. The returned handle can be used to perform
         /// operations that require user authentication.</remarks>
         /// <param name="sessionId">The identifier of the session for the user whose primary token is to be retrieved. Must correspond to a
         /// valid user session.</param>
@@ -65,26 +257,15 @@ namespace PSADT.Security
         /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A SafeFileHandle representing the user's primary access token. The caller is responsible for disposing of
         /// the handle when it is no longer needed.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the session Id is invalid or cannot be vended.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
         /// <exception cref="InvalidProgramException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
-        internal static async ValueTask<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        private static Task<SafeFileHandle> GetUserPrimaryTokenViaBrokerAsync(uint sessionId, ElevatedTokenType elevatedTokenType, bool uiAccess)
         {
-            // Confirm that the caller is an administrator.
-            if (!AccountUtilities.CallerIsAdmin)
-            {
-                throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.");
-            }
-
-            // Confirm the session Id isn't the SYSTEM's.
-            if (sessionId == 0)
-            {
-                throw new UnauthorizedAccessException("Brokering of the Local System session token is not permitted.");
-            }
-
-            // Get the user's token. If we're not local system, we need to use the token broker.
-            if (!AccountUtilities.CallerIsLocalSystem)
+            // Internal worker to abstract parameter validation away from the task.
+            static async Task<SafeFileHandle> GetUserPrimaryTokenViaBrokerImplAsync(uint sessionId, ElevatedTokenType elevatedTokenType, bool uiAccess)
             {
                 // Set up the pipe server and start the client/server token broker process.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
@@ -123,7 +304,7 @@ namespace PSADT.Security
                                             IExecAction execAction = (IExecAction)action;
                                             try
                                             {
-                                                IPrincipal principal = taskDefinition.Principal;
+                                                Windows.Win32.System.TaskScheduler.IPrincipal principal = taskDefinition.Principal;
                                                 try
                                                 {
                                                     ITaskSettings settings = taskDefinition.Settings;
@@ -238,7 +419,7 @@ namespace PSADT.Security
                         }
 
                         // Read the token payload based on the validated size indicator.
-                        byte[] tokenBuf = new byte[tokenSizeIndicator]; int tokenBufReadLength = await pipe.ReadAsync(tokenBuf, 0, tokenSizeIndicator, default).ConfigureAwait(false);
+                        Span<byte> tokenBuf = stackalloc byte[tokenSizeIndicator]; int tokenBufReadLength = pipe.Read(tokenBuf);
                         if (tokenBufReadLength is 0)
                         {
                             throw new InvalidProgramException("The token broker pipe closed before reading the token payload.");
@@ -258,7 +439,34 @@ namespace PSADT.Security
                 }
             }
 
-            // When we're local system, we can just get the primary token for the user.
+            // Validate state before proceeding.
+            return !SessionIdIsValidForVending(sessionId) ? throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.")
+                : !AccountUtilities.CallerIsAdmin ? throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.")
+                : AccountUtilities.CallerIsLocalSystem ? throw new UnauthorizedAccessException("Local System must retrieve user tokens through WTS directly.")
+                : !CanGetTokenViaWtsOrBroker ? throw new UnauthorizedAccessException("The token broker cannot access the client/server assemblies.")
+                : GetUserPrimaryTokenViaBrokerImplAsync(sessionId, elevatedTokenType, uiAccess);
+        }
+
+        /// <summary>
+        /// Retrieves a session token directly through WTS for the Local System caller.
+        /// </summary>
+        /// <param name="sessionId">The requested desktop session.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is required.</param>
+        /// <returns>The owned primary token.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">The session Id is invalid or cannot be vended.</exception>
+        /// <exception cref="UnauthorizedAccessException">The caller is not SYSTEM or the session cannot be vended.</exception>
+        /// <exception cref="InvalidOperationException">Mandatory linked-token acquisition failed.</exception>
+        private static SafeFileHandle GetUserPrimaryTokenViaWts(uint sessionId, ElevatedTokenType elevatedTokenType, bool uiAccess)
+        {
+            if (!SessionIdIsValidForVending(sessionId))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "The session cannot be vended.");
+            }
+            if (!AccountUtilities.CallerIsLocalSystem)
+            {
+                throw new UnauthorizedAccessException("Direct WTS token acquisition requires Local System.");
+            }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
             _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
             using (hUserToken)
@@ -282,100 +490,11 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Retrieves the primary token associated with the specified security token handle.
+        /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
         /// </summary>
-        /// <remarks>This method duplicates the specified security token to create a primary token, which
-        /// can be used for impersonation or other security-related operations. Ensure that the caller has appropriate
-        /// permissions to access and duplicate the token.</remarks>
-        /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
-        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>
-        internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
-        {
-            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, lpTokenAttributes: null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
-            if (uiAccess)
-            {
-                if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
-                {
-                    throw new UnauthorizedAccessException("The calling account must have SeTcbPrivilege to set UIAccess on the token.");
-                }
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                unsafe
-                {
-                    int tokenValue = 1; ReadOnlySpan<byte> tokenInformation = MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&tokenValue, 1));
-                    _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
-                }
-            }
-            return hPrimaryToken;
-        }
-
-        /// <summary>
-        /// Retrieves the linked token associated with the specified token handle.
-        /// </summary>
-        /// <remarks>This method retrieves the linked token, which is typically used in scenarios
-        /// involving user impersonation or elevated privileges. The caller must ensure that the provided token handle
-        /// is valid and has the necessary permissions to query linked token information.</remarks>
-        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked token is to be retrieved.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the linked token associated with the specified token
-        /// handle.</returns>
-        internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
-        {
-            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<TOKEN_LINKED_TOKEN>()];
-            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-            ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
-            return new(tokenLinkedToken.LinkedToken, ownsHandle: true);
-        }
-
-        /// <summary>
-        /// Retrieves the primary token linked to the specified token handle.
-        /// </summary>
-        /// <remarks>This method uses the provided token handle to obtain a linked token and then
-        /// retrieves its primary token. The caller is responsible for ensuring the validity of the input token
-        /// handle.</remarks>
-        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked primary token is to be
-        /// retrieved.</param>
-        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the linked primary token.</returns>
-        internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
-        {
-            using SafeFileHandle linkedToken = GetLinkedToken(tokenHandle);
-            return GetPrimaryToken(linkedToken, uiAccess);
-        }
-
-        /// <summary>
-        /// Retrieves the highest available primary token associated with the specified token handle.
-        /// </summary>
-        /// <remarks>This method attempts to retrieve the linked primary token associated with the
-        /// specified token handle. If the linked token is unavailable, it falls back to retrieving the primary token of
-        /// the original token handle.</remarks>
-        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the primary token is to be retrieved.</param>
-        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the highest available primary token.</returns>
-        internal static SafeFileHandle GetHighestPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
-        {
-            // If the linked token is not available, fall back to the primary token of the original token handle.
-            try
-            {
-                return GetLinkedPrimaryToken(tokenHandle, uiAccess);
-            }
-            catch
-            {
-                return GetPrimaryToken(tokenHandle, uiAccess);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the access token for the current process with the specified desired access rights.
-        /// </summary>
-        /// <param name="DesiredAccess">The desired access rights for the token.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the access token for the current process.</returns>
-        internal static SafeFileHandle GetCurrentProcessToken(TOKEN_ACCESS_MASK DesiredAccess)
-        {
-            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(hProcess, DesiredAccess, out SafeFileHandle hToken);
-            return hToken;
-        }
+        /// <remarks>An administrator brokers via a scheduled task running as the Local System account, which reaches a network
+        /// path as the computer account rather than as itself. On a network path, brokering is allowed only when the Local System
+        /// account has the required file system access to the client/server assemblies. This does not verify the share's permissions.</remarks>
+        private static readonly bool CanGetTokenViaWtsOrBroker = AccountUtilities.CallerIsLocalSystem || (AccountUtilities.CallerIsAdmin && (!ClientServerUtilities.ClientServerOnNetworkPath || ClientServerPermissions.SystemAccountHasAccess()));
     }
 }

@@ -1285,6 +1285,87 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Enumerates the authentication identifiers of all LSA logon sessions without copying the native buffer.
+        /// </summary>
+        /// <param name="LogonSessionCount">The number of identifiers in the returned buffer.</param>
+        /// <param name="LogonSessionList">The owned identifier buffer, or null when the count is zero. The caller must dispose it after reading the identifiers.</param>
+        /// <returns>The native <see cref="NTSTATUS"/> indicating the result of the operation.</returns>
+        internal static NTSTATUS LsaEnumerateLogonSessions(out uint LogonSessionCount, out SafeLsaFreeReturnBufferHandle? LogonSessionList)
+        {
+            NTSTATUS res;
+            unsafe
+            {
+                res = PInvoke.LsaEnumerateLogonSessions(out LogonSessionCount, out LUID* identifiers).ThrowOnFailure();
+                if (LogonSessionCount is 0)
+                {
+                    if (identifiers is not null)
+                    {
+                        _ = PInvoke.LsaFreeReturnBuffer(identifiers);
+                    }
+                    LogonSessionList = null;
+                    return res;
+                }
+                try
+                {
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)identifiers, "LSA returned logon identifiers without a buffer.");
+                    LogonSessionList = new((nint)identifiers, checked((int)LogonSessionCount * sizeof(LUID)), ownsHandle: true);
+                }
+                catch (Exception ex)
+                {
+                    if (identifiers is not null)
+                    {
+                        _ = PInvoke.LsaFreeReturnBuffer(identifiers);
+                    }
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves a complete LSA logon record, retaining ownership of its referenced strings and SID.
+        /// </summary>
+        /// <param name="LogonId">The authentication identifier to query.</param>
+        /// <param name="ppLogonSessionData">The owned record buffer. The caller must dispose it after copying referenced data.</param>
+        /// <returns>The native <see cref="NTSTATUS"/> indicating the result of the operation.</returns>
+        /// <exception cref="InvalidOperationException">LSA returned an incomplete record.</exception>
+        internal static NTSTATUS LsaGetLogonSessionData(in LUID LogonId, out SafeLsaFreeReturnBufferHandle ppLogonSessionData)
+        {
+            NTSTATUS res;
+            unsafe
+            {
+                res = PInvoke.LsaGetLogonSessionData(in LogonId, out SECURITY_LOGON_SESSION_DATA* data).ThrowOnFailure();
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)data, "LSA returned no logon record.");
+                SafeLsaFreeReturnBufferHandle buffer = new((nint)data, sizeof(SECURITY_LOGON_SESSION_DATA), ownsHandle: true);
+                try
+                {
+                    ppLogonSessionData = data->Size < sizeof(SECURITY_LOGON_SESSION_DATA)
+                        ? throw new InvalidOperationException("LSA returned an incomplete logon record.")
+                        : buffer;
+                }
+                catch (Exception ex)
+                {
+                    buffer.Dispose();
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Determines whether a token contains restricting SIDs.
+        /// </summary>
+        /// <param name="TokenHandle">The token to inspect.</param>
+        /// <returns>The native <see cref="BOOL"/> indicating whether restricting SIDs are present.</returns>
+        internal static BOOL IsTokenRestricted(SafeHandle TokenHandle)
+        {
+            ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
+            return PInvoke.IsTokenRestricted(TokenHandle);
+        }
+
+        /// <summary>
         /// Displays a task dialog, a modal dialog box that provides a flexible and customizable user interface for presenting information and receiving user input.
         /// </summary>
         /// <remarks>This method wraps the native TaskDialog API, providing a managed interface for displaying a task dialog. The dialog is modal and blocks the calling thread until the user closes it.</remarks>

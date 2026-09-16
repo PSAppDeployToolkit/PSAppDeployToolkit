@@ -92,7 +92,7 @@ namespace PSADT.Tests.Foundation
         }
 
         /// <summary>
-        /// Verifies that a token is not brokered for another user when brokering is unavailable, and that
+        /// Verifies that a token is not brokered when neither acquisition route is eligible, and that
         /// the caller is told so rather than being left to wait on a broker that cannot start.
         /// </summary>
         /// <remarks>
@@ -100,23 +100,38 @@ namespace PSADT.Tests.Foundation
         /// code brokering regardless of whether brokering was available, which on a module installed to a
         /// network path meant waiting out a scheduled task the local system account could never start.
         /// <para>
-        /// The user names the caller's own account against a session other than the caller's, which is
-        /// another user as far as this is concerned while keeping a real account behind it. Brokering would
-        /// have refused the lack of elevation with a different exception, so the one asserted here is what
-        /// proves brokering was never reached.
+        /// Session zero is ineligible for process-token acquisition, and the unelevated caller cannot
+        /// broker a token. The caller's real account is retained so only session eligibility changes.
         /// </para>
         /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task RemediateAsync_RefusesAnotherUserWhenBrokeringIsUnavailableAsync()
+        public async Task RemediateAsync_RefusesSessionWhenNoAcquisitionRouteIsEligibleAsync()
         {
             // Arrange
             Assert.SkipUnless(CallerReachesTheClient, ClientAccessRequired);
             Assert.SkipUnless(!TestEnvironment.IsElevated, UnelevatedRequired);
-            RunAsActiveUser otherSession = new(AccountUtilities.CallerUsername, AccountUtilities.CallerSid, AccountUtilities.CallerSessionId + 1, AccountUtilities.CallerIsAdmin);
+            Assert.SkipUnless(AccountUtilities.CallerSessionId is not 0, "Requires an interactive caller session.");
+            RunAsActiveUser otherSession = new(AccountUtilities.CallerUsername, AccountUtilities.CallerSid, 0, AccountUtilities.CallerIsAdmin);
 
             // Act & Assert
             _ = await Assert.ThrowsAsync<NotSupportedException>(() => ClientServerPermissions.RemediateAsync(otherSession).AsTask()).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Propagates acquisition refusal when the desktop identity mismatches and brokering is unavailable.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task RemediateAsync_PropagatesTokenAcquisitionFailureAsync()
+        {
+            Assert.SkipUnless(CallerReachesTheClient, ClientAccessRequired);
+            Assert.SkipUnless(!TestEnvironment.IsElevated, UnelevatedRequired);
+            Assert.SkipUnless(AccountUtilities.CallerSessionId is not (0 or uint.MaxValue), "Requires an interactive caller session.");
+            RunAsActiveUser mismatchedUser = new(AccountUtilities.CallerUsername,
+                new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), AccountUtilities.CallerSessionId, AccountUtilities.CallerIsAdmin);
+
+            _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => ClientServerPermissions.RemediateAsync(mismatchedUser).AsTask()).ConfigureAwait(true);
         }
 
         /// <summary>

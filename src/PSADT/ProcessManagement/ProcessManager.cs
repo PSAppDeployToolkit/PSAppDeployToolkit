@@ -141,11 +141,11 @@ namespace PSADT.ProcessManagement
                 if (launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is false)
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                    if (!TokenManager.CanGetUserPrimaryToken)
+                    if (!TokenManager.CanGetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId))
                     {
                         throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                     using (lpEnvironment)
                     {
@@ -159,18 +159,18 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
-                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType is ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && TokenManager.CanGetUserPrimaryToken && ((!hasExternalHandles && CanUseCreateProcessWithToken(isCallerToken: true, callerPrivileges, commandSpan) is CreateProcessUsingTokenStatus.OK) || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) is CreateProcessUsingTokenStatus.OK))))
+                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType is ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && TokenManager.CanGetUserPrimaryToken(AccountUtilities.CallerSessionId) && ((!hasExternalHandles && CanUseCreateProcessWithToken(isCallerToken: true, callerPrivileges, commandSpan) is CreateProcessUsingTokenStatus.OK) || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) is CreateProcessUsingTokenStatus.OK))))
                 {
                     // We're running elevated but have been asked to de-elevate.
                     if (!AccountUtilities.CallerIsLoggedOnUser)
                     {
                         throw new InvalidOperationException("Cannot create process using unelevated token when running in a different user's session.");
                     }
-                    if (!TokenManager.CanGetUserPrimaryToken)
+                    if (!TokenManager.CanGetUserPrimaryToken(AccountUtilities.CallerSessionId))
                     {
                         throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerSessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerRunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, launchInfo.RunAsInvoker, in startupInfo, out pi);
                 }
                 else

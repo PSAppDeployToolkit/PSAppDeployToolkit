@@ -131,7 +131,7 @@ namespace PSADT.TerminalServices
             SecurityIdentifier sid; bool? isLocalAdmin = null;
             if (ntAccount != AccountUtilities.CallerUsername)
             {
-                if (TokenManager.CanGetUserPrimaryToken)
+                if (TokenManager.CanGetUserPrimaryToken(session.SessionId))
                 {
                     using SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryTokenAsync(session.SessionId, ElevatedTokenType.HighestAvailable).ConfigureAwait(false);
                     sid = TokenUtilities.GetTokenSid(hPrimaryToken); isLocalAdmin = TokenUtilities.IsTokenAdministrative(hPrimaryToken);
