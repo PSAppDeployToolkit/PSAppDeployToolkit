@@ -90,8 +90,8 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
         }
 
         It 'Does not run the action against a hive it failed to load' {
-            # reg.exe reports the refusal by exit code alone on PowerShell 7, so an unchecked load leaves
-            # the action writing to a HKEY_USERS key that was never mounted.
+            # reg.exe reports the refusal by exit code alone, so an unchecked load would leave the action
+            # writing to a HKEY_USERS key that was never mounted.
             $seen = [System.Collections.Generic.List[System.String]]::new()
             Invoke-ADTAllUsersRegistryAction -UserProfiles $script:BadHiveProfile -ScriptBlock { $seen.Add($_.SID.Value) } -ErrorAction SilentlyContinue
             $seen | Should -BeNullOrEmpty
@@ -112,6 +112,34 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
             $seen = [System.Collections.Generic.List[System.String]]::new()
             Invoke-ADTAllUsersRegistryAction -UserProfiles $script:BadHiveProfile, $script:CallerProfile -ScriptBlock { $seen.Add($_.SID.Value) } -ErrorAction SilentlyContinue
             $seen | Should -Be $script:CallerSid.Value
+        }
+    }
+
+    Context 'Previewing with -WhatIf' {
+        BeforeAll {
+            # reg.exe is stood in for throughout this context, so nothing is ever mounted and the profile
+            # only has to look like one from the outside.
+            $script:PreviewProfilePath = New-Item -Path "$TestDrive\PreviewProfile" -ItemType Directory -Force
+            Set-Content -LiteralPath "$($script:PreviewProfilePath.FullName)\NTUSER.DAT" -Value 'stood in for'
+            $script:PreviewProfile = [PSADT.AccountManagement.UserProfileInfo]::new(
+                [System.Security.Principal.NTAccount]::new('TESTONLY\Preview'),
+                [System.Security.Principal.SecurityIdentifier]::new('S-1-5-21-1111111111-2222222222-3333333333-1097'),
+                $script:PreviewProfilePath)
+        }
+
+        It 'Previews the change rather than making it' {
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { [PSADT.ProcessManagement.ProcessResult]::new(0, $null, $null, $null) }
+            $seen = [System.Collections.Generic.List[System.String]]::new()
+            Invoke-ADTAllUsersRegistryAction -UserProfiles $script:PreviewProfile -ScriptBlock { $seen.Add($_.SID.Value) } -WhatIf
+            $seen | Should -BeNullOrEmpty
+        }
+
+        It 'Still mounts and unmounts the hive it would act on' {
+            # Mounting is this function's own business rather than the change being previewed, and -WhatIf
+            # reaching reg.exe would leave nothing to preview against and no exit code to read.
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { [PSADT.ProcessManagement.ProcessResult]::new(0, $null, $null, $null) }
+            Invoke-ADTAllUsersRegistryAction -UserProfiles $script:PreviewProfile -ScriptBlock { } -WhatIf
+            Should -Invoke -ModuleName PSAppDeployToolkit Start-ADTProcess -Times 2 -Exactly
         }
     }
 

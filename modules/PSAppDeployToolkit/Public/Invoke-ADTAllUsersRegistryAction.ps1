@@ -106,6 +106,18 @@ function Invoke-ADTAllUsersRegistryAction
         {
             $UserProfiles = Get-ADTUserProfiles
         }
+
+        # Set up the default parameters for calling `reg.exe` via `Start-ADTProcess`.
+        $regExeParams = @{
+            FilePath = "$([System.Environment]::SystemDirectory)\reg.exe"
+            CreateNoWindow = $true
+            PassThru = $true
+            SuccessExitCodes = 0
+            InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+            ErrorAction = [System.Management.Automation.ActionPreference]::Ignore
+            WhatIf = $false
+            Confirm = $false
+        }
     }
 
     process
@@ -148,11 +160,11 @@ function Invoke-ADTAllUsersRegistryAction
 
                                 # A native command does not throw on a bad exit code, so an unloadable hive would
                                 # otherwise run the caller's scriptblock against a HKEY_USERS key that isn't there.
-                                $regResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD $regHive.Mountpoint $regHive.Path 2>&1
-                                if ($Global:LASTEXITCODE)
+                                $regResult = Start-ADTProcess @regExeParams -ArgumentList LOAD, $regHive.Mountpoint, $regHive.Path
+                                if ($regResult.ExitCode)
                                 {
                                     $naerParams = @{
-                                        Exception = [PSADT.ProcessManagement.ProcessException]::new("Failed to load the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] with exit code [$Global:LASTEXITCODE]: $regResult", [PSADT.ProcessManagement.ProcessResult]::new($Global:LASTEXITCODE))
+                                        Exception = [PSADT.ProcessManagement.ProcessException]::new("Failed to load the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] with exit code [$($regResult.ExitCode)]: $($regResult.Interleaved)", $regResult)
                                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                         ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpperInvariant())RegistryHiveLoadFailure"
                                         TargetObject = $regResult
@@ -187,11 +199,11 @@ function Invoke-ADTAllUsersRegistryAction
                             # the next run reads it as logged on and skips it. Not something to log and move past.
                             Write-ADTLogEntry -Message "Unloading the User [$($UserProfile.NTAccount)] registry hive in path [$($regHive.Mountpoint)]."
                             [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()
-                            $regResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD $regHive.Mountpoint 2>&1
-                            if ($Global:LASTEXITCODE)
+                            $regResult = Start-ADTProcess @regExeParams -ArgumentList UNLOAD, $regHive.Mountpoint
+                            if ($regResult.ExitCode)
                             {
                                 $naerParams = @{
-                                    Exception = [PSADT.ProcessManagement.ProcessException]::new("Failed to unload the registry hive [$($regHive.Mountpoint)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] with exit code [$Global:LASTEXITCODE]: $regResult. The hive remains mounted.", [PSADT.ProcessManagement.ProcessResult]::new($Global:LASTEXITCODE))
+                                    Exception = [PSADT.ProcessManagement.ProcessException]::new("Failed to unload the registry hive [$($regHive.Mountpoint)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] with exit code [$($regResult.ExitCode)]: $($regResult.Interleaved). The hive remains mounted.", $regResult)
                                     Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
                                     ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpperInvariant())RegistryHiveUnloadFailure"
                                     TargetObject = $regResult
