@@ -55,7 +55,8 @@ namespace PSADT.SMBIOS
         {
             if (buffer.IsEmpty)
             {
-                Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
+                // On the heap, as the length is the firmware's to report and nothing bounds it below int.MaxValue.
+                Span<byte> localbuf = new byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
                 return ReadStructure(localbuf, targetType, parser);
             }
             return ReadStructure(buffer, targetType, parser);
@@ -156,7 +157,8 @@ namespace PSADT.SMBIOS
         {
             if (buffer.IsEmpty)
             {
-                Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()];
+                // On the heap, as the length is the firmware's to report and nothing bounds it below int.MaxValue.
+                Span<byte> localbuf = new byte[SmbiosTables.GetRequiredLength()];
                 SmbiosTables.FillBuffer(localbuf);
                 return ParseSmbiosVersion(localbuf);
             }
