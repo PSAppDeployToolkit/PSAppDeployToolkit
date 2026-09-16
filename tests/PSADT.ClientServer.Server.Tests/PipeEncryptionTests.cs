@@ -334,11 +334,47 @@ namespace PSADT.ClientServer.Server.Tests
         {
             // Arrange: a length-prefixed frame carrying the malformed blob, as the far half would send it
             byte[] blob = new byte[blobLength];
-            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            BitConverter.GetBytes(EcdhPublicP256Magic).CopyTo(blob, 0);
             BitConverter.GetBytes(declaredKeySize).CopyTo(blob, 4);
             byte[] frame = new byte[blob.Length + 4];
             BitConverter.GetBytes(blob.Length).CopyTo(frame, 0);
             blob.CopyTo(frame, 4);
+
+            using ServerPipeEncryption server = new();
+            using MemoryStream output = new();
+            using MemoryStream input = new(frame);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that a blob of the right shape but opening with the wrong magic is refused.
+        /// </summary>
+        /// <remarks>
+        /// Built from a real client's key so that the coordinates are a genuine point on the curve and the
+        /// magic is the only thing wrong with it. Coordinates of any other kind are refused for being off
+        /// the curve before the magic is ever reached, which would leave this passing whether the magic was
+        /// read or not.
+        /// <para>
+        /// Only the .NET Framework import reads the magic, CNG refusing a blob that is not an ECDH P-256
+        /// public key. The .NET 8 path takes the coordinates out of the blob and names the curve itself, so
+        /// the four bytes went unread there and a key the one target refused was completing an exchange on
+        /// the other.
+        /// </para>
+        /// </remarks>
+        /// <param name="magic">The magic to write into the blob's header.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(0)] // No magic at all.
+        [InlineData(EcdhPublicP256Magic + 1)] // A near miss on the P-256 magic.
+        [InlineData(0x334B4345)] // BCRYPT_ECDH_PUBLIC_P384_MAGIC, a real blob type but the wrong curve.
+        [InlineData(unchecked((int)0xFFFFFFFF))] // Nothing CNG defines.
+        public async Task KeyExchange_RefusesAPublicKeyThatDoesNotOpenWithTheP256Magic(int magic)
+        {
+            // Arrange: a real public key frame, with only the blob's magic overwritten
+            byte[] frame = await KeyExchangeFrames.ClientPublicKeyAsync().ConfigureAwait(true);
+            BitConverter.GetBytes(magic).CopyTo(frame, 4);
 
             using ServerPipeEncryption server = new();
             using MemoryStream output = new();
@@ -457,5 +493,11 @@ namespace PSADT.ClientServer.Server.Tests
             /// </summary>
             private int _position;
         }
+
+        /// <summary>
+        /// The magic number CNG puts at the front of a P-256 elliptic curve public key blob, being the
+        /// characters <c>ECK1</c> read as a little-endian integer.
+        /// </summary>
+        private const int EcdhPublicP256Magic = 0x314B4345;
     }
 }

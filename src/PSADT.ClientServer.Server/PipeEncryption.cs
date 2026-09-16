@@ -221,8 +221,8 @@ namespace PSADT.ClientServer
             // construction, so the sizes are the same constants the far end's blob is checked against.
             ECParameters ecParams = _ecdh.ExportParameters(includePrivateParameters: false);
             byte[] blob = new byte[EccPublicBlobSize];
-            // ECDH_PUBLIC_P256 magic
-            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            // ECDH_PUBLIC_P256 magic, written from the same constant the far end's blob is checked against
+            BitConverter.GetBytes(EcdhPublicP256Magic).CopyTo(blob, 0);
             // Key length in bytes
             blob[4] = P256CoordinateSize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
             Buffer.BlockCopy(ecParams.Q.X!, 0, blob, 8, P256CoordinateSize);
@@ -250,14 +250,22 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
-            // Remote key is in CNG EccPublicBlob format: an 8-byte header whose second half declares the coordinate
-            // size, then X and Y. Both the blob's own length and the size it declares are checked before either is
-            // used to size or bound a copy, and the length check comes first so that reading the size is in bounds.
-            // Nothing has authenticated the far party at this point, so both values are an unauthenticated caller's
-            // to choose, and the curve is fixed at P-256 on both sides, which leaves exactly one legal shape.
+            // Remote key is in CNG EccPublicBlob format: an 8-byte header of a magic and a declared coordinate size,
+            // then X and Y. The blob's own length, its magic and the size it declares are all checked before any of
+            // them is used to size or bound a copy, and the length check comes first so that reading the header is in
+            // bounds. Nothing has authenticated the far party at this point, so every one of those values is an
+            // unauthenticated caller's to choose, and the curve is fixed at P-256 on both sides, which leaves exactly
+            // one legal shape. The magic is checked here rather than left to the import below because only the .NET
+            // Framework import reads it: the .NET 8 path takes the coordinates and names the curve itself, so without
+            // this the same malformed blob would be refused on one target and accepted on the other.
             if (remotePublicKey.Length != EccPublicBlobSize)
             {
                 throw new InvalidDataException($"The remote public key is {remotePublicKey.Length.ToString(CultureInfo.InvariantCulture)} bytes, but a P-256 public key blob is {EccPublicBlobSize.ToString(CultureInfo.InvariantCulture)} bytes.");
+            }
+            int declaredMagic = BitConverter.ToInt32(remotePublicKey, 0);
+            if (declaredMagic != EcdhPublicP256Magic)
+            {
+                throw new InvalidDataException($"The remote public key opens with 0x{declaredMagic.ToString("X8", CultureInfo.InvariantCulture)}, but a P-256 public key blob opens with 0x{EcdhPublicP256Magic.ToString("X8", CultureInfo.InvariantCulture)}.");
             }
             int declaredKeySize = BitConverter.ToInt32(remotePublicKey, 4);
             if (declaredKeySize != P256CoordinateSize)
@@ -486,5 +494,13 @@ namespace PSADT.ClientServer
         /// followed by the X and Y coordinates.
         /// </remarks>
         private const int EccPublicBlobSize = 8 + (P256CoordinateSize << 1);
+
+        /// <summary>
+        /// Specifies the magic that opens a CNG EccPublicBlob carrying a P-256 public key.
+        /// </summary>
+        /// <remarks>
+        /// BCRYPT_ECDH_PUBLIC_P256_MAGIC, being the characters <c>ECK1</c> read as a little-endian integer.
+        /// </remarks>
+        private const int EcdhPublicP256Magic = 0x314B4345;
     }
 }
