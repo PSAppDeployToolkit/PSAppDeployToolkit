@@ -3,6 +3,11 @@ using System.IO;
 using PSADT.Interop;
 using PSADT.ShortcutManagement;
 using PSADT.Tests.TestHelpers;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Com.StructuredStorage;
+using Windows.Win32.System.Variant;
+using Windows.Win32.UI.Shell.PropertiesSystem;
 using Xunit;
 
 namespace PSADT.Tests.ShortcutManagement
@@ -842,6 +847,48 @@ namespace PSADT.Tests.ShortcutManagement
             }
             using ShellLinkFile writable = ShellLinkFile.Load(linkPath, STGM.STGM_READWRITE);
             Assert.True(writable.CanSave);
+        }
+
+        /// <summary>
+        /// Verifies that a four-byte property is read whichever way the shortcut signed it.
+        /// </summary>
+        /// <remarks>
+        /// These are written here as VT_UI4, so the signed form only ever arrives in a shortcut something else
+        /// wrote. Neither sign of it could be read: a value with the high bit clear fell past both branches to
+        /// the refusal at the end, and one with it set reached a conversion that this repository, building
+        /// checked, turns into an overflow rather than a reinterpretation. So the type was accepted in name and
+        /// never in fact.
+        /// </remarks>
+        /// <param name="signed">The signed value to store.</param>
+        /// <param name="expected">The unsigned value it should be read back as.</param>
+        [Theory]
+        [InlineData(0, 0u)]
+        [InlineData(1, 1u)]
+        [InlineData(int.MaxValue, (uint)int.MaxValue)]
+        [InlineData(-1, uint.MaxValue)]
+        public void StartPinOption_IsReadWhicheverWayItWasSigned(int signed, uint expected)
+        {
+            // Arrange: written straight to the property store, as the setter only ever produces the unsigned form
+            using ShellLinkFile link = ShellLinkFile.Create(TargetPath);
+            System.Reflection.FieldInfo? shellLink = typeof(ShellLinkFile).GetField("_shellLink", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(shellLink);
+            object? shellLinkObject = shellLink.GetValue(link);
+            Assert.NotNull(shellLinkObject);
+
+            // Cast rather than tested, as the shell's link object answers for this through QueryInterface
+            // rather than by declaring it, which is also how the code under test reaches the property store.
+            IPropertyStore store = (IPropertyStore)shellLinkObject;
+            PROPVARIANT propVariant = default;
+            propVariant.Anonymous.Anonymous.vt = VARENUM.VT_I4;
+            propVariant.Anonymous.Anonymous.Anonymous.lVal = signed;
+
+            // Act
+            PROPERTYKEY key = PInvoke.PKEY_AppUserModel_StartPinOption;
+            store.SetValue(in key, in propVariant);
+            store.Commit();
+
+            // Assert
+            Assert.Equal(expected, link.AppUserModelStartPinOption);
         }
 
         /// <summary>
