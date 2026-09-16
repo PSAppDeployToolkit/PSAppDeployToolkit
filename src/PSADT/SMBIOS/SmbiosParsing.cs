@@ -19,6 +19,8 @@
  */
 
 using System;
+using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace PSADT.SMBIOS
@@ -68,14 +70,24 @@ namespace PSADT.SMBIOS
         /// <param name="parser">Function to parse the structure from the buffer.</param>
         /// <returns>The parsed SMBIOS structure.</returns>
         /// <exception cref="SmbiosTypeNotFoundException">Thrown if the specified SMBIOS structure type is not found in the buffer.</exception>
+        /// <exception cref="InvalidDataException">Thrown if a structure declares a length that does not fit the table.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static T ReadStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             int offset = 8; while (offset < buffer.Length - 4)
             {
-                // Have we found an instance?
+                // A structure's length is declared by the structure itself, and neither the parsers below nor
+                // the walk on from here can do anything sensible with one that does not fit. Under four does
+                // not cover the header it was read from, so the walk would not advance past it and every
+                // offset after would be read from the middle of something.
                 byte length = buffer[offset + 1];
+                if (length < 4 || offset + length > buffer.Length)
+                {
+                    throw new InvalidDataException($"The SMBIOS structure at offset {offset.ToString(CultureInfo.InvariantCulture)} declares a length of {length.ToString(CultureInfo.InvariantCulture)}, which does not fit the table.");
+                }
+
+                // Have we found an instance?
                 if (buffer[offset] == (byte)targetType)
                 {
                     return parser(buffer, offset, length);

@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.IO;
 using PSADT.SMBIOS;
 using Xunit;
 
@@ -104,6 +105,36 @@ namespace PSADT.Tests.SMBIOS
             Assert.Equal("C", second);
             Assert.Null(missing);
             Assert.Null(zeroIndex);
+        }
+
+        /// <summary>
+        /// Verifies that a structure declaring a length the table cannot hold is refused.
+        /// </summary>
+        /// <remarks>The length is declared by the structure itself, so it is the firmware's to get wrong. One
+        /// that runs past the end of the table leaves the parser slicing outside it, and one under four does not
+        /// cover the header it was read from, so the walk does not advance past the structure and every offset
+        /// after it is read from the middle of something. Neither can be worked with, and saying which structure
+        /// was wrong beats the slice failing somewhere further in.</remarks>
+        /// <param name="declaredLength">The length for the structure to declare.</param>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(3)]
+        [InlineData(64)]
+        [InlineData(byte.MaxValue)]
+        public void ReadStructure_ThrowsWhenAStructureDeclaresALengthThatDoesNotFit(byte declaredLength)
+        {
+            // Arrange: a well formed header whose declared length is then replaced with the one under test
+            byte[] data =
+            [
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                (byte)SmbiosType.PlatformFirmwareInformation, declaredLength, 0x00, 0x00,
+                (byte)'A', 0x00,
+                0x00,
+            ];
+
+            // Assert
+            _ = Assert.Throws<InvalidDataException>(() => SmbiosParsing.ReadStructure(data, SmbiosType.PlatformFirmwareInformation, FakeStructureParser));
         }
 
         /// <summary>
