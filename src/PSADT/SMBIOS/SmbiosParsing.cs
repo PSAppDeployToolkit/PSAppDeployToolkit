@@ -19,7 +19,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PSADT.SMBIOS
@@ -107,29 +106,31 @@ namespace PSADT.SMBIOS
                 return null;
             }
 
-            // Iterate through strings to find the requested index.
+            // Iterate through this structure's own strings to find the requested index.
             int currentIndex = 1; int offset = stringTableOffset;
-            while (offset < buffer.Length && currentIndex <= stringIndex)
+            while (offset < buffer.Length)
             {
                 // Read until null terminator.
-                List<byte> stringBytes = [];
+                int start = offset;
                 while (offset < buffer.Length && buffer[offset] is not 0)
                 {
-                    stringBytes.Add(buffer[offset]);
                     offset++;
+                }
+
+                // An empty string terminates the set, so an index past its end belongs to no string here. The
+                // strings of the next structure begin immediately after, and reading on would return those.
+                if (offset == start)
+                {
+                    return null;
                 }
                 if (currentIndex == stringIndex)
                 {
-                    string result = Encoding.ASCII.GetString([.. stringBytes]);
+                    string result = Encoding.ASCII.GetString(buffer[start..offset].ToArray());
                     return !string.IsNullOrWhiteSpace(result) ? result : null;
                 }
 
-                // Move past the null terminator. A double null indicates end of the table, not an empty string entry.
+                // Move past the null terminator.
                 offset++; currentIndex++;
-                if ((offset >= buffer.Length) || (buffer[offset] is 0 && (offset + 1 >= buffer.Length || buffer[offset + 1] is 0)))
-                {
-                    break;
-                }
             }
             return null;
         }

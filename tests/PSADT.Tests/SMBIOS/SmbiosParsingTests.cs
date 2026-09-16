@@ -107,6 +107,38 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
+        /// Verifies that an index past the end of a structure's own strings does not reach the next structure's.
+        /// </summary>
+        /// <remarks>A string set ends with an empty string, and the set belonging to the structure that follows
+        /// begins immediately after it. Nothing separates the two but that terminator, so a search that does not
+        /// stop at it walks straight on and answers with a string belonging to something else. An index past the
+        /// end is how firmware says a structure has no such string, so this is reached by a well formed table and
+        /// not only by a malformed one.</remarks>
+        /// <param name="stringIndex">An index beyond the strings the first structure declares.</param>
+        [Theory]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [InlineData(byte.MaxValue)]
+        public void GetSmbiosString_DoesNotReadIntoTheFollowingStructure(byte stringIndex)
+        {
+            // Arrange: one structure's strings, its terminator, then a structure whose own strings follow
+            byte[] data =
+            [
+                0x00, 0x00, 0x00, 0x00,
+                (byte)'A', (byte)'B', 0x00,
+                (byte)'C', 0x00,
+                0x00,
+                0x01, 0x04, 0x00, 0x00,
+                (byte)'N', (byte)'E', (byte)'X', (byte)'T', 0x00,
+                0x00,
+            ];
+
+            // Assert
+            Assert.Null(SmbiosParsing.GetSmbiosString(data, 4, stringIndex));
+        }
+
+        /// <summary>
         /// Verifies that GetSmbiosString returns null when the extracted string consists only of whitespace characters.
         /// </summary>
         /// <remarks>This test ensures that the SmbiosParsing.GetSmbiosString method treats strings
