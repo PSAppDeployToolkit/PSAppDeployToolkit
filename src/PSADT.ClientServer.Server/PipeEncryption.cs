@@ -217,17 +217,16 @@ namespace PSADT.ClientServer
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
+            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y. The curve is fixed at
+            // construction, so the sizes are the same constants the far end's blob is checked against.
             ECParameters ecParams = _ecdh.ExportParameters(includePrivateParameters: false);
-            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y
-            // Magic for ECDH P-256 public key: ECDH_PUBLIC_P256 = 0x314B4345
-            int keySize = ecParams.Q.X!.Length;
-            byte[] blob = new byte[8 + (keySize * 2)];
+            byte[] blob = new byte[EccPublicBlobSize];
             // ECDH_PUBLIC_P256 magic
             blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
             // Key length in bytes
-            blob[4] = (byte)keySize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
-            Buffer.BlockCopy(ecParams.Q.X, 0, blob, 8, keySize);
-            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + keySize, keySize);
+            blob[4] = P256CoordinateSize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
+            Buffer.BlockCopy(ecParams.Q.X!, 0, blob, 8, P256CoordinateSize);
+            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + P256CoordinateSize, P256CoordinateSize);
             return blob;
 #else
             return _ecdh.PublicKey.ToByteArray();
@@ -240,6 +239,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
+        /// <exception cref="InvalidDataException">Thrown if <paramref name="remotePublicKey"/> is not a P-256 public key blob.</exception>
         private protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
@@ -250,14 +250,27 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
+            // Remote key is in CNG EccPublicBlob format: an 8-byte header whose second half declares the coordinate
+            // size, then X and Y. Both the blob's own length and the size it declares are checked before either is
+            // used to size or bound a copy, and the length check comes first so that reading the size is in bounds.
+            // Nothing has authenticated the far party at this point, so both values are an unauthenticated caller's
+            // to choose, and the curve is fixed at P-256 on both sides, which leaves exactly one legal shape.
+            if (remotePublicKey.Length != EccPublicBlobSize)
+            {
+                throw new InvalidDataException($"The remote public key is {remotePublicKey.Length.ToString(CultureInfo.InvariantCulture)} bytes, but a P-256 public key blob is {EccPublicBlobSize.ToString(CultureInfo.InvariantCulture)} bytes.");
+            }
+            int declaredKeySize = BitConverter.ToInt32(remotePublicKey, 4);
+            if (declaredKeySize != P256CoordinateSize)
+            {
+                throw new InvalidDataException($"The remote public key declares a coordinate size of {declaredKeySize.ToString(CultureInfo.InvariantCulture)} bytes, but the P-256 curve requires {P256CoordinateSize.ToString(CultureInfo.InvariantCulture)}.");
+            }
+
             // Import the remote public key and derive shared secret
 #if NET8_0_OR_GREATER
-            // Remote key is in CNG EccPublicBlob format: 8-byte header + X + Y
-            int keySize = BitConverter.ToInt32(remotePublicKey, 4);
-            byte[] x = new byte[keySize];
-            byte[] y = new byte[keySize];
-            Buffer.BlockCopy(remotePublicKey, 8, x, 0, keySize);
-            Buffer.BlockCopy(remotePublicKey, 8 + keySize, y, 0, keySize);
+            byte[] x = new byte[P256CoordinateSize];
+            byte[] y = new byte[P256CoordinateSize];
+            Buffer.BlockCopy(remotePublicKey, 8, x, 0, P256CoordinateSize);
+            Buffer.BlockCopy(remotePublicKey, 8 + P256CoordinateSize, y, 0, P256CoordinateSize);
             ECParameters remoteParams = new()
             {
                 Curve = ECCurve.NamedCurves.nistP256,
@@ -455,5 +468,23 @@ namespace PSADT.ClientServer
         /// malicious or corrupted length prefixes from causing excessive memory allocation.
         /// </remarks>
         private const int MaxMessageSize = 16 * 1024 * 1024;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of a single P-256 public key coordinate.
+        /// </summary>
+        /// <remarks>
+        /// The curve is fixed at P-256 on both sides of the exchange, so this is the only size either party
+        /// may declare for the X and Y coordinates of a public key blob.
+        /// </remarks>
+        private const int P256CoordinateSize = 32;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of a CNG EccPublicBlob carrying a P-256 public key.
+        /// </summary>
+        /// <remarks>
+        /// A BCRYPT_ECCKEY_BLOB header of eight bytes - a four byte magic and a four byte coordinate size -
+        /// followed by the X and Y coordinates.
+        /// </remarks>
+        private const int EccPublicBlobSize = 8 + (P256CoordinateSize << 1);
     }
 }

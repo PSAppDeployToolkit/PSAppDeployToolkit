@@ -310,6 +310,66 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a public key blob which is not the shape a P-256 key takes is refused.
+        /// </summary>
+        /// <remarks>
+        /// The blob is a CNG EccPublicBlob: an eight byte header whose second half declares the coordinate
+        /// size, then the X and Y coordinates. Both that declared size and the blob's own length used to be
+        /// taken on trust, and they arrive before either party has authenticated the other, so the caller
+        /// choosing them is unauthenticated by construction. A size of int.MaxValue asks for two allocations
+        /// of two gigabytes before a single byte has been verified, and a size longer than the blob reads
+        /// off the end of it.
+        /// </remarks>
+        /// <param name="blobLength">The length to give the blob.</param>
+        /// <param name="declaredKeySize">The coordinate size to write into the blob's header.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(72, int.MaxValue)] // Right length, a size that asks for 4GB across two allocations.
+        [InlineData(72, -1)] // Right length, a negative size.
+        [InlineData(72, 64)] // Right length, a size that reads past the end of the blob.
+        [InlineData(72, 0)] // Right length, no coordinates at all.
+        [InlineData(40, 16)] // Short blob, self-consistent but not P-256.
+        [InlineData(136, 64)] // Long blob, self-consistent but not P-256.
+        public async Task KeyExchange_RefusesAPublicKeyThatIsNotP256(int blobLength, int declaredKeySize)
+        {
+            // Arrange: a length-prefixed frame carrying the malformed blob, as the far half would send it
+            byte[] blob = new byte[blobLength];
+            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            BitConverter.GetBytes(declaredKeySize).CopyTo(blob, 4);
+            byte[] frame = new byte[blob.Length + 4];
+            BitConverter.GetBytes(blob.Length).CopyTo(frame, 0);
+            blob.CopyTo(frame, 4);
+
+            using ServerPipeEncryption server = new();
+            using MemoryStream output = new();
+            using MemoryStream input = new(frame);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that the key exchange still completes against a real public key, so that the refusals
+        /// above are about the malformed blobs rather than about the shape of every blob.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task KeyExchange_AcceptsARealPublicKey()
+        {
+            // Arrange
+            EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
+            using (pair)
+            {
+                // Act
+                byte[] frame = await EncryptToBytesAsync(pair, [1, 2, 3]).ConfigureAwait(true);
+                using MemoryStream readable = new(frame);
+
+                // Assert
+                Assert.Equal([1, 2, 3], await pair.Client.ReadEncryptedAsync(readable).ConfigureAwait(true));
+            }
+        }
+
+        /// <summary>
         /// A stream that hands back only a few bytes at a time, however many were asked for.
         /// </summary>
         /// <remarks>
