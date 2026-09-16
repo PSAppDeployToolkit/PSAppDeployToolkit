@@ -23,7 +23,9 @@ function Private:Unblock-ADTAppExecutionInternal
     Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*\MyFilter", "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger, FilterFullPath -Verbose:$false -ErrorAction Ignore | & {
         process
         {
-            if (!$_.Debugger.Contains('PSAppDeployToolkit'))
+            # Debugger is absent on keys carrying only FilterFullPath, and under StrictMode reading it then
+            # throws, which at the startup task's ErrorActionPreference of Continue skips this return.
+            if (!$_.PSObject.Properties.Name.Contains('Debugger') -or ($_.Debugger -notlike '*PSAppDeployToolkit*'))
             {
                 return
             }
