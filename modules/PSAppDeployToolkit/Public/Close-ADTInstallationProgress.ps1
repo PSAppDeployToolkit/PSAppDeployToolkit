@@ -112,8 +112,8 @@ function Close-ADTInstallationProgress
             return
         }
 
-        # Send out the final toast notification.
-        if ($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.DialogStyle -eq 'Classic')
+        # Send out the final toast notification. This reports the session's deployment status, so there's nothing to send without one.
+        if ($adtSession -and ($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.DialogStyle -eq 'Classic'))
         {
             try
             {
