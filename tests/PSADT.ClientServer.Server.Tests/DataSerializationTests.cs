@@ -370,6 +370,50 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a faulted task's failure survives the trip, which is the shape async code produces.
+        /// </summary>
+        /// <remarks>
+        /// An AggregateException carries its inner exceptions as an Exception[], a type the contract names
+        /// nowhere else, and the resolver refuses what it cannot name. The exception type itself was in the
+        /// known types and had never been serializable for want of that array, so anything awaiting a task
+        /// lost its failure on the way out rather than reporting it.
+        /// </remarks>
+        [Fact]
+        public void Exception_RoundTripsAFaultedTaskFailure()
+        {
+            // Arrange
+            AggregateException original = new("the task faulted", new InvalidOperationException("the first"), new IOException("the second"));
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(original));
+
+            // Assert
+            AggregateException aggregate = Assert.IsType<AggregateException>(restored);
+            Assert.Equal(2, aggregate.InnerExceptions.Count);
+            Assert.Equal("the first", aggregate.InnerExceptions[0].Message);
+            Assert.Equal("the second", aggregate.InnerExceptions[1].Message);
+        }
+
+        /// <summary>
+        /// Verifies that an aggregate nested inside another survives, since a task awaiting tasks produces
+        /// exactly that and it is the case the array type is reached through twice.
+        /// </summary>
+        [Fact]
+        public void Exception_RoundTripsNestedFaultedTaskFailures()
+        {
+            // Arrange
+            AggregateException original = new("the outer task faulted", new AggregateException("the inner task faulted", new InvalidOperationException("the leaf")));
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(original));
+
+            // Assert
+            AggregateException aggregate = Assert.IsType<AggregateException>(restored);
+            AggregateException inner = Assert.IsType<AggregateException>(Assert.Single(aggregate.InnerExceptions));
+            Assert.Equal("the leaf", Assert.Single(inner.InnerExceptions).Message);
+        }
+
+        /// <summary>
         /// Verifies that an exception chain deeper than the reader's quota is refused rather than descended.
         /// </summary>
         /// <remarks>

@@ -454,6 +454,10 @@ namespace PSADT.ClientServer
                 // XmlException serializes its own message arguments, so without this every failure out of
                 // ReadObject fails here instead, and the client aborts on its error handler's FailFast.
                 typeof(string[]),
+
+                // AggregateException puts its InnerExceptions on the wire as one of these, so without it the
+                // type above cannot be written at all and a faulted task's failure never reaches the far end.
+                typeof(Exception[]),
             ]),
         };
 
