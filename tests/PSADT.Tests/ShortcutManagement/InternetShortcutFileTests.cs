@@ -635,6 +635,37 @@ namespace PSADT.Tests.ShortcutManagement
         }
 
         /// <summary>
+        /// Verifies that an address the framework will not parse is refused in terms that name it.
+        /// </summary>
+        /// <remarks>
+        /// A .url file is a text file that anything can write, and the shell stores what it is given. Uri is
+        /// stricter about what it accepts than the shell is about what it keeps, so a line the shell is content
+        /// with can still be one Uri refuses. That is a malformed shortcut rather than one with no address, and
+        /// is reported as such: what the parser raises on its own says only that some URI was invalid, without
+        /// naming the value or the property it came from. It is kept as the inner exception, being the only
+        /// thing that says what was wrong with the address.
+        /// </remarks>
+        [Fact]
+        public void Url_IsRefusedInTermsThatNameItWhenItCannotBeParsed()
+        {
+            StaThread.Run(static () =>
+            {
+                // Arrange: written by hand, as the API cannot be made to store an address it would refuse
+                using TempDirectory temp = new();
+                string shortcutPath = temp.WriteFile("malformed.url", "[InternetShortcut]\r\nURL=http://[unclosed\r\nIconFile=C:\\Windows\\System32\\shell32.dll\r\nIconIndex=2\r\n");
+
+                // Act
+                using InternetShortcutFile loaded = InternetShortcutFile.Load(shortcutPath);
+                InvalidDataException thrown = Assert.Throws<InvalidDataException>(() => loaded.Url);
+
+                // Assert
+                Assert.Contains("unclosed", thrown.Message, StringComparison.Ordinal);
+                _ = Assert.IsType<UriFormatException>(thrown.InnerException);
+                Assert.Equal(2, loaded.IconIndex);
+            });
+        }
+
+        /// <summary>
         /// The address used throughout, chosen so nothing is ever resolved over the network.
         /// </summary>
         private static Uri Url { get; } = new("https://psappdeploytoolkit.com/");
