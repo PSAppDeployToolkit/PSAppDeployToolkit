@@ -21,6 +21,8 @@ function Start-ADTProcess
     .PARAMETER ArgumentList
         Arguments to be passed to the executable.
 
+        Passing an array says where each argument ends, so one element always reaches the executable as one argument however it is punctuated. What it does not do is sanitise: an element is quoted where it has to be and otherwise left in the form an installer expects, so interpolating a value you did not author into one leaves that value able to say anything an argument can say.
+
     .PARAMETER SecureArgumentList
         Hides all arguments passed to the executable from the Toolkit log file.
 
