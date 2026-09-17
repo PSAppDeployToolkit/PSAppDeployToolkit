@@ -178,6 +178,14 @@ Describe 'Get-ADTDefaultConfig' {
             $script:DefaultConfig.$Section.$Name | Should -BeExactly $script:SeatedConfig.$Section.$Name
         }
 
+        It 'Resolves the temporary path to the hardened folder on both' {
+            # Both answers have to be the folder .NET reports rather than the one TEMP was moved to, which
+            # is what makes the agreement above mean the hardening happened rather than that neither did it.
+            $expected = [System.IO.Path]::GetTempPath().TrimEnd('\')
+            $script:DefaultConfig.Toolkit.TempPath | Should -BeLike "$expected\*"
+            $script:SeatedConfig.Toolkit.TempPath | Should -BeLike "$expected\*"
+        }
+
         It 'Refuses to answer for a module that has been initialized' {
             # Every caller is gated on the module not being initialized, so reaching here with one that is
             # means a caller that should have asked Get-ADTConfig and would otherwise be handed a config

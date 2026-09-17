@@ -37,6 +37,7 @@ function Private:Get-ADTDefaultConfig
 
     # Import without a base directory so only the module's defaults are used, with any policy super-imposed on top.
     $config = Import-ADTModuleDataFile -BaseDirectory $null -FileName config.psd1
+    Update-ADTConfigTempVariables -Config $config
 
     # Expand any variables in the config, loading a new environment table if required.
     if ($config | Test-ADTConfigNamesEnvironmentValue)

@@ -31,6 +31,28 @@ Describe 'Import-ADTConfig' {
             [System.IO.Path]::IsPathRooted($script:Config.Toolkit.LogPath) | Should -BeTrue
         }
 
+        It 'Resolves the temporary path to the hardened temp folder' {
+            # A value written as $env:Temp is pointed at the module's own temp variable, which comes from
+            # .NET. Under SYSTEM the two differ: the environment says C:\Windows\Temp while .NET gives
+            # C:\Windows\SystemTemp, the one only SYSTEM can reach.
+            #
+            # They usually agree for an ordinary user, so TEMP is moved for the duration to tell them apart
+            # and the assertion means the same thing on any machine. .NET reads TMP ahead of TEMP and so
+            # stays where it was, which is what makes the two separable without being SYSTEM.
+            $original = $env:TEMP
+            try
+            {
+                $env:TEMP = 'C:\ADTNotTheHardenedTemp'
+                $config = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTConfig -BaseDirectory $null }
+                $config.Toolkit.TempPath | Should -BeLike "$([System.IO.Path]::GetTempPath().TrimEnd('\'))\*"
+                $config.Toolkit.TempPath | Should -Not -BeLike 'C:\ADTNotTheHardenedTemp*'
+            }
+            finally
+            {
+                $env:TEMP = $original
+            }
+        }
+
         It 'Appends the toolkit name to the temporary path' {
             # Keeps the toolkit's own scratch files together under whatever temp root was configured.
             $script:Config.Toolkit.TempPath | Should -BeLike "*\$($script:Config.Toolkit.CompanyName -replace '\s')*"
