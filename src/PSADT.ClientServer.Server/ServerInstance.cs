@@ -801,10 +801,7 @@ namespace PSADT.ClientServer
             byte[] response;
             try
             {
-                if ((response = await _ioEncryption.ReadEncryptedAsync(_inputServer).ConfigureAwait(false)).Length < 2)
-                {
-                    throw new InvalidOperationException("The client process returned an invalid or empty response.");
-                }
+                response = await _ioEncryption.ReadEncryptedAsync(_inputServer).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -812,9 +809,13 @@ namespace PSADT.ClientServer
             }
 
             // Deserialize based on the success marker, overwriting the decrypted response once it has been read.
+            // The length test sits inside the scope that clears it, since a response too short to deserialize is
+            // still one that was decrypted.
             try
             {
-                return response[0] != (byte)ResponseMarker.Success
+                return response.Length < 2
+                    ? throw new ServerException("The client process returned an invalid or empty response.")
+                    : response[0] != (byte)ResponseMarker.Success
                     ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
                     : DataSerialization.DeserializeFromBytes<T>(response, 1);
             }
