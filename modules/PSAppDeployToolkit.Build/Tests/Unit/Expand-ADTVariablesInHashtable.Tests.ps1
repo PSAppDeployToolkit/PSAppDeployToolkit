@@ -65,6 +65,24 @@ Describe 'Expand-ADTVariablesInHashtable' {
             { Invoke-Expansion -Hashtable @{} } | Should -Throw -ExpectedMessage "*Cannot validate argument on parameter 'Hashtable'*"
         }
 
+        It 'Refuses a <Name> rather than expanding it' -ForEach @(
+            @{ Name = 'subexpression'; Value = 'C:\Logs$(2000+24)' }
+            @{ Name = 'braced provider path'; Value = '${C:\Windows\System32\drivers\etc\hosts}' }
+        ) {
+            # A config value can arrive from a Group Policy registry key, and the expander would otherwise
+            # run the first as code and return the named file's contents for the second.
+            $table = @{ Value = $Value }
+            { Invoke-Expansion -Hashtable $table } | Should -Throw -ErrorId 'UnsafeStringExpansionValue'
+        }
+
+        It 'Leaves the refused value as it found it' {
+            # The hashtable is mutated in place, so a refusal part way through must not leave a half-expanded
+            # table behind for a caller that carries on past the error.
+            $table = @{ Value = 'C:\Logs$(2000+24)' }
+            { Invoke-Expansion -Hashtable $table } | Should -Throw
+            $table.Value | Should -BeExactly 'C:\Logs$(2000+24)'
+        }
+
         It 'Throws when a value names a variable that does not exist' {
             # ExpandString raises this from the .NET side, so it terminates regardless of ErrorActionPreference.
             $table = @{ Value = '$ThisVariableIsNotSetAnywhere' }
