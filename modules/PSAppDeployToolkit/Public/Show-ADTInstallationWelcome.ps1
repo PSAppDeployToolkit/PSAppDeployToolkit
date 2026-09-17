@@ -1007,7 +1007,7 @@ function Show-ADTInstallationWelcome
                             Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity Error
                             if (!$Silent)
                             {
-                                Show-ADTInstallationPrompt -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error
+                                Show-ADTInstallationPrompt -Title $PSBoundParameters.Title -Subtitle $PSBoundParameters.Subtitle -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error
                             }
                             Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                         }
