@@ -327,6 +327,7 @@ namespace PSADT.Security
         private static Task<SafeFileHandle> GetUserPrimaryTokenViaBrokerAsync(uint sessionId, ElevatedTokenType elevatedTokenType, bool uiAccess)
         {
             // Internal worker to abstract parameter validation away from the task.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0004:Cast is redundant.", Justification = "This cast is needed for our net472 target.")]
             static async Task<SafeFileHandle> GetUserPrimaryTokenViaBrokerImplAsync(uint sessionId, ElevatedTokenType elevatedTokenType, bool uiAccess)
             {
                 // Set up the pipe server and start the client/server token broker process.
@@ -480,19 +481,25 @@ namespace PSADT.Security
                             throw new InvalidProgramException($"Invalid token size indicator of {tokenSizeIndicator.ToString(CultureInfo.InvariantCulture)} received from the token broker. Expected 4 or 8.");
                         }
 
-                        // Read the token payload based on the validated size indicator.
-                        Span<byte> tokenBuf = stackalloc byte[tokenSizeIndicator]; int tokenBufReadLength = pipe.Read(tokenBuf);
-                        if (tokenBufReadLength is 0)
+                        // Read the token payload based on the validated size indicator. A byte mode pipe may hand back
+                        // fewer bytes than were asked for without having ended, so the payload is accumulated until it
+                        // is whole rather than read once and measured.
+                        Span<byte> tokenBuf = stackalloc byte[tokenSizeIndicator];
+                        int tokenBufReadLength = 0;
+                        while (tokenBufReadLength < tokenSizeIndicator)
                         {
-                            throw new InvalidProgramException("The token broker pipe closed before reading the token payload.");
-                        }
-                        if (tokenBufReadLength != tokenSizeIndicator)
-                        {
-                            throw new InvalidProgramException(string.Create(CultureInfo.InvariantCulture, $"The token broker pipe read {tokenBufReadLength} bytes, but expected {tokenSizeIndicator} bytes."));
+                            int read = pipe.Read(tokenBuf[tokenBufReadLength..]);
+                            if (read is 0)
+                            {
+                                throw new InvalidProgramException("The token broker pipe closed before reading the token payload.");
+                            }
+                            tokenBufReadLength += read;
                         }
 
                         // Return the token handle.
-                        return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
+                        return tokenSizeIndicator is 8
+                            ? new((nint)tokenBuf.AsReadOnlyStructure<long>(), ownsHandle: true)
+                            : new((nint)tokenBuf.AsReadOnlyStructure<int>(), ownsHandle: true);
                     }
                     catch (Exception ex)
                     {
