@@ -1009,7 +1009,11 @@ function Show-ADTInstallationWelcome
                             {
                                 Show-ADTInstallationPrompt -Title $PSBoundParameters.Title -Subtitle $PSBoundParameters.Subtitle -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error
                             }
-                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            if ($adtSession)
+                            {
+                                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            }
+                            break
                         }
                         Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
                     }
