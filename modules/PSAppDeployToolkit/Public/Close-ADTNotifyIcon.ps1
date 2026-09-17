@@ -51,7 +51,6 @@ function Close-ADTNotifyIcon
     begin
     {
         # Initialise function.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -92,7 +91,7 @@ function Close-ADTNotifyIcon
         }
 
         # Close the client/server process when we're running sessionless.
-        if (!$adtSession -and !(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
+        if (!(Test-ADTSessionActive) -and !(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
         {
             Close-ADTClientServerProcess
         }

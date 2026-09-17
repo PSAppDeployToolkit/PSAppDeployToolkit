@@ -406,7 +406,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.TimeSpan]$MsiExecWaitTime,
+        [System.TimeSpan]$MsiExecWaitTime = [System.TimeSpan]::FromSeconds($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).MSI.MutexWaitTime),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -661,14 +661,6 @@ function Start-ADTProcess
         else
         {
             $canSetExitCode = $false
-        }
-        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
-        {
-            if (!$adtSession)
-            {
-                Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
-            }
-            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
         }
 
         # Set up initial variables.

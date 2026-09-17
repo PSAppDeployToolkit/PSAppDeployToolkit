@@ -17,10 +17,9 @@ function Private:Test-ADTCallerOwnsConfiguredPaths
 
     # Admin rights are enough to own the configured paths by default, while PathsBasedOnSystemContext narrows
     # it to LocalSystem so that an administrator's deployment doesn't write where LocalSystem's already has.
-    $adtEnv = Get-ADTEnvironmentTable
     if ($Config.Toolkit.PathsBasedOnSystemContext)
     {
-        return $adtEnv.IsLocalSystemAccount
+        return [PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem
     }
-    return $adtEnv.IsAdmin
+    return [PSADT.AccountManagement.AccountUtilities]::CallerIsAdmin
 }

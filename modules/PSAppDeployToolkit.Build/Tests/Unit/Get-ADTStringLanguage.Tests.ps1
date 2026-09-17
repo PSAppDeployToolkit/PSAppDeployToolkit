@@ -78,4 +78,36 @@ Describe 'Get-ADTStringLanguage' {
             }
         }
     }
+
+    Context 'A supplied config' {
+        It 'Reads the override from the config it was given' {
+            # Get-ADTDefaultStringTable hands it the module defaults, so the seated config must not win.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                (Get-ADTStringLanguage -Config @{ UI = @{ LanguageOverride = 'de-DE' } }).Name | Should -BeExactly 'de-DE'
+            }
+        }
+
+        It 'Works without an environment table to read' {
+            # The uninitialized path has none, so the caller SID and logged-on user have to come from the
+            # account utilities rather than from Get-ADTEnvironmentTable.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $original = $ADT.Environment
+                try
+                {
+                    $ADT.Environment = $null
+                    (Get-ADTStringLanguage -Config (Get-ADTDefaultConfig)).Name | Should -Not -BeNullOrEmpty
+                }
+                finally
+                {
+                    $ADT.Environment = $original
+                }
+            }
+        }
+
+        It 'Refuses an empty config' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                { Get-ADTStringLanguage -Config @{} } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Get-ADTStringLanguage'
+            }
+        }
+    }
 }

@@ -58,7 +58,6 @@ Most public functions follow the repository's standard `begin` / `process` / `en
 ### Session handling
 
 - Functions that require an active ADT session should obtain it in `begin` and terminate cleanly if unavailable.
-- Functions that optionally use a session should prefer `Initialize-ADTModuleIfUninitialized -PassThruActiveSession`.
 - Use `Test-ADTSessionActive` when you need a non-throwing session check.
 
 ### Parameters and validation

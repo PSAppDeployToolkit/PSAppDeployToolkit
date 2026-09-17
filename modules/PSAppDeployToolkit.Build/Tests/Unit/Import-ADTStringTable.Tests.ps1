@@ -103,5 +103,29 @@ Describe 'Import-ADTStringTable' {
                 { Import-ADTStringTable -BaseDirectory $null -UICulture $null } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
             }
         }
+
+        It 'Refuses an empty config' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                { Import-ADTStringTable -BaseDirectory $null -Config @{} } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
+            }
+        }
+    }
+
+    Context 'A supplied config' {
+        It 'Substitutes from the config it was given rather than the seated one' {
+            # Get-ADTDefaultStringTable hands it the module defaults so a string table can be built
+            # before the module has been initialized at all.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $strings = Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US')) -Config @{ Toolkit = @{ CompanyName = 'Somewhere Else' } }
+                $strings.InstallationPrompt.Subtitle.Install | Should -BeLike 'Somewhere Else*'
+            }
+        }
+
+        It 'Falls back to the seated config when none is given' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $strings = Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US'))
+                $strings.InstallationPrompt.Subtitle.Install | Should -BeLike "$((Get-ADTConfig).Toolkit.CompanyName)*"
+            }
+        }
     }
 }

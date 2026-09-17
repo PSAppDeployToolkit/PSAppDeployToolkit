@@ -95,8 +95,11 @@ function Show-ADTBalloonTip
 
     dynamicparam
     {
-        # Initialize the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
+        # Get the active session if we have one.
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -118,7 +121,7 @@ function Show-ADTBalloonTip
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtConfig = Get-ADTConfig
+        $adtConfig = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }
         $forced = $false
 
         # Log the deprecation of -WaitSeconds to the log.

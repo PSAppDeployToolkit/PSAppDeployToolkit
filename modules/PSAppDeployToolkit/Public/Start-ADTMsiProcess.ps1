@@ -424,7 +424,11 @@ function Start-ADTMsiProcess
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession; $adtConfig = Get-ADTConfig
+        $adtConfig = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -735,7 +739,7 @@ function Start-ADTMsiProcess
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)"
                     }
-                    elseif (!(Test-ADTCallerOwnsConfiguredPaths))
+                    elseif (!(Test-ADTCallerOwnsConfiguredPaths -Config $adtConfig))
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))"
                     }

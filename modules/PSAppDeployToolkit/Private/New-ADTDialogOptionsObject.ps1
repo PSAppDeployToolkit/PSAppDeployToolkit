@@ -31,7 +31,7 @@ function Private:New-ADTDialogOptionsObject
     }
 
     # Spin until this works.
-    $configAssets = (Get-ADTConfig).Assets
+    $configAssets = $(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).Assets
     while ($true)
     {
         try

@@ -122,7 +122,7 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode,
+        [System.String]$FileCopyMode = $(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).Toolkit.FileCopyMode,
 
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IA:RASHCNETO /IS /IT /IM /XX /MT:4 /R:1 /W:1',
@@ -134,13 +134,6 @@ function Copy-ADTFile
 
     begin
     {
-        # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!$PSBoundParameters.ContainsKey('FileCopyMode'))
-        {
-            Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
-            $FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
-        }
-
         # Verify that Robocopy can be used if selected
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($FileCopyMode -eq 'Robocopy')

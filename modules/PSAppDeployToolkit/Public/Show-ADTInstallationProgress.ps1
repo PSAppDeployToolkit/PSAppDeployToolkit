@@ -115,9 +115,33 @@ function Show-ADTInstallationProgress
 
     dynamicparam
     {
-        # Initialize the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
-        $adtConfig = Get-ADTConfig
+        # Get the active session if we have one, and the session state to expand the string table against.
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.DeployAppScriptSessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+
+        # Get the config, language and string table in the one hit.
+        if (!(Test-ADTModuleInitialized))
+        {
+            $adtConfig = Get-ADTDefaultConfig
+            $adtLanguage = Get-ADTStringLanguage -Config $adtConfig
+            $adtStrings = Get-ADTDefaultStringTable -UICulture $adtLanguage -SessionState $sessionState
+        }
+        else
+        {
+            $adtConfig = Get-ADTConfig
+            $adtLanguage = $Script:ADT.Language
+            $adtStrings = Get-ADTStringTable -SessionState $sessionState
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -146,17 +170,6 @@ function Show-ADTInstallationProgress
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Initialise the string table.
-        $sessionState = if ($adtSession)
-        {
-            $adtSession.DeployAppScriptSessionState
-        }
-        if ($null -eq $sessionState)
-        {
-            $sessionState = $PSCmdlet.SessionState
-        }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
         [System.String]$deploymentType = if (!$adtSession)
@@ -236,7 +249,7 @@ function Show-ADTInstallationProgress
                         AppBannerImage = $adtConfig.Assets.Banner
                         AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                         DialogTopMost = !$NotTopMost
-                        Language = $Script:ADT.Language
+                        Language = $adtLanguage
                         ProgressMessageText = $PSBoundParameters.StatusMessage
                         ProgressDetailMessageText = $PSBoundParameters.StatusMessageDetail
                     }

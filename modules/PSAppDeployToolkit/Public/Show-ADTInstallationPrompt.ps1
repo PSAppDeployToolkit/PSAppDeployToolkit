@@ -229,8 +229,32 @@ function Show-ADTInstallationPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
-        $adtConfig = Get-ADTConfig
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.DeployAppScriptSessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+
+        # Get the config, language and string table in the one hit.
+        if (!(Test-ADTModuleInitialized))
+        {
+            $adtConfig = Get-ADTDefaultConfig
+            $adtLanguage = Get-ADTStringLanguage -Config $adtConfig
+            $adtStrings = Get-ADTDefaultStringTable -UICulture $adtLanguage -SessionState $sessionState
+        }
+        else
+        {
+            $adtConfig = Get-ADTConfig
+            $adtLanguage = $Script:ADT.Language
+            $adtStrings = Get-ADTStringTable -SessionState $sessionState
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -324,17 +348,6 @@ function Show-ADTInstallationPrompt
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # Initialise the string table.
-        $sessionState = if ($adtSession)
-        {
-            $adtSession.DeployAppScriptSessionState
-        }
-        if ($null -eq $sessionState)
-        {
-            $sessionState = $PSCmdlet.SessionState
-        }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
-
         # Set up DeploymentType.
         [System.String]$deploymentType = if (!$adtSession)
         {
@@ -389,7 +402,7 @@ function Show-ADTInstallationPrompt
                     AppBannerImage = $adtConfig.Assets.Banner
                     AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                     DialogTopMost = !$NotTopMost
-                    Language = $Script:ADT.Language
+                    Language = $adtLanguage
                     MinimizeWindows = !!$MinimizeWindows
                     DialogExpiryDuration = $PSBoundParameters.Timeout
                     MessageText = $Message

@@ -175,36 +175,11 @@ function Private:Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
+    (Get-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Change paths to user accessible ones if the caller doesn't own the configured ones.
-    if (!(Test-ADTCallerOwnsConfiguredPaths -Config $config))
-    {
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.TempPathNoAdminRights))
-        {
-            $config.Toolkit.TempPath = $config.Toolkit.TempPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.RegPathNoAdminRights))
-        {
-            $config.Toolkit.RegPath = $config.Toolkit.RegPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.LogPathNoAdminRights))
-        {
-            $config.Toolkit.LogPath = $config.Toolkit.LogPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.CachePathNoAdminRights))
-        {
-            $config.Toolkit.CachePath = $config.Toolkit.CachePathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.MSI.LogPathNoAdminRights))
-        {
-            $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights
-        }
-    }
-
-    # Append the toolkit's name onto the temporary path.
-    $config.Toolkit.TempPath = Join-Path -Path $config.Toolkit.TempPath -ChildPath $adtEnv.appDeployToolkitName
+    Update-ADTConfigAccessiblePaths -Config $config
 
     # Finally, handle some correctly renamed language identifiers for 4.1.1.
     if (![System.String]::IsNullOrWhiteSpace($config.UI.LanguageOverride))
