@@ -78,10 +78,9 @@ namespace PSADT.SMBIOS
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             int offset = 8; while (offset < buffer.Length - 4)
             {
-                // A structure's length is declared by the structure itself, and neither the parsers below nor
-                // the walk on from here can do anything sensible with one that does not fit. Under four does
-                // not cover the header it was read from, so the walk would not advance past it and every
-                // offset after would be read from the middle of something.
+                // A structure declares its own length, and under four does not cover the header it was read
+                // from, so the walk would not advance past it and every offset after would be read from
+                // the middle of something.
                 byte length = buffer[offset + 1];
                 if (length < 4 || offset + length > buffer.Length)
                 {

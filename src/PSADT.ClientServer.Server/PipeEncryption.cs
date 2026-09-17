@@ -250,14 +250,9 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
-            // Remote key is in CNG EccPublicBlob format: an 8-byte header of a magic and a declared coordinate size,
-            // then X and Y. The blob's own length, its magic and the size it declares are all checked before any of
-            // them is used to size or bound a copy, and the length check comes first so that reading the header is in
-            // bounds. Nothing has authenticated the far party at this point, so every one of those values is an
-            // unauthenticated caller's to choose, and the curve is fixed at P-256 on both sides, which leaves exactly
-            // one legal shape. The magic is checked here rather than left to the import below because only the .NET
-            // Framework import reads it: the .NET 8 path takes the coordinates and names the curve itself, so without
-            // this the same malformed blob would be refused on one target and accepted on the other.
+            // Remote key is a CNG EccPublicBlob: an 8-byte header of a magic and a declared size, then X and Y.
+            // Nothing has authenticated the far party, so all three are checked before any is used to bound a
+            // copy, length first. The magic is read only by the net472 import, so both targets check it here.
             if (remotePublicKey.Length != EccPublicBlobSize)
             {
                 throw new InvalidDataException($"The remote public key is {remotePublicKey.Length.ToString(CultureInfo.InvariantCulture)} bytes, but a P-256 public key blob is {EccPublicBlobSize.ToString(CultureInfo.InvariantCulture)} bytes.");

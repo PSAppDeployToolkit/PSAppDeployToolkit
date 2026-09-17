@@ -87,10 +87,9 @@ namespace PSADT.WindowsInstaller
                     }
                     if (GetRecordString(hRecord, 1) is string key)
                     {
-                        // Which column to key on is the caller's to choose, and nothing says the one they chose
-                        // holds a value only once. By default the later row wins, which is what this has always
-                        // done; a caller who needs to know instead gets it raised below, once the record this
-                        // was read from has been disposed of and the failure can name the table and the column.
+                        // Nothing says the column the caller keyed on holds a value only once. The later row
+                        // wins by default, as this has always done; a caller who needs to know instead gets
+                        // it raised below, once the record it was read from has been disposed of.
                         if (noClobber && result.ContainsKey(key))
                         {
                             repeatedKey = key;

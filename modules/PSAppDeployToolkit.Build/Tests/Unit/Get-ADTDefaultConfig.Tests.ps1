@@ -31,10 +31,9 @@ Describe 'Get-ADTDefaultConfig' {
         }
 
         It 'Builds no environment table for a config that names none' {
-            # This answers parameter defaults, and building a table costs around a fifth of a second the
-            # first time in a process. That cost is what removing Initialize-ADTModuleIfUninitialized took
-            # out of this path, so nothing may put it back for a config the shipped defaults can expand
-            # without one: they name environment variables through the provider, which needs nothing in scope.
+            # A table costs around a fifth of a second the first time in a process, which is the cost that
+            # removing Initialize-ADTModuleIfUninitialized took out of this path. The shipped defaults name
+            # environment variables through the provider, which needs nothing in scope.
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock New-ADTEnvironmentTable { }
                 $null = Get-ADTDefaultConfig
@@ -104,10 +103,9 @@ Describe 'Get-ADTDefaultConfig' {
         }
 
         It 'Expands a policy value naming one of the toolkit variables' {
-            # Import-ADTConfig expands with the environment table's values in scope, so a config naming one
-            # of them resolves there. This path expands before the module is initialized, which is the case
-            # it exists for, and so had nothing to resolve them against: the expansion threw rather than
-            # returning a config, for any value an administrator wrote in the toolkit's own idiom.
+            # Import-ADTConfig expands with the environment table in scope, so a config naming one of its
+            # values resolves there. This path expands before the module is initialized and had nothing to
+            # resolve them against, so the expansion threw rather than returning a config.
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock Get-ChildItem { 'policy-key' } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
                 # Both forms carry the same value, so the answer is the same whether or not the account
@@ -143,11 +141,9 @@ Describe 'Get-ADTDefaultConfig' {
             # Get-ADTDefaultConfig answers only for a module that has not been initialized, so the default
             # config is taken first and compared with the seated one afterwards.
             #
-            # TEMP is moved aside across both, because the two only part company over the temporary path
-            # where the environment and .NET disagree about it, which is the SYSTEM account: the environment
-            # says C:\Windows\Temp and .NET gives the hardened C:\Windows\SystemTemp. They agree for an
-            # ordinary user, so without this the cases below cannot see a regression there and the build that
-            # found one was running as SYSTEM. .NET reads TMP ahead of TEMP and so stays where it was.
+            # TEMP is moved aside across both, since the two only part company over the temporary path where
+            # the environment and .NET do: C:\Windows\Temp against the hardened C:\Windows\SystemTemp under
+            # SYSTEM. .NET reads TMP ahead of TEMP and so stays put, which is what separates them here.
             #
             # Deliberately not Initialize-ADTTestModule, which repoints the log, temp and cache paths at
             # TestDrive afterwards and so has nothing left to compare against. Initializing on its own

@@ -12,10 +12,9 @@ function Publish-ADTDocusaurusExport
     $gitConfigRestore = [ordered]@{}
     try
     {
-        # Clone the destination repo. The authorization header reaches git through the environment rather
-        # than through -c or git config, both of which pass it as an argument and so put it in the runner's
-        # process list for anything able to read one. Every git call below inherits it, and the finally clause
-        # puts each variable back the way it was found, which for the token means taking it away again.
+        # Clone the destination repo. The authorization header reaches git through the environment rather than
+        # -c or git config, which would put it in the runner's process list for anything able to read one.
+        # The finally clause puts each variable back as it was found, which for the token means removing it.
         Write-ADTBuildLogEntry -Message "Cloning destination repository, this may take a while."
         $destBranch = 'main'; $destRepo = "https://github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $gitAuthToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("x-access-token:$env:API_TOKEN_GITHUB"))

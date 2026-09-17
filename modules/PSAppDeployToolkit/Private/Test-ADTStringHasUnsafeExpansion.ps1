@@ -15,11 +15,8 @@ function Private:Test-ADTStringHasUnsafeExpansion
         [System.String]$InputString
     )
 
-    # PowerShell's string expansion does more than substitute a variable. A $( ) subexpression evaluates
-    # whatever it holds, and a ${ } reference resolves through the provider, so ${C:\file.txt} hands back
-    # that file's contents. Config values can arrive from Group Policy, which makes both an outside caller's
-    # to write, so both are reported here and refused before anything is expanded. Everything else, variables
-    # and escapes alike, is left to the expander so that what it accepts is unchanged.
+    # Expansion also evaluates $( ) and resolves ${ } through the provider, so ${C:\file.txt} hands back that
+    # file's contents. Config values can arrive from Group Policy, so both are refused before anything runs.
     for ($i = 0; $i -lt $InputString.Length; $i++)
     {
         # A backtick escapes whatever follows it, so nothing is expanded there and there is nothing to refuse.

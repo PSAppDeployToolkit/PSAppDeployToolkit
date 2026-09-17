@@ -113,11 +113,9 @@ Describe 'Get-ADTDefaultStringTable' {
 
     Context 'Against an initialized module' {
         BeforeAll {
-            # This reads the default config, which answers only for a module that has not been initialized,
-            # so the default table is taken first and compared with the seated one afterwards. The language
-            # is left to each to resolve, which is part of what has to agree: both read it from the same
-            # config values, so a table in one language and a table in another would be a difference worth
-            # failing on rather than one to arrange away.
+            # This reads the default config, which answers only for an uninitialized module, so the default
+            # table is taken first and compared with the seated one afterwards. Each resolves its own
+            # language, which is part of what has to agree rather than something to arrange away.
             $script:DefaultStrings = InModuleScope -ModuleName PSAppDeployToolkit { Get-ADTDefaultStringTable }
             InModuleScope -ModuleName PSAppDeployToolkit { Initialize-ADTModule -InformationAction SilentlyContinue }
             $script:SeatedStrings = InModuleScope -ModuleName PSAppDeployToolkit { Get-ADTStringTable }

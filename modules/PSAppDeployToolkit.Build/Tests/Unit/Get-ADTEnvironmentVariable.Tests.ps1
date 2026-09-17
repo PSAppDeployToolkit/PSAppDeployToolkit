@@ -1,10 +1,9 @@
 ﻿BeforeDiscovery {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
 
-    # The User target is read for whoever is signed in, not for the process, so the two are the same only
-    # when the caller has a session of its own. LocalSystem does not: it reads the signed-in user's hive
-    # where .NET reads the service profile's, which makes .NET the wrong oracle rather than the answer
-    # wrong. Skipped rather than reworked, since checking it properly means reading another user's hive.
+    # The User target is read for whoever is signed in rather than for the process, so the two agree only
+    # when the caller has a session of its own. LocalSystem does not, which makes .NET the wrong oracle
+    # rather than the answer wrong. Checking it properly means reading another user's hive.
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'UserTargetIsTheCallers', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
     $script:UserTargetIsTheCallers = !(Get-ADTCallerSid).IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid)
 }

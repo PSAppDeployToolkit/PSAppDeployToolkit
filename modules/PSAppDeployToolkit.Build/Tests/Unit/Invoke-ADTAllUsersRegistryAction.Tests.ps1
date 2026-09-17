@@ -77,10 +77,8 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
 
     Context 'Profiles whose hive will not load' {
         BeforeAll {
-            # A profile whose NTUSER.DAT is present but is not a hive, so that reg.exe always refuses to
-            # load it. The refusal is what is under test, so nothing is ever mounted and the run leaves
-            # no hive behind. A standard user can arrange the same refusal for their own profile by
-            # holding the file open or denying SYSTEM on it.
+            # A profile whose NTUSER.DAT is present but is not a hive, so reg.exe always refuses it. The
+            # refusal is what is under test, so nothing is mounted and the run leaves no hive behind.
             $script:BadHiveProfilePath = New-Item -Path "$TestDrive\BadHiveProfile" -ItemType Directory -Force
             Set-Content -LiteralPath "$($script:BadHiveProfilePath.FullName)\NTUSER.DAT" -Value 'not a registry hive'
             $script:BadHiveProfile = [PSADT.AccountManagement.UserProfileInfo]::new(

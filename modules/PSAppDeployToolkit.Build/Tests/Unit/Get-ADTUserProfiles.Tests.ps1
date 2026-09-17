@@ -14,10 +14,8 @@ Describe 'Get-ADTUserProfiles' {
             $script:Mine = $script:Profiles | & { process { if ($_.SID.Value.Equals($callerSid)) { return $_ } } } | Select-Object -First 1
 
             # The profile the filtering tests act on. Deliberately not the caller's: LocalSystem has no
-            # ordinary profile and is left out of this list by default, so there would be nothing to act on
-            # when the suite runs as it. What those tests need is a profile that is certainly in the set,
-            # not a particular person's - so any real one, which means anything but the default template,
-            # whose SID is the null one rather than an account's.
+            # ordinary profile and is excluded by default, leaving nothing to act on. Any real profile will
+            # do, which means anything but the default template, whose SID is the null one.
             $script:Subject = $script:Profiles | & { process { if (!$_.SID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid)) { return $_ } } } | Select-Object -First 1
         }
 

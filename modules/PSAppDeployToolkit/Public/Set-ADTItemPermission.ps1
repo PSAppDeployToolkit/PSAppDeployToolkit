@@ -240,9 +240,8 @@ function Set-ADTItemPermission
                         return
                     }
                     # Only sections a list reports as modified get written, and one read from another path
-                    # reports none, so re-stamp the access rules to mark that section as ours to apply.
-                    # Stamped onto a copy of the caller's list, as stamping theirs leaves it able to write
-                    # these rules wherever they hand it next.
+                    # reports none. Stamped onto a copy, since stamping theirs leaves it writing these
+                    # rules wherever it goes next.
                     $aclSection = [System.Security.AccessControl.AccessControlSections]::Access
                     $aclToApply = [System.Activator]::CreateInstance($AccessControlList.GetType())
                     $aclToApply.SetSecurityDescriptorSddlForm($AccessControlList.GetSecurityDescriptorSddlForm($aclSection), $aclSection)

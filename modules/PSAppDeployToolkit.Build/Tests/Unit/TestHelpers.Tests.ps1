@@ -8,11 +8,9 @@
 Describe 'PSAppDeployToolkit.TestHelpers' {
     Context 'The names it exports' {
         It 'Shares none of them with the build module' {
-            # The build module marks every one of its own functions read-only as it loads, and the unit
-            # tests run from inside its session state, so a helper sharing a name with one of them cannot
-            # be written at all: the import fails, and with it the discovery of every test file that asks
-            # for the helpers. That is a whole suite gone rather than one test, and it does not show up
-            # when Pester is run directly, because nothing has loaded the build module then.
+            # The build module marks its own functions read-only as it loads and the unit tests run inside
+            # its session state, so a helper sharing a name cannot be written: the import fails and takes
+            # the discovery of every test file asking for the helpers with it.
             $shared = @($script:HelperNames | & { process { if ($script:BuildModuleNames -contains $_) { return $_ } } })
             $shared | Should -BeNullOrEmpty -Because "the build module defines them too and locks them: [$($shared -join ', ')]"
         }

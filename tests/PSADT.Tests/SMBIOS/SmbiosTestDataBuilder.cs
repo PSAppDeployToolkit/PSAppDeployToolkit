@@ -49,10 +49,9 @@ namespace PSADT.Tests.SMBIOS
 
                 foreach (string value in structure.Strings)
                 {
-                    // Anything with bytes in it is written as those bytes, whitespace included: a string of
-                    // spaces is a string, and firmware that holds one writes the spaces. Null or empty is not
-                    // a member of a string set at all, since a bare terminator is what ends the set, so writing
-                    // one is how a caller here says the set stops at that point.
+                    // Anything with bytes in it is written as those bytes, whitespace included. Null or empty
+                    // is not a member of a string set at all, since a bare terminator is what ends the set,
+                    // so writing one is how a caller says the set stops there.
                     if (value is { Length: > 0 })
                     {
                         tableBytes.AddRange(Encoding.ASCII.GetBytes(value));
