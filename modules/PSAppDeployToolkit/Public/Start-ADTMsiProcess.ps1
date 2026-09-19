@@ -546,7 +546,7 @@ function Start-ADTMsiProcess
                     if (!$InstalledApplication)
                     {
                         Write-ADTLogEntry -Message "Determining whether the MSI is already installed on this system."
-                        if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -InformationAction SilentlyContinue)
+                        if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -Force -InformationAction SilentlyContinue)
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
                             if (($installedApps | Measure-Object).Count -gt 1)
@@ -576,7 +576,7 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [MsiQueryProductState()]."
                             $msiProductState.Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
                         }
-                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
+                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -Force -InformationAction SilentlyContinue))
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
                             if (($installedApps | Measure-Object).Count -gt 1)
