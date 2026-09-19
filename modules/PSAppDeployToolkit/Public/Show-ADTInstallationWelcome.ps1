@@ -859,7 +859,7 @@ function Show-ADTInstallationWelcome
         {
             $PSBoundParameters.Add('Subtitle', $adtStrings.CloseAppsPrompt.Fluent.Subtitle.($DeploymentType.ToString()))
         }
-        $RequiredDiskSpace = if ($PSBoundParameters.ContainsKey('RequiredDiskSpace'))
+        [System.UInt32]$RequiredDiskSpace = if ($PSBoundParameters.ContainsKey('RequiredDiskSpace'))
         {
             $PSBoundParameters.RequiredDiskSpace
         }
