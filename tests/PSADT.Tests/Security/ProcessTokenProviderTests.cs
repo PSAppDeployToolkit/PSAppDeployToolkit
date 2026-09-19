@@ -338,7 +338,7 @@ namespace PSADT.Tests.Security
         /// <returns>The reference logon.</returns>
         private static ProcessTokenLogon CreateLogon()
         {
-            return new(new LUID { LowPart = 42 }, 5, new("S-1-5-21-1-2-3-1001"), SECURITY_LOGON_TYPE.Interactive, 0x8000, 101);
+            return new(new LUID { LowPart = 42 }, 5, new("S-1-5-21-1-2-3-1001"), SECURITY_LOGON_TYPE.Interactive, Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON, 101);
         }
 
         /// <summary>

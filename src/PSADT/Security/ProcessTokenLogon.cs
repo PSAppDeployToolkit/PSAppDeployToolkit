@@ -13,7 +13,7 @@ namespace PSADT.Security
     /// <param name="LogonType">The native logon type.</param>
     /// <param name="UserFlags">The LSA provenance flags.</param>
     /// <param name="LogonTime">The LSA logon time.</param>
-    internal sealed record class ProcessTokenLogon(in LUID AuthenticationId, uint SessionId, SecurityIdentifier? Sid, SECURITY_LOGON_TYPE LogonType, uint UserFlags, long LogonTime)
+    internal sealed record class ProcessTokenLogon(in LUID AuthenticationId, uint SessionId, SecurityIdentifier? Sid, SECURITY_LOGON_TYPE LogonType, Interop.MSV_SUB_AUTHENTICATION_FILTER UserFlags, long LogonTime)
     {
         /// <summary>
         /// The authentication identifier.
@@ -38,7 +38,7 @@ namespace PSADT.Security
         /// <summary>
         /// The LSA provenance flags.
         /// </summary>
-        internal readonly uint UserFlags = UserFlags;
+        internal readonly Interop.MSV_SUB_AUTHENTICATION_FILTER UserFlags = UserFlags;
 
         /// <summary>
         /// The LSA logon time.
