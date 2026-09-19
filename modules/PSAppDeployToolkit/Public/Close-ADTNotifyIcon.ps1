@@ -93,7 +93,7 @@ function Close-ADTNotifyIcon
         # Close the client/server process when we're running sessionless.
         if (!(Test-ADTSessionActive) -and !(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
         {
-            Close-ADTClientServerProcess
+            Close-ADTClientServerInstance
         }
     }
 

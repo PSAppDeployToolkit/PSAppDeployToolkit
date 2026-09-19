@@ -7,15 +7,11 @@
 # Rethrowing caught exceptions makes the error output from Import-Module look better.
 try
 {
-    # Set all functions as read-only, export all public definitions and finalise the CommandTable.
-    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
-    New-Variable -Name CommandTable -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary($CommandTable, $null)) -Option Constant -Force -Confirm:$false
-    Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
-
-    # Define object for holding all PSADT variables.
-    New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
-            ModuleDefaults = [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Collections.Frozen.FrozenDictionary[System.String, System.Management.Automation.ScriptBlock]][]]$(
-                    [System.Collections.Generic.KeyValuePair[System.String, System.Collections.Frozen.FrozenDictionary[System.String, System.Management.Automation.ScriptBlock]]]::new('Config', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock][]]$(
+    # Re-define the `$Module` variable since its correct type is available now that all assemblies have been successfully loaded.
+    # The defaults should be handled differently but were left as-is to not make the commit implementing `ModuleDatabase` noisy.
+    New-Variable -Name Module -Option Constant -Force -Value ([PSAppDeployToolkit.Foundation.ModuleDatabase]::new(
+            [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.ScriptBlock]][]](
+                    [System.Collections.Generic.KeyValuePair[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.ScriptBlock]]]::new('Config', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock][]](
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new([System.String]::Empty, {
                                         @{
                                             Assets = @{
@@ -192,8 +188,8 @@ try
                                             }
                                         }
                                     })
-                            ), $null))
-                    [System.Collections.Generic.KeyValuePair[System.String, System.Collections.Frozen.FrozenDictionary[System.String, System.Management.Automation.ScriptBlock]]]::new('Strings', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock][]]$(
+                            ), [System.StringComparer]::OrdinalIgnoreCase)),
+                    [System.Collections.Generic.KeyValuePair[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.ScriptBlock]]]::new('Strings', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock][]](
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new([System.String]::Empty, {
                                         @{
                                             BalloonTip = @{
@@ -447,7 +443,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('ar', {
                                         @{
                                             BalloonTip = @{
@@ -612,7 +608,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('bg', {
                                         @{
                                             BalloonTip = @{
@@ -777,7 +773,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('cs', {
                                         @{
                                             BalloonTip = @{
@@ -942,7 +938,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('da', {
                                         @{
                                             BalloonTip = @{
@@ -1107,7 +1103,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('de', {
                                         @{
                                             BalloonTip = @{
@@ -1272,7 +1268,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('el', {
                                         @{
                                             BalloonTip = @{
@@ -1437,7 +1433,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('es', {
                                         @{
                                             BalloonTip = @{
@@ -1602,7 +1598,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('fi', {
                                         @{
                                             BalloonTip = @{
@@ -1767,7 +1763,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('fr', {
                                         @{
                                             BalloonTip = @{
@@ -1932,7 +1928,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('he', {
                                         @{
                                             BalloonTip = @{
@@ -2097,7 +2093,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('hu', {
                                         @{
                                             BalloonTip = @{
@@ -2262,7 +2258,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('it', {
                                         @{
                                             BalloonTip = @{
@@ -2427,7 +2423,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('ja', {
                                         @{
                                             BalloonTip = @{
@@ -2592,7 +2588,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('ko', {
                                         @{
                                             BalloonTip = @{
@@ -2757,7 +2753,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('lv', {
                                         @{
                                             BalloonTip = @{
@@ -2922,7 +2918,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('nb', {
                                         @{
                                             BalloonTip = @{
@@ -3087,7 +3083,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('nl', {
                                         @{
                                             BalloonTip = @{
@@ -3252,7 +3248,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('pl', {
                                         @{
                                             BalloonTip = @{
@@ -3417,7 +3413,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('pt', {
                                         @{
                                             BalloonTip = @{
@@ -3582,7 +3578,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('pt-BR', {
                                         @{
                                             BalloonTip = @{
@@ -3747,7 +3743,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('ru', {
                                         @{
                                             BalloonTip = @{
@@ -3912,7 +3908,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('sk', {
                                         @{
                                             BalloonTip = @{
@@ -4077,7 +4073,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('sv', {
                                         @{
                                             BalloonTip = @{
@@ -4242,7 +4238,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('tr', {
                                         @{
                                             BalloonTip = @{
@@ -4407,7 +4403,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('zh-CN', {
                                         @{
                                             BalloonTip = @{
@@ -4572,7 +4568,7 @@ try
                                                 CustomMessage = $null
                                             }
                                         }
-                                    })
+                                    }),
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new('zh-HK', {
                                         @{
                                             BalloonTip = @{
@@ -4738,115 +4734,88 @@ try
                                             }
                                         }
                                     })
-                            ), $null))
-                ), $null)
-            Callbacks = [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]][]]$(
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnInit, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnStart, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::PreOpen, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::PostOpen, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnLogEntry, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnDefer, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::PreClose, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::PostClose, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnFinish, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                    [System.Collections.Generic.KeyValuePair[PSAppDeployToolkit.Foundation.CallbackType, System.Collections.Generic.List[System.Management.Automation.CommandInfo]]]::new([PSAppDeployToolkit.Foundation.CallbackType]::OnExit, [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new())
-                ), $null)
-            Directories = [pscustomobject]@{
-                Script = $null
-                Config = $null
-                Strings = $null
-            }
-            Durations = [pscustomobject]@{
-                ModuleImport = $null
-                ModuleInit = $null
-            }
-            ProcessExitEvent = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -SupportEvent -Action {
-                if ($Script:ADT.ClientServerProcess)
-                {
-                    Close-ADTClientServerProcess
-                }
-            }
-            SessionState = $ExecutionContext.SessionState
-            RestartOnExitCountdown = $null
-            ShutdownReasonText = $null
-            ShutdownNoForceCloseApps = $false
-            ClientServerProcess = $null
-            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
-            Environment = $null
-            Language = $null
-            Config = $null
-            Strings = $null
-            LastExitCode = 0
-            Initialized = $false
-        })
+                            ), [System.StringComparer]::OrdinalIgnoreCase))
+                ), [System.StringComparer]::OrdinalIgnoreCase),
+            (Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1),
+            $(if ($MyInvocation.MyCommand.Name.Equals('ImportsLast.ps1')) { (Get-PSCallStack)[1].InvocationInfo } else { $MyInvocation }).MyCommand.ScriptBlock.Module,
+            $Module.Assemblies,
+            $Module.Signature,
+            $Module.Compiled
+        ))
 
     # Registry path transformation constants used within Convert-ADTRegistryPath.
-    New-Variable -Name Registry -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Object][]]$(
-                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('PathMatches', [System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]]$(
-                            ':\\'
-                            ':'
+    New-Variable -Name RegistryConstants -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Object][]](
+                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('PathMatches', [System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]](
+                            ':\\',
+                            ':',
                             '\\'
-                        ), $null))
-                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('PathReplacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]]$(
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKLM', 'HKEY_LOCAL_MACHINE\')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCR', 'HKEY_CLASSES_ROOT\')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCU', 'HKEY_CURRENT_USER\')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKU', 'HKEY_USERS\')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCC', 'HKEY_CURRENT_CONFIG\')
+                        ), [System.StringComparer]::OrdinalIgnoreCase)),
+                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('PathReplacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKLM', 'HKEY_LOCAL_MACHINE\'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCR', 'HKEY_CLASSES_ROOT\'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCU', 'HKEY_CURRENT_USER\'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKU', 'HKEY_USERS\'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCC', 'HKEY_CURRENT_CONFIG\'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKPD', 'HKEY_PERFORMANCE_DATA\')
-                        ), $null))
-                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('WOW64Replacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]]$(
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE\\', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\')
-                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE$', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node')
+                        ), [System.StringComparer]::OrdinalIgnoreCase)),
+                [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('WOW64Replacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE\\', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'),
+                            [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE$', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\', 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\')
-                        ), $null))
-            ), $null))
+                        ), [System.StringComparer]::OrdinalIgnoreCase))
+            ), [System.StringComparer]::OrdinalIgnoreCase))
 
     # Array of all PowerShell common parameter names.
-    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters), $null))
+    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters), [System.StringComparer]::OrdinalIgnoreCase))
 
     # Lookup table for preference variables and their associated CommonParameter name.
-    New-Variable -Name PreferenceVariableTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]]$(
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('InformationAction', 'InformationPreference')
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('ProgressAction', 'ProgressPreference')
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('WarningAction', 'WarningPreference')
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Confirm', 'ConfirmPreference')
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Verbose', 'VerbosePreference')
-                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('WhatIf', 'WhatIfPreference')
+    New-Variable -Name PreferenceVariableTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('InformationAction', 'InformationPreference'),
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('ProgressAction', 'ProgressPreference'),
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('WarningAction', 'WarningPreference'),
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Confirm', 'ConfirmPreference'),
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Verbose', 'VerbosePreference'),
+                [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('WhatIf', 'WhatIfPreference'),
                 [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Debug', 'DebugPreference')
-            ), $null))
+            ), [System.StringComparer]::OrdinalIgnoreCase))
 
     # Lookup table for service status translation mapping.
-    New-Variable -Name ServiceStatusTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus][]]$(
-                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('ContinuePending', [System.ServiceProcess.ServiceControllerStatus]::Running)
-                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('PausePending', [System.ServiceProcess.ServiceControllerStatus]::Paused)
-                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('StartPending', [System.ServiceProcess.ServiceControllerStatus]::Running)
+    New-Variable -Name ServiceStatusTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus][]](
+                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('ContinuePending', [System.ServiceProcess.ServiceControllerStatus]::Running),
+                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('PausePending', [System.ServiceProcess.ServiceControllerStatus]::Paused),
+                [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('StartPending', [System.ServiceProcess.ServiceControllerStatus]::Running),
                 [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('StopPending', [System.ServiceProcess.ServiceControllerStatus]::Stopped)
-            ), $null))
+            ), [System.StringComparer]::OrdinalIgnoreCase))
+
+    # Set all functions as read-only, export all public definitions and finalise the CommandTable.
+    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
+    New-Variable -Name CommandTable -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary($CommandTable, $null)) -Option Constant -Force -Confirm:$false
+    Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+
+    # Register a safety shutdown event to ensure there's no remaining client/server process.
+    Register-EngineEvent -SourceIdentifier PowerShell.Exiting -SupportEvent -Action {
+        if (Test-ADTClientServerActive)
+        {
+            Close-ADTClientServerProcess
+        }
+    }
+
+    # Ensure that the client/server process is closed on module remove.
+    $Module.ModuleInfo.OnRemove = {
+        if (Test-ADTClientServerActive)
+        {
+            Close-ADTClientServerInstance
+        }
+        Get-EventSubscriber -SourceIdentifier PowerShell.Exiting -Force -ErrorAction Ignore | & { process { if ($_.Action.Command.Contains('Close-ADTClientServerProcess')) { return $_ } } } | Unregister-Event -Force
+        [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
+    }
 
     # Send the module's database into the C# code for internal access.
-    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Init($ADT)
+    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Init($ExecutionContext.SessionState, $Module, $ModuleImportStart)
+    Remove-Variable -Name ModuleImportStart -Force -Confirm:$false
 }
 catch
 {
     throw
 }
-
-# Ensure that the client/server process is closed on module remove.
-$ModuleInfo.OnRemove = {
-    if ($Script:ADT.ClientServerProcess)
-    {
-        Close-ADTClientServerProcess
-    }
-    if ($Script:ADT.ProcessExitEvent)
-    {
-        Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.Id
-    }
-    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
-}
-
-# Determine how long the import took.
-$ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart
-Remove-Variable -Name ModuleImportStart -Force -Confirm:$false

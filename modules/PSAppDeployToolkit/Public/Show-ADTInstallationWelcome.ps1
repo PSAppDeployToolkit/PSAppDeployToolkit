@@ -800,7 +800,7 @@ function Show-ADTInstallationWelcome
         else
         {
             $adtConfig = Get-ADTConfig
-            $adtLanguage = $Script:ADT.Language
+            $adtLanguage = Get-ADTStringLanguage
             $adtStrings = Get-ADTStringTable -SessionState $sessionState
         }
 
@@ -1363,7 +1363,7 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnDefer)))
+                                foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnDefer | & { process { return $_ } }))
                                 {
                                     & $callback
                                 }
@@ -1437,9 +1437,9 @@ function Show-ADTInstallationWelcome
         finally
         {
             # Close the client/server process if we're running without a session.
-            if (!$adtSession -and $Script:ADT.ClientServerProcess)
+            if (!$adtSession -and (Test-ADTClientServerActive))
             {
-                Close-ADTClientServerProcess
+                Close-ADTClientServerInstance
             }
         }
     }

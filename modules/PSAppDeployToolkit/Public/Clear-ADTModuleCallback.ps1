@@ -73,7 +73,7 @@ function Clear-ADTModuleCallback
     # Directly clear the backend list.
     try
     {
-        $Script:ADT.Callbacks.$Hookpoint.Clear()
+        (Get-ADTModuleCallbacks).$Hookpoint.Clear()
     }
     catch
     {

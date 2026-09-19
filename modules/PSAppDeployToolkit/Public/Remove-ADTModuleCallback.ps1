@@ -81,7 +81,7 @@ function Remove-ADTModuleCallback
         $null = $Callback | & {
             begin
             {
-                $callbacks = $Script:ADT.Callbacks.$Hookpoint
+                $callbacks = (Get-ADTModuleCallbacks).$Hookpoint
             }
             process
             {

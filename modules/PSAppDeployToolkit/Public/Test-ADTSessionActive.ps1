@@ -43,5 +43,5 @@ function Test-ADTSessionActive
         https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTSessionActive.ps1
     #>
 
-    return !!$Script:ADT.Sessions.Count
+    return (Test-ADTModuleInitialized) -and !!(Get-ADTDeploymentSessions).Count
 }

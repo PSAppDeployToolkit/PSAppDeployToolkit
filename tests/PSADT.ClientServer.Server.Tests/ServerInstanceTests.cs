@@ -339,7 +339,9 @@ namespace PSADT.ClientServer.Server.Tests
         [Fact]
         public async Task ReadLogFrameAsync_ReadsTheFrameEvenWithNoSessionToWriteItTo()
         {
-            // Arrange: no deployment session is active, since nothing in this assembly seats one.
+            // Arrange: the module imported and not initialized, which is the state a log frame can genuinely arrive
+            // in. A database has to be seated for that, as every reader refuses an assembly loaded another way.
+            using ModuleDatabaseScope seated = powerShell.SeatModuleDatabaseWithoutState();
             Assert.False(ModuleDatabase.IsDeploymentSessionActive());
             int reads = 0;
             byte[] frame = DataSerialization.SerializeToBytes(new LogMessagePayload("a message", LogSeverity.Info, "a source"));
@@ -512,9 +514,13 @@ namespace PSADT.ClientServer.Server.Tests
                 return DataSerialization.SerializeToBytes(new EnvironmentVariablePayload("PATH"));
             }
 
-            // Assert: with nothing to write to, the frame is never deserialised and nothing is noticed.
-            Assert.False(ModuleDatabase.IsDeploymentSessionActive());
-            Assert.Null(await Record.ExceptionAsync(static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true));
+            // Assert: with nothing to write to, the frame is never deserialised and nothing is noticed. The module is
+            // imported and not initialized, which needs a database seated even though it holds no state.
+            using (powerShell.SeatModuleDatabaseWithoutState())
+            {
+                Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+                Assert.Null(await Record.ExceptionAsync(static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true));
+            }
 
             // Arrange: and again with a session seated.
             using IDisposable scope = powerShell.Enter();

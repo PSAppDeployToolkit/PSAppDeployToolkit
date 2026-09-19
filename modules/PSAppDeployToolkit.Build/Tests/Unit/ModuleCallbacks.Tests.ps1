@@ -30,14 +30,16 @@ Describe 'Module callback registrations' -Tag Unit {
 
     It 'Has somewhere to register a <CallbackType> callback' -ForEach $script:CallbackTypes {
         InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Name = $CallbackType } {
-            $ADT.Callbacks.ContainsKey([System.Enum]::Parse([PSAppDeployToolkit.Foundation.CallbackType], $Name)) | Should -BeTrue
+            # A property per hookpoint rather than a keyed table, so the enumeration
+            # is matched against the names the callbacks object carries instead.
+            (Get-ADTModuleCallbacks).PSObject.Properties.Name | Should -Contain $Name
         }
     }
 
     It 'Registers nothing the enumeration does not declare' {
         # The other direction. A type removed from the enumeration leaves an entry behind that nothing can ever
         # reach, which is harmless but is a sign the two have drifted apart.
-        $registered = InModuleScope -ModuleName PSAppDeployToolkit { $ADT.Callbacks.Keys | ForEach-Object { $_.ToString() } }
+        $registered = InModuleScope -ModuleName PSAppDeployToolkit { (Get-ADTModuleCallbacks).PSObject.Properties.Name }
         ($registered | Sort-Object) -join ', ' | Should -BeExactly (([System.Enum]::GetNames([PSAppDeployToolkit.Foundation.CallbackType]) | Sort-Object) -join ', ')
     }
 }

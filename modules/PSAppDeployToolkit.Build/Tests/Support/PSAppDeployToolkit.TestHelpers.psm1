@@ -34,7 +34,7 @@ function Import-ADTModuleUnderTest
         Call it from both `BeforeDiscovery` and `BeforeAll` in any file whose discovery enumerates something from the module, as discovery runs before `BeforeAll` does.
 
     .PARAMETER Force
-        Removes and reimports the module even when it is already loaded. Use this only in files that mutate the module's internal `$ADT` state, so the next file starts from a clean module.
+        Removes and reimports the module even when it is already loaded. Use this only in files that mutate the module's internal `$Module` state, so the next file starts from a clean module.
 
     .INPUTS
         None
@@ -73,10 +73,10 @@ function Import-ADTModuleUnderTest
 
     if ($loaded)
     {
-        # A test that mocks Exit-ADTInvocation never reaches the Close-ADTClientServerProcess inside it, so
+        # A test that mocks Exit-ADTInvocation never reaches the Close-ADTClientServerInstance inside it, so
         # the client is left running and holds a handle on the module's own binaries. Closed here, because a
         # forced reload is where module state is meant to be discarded.
-        & $loaded { if ($null -ne $ADT.ClientServerProcess) { Close-ADTClientServerProcess -InformationAction SilentlyContinue } }
+        & $loaded { if (Test-ADTClientServerActive) { Close-ADTClientServerInstance -InformationAction SilentlyContinue } }
         Remove-Module -ModuleInfo $loaded -Force
     }
 
@@ -540,15 +540,16 @@ function Initialize-ADTTestModule
     Initialize-ADTModule -InformationAction SilentlyContinue
 
     & (Get-Module -Name PSAppDeployToolkit) {
+        $toolkit = (Get-ADTConfig).Toolkit
         foreach ($setting in 'LogPath', 'LogPathNoAdminRights', 'TempPath', 'TempPathNoAdminRights', 'CachePath', 'CachePathNoAdminRights')
         {
-            $ADT.Config.Toolkit.$setting = [System.IO.Path]::Combine($args[0], $setting.Replace('NoAdminRights', [System.String]::Empty))
+            $toolkit.$setting = [System.IO.Path]::Combine($args[0], $setting.Replace('NoAdminRights', [System.String]::Empty))
         }
-        $ADT.Config.Toolkit.LogWriteToHost = $false
+        $toolkit.LogWriteToHost = $false
 
         if (![System.String]::IsNullOrWhiteSpace($args[1]))
         {
-            $ADT.Config.Toolkit.RegPath = $ADT.Config.Toolkit.RegPathNoAdminRights = $args[1]
+            $toolkit.RegPath = $toolkit.RegPathNoAdminRights = $args[1]
         }
     } $Path $RegistryPath
 }

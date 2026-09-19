@@ -19,6 +19,18 @@ function Private:Get-ADTDefaultStringTable
         [System.Management.Automation.SessionState]$SessionState
     )
 
+    # If we're here but the module is in any way/shape/form initialised, throw loudly.
+    if (Test-ADTModuleInitialized)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidProgramException]::new("Cannot retrieve the default string table while the module is already initialized.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            ErrorId = 'ModuleAlreadyInitialized'
+            RecommendedAction = "Please report this issue to the PSAppDeployToolkit team."
+        }
+        throw (New-ADTErrorRecord @naerParams)
+    }
+
     # Resolve the language against the module's defaults, as the config is what specifies any override.
     $config = Get-ADTDefaultConfig
     if (!$PSBoundParameters.ContainsKey('UICulture'))

@@ -23,14 +23,13 @@ function Private:Get-ADTDefaultConfig
     }
 
     # If we're here but the module is in any way/shape/form initialised, throw loudly.
-    if ($Script:ADT.Environment)
+    if (Test-ADTModuleInitialized)
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The module has been initialized, so [Get-ADTConfig] is what holds its config. [$($MyInvocation.MyCommand.Name)] answers only for a module that has not been.")
+            Exception = [System.InvalidProgramException]::new("Cannot retrieve the default config while the module is already initialized.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ModuleAlreadyInitialized'
-            TargetObject = $Script:ADT.Environment
-            RecommendedAction = "Please call [Get-ADTConfig] instead, or gate the call on [Test-ADTModuleInitialized]."
+            RecommendedAction = "Please report this issue to the PSAppDeployToolkit team."
         }
         throw (New-ADTErrorRecord @naerParams)
     }

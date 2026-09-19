@@ -10,7 +10,9 @@ AfterAll {
 Describe 'Get-ADTStringTable' {
     Context 'Before initialisation' {
         It 'Refuses to hand back strings that were never loaded' {
-            { Get-ADTStringTable } | Should -Throw -ErrorId 'ADTStringTableNotInitialized,Get-ADTStringTable'
+            # The state holds the strings now, so the refusal comes from there rather
+            # than from a check of its own, and names the module rather than the table.
+            { Get-ADTStringTable } | Should -Throw -ErrorId 'ADTModuleNotInitialized,Get-ADTStringTable'
         }
     }
 
@@ -36,7 +38,7 @@ Describe 'Get-ADTStringTable' {
         }
 
         It 'Hands back the same table the module holds' {
-            $script:Strings | Should -Be (InModuleScope PSAppDeployToolkit { $ADT.Strings })
+            $script:Strings | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Strings })
         }
 
         It 'Returns a separate copy when given a session state' {
@@ -49,7 +51,7 @@ Describe 'Get-ADTStringTable' {
 
         It 'Leaves the shared table unexpanded when a copy is taken' {
             $null = Get-ADTStringTable -SessionState $ExecutionContext.SessionState
-            Get-ADTStringTable | Should -Be (InModuleScope PSAppDeployToolkit { $ADT.Strings })
+            Get-ADTStringTable | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Strings })
         }
     }
 }

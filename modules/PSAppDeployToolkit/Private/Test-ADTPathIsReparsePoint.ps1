@@ -15,8 +15,8 @@ function Private:Test-ADTPathIsReparsePoint
         [System.String]$LiteralPath
     )
 
-    # -Force reports the link's own attributes rather than following it to the target, which is the
-    # distinction being drawn here. A path that isn't there at all cannot be one itself.
+    # The `-Force` parameter reports the link's own attributes rather than following it to the target,
+    # which is the distinction being drawn here. A path that isn't there at all cannot be one itself.
     if (($item = Get-Item -LiteralPath $LiteralPath -Force -ErrorAction Ignore))
     {
         if ($item.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint))

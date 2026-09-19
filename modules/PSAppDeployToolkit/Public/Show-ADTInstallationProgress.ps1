@@ -139,7 +139,7 @@ function Show-ADTInstallationProgress
         else
         {
             $adtConfig = Get-ADTConfig
-            $adtLanguage = $Script:ADT.Language
+            $adtLanguage = Get-ADTStringLanguage
             $adtStrings = Get-ADTStringTable -SessionState $sessionState
         }
 
