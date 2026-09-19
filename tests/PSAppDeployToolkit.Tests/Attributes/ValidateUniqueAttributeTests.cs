@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Management.Automation;
 using PSAppDeployToolkit.Attributes;
 using PSAppDeployToolkit.Tests.TestHelpers;
@@ -164,6 +165,51 @@ namespace PSAppDeployToolkit.Tests.Attributes
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { 1, "alpha", "ALPHA" }));
             _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { new Named("x"), "alpha", "ALPHA" }));
             ArgumentAttributes.Validate(new ValidateUniqueAttribute(StringComparison.Ordinal), new object[] { 1, "alpha", "ALPHA" });
+        }
+
+        /// <summary>
+        /// Verifies that two file system elements naming one path are the same element.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="FileSystemInfo"/> compares by reference, so the same path passed twice arrived here as two
+        /// distinct elements and was accepted. Paths reach this validator as directories rather than as strings
+        /// wherever a parameter is typed that way, which is what both
+        /// <c language="powershell">Initialize-ADTModule</c> and <c language="powershell">Open-ADTSession</c> do with
+        /// their script directories.
+        /// </remarks>
+        [Fact]
+        public void Validate_ComparesFileSystemElementsByPath()
+        {
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new DirectoryInfo(@"C:\ADTProbe\Alpha"), new DirectoryInfo(@"C:\ADTProbe\Bravo") });
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new DirectoryInfo(@"C:\ADTProbe\Alpha"), new DirectoryInfo(@"C:\ADTProbe\Alpha") }));
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new FileInfo(@"C:\ADTProbe\Alpha.txt"), new FileInfo(@"C:\ADTProbe\Alpha.txt") }));
+        }
+
+        /// <summary>
+        /// Verifies that a path follows the configured comparison as any other string does.
+        /// </summary>
+        /// <remarks>
+        /// Two spellings of one Windows path name one directory, so the default treats them as a duplicate. An
+        /// explicit ordinal comparison is still honoured, since the comparison is the caller's to choose.
+        /// </remarks>
+        [Fact]
+        public void Validate_AppliesTheStringComparisonToPaths()
+        {
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new[] { new DirectoryInfo(@"C:\ADTProbe\Alpha"), new DirectoryInfo(@"C:\adtprobe\alpha") }));
+            ArgumentAttributes.Validate(new ValidateUniqueAttribute(StringComparison.Ordinal), new[] { new DirectoryInfo(@"C:\ADTProbe\Alpha"), new DirectoryInfo(@"C:\adtprobe\alpha") });
+        }
+
+        /// <summary>
+        /// Verifies that one path named twice is one element however each was typed.
+        /// </summary>
+        /// <remarks>
+        /// Both reduce to the path they name, unlike <c language="text">1</c> and <c language="text">"1"</c>, which
+        /// stay distinct because a number names no path.
+        /// </remarks>
+        [Fact]
+        public void Validate_TreatsOnePathAsOneElementHoweverItIsTyped()
+        {
+            _ = Assert.Throws<ArgumentException>(static () => ArgumentAttributes.Validate(new ValidateUniqueAttribute(), new object[] { @"C:\ADTProbe\Alpha", new DirectoryInfo(@"C:\ADTProbe\Alpha") }));
         }
 
         /// <summary>
