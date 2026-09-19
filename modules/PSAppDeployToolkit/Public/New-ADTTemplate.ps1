@@ -504,7 +504,7 @@ function New-ADTTemplate
                 [ValidateScript({
                         if ($null -eq $_.Start -or $null -eq $_.End -or $null -eq $_.Value)
                         {
-                            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName 'Replacements' -ProvidedValue ($_ | Out-String).Trim() -ExceptionMessage 'The specified replacement does not have the required Start/End/Value properties.'))
+                            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName 'Replacements' -ProvidedValue ($_ | Out-ADTString).Trim() -ExceptionMessage 'The specified replacement does not have the required Start/End/Value properties.'))
                         }
                         return $true
                     })]

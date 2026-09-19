@@ -128,11 +128,11 @@ function Resolve-ADTErrorRecord
             # If we've asked for all properties, return early with the above.
             if ($propsIsWildCard)
             {
-                return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String))) { return $_ } } }
+                return $properties | & { process { if ($InputObject.$_ | Out-ADTString) { return $_ } } }
             }
 
             # Return all valid properties in the order used by the caller.
-            return $Property | & { process { if (($properties -contains $_) -and ![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String))) { return $_ } } }
+            return $Property | & { process { if (($properties -contains $_) -and ($InputObject.$_ | Out-ADTString)) { return $_ } } }
         }
     }
 
@@ -171,7 +171,7 @@ function Resolve-ADTErrorRecord
             {
                 if ($propName -eq 'TargetObject')
                 {
-                    $logErrorProperties.Add($propName, [System.String]::Join([System.Environment]::NewLine, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines([System.String[]]($errorObject.$propName | Out-String -Stream))))
+                    $logErrorProperties.Add($propName, [System.String]::Join([System.Environment]::NewLine, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines([System.String[]]($errorObject.$propName | Out-ADTString -Stream))))
                 }
                 elseif ($propName -match 'Exception$')
                 {
@@ -205,7 +205,7 @@ function Resolve-ADTErrorRecord
         }
 
         # Build out error properties.
-        $logErrorMessage = [System.String]::Join([System.Environment]::NewLine, "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties))).Trim())
+        $logErrorMessage = [System.String]::Join([System.Environment]::NewLine, "Error Record:", "-------------", $null, (Out-ADTString -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties))).Trim())
 
         # Capture Error Inner Exception(s).
         if ($IncludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
@@ -224,7 +224,7 @@ function Resolve-ADTErrorRecord
                 }
 
                 # Add error record and get next inner exception.
-                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String).Trim())
+                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-ADTString).Trim())
                 $errInnerException = $errInnerException.InnerException
             }
 

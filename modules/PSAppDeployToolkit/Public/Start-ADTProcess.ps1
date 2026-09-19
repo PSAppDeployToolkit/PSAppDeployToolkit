@@ -900,8 +900,8 @@ function Start-ADTProcess
                     [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($launchData)
                 }
 
-                # Handle if the returned value is null. The `Out-String` setup primes the Process object.
-                if ([System.String]::IsNullOrWhiteSpace(($execution | Out-String)))
+                # Handle if the returned value is null. The `Out-ADTString` setup primes the Process object.
+                if (!($execution | Out-ADTString))
                 {
                     # A null result without using ShellExecute is entirely unexpected.
                     if (!$UseShellExecute)

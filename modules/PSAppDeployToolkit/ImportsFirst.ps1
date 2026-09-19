@@ -73,11 +73,7 @@ try
     New-Variable -Name ErrorActionPreference -Value ([System.Management.Automation.ActionPreference]::Stop) -Option Constant -Force
     New-Variable -Name InformationPreference -Value ([System.Management.Automation.ActionPreference]::Continue) -Option Constant -Force
     New-Variable -Name ProgressPreference -Value ([System.Management.Automation.ActionPreference]::SilentlyContinue) -Option Constant -Force
-    New-Variable -Name PSDefaultParameterValues -Value $PSDefaultParameterValues -Option Constant -Force
     New-Variable -Name ImportedModules -Value $ImportedModules -Option Constant -Force
-
-    # Never let the host's console width truncate formatted output within this module.
-    $PSDefaultParameterValues.Add('Out-String:Width', 16383)  # [System.Int16]::MaxValue -shr 1
 
     # Ensure module operates under the strictest of conditions.
     Set-StrictMode -Version 3

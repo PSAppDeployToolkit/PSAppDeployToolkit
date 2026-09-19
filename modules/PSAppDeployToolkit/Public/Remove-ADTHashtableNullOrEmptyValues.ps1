@@ -77,7 +77,7 @@ function Remove-ADTHashtableNullOrEmptyValues
             {
                 $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value -Recurse -Depth ($Depth - 1)
             }
-            if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
+            if (Out-ADTString -InputObject $section.Value)
             {
                 $obj.Add($section.Key, $section.Value)
             }

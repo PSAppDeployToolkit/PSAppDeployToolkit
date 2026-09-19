@@ -141,7 +141,7 @@ function Get-ADTPendingReboot
                     $PendingFileRenameOperations,
                     $PendRebootErrorMsg.AsReadOnly()
                 )
-                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String)"
+                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-ADTString)"
                 return $PendingRebootInfo
             }
             catch
