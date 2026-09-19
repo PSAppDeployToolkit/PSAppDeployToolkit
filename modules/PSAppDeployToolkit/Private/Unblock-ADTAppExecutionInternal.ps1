@@ -24,13 +24,14 @@ function Private:Unblock-ADTAppExecutionInternal
         process
         {
             # Debugger is absent on keys carrying only FilterFullPath, and under StrictMode reading it then
-            # throws, which at the startup task's ErrorActionPreference of Continue skips this return.
-            if (!$_.PSObject.Properties.Name.Contains('Debugger') -or ($_.Debugger -notlike '*PSAppDeployToolkit*'))
+            # throws, which at the startup task's ErrorActionPreference of Continue skips this return. Asked
+            # for by name, as a list of names is searched case-sensitively while the registry's are not.
+            if (!$_.PSObject.Properties['Debugger'] -or ($_.Debugger -notlike '*PSAppDeployToolkit*'))
             {
                 return
             }
 
-            if ($_.PSObject.Properties.Name.Contains('FilterFullPath'))
+            if ($_.PSObject.Properties['FilterFullPath'])
             {
                 Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.FilterFullPath)]."
                 Remove-ItemProperty -LiteralPath $_.PSParentPath -Name UseFilter -Verbose:$false

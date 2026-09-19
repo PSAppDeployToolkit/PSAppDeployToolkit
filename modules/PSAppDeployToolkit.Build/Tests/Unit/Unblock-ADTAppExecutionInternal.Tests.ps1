@@ -78,6 +78,21 @@ Describe 'Unblock-ADTAppExecutionInternal' {
             Should -Invoke -ModuleName PSAppDeployToolkit Remove-ItemProperty -Times 1 -Exactly -ParameterFilter { $Name -eq 'Debugger' }
         }
 
+        It 'Removes a key the toolkit wrote whose value name is stored in another case' {
+            # A registry value name comes back as whatever case it was written in, and the registry treats
+            # them all as one name, so the test for its presence cannot be the one thing that does not.
+            Mock -ModuleName PSAppDeployToolkit Get-ItemProperty -ParameterFilter { $null -ne $Path } -MockWith {
+                [pscustomobject]@{
+                    debugger = '"C:\Program Files\PSAppDeployToolkit\PSADT.ClientServer.Client.Launcher.Compatible.exe" /smd'
+                    PSParentPath = 'TestRegistry:\Ours'
+                    PSPath = 'TestRegistry:\Ours\app.exe'
+                    PSChildName = 'app.exe'
+                }
+            }
+            InModuleScope -ModuleName PSAppDeployToolkit { Unblock-ADTAppExecutionInternal -TaskName 'ADTTestOnlyNeverRegistered' }
+            Should -Invoke -ModuleName PSAppDeployToolkit Remove-ItemProperty -Times 1 -Exactly -ParameterFilter { $Name -eq 'Debugger' }
+        }
+
         It 'Removes the filter subkey of a key the toolkit wrote' {
             Mock -ModuleName PSAppDeployToolkit Get-ItemProperty -ParameterFilter { $null -ne $Path } -MockWith {
                 [pscustomobject]@{
