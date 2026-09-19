@@ -158,7 +158,7 @@ namespace PSADT.Security
             ProcessTokenLogon? reference = null;
             foreach (ProcessTokenLogon logon in logons)
             {
-                if (logon.SessionId != session.SessionId || logon.Sid is null || !session.Sid.Equals(logon.Sid) || (logon.UserFlags & 0x8000u) is 0 || logon.LogonType is not (SECURITY_LOGON_TYPE.Interactive or SECURITY_LOGON_TYPE.RemoteInteractive or SECURITY_LOGON_TYPE.CachedInteractive or SECURITY_LOGON_TYPE.CachedRemoteInteractive))
+                if (logon.SessionId != session.SessionId || logon.Sid is null || !session.Sid.Equals(logon.Sid) || !logon.UserFlags.HasFlag(Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON) || logon.LogonType is not (SECURITY_LOGON_TYPE.Interactive or SECURITY_LOGON_TYPE.RemoteInteractive or SECURITY_LOGON_TYPE.CachedInteractive or SECURITY_LOGON_TYPE.CachedRemoteInteractive))
                 {
                     continue;
                 }
@@ -324,7 +324,7 @@ namespace PSADT.Security
             using (buffer)
             {
                 ref readonly SECURITY_LOGON_SESSION_DATA data = ref buffer.AsReadOnlyStructure<SECURITY_LOGON_SESSION_DATA>();
-                return new(in data.LogonId, data.Session, !data.Sid.IsNull ? data.Sid.ToSecurityIdentifier() : null, (SECURITY_LOGON_TYPE)data.LogonType, data.UserFlags, data.LogonTime);
+                return new(in data.LogonId, data.Session, !data.Sid.IsNull ? data.Sid.ToSecurityIdentifier() : null, (SECURITY_LOGON_TYPE)data.LogonType, (Interop.MSV_SUB_AUTHENTICATION_FILTER)data.UserFlags, data.LogonTime);
             }
         }
 
