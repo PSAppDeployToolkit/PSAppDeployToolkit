@@ -42,7 +42,7 @@ function Get-ADTConfig
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTConfig
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTConfig.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTConfig.ps1
     #>
 
     [CmdletBinding()]
@@ -51,17 +51,14 @@ function Get-ADTConfig
     (
     )
 
-    # Return the config database if initialized.
-    if (!$Script:ADT.Config -or !$Script:ADT.Config.Count)
+    # Return the config database if initialized. Rethrown from here so the caller's own line is
+    # what the error reports, rather than a line inside this module that means nothing to them.
+    try
     {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-            ErrorId = 'ADTConfigNotLoaded'
-            TargetObject = $Script:ADT.Config
-            RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        return (Get-ADTModuleState).Config
     }
-    return $Script:ADT.Config
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }

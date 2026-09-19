@@ -29,4 +29,10 @@
     <Content Include="..\..\support\PSADT.PowerShellTestFixture\PSADT.PowerShellTestFixture.psm1" CopyToOutputDirectory="PreserveNewest" LinkBase="" />
   </ItemGroup>
 
+  <!--
+    The client/server executables, which the fixture reaches by building an EnvironmentTable. Needed only
+    for an elevated run, which is the one that gets as far as asking for them; see the file itself.
+  -->
+  <Import Project="..\ClientServerExecutables.targets" />
+
 </Project>

@@ -54,7 +54,7 @@ function Private:Import-ADTModuleDataFile
                 }
                 & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
             }
-            elseif (!$DataFile.ContainsKey($section.Key) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
+            elseif (!$DataFile.ContainsKey($section.Key) -or (Out-ADTString -InputObject $section.Value))
             {
                 $DataFile.($section.Key) = $section.Value
             }
@@ -66,9 +66,9 @@ function Private:Import-ADTModuleDataFile
     $initialUICulture = $UICulture
     $importedData = while ($true)
     {
-        if ($Script:ADT.ModuleDefaults.$section.ContainsKey($UICulture.Name))
+        if (($defaultSection = (Get-ADTModuleDefaults).$section).ContainsKey($UICulture.Name))
         {
-            $Script:ADT.ModuleDefaults.$section.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
             $UICulture = $initialUICulture
             break
         }

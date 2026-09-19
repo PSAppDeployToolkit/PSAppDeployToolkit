@@ -46,7 +46,7 @@ function Convert-ADTValueType
         https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTValueType
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Convert-ADTValueType.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Convert-ADTValueType.ps1
     #>
 
     [CmdletBinding()]

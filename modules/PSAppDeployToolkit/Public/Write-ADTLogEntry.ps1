@@ -80,7 +80,7 @@ function Write-ADTLogEntry
         https://psappdeploytoolkit.com/docs/reference/functions/Write-ADTLogEntry
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Write-ADTLogEntry.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Write-ADTLogEntry.ps1
     #>
 
     [CmdletBinding()]
@@ -202,7 +202,7 @@ function Write-ADTLogEntry
         }
         if ($logEntries)
         {
-            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnLogEntry)))
+            foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnLogEntry | & { process { return $_ } }))
             {
                 $logEntries | & $callback
             }

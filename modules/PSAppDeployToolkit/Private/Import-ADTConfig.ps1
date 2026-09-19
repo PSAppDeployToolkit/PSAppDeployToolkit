@@ -12,7 +12,11 @@ function Private:Import-ADTConfig
         [Parameter(Mandatory = $true)]
         [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [System.String[]]$BaseDirectory
+        [System.String[]]$BaseDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.EnvironmentTable]$Environment
     )
 
     # Internal filter to process asset file paths.
@@ -128,30 +132,12 @@ function Private:Import-ADTConfig
             }
         }
     }
-    filter Update-ADTConfigTempVariables
-    {
-        # Go recursive if we've received a hashtable, otherwise just test the values.
-        foreach ($section in $($_.GetEnumerator()))
-        {
-            # Re-process if this is a hashtable.
-            if ($section.Value -is [System.Collections.Hashtable])
-            {
-                $section.Value | & $MyInvocation.MyCommand; continue
-            }
-
-            # Replace any temp environment variable with .NET's provided value.
-            if (($section.Value -is [System.String]) -and ($section.Value -match '\$env:?Temp'))
-            {
-                $section.Value = $section.Value -replace '\$env:?Temp', '$([System.IO.Path]::GetTempPath().TrimEnd("\"))'
-            }
-        }
-    }
 
     # Import the config from disk and verify all integers are valid.
-    $integerKeys = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
-    $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
+    $integerKeys = (Get-ADTModuleDefaults).Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
+    $null = $PSBoundParameters.Remove('Environment'); $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
     $config | Confirm-ADTConfigIntegersGreaterThanZero
-    $config | Update-ADTConfigTempVariables
+    Update-ADTConfigTempVariables -Config $config
 
     # Confirm the specified dialog type is valid.
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))
@@ -175,36 +161,11 @@ function Private:Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
+    $Environment.PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath
 
-    # Change paths to user accessible ones if user isn't an admin.
-    if (!$adtEnv.IsAdmin)
-    {
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.TempPathNoAdminRights))
-        {
-            $config.Toolkit.TempPath = $config.Toolkit.TempPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.RegPathNoAdminRights))
-        {
-            $config.Toolkit.RegPath = $config.Toolkit.RegPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.LogPathNoAdminRights))
-        {
-            $config.Toolkit.LogPath = $config.Toolkit.LogPathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.CachePathNoAdminRights))
-        {
-            $config.Toolkit.CachePath = $config.Toolkit.CachePathNoAdminRights
-        }
-        if (![System.String]::IsNullOrWhiteSpace($config.MSI.LogPathNoAdminRights))
-        {
-            $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights
-        }
-    }
-
-    # Append the toolkit's name onto the temporary path.
-    $config.Toolkit.TempPath = Join-Path -Path $config.Toolkit.TempPath -ChildPath $adtEnv.appDeployToolkitName
+    # Change paths to user accessible ones if the caller doesn't own the configured ones.
+    Update-ADTConfigAccessiblePaths -Config $config
 
     # Finally, handle some correctly renamed language identifiers for 4.1.1.
     if (![System.String]::IsNullOrWhiteSpace($config.UI.LanguageOverride))

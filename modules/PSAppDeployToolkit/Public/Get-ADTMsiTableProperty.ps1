@@ -28,6 +28,11 @@ function Get-ADTMsiTableProperty
     .PARAMETER TablePropertyValueColumnNum
         Specify the table column number which contains the value of the properties.
 
+    .PARAMETER NoClobber
+        Fails when the name column holds the same value on more than one row, rather than letting the later row replace the earlier one.
+
+        Names are read with their surrounding whitespace removed, so two rows differing only by that arrive as one. Which column the names are read from is also yours to choose, and nothing requires the one you choose to hold a value only once. Either way the default keeps the last row read, which is what this function has always done; use this to be told instead.
+
     .PARAMETER GetSummaryInformation
         Retrieves the Summary Information for the Windows Installer database.
 
@@ -92,7 +97,7 @@ function Get-ADTMsiTableProperty
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiTableProperty
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTMsiTableProperty.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTMsiTableProperty.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
@@ -137,6 +142,9 @@ function Get-ADTMsiTableProperty
         [PSDefaultValue(Help = 'MSI file: 2; MSP file: 3')]
         [System.Nullable[System.UInt32]]$TablePropertyValueColumnNum,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
+        [System.Management.Automation.SwitchParameter]$NoClobber,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation
     )
@@ -172,7 +180,7 @@ function Get-ADTMsiTableProperty
                     return [PSADT.WindowsInstaller.MsiSummaryInfo]::Get($LiteralPath, $TransformPath)
                 }
                 Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$LiteralPath] in table [$Table]."
-                return [PSADT.WindowsInstaller.MsiUtilities]::GetMsiTableDictionary($LiteralPath, $Table, $TablePropertyNameColumnNum, $TablePropertyValueColumnNum, $TransformPath)
+                return [PSADT.WindowsInstaller.MsiUtilities]::GetMsiTableDictionary($LiteralPath, $Table, $TablePropertyNameColumnNum, $TablePropertyValueColumnNum, $TransformPath, $NoClobber)
             }
             catch
             {

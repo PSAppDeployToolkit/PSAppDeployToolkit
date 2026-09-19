@@ -39,7 +39,7 @@ Describe 'Show-ADTInstallationRestartPrompt' {
         It 'Arms nothing for the end of the deployment' {
             Show-ADTInstallationRestartPrompt
             InModuleScope -ModuleName PSAppDeployToolkit {
-                $ADT.RestartOnExitCountdown | Should -BeNullOrEmpty
+                $Module.State.RestartOnExitCountdown | Should -BeNullOrEmpty
             }
         }
 
@@ -55,6 +55,20 @@ Describe 'Show-ADTInstallationRestartPrompt' {
 
         It 'Refuses a silent countdown without a silent restart' {
             Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter SilentCountdown, Title, Subtitle | Should -BeFalse
+        }
+
+        # Both parameters that shape the shutdown.exe call have to reach every path ending in a restart,
+        # and each path sits in a different parameter set. A set one was left out of binds nothing and
+        # the caller's intent is dropped without an error, as -ShutdownReasonText was on the silent path.
+        It 'Accepts <Parameter2> on the <Name> path' -ForEach @(
+            @{ Name = 'countdown'; Parameter2 = 'NoForceCloseApps'; Parameter = 'Countdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'no countdown'; Parameter2 = 'NoForceCloseApps'; Parameter = 'NoCountdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'silent restart'; Parameter2 = 'NoForceCloseApps'; Parameter = 'SilentRestart', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'countdown'; Parameter2 = 'ShutdownReasonText'; Parameter = 'Countdown', 'ShutdownReasonText', 'Title', 'Subtitle' }
+            @{ Name = 'no countdown'; Parameter2 = 'ShutdownReasonText'; Parameter = 'NoCountdown', 'ShutdownReasonText', 'Title', 'Subtitle' }
+            @{ Name = 'silent restart'; Parameter2 = 'ShutdownReasonText'; Parameter = 'SilentRestart', 'ShutdownReasonText', 'Title', 'Subtitle' }
+        ) {
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter $Parameter | Should -BeTrue
         }
     }
 }

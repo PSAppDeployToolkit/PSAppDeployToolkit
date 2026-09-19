@@ -21,6 +21,8 @@ function Start-ADTProcess
     .PARAMETER ArgumentList
         Arguments to be passed to the executable.
 
+        Passing an array says where each argument ends, so one element always reaches the executable as one argument however it is punctuated. What it does not do is sanitise: an element is quoted where it has to be and otherwise left in the form an installer expects, so interpolating a value you did not author into one leaves that value able to say anything an argument can say.
+
     .PARAMETER SecureArgumentList
         Hides all arguments passed to the executable from the Toolkit log file.
 
@@ -211,7 +213,7 @@ function Start-ADTProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTProcess.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Start-ADTProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Default_CreateWindow_Wait')]
@@ -404,7 +406,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.TimeSpan]$MsiExecWaitTime,
+        [System.TimeSpan]$MsiExecWaitTime = [System.TimeSpan]::FromSeconds($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).MSI.MutexWaitTime),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -660,14 +662,6 @@ function Start-ADTProcess
         {
             $canSetExitCode = $false
         }
-        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
-        {
-            if (!$adtSession)
-            {
-                Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
-            }
-            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
-        }
 
         # Set up initial variables.
         $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
@@ -816,7 +810,7 @@ function Start-ADTProcess
                         {
                             [PSADT.Security.ElevatedTokenType]::HighestAvailable
                         }
-                        elseif ($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser)
+                        elseif (($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -and [PSADT.AccountManagement.AccountUtilities]::CallerIsLoggedOnUser)
                         {
                             [PSADT.Security.ElevatedTokenType]::None
                         }
@@ -906,8 +900,8 @@ function Start-ADTProcess
                     [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($launchData)
                 }
 
-                # Handle if the returned value is null. The `Out-String` setup primes the Process object.
-                if ([System.String]::IsNullOrWhiteSpace(($execution | Out-String)))
+                # Handle if the returned value is null. The `Out-ADTString` setup primes the Process object.
+                if (!($execution | Out-ADTString))
                 {
                     # A null result without using ShellExecute is entirely unexpected.
                     if (!$UseShellExecute)

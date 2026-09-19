@@ -22,6 +22,10 @@ function Show-ADTInstallationPrompt
     .PARAMETER SecureInput
         Indicates input should be masked (i.e. for password use).
 
+        Changes the returned type to `SecureInputDialogResult`, whose `Text` property is a `System.Security.SecureString` rather than a string. The value is protected across the client/server boundary by the encrypted channel the two processes negotiate; it cannot be carried as a `SecureString` itself, because that type's memory protection is scoped to the process that created it.
+
+        Requires the Fluent dialog style, as `-RequestInput` does on its own. Under `DialogStyle = Classic` the dialog throws at runtime, since an input dialog is only implemented for Fluent.
+
     .PARAMETER Message
         The message text to be displayed on the prompt.
 
@@ -79,9 +83,18 @@ function Show-ADTInstallationPrompt
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        PSADT.UserInterface.DialogResults.CustomDialogResult
 
-        This function does not generate any output.
+    .OUTPUTS
+        PSADT.UserInterface.DialogResults.InputDialogResult
+
+    .OUTPUTS
+        PSADT.UserInterface.DialogResults.ListSelectionDialogResult
+
+    .OUTPUTS
+        PSADT.UserInterface.DialogResults.SecureInputDialogResult
+
+        Returns the dialog's result unless `-NoWait` is specified, in which case nothing is returned. The concrete type depends on the parameter set: `InputDialogResult` for `-RequestInput`, `SecureInputDialogResult` when `-SecureInput` is added to it, `ListSelectionDialogResult` for `-ListItems`, and `CustomDialogResult` otherwise. Each exposes a `Result` property holding the text of the button the user clicked.
 
     .EXAMPLE
         ```powershell
@@ -127,22 +140,26 @@ function Show-ADTInstallationPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationPrompt
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationPrompt.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationPrompt.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'ShowCustomDialog')]
+    [OutputType([PSADT.UserInterface.DialogResults.CustomDialogResult])]
+    [OutputType([PSADT.UserInterface.DialogResults.InputDialogResult])]
+    [OutputType([PSADT.UserInterface.DialogResults.ListSelectionDialogResult])]
+    [OutputType([PSADT.UserInterface.DialogResults.SecureInputDialogResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_DefaultValue')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_SecureInput')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowSecureInputDialog')]
         [System.Management.Automation.SwitchParameter]$RequestInput,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_DefaultValue')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultValue,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_SecureInput')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowSecureInputDialog')]
         [System.Management.Automation.SwitchParameter]$SecureInput,
 
         [Parameter(Mandatory = $true)]
@@ -212,8 +229,32 @@ function Show-ADTInstallationPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
-        $adtConfig = Get-ADTConfig
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.DeployAppScriptSessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+
+        # Get the config, language and string table in the one hit.
+        if (!(Test-ADTModuleInitialized))
+        {
+            $adtConfig = Get-ADTDefaultConfig
+            $adtLanguage = Get-ADTStringLanguage -Config $adtConfig
+            $adtStrings = Get-ADTDefaultStringTable -UICulture $adtLanguage -SessionState $sessionState
+        }
+        else
+        {
+            $adtConfig = Get-ADTConfig
+            $adtLanguage = Get-ADTStringLanguage
+            $adtStrings = Get-ADTStringTable -SessionState $sessionState
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -307,17 +348,6 @@ function Show-ADTInstallationPrompt
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # Initialise the string table.
-        $sessionState = if ($adtSession)
-        {
-            $adtSession.DeployAppScriptSessionState
-        }
-        if ($null -eq $sessionState)
-        {
-            $sessionState = $PSCmdlet.SessionState
-        }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
-
         # Set up DeploymentType.
         [System.String]$deploymentType = if (!$adtSession)
         {
@@ -372,7 +402,7 @@ function Show-ADTInstallationPrompt
                     AppBannerImage = $adtConfig.Assets.Banner
                     AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                     DialogTopMost = !$NotTopMost
-                    Language = $Script:ADT.Language
+                    Language = $adtLanguage
                     MinimizeWindows = !!$MinimizeWindows
                     DialogExpiryDuration = $PSBoundParameters.Timeout
                     MessageText = $Message
@@ -449,7 +479,14 @@ function Show-ADTInstallationPrompt
                 if ($RequestInput)
                 {
                     $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
-                    $defaultResult = [PSADT.UserInterface.DialogResults.InputDialogResult]::DefaultResult
+                    $defaultResult = if ($SecureInput)
+                    {
+                        [PSADT.UserInterface.DialogResults.SecureInputDialogResult]::DefaultResult
+                    }
+                    else
+                    {
+                        [PSADT.UserInterface.DialogResults.InputDialogResult]::DefaultResult
+                    }
                 }
                 elseif ($ListItems)
                 {
@@ -524,6 +561,14 @@ function Show-ADTInstallationPrompt
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+        finally
+        {
+            # Close the client/server process if we're running without a session.
+            if (!$adtSession -and (Test-ADTClientServerActive))
+            {
+                Close-ADTClientServerInstance
+            }
         }
     }
 

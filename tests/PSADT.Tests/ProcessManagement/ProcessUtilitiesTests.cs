@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
@@ -71,28 +72,24 @@ namespace PSADT.Tests.ProcessManagement
         public void GetParentProcesses_TerminatesWithoutRepeating()
         {
             // Act
-            IReadOnlyList<Process> ancestors = ProcessUtilities.GetParentProcesses();
+            IReadOnlyList<int> ancestorIds = [.. ProcessUtilities.GetParentProcesses().Select(static p =>
+            {
+                using (p)
+                {
+                    return p.Id;
+                }
+            })];
 
             // Assert
-            try
+            HashSet<int> seen = [];
+            foreach (int ancestorId in ancestorIds)
             {
-                HashSet<int> seen = [];
-                foreach (Process ancestor in ancestors)
-                {
-                    Assert.True(seen.Add(ancestor.Id), $"Process {ancestor.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)} appears twice in the chain.");
-                }
+                Assert.True(seen.Add(ancestorId), $"Process {ancestorId.ToString(System.Globalization.CultureInfo.InvariantCulture)} appears twice in the chain.");
+            }
 
-                // The immediate parent heads the chain, so whatever else is on it, that much is known
-                Assert.NotEmpty(ancestors);
-                Assert.Equal(ProcessUtilities.GetParentProcessId(), ancestors[0].Id);
-            }
-            finally
-            {
-                foreach (Process ancestor in ancestors)
-                {
-                    ancestor.Dispose();
-                }
-            }
+            // The immediate parent heads the chain, so whatever else is on it, that much is known
+            Assert.NotEmpty(ancestorIds);
+            Assert.Equal(ProcessUtilities.GetParentProcessId(), ancestorIds[0]);
         }
 
         /// <summary>

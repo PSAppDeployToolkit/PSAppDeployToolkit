@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security;
 using System.Windows;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
@@ -15,7 +16,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Initializes the UI elements and behavior for the Input dialog type.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal InputDialog(InputDialogOptions options) : base(options, InputDialogResult.DefaultResult)
+        internal InputDialog(InputDialogOptions options) : base(options, DefaultResultFor(options))
         {
             // Enable input box within the dialog
             InputBoxStackPanel.Visibility = Visibility.Visible;
@@ -79,9 +80,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Enables or disables the continue button based on whether the current input value is null, empty, or consists solely of whitespace.
         /// </summary>
+        /// <remarks>Masked input is tested by length alone. Reading the box as a string to test it for whitespace
+        /// would leave an unzeroable copy of every prefix the user typed on the managed heap.</remarks>
         private void UpdateContinueButtonState()
         {
-            ButtonLeft.IsEnabled = !string.IsNullOrWhiteSpace(CurrentInputValue);
+            if (_secureInput)
+            {
+                using SecureString value = InputBoxPassword.SecurePassword;
+                ButtonLeft.IsEnabled = value.Length > 0;
+            }
+            else
+            {
+                ButtonLeft.IsEnabled = !string.IsNullOrWhiteSpace(InputBoxText.Text);
+            }
         }
 
         /// <summary>
@@ -95,7 +106,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal), CurrentInputValue);
+            DialogResult = CreateResult(ButtonLeft);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -110,7 +121,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal), CurrentInputValue);
+            DialogResult = CreateResult(ButtonMiddle);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -126,14 +137,33 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal), CurrentInputValue);
+            DialogResult = CreateResult(ButtonRight);
             base.ButtonRight_Click(sender, e);
         }
 
         /// <summary>
-        /// Gets the current input value from either the TextBox or PasswordBox.
+        /// Builds the dialog result for the specified button, reading the answer from whichever input box is in use.
         /// </summary>
-        private string? CurrentInputValue => _secureInput ? InputBoxPassword.Password : InputBoxText.Text;
+        /// <remarks>Masked input is taken as a <see cref="SecureString"/> so the value never becomes an
+        /// immutable string the process cannot subsequently zero.</remarks>
+        /// <param name="button">The button that was clicked.</param>
+        /// <returns>A result pairing the button's caption with what the user entered.</returns>
+        private CustomDialogDerivative CreateResult(Fluence.Wpf.Controls.Button button)
+        {
+            string caption = ((AccessText)button.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal);
+            return _secureInput ? new SecureInputDialogResult(caption, InputBoxPassword.SecurePassword) : new InputDialogResult(caption, InputBoxText.Text);
+        }
+
+        /// <summary>
+        /// Gets the timeout result matching the kind of answer the supplied options ask for.
+        /// </summary>
+        /// <param name="options">The options the dialog is being constructed with.</param>
+        /// <returns>The default result of whichever type this dialog will report.</returns>
+        private static CustomDialogDerivative DefaultResultFor(InputDialogOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            return options.SecureInput ? SecureInputDialogResult.DefaultResult : InputDialogResult.DefaultResult;
+        }
 
         /// <summary>
         /// Indicates whether the input box is in secure input mode.

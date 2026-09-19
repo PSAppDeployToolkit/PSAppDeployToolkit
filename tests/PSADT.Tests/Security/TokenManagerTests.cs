@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
-using PSADT.AccountManagement;
+using PSADT.Foundation;
 using PSADT.Security;
 using PSADT.Tests.TestHelpers;
 using Windows.Win32.Security;
@@ -22,9 +23,114 @@ namespace PSADT.Tests.Security
     /// which are the part that matters: a token handed out in error is a privilege escalation, and the
     /// refusals all happen before any part of the brokering is set in motion.
     /// </para>
+    /// <para>
+    /// The identity check on the <see cref="RunAsActiveUser"/> entry point falls under the same exclusion.
+    /// It compares a token that has already been acquired, so reaching it needs an acquisition that
+    /// succeeds, which needs the second session and the broker run that are ruled out above.
+    /// </para>
     /// </remarks>
     public sealed class TokenManagerTests
     {
+        /// <summary>
+        /// Restricts token vending to valid desktop sessions.
+        /// </summary>
+        /// <param name="session">The requested session identifier.</param>
+        /// <param name="expected">Whether the session is valid for vending.</param>
+        [Theory]
+        [InlineData(5u, true)]
+        [InlineData(6u, true)]
+        [InlineData(0u, false)]
+        [InlineData(uint.MaxValue, false)]
+        public void SessionIdIsValidForVending_RequiresValidSession(uint session, bool expected)
+        {
+            Assert.Equal(expected, TokenManager.SessionIdIsValidForVending(session));
+        }
+
+        /// <summary>
+        /// Reports acquisition eligibility without acquiring a token, which needs both a vendable session
+        /// and a caller with a route to one rather than either on its own.
+        /// </summary>
+        /// <remarks>
+        /// The caller half is a fact about the machine the run landed on, so the expectation is derived
+        /// rather than fixed. An unelevated caller has no route at all - no process it may open, no broker
+        /// it may start, and no WTS - so every session is refused, and asserting that beside the elevated
+        /// answer is what proves the two are combined rather than alternatives.
+        /// </remarks>
+        /// <param name="session">The requested session.</param>
+        /// <param name="vendable">Whether the session itself may be vended.</param>
+        [Theory]
+        [InlineData(5u, true)]
+        [InlineData(6u, true)]
+        [InlineData(0u, false)]
+        [InlineData(uint.MaxValue, false)]
+        public void CanGetUserPrimaryToken_RequiresAVendableSessionAndAnEligibleCaller(uint session, bool vendable)
+        {
+            Assert.Equal(vendable && TestEnvironment.IsElevated, TokenManager.CanGetUserPrimaryToken(session));
+        }
+
+        /// <summary>
+        /// Reports the absence of a token rather than raising it, on both entry points.
+        /// </summary>
+        /// <remarks>
+        /// The sessions are ineligible ones, which is the only refusal a test can arrange on a single
+        /// session machine: a caller that may attempt acquisition still cannot be made to fail on demand,
+        /// as that needs a session holding no suitable process and a broker that cannot be started.
+        /// <para>
+        /// A caller error still raises, and that is asserted here too, because the whole value of the
+        /// member is in which outcomes it absorbs and an undefined elevation is not one of them.
+        /// </para>
+        /// </remarks>
+        /// <param name="session">The ineligible session.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(0u)]
+        [InlineData(uint.MaxValue)]
+        public async Task TryGetUserPrimaryTokenAsync_ReportsRefusalButRaisesCallerErrorAsync(uint session)
+        {
+            RunAsActiveUser user = new(new NTAccount("TokenValidationTest"), new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), session, isLocalAdmin: null);
+            using (SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(session).ConfigureAwait(true))
+            {
+                Assert.Null(token);
+            }
+            using (SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(user).ConfigureAwait(true))
+            {
+                Assert.Null(token);
+            }
+            ArgumentOutOfRangeException failure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(static async () =>
+            {
+                using SafeFileHandle? token = await TokenManager.TryGetUserPrimaryTokenAsync(5u, (ElevatedTokenType)99).ConfigureAwait(false);
+            }).ConfigureAwait(true);
+            Assert.Equal("elevatedTokenType", failure.ParamName);
+        }
+
+        /// <summary>
+        /// Rejects undefined elevation before native acquisition or fallback, on both entry points.
+        /// </summary>
+        /// <param name="value">The undefined enum value.</param>
+        /// <param name="session">The requested session.</param>
+        [Theory]
+        [InlineData(-1, 5u)]
+        [InlineData(3, 5u)]
+        [InlineData(99, 6u)]
+        [InlineData(int.MaxValue, 6u)]
+        public async Task GetUserPrimaryTokenAsync_RejectsUndefinedElevationAsync(int value, uint session)
+        {
+            ElevatedTokenType elevation = (ElevatedTokenType)value;
+            ArgumentOutOfRangeException sessionFailure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            {
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(session, elevation).ConfigureAwait(false);
+            });
+            Assert.Equal("elevatedTokenType", sessionFailure.ParamName);
+            Assert.Equal(elevation, sessionFailure.ActualValue);
+            RunAsActiveUser user = new(new NTAccount("TokenValidationTest"), new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), session, isLocalAdmin: null);
+            ArgumentOutOfRangeException userFailure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            {
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(user, elevation, uiAccess: true).ConfigureAwait(false);
+            });
+            Assert.Equal("elevatedTokenType", userFailure.ParamName);
+            Assert.Equal(elevation, userFailure.ActualValue);
+        }
+
         /// <summary>
         /// Verifies that the current process token opens with the rights that were asked for, and is a
         /// usable handle rather than a sentinel.
@@ -180,57 +286,51 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
-        /// Verifies that an unelevated caller is reported as unable to broker another user's token, since
-        /// it has no way to obtain one.
+        /// Rejects invalid sessions before elevation or caller validation on both entry points.
         /// </summary>
-        [Fact(Skip = "Requires an unelevated caller.", SkipWhen = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
-        public void CanGetUserPrimaryToken_IsFalseForAnUnelevatedCaller()
+        /// <param name="session">The invalid session identifier.</param>
+        /// <param name="elevation">The requested elevation, including an undefined value.</param>
+        [Theory]
+        [InlineData(0u, ElevatedTokenType.None)]
+        [InlineData(uint.MaxValue, ElevatedTokenType.None)]
+        [InlineData(0u, (ElevatedTokenType)99)]
+        [InlineData(uint.MaxValue, (ElevatedTokenType)99)]
+        public async Task GetUserPrimaryTokenAsync_RejectsInvalidSessionFirstAsync(uint session, ElevatedTokenType elevation)
         {
-            Assert.False(TokenManager.CanGetUserPrimaryToken);
-        }
-
-        /// <summary>
-        /// Verifies that whether brokering is possible agrees with what the caller is, so the flag cannot
-        /// report a capability the caller does not have.
-        /// </summary>
-        [Fact(Skip = "Requires the client/server executables alongside the test assembly.", SkipUnless = nameof(TestEnvironment.ClientServerExecutablesPresent), SkipType = typeof(TestEnvironment))]
-        public void CanGetUserPrimaryToken_RequiresAnAdministrativeCaller()
-        {
-            if (TokenManager.CanGetUserPrimaryToken)
+            ArgumentOutOfRangeException sessionFailure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
             {
-                Assert.True(AccountUtilities.CallerIsAdmin || AccountUtilities.CallerIsLocalSystem, "Brokering was reported as possible for a caller that is neither an administrator nor the local system.");
-            }
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(session, elevation).ConfigureAwait(false);
+            });
+            Assert.Equal("sessionId", sessionFailure.ParamName);
+            Assert.Equal(session, sessionFailure.ActualValue);
+            RunAsActiveUser user = new(new NTAccount("TokenValidationTest"), new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), session, isLocalAdmin: null);
+            ArgumentOutOfRangeException userFailure = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            {
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(user, elevation, uiAccess: true).ConfigureAwait(false);
+            });
+            Assert.Equal("sessionId", userFailure.ParamName);
+            Assert.Equal(session, userFailure.ActualValue);
         }
 
         /// <summary>
-        /// Verifies that brokering the local system session's token is refused outright, which is the one
-        /// refusal that holds however the caller is running.
-        /// </summary>
-        /// <remarks>
-        /// Session zero has no interactive user, so a token brokered from it would be the machine
-        /// account's rather than a person's - the very escalation this is guarding against. The refusal is
-        /// reached before the broker is set up, so nothing is launched by this test.
-        /// </remarks>
-        [Fact]
-        public Task GetUserPrimaryTokenAsync_RefusesTheSystemSessionAsync()
-        {
-            // Returned rather than awaited: awaiting here would need a ConfigureAwait that the runner
-            // forbids in a test body, and omitting it trips the analyser that requires one.
-            return Assert.ThrowsAsync<UnauthorizedAccessException>(static () => TokenManager.GetUserPrimaryTokenAsync(0).AsTask());
-        }
-
-        /// <summary>
-        /// Verifies that an unelevated caller cannot broker another user's token at all.
+        /// Verifies that an unelevated caller cannot acquire another user's token through either entry point.
         /// </summary>
         /// <remarks>
         /// Only meaningful unelevated, and safe only unelevated: the refusal for a caller that is not an
-        /// administrator is the first thing checked, so nothing is launched. An elevated caller would get
-        /// past it and start brokering, which is why this is gated rather than asserted both ways.
+        /// administrator occurs before acquisition for valid arguments, so nothing is launched.
         /// </remarks>
         [Fact(Skip = "Requires an unelevated caller.", SkipWhen = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
-        public Task GetUserPrimaryTokenAsync_RefusesAnUnelevatedCallerAsync()
+        public async Task GetUserPrimaryTokenAsync_RefusesAnUnelevatedCallerAsync()
         {
-            return Assert.ThrowsAsync<UnauthorizedAccessException>(static () => TokenManager.GetUserPrimaryTokenAsync(1).AsTask());
+            _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(static async () =>
+            {
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(1).ConfigureAwait(false);
+            });
+            RunAsActiveUser user = new(new NTAccount("TokenValidationTest"), new SecurityIdentifier(WellKnownSidType.NullSid, domainSid: null), 1, isLocalAdmin: null);
+            _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            {
+                using SafeFileHandle token = await TokenManager.GetUserPrimaryTokenAsync(user).ConfigureAwait(false);
+            });
         }
     }
 }

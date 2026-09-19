@@ -53,19 +53,7 @@ namespace PSADT.ClientServer.Server.Tests
         public void EveryPayloadMember_IsSaidToBeCarriedOrIgnored()
         {
             // Arrange
-            List<string> undecided = [];
-
-            // Act
-            foreach (Type payload in Payloads)
-            {
-                foreach (MemberInfo member in SerializableMembers(payload))
-                {
-                    if (!Attribute.IsDefined(member, typeof(DataMemberAttribute)) && !Attribute.IsDefined(member, typeof(IgnoreDataMemberAttribute)))
-                    {
-                        undecided.Add($"{payload.Name}.{member.Name}");
-                    }
-                }
-            }
+            List<string> undecided = [.. Payloads.SelectMany(static payload => SerializableMembers(payload).Where(static member => !Attribute.IsDefined(member, typeof(DataMemberAttribute)) && !Attribute.IsDefined(member, typeof(IgnoreDataMemberAttribute))).Select(member => $"{payload.Name}.{member.Name}"))];
 
             // Assert
             Assert.True(undecided.Count is 0, $"Neither carried nor ignored: {string.Join(", ", undecided)}.");
@@ -84,6 +72,35 @@ namespace PSADT.ClientServer.Server.Tests
             Assert.All(Payloads, static payload => Assert.Contains(
                 SerializableMembers(payload),
                 static member => Attribute.IsDefined(member, typeof(DataMemberAttribute))));
+        }
+
+        /// <summary>
+        /// Verifies that every payload holds itself to its own invariants once it is off the wire.
+        /// </summary>
+        /// <remarks>
+        /// A payload's constructor is the only thing that checks what it was given, and nothing arriving over
+        /// the pipe runs one: DataContractSerializer allocates the object and assigns the members it finds, so
+        /// a member the sender left out keeps its CLR default. Every member declared non-nullable is a promise
+        /// the type system makes and the wire does not keep, and the client that sends them runs in the
+        /// logged-on user's session.
+        /// <para>
+        /// The two exemptions carry nothing that can be missing: one holds a single nullable collection, where
+        /// nothing at all is a meaningful value, and the other a TimeSpan, which cannot be null. Naming them
+        /// here rather than detecting it keeps the rule readable and makes adding a payload a deliberate act.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void EveryPayload_ChecksItselfOnArrival()
+        {
+            // Arrange
+            string[] exempt = ["InitCloseAppsDialogPayload", "PromptToCloseAppsPayload"];
+
+            // Assert
+            Assert.All(
+                Payloads.Where(payload => !exempt.Contains(payload.Name, StringComparer.Ordinal)),
+                static payload => Assert.Contains(
+                    payload.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly),
+                    static method => Attribute.IsDefined(method, typeof(OnDeserializedAttribute))));
         }
 
         /// <summary>

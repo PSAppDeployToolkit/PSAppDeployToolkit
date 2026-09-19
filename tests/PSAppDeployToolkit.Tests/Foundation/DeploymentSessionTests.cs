@@ -772,6 +772,40 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that the log file name follows the LocalSystem account rather than administrative rights when the
+        /// configuration asks for its paths to be based on the system context.
+        /// </summary>
+        /// <remarks>
+        /// PathsBasedOnSystemContext sends every caller but LocalSystem to the user-accessible log path, so the name
+        /// has to carry the user for every caller but LocalSystem as well, or an administrator would claim the
+        /// unsuffixed file that LocalSystem writes. Asserted as an equivalence, so it holds under any account.
+        /// </remarks>
+        [Fact]
+        public void NewLogFileName_FollowsTheSystemContextWhenTheConfigurationAsksForIt()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            EnvironmentTable environment = powerShell.NewEnvironmentTable();
+            ModuleConfiguration configuration = Configuration(temp);
+            configuration.PathsBasedOnSystemContext = true;
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(configuration, environment);
+
+            // Act
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            string name = session.NewLogFileName("Discriminator", fileNameOnly: true);
+
+            // Assert
+            Assert.Equal(
+                $"{session.InstallName}_Discriminator_{session.DeploymentType}{(environment.IsLocalSystemAccount ? null : $"_{environment.EnvUserName}")}.log",
+                name,
+                StringComparer.Ordinal);
+
+            // Assert: the user's name is there for every account but LocalSystem, which owns the unsuffixed file.
+            Assert.Equal(!environment.IsLocalSystemAccount, name.Contains($"_{environment.EnvUserName}.", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// Verifies that a log file name is returned beneath the log path unless only the name was asked for.
         /// </summary>
         [Fact]

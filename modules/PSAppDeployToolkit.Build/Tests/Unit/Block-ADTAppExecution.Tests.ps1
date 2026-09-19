@@ -17,7 +17,7 @@ Describe 'Block-ADTAppExecution' {
         It 'Requires a session to block them for' {
             # The scheduled task it registers is named after the deployment, and unblocking finds it again
             # by that name, so there is nothing to key the block to without one.
-            { Block-ADTAppExecution -Processes @{ Name = 'anything' } } | Should -Throw -ErrorId 'ADTSessionBufferEmpty,Block-ADTAppExecution'
+            { Block-ADTAppExecution -Processes @{ Name = 'anything' } } | Should -Throw -ErrorId 'ADTModuleNotInitialized,Block-ADTAppExecution'
         }
 
         It 'Refuses a window position it does not know' {

@@ -70,6 +70,7 @@ dotnet_diagnostic.RCS1004.severity = none
 dotnet_diagnostic.RCS1019.severity = none
 dotnet_diagnostic.RCS1031.severity = none
 dotnet_diagnostic.RCS1052.severity = none
+dotnet_diagnostic.RCS1069.severity = none
 dotnet_diagnostic.RCS1081.severity = none
 dotnet_diagnostic.RCS1162.severity = none
 dotnet_diagnostic.RCS1181.severity = none
@@ -383,9 +384,6 @@ dotnet_diagnostic.rcs1061.severity = error
 
 # Simplify logical negation
 dotnet_diagnostic.rcs1068.severity = error
-
-# Remove unnecessary case label
-dotnet_diagnostic.rcs1069.severity = error
 
 # Remove redundant default switch section
 dotnet_diagnostic.rcs1070.severity = error

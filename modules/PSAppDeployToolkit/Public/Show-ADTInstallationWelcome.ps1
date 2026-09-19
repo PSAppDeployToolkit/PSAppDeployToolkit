@@ -108,9 +108,6 @@ function Show-ADTInstallationWelcome
 
         If this parameter is specified without the `-RequiredDiskSpace` parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 
-    .PARAMETER RequiredDiskSpace
-        Specify required disk space in MB, used in combination with the `-CheckDiskSpace` parameter.
-
     .PARAMETER PassThru
         Returns the user's prompt choice to the caller for further decision making.
 
@@ -120,9 +117,9 @@ function Show-ADTInstallationWelcome
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        PSADT.UserInterface.DialogResults.CloseAppsDialogResult
 
-        This function does not return any output.
+        When `-PassThru` is specified, returns a `CloseAppsDialogResult` indicating the user's choice (for example: `Timeout`, `Defer`, or continue/close action) so callers can make follow-up decisions.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel
@@ -159,12 +156,17 @@ function Show-ADTInstallationWelcome
 
         Close Word and Excel and prevent the user from launching the applications while the deployment is in progress. Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first. When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
+    .EXAMPLE
+        Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel -Title 'Application Installation' -Subtitle 'Please close the following applications'
+
+        Prompt the user to close Internet Explorer, Word and Excel.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
         The process descriptions are retrieved via `Get-Process`, with a fallback on the process name if no description is available. Alternatively, you can specify the description yourself by providing a hashtable that is converted to a ProcessDefinition object, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
 
-        The dialog box will timeout after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The dialog box will time out after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
@@ -175,10 +177,11 @@ function Show-ADTInstallationWelcome
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationWelcome.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationWelcome.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Interactive, with no modifying options.')]
+    [OutputType([PSADT.UserInterface.DialogResults.CloseAppsDialogResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
@@ -740,25 +743,6 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the [-RequiredDiskSpace] parameter, the required disk space is calculated automatically based on the size of the script source and associated files.')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, with a continue countdown irrespective of deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Silent, and with a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
-        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.UInt32]$RequiredDiskSpace,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
@@ -793,10 +777,10 @@ function Show-ADTInstallationWelcome
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
-        $adtConfig = Get-ADTConfig
-
-        # Initialise the string table.
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
         $sessionState = if ($adtSession)
         {
             $adtSession.DeployAppScriptSessionState
@@ -805,7 +789,20 @@ function Show-ADTInstallationWelcome
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $sessionState
+
+        # Get the config, language and string table in the one hit.
+        if (!(Test-ADTModuleInitialized))
+        {
+            $adtConfig = Get-ADTDefaultConfig
+            $adtLanguage = Get-ADTStringLanguage -Config $adtConfig
+            $adtStrings = Get-ADTDefaultStringTable -UICulture $adtLanguage -SessionState $sessionState
+        }
+        else
+        {
+            $adtConfig = Get-ADTConfig
+            $adtLanguage = Get-ADTStringLanguage
+            $adtStrings = Get-ADTStringTable -SessionState $sessionState
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -821,6 +818,12 @@ function Show-ADTInstallationWelcome
                 'Subtitle', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = "Subtitle of the prompt. Optionally used to override the subtitle defined in the `strings.psd1` file." }
                     [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute]::new()
+                )
+            ))
+        $paramDictionary.Add('RequiredDiskSpace', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'RequiredDiskSpace', [System.UInt32], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $PSBoundParameters.ContainsKey('CheckDiskSpace') -and $PSBoundParameters.CheckDiskSpace -and !$adtSession; HelpMessage = "Specify required disk space in MB, used in combination with the `-CheckDiskSpace` parameter." }
+                    [PSAppDeployToolkit.Attributes.ValidateGreaterThanZeroAttribute]::new()
                 )
             ))
 
@@ -855,6 +858,10 @@ function Show-ADTInstallationWelcome
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
             $PSBoundParameters.Add('Subtitle', $adtStrings.CloseAppsPrompt.Fluent.Subtitle.($DeploymentType.ToString()))
+        }
+        [System.UInt32]$RequiredDiskSpace = if ($PSBoundParameters.ContainsKey('RequiredDiskSpace'))
+        {
+            $PSBoundParameters.RequiredDiskSpace
         }
 
         # Instantiate new object to hold all data needed within this call.
@@ -986,7 +993,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check disk space requirements if specified
-                if ($adtSession -and $CheckDiskSpace)
+                if ($CheckDiskSpace -or $PSBoundParameters.ContainsKey('RequiredDiskSpace'))
                 {
                     if (!$PSBoundParameters.ContainsKey('RequiredDiskSpace') -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }) -and (Get-ChildItem -LiteralPath $scriptDir -Force -ErrorAction Ignore))
                     {
@@ -1000,9 +1007,13 @@ function Show-ADTInstallationWelcome
                             Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity Error
                             if (!$Silent)
                             {
-                                Show-ADTInstallationPrompt -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error
+                                Show-ADTInstallationPrompt -Title $PSBoundParameters.Title -Subtitle $PSBoundParameters.Subtitle -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error
                             }
-                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            if ($adtSession)
+                            {
+                                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            }
+                            break
                         }
                         Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
                     }
@@ -1104,7 +1115,7 @@ function Show-ADTInstallationWelcome
                         AppBannerImage = $adtConfig.Assets.Banner
                         AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                         DialogTopMost = !$NotTopMost
-                        Language = $Script:ADT.Language
+                        Language = $adtLanguage
                         MinimizeWindows = !!$MinimizeWindows
                         DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                         Strings = $adtStrings.CloseAppsPrompt
@@ -1161,16 +1172,13 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('DialogAllowMinimize', !!$AllowMinimize)
                     }
-                    if ($CustomMessage)
+                    if ($PSBoundParameters.ContainsKey('CustomMessageText'))
                     {
-                        if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
-                        {
-                            $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
-                        }
-                        else
-                        {
-                            $dialogOptions.Add('CustomMessageText', $CustomMessageText)
-                        }
+                        $dialogOptions.Add('CustomMessageText', $CustomMessageText)
+                    }
+                    elseif ($CustomMessage)
+                    {
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
                     }
                     if ($null -ne $CloseProcesses)
                     {
@@ -1355,7 +1363,7 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnDefer)))
+                                foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnDefer | & { process { return $_ } }))
                                 {
                                     & $callback
                                 }
@@ -1429,9 +1437,9 @@ function Show-ADTInstallationWelcome
         finally
         {
             # Close the client/server process if we're running without a session.
-            if (!$adtSession -and $Script:ADT.ClientServerProcess)
+            if (!$adtSession -and (Test-ADTClientServerActive))
             {
-                Close-ADTClientServerProcess
+                Close-ADTClientServerInstance
             }
         }
     }

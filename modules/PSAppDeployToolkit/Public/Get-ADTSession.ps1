@@ -50,7 +50,7 @@ function Get-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTSession
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTSession.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTSession.ps1
     #>
 
     [CmdletBinding()]
@@ -60,16 +60,15 @@ function Get-ADTSession
     )
 
     # Return the most recent session in the database.
-    if (!$Script:ADT.Sessions.Count)
+    if (!($deploymentSessions = Get-ADTDeploymentSessions).Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTSessionBufferEmpty'
-            TargetObject = [System.Collections.ObjectModel.ReadOnlyCollection[PSAppDeployToolkit.Foundation.DeploymentSession]]$Script:ADT.Sessions
             RecommendedAction = "Please ensure a session is opened via [Open-ADTSession] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
-    return $Script:ADT.Sessions[-1]
+    return $deploymentSessions[-1]
 }

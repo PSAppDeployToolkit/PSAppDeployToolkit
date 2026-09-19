@@ -45,7 +45,7 @@ function Install-ADTMSUpdates
         https://psappdeploytoolkit.com/docs/reference/functions/Install-ADTMSUpdates
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Install-ADTMSUpdates.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Install-ADTMSUpdates.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

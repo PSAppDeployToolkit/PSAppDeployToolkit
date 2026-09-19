@@ -188,7 +188,7 @@ namespace PSADT.UserInterface.Interfaces.Tests
 
             // Assert
             Assert.True(properties.Count > 1, $"Expected several property notifications, saw {properties.Count}.");
-            Assert.All(properties, static name => Assert.True(string.Equals(name, "Count", StringComparison.Ordinal) || string.Equals(name, "Item[]", StringComparison.Ordinal), $"Unexpected property notification '{name}'."));
+            Assert.All(properties, static name => Assert.True("Count".Equals(name, StringComparison.Ordinal) || "Item[]".Equals(name, StringComparison.Ordinal), $"Unexpected property notification '{name}'."));
         }
     }
 }

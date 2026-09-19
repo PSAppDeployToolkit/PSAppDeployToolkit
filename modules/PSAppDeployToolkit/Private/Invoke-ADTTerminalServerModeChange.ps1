@@ -16,16 +16,16 @@ function Private:Invoke-ADTTerminalServerModeChange
 
     # Change the terminal server mode. An exit code of 1 is considered successful.
     Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLowerInvariant()) mode"))."
-    $terminalServerResult = & "$([System.Environment]::SystemDirectory)\change.exe" User /$Mode 2>&1
-    if ($Global:LASTEXITCODE.Equals(1))
+    $terminalServerResult = Start-ADTProcess -FilePath "$([System.Environment]::SystemDirectory)\change.exe" -ArgumentList User, "/$Mode" -CreateNoWindow -PassThru -SuccessExitCodes 1 -InformationAction SilentlyContinue -ErrorAction Ignore -Confirm:$false
+    if ($terminalServerResult.ExitCode.Equals(1))
     {
         return
     }
 
     # If we're here, we had a bad exit code.
-    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $terminalServerResult") -Severity Error
+    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$($terminalServerResult.ExitCode)]: $($terminalServerResult.Interleaved)") -Severity Error
     $naerParams = @{
-        Exception = [PSADT.ProcessManagement.ProcessException]::new($msg, [PSADT.ProcessManagement.ProcessResult]::new($Global:LASTEXITCODE))
+        Exception = [PSADT.ProcessManagement.ProcessException]::new($msg, $terminalServerResult)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
         ErrorId = 'RdsChangeUtilityFailure'
         TargetObject = $terminalServerResult

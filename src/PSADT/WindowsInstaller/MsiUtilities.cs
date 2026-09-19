@@ -48,10 +48,13 @@ namespace PSADT.WindowsInstaller
         /// <param name="valueColumn">The zero-based index of the column to use as the value in the resulting dictionary.</param>
         /// <param name="szTransformFiles">An optional collection of transform files to apply when opening the database. May be null if no transforms
         /// are required.</param>
+        /// <param name="noClobber">Whether to refuse a key column that holds the same value on more than one row, rather than letting the
+        /// later row replace the earlier one.</param>
         /// <returns>A read-only dictionary containing the key-value pairs from the specified table and columns, or null if no
         /// properties are found.</returns>
-        /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database.</exception>
-        public static IReadOnlyDictionary<string, object>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null)
+        /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database, or if
+        /// <paramref name="noClobber"/> is set and the key column holds the same value more than once.</exception>
+        public static IReadOnlyDictionary<string, object>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null, bool noClobber = false)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -74,6 +77,7 @@ namespace PSADT.WindowsInstaller
             {
                 _ = NativeMethods.MsiViewExecute(hView);
                 Dictionary<string, object> result = new(StringComparer.Ordinal);
+                string? repeatedKey = null;
                 while (true)
                 {
                     using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
@@ -83,17 +87,27 @@ namespace PSADT.WindowsInstaller
                     }
                     if (GetRecordString(hRecord, 1) is string key)
                     {
+                        // Nothing says the column the caller keyed on holds a value only once. The later row
+                        // wins by default, as this has always done; a caller who needs to know instead gets
+                        // it raised below, once the record it was read from has been disposed of.
+                        if (noClobber && result.ContainsKey(key))
+                        {
+                            repeatedKey = key;
+                            break;
+                        }
                         if (GetRecordInteger(hRecord, 2) is int intValue)
                         {
-                            result.Add(key, intValue);
+                            result[key] = intValue;
                         }
                         else if (GetRecordString(hRecord, 2) is string stringValue)
                         {
-                            result.Add(key, stringValue);
+                            result[key] = stringValue;
                         }
                     }
                 }
-                return result.Count > 0 ? new ReadOnlyDictionary<string, object>(result) : null;
+                return repeatedKey is not null
+                    ? throw new InvalidDataException($"The '{resolvedTableName}' table holds more than one row with a '{keyColumnName}' of '{repeatedKey}', so it cannot be read as a dictionary keyed on that column.")
+                    : result.Count > 0 ? new ReadOnlyDictionary<string, object>(result) : null;
             }
         }
 
@@ -174,7 +188,6 @@ namespace PSADT.WindowsInstaller
         /// name="transformProperties"/> is empty or contains null or empty keys, or if <paramref name="tempMsiPath"/>
         /// already exists.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the specified temp MSI path already exists or if the directory for the temp MSI path cannot be created.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "This isn't supported on net472.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {
@@ -302,8 +315,9 @@ namespace PSADT.WindowsInstaller
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, szXMLData: null, out uint requiredLength);
-            Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
+            Span<char> bufSpan = new char[(int)requiredLength + 1];
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan[..(int)requiredLength].ToString());
         }
@@ -538,12 +552,13 @@ namespace PSADT.WindowsInstaller
         /// not set.</returns>
         internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, szValueBuf: null, out uint requiredSize);
             if (requiredSize == 0)
             {
                 return null;
             }
-            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            Span<char> bufSpan = new char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
             return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan ? resSpan.ToString() : null;
         }
@@ -634,12 +649,13 @@ namespace PSADT.WindowsInstaller
         /// <summary>
         /// Fetches the next record from the specified Windows Installer view.
         /// </summary>
-        /// <remarks>If the fetch operation fails, the method returns null without throwing an exception.
-        /// Ensure that the view handle is properly initialized before calling this method.</remarks>
+        /// <remarks>The end of a view is reported by the native call as a failure, so it is caught here and
+        /// returned as an absent row. Nothing else is: a read that fails for any other reason has to stay
+        /// distinguishable from a view that simply had nothing more in it, or a table that could not be read
+        /// reads as a table that was empty. Ensure the view handle is initialized before calling this.</remarks>
         /// <param name="hView">The handle to the view from which to fetch the record. This handle must be valid and opened with the
         /// appropriate permissions.</param>
-        /// <returns>A handle to the fetched record, or null if no more records are available or an error occurs during the fetch
-        /// operation.</returns>
+        /// <returns>A handle to the fetched record, or null if there are no more records.</returns>
         private static MsiCloseHandleSafeHandle? ViewFetch(MsiCloseHandleSafeHandle hView)
         {
             try
@@ -647,10 +663,9 @@ namespace PSADT.WindowsInstaller
                 _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle hRecord);
                 return hRecord;
             }
-            catch
+            catch (Win32Exception ex) when (ex.NativeErrorCode is (int)WIN32_ERROR.ERROR_NO_MORE_ITEMS)
             {
                 return null;
-                throw;
             }
         }
 
@@ -675,8 +690,9 @@ namespace PSADT.WindowsInstaller
         /// <returns>The string value of the specified field if it exists; otherwise, null if the field is empty or not found.</returns>
         private static string? GetRecordString(MsiCloseHandleSafeHandle hRecord, uint field)
         {
+            // On the heap, as the length comes from the file's own content and nothing bounds it.
             _ = NativeMethods.MsiRecordGetString(hRecord, field, szValueBuf: null, out uint requiredSize);
-            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            Span<char> bufSpan = new char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
             return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan
                 ? resSpan.ToString()

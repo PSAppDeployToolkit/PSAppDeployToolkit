@@ -57,7 +57,7 @@ function Get-ADTModuleCallback
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTModuleCallback
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTModuleCallback.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTModuleCallback.ps1
     #>
 
     [CmdletBinding()]
@@ -72,7 +72,7 @@ function Get-ADTModuleCallback
     # Directly clear the backend list.
     try
     {
-        $PSCmdlet.WriteObject([System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]]$Script:ADT.Callbacks.$Hookpoint.AsReadOnly(), $false)
+        $PSCmdlet.WriteObject([System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]](Get-ADTModuleCallbacks).$Hookpoint.AsReadOnly(), $false)
     }
     catch
     {

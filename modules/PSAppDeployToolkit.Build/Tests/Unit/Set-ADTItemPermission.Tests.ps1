@@ -170,10 +170,9 @@ Describe 'Set-ADTItemPermission' {
         }
 
         It 'Leaves the list it was given alone when applying it fails' {
-            # Marking the access rules is what gets them written, and applying them clears the marking
-            # again - so a call that succeeds leaves nothing to see. A call that fails leaves the marking
-            # behind, and the caller is then holding a list that writes those rules to the next thing they
-            # hand it to. A file's list handed to a directory fails without touching anything else.
+            # Marking the access rules is what writes them and applying clears the marking, so a call that
+            # succeeds leaves nothing to see. One that fails leaves the marking behind, and the caller's
+            # list then writes those rules to the next thing they hand it to.
             $sourceFile = "$TestDrive\AclFile$([System.Guid]::NewGuid().ToString('N')).txt"
             Set-Content -LiteralPath $sourceFile -Value 'source'
             Set-ADTItemPermission -LiteralPath $sourceFile -User "*$script:UsersSid" -Permission FullControl

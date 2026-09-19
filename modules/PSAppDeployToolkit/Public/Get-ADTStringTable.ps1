@@ -45,7 +45,7 @@ function Get-ADTStringTable
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTStringTable
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTStringTable.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTStringTable.ps1
     #>
 
     [CmdletBinding()]
@@ -57,25 +57,21 @@ function Get-ADTStringTable
         [System.Management.Automation.SessionState]$SessionState
     )
 
-    # Return the string database if initialized.
-    if (!$Script:ADT.Strings -or !$Script:ADT.Strings.Count)
-    {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-            ErrorId = 'ADTStringTableNotInitialized'
-            TargetObject = $Script:ADT.Strings
-            RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-
     # Return a copied hashtable with variables expanded if a SessionState is provided, otherwise just return a reference to what we've got.
+    # Rethrown from here so the caller's own line is what the error reports, rather than a line inside this module that means nothing to them.
+    $strings = try
+    {
+        (Get-ADTModuleState).Strings
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
     if ($PSBoundParameters.ContainsKey('SessionState'))
     {
-        $strings = [PSADT.ClientServer.DataSerialization]::DeserializeFromBytes([PSADT.ClientServer.DataSerialization]::SerializeToBytes($Script:ADT.Strings), [System.Collections.Hashtable])
+        $strings = [PSADT.ClientServer.DataSerialization]::DeserializeFromBytes([PSADT.ClientServer.DataSerialization]::SerializeToBytes($strings), [System.Collections.Hashtable])
         Expand-ADTVariablesInHashtable -Hashtable $strings -SessionState $SessionState
         return $strings
     }
-    return $Script:ADT.Strings
+    return $strings
 }

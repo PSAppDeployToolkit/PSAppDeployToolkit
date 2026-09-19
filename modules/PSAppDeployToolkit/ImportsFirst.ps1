@@ -78,29 +78,24 @@ try
     # Ensure module operates under the strictest of conditions.
     Set-StrictMode -Version 3
 
-    # Store the module info in a variable for further usage.
-    if (!(Get-Variable -Name ModuleInfo -ErrorAction Ignore))
-    {
-        New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
-    }
-
-    # Store build information pertaining to this module's state.
-    New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
+    # Store build information pertaining to this module's state. This will get redefined
+    # at the end as its proper type onces assemblies have been successfully loaded.
+    New-Variable -Name Module -Option ReadOnly -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
-            Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(if (!$PSVersionTable.PSEdition.Equals('Desktop'))
-                {
-                    "$PSScriptRoot\lib\net8.0\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net8.0\PSADT.Interop.dll", "$PSScriptRoot\lib\net8.0\PSADT.dll", "$PSScriptRoot\lib\net8.0\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net8.0\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net8.0\Microsoft.Windows.SDK.NET.dll", "$PSScriptRoot\lib\net8.0\PSADT.WindowsRuntime.dll"
-                }
-                else
-                {
-                    "$PSScriptRoot\lib\net472\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net472\PSADT.Interop.dll", "$PSScriptRoot\lib\net472\PSADT.dll", "$PSScriptRoot\lib\net472\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net472\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net472\PSADT.WindowsRuntime.dll"
-                })
+            Assemblies = if (!$PSVersionTable.PSEdition.Equals('Desktop'))
+            {
+                [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.FileInfo]]("$PSScriptRoot\lib\net8.0\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net8.0\PSADT.Interop.dll", "$PSScriptRoot\lib\net8.0\PSADT.dll", "$PSScriptRoot\lib\net8.0\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net8.0\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net8.0\Microsoft.Windows.SDK.NET.dll", "$PSScriptRoot\lib\net8.0\PSADT.WindowsRuntime.dll")
+            }
+            else
+            {
+                [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.FileInfo]]("$PSScriptRoot\lib\net472\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net472\PSADT.Interop.dll", "$PSScriptRoot\lib\net472\PSADT.dll", "$PSScriptRoot\lib\net472\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net472\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net472\PSADT.WindowsRuntime.dll")
+            }
+            Signature = Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
-            Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
         }).AsReadOnly()
 
     # Import our assemblies, factoring in whether they're on a network share or not.
-    $(if ($PSVersionTable.PSEdition.Equals('Desktop')) { "$PSScriptRoot\lib\net472\System.Collections.Immutable.dll" } $Module.Assemblies) | & {
+    $(if ($PSVersionTable.PSEdition.Equals('Desktop')) { [System.IO.FileInfo]"$PSScriptRoot\lib\net472\System.Collections.Immutable.dll" } $Module.Assemblies).FullName | & {
         begin
         {
             # Cache loaded assemblies to test whether they're already loaded.
@@ -134,7 +129,7 @@ try
             }
 
             # If we're on a compiled build, confirm the DLLs are signed before proceeding.
-            if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
+            if ($Module.Signature.Status.Equals([System.Management.Automation.SignatureStatus]::Valid) -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
             {
                 throw [System.Management.Automation.ErrorRecord]::new(
                     [System.Security.Cryptography.CryptographicException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
@@ -168,23 +163,21 @@ try
     # Remove any previous functions that may have been defined.
     if ($Module.Compiled)
     {
-        $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
         $PrivateFuncs = [System.Collections.Generic.HashSet[System.String]]::new()
-        $null = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
-            process
-            {
-                if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
-                {
-                    $i = $_.Name.Split(':')[-1]
-                    if ($_.Name.Contains(':'))
+        New-Variable -Name FunctionPaths -Option Constant -Force -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
+                    process
                     {
-                        $PrivateFuncs.Add($i)
+                        if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
+                        {
+                            $i = $_.Name.Split(':')[-1]
+                            if ($_.Name.Contains(':'))
+                            {
+                                $null = $PrivateFuncs.Add($i)
+                            }
+                            return "Microsoft.PowerShell.Core\Function::$i"
+                        }
                     }
-                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$i")
-                }
-            }
-        }
-        New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
+                }))
         New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }

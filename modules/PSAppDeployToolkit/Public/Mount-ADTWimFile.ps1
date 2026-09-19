@@ -17,7 +17,9 @@ function Mount-ADTWimFile
         Path to the WIM file to be mounted.
 
     .PARAMETER Path
-        Directory where the WIM file will be mounted. The directory either must not exist, or must be empty and not have a pre-existing WIM mounted.
+        Directory where the WIM file will be mounted. The directory either must not exist, or must be empty and not have a pre-existing WIM mounted. A reparse point is refused.
+
+        Site the mount path under a directory that standard users cannot write to. A user who can create the mount point ahead of the deployment decides where the mount actually lands, and a location off `C:\` inherits Modify for all authenticated users by default.
 
     .PARAMETER Index
         Index of the image within the WIM file to be mounted.
@@ -75,7 +77,7 @@ function Mount-ADTWimFile
         https://psappdeploytoolkit.com/docs/reference/functions/Mount-ADTWimFile
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Mount-ADTWimFile.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Mount-ADTWimFile.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -112,6 +114,10 @@ function Mount-ADTWimFile
                 if ([System.Uri]::new($_.FullName).IsUnc)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path cannot be a network share.'))
+                }
+                if (Test-ADTPathIsReparsePoint -LiteralPath $_.FullName)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path is a reparse point.'))
                 }
                 if (Get-ADTMountedWimFile -Path $_)
                 {
@@ -197,6 +203,20 @@ function Mount-ADTWimFile
                 {
                     Write-ADTLogEntry -Message "Creating path [$Path] as it does not exist."
                     $Path = [System.IO.Directory]::CreateDirectory($Path).FullName
+                }
+
+                # Refuse to mount through a reparse point. Checked again here because the mount point is
+                # whatever its parent holds by that name at this moment, not what was validated earlier.
+                if (Test-ADTPathIsReparsePoint -LiteralPath $Path.FullName)
+                {
+                    $naerParams = @{
+                        Exception = [System.IO.IOException]::new("The specified mount path is a reparse point.")
+                        Category = [System.Management.Automation.ErrorCategory]::SecurityError
+                        ErrorId = 'ReparsePointMountPathError'
+                        TargetObject = $Path
+                        RecommendedAction = "Please specify a mount path under a directory that standard users cannot write to."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Mount the WIM file.

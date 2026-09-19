@@ -54,8 +54,9 @@ function Open-ADTSession
 
     .PARAMETER AppProcessesToClose
         Specifies one or more processes that require closing to ensure a successful deployment. Provide either the bare process name (do not include the `.exe`), or the full path to a specific executable if you need to distinguish between two processes that share the same name (for example, two different vendors' `javaw.exe`). Wildcards (`*`) are supported in either form.
+
         Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`. The `Description` property is purely cosmetic - it does not filter or restrict which running processes are matched.
-    
+
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
@@ -178,7 +179,7 @@ function Open-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Open-ADTSession
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Open-ADTSession.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Open-ADTSession.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
@@ -373,7 +374,7 @@ function Open-ADTSession
                 }
                 if (![PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.IsMatch($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does not match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
                 }
                 return $_
             })]
@@ -389,7 +390,7 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (!$_.BaseType.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
+                if (![PSAppDeployToolkit.Foundation.DeploymentSession].IsAssignableFrom($_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
                 }
@@ -422,7 +423,7 @@ function Open-ADTSession
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
         {
-            [System.String[]]$PSBoundParameters.ScriptDirectory = $ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
+            [System.String[]]$PSBoundParameters.ScriptDirectory = $ScriptDirectory = if (!(Test-ADTModuleInitialized))
             {
                 if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $DeployAppScriptSessionState.PSVariable.GetValue('PSScriptRoot', $null))))
                 {
@@ -442,7 +443,7 @@ function Open-ADTSession
             }
             else
             {
-                $Script:ADT.Directories.Script
+                (Get-ADTModuleDirectories).Script
             }
         }
 
@@ -495,7 +496,7 @@ function Open-ADTSession
         }
 
         # Remove any values from $PSBoundParameters that are null (empty strings, mostly).
-        $null = ($PSBoundParameters.GetEnumerator().Where({ [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
+        $null = ($PSBoundParameters.GetEnumerator().Where({ !(Out-ADTString -InputObject $_.Value) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
     }
 
     process
@@ -503,10 +504,9 @@ function Open-ADTSession
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
         if (($callerInvocation -and [System.String]::IsNullOrWhiteSpace($callerInvocation.InvocationName) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.Line)) -or $compatibilityMode)
         {
-            $Script:ADT.Sessions.Clear()
-            $Script:ADT.Initialized = $false
+            Reset-ADTModuleState -Force
         }
-        $firstSession = !$Script:ADT.Sessions.Count
+        $firstSession = !(Test-ADTSessionActive)
 
         # Perform pre-opening tasks.
         $initialized = $false
@@ -516,7 +516,7 @@ function Open-ADTSession
             # Initialize the module before opening the first session.
             if ($firstSession)
             {
-                if (($initialized = !$Script:ADT.Initialized))
+                if (($initialized = !(Test-ADTModuleInitialized)))
                 {
                     $iamParams = @{
                         ScriptDirectory = $PSBoundParameters.ScriptDirectory
@@ -527,14 +527,14 @@ function Open-ADTSession
                     }
                     Initialize-ADTModule @iamParams
                 }
-                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnStart)))
+                foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnStart | & { process { return $_ } }))
                 {
                     & $callback
                 }
             }
 
             # Invoke pre-open callbacks.
-            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PreOpen)))
+            foreach ($callback in (Get-ADTModuleCallback -Hookpoint PreOpen | & { process { return $_ } }))
             {
                 & $callback
             }
@@ -548,7 +548,7 @@ function Open-ADTSession
             # If we failed here, de-init the module so we can start fresh again next time.
             if ($errRecord -and $initialized)
             {
-                $Script:ADT.Initialized = $false
+                Reset-ADTModuleState
             }
         }
 
@@ -558,13 +558,13 @@ function Open-ADTSession
             try
             {
                 $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $compatibilityMode)
-                $Script:ADT.Sessions.Add($adtSession)
+                (Get-ADTDeploymentSessions).Add($adtSession)
             }
             catch
             {
                 if ($_.Exception.InnerException -is [System.ApplicationException])
                 {
-                    Write-Error -Exception $_.Exception.InnerException.InnerException -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().Name
+                    Write-Error -Exception $_.Exception.InnerException.InnerException -Category OpenError -CategoryTargetName ($moduleExitCode = Get-ADTModuleExitCode) -CategoryTargetType $moduleExitCode.GetType().Name
                 }
                 else
                 {
@@ -581,11 +581,7 @@ function Open-ADTSession
             # If we failed here, exit out with the DeploymentSession's set exit code as we can't continue.
             if ($errRecord)
             {
-                if ($initialized)
-                {
-                    $Script:ADT.Initialized = $false
-                }
-                Exit-ADTInvocation -ExitCode $Script:ADT.LastExitCode -NoShellExit:$noExitOnClose
+                Exit-ADTInvocation -ExitCode (Get-ADTModuleExitCode) -NoShellExit:$noExitOnClose
             }
         }
 
@@ -610,7 +606,7 @@ function Open-ADTSession
                 }
 
                 # Invoke post-open callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PostOpen)))
+                foreach ($callback in (Get-ADTModuleCallback -Hookpoint PostOpen | & { process { return $_ } }))
                 {
                     & $callback
                 }
@@ -642,11 +638,7 @@ function Open-ADTSession
             # If we failed here, ensure we close out the instantiated DeploymentSession object.
             if ($errRecord)
             {
-                if ($initialized)
-                {
-                    $Script:ADT.Initialized = $false
-                }
-                Close-ADTSession -ExitCode $Script:ADT.LastExitCode
+                Close-ADTSession -ExitCode 60008
             }
         }
     }

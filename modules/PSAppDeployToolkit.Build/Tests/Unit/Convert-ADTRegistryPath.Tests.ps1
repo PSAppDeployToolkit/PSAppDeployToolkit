@@ -7,10 +7,9 @@ Describe 'Convert-ADTRegistryPath' {
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
-        # A SID that belongs to nobody, which is the point: converting a key for the account already behind
-        # HKEY_CURRENT_USER is a no-op by design, so naming the caller's own SID skips both the rewrite and
-        # the validation that goes with it. 'S-1-5-18' used to stand in for another user here and stopped
-        # doing so the moment the suite was run as LocalSystem.
+        # A SID belonging to nobody: converting a key for the account already behind HKEY_CURRENT_USER is
+        # a no-op, so the caller's own SID would skip the rewrite. 'S-1-5-18' stopped standing in for
+        # another user the moment the suite was run as LocalSystem.
         $script:OtherUserSid = 'S-1-5-21-1111111111-2222222222-3333333333-1001'
     }
 

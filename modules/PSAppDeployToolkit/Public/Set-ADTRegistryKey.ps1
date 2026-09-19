@@ -95,7 +95,7 @@ function Set-ADTRegistryKey
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTRegistryKey
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTRegistryKey.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTRegistryKey.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

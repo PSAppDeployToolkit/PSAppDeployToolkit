@@ -1687,7 +1687,6 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal(expected, result);
         }
 
-
         /// <summary>
         /// Tests full round-trip for 7-Zip style flag+path arguments.
         /// Parses the command line, converts back, and verifies the format is correct.
@@ -2097,6 +2096,82 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(args, strictArgs);
+        }
+
+        /// <summary>
+        /// Verifies that one element of an argument list stays one argument on the child's command line.
+        /// </summary>
+        /// <remarks>
+        /// An already-quoted value is written out as it stands, which is what lets an installer property
+        /// carrying spaces or doubled quotes reach the child in the form it expects. Whether something is
+        /// already quoted used to be decided by its first and last character, and a value that merely begins
+        /// and ends with a quote can be several arguments in the middle: the element below carries a switch
+        /// and a second property that the child would have seen as its own, which is the whole of what
+        /// passing an array rather than a string is for.
+        /// <para>
+        /// How many arguments come back is what is asserted rather than what they say. Several of these go
+        /// through paths that consume the caller's own quotes on the way, the quoting being the caller's way
+        /// of saying where the value ends rather than part of the value, so the text on the far side is not
+        /// always the text that went in. Staying one argument is the part that matters here.
+        /// </para>
+        /// </remarks>
+        /// <param name="argument">The argument that has to survive as one.</param>
+        [Theory]
+        [InlineData("TRANSFORMS=\"a.mst\" /qn EXTRA=\"b\"")]
+        [InlineData("PROPERTY=\"value\" ANOTHER=\"value\"")]
+        [InlineData("-Key:\"value\" -Other:\"value\"")]
+        [InlineData("-sfx_o\"C:\\Path\" /S")]
+        public void ArgumentListToCommandLine_KeepsAnArgumentWhole(string argument)
+        {
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(["program", argument]);
+
+            // Assert
+            Assert.Equal(2, CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true).Count);
+        }
+
+        /// <summary>
+        /// Verifies that an argument carrying quotes of its own reaches the executable with them intact.
+        /// </summary>
+        /// <remarks>
+        /// 7-Zip's self-extractor takes its output directory attached to the flag, quotes and all, so the
+        /// quotes here are part of what the executable is being told rather than the caller saying where the
+        /// argument ends. The rule for that shape used to join the flag, which ends on one of those quotes,
+        /// onto a separately escaped value, leaving the quoting unbalanced and the argument in three pieces.
+        /// Escaping the whole thing keeps it one argument and keeps every character of it.
+        /// </remarks>
+        [Fact]
+        public void ArgumentListToCommandLine_KeepsAFlagsOwnQuotes()
+        {
+            // Arrange
+            const string Argument = "-sfx_o\"C:\\Path\" /S";
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(["program", Argument]);
+
+            // Assert
+            Assert.Equal(["program", Argument], CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true));
+        }
+
+        /// <summary>
+        /// Verifies that a value which genuinely is one quoted token is still written out as it stands.
+        /// </summary>
+        /// <remarks>These are why the verbatim path exists. Counting quotes would not separate them from the
+        /// ones above, the third carrying six of them and still being a single argument, so what decides it is
+        /// whether the argument reads back as one rather than how it is punctuated.</remarks>
+        /// <param name="argument">The argument to write out unchanged.</param>
+        [Theory]
+        [InlineData("TRANSFORMS=\"a.mst\"")]
+        [InlineData("TRANSFORMS=\"a file.mst\"")]
+        [InlineData("PROPERTY=\"a \"\"quoted\"\" value\"")]
+        [InlineData("DIR=\"C:\\Program Files\\App\"")]
+        public void ArgumentListToCommandLine_LeavesAnAlreadyQuotedValueAlone(string argument)
+        {
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(["program", argument]);
+
+            // Assert
+            Assert.Equal($"program {argument}", commandLine);
         }
     }
 }

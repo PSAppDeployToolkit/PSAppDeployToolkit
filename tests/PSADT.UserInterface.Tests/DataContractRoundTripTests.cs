@@ -145,7 +145,7 @@ namespace PSADT.UserInterface.Tests
         public void Results_CarryTheirResultValueOnlyOnce(string typeName)
         {
             // Arrange
-            object original = EveryResult().Single(o => string.Equals(o.GetType().Name, typeName, StringComparison.Ordinal));
+            object original = EveryResult().Single(o => o.GetType().Name.Equals(typeName, StringComparison.Ordinal));
 
             // Act
             string xml = Serialize(original, original.GetType());
@@ -224,6 +224,7 @@ namespace PSADT.UserInterface.Tests
                 CustomDialogResult.DefaultResult,
                 InputDialogResult.DefaultResult,
                 ListSelectionDialogResult.DefaultResult,
+                SecureInputDialogResult.DefaultResult,
                 CloseAppsDialogResult.Defer,
                 DialogBoxResult.Yes,
             ];

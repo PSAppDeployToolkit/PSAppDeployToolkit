@@ -122,7 +122,7 @@ namespace PSADT.SMBIOS
         /// This represents the date when the BIOS was released by the vendor. If the Release Date string is not supplied
         /// (string index 0) or cannot be parsed, this will be null.
         /// </remarks>
-        public DateTime ReleaseDate { get; }
+        public DateTime? ReleaseDate { get; }
 
         /// <summary>
         /// Gets the BIOS ROM size in bytes.
@@ -209,7 +209,7 @@ namespace PSADT.SMBIOS
             Vendor = !string.IsNullOrWhiteSpace(vendor) ? vendor : null;
             Version = !string.IsNullOrWhiteSpace(version) ? version : null;
             StartingAddressSegment = startingAddressSegment;
-            ReleaseDate = DateTime.TryParseExact($"{releaseDate?.TrimEnd('Z')}Z", ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : throw new ArgumentOutOfRangeException(nameof(releaseDate), $"The system's release date of [{releaseDate}] was unable to be parsed.");
+            ReleaseDate = DateTime.TryParseExact($"{releaseDate?.TrimEnd('Z')}Z", ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : null;
             RomSizeBytes = romSizeBytes;
             Characteristics = characteristics;
             CharacteristicsExt1 = characteristicsExt1;
@@ -274,14 +274,15 @@ namespace PSADT.SMBIOS
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is not benchmarking code.")]
         public double GetBiosAgeInDays()
         {
-            return (DateTime.Now - ReleaseDate).TotalDays;
+            return ReleaseDate is DateTime releaseDate ? (DateTime.Now - releaseDate).TotalDays : double.NaN;
         }
 
         /// <summary>
         /// Determines whether this BIOS was released after a specified date.
         /// </summary>
         /// <param name="compareDate">The date to compare against.</param>
-        /// <returns>True if BIOS was released after the specified date; otherwise, false.</returns>
+        /// <returns>True if BIOS was released after the specified date; otherwise, false. A firmware that supplied no
+        /// parseable release date cannot be said to be newer, so it answers false.</returns>
         public bool IsReleasedAfter(DateTime compareDate)
         {
             return ReleaseDate > compareDate;
@@ -323,7 +324,7 @@ namespace PSADT.SMBIOS
             // Build without printing "null" when fields are missing
             string vendor = Vendor ?? string.Empty;
             string version = Version ?? string.Empty;
-            string date = $" ({ReleaseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)})";
+            string date = ReleaseDate is DateTime releaseDate ? $" ({releaseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)})" : string.Empty;
             string spaceIfBoth = string.IsNullOrWhiteSpace(vendor) || string.IsNullOrWhiteSpace(version) ? string.Empty : " ";
             return vendor + spaceIfBoth + version + date;
         }

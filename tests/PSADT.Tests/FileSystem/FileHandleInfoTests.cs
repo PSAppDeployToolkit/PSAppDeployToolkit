@@ -22,6 +22,7 @@ namespace PSADT.Tests.FileSystem
     /// about is one this test opened and closes again.
     /// </para>
     /// </remarks>
+    [Collection(FileHandleSweepCollection.Name)]
     public sealed class FileHandleInfoTests
     {
         /// <summary>

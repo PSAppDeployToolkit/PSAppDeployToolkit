@@ -51,7 +51,7 @@ function Remove-ADTEdgeExtension
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTEdgeExtension
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTEdgeExtension.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Remove-ADTEdgeExtension.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

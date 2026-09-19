@@ -19,7 +19,8 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace PSADT.SMBIOS
@@ -54,7 +55,8 @@ namespace PSADT.SMBIOS
         {
             if (buffer.IsEmpty)
             {
-                Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
+                // On the heap, as the length is the firmware's to report and nothing bounds it below int.MaxValue.
+                Span<byte> localbuf = new byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
                 return ReadStructure(localbuf, targetType, parser);
             }
             return ReadStructure(buffer, targetType, parser);
@@ -69,17 +71,34 @@ namespace PSADT.SMBIOS
         /// <param name="parser">Function to parse the structure from the buffer.</param>
         /// <returns>The parsed SMBIOS structure.</returns>
         /// <exception cref="SmbiosTypeNotFoundException">Thrown if the specified SMBIOS structure type is not found in the buffer.</exception>
+        /// <exception cref="InvalidDataException">Thrown if a structure declares a length that does not fit the table.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static T ReadStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             int offset = 8; while (offset < buffer.Length - 4)
             {
-                // Have we found an instance?
+                // A structure declares its own length, and under four does not cover the header it was read
+                // from, so the walk would not advance past it and every offset after would be read from
+                // the middle of something.
                 byte length = buffer[offset + 1];
+                if (length < 4 || offset + length > buffer.Length)
+                {
+                    throw new InvalidDataException($"The SMBIOS structure at offset {offset.ToString(CultureInfo.InvariantCulture)} declares a length of {length.ToString(CultureInfo.InvariantCulture)}, which does not fit the table.");
+                }
+
+                // Have we found an instance?
                 if (buffer[offset] == (byte)targetType)
                 {
                     return parser(buffer, offset, length);
+                }
+
+                // The end-of-table structure is the last one the firmware published, so anything after it is
+                // padding rather than a structure. Firmware is free to pad, and reading on would take those
+                // bytes as a header and refuse the table over a length the firmware never declared.
+                if (buffer[offset] == (byte)SmbiosType.EndOfTable)
+                {
+                    break;
                 }
 
                 // Move to the next structure, skipping unformatted string fields. A double terminator indicates the end.
@@ -107,29 +126,31 @@ namespace PSADT.SMBIOS
                 return null;
             }
 
-            // Iterate through strings to find the requested index.
+            // Iterate through this structure's own strings to find the requested index.
             int currentIndex = 1; int offset = stringTableOffset;
-            while (offset < buffer.Length && currentIndex <= stringIndex)
+            while (offset < buffer.Length)
             {
                 // Read until null terminator.
-                List<byte> stringBytes = [];
+                int start = offset;
                 while (offset < buffer.Length && buffer[offset] is not 0)
                 {
-                    stringBytes.Add(buffer[offset]);
                     offset++;
+                }
+
+                // An empty string terminates the set, so an index past its end belongs to no string here. The
+                // strings of the next structure begin immediately after, and reading on would return those.
+                if (offset == start)
+                {
+                    return null;
                 }
                 if (currentIndex == stringIndex)
                 {
-                    string result = Encoding.ASCII.GetString([.. stringBytes]);
+                    string result = Encoding.ASCII.GetString(buffer[start..offset].ToArray());
                     return !string.IsNullOrWhiteSpace(result) ? result : null;
                 }
 
-                // Move past the null terminator. A double null indicates end of the table, not an empty string entry.
+                // Move past the null terminator.
                 offset++; currentIndex++;
-                if ((offset >= buffer.Length) || (buffer[offset] is 0 && (offset + 1 >= buffer.Length || buffer[offset + 1] is 0)))
-                {
-                    break;
-                }
             }
             return null;
         }
@@ -143,7 +164,8 @@ namespace PSADT.SMBIOS
         {
             if (buffer.IsEmpty)
             {
-                Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()];
+                // On the heap, as the length is the firmware's to report and nothing bounds it below int.MaxValue.
+                Span<byte> localbuf = new byte[SmbiosTables.GetRequiredLength()];
                 SmbiosTables.FillBuffer(localbuf);
                 return ParseSmbiosVersion(localbuf);
             }

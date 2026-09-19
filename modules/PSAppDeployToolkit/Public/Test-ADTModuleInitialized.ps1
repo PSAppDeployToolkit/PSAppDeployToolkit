@@ -40,8 +40,8 @@ function Test-ADTModuleInitialized
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTModuleInitialized
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTModuleInitialized.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTModuleInitialized.ps1
     #>
 
-    return $Script:ADT.Initialized
+    return $null -ne $Script:Module.State
 }

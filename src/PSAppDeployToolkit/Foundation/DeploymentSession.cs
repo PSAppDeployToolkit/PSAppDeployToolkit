@@ -55,7 +55,6 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Establish initial variable values.
-                PSObject adtData = ModuleDatabase.Get();
                 EnvironmentTable adtEnv = ModuleDatabase.GetEnvironment();
                 IDictionary adtConfig = ModuleDatabase.GetConfig();
                 IDictionary configUI = (IDictionary)adtConfig["UI"]!;
@@ -490,8 +489,11 @@ namespace PSAppDeployToolkit.Foundation
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
-                // Generate the log filename to use. Append the username unless running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!AccountUtilities.CallerIsAdmin ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
+                // Establish whether the caller owns the configured log path. This mirrors the redirection Import-ADTConfig performs, so that the file name matches wherever the path ended up.
+                bool callerOwnsLogPath = (bool)configToolkit["PathsBasedOnSystemContext"]! ? AccountUtilities.CallerIsLocalSystem : AccountUtilities.CallerIsAdmin;
+
+                // Generate the log filename to use. Append the username unless the caller owns the log path, since everybody else lacks the rights to modify files within it that belong to other users.
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!callerOwnsLogPath ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -586,19 +588,18 @@ namespace PSAppDeployToolkit.Foundation
                         WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{CommandLineUtilities.ArgumentListToCommandLine(PowerShellUtilities.ConvertBoundParametersToArgumentList(DeployAppScriptParameters))}].");
                     }
                 }
-                PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
-                PSObject adtDurations = (PSObject)adtData.Properties["Durations"].Value;
+                ModuleDirectories moduleDirectories = ModuleDatabase.GetDirectories();
                 WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
-                WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
-                WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module imported in [{ModuleDatabase.GetImportDuration().TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{ModuleDatabase.GetInitDuration().TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv.AppDeployToolkitPath}'].");
-                if ((string[]?)adtDirectories.Properties["Config"].Value is { Length: > 0 } adtConfigDirs)
+                if (moduleDirectories.Config is { Count: > 0 } configDirectories)
                 {
-                    WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", adtConfigDirs)}'].");
+                    WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", configDirectories)}'].");
                 }
-                if ((string[]?)adtDirectories.Properties["Strings"].Value is { Length: > 0 } adtStringDirs)
+                if (moduleDirectories.Strings is { Count: > 0 } stringDirectories)
                 {
-                    WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", adtStringDirs)}'].");
+                    WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", stringDirectories)}'].");
                 }
 
                 // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
@@ -696,7 +697,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
                 }
-                WriteLogEntry($"The following locale was used to import UI messages from the strings.psd1 files: [{adtData.Properties["Language"].Value}].");
+                WriteLogEntry($"The following locale was used to import UI messages from the strings.psd1 files: [{ModuleDatabase.GetLanguage()}].");
 
 
                 #endregion LogLanguageInfo
@@ -1007,8 +1008,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>The exit code.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         public int Close(string? exitMessage = null)
         {
             // Throw if this object has already been disposed.
@@ -1016,9 +1015,6 @@ namespace PSAppDeployToolkit.Foundation
             {
                 throw new ObjectDisposedException(nameof(DeploymentSession), "This object has already been disposed.");
             }
-
-            // Establish initial variable values.
-            PSPropertyInfo adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
 
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
@@ -1068,7 +1064,7 @@ namespace PSAppDeployToolkit.Foundation
             // Update the module's last tracked exit code.
             if (ExitCode is not 0)
             {
-                adtExitCode.Value = ExitCode;
+                ModuleDatabase.SetLastExitCode(ExitCode);
             }
 
             // Clean up state and write out a log divider to indicate the end of logging.
@@ -1108,7 +1104,7 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }
             }
-            return (int)adtExitCode.Value;
+            return ExitCode;
         }
 
         /// <summary>

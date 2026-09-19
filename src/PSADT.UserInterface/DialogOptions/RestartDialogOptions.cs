@@ -44,6 +44,7 @@ namespace PSADT.UserInterface.DialogOptions
             (TimeSpan?)options["CountdownDuration"],
             (TimeSpan?)options["CountdownNoMinimizeDuration"],
             (string?)options["ShutdownReasonText"],
+            (bool?)options["NoForceCloseApps"],
             (string?)options["CustomMessageText"],
             (bool?)options["DialogAllowCancel"])
         {
@@ -79,10 +80,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="countdownNoMinimizeDuration">The duration during which the countdown timer cannot be minimized. If <see langword="null"/>, the default
         /// behavior is used.</param>
         /// <param name="shutdownReasonText">Represents the reason for shutdown, which can be optionally provided to give users more context about why a restart is necessary. If provided, this text can be displayed in the dialog to inform users about the specific reason for the restart, such as "System updates require a restart" or "A critical error occurred that requires a restart". If <see langword="null"/>, no specific shutdown reason is displayed.</param>
+        /// <param name="noForceCloseApps">Indicates whether shutdown.exe's '/f' switch is omitted when the restart is triggered, leaving running applications able to block it. If <see langword="null"/> or <see langword="false"/>, applications are forced closed.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
         /// <param name="dialogAllowCancel">Indicates whether the dialog displays a Cancel button that closes the prompt without restarting. If <see langword="null"/> or <see langword="false"/>, no Cancel button is shown.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
-        private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? shutdownReasonText, string? customMessageText, bool? dialogAllowCancel) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
+        private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? shutdownReasonText, bool? noForceCloseApps, string? customMessageText, bool? dialogAllowCancel) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
         {
             if (customMessageText is not null)
             {
@@ -97,6 +99,7 @@ namespace PSADT.UserInterface.DialogOptions
             CountdownDuration = countdownDuration;
             CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
             ShutdownReasonText = shutdownReasonText;
+            NoForceCloseApps = noForceCloseApps ?? false;
             CustomMessageText = customMessageText;
             DialogAllowCancel = dialogAllowCancel ?? false;
         }
@@ -124,6 +127,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly string? ShutdownReasonText;
+
+        /// <summary>
+        /// Indicates whether shutdown.exe's '/f' switch is omitted when the restart is triggered. Defaults to <see langword="false"/>, so applications are forced closed; when <see langword="true"/>, an application with unsaved work can block the restart.
+        /// </summary>
+        [DataMember]
+        public readonly bool NoForceCloseApps;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.

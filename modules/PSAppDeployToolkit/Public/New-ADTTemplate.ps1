@@ -149,7 +149,7 @@ function New-ADTTemplate
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTTemplate
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTTemplate.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/New-ADTTemplate.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
@@ -504,7 +504,7 @@ function New-ADTTemplate
                 [ValidateScript({
                         if ($null -eq $_.Start -or $null -eq $_.End -or $null -eq $_.Value)
                         {
-                            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName 'Replacements' -ProvidedValue ($_ | Out-String).Trim() -ExceptionMessage 'The specified replacement does not have the required Start/End/Value properties.'))
+                            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName 'Replacements' -ProvidedValue ($_ | Out-ADTString).Trim() -ExceptionMessage 'The specified replacement does not have the required Start/End/Value properties.'))
                         }
                         return $true
                     })]
@@ -590,7 +590,7 @@ function New-ADTTemplate
             try
             {
                 # If we're running a release module, ensure the psd1 files haven't been tampered with.
-                if ($Script:Module.Compiled -and $Script:Module.Signed -and ($badFiles = Get-ChildItem -LiteralPath $Script:PSScriptRoot -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
+                if ((Test-ADTModuleCompiled) -and (Test-ADTModuleSigned) -and ($badFiles = Get-ChildItem -LiteralPath (Get-ADTModuleDirectory) -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
                 {
                     $naerParams = @{
                         Exception = [System.Security.Cryptography.CryptographicException]::new("One or more files within this module have invalid digital signatures.")
@@ -628,11 +628,11 @@ function New-ADTTemplate
                 }
 
                 # Copy in the frontend files.
-                Get-ChildItem -LiteralPath "$Script:PSScriptRoot\opt\Frontend\v$Version" -Force | & { process { if (!$_.Name.Equals('PSAppDeployToolkit.Extensions') -or ('Extensions' -notin $ExcludeContent)) { Copy-Item -LiteralPath $_.FullName -Destination $templatePath -Recurse -Force } } }
+                Get-ChildItem -LiteralPath "$(Get-ADTModuleDirectory)\opt\Frontend\v$Version" -Force | & { process { if (!$_.Name.Equals('PSAppDeployToolkit.Extensions') -or ('Extensions' -notin $ExcludeContent)) { Copy-Item -LiteralPath $_.FullName -Destination $templatePath -Recurse -Force } } }
 
                 if (('Assets' -notin $ExcludeContent) -or ('Config' -notin $ExcludeContent))
                 {
-                    $defaultAssets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
+                    $defaultAssets = (Get-ADTModuleDefaults).Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
                     $banner = $defaultAssets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value
                     $logo = $defaultAssets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value
                 }
@@ -651,7 +651,7 @@ function New-ADTTemplate
                 # Export the configuration data from the module to disk.
                 if ('Config' -notin $ExcludeContent)
                 {
-                    $configText = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png')
+                    $configText = (Get-ADTModuleDefaults).Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png')
                     if ($PSBoundParameters.ContainsKey('Config'))
                     {
                         $configReplacements = Get-ADTConfigReplacements -ConfigText $configText -Settings $Config
@@ -665,7 +665,7 @@ function New-ADTTemplate
                 if ('Strings' -notin $ExcludeContent)
                 {
                     $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
-                    foreach ($stringData in $Script:ADT.ModuleDefaults.Strings.GetEnumerator())
+                    foreach ($stringData in (Get-ADTModuleDefaults).Strings.GetEnumerator())
                     {
                         if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
                         {
@@ -674,7 +674,7 @@ function New-ADTTemplate
                         $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
                         Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
                     }
-                    Export-ADTScriptBlockToFile -ScriptBlock $Script:ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
+                    Export-ADTScriptBlockToFile -ScriptBlock (Get-ADTModuleDefaults).Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
                 }
 
                 # Ensure all editable ps*1 files are not read-only and remove any digital signatures.
@@ -698,7 +698,7 @@ function New-ADTTemplate
                 {
                     # Copy in the module files.
                     $null = New-Item -Path $templateModulePath -ItemType Directory -Force
-                    Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot"))\*" -Destination $templateModulePath -Recurse -Force
+                    Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape((Get-ADTModuleDirectory)))\*" -Destination $templateModulePath -Recurse -Force
 
                     # Make the shipped module and its files read-only.
                     $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
@@ -870,7 +870,7 @@ function New-ADTTemplate
                 {
                     # Copy over Deploy-Application.exe from the v4 template.
                     $v3LauncherName = if ($PSBoundParameters.ContainsKey('LauncherName')) { $LauncherName } else { 'Deploy-Application' }
-                    Copy-Item -LiteralPath $Script:PSScriptRoot\opt\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\$v3LauncherName.exe"
+                    Copy-Item -LiteralPath "$(Get-ADTModuleDirectory)\opt\Frontend\v4\Invoke-AppDeployToolkit.exe" -Destination "$templatePath\$v3LauncherName.exe"
                 }
 
                 # Display the newly created folder in Windows Explorer.

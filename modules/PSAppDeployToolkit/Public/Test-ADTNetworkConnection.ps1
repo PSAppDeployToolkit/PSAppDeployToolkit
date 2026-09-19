@@ -43,7 +43,7 @@ function Test-ADTNetworkConnection
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTNetworkConnection
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTNetworkConnection.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTNetworkConnection.ps1
     #>
 
     [CmdletBinding()]

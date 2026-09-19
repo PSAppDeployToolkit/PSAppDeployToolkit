@@ -2,8 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using PSADT.Utilities;
+using System.Runtime.Serialization;
 
 namespace PSADT.Collections
 {
@@ -18,24 +17,15 @@ namespace PSADT.Collections
     /// of the field, rather than writing a comparison by hand on each record, is the point: equality then stays
     /// correct when a member is added later, which a hand-written one would not. </para><para> Elements are compared
     /// the same way, so a list of arrays compares by the arrays' contents rather than by their references.
-    /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
-    /// The parameterless constructor and <see cref="Add"/> are private and exist solely for the data contract
-    /// serializer, which builds a collection by constructing an empty one and adding to it, reaches both by
-    /// reflection, and refuses a collection type offering no way to do it. Being private is the point: the type
-    /// stands in for a value, and a list that changed after the record holding it was built would change that
-    /// record's hash code underneath whatever was holding it, so nothing outside this type can. </para></remarks>
+    /// </para><para> The elements are held in an array that is set once and never replaced, so nothing on any surface
+    /// can change what this compares as. <see cref="DataContractAttribute"/> is what allows that: the data contract
+    /// serializer would otherwise see <see cref="IEnumerable{T}"/>, take this for a collection, and refuse one that
+    /// offers no <c language="csharp">Add</c> for it to fill. Carrying the attribute sends it down the ordinary class path instead,
+    /// where it writes the one field and rebuilds the type without running a constructor. </para></remarks>
     /// <typeparam name="T">The type of the elements.</typeparam>
+    [DataContract]
     internal sealed class EquatableList<T> : IReadOnlyList<T>, IEquatable<EquatableList<T>>
     {
-        /// <summary>
-        /// Initializes a new, empty instance of the <see cref="EquatableList{T}"/> class.
-        /// </summary>
-        /// <remarks>For the data contract serializer, which fills it through <see cref="Add"/>.</remarks>
-        private EquatableList()
-        {
-            _items = [];
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EquatableList{T}"/> class holding the specified elements.
         /// </summary>
@@ -47,25 +37,31 @@ namespace PSADT.Collections
         }
 
         /// <summary>
-        /// Appends an element.
-        /// </summary>
-        /// <remarks>For the data contract serializer. See the remarks on the type.</remarks>
-        /// <param name="item">The element to append.</param>
-        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "The data contract serializer calls this by reflection, which the compiler cannot see.")]
-        private void Add(T item)
-        {
-            _items.Add(item);
-            _hashCode = null;
-        }
-
-        /// <summary>
         /// Determines whether this list holds the same elements, in the same order, as another.
         /// </summary>
         /// <param name="other">The list to compare against.</param>
         /// <returns><see langword="true"/> if the two hold the same elements; otherwise, <see langword="false"/>.</returns>
         public bool Equals([NotNullWhen(true)] EquatableList<T>? other)
         {
-            return ReferenceEquals(this, other) || (other is not null && _items.Count == other._items.Count && _items.SequenceEqual(other._items, ElementComparer));
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            if (other is null || _items.Length != other._items.Length)
+            {
+                return false;
+            }
+
+            // Walked rather than run through a query, so that comparing two lists allocates nothing: a query asks
+            // each array for an enumerator, and an array hands back an object to do it.
+            for (int index = 0; index < _items.Length; index++)
+            {
+                if (!ElementComparer.Equals(_items[index], other._items[index]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <inheritdoc/>
@@ -75,21 +71,45 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>Worked out once and kept, since a record holding this asks for it every time it is put in a
-        /// dictionary or a set and the list itself does not change after it has been built.</remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The list is filled once and then left alone, which is what the remarks on the type describe; the cache is cleared if anything does append.")]
+        /// <remarks>Worked out on every call rather than once and kept. A kept one would be worth something only
+        /// where the same list is hashed more than once, which nothing here does. What it would cost is a hash that
+        /// stops describing what the list holds: an element that is itself an array is handed out by the indexer and
+        /// is writable through it, and a kept hash would go on reporting what that element used to be. Worked out on
+        /// demand the two always agree, and a caller that writes to something it was handed has broken the rule every
+        /// hash container has rather than found a fault in this one.</remarks>
         public override int GetHashCode()
         {
-            // Combined through the shared helper rather than here, so that every hash this library produces
-            // from a sequence of values is produced the same way. The comparer is handed over with it because
-            // an element that is an array has to be hashed by its contents rather than by its reference.
-            return _hashCode ??= CryptographicUtilities.GenerateHashCode(_items, ElementComparer);
+            return ComputeHashCode();
+        }
+
+        /// <summary>
+        /// Determines whether two lists hold the same elements in the same order.
+        /// </summary>
+        /// <remarks>Defined so that the operator cannot quietly disagree with <see cref="Equals(EquatableList{T})"/>,
+        /// which it would if it were left comparing references as a reference type's operator does by default.</remarks>
+        /// <param name="left">The first list, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second list, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two hold the same elements, or both are <see langword="null"/>; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==(EquatableList<T>? left, EquatableList<T>? right)
+        {
+            return left is not null ? left.Equals(right) : right is null;
+        }
+
+        /// <summary>
+        /// Determines whether two lists differ in their elements or in the order of them.
+        /// </summary>
+        /// <param name="left">The first list, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second list, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two differ, or one is <see langword="null"/> and the other is not; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=(EquatableList<T>? left, EquatableList<T>? right)
+        {
+            return !(left == right);
         }
 
         /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
-            return _items.GetEnumerator();
+            return ((IEnumerable<T>)_items).GetEnumerator();
         }
 
         /// <inheritdoc/>
@@ -98,11 +118,27 @@ namespace PSADT.Collections
             return _items.GetEnumerator();
         }
 
+        /// <summary>
+        /// Combines the elements into a hash code.
+        /// </summary>
+        /// <remarks>The comparer is handed to each element rather than left to the combiner's own, because an
+        /// element that is an array has to be hashed by its contents rather than by its reference.</remarks>
+        /// <returns>The hash code of the elements.</returns>
+        private int ComputeHashCode()
+        {
+            HashCode hashCode = new();
+            foreach (T item in _items)
+            {
+                hashCode.Add(item, ElementComparer);
+            }
+            return hashCode.ToHashCode();
+        }
+
         /// <inheritdoc/>
         public T this[int index] => _items[index];
 
         /// <inheritdoc/>
-        public int Count => _items.Count;
+        public int Count => _items.Length;
 
         /// <summary>
         /// An empty list.
@@ -115,12 +151,8 @@ namespace PSADT.Collections
         /// <summary>
         /// The elements held.
         /// </summary>
-        private readonly List<T> _items;
-
-        /// <summary>
-        /// The hash code of the elements, worked out on first use.
-        /// </summary>
-        private int? _hashCode;
+        [DataMember]
+        private readonly T[] _items;
 
         /// <summary>
         /// Compares two elements.

@@ -58,7 +58,7 @@ function Convert-ADTRegistryPath
         https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTRegistryPath
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Convert-ADTRegistryPath.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Convert-ADTRegistryPath.ps1
     #>
 
     [CmdletBinding()]
@@ -90,12 +90,12 @@ function Convert-ADTRegistryPath
             try
             {
                 # Convert the registry key hive to the full path, only match if at the beginning of the line.
-                $Script:Registry.PathReplacements.GetEnumerator() | . {
+                $Script:RegistryConstants.PathReplacements.GetEnumerator() | . {
                     process
                     {
                         if ($Key -match $_.Key)
                         {
-                            foreach ($regexMatch in ($Script:Registry.PathMatches -replace '^', $_.Key))
+                            foreach ($regexMatch in ($Script:RegistryConstants.PathMatches -replace '^', $_.Key))
                             {
                                 $Key = $Key -replace $regexMatch, $_.Value
                             }
@@ -106,7 +106,7 @@ function Convert-ADTRegistryPath
                 # Process the WOW6432Node values if applicable.
                 if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
                 {
-                    $Script:Registry.WOW64Replacements.GetEnumerator() | . {
+                    $Script:RegistryConstants.WOW64Replacements.GetEnumerator() | . {
                         process
                         {
                             if ($Key -match $_.Key)

@@ -40,7 +40,7 @@ function Update-ADTDesktop
         https://psappdeploytoolkit.com/docs/reference/functions/Update-ADTDesktop
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Update-ADTDesktop.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Update-ADTDesktop.ps1
     #>
 
     [CmdletBinding()]

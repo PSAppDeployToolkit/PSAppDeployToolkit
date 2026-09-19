@@ -145,12 +145,40 @@ namespace PSADT.PowerShellTestFixture
         /// <c language="powershell">$Script:CommandTable</c> against it.
         /// </remarks>
         /// <param name="configuration">The configuration the types under test should read.</param>
-        /// <param name="environment">The environment table, where the test needs one.</param>
+        /// <param name="environment">The environment table, where the test needs a particular one.</param>
         /// <returns>A scope that puts back whatever database was seated before.</returns>
         public ModuleDatabaseScope SeatModuleDatabase(ModuleConfiguration configuration, EnvironmentTable? environment = null)
         {
-            return new ModuleDatabaseScope(configuration, ModuleSessionState, environment);
+            return new ModuleDatabaseScope(configuration, ModuleSessionState, FixtureModuleInfo, environment ?? SharedEnvironment);
         }
+
+        /// <summary>
+        /// Seats a module database carrying no state, for the lifetime of the returned scope.
+        /// </summary>
+        /// <remarks>
+        /// The module imported and nothing more, which is what every reader of initialized state is refusing when it
+        /// names <c language="powershell">Initialize-ADTModule</c>. Reachable in earnest, since the database is seated
+        /// at import and the state only when that command runs.
+        /// </remarks>
+        /// <returns>A scope that puts back whatever database was seated before.</returns>
+        public ModuleDatabaseScope SeatModuleDatabaseWithoutState()
+        {
+            return new ModuleDatabaseScope(configuration: null, ModuleSessionState, FixtureModuleInfo, environment: null);
+        }
+
+        /// <summary>
+        /// The fixture module, which a seated database records as the module it belongs to.
+        /// </summary>
+        /// <remarks>Both halves of the fixture import under this name, the script module and the assembly, so the first
+        /// is taken rather than expecting one. Taken here rather than with <c language="powershell">Select-Object</c>,
+        /// which belongs to a module this runspace does not load.</remarks>
+        private PSModuleInfo FixtureModuleInfo => field ??= UnwrapFirst<PSModuleInfo>(InvokeInRunspace($"Get-Module -Name '{ModuleName}'"));
+
+        /// <summary>
+        /// The environment table a seated database uses when a test does not supply one of its own. Built once, as a
+        /// table costs around a fifth of a second and every test seating a database would otherwise pay for it.
+        /// </summary>
+        private EnvironmentTable SharedEnvironment => field ??= NewEnvironmentTable();
 
         /// <summary>
         /// Runs a script in this fixture's runspace and returns what it wrote to the pipeline.
@@ -166,6 +194,20 @@ namespace PSADT.PowerShellTestFixture
             Collection<PSObject> output = powerShell.Invoke();
             ThrowIfWroteErrors(powerShell, script);
             return new ReadOnlyCollection<PSObject>(output);
+        }
+
+        /// <summary>
+        /// Unwraps the first of what the engine wrote, for a command that may legitimately write several.
+        /// </summary>
+        /// <typeparam name="T">The type expected.</typeparam>
+        /// <param name="written">What the engine wrote.</param>
+        /// <returns>The first object, unwrapped.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when nothing was written.</exception>
+        private static T UnwrapFirst<T>(IReadOnlyList<PSObject> written) where T : class
+        {
+            return written.Count is 0
+                ? throw new InvalidOperationException($"The fixture expected at least one {typeof(T).Name} from the engine but got nothing.")
+                : Unwrap<T>([written[0]]);
         }
 
         /// <summary>

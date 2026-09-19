@@ -2,11 +2,9 @@
     # One case per character .NET considers invalid, so the set is read from the framework rather than
     # listed here.
     #
-    # The character itself is deliberately not carried in the case data. A test that never runs, because
-    # a setup above it failed, is written to the NUnit report with its data appended to its name - and one
-    # of these characters is NUL, which no XML attribute can hold. That fails the report for the entire
-    # run rather than the one test, and takes the summary with it. The code point travels instead, and the
-    # character is rebuilt from it where it is used.
+    # The code point travels rather than the character. A test that never runs is written to the NUnit
+    # report with its data appended to its name, and one of these characters is NUL, which no XML
+    # attribute can hold - failing the report for the whole run rather than the one test.
     $script:InvalidCharacters = foreach ($character in [System.IO.Path]::GetInvalidFileNameChars())
     {
         @{ CodePoint = '0x{0:X2}' -f [System.Int32]$character; Value = [System.Int32]$character }

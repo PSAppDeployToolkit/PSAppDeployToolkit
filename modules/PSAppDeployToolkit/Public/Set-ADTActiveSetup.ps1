@@ -101,7 +101,7 @@ function Set-ADTActiveSetup
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTActiveSetup
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTActiveSetup.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTActiveSetup.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Create')]
@@ -210,7 +210,6 @@ function Set-ADTActiveSetup
                         Exception = [System.InvalidProgramException]::new("An active DeploymentSession was not found when one was expected.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                         ErrorId = 'ADTSessionUnexpectedNull'
-                        TargetObject = [System.Collections.ObjectModel.ReadOnlyCollection[PSAppDeployToolkit.Foundation.DeploymentSession]]$Script:ADT.Sessions
                         RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
                     }
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
@@ -230,7 +229,6 @@ function Set-ADTActiveSetup
                     Exception = [System.InvalidProgramException]::new("An active DeploymentSession was not found when one was expected.")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                     ErrorId = 'ADTSessionUnexpectedNull'
-                    TargetObject = [System.Collections.ObjectModel.ReadOnlyCollection[PSAppDeployToolkit.Foundation.DeploymentSession]]$Script:ADT.Sessions
                     RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))

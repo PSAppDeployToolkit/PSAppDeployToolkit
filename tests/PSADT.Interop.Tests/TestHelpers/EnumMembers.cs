@@ -38,7 +38,7 @@ namespace PSADT.Interop.Tests.TestHelpers
         {
             return typeof(FIRMWARE_TABLE_ID).Assembly.GetTypes()
                 .Where(static t => t.IsEnum
-                    && string.Equals(t.Namespace, "PSADT.Interop", StringComparison.Ordinal)
+                    && "PSADT.Interop".Equals(t.Namespace, StringComparison.Ordinal)
                     && !Attribute.IsDefined(t, typeof(FlagsAttribute)));
         }
 
@@ -66,7 +66,7 @@ namespace PSADT.Interop.Tests.TestHelpers
             KeyValuePair<string, long>[] members = Get(type);
             Assert.Equal(expectedCount, members.Length);
             AssertValuesAre(members, [.. Enumerable.Range(0, expectedCount).Select(static i => (long)i)]);
-            Assert.Equal(expectedCount - 1, members.Single(m => string.Equals(m.Key, maxMemberName, StringComparison.Ordinal)).Value);
+            Assert.Equal(expectedCount - 1, members.Single(m => maxMemberName.Equals(m.Key, StringComparison.Ordinal)).Value);
         }
     }
 }

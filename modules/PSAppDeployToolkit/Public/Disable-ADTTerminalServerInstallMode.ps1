@@ -42,7 +42,7 @@ function Disable-ADTTerminalServerInstallMode
         https://psappdeploytoolkit.com/docs/reference/functions/Disable-ADTTerminalServerInstallMode
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Disable-ADTTerminalServerInstallMode.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Disable-ADTTerminalServerInstallMode.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

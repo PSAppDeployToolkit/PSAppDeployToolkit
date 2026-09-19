@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.Interop;
@@ -15,6 +16,23 @@ namespace PSADT.Security
     /// where direct interaction with Windows security tokens is necessary.</remarks>
     internal static class TokenUtilities
     {
+        /// <summary>
+        /// Reads a fixed-size token information value, rejecting incomplete results.
+        /// </summary>
+        /// <typeparam name="T">The native information structure.</typeparam>
+        /// <param name="tokenHandle">The token opened for querying.</param>
+        /// <param name="informationClass">The information class matching the structure.</param>
+        /// <returns>The copied information value.</returns>
+        /// <exception cref="InvalidOperationException">Windows returned incomplete token information.</exception>
+        internal static T GetTokenInformation<T>(SafeHandle tokenHandle, TOKEN_INFORMATION_CLASS informationClass) where T : unmanaged
+        {
+            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<T>()];
+            _ = NativeMethods.GetTokenInformation(tokenHandle, informationClass, buffer, out uint length);
+            return length != buffer.Length
+                ? throw new InvalidOperationException("Windows returned incomplete token information.")
+                : MemoryMarshal.Read<T>(buffer);
+        }
+
         /// <summary>
         /// Determines whether the specified security token represents a user with administrative privileges.
         /// </summary>

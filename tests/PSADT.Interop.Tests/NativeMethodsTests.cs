@@ -415,7 +415,9 @@ namespace PSADT.Interop.Tests
         /// <summary>
         /// Verifies that the power status reads back within its documented ranges. The structure is a
         /// packed set of single bytes where every field has a reserved value for "unknown", so a
-        /// marshalling mistake shows up as a field outside its range rather than as a failed call.
+        /// marshalling mistake shows up as a field outside its range rather than as a failed call. The
+        /// battery flags are read as the set of flags they are rather than as a list of values, since
+        /// charging combines with the charge level and only the undefined bits mean anything is wrong.
         /// </summary>
         [Fact]
         public void GetSystemPowerStatus_ReportsValuesWithinTheirDocumentedRanges()
@@ -426,7 +428,10 @@ namespace PSADT.Interop.Tests
             // Assert
             Assert.True(status.ACLineStatus is 0 or 1 or 255);
             Assert.True(status.BatteryLifePercent is <= 100 or 255);
-            Assert.True(status.BatteryFlag is 0 or 1 or 2 or 4 or 8 or 128 or 255);
+            // BatteryFlag is a set of flags rather than one value: charging combines with the charge level, so a
+            // battery that is low and charging reports 8 | 2. Only the unknown value stands alone, and 0x70 is
+            // what the documentation leaves undefined - which is where a marshalling mistake would show up.
+            Assert.True(status.BatteryFlag is 255 || (status.BatteryFlag & 0x70) is 0);
         }
 
         /// <summary>

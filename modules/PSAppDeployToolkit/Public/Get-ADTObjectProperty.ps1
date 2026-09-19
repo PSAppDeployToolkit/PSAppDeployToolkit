@@ -49,7 +49,7 @@ function Get-ADTObjectProperty
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTObjectProperty
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTObjectProperty.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTObjectProperty.ps1
     #>
 
     [CmdletBinding()]

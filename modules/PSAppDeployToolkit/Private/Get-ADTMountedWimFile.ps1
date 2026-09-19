@@ -23,7 +23,10 @@ function Private:Get-ADTMountedWimFile
         [System.IO.DirectoryInfo[]]$Path
     )
 
-    # Get the caller's provided input via the ParameterSetName so we can filter on its name and value.
+    # The array cast keeps one value and several behaving alike. Member enumeration over a single-element
+    # array unwraps to the value, which made this String.Contains and matched on any substring.
     $parameter = Get-Variable -Name $PSCmdlet.ParameterSetName
-    return (Get-WindowsImage -Mounted | & { process { if ($parameter.Value.FullName.Contains($_.($parameter.Name))) { return $_ } } })
+    $separators = [System.Char[]]([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+    $wanted = [System.String[]]$parameter.Value.FullName | & { process { $_.TrimEnd($separators) } }
+    return (Get-WindowsImage -Mounted | & { process { if ($wanted -contains $_.($parameter.Name).TrimEnd($separators)) { return $_ } } })
 }

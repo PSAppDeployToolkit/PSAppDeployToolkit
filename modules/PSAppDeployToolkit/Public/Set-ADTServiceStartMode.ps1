@@ -77,7 +77,7 @@ function Set-ADTServiceStartMode
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTServiceStartMode
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTServiceStartMode.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTServiceStartMode.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -173,13 +173,13 @@ function Set-ADTServiceStartMode
                         try
                         {
                             # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-                            $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $service.ServiceName start= $StartMode 2>&1
-                            if ($Global:LASTEXITCODE)
+                            $scResult = Start-ADTProcess -FilePath "$([System.Environment]::SystemDirectory)\sc.exe" -ArgumentList config, $service.ServiceName, 'start=', $StartMode -CreateNoWindow -PassThru -SuccessExitCodes 0 -InformationAction SilentlyContinue -ErrorAction Ignore -Confirm:$false
+                            if ($scResult.ExitCode)
                             {
                                 # If we're here, we had a bad exit code.
-                                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
+                                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$($scResult.ExitCode)]: $($scResult.Interleaved)") -Severity Error
                                 $naerParams = @{
-                                    Exception = [PSADT.ProcessManagement.ProcessException]::new($msg, [PSADT.ProcessManagement.ProcessResult]::new($Global:LASTEXITCODE))
+                                    Exception = [PSADT.ProcessManagement.ProcessException]::new($msg, $scResult)
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'ScConfigFailure'
                                     TargetObject = $scResult

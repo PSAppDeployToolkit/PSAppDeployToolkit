@@ -512,6 +512,130 @@ namespace PSADT.Tests.WindowsInstaller
         }
 
         /// <summary>
+        /// Verifies that a table is still read when the names it is keyed on repeat.
+        /// </summary>
+        /// <remarks>
+        /// Two rows the installer holds as distinct arrive here as one, names being read with the whitespace
+        /// around them removed. That used to throw out of the dictionary, taking the whole table with it: not
+        /// just the property that repeated, but every other one as well. The later row wins and the rest of the
+        /// table comes back, which is what the function did before it was rewritten.
+        /// </remarks>
+        [Fact]
+        public void GetMsiTableDictionary_KeepsReadingWhenANameRepeats()
+        {
+            // Arrange: three rows the installer keeps apart, whose names differ only by the space around them
+            using TempDirectory temp = new();
+            string msiPath = temp.WriteFile("spaced.msi", string.Empty);
+            WriteMsiWithProperties(msiPath, [("Spaced", "plain"), ("Spaced ", "trailing"), (" Spaced", "leading"), ("Other", "kept")]);
+
+            // Act
+            IReadOnlyDictionary<string, object>? properties = MsiUtilities.GetMsiTableDictionary(msiPath, "Property", 1, 2);
+
+            // Assert
+            Assert.NotNull(properties);
+            Assert.True(properties.ContainsKey("Spaced"));
+            Assert.Equal("kept", properties["Other"]);
+        }
+
+        /// <summary>
+        /// Verifies that a repeated name is refused, and said plainly, when the caller asks to be told.
+        /// </summary>
+        /// <remarks>
+        /// Which column the names come from is the caller's to choose, and nothing requires the one they chose
+        /// to hold a value only once, so a caller who needs every row to survive has to be able to find out
+        /// that one did not. What the dictionary raised on its own named neither the table nor the column.
+        /// </remarks>
+        [Fact]
+        public void GetMsiTableDictionary_RefusesARepeatedNameWhenAskedTo()
+        {
+            // Arrange: two rows distinct by their own primary key, sharing the column being keyed on
+            using TempDirectory temp = new();
+            string msiPath = temp.WriteFile("repeated.msi", string.Empty);
+            WriteMsi(
+                msiPath,
+                "CREATE TABLE `Pairs` (`Id` CHAR(72) NOT NULL, `Shared` CHAR(0) NOT NULL PRIMARY KEY `Id`)",
+                ["INSERT INTO `Pairs` (`Id`, `Shared`) VALUES ('first', 'same')", "INSERT INTO `Pairs` (`Id`, `Shared`) VALUES ('second', 'same')"]);
+
+            // Act
+            InvalidDataException thrown = Assert.Throws<InvalidDataException>(() => MsiUtilities.GetMsiTableDictionary(msiPath, "Pairs", 2, 1, noClobber: true));
+
+            // Assert
+            Assert.Contains("Pairs", thrown.Message, StringComparison.Ordinal);
+            Assert.Contains("Shared", thrown.Message, StringComparison.Ordinal);
+            Assert.Contains("same", thrown.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that the same table reads without complaint when the caller has not asked to be told.
+        /// </summary>
+        [Fact]
+        public void GetMsiTableDictionary_KeepsReadingARepeatedNameByDefault()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string msiPath = temp.WriteFile("repeated-default.msi", string.Empty);
+            WriteMsi(
+                msiPath,
+                "CREATE TABLE `Pairs` (`Id` CHAR(72) NOT NULL, `Shared` CHAR(0) NOT NULL PRIMARY KEY `Id`)",
+                ["INSERT INTO `Pairs` (`Id`, `Shared`) VALUES ('first', 'same')", "INSERT INTO `Pairs` (`Id`, `Shared`) VALUES ('second', 'same')"]);
+
+            // Act
+            IReadOnlyDictionary<string, object>? pairs = MsiUtilities.GetMsiTableDictionary(msiPath, "Pairs", 2, 1);
+
+            // Assert
+            Assert.NotNull(pairs);
+            Assert.Equal("second", pairs["same"]);
+        }
+
+        /// <summary>
+        /// Writes a minimal installer database holding nothing but a Property table.
+        /// </summary>
+        /// <remarks>Authored through the installer itself rather than from a checked-in file, so that the rows
+        /// under test are stated here and a reader can see exactly what the database holds. The path has to
+        /// already exist, the wrapper checking for that before it opens anything, and a creating open replaces
+        /// whatever is there.</remarks>
+        /// <param name="path">The path to write the database to, which must already exist.</param>
+        /// <param name="properties">The property names and values to record.</param>
+        private static void WriteMsiWithProperties(string path, IReadOnlyList<(string Name, string Value)> properties)
+        {
+            List<string> inserts = [];
+            foreach ((string name, string value) in properties)
+            {
+                inserts.Add($"INSERT INTO `Property` (`Property`, `Value`) VALUES ('{name}', '{value}')");
+            }
+            WriteMsi(path, "CREATE TABLE `Property` (`Property` CHAR(72) NOT NULL, `Value` CHAR(0) NOT NULL PRIMARY KEY `Property`)", inserts);
+        }
+
+        /// <summary>
+        /// Writes a minimal installer database holding one table, built and filled by the queries given.
+        /// </summary>
+        /// <remarks>Authored through the installer itself rather than from a checked-in file, so that what the
+        /// database holds is stated here where a reader will see it. The path has to already exist, the wrapper
+        /// checking for that before it opens anything, and a creating open replaces whatever is there.</remarks>
+        /// <param name="path">The path to write the database to, which must already exist.</param>
+        /// <param name="createQuery">The query creating the table.</param>
+        /// <param name="insertQueries">The queries filling it.</param>
+        private static void WriteMsi(string path, string createQuery, IReadOnlyList<string> insertQueries)
+        {
+            using Windows.Win32.MsiCloseHandleSafeHandle database = MsiUtilities.OpenDatabase(path, szPersist: Interop.MSI_PERSISTENCE_MODE.MSIDBOPEN_CREATE);
+            Execute(database, createQuery);
+            foreach (string insertQuery in insertQueries)
+            {
+                Execute(database, insertQuery);
+            }
+            _ = Interop.NativeMethods.MsiDatabaseCommit(database);
+
+            static void Execute(Windows.Win32.MsiCloseHandleSafeHandle database, string query)
+            {
+                _ = Interop.NativeMethods.MsiDatabaseOpenView(database, query, out Windows.Win32.MsiCloseHandleSafeHandle view);
+                using (view)
+                {
+                    _ = Interop.NativeMethods.MsiViewExecute(view);
+                }
+            }
+        }
+
+        /// <summary>
         /// Verifies that no properties at all is refused as a null argument.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]

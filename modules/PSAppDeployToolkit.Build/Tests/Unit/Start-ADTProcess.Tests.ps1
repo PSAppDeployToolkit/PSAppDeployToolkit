@@ -84,11 +84,9 @@ Describe 'Start-ADTProcess' {
         }
 
         It 'Reports the exit code rather than a binding failure when the arguments are secured' {
-            # Securing the arguments means the error resolver has to be told which properties to print, so
-            # that the command line does not reach the log through the position message. That list belongs
-            # to a parameter set the silent handler is not in, and a failing process is handled silently -
-            # so the two together used to resolve to no parameter set at all and the caller was told
-            # "Parameter set cannot be resolved" instead of what the process actually did.
+            # Securing the arguments means telling the error resolver which properties to print, and that
+            # list belongs to a parameter set the silent handler is not in. A failing process is handled
+            # silently, so the two together used to resolve to no parameter set at all.
             { Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 1' -CreateNoWindow -SecureArgumentList } | Should -Throw -ErrorId 'ProcessExitCodeError,Start-ADTProcess'
         }
 
@@ -222,7 +220,11 @@ Describe 'Start-ADTProcess' {
         }
 
         It 'Runs with an unelevated token when asked' -Skip:(!$script:CallerOwnsItsSession) {
-            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken -PassThru).ExitCode | Should -Be 0
+            # A process starting says nothing about which token it was started with, so the request that
+            # was made is read back off the launch information the result carries.
+            $result = Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -UseUnelevatedToken -PassThru
+            $result.ExitCode | Should -Be 0
+            $result.LaunchInfo.ElevatedTokenType | Should -Be ([PSADT.Security.ElevatedTokenType]::None)
         }
 
         It 'Refuses to de-elevate into a session it does not own' -Skip:$script:CallerOwnsItsSession {
@@ -317,6 +319,34 @@ Describe 'Start-ADTProcess' {
             # Which token the process gets decides what it can do, and each of these picks a different one.
             $splat = @{ $Switch = $true }
             (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -PassThru @splat).ExitCode | Should -Be 0
+        }
+
+        It 'Asks for the <Expected> token with -<Switch>' -ForEach @(
+            @{ Switch = 'UseLinkedAdminToken'; Expected = 'HighestMandatory' }
+            @{ Switch = 'UseHighestAvailableToken'; Expected = 'HighestAvailable' }
+        ) {
+            # The switch above only covers that the process ran. Which of the two elevated tokens was asked
+            # for is the whole of what these do, and the two differ only in whether they may fall back.
+            $splat = @{ $Switch = $true }
+            $result = Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser $script:ActiveUser -PassThru @splat
+            $result.LaunchInfo.ElevatedTokenType | Should -Be ([PSADT.Security.ElevatedTokenType]$Expected)
+        }
+
+        It 'Drops to the caller''s own token when the caller is the one signed in' -Skip:(!$script:CallerOwnsItsSession) {
+            # Naming the caller as the user to run as asks for nothing out of the ordinary, so the process
+            # is started with the plain token of the account already running.
+            $result = Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -PassThru
+            $result.ExitCode | Should -Be 0
+            $result.LaunchInfo.ElevatedTokenType | Should -Be ([PSADT.Security.ElevatedTokenType]::None)
+        }
+
+        It 'Starts the process rather than refusing when the caller is not the one signed in' -Skip:$script:CallerOwnsItsSession {
+            # The same request from LocalSystem, or from an administrator testing through runas, has no
+            # caller token to drop to. Asking for one anyway is read further down as a de-elevation into
+            # somebody else's session and refused outright, so nothing may be asked for here.
+            $result = Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'exit 0' -CreateNoWindow -RunAsActiveUser ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -PassThru
+            $result.ExitCode | Should -Be 0
+            $result.LaunchInfo.ElevatedTokenType | Should -BeNullOrEmpty
         }
     }
 

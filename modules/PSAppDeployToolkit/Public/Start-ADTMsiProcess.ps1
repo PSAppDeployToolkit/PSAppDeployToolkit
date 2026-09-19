@@ -202,7 +202,7 @@ function Start-ADTMsiProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTMsiProcess.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Start-ADTMsiProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -424,7 +424,11 @@ function Start-ADTMsiProcess
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession; $adtConfig = Get-ADTConfig
+        $adtConfig = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -542,7 +546,7 @@ function Start-ADTMsiProcess
                     if (!$InstalledApplication)
                     {
                         Write-ADTLogEntry -Message "Determining whether the MSI is already installed on this system."
-                        if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -InformationAction SilentlyContinue)
+                        if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -Force -InformationAction SilentlyContinue)
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
                             if (($installedApps | Measure-Object).Count -gt 1)
@@ -572,7 +576,7 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [MsiQueryProductState()]."
                             $msiProductState.Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
                         }
-                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
+                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -Force -InformationAction SilentlyContinue))
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
                             if (($installedApps | Measure-Object).Count -gt 1)
@@ -729,12 +733,13 @@ function Start-ADTMsiProcess
                         $logPath += "_$Action"
                     }
 
-                    # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                    # Append the username to the log file name, either the user the MSI runs as, or the caller when it
+                    # doesn't own the log path. This is the same rule DeploymentSession names its own log file by.
                     if ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)"
                     }
-                    elseif ((![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -and [System.Environment]::UserInteractive) -or !(Test-ADTCallerIsAdmin))
+                    elseif (!(Test-ADTCallerOwnsConfiguredPaths -Config $adtConfig))
                     {
                         $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))"
                     }

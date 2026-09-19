@@ -10,7 +10,7 @@ AfterAll {
 Describe 'Export-ADTEnvironmentTableToSessionState' {
     Context 'Before initialisation' {
         It 'Refuses to export an environment that was never built' {
-            { Export-ADTEnvironmentTableToSessionState } | Should -Throw -ErrorId 'ADTEnvironmentDatabaseEmpty,Export-ADTEnvironmentTableToSessionState'
+            { Export-ADTEnvironmentTableToSessionState } | Should -Throw -ErrorId 'ADTModuleNotInitialized,Export-ADTEnvironmentTableToSessionState'
         }
     }
 

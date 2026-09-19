@@ -57,8 +57,41 @@ namespace PSADT.Foundation
                 || callingProcessPath.Equals(ClientLauncherCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase);
             CallerIsClientServerExecutable = CallerIsClientServerClient || CallerIsClientServerClientLauncher;
 
-            // Determine whether the client/server executables are on a UNC path or not.
-            ClientServerOnUncPath = new Uri(ClientServerDirectory.FullName).IsUnc;
+            // Determine whether the client/server executables are on a network path or not.
+            ClientServerOnNetworkPath = GetPathIsNetworked(ClientServerDirectory.FullName);
+        }
+
+        /// <summary>
+        /// Determines whether the specified path resides on a network location.
+        /// </summary>
+        /// <remarks>A share is visible only in the shape of the path, and a mapped drive only in the drive behind it, so both
+        /// are asked. Neither question understands an extended-length path, which is therefore reduced to the path it extends
+        /// before either is put; anything left that they still refuse names no drive and cannot be a mapped one, so it is
+        /// reported as local rather than allowed to fault this type's initialisation.</remarks>
+        /// <param name="path">The fully qualified path to test.</param>
+        /// <returns><see langword="true"/> if the path resides on a network location; otherwise, <see langword="false"/>.</returns>
+        internal static bool GetPathIsNetworked(string path)
+        {
+            // The extended-length UNC form can only ever name a share, and its local counterpart reduces to a normal path.
+            const string extendedPrefix = @"\\?\";
+            const string extendedUncPrefix = @"\\?\UNC\";
+            if (path.StartsWith(extendedUncPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            string testPath = path.StartsWith(extendedPrefix, StringComparison.Ordinal) ? path[extendedPrefix.Length..] : path;
+            try
+            {
+                return new Uri(testPath).IsUnc || (Path.GetPathRoot(testPath) is string pathRoot && !string.IsNullOrWhiteSpace(pathRoot) && new DriveInfo(pathRoot).DriveType is DriveType.Network);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -260,9 +293,10 @@ namespace PSADT.Foundation
         internal static readonly DirectoryInfo ClientServerDirectory;
 
         /// <summary>
-        /// Indicates whether the client-server executables are located on a UNC path, which can affect how they are launched and executed.
+        /// Indicates whether the client-server executables are located on a network path, which can affect how they are launched and executed.
         /// </summary>
-        internal static readonly bool ClientServerOnUncPath;
+        /// <remarks>Covers a mapped drive as well as a UNC path, as both are reached by the Local System account as the computer account.</remarks>
+        internal static readonly bool ClientServerOnNetworkPath;
 
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.

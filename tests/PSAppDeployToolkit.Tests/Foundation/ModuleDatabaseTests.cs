@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using PSADT.PowerShellTestFixture;
@@ -30,11 +32,11 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// was loaded some other way - not that a command was missed.
         /// </remarks>
         [Fact]
-        public void Get_SaysTheAssemblyWasNotLoadedByTheModule()
+        public void GetSessionState_SaysTheAssemblyWasNotLoadedByTheModule()
         {
             Assert.Contains(
                 "only supports loading via the PSAppDeployToolkit PowerShell module",
-                Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Get()).Message,
+                Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.GetImportDuration()).Message,
                 StringComparison.Ordinal);
             Assert.Contains(
                 "only supports loading via the PSAppDeployToolkit PowerShell module",
@@ -52,6 +54,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         [Fact]
         public void GetEnvironment_NamesTheCommandThatInitialisesTheModule()
         {
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabaseWithoutState();
             foreach (Func<object> reader in new Func<object>[] { ModuleDatabase.GetEnvironment, ModuleDatabase.GetConfig, ModuleDatabase.GetStrings })
             {
                 Assert.Contains(
@@ -65,9 +68,19 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that a database with nothing in it is not mistaken for an initialised one.
         /// </summary>
         [Fact]
-        public void IsInitialized_IsFalseUntilSomethingIsSeated()
+        public void IsInitialized_IsFalseUntilStateIsSeated()
         {
-            Assert.False(ModuleDatabase.IsInitialized());
+            // Three states rather than two: no database is the assembly loaded outside the module and is refused
+            // rather than answered, a database without state is the module imported and nothing more.
+            static void ReadIsInitialized()
+            {
+                _ = ModuleDatabase.IsInitialized();
+            }
+            _ = Assert.Throws<InvalidOperationException>(ReadIsInitialized);
+            using (powerShell.SeatModuleDatabaseWithoutState())
+            {
+                Assert.False(ModuleDatabase.IsInitialized());
+            }
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
             Assert.True(ModuleDatabase.IsInitialized());
         }
@@ -88,6 +101,104 @@ namespace PSAppDeployToolkit.Tests.Foundation
             Assert.Equal("Legacy", toolkit["LogStyle"]);
             Assert.NotNull(ModuleDatabase.GetStrings());
             Assert.Same(powerShell.ModuleSessionState, ModuleDatabase.GetSessionState());
+        }
+
+        /// <summary>
+        /// Verifies that the readers answering from a seated state each hand back their own part of it.
+        /// </summary>
+        /// <remarks>
+        /// Covered together because each is a one-line read of the same object, so what is worth pinning is that
+        /// every one of them reaches the part it is named for rather than a neighbouring one.
+        /// </remarks>
+        [Fact]
+        public void GetDirectories_AndItsSiblingsEachReadTheirOwnPartOfTheState()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration { LogPath = temp.GetPath("Logs") });
+
+            // Assert
+            Assert.Equal(temp.GetPath("Logs"), Assert.Single(ModuleDatabase.GetDirectories().Script).FullName);
+            Assert.NotNull(ModuleDatabase.GetLanguage());
+            Assert.NotNull(ModuleDatabase.GetStrings());
+            Assert.InRange(ModuleDatabase.GetInitDuration(), TimeSpan.Zero, TimeSpan.FromMinutes(5));
+            Assert.InRange(ModuleDatabase.GetImportDuration(), TimeSpan.Zero, TimeSpan.FromMinutes(5));
+        }
+
+        /// <summary>
+        /// Verifies that the last exit code is written onto the seated state.
+        /// </summary>
+        /// <remarks>
+        /// It starts absent rather than zero, because nothing has exited yet. A zero would read as a deployment that
+        /// succeeded, which is how a failure path came to report success before this was made nullable.
+        /// </remarks>
+        [Fact]
+        public void SetLastExitCode_WritesOntoTheSeatedState()
+        {
+            // Arrange
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
+            Assert.Null(database.Database.State!.LastExitCode);
+
+            // Act
+            ModuleDatabase.SetLastExitCode(60008);
+
+            // Assert
+            Assert.Equal(60008, database.Database.State.LastExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that the database carries what it was built with, whether or not it has been initialized.
+        /// </summary>
+        /// <remarks>
+        /// These are the parts a module knows at import rather than at initialization, so they answer from a database
+        /// holding no state at all. <c language="csharp">Signed</c> is derived rather than stored, and the fixture's
+        /// signature is deliberately not a valid one.
+        /// </remarks>
+        [Fact]
+        public void Constructor_CarriesWhatTheModuleKnowsAtImport()
+        {
+            // Arrange
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabaseWithoutState();
+
+            // Assert
+            Assert.NotEmpty(database.Database.Manifest);
+            Assert.NotNull(database.Database.ModuleInfo);
+            Assert.NotEmpty(database.Database.Assemblies);
+            Assert.NotNull(database.Database.Signature);
+            Assert.False(database.Database.Signed);
+            Assert.False(database.Database.Compiled);
+            Assert.NotNull(database.Database.Defaults.Config);
+            Assert.NotNull(database.Database.Defaults.Strings);
+            Assert.NotNull(database.Database.Callbacks);
+        }
+
+        /// <summary>
+        /// Verifies that a database cannot be built without the parts every reader assumes are there.
+        /// </summary>
+        /// <remarks>
+        /// The manifest and assemblies are checked for emptiness as well as absence, since an empty one is what a
+        /// failed import leaves behind and would otherwise be seated and fail later somewhere unrelated.
+        /// </remarks>
+        [Fact]
+        public void Constructor_RefusesADatabaseMissingWhatItMustCarry()
+        {
+            // Arrange
+            using ModuleDatabaseScope seated = powerShell.SeatModuleDatabaseWithoutState();
+            ModuleDatabase built = seated.Database;
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, ScriptBlock>> defaults = new Dictionary<string, IReadOnlyDictionary<string, ScriptBlock>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Config", new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase) { { string.Empty, ScriptBlock.Create("@{}") } } },
+                { "Strings", new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase) { { string.Empty, ScriptBlock.Create("@{}") } } },
+            };
+            ReadOnlyCollection<FileInfo> assemblies = new([new(typeof(ModuleDatabase).Assembly.Location)]);
+
+            // Assert
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, manifest: null!, built.ModuleInfo, assemblies, built.Signature, compiled: false));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, new Hashtable(), built.ModuleInfo, assemblies, built.Signature, compiled: false));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, built.Manifest, built.ModuleInfo, assemblies: null!, built.Signature, compiled: false));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, built.Manifest, built.ModuleInfo, new ReadOnlyCollection<FileInfo>([]), built.Signature, compiled: false));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, built.Manifest, moduleInfo: null!, assemblies, built.Signature, compiled: false));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleDatabase(defaults, built.Manifest, built.ModuleInfo, assemblies, signature: null!, compiled: false));
         }
 
         /// <summary>
@@ -113,9 +224,9 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// is for.
         /// </remarks>
         [Fact]
-        public void GetEnvironment_StillRefusesWhenNoTableWasSeated()
+        public void GetEnvironment_StillRefusesWhenNoStateWasSeated()
         {
-            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabaseWithoutState();
             Assert.Contains(
                 "[Initialize-ADTModule] is called",
                 Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.GetEnvironment()).Message,
@@ -130,9 +241,12 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// empty-list cases are reached in normal running - before a session opens and after the last one closes.
         /// </remarks>
         [Fact]
-        public void IsDeploymentSessionActive_IsFalseWithNoDatabaseAndWithNoSessions()
+        public void IsDeploymentSessionActive_IsFalseBeforeAnySessionOpens()
         {
-            Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            using (powerShell.SeatModuleDatabaseWithoutState())
+            {
+                Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            }
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
             Assert.False(ModuleDatabase.IsDeploymentSessionActive());
         }
@@ -270,16 +384,13 @@ namespace PSAppDeployToolkit.Tests.Foundation
         {
             using IDisposable scope = powerShell.Enter();
 
-            // Arrange
-            PSObject database = new();
-            database.Properties.Add(new PSNoteProperty("Initialized", value: true));
-
-            // Assert
+            // Assert: a valid session state still gets the guard's message rather than a complaint about the
+            // null database beside it, which is the ordering being shown.
             Assert.Contains(
                 "can only be initialized from within the PSAppDeployToolkit module",
-                Assert.Throws<InvalidOperationException>(() => ModuleDatabase.Init(database)).Message,
+                Assert.Throws<InvalidOperationException>(() => ModuleDatabase.Init(powerShell.ModuleSessionState, null!, DateTime.Now)).Message,
                 StringComparison.Ordinal);
-            _ = Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Init(null!));
+            _ = Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Init(null!, null!, default));
         }
 
         /// <summary>

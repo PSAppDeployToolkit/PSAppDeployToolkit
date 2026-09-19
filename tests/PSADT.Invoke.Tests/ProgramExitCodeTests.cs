@@ -13,7 +13,12 @@ namespace PSADT.Invoke.Tests
     /// </summary>
     public sealed class ProgramExitCodeTests
     {
-        private const int ProcessTimeoutMilliseconds = 30000;
+        /// <summary>
+        /// How long a launcher is given to exit. A guard against a hang, not an assertion about speed: a case
+        /// that takes under a second on an idle machine was measured at fourteen under a parallel suite.
+        /// </summary>
+        private const int ProcessTimeoutMilliseconds = 120000;
+
         private const string DefaultMode = "Default";
         private const string DirectScriptMode = "DirectScript";
         private const string FileMode = "File";
@@ -60,13 +65,12 @@ namespace PSADT.Invoke.Tests
             File.WriteAllText(scriptPath, GetExitScript(expectedExitCode), Encoding.UTF8);
 
             using Process process = StartInvoker(invokerPath, invocationMode, scriptPath);
-            bool completed = process.WaitForExit(ProcessTimeoutMilliseconds);
-            if (!completed)
+            if (!process.WaitForExit(ProcessTimeoutMilliseconds))
             {
-                process.Kill();
+                string survivors = KillProcessTree(process.Id);
+                Assert.Fail($"[{invocationMode}] did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
             }
 
-            Assert.True(completed);
             Assert.Equal(expectedExitCode, process.ExitCode);
         }
 
@@ -108,6 +112,55 @@ namespace PSADT.Invoke.Tests
                 File.Copy(sourceFilePath, Path.Join(directoryPath, Path.GetFileName(sourceFilePath)));
             }
             return Path.Join(directoryPath, InvokerFileName);
+        }
+
+        /// <summary>
+        /// Terminates a process and everything it started.
+        /// </summary>
+        /// <remarks>
+        /// The launcher starts PowerShell through ShellExecute, so no job object ties the two together and
+        /// <c language="csharp">Process.Kill</c> takes only the launcher. An abandoned child holds the test's temporary
+        /// directory open and competes for the runner for the rest of the job. The .NET Framework has no
+        /// entireProcessTree overload, so the walk is taskkill's.
+        /// </remarks>
+        /// <param name="processId">The identifier of the process at the root of the tree.</param>
+        /// <returns>
+        /// What taskkill reported, which names every process it found. A timeout otherwise says only that the
+        /// launcher did not exit, where the useful question is whether it ever reached starting PowerShell.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">Thrown if taskkill cannot be started.</exception>
+        private static string KillProcessTree(int processId)
+        {
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "taskkill.exe",
+                Arguments = "/T /F /PID " + processId.ToString(CultureInfo.InvariantCulture),
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            StringBuilder output = new();
+            void AppendLine(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _ = output.AppendLine(e.Data);
+                }
+            }
+
+            using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start taskkill.exe.");
+            process.ErrorDataReceived += AppendLine;
+            process.OutputDataReceived += AppendLine;
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            if (process.WaitForExit(ProcessTimeoutMilliseconds))
+            {
+                // The overload taking a timeout returns before the redirected streams have finished.
+                process.WaitForExit();
+            }
+            return output.ToString().Trim();
         }
 
         private static string GetExitScript(int exitCode)

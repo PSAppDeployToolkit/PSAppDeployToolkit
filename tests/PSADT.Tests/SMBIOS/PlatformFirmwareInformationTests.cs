@@ -79,7 +79,8 @@ namespace PSADT.Tests.SMBIOS
             Assert.Equal("FW 1.2", info.Version);
             Assert.True(info.StartingAddressSegment is not null);
             Assert.Equal<ushort>(0xFFF0, info.StartingAddressSegment.Value);
-            Assert.Equal<DateTime>(new(2020, 1, 31), info.ReleaseDate);
+            Assert.True(info.ReleaseDate is not null);
+            Assert.Equal<DateTime>(new(2020, 1, 31), info.ReleaseDate.Value);
             Assert.True(info.RomSizeBytes is not null);
             Assert.Equal<uint>((0x20 + 1) * 64 * 1024, info.RomSizeBytes.Value);
             Assert.Equal(characteristics, (ulong)info.Characteristics);
@@ -298,6 +299,82 @@ namespace PSADT.Tests.SMBIOS
 
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => PlatformFirmwareInformation.Get(buffer));
             Assert.Equal("structureLength", ex.ParamName);
+        }
+
+        /// <summary>
+        /// Verifies that a release date the specification does not describe leaves the property null rather than
+        /// throwing, and that every other field on the structure is still parsed.
+        /// </summary>
+        /// <remarks>The constructor runs inside HardwareInfo's static constructor, which is never retried once it
+        /// has faulted, so a throw here would make every member of HardwareInfo - and therefore the environment table
+        /// that reads it - unavailable for the life of the process over a field nothing else consumes.</remarks>
+        /// <param name="releaseDate">The release date string the firmware supplied.</param>
+        [Theory]
+        [InlineData("2020-01-31")] // ISO 8601, which the specification does not use.
+        [InlineData("31/01/2020")] // Day first.
+        [InlineData("Jan 31 2020")]
+        [InlineData("not a date at all")]
+        public void Get_LeavesReleaseDateNullWhenUnparseable(string releaseDate)
+        {
+            PlatformFirmwareInformation info = BuildWithReleaseDate(releaseDate, releaseDateIndex: 3);
+            Assert.Null(info.ReleaseDate);
+            Assert.Equal("Acme Corp.", info.Vendor);
+            Assert.Equal("FW 1.2", info.Version);
+        }
+
+        /// <summary>
+        /// Verifies that a structure supplying no release date string at all leaves the property null.
+        /// </summary>
+        /// <remarks>A string index of zero is how the specification says a string is absent, so this is well-formed
+        /// firmware rather than malformed firmware.</remarks>
+        [Fact]
+        public void Get_LeavesReleaseDateNullWhenNotSupplied()
+        {
+            PlatformFirmwareInformation info = BuildWithReleaseDate("01/31/2020", releaseDateIndex: 0);
+            Assert.Null(info.ReleaseDate);
+            Assert.Equal("Acme Corp.", info.Vendor);
+        }
+
+        /// <summary>
+        /// Verifies that the members derived from the release date cope with its absence.
+        /// </summary>
+        /// <remarks>Each one is documented to have an answer for a firmware that supplied no date, and none of them
+        /// had a way to reach it while the constructor refused to build such a structure.</remarks>
+        [Fact]
+        public void Get_DerivedMembersCopeWithAbsentReleaseDate()
+        {
+            PlatformFirmwareInformation info = BuildWithReleaseDate("not a date at all", releaseDateIndex: 3);
+            Assert.True(double.IsNaN(info.GetBiosAgeInDays()));
+            Assert.False(info.IsReleasedAfter(new DateTime(2000, 1, 1)));
+            Assert.False(info.IsReleasedAfter(DateTime.MaxValue));
+            Assert.Equal("Acme Corp. FW 1.2", info.ToString());
+        }
+
+        /// <summary>
+        /// Builds a minimal Platform Firmware Information structure carrying the given release date string.
+        /// </summary>
+        /// <param name="releaseDate">The release date string to place in the structure's string set.</param>
+        /// <param name="releaseDateIndex">The string index the structure points at, where zero means no string.</param>
+        /// <returns>The parsed structure.</returns>
+        private static PlatformFirmwareInformation BuildWithReleaseDate(string releaseDate, byte releaseDateIndex)
+        {
+            byte[] formatted = new byte[20];
+            formatted[0] = 1; // Vendor index
+            formatted[1] = 2; // Version index
+            formatted[4] = releaseDateIndex;
+            formatted[5] = 0x20; // ROM size byte
+            CopyUInt64LittleEndian((ulong)FirmwareCharacteristics.BiosUpgradeable, formatted, 6);
+
+            byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
+                new SmbiosTestDataBuilder.SmbiosStructure(
+                    SmbiosType.PlatformFirmwareInformation,
+                    0x1234,
+                    formatted,
+                    "Acme Corp.",
+                    "FW 1.2",
+                    releaseDate));
+
+            return PlatformFirmwareInformation.Get(buffer);
         }
 
         /// <summary>

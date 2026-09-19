@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using PSADT.Utilities;
 
 namespace PSADT.ClientServer
 {
@@ -63,7 +64,8 @@ namespace PSADT.ClientServer
         /// Writes encrypted data to the stream.
         /// </summary>
         /// <param name="stream">The output stream.</param>
-        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
+        /// <param name="plaintext">The plaintext bytes to encrypt and write. Left as it was found; whoever built it
+        /// overwrites it once this returns.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
         internal ValueTask WriteEncryptedAsync(Stream stream, byte[] plaintext)
         {
@@ -215,17 +217,16 @@ namespace PSADT.ClientServer
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
+            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y. The curve is fixed at
+            // construction, so the sizes are the same constants the far end's blob is checked against.
             ECParameters ecParams = _ecdh.ExportParameters(includePrivateParameters: false);
-            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y
-            // Magic for ECDH P-256 public key: ECDH_PUBLIC_P256 = 0x314B4345
-            int keySize = ecParams.Q.X!.Length;
-            byte[] blob = new byte[8 + (keySize * 2)];
-            // ECDH_PUBLIC_P256 magic
-            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            byte[] blob = new byte[EccPublicBlobSize];
+            // ECDH_PUBLIC_P256 magic, written from the same constant the far end's blob is checked against
+            BitConverter.GetBytes(EcdhPublicP256Magic).CopyTo(blob, 0);
             // Key length in bytes
-            blob[4] = (byte)keySize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
-            Buffer.BlockCopy(ecParams.Q.X, 0, blob, 8, keySize);
-            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + keySize, keySize);
+            blob[4] = P256CoordinateSize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
+            Buffer.BlockCopy(ecParams.Q.X!, 0, blob, 8, P256CoordinateSize);
+            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + P256CoordinateSize, P256CoordinateSize);
             return blob;
 #else
             return _ecdh.PublicKey.ToByteArray();
@@ -238,6 +239,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
+        /// <exception cref="InvalidDataException">Thrown if <paramref name="remotePublicKey"/> is not a P-256 public key blob.</exception>
         private protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
@@ -248,14 +250,30 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
+            // Remote key is a CNG EccPublicBlob: an 8-byte header of a magic and a declared size, then X and Y.
+            // Nothing has authenticated the far party, so all three are checked before any is used to bound a
+            // copy, length first. The magic is read only by the net472 import, so both targets check it here.
+            if (remotePublicKey.Length != EccPublicBlobSize)
+            {
+                throw new InvalidDataException($"The remote public key is {remotePublicKey.Length.ToString(CultureInfo.InvariantCulture)} bytes, but a P-256 public key blob is {EccPublicBlobSize.ToString(CultureInfo.InvariantCulture)} bytes.");
+            }
+            int declaredMagic = BitConverter.ToInt32(remotePublicKey, 0);
+            if (declaredMagic != EcdhPublicP256Magic)
+            {
+                throw new InvalidDataException($"The remote public key opens with 0x{declaredMagic.ToString("X8", CultureInfo.InvariantCulture)}, but a P-256 public key blob opens with 0x{EcdhPublicP256Magic.ToString("X8", CultureInfo.InvariantCulture)}.");
+            }
+            int declaredKeySize = BitConverter.ToInt32(remotePublicKey, 4);
+            if (declaredKeySize != P256CoordinateSize)
+            {
+                throw new InvalidDataException($"The remote public key declares a coordinate size of {declaredKeySize.ToString(CultureInfo.InvariantCulture)} bytes, but the P-256 curve requires {P256CoordinateSize.ToString(CultureInfo.InvariantCulture)}.");
+            }
+
             // Import the remote public key and derive shared secret
 #if NET8_0_OR_GREATER
-            // Remote key is in CNG EccPublicBlob format: 8-byte header + X + Y
-            int keySize = BitConverter.ToInt32(remotePublicKey, 4);
-            byte[] x = new byte[keySize];
-            byte[] y = new byte[keySize];
-            Buffer.BlockCopy(remotePublicKey, 8, x, 0, keySize);
-            Buffer.BlockCopy(remotePublicKey, 8 + keySize, y, 0, keySize);
+            byte[] x = new byte[P256CoordinateSize];
+            byte[] y = new byte[P256CoordinateSize];
+            Buffer.BlockCopy(remotePublicKey, 8, x, 0, P256CoordinateSize);
+            Buffer.BlockCopy(remotePublicKey, 8 + P256CoordinateSize, y, 0, P256CoordinateSize);
             ECParameters remoteParams = new()
             {
                 Curve = ECCurve.NamedCurves.nistP256,
@@ -272,7 +290,7 @@ namespace PSADT.ClientServer
             _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
 
             // Clear sensitive data
-            SecureZeroMemory(sharedSecret);
+            CryptographicUtilities.SecureZeroMemory(sharedSecret);
         }
 
         /// <summary>
@@ -360,25 +378,9 @@ namespace PSADT.ClientServer
             }
             finally
             {
-                SecureZeroMemory(prk);
+                CryptographicUtilities.SecureZeroMemory(prk);
             }
             return output;
-        }
-
-        /// <summary>
-        /// Securely zeros a byte array to clear sensitive data from memory.
-        /// </summary>
-        /// <param name="data">The byte array to zero.</param>
-        private static void SecureZeroMemory(byte[] data)
-        {
-            // Use volatile write to prevent compiler optimization from removing the zeroing operation
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = 0;
-            }
-
-            // Memory barrier to ensure the writes are visible
-            System.Threading.Thread.MemoryBarrier();
         }
 
         /// <summary>
@@ -394,7 +396,7 @@ namespace PSADT.ClientServer
             {
                 if (_encryptionKey is not null)
                 {
-                    SecureZeroMemory(_encryptionKey);
+                    CryptographicUtilities.SecureZeroMemory(_encryptionKey);
                     _encryptionKey = null;
                 }
             }
@@ -469,5 +471,31 @@ namespace PSADT.ClientServer
         /// malicious or corrupted length prefixes from causing excessive memory allocation.
         /// </remarks>
         private const int MaxMessageSize = 16 * 1024 * 1024;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of a single P-256 public key coordinate.
+        /// </summary>
+        /// <remarks>
+        /// The curve is fixed at P-256 on both sides of the exchange, so this is the only size either party
+        /// may declare for the X and Y coordinates of a public key blob.
+        /// </remarks>
+        private const int P256CoordinateSize = 32;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of a CNG EccPublicBlob carrying a P-256 public key.
+        /// </summary>
+        /// <remarks>
+        /// A BCRYPT_ECCKEY_BLOB header of eight bytes - a four byte magic and a four byte coordinate size -
+        /// followed by the X and Y coordinates.
+        /// </remarks>
+        private const int EccPublicBlobSize = 8 + (P256CoordinateSize << 1);
+
+        /// <summary>
+        /// Specifies the magic that opens a CNG EccPublicBlob carrying a P-256 public key.
+        /// </summary>
+        /// <remarks>
+        /// BCRYPT_ECDH_PUBLIC_P256_MAGIC, being the characters <c>ECK1</c> read as a little-endian integer.
+        /// </remarks>
+        private const int EcdhPublicP256Magic = 0x314B4345;
     }
 }

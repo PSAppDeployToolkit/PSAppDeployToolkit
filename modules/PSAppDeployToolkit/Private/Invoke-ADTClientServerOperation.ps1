@@ -168,15 +168,18 @@ function Private:Invoke-ADTClientServerOperation
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ShutdownReasonText,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
     # Internal worker function to extract client/server client process result from the exception.
-    function Get-ADTClientServerClientProcessResult
+    function Get-ADTClientServerProcessResult
     {
         [CmdletBinding()]
         param
@@ -206,28 +209,28 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # If the client/server process is instantiated but no longer running, clean up before continuing.
-    if ($Script:ADT.ClientServerProcess -and !$Script:ADT.ClientServerProcess.IsRunning)
+    if ((Test-ADTClientServerActive) -and !(Get-ADTClientServerInstance).IsRunning)
     {
         Write-ADTLogEntry -Message 'Existing client/server process closed outside of our control.'
-        Close-ADTClientServerProcess
+        Close-ADTClientServerInstance
     }
 
     # Ensure the permissions are correct on all files before proceeding.
-    if (!$Script:ADT.ClientServerProcess)
+    if (!(Test-ADTClientServerActive))
     {
-        Set-ADTClientServerProcessPermissions -User $User
+        Set-ADTClientServerFilePermissions -User $User
     }
 
     # Establish conditions for whether to go the client/server route, or standalone.
-    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType)
-    $canUseClientServer = !$PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess') -and !$NoWait -and (((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser)) -or ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User)))
+    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|NotifyIconOpen|ShowNotifyIcon|UpdateNotifyIcon|CloseNotifyIcon|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or [PSADT.UserInterface.DialogType]::SecureInputDialog.Equals($DialogType)
+    $canUseClientServer = !$PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess') -and !$NoWait -and (((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser)) -or ((Test-ADTClientServerActive) -and (Get-ADTClientServerInstance).RunAsActiveUser.Equals($User)))
 
     # Go into client/server mode if a session is active and we're not asked to wait.
     if ($mustUseClientServer -or $canUseClientServer)
     {
-        # Instantiate a new ClientServerProcess object if one's not already present.
-        $clientServerClientProcessResult = $null
-        if (!$Script:ADT.ClientServerProcess)
+        # Instantiate a new ServerInstance object if one's not already present.
+        $clientServerProcessResult = $null
+        if (!(Test-ADTClientServerActive))
         {
             # No point proceeding further for this operation.
             if ($PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen'))
@@ -243,52 +246,50 @@ function Private:Invoke-ADTClientServerOperation
                 return
             }
 
-            # Instantiate a new ClientServerProcess object as required, then add the necessary callback.
+            # Instantiate a new ServerInstance object as required, then add the necessary callback.
             Write-ADTLogEntry -Message 'Instantiating user client/server process.'
-            $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User)
+            $clientServerInstance = $Script:ClientServerInstance = [PSADT.ClientServer.ServerInstance]::new($User)
             try
             {
-                $null = $Script:ADT.ClientServerProcess.OpenAsync().ConfigureAwait($false).GetAwaiter().GetResult()
+                $null = $clientServerInstance.OpenAsync().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             catch
             {
                 # Construct an ErrorRecord using an exception from the client/server process if possible.
-                if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
+                if ($clientServerProcessResult = Get-ADTClientServerProcessResult -ErrorRecord $_)
                 {
                     try
                     {
                         $naerParams = @{
-                            Exception = if ($clientServerClientProcessResult.StdErr.Count)
+                            Exception = if ($clientServerProcessResult.StdErr.Count)
                             {
-                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerProcessResult))
                             }
                             else
                             {
-                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
+                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientServerProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerProcessResult.ExitCode)) { " Exit Code: [$($clientServerProcessResult.ExitCode)]." })$(if ($clientServerProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerProcessResult.StdOut))]" })", $_.Exception.InnerException)
                             }
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'ClientServerProcessOpenFailure'
-                            TargetObject = $clientServerClientProcessResult
+                            ErrorId = 'ClientServerInstanceOpenFailure'
+                            TargetObject = $clientServerProcessResult
                         }
-                        $null = $Script:ADT.ClientServerProcess.DisposeAsync().ConfigureAwait($false).GetAwaiter().GetResult()
-                        $Script:ADT.ClientServerProcess = $null
+                        Close-ADTClientServerInstance -InformationAction SilentlyContinue
                         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                     }
                     finally
                     {
-                        $clientServerClientProcessResult.Dispose()
+                        $clientServerProcessResult.Dispose()
                     }
                 }
                 else
                 {
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().ConfigureAwait($false).GetAwaiter().GetResult()
-                    $Script:ADT.ClientServerProcess = $null
+                    Close-ADTClientServerInstance -InformationAction SilentlyContinue
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
             }
 
             # Ensure we properly close the client/server process upon the closure of the last active session.
-            Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTClientServerProcess'
+            Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTClientServerInstance'
         }
 
         # Invoke the right method depending on the mode.
@@ -296,56 +297,56 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ([PSADT.UserInterface.DialogType]::DialogBox.Equals($DialogType))
             {
-                $result = $Script:ADT.ClientServerProcess.ShowDialogBoxAsync($Options).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.ShowDialogBoxAsync($Options).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess."Show$($DialogType)Async"($DialogStyle, $Options).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance."Show$($DialogType)Async"($DialogStyle, $Options).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialogAsync($CloseProcesses).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.InitCloseAppsDialogAsync($CloseProcesses).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
             {
-                $result = $Script:ADT.ClientServerProcess.PromptToCloseAppsAsync($PromptToCloseTimeout).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.PromptToCloseAppsAsync($PromptToCloseTimeout).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.ShowProgressDialogAsync($DialogStyle, $Options).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.ShowProgressDialogAsync($DialogStyle, $Options).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.UpdateProgressDialogAsync($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.UpdateProgressDialogAsync($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('UpdateNotifyIcon'))
             {
-                $result = $Script:ADT.ClientServerProcess.UpdateNotifyIconAsync($MessageText).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.UpdateNotifyIconAsync($MessageText).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('GetEnvironmentVariable') -or $PSCmdlet.ParameterSetName.Equals('RemoveEnvironmentVariable'))
             {
-                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"($Variable).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance."$($PSCmdlet.ParameterSetName)Async"($Variable).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
-                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariableAsync($Variable, $Value, !!$Expandable, !!$Append, !!$Remove).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance.SetEnvironmentVariableAsync($Variable, $Value, !!$Expandable, !!$Append, !!$Remove).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {
-                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"($Options).ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance."$($PSCmdlet.ParameterSetName)Async"($Options).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             else
             {
-                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"().ConfigureAwait($false).GetAwaiter().GetResult()
+                $result = $clientServerInstance."$($PSCmdlet.ParameterSetName)Async"().ConfigureAwait($false).GetAwaiter().GetResult()
             }
 
             # If the log writer gave up the ghost, throw its exception.
-            if ($loggingException = $Script:ADT.ClientServerProcess.GetLogWriterException())
+            if ($loggingException = $clientServerInstance.GetLogWriterException())
             {
                 $naerParams = @{
                     Exception = [System.ApplicationException]::new("The log writer failed and was unable to continue execution.", $loggingException)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'ClientServerProcessLoggingFailure'
+                    ErrorId = 'ClientServerInstanceLoggingFailure'
                     TargetObject = $loggingException
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
@@ -354,28 +355,28 @@ function Private:Invoke-ADTClientServerOperation
         catch
         {
             # Construct an ErrorRecord using an exception from the client/server process if possible.
-            if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
+            if ($clientServerProcessResult = Get-ADTClientServerProcessResult -ErrorRecord $_)
             {
                 try
                 {
                     $naerParams = @{
-                        Exception = if ($clientServerClientProcessResult.StdErr.Count)
+                        Exception = if ($clientServerProcessResult.StdErr.Count)
                         {
-                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerProcessResult))
                         }
                         else
                         {
-                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
+                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientServerProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerProcessResult.ExitCode)) { " Exit Code: [$($clientServerProcessResult.ExitCode)]." })$(if ($clientServerProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerProcessResult.StdOut))]" })", $_.Exception.InnerException)
                         }
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'ClientServerProcessCommandFailure'
-                        TargetObject = $clientServerClientProcessResult
+                        ErrorId = 'ClientServerInstanceCommandFailure'
+                        TargetObject = $clientServerProcessResult
                     }
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 finally
                 {
-                    $clientServerClientProcessResult.Dispose()
+                    $clientServerProcessResult.Dispose()
                 }
             }
             else
@@ -385,9 +386,9 @@ function Private:Invoke-ADTClientServerOperation
         }
         finally
         {
-            if ($null -ne $clientServerClientProcessResult)
+            if ($null -ne $clientServerProcessResult)
             {
-                Close-ADTClientServerProcess
+                Close-ADTClientServerInstance
             }
         }
     }
@@ -712,7 +713,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|NotifyIconOpen|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.Foundation.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
+    if (($result | Out-ADTString) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|NotifyIconOpen|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.Foundation.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
     {
         return $result
     }

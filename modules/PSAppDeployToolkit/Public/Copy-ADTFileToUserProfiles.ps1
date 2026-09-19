@@ -91,6 +91,11 @@ function Copy-ADTFileToUserProfiles
 
         Copy an entire folder to `C:\Users\<UserName>` for each user.
 
+    .EXAMPLE
+        Copy-ADTFileToUserProfiles -Path "$($adtSession.DirSupportFiles)\config.txt" -Destination "AppData\Roaming\MyApp" -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)
+
+        Copy a single file to `C:\Users\<UserName>\AppData\Roaming\MyApp` for each of the specified user profiles.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
@@ -105,18 +110,20 @@ function Copy-ADTFileToUserProfiles
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Copy-ADTFileToUserProfiles.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Copy-ADTFileToUserProfiles.ps1
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'CalculatedProfiles')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'PathCalculatedProfiles')]
     param (
-        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'Path')]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'PathCalculatedProfiles')]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'PathSpecifiedProfiles')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
-        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'LiteralPath', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'LiteralPathCalculatedProfiles', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'LiteralPathSpecifiedProfiles', ValueFromPipeline = $true)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$LiteralPath,
@@ -148,24 +155,29 @@ function Copy-ADTFileToUserProfiles
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyAdditionalParams,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PathSpecifiedProfiles')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPathSpecifiedProfiles')]
         [ValidateNotNullOrEmpty()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.AccountManagement.UserProfileInfo[]]$UserProfiles,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PathCalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPathCalculatedProfiles')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PathCalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPathCalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PathCalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPathCalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PathCalculatedProfiles')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPathCalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
 
@@ -213,25 +225,27 @@ function Copy-ADTFileToUserProfiles
         {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
-        if ($BasePath -ne 'ProfilePath')
+        if ($BasePath -ne 'Profile')
         {
+            # Only the shell folder paths need loading, ProfilePath is always populated.
             $GetUserProfileSplat.LoadProfilePaths = $true
         }
 
-        # Collector for all provided paths.
+        # Collector for all provided paths, plus the source variable as its name differs between parameter sets.
         $sourcePaths = [System.Collections.Generic.List[System.String]]::new()
+        $sourceVar = Get-Variable -Name $(if ($PSCmdlet.ParameterSetName.StartsWith('LiteralPath')) { 'LiteralPath' } else { 'Path' })
     }
 
     process
     {
         # Add all source paths to the collection.
-        $sourcePaths.AddRange((Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
+        $sourcePaths.AddRange($sourceVar.Value)
     }
 
     end
     {
         # Copy all paths to the specified destination.
-        foreach ($UserProfile in $(if (!$UserProfiles) { Get-ADTUserProfiles @GetUserProfileSplat } else { $UserProfiles }))
+        foreach ($UserProfile in $(if ($PSCmdlet.ParameterSetName.EndsWith('CalculatedProfiles')) { Get-ADTUserProfiles @GetUserProfileSplat } else { $UserProfiles }))
         {
             if (!$UserProfile."$($BasePath)Path")
             {

@@ -77,7 +77,7 @@ Describe 'Open-ADTSession' {
         It 'Stacks a nested session on top rather than replacing it' {
             $outer = Open-Probe -Splat @{ AppName = 'Outer' }
             $inner = Open-Probe -Splat @{ AppName = 'Inner' }
-            InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count } | Should -Be 2
+            InModuleScope PSAppDeployToolkit { (Get-ADTDeploymentSessions).Count } | Should -Be 2
             (Get-ADTSession).InstallName | Should -BeExactly $inner.InstallName
             $outer.InstallName | Should -Not -BeExactly $inner.InstallName
         }
@@ -120,11 +120,11 @@ Describe 'Open-ADTSession' {
             $script:Order = [System.Collections.Generic.List[System.String]]::new()
             function Test-PreOpenCallback
             {
-                $script:Order.Add("pre:$(InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count })")
+                $script:Order.Add("pre:$(InModuleScope PSAppDeployToolkit { (Get-ADTDeploymentSessions).Count })")
             }
             function Test-PostOpenCallback
             {
-                $script:Order.Add("post:$(InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count })")
+                $script:Order.Add("post:$(InModuleScope PSAppDeployToolkit { (Get-ADTDeploymentSessions).Count })")
             }
             Add-ADTModuleCallback -Hookpoint PreOpen -Callback (Get-Command Test-PreOpenCallback)
             Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command Test-PostOpenCallback)

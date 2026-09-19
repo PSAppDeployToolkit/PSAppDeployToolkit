@@ -18,6 +18,16 @@
   </PropertyGroup>
 
   <!--
+    The run settings at the repository root, named here rather than left to Visual Studio's own detection
+    of them. Detection is a setting each person has to turn on, and what the file carries is a telemetry
+    opt-out that a test run deadlocks without; see the file itself for why. Naming it applies it to every
+    run of these projects without anything having to be configured first.
+  -->
+  <PropertyGroup>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <!--
     CA1707 fires on the underscores that separate scenario from expectation in test method names.
     Projects append their own suppressions by prefixing $(NoWarn), the same way
     Directory.Build.targets does.

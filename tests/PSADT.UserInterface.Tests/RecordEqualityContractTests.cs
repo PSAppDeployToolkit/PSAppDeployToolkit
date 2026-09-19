@@ -44,17 +44,7 @@ namespace PSADT.UserInterface.Tests
         public void Records_DoNotHoldFieldsThatCompareByReference()
         {
             // Act
-            List<string> offenders = [];
-            foreach (Type record in RecordTypes())
-            {
-                foreach (FieldInfo instanceField in record.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-                {
-                    if (ComparesByReference(instanceField.FieldType) && !Allowed.Contains($"{record.FullName}.{instanceField.Name}"))
-                    {
-                        offenders.Add($"{record.Name}.{FieldDescription(instanceField)} is a {instanceField.FieldType.Name}, which compares by reference");
-                    }
-                }
-            }
+            List<string> offenders = [.. RecordTypes().SelectMany(static record => record.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(instanceField => ComparesByReference(instanceField.FieldType) && !Allowed.Contains($"{record.FullName}.{instanceField.Name}")).Select(instanceField => $"{record.Name}.{FieldDescription(instanceField)} is a {instanceField.FieldType.Name}, which compares by reference"))];
 
             // Assert
             Assert.True(offenders.Count is 0, $"These record members do not compare by value:{Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", offenders)}");
@@ -119,6 +109,7 @@ namespace PSADT.UserInterface.Tests
                 ["CustomDialogDerivative"] = "shares its base's hand-written equality",
                 ["InputDialogResult"] = "hand-written equality, matching its base",
                 ["ListSelectionDialogResult"] = "hand-written equality, matching its base",
+                ["SecureInputDialogResult"] = "hand-written equality, matching its base, and deliberately blind to the value it carries",
                 ["CloseAppsDialogResult"] = "a TypedConstant, whose members are shared singletons",
                 ["DialogBoxResult"] = "a TypedConstant, whose members are shared singletons",
                 ["BaseDialogState"] = "state rather than a value; it has identity and a lifetime",
@@ -225,14 +216,18 @@ namespace PSADT.UserInterface.Tests
         /// </summary>
         /// <remarks>
         /// Iterator state machines, closures and the like hold fields and are not records, so they would
-        /// otherwise have to be listed as deliberate exceptions.
+        /// otherwise have to be listed as deliberate exceptions. The markers sit on the type the compiler
+        /// emitted and not on anything nested inside it, so a synthesised type's own enumerator is judged by
+        /// its declaring chain rather than by a name that looks perfectly ordinary on its own.
         /// </remarks>
         /// <param name="type">The type to judge.</param>
         /// <returns><see langword="true"/> if the compiler generated it; otherwise, <see langword="false"/>.</returns>
         private static bool IsCompilerGenerated(Type type)
         {
+            // A nested type carries none of the markers itself, so the declaring chain decides it.
             return Attribute.IsDefined(type, typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))
-                || type.Name.Contains('<', StringComparison.Ordinal);
+                || type.Name.Contains('<', StringComparison.Ordinal)
+                || (type.DeclaringType is not null && IsCompilerGenerated(type.DeclaringType));
         }
     }
 }

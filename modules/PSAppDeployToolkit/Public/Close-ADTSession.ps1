@@ -65,7 +65,7 @@ function Close-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTSession
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Close-ADTSession.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Close-ADTSession.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
@@ -116,6 +116,7 @@ function Close-ADTSession
     process
     {
         # Change the install phase now that we're on the way out.
+        $deploymentSessions = Get-ADTDeploymentSessions
         $adtSession.InstallPhase = 'Finalization'
 
         # Update the session's exit code with the provided value.
@@ -126,7 +127,7 @@ function Close-ADTSession
 
         # Invoke all callbacks and capture all errors.
         $preCloseErrors = $(
-            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PreClose)))
+            foreach ($callback in (Get-ADTModuleCallback -Hookpoint PreClose | & { process { return $_ } }))
             {
                 try
                 {
@@ -144,7 +145,7 @@ function Close-ADTSession
                     $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]." -DisableErrorResolving:$false
                 }
             }
-            foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnFinish) }))
+            foreach ($callback in $(if ($deploymentSessions.Count.Equals(1)) { Get-ADTModuleCallback -Hookpoint OnFinish | & { process { return $_ } } }))
             {
                 try
                 {
@@ -184,7 +185,7 @@ function Close-ADTSession
         finally
         {
             # Invoke close callbacks before we remove the session, the callback owner may still need it.
-            $postCloseErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PostClose)))
+            $postCloseErrors = foreach ($callback in (Get-ADTModuleCallback -Hookpoint PostClose | & { process { return $_ } }))
             {
                 try
                 {
@@ -202,7 +203,7 @@ function Close-ADTSession
                     $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.Name)]."
                 }
             }
-            $null = $Script:ADT.Sessions.Remove($adtSession)
+            $null = $deploymentSessions.Remove($adtSession)
         }
 
         # Forcibly set the LASTEXITCODE so it's available if we're breaking
@@ -210,7 +211,7 @@ function Close-ADTSession
         $Global:LASTEXITCODE = $ExitCode
 
         # Hand over to our backend closure routine if this was the last session.
-        if (!$Script:ADT.Sessions.Count)
+        if (!$deploymentSessions.Count)
         {
             Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:($NoShellExit -or !$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and ($preCloseErrors -or $postCloseErrors)))
         }

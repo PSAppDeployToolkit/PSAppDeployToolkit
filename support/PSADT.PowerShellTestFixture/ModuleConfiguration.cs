@@ -75,6 +75,11 @@ namespace PSADT.PowerShellTestFixture
         public bool LogHostOutputToStdStreams { get; set; }
 
         /// <summary>
+        /// Whether the paths belong to the LocalSystem account rather than to any administrator.
+        /// </summary>
+        public bool PathsBasedOnSystemContext { get; set; }
+
+        /// <summary>
         /// The registry path deferral history is kept under. A test should point this somewhere that does not exist.
         /// </summary>
         public string RegPath { get; set; } = @"HKCU:\SOFTWARE";
@@ -114,6 +119,7 @@ namespace PSADT.PowerShellTestFixture
                 { nameof(CompressLogs), CompressLogs },
                 { nameof(LogWriteToHost), LogWriteToHost },
                 { nameof(LogHostOutputToStdStreams), LogHostOutputToStdStreams },
+                { nameof(PathsBasedOnSystemContext), PathsBasedOnSystemContext },
                 { nameof(RegPath), RegPath },
             };
             Hashtable ui = new(StringComparer.OrdinalIgnoreCase)

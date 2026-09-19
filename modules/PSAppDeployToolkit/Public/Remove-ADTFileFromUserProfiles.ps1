@@ -68,7 +68,7 @@ function Remove-ADTFileFromUserProfiles
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTFileFromUserProfiles
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTFileFromUserProfiles.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Remove-ADTFileFromUserProfiles.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

@@ -12,7 +12,7 @@ AfterAll {
 Describe 'Import-ADTStringTable' {
     Context 'The module defaults' {
         BeforeAll {
-            $script:Strings = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US')) }
+            $script:Strings = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US')) -Config (Get-ADTConfig) }
         }
 
         It 'Returns a section for each dialog the toolkit can show' {
@@ -40,7 +40,7 @@ Describe 'Import-ADTStringTable' {
     Context 'Cultures' {
         It 'Returns the requested language' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('de-DE'))).BalloonTip.Start.Install | Should -BeExactly 'Installation wurde gestartet.'
+                (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('de-DE')) -Config (Get-ADTConfig)).BalloonTip.Start.Install | Should -BeExactly 'Installation wurde gestartet.'
             }
         }
 
@@ -48,14 +48,14 @@ Describe 'Import-ADTStringTable' {
             # The module ships one English table rather than one per region, so en-NZ has to walk up to it
             # instead of coming back empty.
             InModuleScope -ModuleName PSAppDeployToolkit {
-                $variant = Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-NZ'))
-                $variant.BalloonTip.Start.Install | Should -BeExactly (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US'))).BalloonTip.Start.Install
+                $variant = Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-NZ')) -Config (Get-ADTConfig)
+                $variant.BalloonTip.Start.Install | Should -BeExactly (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US')) -Config (Get-ADTConfig)).BalloonTip.Start.Install
             }
         }
 
         It 'Falls back to English for a language it does not ship' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('mi-NZ'))).BalloonTip.Start.Install | Should -Not -BeNullOrEmpty
+                (Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('mi-NZ')) -Config (Get-ADTConfig)).BalloonTip.Start.Install | Should -Not -BeNullOrEmpty
             }
         }
     }
@@ -65,7 +65,7 @@ Describe 'Import-ADTStringTable' {
             $script:Dir = "$TestDrive\Strings"
             $null = New-Item -Path $script:Dir -ItemType Directory -Force
             Set-Content -LiteralPath "$script:Dir\strings.psd1" -Value "@{ BalloonTip = @{ Start = @{ Install = 'Overridden install text.' } } }"
-            $script:Merged = InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $script:Dir } { Import-ADTStringTable -BaseDirectory $Dir -UICulture ([System.Globalization.CultureInfo]::new('en-US')) }
+            $script:Merged = InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $script:Dir } { Import-ADTStringTable -BaseDirectory $Dir -UICulture ([System.Globalization.CultureInfo]::new('en-US')) -Config (Get-ADTConfig) }
         }
 
         It 'Takes the string the deployment supplied' {
@@ -82,13 +82,13 @@ Describe 'Import-ADTStringTable' {
     Context 'Input Validation' {
         It 'Refuses the same directory twice' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTStringTable -BaseDirectory 'C:\Windows', 'C:\Windows' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
+                { Import-ADTStringTable -BaseDirectory 'C:\Windows', 'C:\Windows' -Config (Get-ADTConfig) } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
             }
         }
 
         It 'Refuses a blank directory' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTStringTable -BaseDirectory '   ' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
+                { Import-ADTStringTable -BaseDirectory '   ' -Config (Get-ADTConfig) } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
             }
         }
 
@@ -100,8 +100,31 @@ Describe 'Import-ADTStringTable' {
 
         It 'Refuses a null culture' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTStringTable -BaseDirectory $null -UICulture $null } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
+                { Import-ADTStringTable -BaseDirectory $null -UICulture $null -Config (Get-ADTConfig) } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
             }
+        }
+
+        It 'Refuses an empty config' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                { Import-ADTStringTable -BaseDirectory $null -Config @{} } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTStringTable'
+            }
+        }
+    }
+
+    Context 'A supplied config' {
+        It 'Substitutes from the config it was given rather than the seated one' {
+            # Get-ADTDefaultStringTable hands it the module defaults so a string table can be built
+            # before the module has been initialized at all.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $strings = Import-ADTStringTable -BaseDirectory $null -UICulture ([System.Globalization.CultureInfo]::new('en-US')) -Config @{ Toolkit = @{ CompanyName = 'Somewhere Else' } }
+                $strings.InstallationPrompt.Subtitle.Install | Should -BeLike 'Somewhere Else*'
+            }
+        }
+
+        It 'Has to be given one rather than reaching for the seated config' {
+            # It builds a string table for a module that may not be initialized, so there is not always a
+            # seated config to fall back on and the caller states which one the substitutions come from.
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Import-ADTStringTable }) -Parameter Config | Should -BeTrue
         }
     }
 }

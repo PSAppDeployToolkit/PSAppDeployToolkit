@@ -35,7 +35,7 @@ function New-ADTShortcut
         Working Directory to be used for the target path.
 
     .PARAMETER WindowStyle
-        Windows style of the application. Options: Normal, Maximized, Minimized.
+        Windows style of the application.
 
     .PARAMETER RunAsAdmin
         Specifies that the command executed by the shortcut should be done so with elevated permissions. Setting this option will prompt the user to elevate when the shortcut is executed.
@@ -47,7 +47,7 @@ function New-ADTShortcut
         Specifies that an existing shortcut should be overwritten.
 
     .PARAMETER PassThru
-        Returns a IShortcutLinkInfo object representing the new shortcut.
+        Returns an IShortcutLinkInfo object representing the new shortcut.
 
     .INPUTS
         None
@@ -62,7 +62,7 @@ function New-ADTShortcut
     .OUTPUTS
         PSADT.ShortcutManagement.IShortcutLinkInfo
 
-        When the `-PassThru` parameter is provided, this function returns a IShortcutLinkInfo object representing the new shortcut.
+        When the `-PassThru` parameter is provided, this function returns an IShortcutLinkInfo object representing the new shortcut.
 
     .EXAMPLE
         New-ADTShortcut -LiteralPath "$envCommonStartMenuPrograms\My Shortcut.lnk" -TargetPath "$envWinDir\notepad.exe" -IconLocation "$envWinDir\notepad.exe" -Description 'Notepad' -WorkingDirectory '%HOMEDRIVE%\%HOMEPATH%'
@@ -85,7 +85,7 @@ function New-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTShortcut
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTShortcut.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/New-ADTShortcut.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

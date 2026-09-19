@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace PSADT.Utilities
 {
@@ -8,8 +8,8 @@ namespace PSADT.Utilities
     /// Provides utility methods for cryptographic operations.
     /// </summary>
     /// <remarks>This class contains methods designed to assist with cryptographic tasks, such as generating
-    /// cryptographically secure random values. It is intended for scenarios where enhanced security and
-    /// unpredictability are required.</remarks>
+    /// cryptographically secure random values and clearing the buffers that held them. It is intended for scenarios
+    /// where enhanced security and unpredictability are required.</remarks>
     internal static class CryptographicUtilities
     {
         /// <summary>
@@ -27,50 +27,25 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Generates a hash code from multiple parameters using a standard combining algorithm.
+        /// Overwrites a buffer that held unprotected data.
         /// </summary>
-        /// <remarks>This method provides a consistent way to combine multiple values into a single hash code,
-        /// useful for implementing <see cref="object.GetHashCode"/> in types with multiple properties.
-        /// Null values contribute zero to the hash.</remarks>
-        /// <param name="parameters">The values to combine into a hash code.</param>
-        /// <returns>A combined hash code derived from all provided parameters.</returns>
-        internal static int GenerateHashCode(params IReadOnlyList<object?> parameters)
+        /// <remarks>Callers hand plaintext to the serializer and the cipher in ordinary managed arrays, which the
+        /// garbage collector will neither scrub nor keep still. Overwriting one as soon as it has served its purpose
+        /// is the only control available over how long its contents remain legible in the process.</remarks>
+        /// <param name="data">The buffer to overwrite. A null buffer is ignored.</param>
+        internal static void SecureZeroMemory(byte[]? data)
         {
-            int hash = 17;
-            unchecked
+            if (data is null)
             {
-                foreach (object? param in parameters)
-                {
-                    hash = (hash * 31) + (param?.GetHashCode() ?? 0);
-                }
+                return;
             }
-            return hash;
-        }
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = 0;
+            }
 
-        /// <summary>
-        /// Generates a hash code from a sequence of items using the same combining algorithm.
-        /// </summary>
-        /// <remarks>The sequence is walked as it is, rather than being copied into an array of objects first, so a
-        /// caller holding a collection of value types hashes it without boxing every element. Null items contribute
-        /// zero to the hash, as they do for the other overload.</remarks>
-        /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="items">The items to combine into a hash code.</param>
-        /// <param name="comparer">The comparer to take each item's hash code from.</param>
-        /// <returns>A combined hash code derived from every item in the sequence.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="items"/> or <paramref name="comparer"/> is null.</exception>
-        internal static int GenerateHashCode<T>(IEnumerable<T> items, IEqualityComparer<T> comparer)
-        {
-            ArgumentNullException.ThrowIfNull(items);
-            ArgumentNullException.ThrowIfNull(comparer);
-            int hash = 17;
-            unchecked
-            {
-                foreach (T item in items)
-                {
-                    hash = (hash * 31) + (item is not null ? comparer.GetHashCode(item) : 0);
-                }
-            }
-            return hash;
+            // Barrier stops the loop above being optimised away as a dead store.
+            Thread.MemoryBarrier();
         }
     }
 }

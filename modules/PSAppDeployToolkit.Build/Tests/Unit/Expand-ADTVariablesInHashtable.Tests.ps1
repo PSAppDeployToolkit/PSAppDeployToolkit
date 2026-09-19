@@ -65,6 +65,41 @@ Describe 'Expand-ADTVariablesInHashtable' {
             { Invoke-Expansion -Hashtable @{} } | Should -Throw -ExpectedMessage "*Cannot validate argument on parameter 'Hashtable'*"
         }
 
+        It 'Refuses a <Name> rather than expanding it' -ForEach @(
+            @{ Name = 'subexpression'; Value = 'C:\Logs$(2000+24)' }
+            @{ Name = 'braced provider path'; Value = '${C:\Windows\System32\drivers\etc\hosts}' }
+        ) {
+            # A config value can arrive from a Group Policy registry key, and the expander would otherwise
+            # run the first as code and return the named file's contents for the second.
+            $table = @{ Value = $Value }
+            { Invoke-Expansion -Hashtable $table } | Should -Throw -ErrorId 'UnsafeStringExpansionValue'
+        }
+
+        It 'Leaves every other value as it found it when one is refused' {
+            # The table is mutated in place, so one bad value has to stop the whole expansion rather than
+            # only its own. The safe values sit either side of the refused one and below it, since which
+            # entry a hashtable hands out first is not something a caller chooses.
+            $table = @{
+                First = '$ADTExpansionProbe'
+                Refused = 'C:\Logs$(2000+24)'
+                Last = '$ADTExpansionProbe'
+                Nested = @{ Deeper = '$ADTExpansionProbe' }
+            }
+            { Invoke-Expansion -Hashtable $table } | Should -Throw -ErrorId 'UnsafeStringExpansionValue'
+            $table.First | Should -BeExactly '$ADTExpansionProbe'
+            $table.Refused | Should -BeExactly 'C:\Logs$(2000+24)'
+            $table.Last | Should -BeExactly '$ADTExpansionProbe'
+            $table.Nested.Deeper | Should -BeExactly '$ADTExpansionProbe'
+        }
+
+        It 'Refuses a value nested below the safe ones' {
+            # The refusal has to be found before anything at all is expanded, including values the walk
+            # reaches before it ever descends into the table holding the bad one.
+            $table = @{ Top = '$ADTExpansionProbe'; Nested = @{ Deeper = @{ Refused = 'C:\Logs$(2000+24)' } } }
+            { Invoke-Expansion -Hashtable $table } | Should -Throw -ErrorId 'UnsafeStringExpansionValue'
+            $table.Top | Should -BeExactly '$ADTExpansionProbe'
+        }
+
         It 'Throws when a value names a variable that does not exist' {
             # ExpandString raises this from the .NET side, so it terminates regardless of ErrorActionPreference.
             $table = @{ Value = '$ThisVariableIsNotSetAnywhere' }

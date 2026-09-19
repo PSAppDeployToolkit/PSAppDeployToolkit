@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Set-ADTClientServerProcessPermissions
+# MARK: Set-ADTClientServerFilePermissions
 #
 #-----------------------------------------------------------------------------
 
-function Private:Set-ADTClientServerProcessPermissions
+function Private:Set-ADTClientServerFilePermissions
 {
     [CmdletBinding()]
     param

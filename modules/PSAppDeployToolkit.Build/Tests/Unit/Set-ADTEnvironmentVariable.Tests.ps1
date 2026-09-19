@@ -83,10 +83,9 @@ Describe 'Set-ADTEnvironmentVariable' {
         # Append and remove read the current value before writing back, and that read must come from the
         # target scope. The tests above all use the process scope, where the distinction cannot show up.
         #
-        # Skipped when the caller has no session of its own, because the User target then means somebody
-        # else's hive: setting the value up through .NET and reading it back the same way would be looking
-        # at the service profile while the toolkit wrote to the signed-in user. Covering that properly
-        # means writing into another user's hive, which is a larger thing to do than these tests warrant.
+        # Skipped without a session of its own, since the User target then means somebody else's hive: .NET
+        # would be reading the service profile while the toolkit wrote to the signed-in user. Covering it
+        # properly means writing into another user's hive.
         AfterEach {
             [System.Environment]::SetEnvironmentVariable($script:Variable, $null, [System.EnvironmentVariableTarget]::User)
         }

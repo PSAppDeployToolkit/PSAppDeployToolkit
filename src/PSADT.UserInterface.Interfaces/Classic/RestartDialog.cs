@@ -86,6 +86,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 buttonRestartNow.Text = StripFormattingTags(options.Strings.ButtonRestartNow);
                 buttonMinimize.Text = StripFormattingTags(options.Strings.ButtonRestartLater);
                 shutdownReasonText = options.ShutdownReasonText;
+                noForceCloseApps = options.NoForceCloseApps;
 
                 // Set up the Cancel button if cancellation is allowed, otherwise remove it.
                 if (options.DialogAllowCancel)
@@ -159,7 +160,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
-            await DeviceUtilities.RestartComputerAsync(shutdownReasonText);
+            await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -234,5 +235,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// The shutdown reason text to use when performing the restart, if any.
         /// </summary>
         private readonly string? shutdownReasonText;
+
+        /// <summary>
+        /// Indicates whether shutdown.exe's '/f' switch is omitted when the restart is triggered, leaving running applications able to block it.
+        /// </summary>
+        private readonly bool noForceCloseApps;
     }
 }

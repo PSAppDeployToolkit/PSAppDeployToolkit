@@ -44,7 +44,7 @@ function Get-ADTMsiExitCodeMessage
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiExitCodeMessage
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTMsiExitCodeMessage.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTMsiExitCodeMessage.ps1
     #>
 
     [CmdletBinding()]

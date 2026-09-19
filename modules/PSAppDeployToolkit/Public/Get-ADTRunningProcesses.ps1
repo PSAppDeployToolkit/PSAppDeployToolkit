@@ -41,10 +41,10 @@ function Get-ADTRunningProcesses
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTServiceStartMode
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTRunningProcesses
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTServiceStartMode.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTRunningProcesses.ps1
     #>
 
     [CmdletBinding()]

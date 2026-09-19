@@ -45,7 +45,7 @@ function Remove-ADTContentFromCache
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTContentFromCache
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTContentFromCache.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Remove-ADTContentFromCache.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -19,6 +19,32 @@
         [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
     )
 
+    # Each function's .LINK entries are self-referential, and both are built from where the function
+    # actually lives so that a help block copied from elsewhere cannot keep the links it came with.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'documentationUriPrefix', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $documentationUriPrefix = 'https://psappdeploytoolkit.com/docs/reference/functions/'
+    $sourceUriPrefix = 'https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/'
+    $repositoryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', '..'))
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'expectedHelpLinks', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $expectedHelpLinks = @{}
+    foreach ($exportedCommand in (Get-Command -Module $ModuleName))
+    {
+        if ([System.String]::IsNullOrWhiteSpace($exportedCommand.ScriptBlock.File) -or !$exportedCommand.ScriptBlock.File.StartsWith($repositoryRoot, [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            throw "Unable to resolve a repository-relative source file for [$($exportedCommand.Name)]."
+        }
+
+        $sourcePath = $exportedCommand.ScriptBlock.File.Substring($repositoryRoot.Length).Replace('\', '/').TrimStart('/')
+        $expectedLinks = [PSCustomObject]@{
+            Documentation = "$documentationUriPrefix$($exportedCommand.Name)"
+            Source = "$sourceUriPrefix$sourcePath"
+            SourceDirectory = "$sourceUriPrefix$($sourcePath.Substring(0, $sourcePath.LastIndexOf('/') + 1))"
+        }
+
+        $expectedHelpLinks.Add($exportedCommand.Name, $expectedLinks)
+    }
+
     Add-ShouldOperator -Name HaveDescription -InternalName Should-HaveDescription -Test {
         param (
             $ActualValue,
@@ -86,6 +112,9 @@ Describe $ModuleName {
 
                 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'outputTypes', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
                 $outputTypes = $command.OutputType | & { process { return $_.Type } }
+
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'helpLinkUris', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+                $helpLinkUris = $help.relatedLinks.navigationLink | & { process { return $_.uri } }
             }
 
             It 'Includes a Synopsis' {
@@ -102,6 +131,14 @@ Describe $ModuleName {
             }
             It 'Includes an Output' {
                 $help.returnValues | Should -Not -BeNullOrEmpty
+            }
+            It 'Includes a Link to its documentation' {
+                $expectedUri = $expectedHelpLinks[$command.Name].Documentation
+                @($helpLinkUris | Where-Object { $_ -ceq $expectedUri }) | Should -HaveCount 1 -Because "the comment-based help should link to [$expectedUri] exactly once"
+            }
+            It 'Includes a Link to its source file' {
+                $expectedUri = $expectedHelpLinks[$command.Name].Source
+                @($helpLinkUris | Where-Object { $_ -ceq $expectedUri }) | Should -HaveCount 1 -Because "the comment-based help should link to [$expectedUri] exactly once"
             }
             It 'All outputs defined in the comment-based help are defined in OutputType attributes' {
                 $returnValueTypes = [System.Collections.Generic.HashSet[System.Type]]::new()
@@ -169,6 +206,19 @@ Describe $ModuleName {
                     }
 
                     $parameter | Should -HaveDescription
+                }
+            }
+            It 'Includes no Link belonging to another function' {
+                $expectedUris = $expectedHelpLinks[$command.Name]
+                foreach ($helpLinkUri in $helpLinkUris)
+                {
+                    # A link outside the module documentation and source trees is an external reference.
+                    if (!$helpLinkUri.StartsWith($documentationUriPrefix, [System.StringComparison]::OrdinalIgnoreCase) -and !$helpLinkUri.StartsWith($expectedUris.SourceDirectory, [System.StringComparison]::OrdinalIgnoreCase))
+                    {
+                        continue
+                    }
+
+                    $helpLinkUri | Should -BeIn @($expectedUris.Documentation, $expectedUris.Source) -Because 'the comment-based help should only link to its own documentation page and source file'
                 }
             }
         }

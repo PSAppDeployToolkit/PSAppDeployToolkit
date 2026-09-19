@@ -11,7 +11,7 @@ function Get-ADTShortcut
         Get information from a .lnk or .url type shortcut.
 
     .DESCRIPTION
-        The `Get-ADTShortcut` function gets information from a .lnk or .url type shortcut. Returns a IShortcutLinkInfo object with details about the shortcut such as TargetPath, Arguments, Description, and more.
+        The `Get-ADTShortcut` function gets information from a .lnk or .url type shortcut. Returns an IShortcutLinkInfo object with details about the shortcut such as TargetPath, Arguments, Description, and more.
 
     .PARAMETER LiteralPath
         Path to the shortcut to get information from.
@@ -54,7 +54,7 @@ function Get-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTShortcut
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTShortcut.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Get-ADTShortcut.ps1
     #>
 
     [CmdletBinding()]

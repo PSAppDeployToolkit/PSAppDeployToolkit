@@ -2,8 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using PSADT.Utilities;
+using System.Runtime.Serialization;
 
 namespace PSADT.Collections
 {
@@ -17,31 +16,25 @@ namespace PSADT.Collections
     /// generated equality picks up the entries while the type's callers see no difference.
     /// <para> Order is not part of the comparison, since two dictionaries holding the same entries describe the same
     /// thing however they were filled. Keys and values are both compared the way <see cref="ElementEqualityComparer{T}"/>
-    /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references.
-    /// </para><para> It is filled once and then left alone, and its hash code is worked out on first use and kept.
-    /// Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is implemented, so there is no member on any surface that
-    /// would change it. The parameterless constructor and <see cref="Add"/> are private and exist solely for the data
-    /// contract serializer, which builds a collection by constructing an empty one and adding to it, reaches both by
-    /// reflection, and refuses a type offering no way to do it. Being private is the point: a dictionary that changed
-    /// after the record holding it was built would change that record's hash code underneath whatever was holding it,
-    /// so nothing outside this type can. </para><para> <see cref="Add"/> takes a <see cref="KeyValuePair{TKey,
-    /// TValue}"/> rather than a key and a value because that is what the serializer looks for once a type is not an
-    /// <c language="csharp">IDictionary</c>: it treats this as a collection of pairs and wants the pair. </para></remarks>
+    /// compares them, so a dictionary of arrays compares by the arrays' contents rather than by their references. That
+    /// cuts both ways for a key: a caller that holds on to an array it used as one and then writes to it changes what
+    /// that key hashes to, and the entry it opened is no longer reachable. Only the entries are copied in, not the
+    /// keys themselves, so a key has to be left alone once it has been handed over.
+    /// </para><para> It is filled once and then left alone. Only <see cref="IReadOnlyDictionary{TKey, TValue}"/> is
+    /// implemented, so there is no member on any surface that would change it. <see cref="DataContractAttribute"/> is what allows that: the data contract serializer would
+    /// otherwise see <see cref="IEnumerable{T}"/>, take this for a collection of pairs, and refuse one that offers no
+    /// <c language="csharp">Add</c> for it to fill. Carrying the attribute sends it down the ordinary class path instead, where it
+    /// writes the one field and rebuilds the type without running a constructor. </para><para> What that path does not
+    /// carry over is the comparer, and the entries are looked up through it - so <see cref="OnDeserialized"/> puts it
+    /// back before anything reads them. Without it a dictionary keyed by arrays would come off the wire looking its
+    /// keys up by reference, and two that had just been sent as equal would arrive unequal. </para></remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "The Dictionary suffix is the correct one and is already present.")]
     [SuppressMessage("Design", "MA0182:Avoid unused internal types", Justification = "This is used across InternalsVisibleTo boundaries, by PSADT.UserInterface and by the tests.")]
+    [DataContract]
     internal sealed class EquatableDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, IEquatable<EquatableDictionary<TKey, TValue>> where TKey : notnull
     {
-        /// <summary>
-        /// Initializes a new, empty instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class.
-        /// </summary>
-        /// <remarks>For the data contract serializer, which fills it through <see cref="Add"/>.</remarks>
-        private EquatableDictionary()
-        {
-            _items = new(KeyComparer);
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EquatableDictionary{TKey, TValue}"/> class holding the specified
         /// entries.
@@ -60,15 +53,16 @@ namespace PSADT.Collections
         }
 
         /// <summary>
-        /// Adds an entry.
+        /// Puts the comparer back once the serializer has rebuilt the entries.
         /// </summary>
-        /// <remarks>For the data contract serializer. See the remarks on the type.</remarks>
-        /// <param name="item">The entry to add.</param>
-        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "The data contract serializer calls this by reflection, which the compiler cannot see.")]
-        private void Add(KeyValuePair<TKey, TValue> item)
+        /// <remarks>The serializer rebuilds the entries into a dictionary of its own making, which is a dictionary
+        /// with the framework's comparer. Putting the comparer back here rather than at each read is what makes a
+        /// dictionary off the wire the same dictionary as one that was built.</remarks>
+        /// <param name="context">The deserialization context.</param>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
         {
-            _items.Add(item.Key, item.Value);
-            _hashCode = null;
+            _items = new(_items, KeyComparer);
         }
 
         /// <summary>
@@ -78,7 +72,26 @@ namespace PSADT.Collections
         /// <returns><see langword="true"/> if the two hold the same entries; otherwise, <see langword="false"/>.</returns>
         public bool Equals([NotNullWhen(true)] EquatableDictionary<TKey, TValue>? other)
         {
-            return ReferenceEquals(this, other) || (other is not null && _items.Count == other._items.Count && _items.All(entry => other._items.TryGetValue(entry.Key, out TValue? value) && ValueComparer.Equals(entry.Value, value)));
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            if (other is null || _items.Count != other._items.Count)
+            {
+                return false;
+            }
+
+            // Walked rather than run through a query, which would capture the other dictionary into a closure and
+            // box this one's enumerator on every comparison. The counts match, so every entry held there being held
+            // here is enough - nothing there is left over.
+            foreach (KeyValuePair<TKey, TValue> entry in _items)
+            {
+                if (!other._items.TryGetValue(entry.Key, out TValue? value) || !ValueComparer.Equals(entry.Value, value))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <inheritdoc/>
@@ -88,17 +101,39 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>Worked out once and kept, since a record holding this asks for it every time it is put in a
-        /// dictionary or a set and the dictionary itself does not change after it has been built. <para> Each entry is
-        /// reduced to a hash of its key and value, and those are then sorted before being combined, so that two
-        /// dictionaries holding the same entries hash alike however they were filled - which is what makes this agree
-        /// with the comparison above, where order does not count. </para></remarks>
-        [SuppressMessage("Major Code Smell", "S2328:GetHashCode should not reference mutable fields", Justification = "The dictionary is filled once and then left alone, which is what the remarks on the type describe; the cache is cleared if the serializer does add.")]
+        /// <remarks>Worked out on every call rather than once and kept. A kept one would be worth something only
+        /// where the same dictionary is hashed more than once, which nothing here does. What it would cost is a hash
+        /// that stops describing what the dictionary holds: a value that is itself an array is handed out by the
+        /// indexer and is writable through it, and a kept hash would go on reporting what that value used to be.
+        /// Worked out on demand the two always agree, and a caller that writes to something it was handed has broken
+        /// the rule every hash container has rather than found a fault in this one.</remarks>
         public override int GetHashCode()
         {
-            // Combined through the shared helper rather than here, so that every hash this library produces
-            // from a sequence of values is produced the same way.
-            return _hashCode ??= CryptographicUtilities.GenerateHashCode(GetSortedEntryHashCodes(), EqualityComparer<int>.Default);
+            return ComputeHashCode();
+        }
+
+        /// <summary>
+        /// Determines whether two dictionaries hold the same entries under the same keys.
+        /// </summary>
+        /// <remarks>Defined so that the operator cannot quietly disagree with <see cref="Equals(EquatableDictionary{TKey, TValue})"/>,
+        /// which it would if it were left comparing references as a reference type's operator does by default.</remarks>
+        /// <param name="left">The first dictionary, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second dictionary, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two hold the same entries, or both are <see langword="null"/>; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==(EquatableDictionary<TKey, TValue>? left, EquatableDictionary<TKey, TValue>? right)
+        {
+            return left is not null ? left.Equals(right) : right is null;
+        }
+
+        /// <summary>
+        /// Determines whether two dictionaries differ in their entries or in the keys they are held under.
+        /// </summary>
+        /// <param name="left">The first dictionary, which may be <see langword="null"/>.</param>
+        /// <param name="right">The second dictionary, which may be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the two differ, or one is <see langword="null"/> and the other is not; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=(EquatableDictionary<TKey, TValue>? left, EquatableDictionary<TKey, TValue>? right)
+        {
+            return !(left == right);
         }
 
         /// <inheritdoc/>
@@ -108,19 +143,10 @@ namespace PSADT.Collections
         }
 
         /// <inheritdoc/>
-        /// <remarks>The <c language="csharp">MaybeNullWhen</c> annotation the framework puts on this parameter is deliberately not
-        /// repeated here. The .NET Framework reference assemblies carry no nullable annotations at all, so annotating
-        /// the implementation more richly than the member it implements is an error there; leaving it off says only
-        /// that the value is set, which is true on both. <para> The lookup goes through the indexer rather than the
-        /// underlying dictionary's own <c language="csharp">TryGetValue</c> for the same reason: what that reports about the value it
-        /// hands back differs between the two frameworks, so a single spelling of it cannot compile clean on both.
-        /// </para></remarks>
-        [SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "An unconstrained TValue has no other way to spell the value handed back when the key is absent, which the return value already tells the caller to ignore.")]
+        [SuppressMessage("Style", "IDE0370:Suppression is unnecessary", Justification = "This is needed for interop between net472 and modern targets.")]
         public bool TryGetValue(TKey key, out TValue value)
         {
-            bool found = _items.ContainsKey(key);
-            value = found ? _items[key] : default!;
-            return found;
+            return _items.TryGetValue(key, out value!);
         }
 
         /// <inheritdoc/>
@@ -136,24 +162,29 @@ namespace PSADT.Collections
         }
 
         /// <summary>
-        /// Reduces each entry to a hash of its key and value, and sorts them.
+        /// Combines the entries into a hash code.
         /// </summary>
-        /// <remarks>Sorting is what makes the result independent of the order the dictionary was filled in,
-        /// which the comparison requires and which the combining helper - being a running total over a sequence - does
-        /// not provide on its own.</remarks>
-        /// <returns>The entries' hash codes, in ascending order.</returns>
-        private List<int> GetSortedEntryHashCodes()
+        /// <remarks>Each entry is reduced to a hash of its key and value, and those are added together rather than
+        /// folded one after another, since addition is what makes the result the same however the dictionary was
+        /// filled - which the comparison requires, order not counting there either. The sum is allowed to wrap, a hash
+        /// being a bit pattern rather than a number. The count seeds it so that entries hashing to zero still tell one
+        /// size of dictionary from another. <para> The comparers are handed to the combiner rather than asked for a
+        /// hash here, so that a null value is answered the same way the list answers a null element. </para></remarks>
+        /// <returns>The hash code of the entries.</returns>
+        private int ComputeHashCode()
         {
-            List<int> hashCodes = new(_items.Count);
-            foreach (KeyValuePair<TKey, TValue> entry in _items)
+            unchecked
             {
-                unchecked
+                int hashCode = _items.Count;
+                foreach (KeyValuePair<TKey, TValue> entry in _items)
                 {
-                    hashCodes.Add((KeyComparer.GetHashCode(entry.Key) * 31) + (entry.Value is not null ? ValueComparer.GetHashCode(entry.Value) : 0));
+                    HashCode entryHashCode = new();
+                    entryHashCode.Add(entry.Key, KeyComparer);
+                    entryHashCode.Add(entry.Value, ValueComparer);
+                    hashCode += entryHashCode.ToHashCode();
                 }
+                return hashCode;
             }
-            hashCodes.Sort();
-            return hashCodes;
         }
 
         /// <inheritdoc/>
@@ -171,12 +202,9 @@ namespace PSADT.Collections
         /// <summary>
         /// The entries held.
         /// </summary>
-        private readonly Dictionary<TKey, TValue> _items;
-
-        /// <summary>
-        /// The hash code of the entries, worked out on first use.
-        /// </summary>
-        private int? _hashCode;
+        /// <remarks>Not read-only, since <see cref="OnDeserialized"/> replaces it once to put the comparer back.</remarks>
+        [DataMember]
+        private Dictionary<TKey, TValue> _items;
 
         /// <summary>
         /// Compares two keys.

@@ -130,15 +130,9 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to create, modify, or delete. Cannot be null or empty.</param>
         /// <param name="value">The value to assign to the environment variable. If null, the environment variable is deleted.</param>
         /// <param name="target">One of the enumeration values that specifies the location where the environment variable is stored.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target)
         {
-            if (value is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(value);
-            }
-            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
-            Environment.SetEnvironmentVariable(variable, value, target);
+            SetEnvironmentVariable(variable, value, target, expandable: false, append: false, remove: false);
         }
 
         /// <summary>
@@ -287,7 +281,6 @@ namespace PSADT.Utilities
                         break;
                     }
                 case EnvironmentVariableTarget.Process:
-                    throw new NotSupportedException("Process target should be handled separately.");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, $"Illegal enum value: {target}.");
             }
@@ -318,11 +311,9 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to remove. Cannot be null.</param>
         /// <param name="target">An enumeration value that specifies whether the environment variable is removed from the current process,
         /// user, or machine.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         public static void RemoveEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
-            Environment.SetEnvironmentVariable(variable, value: null, target);
+            SetEnvironmentVariable(variable, value: null, target, expandable: false, append: false, remove: false);
         }
 
         /// <summary>

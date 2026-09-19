@@ -34,6 +34,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER ShutdownReasonText
         Specifies the shutdown comment to provide to the underlying `shutdown.exe` call when triggering the restart.
 
+    .PARAMETER NoForceCloseApps
+        Specifies that the underlying `shutdown.exe` call should omit its `/f` switch, which is otherwise passed to force running applications closed without forewarning users. Note that an application with unsaved work can then block the restart entirely.
+
     .PARAMETER PersistPrompt
         Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
@@ -89,7 +92,7 @@ function Show-ADTInstallationRestartPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationRestartPrompt
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTInstallationRestartPrompt.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Countdown')]
@@ -142,6 +145,7 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
@@ -154,6 +158,11 @@ function Show-ADTInstallationRestartPrompt
                 return !!$_
             })]
         [System.String]$ShutdownReasonText,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -187,9 +196,10 @@ function Show-ADTInstallationRestartPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
-
-        # Initialise the string table.
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
         $sessionState = if ($adtSession)
         {
             $adtSession.DeployAppScriptSessionState
@@ -198,7 +208,20 @@ function Show-ADTInstallationRestartPrompt
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $sessionState
+
+        # Get the config, language and string table in the one hit.
+        if (!(Test-ADTModuleInitialized))
+        {
+            $adtConfig = Get-ADTDefaultConfig
+            $adtLanguage = Get-ADTStringLanguage -Config $adtConfig
+            $adtStrings = Get-ADTDefaultStringTable -UICulture $adtLanguage -SessionState $sessionState
+        }
+        else
+        {
+            $adtConfig = Get-ADTConfig
+            $adtLanguage = Get-ADTStringLanguage
+            $adtStrings = Get-ADTStringTable -SessionState $sessionState
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -225,7 +248,6 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtConfig = Get-ADTConfig
 
         # Set up DeploymentType.
         [System.String]$deploymentType = if (!$adtSession)
@@ -283,11 +305,12 @@ function Show-ADTInstallationRestartPrompt
             if ($SilentRestart)
             {
                 Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
-                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
+                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
-                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                    $moduleState.ShutdownReasonText = $ShutdownReasonText
                 }
+                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {
@@ -302,15 +325,30 @@ function Show-ADTInstallationRestartPrompt
             Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
             if ($adtSession)
             {
-                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
+                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
-                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                    $moduleState.ShutdownReasonText = $ShutdownReasonText
                 }
+                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {
-                Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdown -NoWait
+                $icsoParams = @{
+                    User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                    SilentRestart = $true
+                    Delay = $SilentCountdown
+                    NoWait = $true
+                }
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $icsoParams.Add('ShutdownReasonText', $ShutdownReasonText)
+                }
+                if ($NoForceCloseApps)
+                {
+                    $icsoParams.Add('NoForceCloseApps', $true)
+                }
+                Invoke-ADTClientServerOperation @icsoParams
             }
             return
         }
@@ -329,7 +367,7 @@ function Show-ADTInstallationRestartPrompt
                     AppBannerImage = $adtConfig.Assets.Banner
                     AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                     DialogTopMost = !$NotTopMost
-                    Language = $Script:ADT.Language
+                    Language = $adtLanguage
                     Strings = $adtStrings.RestartPrompt
                 }
                 if (!$NoCountdown)
@@ -340,6 +378,10 @@ function Show-ADTInstallationRestartPrompt
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
                     $dialogOptions.Add('ShutdownReasonText', $ShutdownReasonText)
+                }
+                if ($NoForceCloseApps)
+                {
+                    $dialogOptions.Add('NoForceCloseApps', $true)
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {

@@ -14,7 +14,7 @@ namespace PSADT.ClientServer
     /// specified.</param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
-    internal sealed class ServerException(string message, Exception? innerException) : InvalidOperationException(message, innerException)
+    internal sealed class ServerException(string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
     {
         /// <summary>
         /// Initializes a new instance of the ServerException class with a specified error message and the associated
@@ -22,7 +22,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="clientProcess">The process handle representing the client process related to the exception.</param>
-        internal ServerException(string message, ProcessHandle clientProcess) : this(message, (Exception?)null)
+        internal ServerException(string message, ProcessHandle clientProcess) : this(message)
         {
             ClientProcess = clientProcess;
         }

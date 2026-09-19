@@ -46,7 +46,7 @@ function Initialize-ADTModule
         https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModule
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Initialize-ADTModule.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Initialize-ADTModule.ps1
     #>
 
     [CmdletBinding()]
@@ -65,7 +65,7 @@ function Initialize-ADTModule
                 return $_
             })]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [System.String[]]$ScriptDirectory,
+        [System.String[]]$ScriptDirectory = (Get-ADTModuleDirectory),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -78,6 +78,8 @@ function Initialize-ADTModule
         $moduleInitStart = [System.DateTime]::Now
 
         # Ensure this function isn't being called mid-flight.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -InformationAction SilentlyContinue
+        $null = $PSBoundParameters.Remove('ScriptDirectory')
         if (Test-ADTSessionActive)
         {
             $naerParams = @{
@@ -89,8 +91,27 @@ function Initialize-ADTModule
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -InformationAction SilentlyContinue
-        $null = $PSBoundParameters.Remove('ScriptDirectory')
+
+        # Internal worker function to get specific subdirectories.
+        function Get-ADTScriptSubdirectory
+        {
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateSet('Config', 'Strings')]
+                [System.String]$Subdirectory
+            )
+
+            # Loop through each provided directory and return all valid subdirectories.
+            foreach ($directory in $ScriptDirectory)
+            {
+                if (Test-Path -LiteralPath (Join-Path -Path $directory -ChildPath "$Subdirectory\$($Subdirectory.ToLowerInvariant()).psd1") -PathType Leaf)
+                {
+                    (Join-Path -Path $directory -ChildPath $Subdirectory).Trim()
+                }
+            }
+        }
     }
 
     process
@@ -99,53 +120,44 @@ function Initialize-ADTModule
         {
             try
             {
-                # Specify the base directory used when searching for config and string tables.
-                $Script:ADT.Directories.Script = if ($null -ne $ScriptDirectory)
+                # Get all valid config/string directories, casting the returned strings into DirectoryInfo objects.
+                [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.DirectoryInfo]]$scriptDirectories = [System.IO.DirectoryInfo[]]$ScriptDirectory
+                [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.DirectoryInfo]]$configDirectories = Get-ADTScriptSubdirectory -Subdirectory Config
+                [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.DirectoryInfo]]$stringsDirectories = Get-ADTScriptSubdirectory -Subdirectory Strings
+
+                # Close out and reset any client/server process that exists. This should never occur, though.
+                if (Test-ADTClientServerActive)
                 {
-                    $ScriptDirectory
-                }
-                else
-                {
-                    $Script:PSScriptRoot
+                    Close-ADTClientServerInstance -InformationAction SilentlyContinue
                 }
 
-                # Initialize remaining directory paths.
-                'Config', 'Strings' | & {
-                    process
-                    {
-                        [System.String[]]$Script:ADT.Directories.$_ = foreach ($directory in $Script:ADT.Directories.Script)
-                        {
-                            if (Test-Path -LiteralPath (Join-Path -Path $directory -ChildPath "$_\$($_.ToLowerInvariant()).psd1") -PathType Leaf)
-                            {
-                                (Join-Path -Path $directory -ChildPath $_).Trim()
-                            }
-                        }
-                    }
+                # Clear any stale module state before re-initialisation.
+                if (Test-ADTModuleInitialized)
+                {
+                    Reset-ADTModuleState
                 }
 
                 # Invoke all callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnInit)))
+                foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnInit | & { process { return $_ } }))
                 {
                     & $callback
                 }
 
-                # Close out and reset any client/server process that exists. This should never occur, though.
-                if ($null -ne $Script:ADT.ClientServerProcess)
-                {
-                    Close-ADTClientServerProcess -InformationAction SilentlyContinue
-                }
-
                 # Initialize the module's global state.
-                $Script:ADT.Environment = New-ADTEnvironmentTable @PSBoundParameters
-                $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
-                $Script:ADT.Language = Get-ADTStringLanguage
-                $Script:ADT.Strings = Import-ADTStringTable -BaseDirectory $Script:ADT.Directories.Strings -UICulture $Script:ADT.Language
-                $Script:ADT.RestartOnExitCountdown = $null
-                $Script:ADT.LastExitCode = 0
-
-                # Calculate how long this process took before finishing.
-                $Script:ADT.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
-                $Script:ADT.Initialized = $true
+                $environment = New-ADTEnvironmentTable @PSBoundParameters
+                $config = Import-ADTConfig -BaseDirectory $configDirectories -Environment $environment
+                $language = Get-ADTStringLanguage -Environment $environment -Config $config
+                $strings = Import-ADTStringTable -BaseDirectory $stringsDirectories -Config $config -UICulture $language
+                $Script:Module.State = [PSAppDeployToolkit.Foundation.ModuleState]::new(
+                    $scriptDirectories,
+                    $configDirectories,
+                    $stringsDirectories,
+                    $environment,
+                    $config,
+                    $language,
+                    $strings,
+                    $moduleInitStart
+                )
             }
             catch
             {

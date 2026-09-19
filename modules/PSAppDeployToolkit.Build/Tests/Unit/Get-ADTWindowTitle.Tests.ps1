@@ -1,4 +1,14 @@
-﻿BeforeAll {
+﻿BeforeDiscovery {
+    Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
+    Import-ADTModuleUnderTest
+
+    # Every assertion below enumerates the windows of the logged-on session, and the context stands one of its
+    # own up to assert against. A run with nobody logged on, or one from session zero, has neither available.
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'CallerOwnsItsSession', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+    $script:CallerOwnsItsSession = (Get-ADTLoggedOnUser | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1 -ExpandProperty SID) -eq (Get-ADTCallerSid)
+}
+
+BeforeAll {
     Import-Module "$PSScriptRoot\..\Support\PSAppDeployToolkit.TestHelpers.psm1"
     Import-ADTModuleUnderTest
 
@@ -7,10 +17,41 @@
 }
 
 Describe 'Get-ADTWindowTitle' {
-    Context 'Functionality' {
+    Context 'Functionality' -Skip:(!$script:CallerOwnsItsSession) {
         BeforeAll {
+            # Stand up a window this test owns. Sampling whichever window happened to sort first meant asserting
+            # against a title that any application is free to change while the run is still in progress.
+            $script:SampleTitle = "ADTWindowTitleTest_$([System.Guid]::NewGuid().ToString('N'))"
+            $script:SampleProcess = Start-Process -FilePath (Get-ADTPowerShellProcessPath) -PassThru -ArgumentList @(
+                '-NoProfile'
+                '-NonInteractive'
+                '-Command'
+                "Add-Type -AssemblyName System.Windows.Forms; `$form = [System.Windows.Forms.Form]::new(); `$form.Text = '$script:SampleTitle'; [System.Void]`$form.ShowDialog()"
+            )
+
+            # The child has to load WinForms and show the form before the window can be enumerated.
+            $deadline = [System.DateTime]::UtcNow.AddSeconds(30)
+            while ([System.DateTime]::UtcNow -lt $deadline)
+            {
+                if (($script:Sample = @(Get-ADTWindowTitle -WindowTitle $script:SampleTitle) | Select-Object -First 1))
+                {
+                    break
+                }
+                Start-Sleep -Milliseconds 250
+            }
+            if (!$script:Sample)
+            {
+                throw "The test window [$script:SampleTitle] did not appear within 30 seconds."
+            }
             $script:Windows = @(Get-ADTWindowTitle)
-            $script:Sample = $script:Windows | & { process { if (![System.String]::IsNullOrWhiteSpace($_.WindowTitle)) { return $_ } } } | Select-Object -First 1
+        }
+
+        AfterAll {
+            if ($script:SampleProcess -and !$script:SampleProcess.HasExited)
+            {
+                $script:SampleProcess.Kill()
+                $null = $script:SampleProcess.WaitForExit(5000)
+            }
         }
 
         It 'Returns the windows open in the user session' {

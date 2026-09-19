@@ -62,7 +62,7 @@ function Show-ADTBalloonTip
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTBalloonTip
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTBalloonTip.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Show-ADTBalloonTip.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Icon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
@@ -95,8 +95,11 @@ function Show-ADTBalloonTip
 
     dynamicparam
     {
-        # Initialize the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
+        # Get the active session if we have one.
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -118,7 +121,7 @@ function Show-ADTBalloonTip
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtConfig = Get-ADTConfig
+        $adtConfig = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }
         $forced = $false
 
         # Log the deprecation of -WaitSeconds to the log.

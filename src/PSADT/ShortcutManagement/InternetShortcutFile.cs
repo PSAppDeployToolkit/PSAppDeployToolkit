@@ -182,8 +182,15 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the URL of the Internet shortcut.
         /// </summary>
-        /// <value>The URL that the shortcut points to.</value>
+        /// <value>The URL that the shortcut points to, or <see langword="null"/> where the file holds none.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        /// <exception cref="InvalidDataException">Thrown if the file holds an address that is not an absolute URI. The
+        /// shell stores what it is given and is less particular about it than <see cref="Uri"/>, so a file written by
+        /// something else can hold one it will not parse. That is a malformed shortcut rather than one without an
+        /// address, and this names both the value and the property, which the parser's own failure does not. What it
+        /// raised is kept as the inner exception, since it is the only thing that says what was wrong with it.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Reading this has always thrown on an address the parser refuses. What changes is that the failure names the value rather than only the parser's complaint about it.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2372:Exceptions should not be thrown from property getters", Justification = "Reading this has always thrown on an address the parser refuses. What changes is that the failure names the value rather than only the parser's complaint about it.")]
         public Uri? Url
         {
             get
@@ -192,7 +199,19 @@ namespace PSADT.ShortcutManagement
                 _internetShortcut.GetURL(out SafeCoTaskMemHandle? url);
                 using (url)
                 {
-                    return url is not null ? new(url.ToStringUni()) : null;
+                    if (url is null)
+                    {
+                        return null;
+                    }
+                    string address = url.ToStringUni();
+                    try
+                    {
+                        return new Uri(address, UriKind.Absolute);
+                    }
+                    catch (UriFormatException ex)
+                    {
+                        throw new InvalidDataException($"The shortcut's address of [{address}] is not an absolute URI.", ex);
+                    }
                 }
             }
             set
@@ -265,7 +284,11 @@ namespace PSADT.ShortcutManagement
                 {
                     return iconFile;
                 }
-                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH];
+
+                // Sized from the URL rather than MAX_PATH, which a path outgrew long ago and which fails the
+                // conversion rather than truncating it. Converting a URL only ever shortens it, so this always
+                // has the room. On the heap because the length is the file's to choose rather than ours.
+                Span<char> buffer = new char[Math.Max((int)PInvoke.MAX_PATH, iconFile.Length + 1)];
                 _ = NativeMethods.PathCreateFromUrl(iconFile, buffer, out uint bufferLength);
                 return buffer[..(int)bufferLength].ToString();
             }

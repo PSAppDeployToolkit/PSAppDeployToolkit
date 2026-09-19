@@ -40,7 +40,7 @@ function Close-ADTInstallationProgress
         https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTInstallationProgress
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Close-ADTInstallationProgress.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Close-ADTInstallationProgress.ps1
     #>
 
     [CmdletBinding()]
@@ -51,8 +51,11 @@ function Close-ADTInstallationProgress
     begin
     {
         # Initialise function.
-        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
@@ -63,7 +66,7 @@ function Close-ADTInstallationProgress
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
+        $adtStrings = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultStringTable -SessionState $SessionState } else { Get-ADTStringTable -SessionState $SessionState }
     }
 
     process
@@ -105,12 +108,12 @@ function Close-ADTInstallationProgress
         # Close the client/server process when we're running sessionless.
         if (!$adtSession -and !(Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser))
         {
-            Close-ADTClientServerProcess
+            Close-ADTClientServerInstance
             return
         }
 
-        # Send out the final toast notification.
-        if ((Get-ADTConfig).UI.DialogStyle -eq 'Classic')
+        # Send out the final toast notification. This reports the session's deployment status, so there's nothing to send without one.
+        if ($adtSession -and ($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.DialogStyle -eq 'Classic'))
         {
             try
             {

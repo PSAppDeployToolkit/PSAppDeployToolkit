@@ -23,6 +23,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             table["CountdownDuration"] = TimeSpan.FromMinutes(20);
             table["CountdownNoMinimizeDuration"] = TimeSpan.FromMinutes(5);
             table["ShutdownReasonText"] = "a maintenance window";
+            table["NoForceCloseApps"] = true;
             table["CustomMessageText"] = "a custom message";
             table["DialogAllowCancel"] = true;
 
@@ -33,6 +34,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Equal(TimeSpan.FromMinutes(20), options.CountdownDuration);
             Assert.Equal(TimeSpan.FromMinutes(5), options.CountdownNoMinimizeDuration);
             Assert.Equal("a maintenance window", options.ShutdownReasonText);
+            Assert.True(options.NoForceCloseApps);
             Assert.Equal("a custom message", options.CustomMessageText);
             Assert.True(options.DialogAllowCancel);
         }
@@ -46,6 +48,9 @@ namespace PSADT.UserInterface.Tests.DialogOptions
         /// field used to be called <c language="csharp">AllowCancel</c> while the dictionary key it is read from was
         /// <c language="csharp">DialogAllowCancel</c>; they now agree, and agree with the <c language="csharp">DialogAllowMove</c> and
         /// <c language="csharp">DialogAllowMinimize</c> pair on the base type.
+        /// <c language="csharp">NoForceCloseApps</c> is collapsed the same way, and is named for the opt-out rather than
+        /// the behaviour it controls so that false - what a bool deserialises to when the key is absent -
+        /// is the behaviour callers had before it existed: shutdown.exe is passed '/f' unless asked not to.
         /// </remarks>
         [Fact]
         public void Constructor_DefaultsTheOptionalValues()
@@ -57,6 +62,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.CountdownDuration);
             Assert.Null(options.CountdownNoMinimizeDuration);
             Assert.Null(options.ShutdownReasonText);
+            Assert.False(options.NoForceCloseApps);
             Assert.Null(options.CustomMessageText);
             Assert.False(options.DialogAllowCancel);
         }

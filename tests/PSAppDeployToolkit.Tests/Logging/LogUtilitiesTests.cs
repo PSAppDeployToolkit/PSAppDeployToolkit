@@ -20,8 +20,24 @@ namespace PSAppDeployToolkit.Tests.Logging
     /// </remarks>
     /// <param name="powerShell">The hosted engine, shared across the collection.</param>
     [Collection(PowerShellCollection.Name)]
-    public sealed class LogUtilitiesTests(PowerShellFixture powerShell)
+    public sealed class LogUtilitiesTests(PowerShellFixture powerShell) : IDisposable
     {
+        /// <summary>
+        /// Puts back whatever database was seated before this test.
+        /// </summary>
+        public void Dispose()
+        {
+            _imported.Dispose();
+        }
+
+        /// <summary>
+        /// The module imported and not initialized, which is what writing a log entry before
+        /// <c language="powershell">Initialize-ADTModule</c> runs against. Seated for every test here because the
+        /// writer asks the database whether it is initialized, and that is refused outright when none is seated.
+        /// A test needing configuration seats its own over the top of this one.
+        /// </summary>
+        private readonly ModuleDatabaseScope _imported = powerShell.SeatModuleDatabaseWithoutState();
+
         /// <summary>
         /// Verifies that a message is returned as an entry carrying what was asked for.
         /// </summary>

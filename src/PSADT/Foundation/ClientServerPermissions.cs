@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using PSADT.AccountManagement;
 using PSADT.FileSystem;
 using PSADT.Security;
+using Windows.Win32.Security;
 
 namespace PSADT.Foundation
 {
@@ -26,22 +26,23 @@ namespace PSADT.Foundation
         /// made.</remarks>
         /// <param name="runAsActiveUser">The user for whom the file system permissions will be remediated. This parameter cannot be <see
         /// langword="null"/>.</param>
-        /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
-        /// and point to existing files.</param>
+        /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must point to
+        /// existing files.</param>
         /// <param name="elevatedTokenType">An optional parameter specifying the type of elevated token to use when checking permissions.
         /// The default value is <see cref="ElevatedTokenType.None"/>.</param>
-        /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the permissions cannot be modified for any path due to insufficient privileges or if the file is located on a network share.</exception>
+        /// <exception cref="NotSupportedException">Thrown if <paramref name="runAsActiveUser"/> is another user whose session token cannot be brokered, as a client cannot be launched for them either.</exception>
         internal static async ValueTask RemediateAsync(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
-            // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
-            using WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
-            using SafeHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
-                ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || TokenManager.CanGetUserPrimaryToken
-                ? await TokenManager.GetUserPrimaryTokenAsync(runAsActiveUser.SessionId, elevatedTokenType).ConfigureAwait(false)
-                : currentUser.AccessToken
-                : null;
+            // Test the user's access with their token where one can be had, and with their identifier where one can't.
+            // Only a user with no session of their own legitimately has no token; for anyone else its absence means the
+            // brokering was refused, and nothing could use the answer anyway as launching a client for them needs it too.
+            using SafeHandle? hPrimaryToken = await GetEffectiveAccessTokenAsync(runAsActiveUser, elevatedTokenType).ConfigureAwait(false);
+            if (hPrimaryToken is null && runAsActiveUser.SessionId != uint.MaxValue)
+            {
+                throw new NotSupportedException("Cannot remediate another user's session as their token cannot be brokered in this execution context.");
+            }
             Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null
                 ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)
                 : (path) => FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions);
@@ -50,10 +51,6 @@ namespace PSADT.Foundation
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
             foreach (FileInfo path in extraPaths?.Count > 0 ? _assemblies.Concat(extraPaths) : _assemblies)
             {
-                if (!Path.IsPathFullyQualified(path.FullName))
-                {
-                    throw new DriveNotFoundException($"The path [{path.FullName}] is not rooted. All paths must be absolute.");
-                }
                 if (!path.Exists)
                 {
                     throw new FileNotFoundException($"The system could not find file [{path.FullName}] as it does not exist.", path.FullName);
@@ -86,9 +83,31 @@ namespace PSADT.Foundation
         /// Determines whether the Local System account has the required file system permissions for all client/server assembly files.
         /// </summary>
         /// <returns>True if the Local System account has the required permissions; otherwise, false.</returns>
-        internal static bool SystemAccountHasPermissions()
+        internal static bool SystemAccountHasAccess()
         {
             return _assemblies.All(static path => FileSystemUtilities.TestEffectiveAccess(path, AccountUtilities.LocalSystemSid, _requiredPermissions));
+        }
+
+        /// <summary>
+        /// Gets the token that the specified user's effective access should be tested with.
+        /// </summary>
+        /// <remarks>Ordered by cost. Our own token is exact for our own session and opens with a single call, so it is
+        /// preferred over brokering another user's, which registers and runs a scheduled task and is worth avoiding
+        /// wherever the answer would be the same.</remarks>
+        /// <param name="runAsActiveUser">The user whose access is to be tested.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to request when one has to be brokered.</param>
+        /// <returns>The user's token, or <see langword="null"/> if they have no session of their own or their token cannot be brokered.</returns>
+        private static async ValueTask<SafeHandle?> GetEffectiveAccessTokenAsync(RunAsActiveUser runAsActiveUser, ElevatedTokenType elevatedTokenType)
+        {
+            // Our own token needs nothing brokered, and describes our own session exactly.
+            if (runAsActiveUser == AccountUtilities.CallerRunAsActiveUser)
+            {
+                return TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            }
+
+            // A user with no session of their own has no token to get, and nor has one whose token cannot be
+            // reached from here. Either way the identifier is left to test with.
+            return await TokenManager.TryGetUserPrimaryTokenAsync(runAsActiveUser, elevatedTokenType).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -310,6 +310,102 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a public key blob which is not the shape a P-256 key takes is refused.
+        /// </summary>
+        /// <remarks>
+        /// The blob is a CNG EccPublicBlob: an eight byte header whose second half declares the coordinate
+        /// size, then the X and Y coordinates. Both that declared size and the blob's own length used to be
+        /// taken on trust, and they arrive before either party has authenticated the other, so the caller
+        /// choosing them is unauthenticated by construction. A size of int.MaxValue asks for two allocations
+        /// of two gigabytes before a single byte has been verified, and a size longer than the blob reads
+        /// off the end of it.
+        /// </remarks>
+        /// <param name="blobLength">The length to give the blob.</param>
+        /// <param name="declaredKeySize">The coordinate size to write into the blob's header.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(72, int.MaxValue)] // Right length, a size that asks for 4GB across two allocations.
+        [InlineData(72, -1)] // Right length, a negative size.
+        [InlineData(72, 64)] // Right length, a size that reads past the end of the blob.
+        [InlineData(72, 0)] // Right length, no coordinates at all.
+        [InlineData(40, 16)] // Short blob, self-consistent but not P-256.
+        [InlineData(136, 64)] // Long blob, self-consistent but not P-256.
+        public async Task KeyExchange_RefusesAPublicKeyThatIsNotP256(int blobLength, int declaredKeySize)
+        {
+            // Arrange: a length-prefixed frame carrying the malformed blob, as the far half would send it
+            byte[] blob = new byte[blobLength];
+            BitConverter.GetBytes(EcdhPublicP256Magic).CopyTo(blob, 0);
+            BitConverter.GetBytes(declaredKeySize).CopyTo(blob, 4);
+            byte[] frame = new byte[blob.Length + 4];
+            BitConverter.GetBytes(blob.Length).CopyTo(frame, 0);
+            blob.CopyTo(frame, 4);
+
+            using ServerPipeEncryption server = new();
+            using MemoryStream output = new();
+            using MemoryStream input = new(frame);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that a blob of the right shape but opening with the wrong magic is refused.
+        /// </summary>
+        /// <remarks>
+        /// Built from a real client's key so that the coordinates are a genuine point on the curve and the
+        /// magic is the only thing wrong with it. Coordinates of any other kind are refused for being off
+        /// the curve before the magic is ever reached, which would leave this passing whether the magic was
+        /// read or not.
+        /// <para>
+        /// Only the .NET Framework import reads the magic, CNG refusing a blob that is not an ECDH P-256
+        /// public key. The .NET 8 path takes the coordinates out of the blob and names the curve itself, so
+        /// the four bytes went unread there and a key the one target refused was completing an exchange on
+        /// the other.
+        /// </para>
+        /// </remarks>
+        /// <param name="magic">The magic to write into the blob's header.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(0)] // No magic at all.
+        [InlineData(EcdhPublicP256Magic + 1)] // A near miss on the P-256 magic.
+        [InlineData(0x334B4345)] // BCRYPT_ECDH_PUBLIC_P384_MAGIC, a real blob type but the wrong curve.
+        [InlineData(unchecked((int)0xFFFFFFFF))] // Nothing CNG defines.
+        public async Task KeyExchange_RefusesAPublicKeyThatDoesNotOpenWithTheP256Magic(int magic)
+        {
+            // Arrange: a real public key frame, with only the blob's magic overwritten
+            byte[] frame = await KeyExchangeFrames.ClientPublicKeyAsync().ConfigureAwait(true);
+            BitConverter.GetBytes(magic).CopyTo(frame, 4);
+
+            using ServerPipeEncryption server = new();
+            using MemoryStream output = new();
+            using MemoryStream input = new(frame);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Verifies that the key exchange still completes against a real public key, so that the refusals
+        /// above are about the malformed blobs rather than about the shape of every blob.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task KeyExchange_AcceptsARealPublicKey()
+        {
+            // Arrange
+            EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
+            using (pair)
+            {
+                // Act
+                byte[] frame = await EncryptToBytesAsync(pair, [1, 2, 3]).ConfigureAwait(true);
+                using MemoryStream readable = new(frame);
+
+                // Assert
+                Assert.Equal([1, 2, 3], await pair.Client.ReadEncryptedAsync(readable).ConfigureAwait(true));
+            }
+        }
+
+        /// <summary>
         /// A stream that hands back only a few bytes at a time, however many were asked for.
         /// </summary>
         /// <remarks>
@@ -397,5 +493,11 @@ namespace PSADT.ClientServer.Server.Tests
             /// </summary>
             private int _position;
         }
+
+        /// <summary>
+        /// The magic number CNG puts at the front of a P-256 elliptic curve public key blob, being the
+        /// characters <c>ECK1</c> read as a little-endian integer.
+        /// </summary>
+        private const int EcdhPublicP256Magic = 0x314B4345;
     }
 }

@@ -31,7 +31,7 @@ Describe 'Test-ADTModuleInitialized' {
         }
 
         It 'Reports the same flag the module holds' {
-            Test-ADTModuleInitialized | Should -Be (InModuleScope PSAppDeployToolkit { $ADT.Initialized })
+            Test-ADTModuleInitialized | Should -Be (InModuleScope PSAppDeployToolkit { $null -ne $Module.State })
         }
 
         It 'Returns false again once the module is reloaded' {

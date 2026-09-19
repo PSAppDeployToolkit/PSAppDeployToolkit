@@ -151,11 +151,11 @@ namespace PSADT.ProcessManagement
             {
                 if (RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is false)
                 {
-                    if (!TokenManager.CanGetUserPrimaryToken)
+                    if (!TokenManager.CanGetUserPrimaryToken(RunAsActiveUser.SessionId))
                     {
-                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
+                        throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser.SessionId).ConfigureAwait(false).GetAwaiter().GetResult();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
                     using (lpEnvironment)
                     {

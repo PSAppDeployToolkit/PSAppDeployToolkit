@@ -47,7 +47,7 @@ function Test-ADTUserIsBusy
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTUserIsBusy
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTUserIsBusy.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTUserIsBusy.ps1
     #>
 
     [CmdletBinding()]

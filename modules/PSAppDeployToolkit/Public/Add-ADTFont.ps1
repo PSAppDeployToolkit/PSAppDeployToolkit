@@ -53,7 +53,7 @@ function Add-ADTFont
         https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTFont
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Add-ADTFont.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Add-ADTFont.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]

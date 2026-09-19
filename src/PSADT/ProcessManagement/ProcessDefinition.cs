@@ -57,7 +57,6 @@ namespace PSADT.ProcessManagement
         {
         }
 
-
         /// <summary>
         /// Sets all calculated fields after deserialization.
         /// </summary>

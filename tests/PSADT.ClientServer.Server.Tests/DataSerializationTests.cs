@@ -370,6 +370,139 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a faulted task's failure survives the trip, which is the shape async code produces.
+        /// </summary>
+        /// <remarks>
+        /// An AggregateException carries its inner exceptions as an Exception[], a type the contract names
+        /// nowhere else, and the resolver refuses what it cannot name. The exception type itself was in the
+        /// known types and had never been serializable for want of that array, so anything awaiting a task
+        /// lost its failure on the way out rather than reporting it.
+        /// </remarks>
+        [Fact]
+        public void Exception_RoundTripsAFaultedTaskFailure()
+        {
+            // Arrange
+            AggregateException original = new("the task faulted", new InvalidOperationException("the first"), new IOException("the second"));
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(original));
+
+            // Assert
+            AggregateException aggregate = Assert.IsType<AggregateException>(restored);
+            Assert.Equal(2, aggregate.InnerExceptions.Count);
+            Assert.Equal("the first", aggregate.InnerExceptions[0].Message);
+            Assert.Equal("the second", aggregate.InnerExceptions[1].Message);
+        }
+
+        /// <summary>
+        /// Verifies that the remaining exception types carrying a member of their own kind are writable.
+        /// </summary>
+        /// <remarks>
+        /// Each serializes something the contract names nowhere else - an array of its own kind, or an enum
+        /// of its own - and the resolver refuses what it cannot name, so being in the known types is not on
+        /// its own enough to make a type writable. Neither of these can arise from this client, which uses
+        /// neither SMTP nor websockets, but a type declared as supported and silently unserializable is
+        /// worse than one that was never declared at all.
+        /// <para>
+        /// What survives is the type and the message. WebSocketException's own error code does not: the
+        /// framework stopped carrying it through GetObjectData, so it comes back as the default whatever it
+        /// was set to, and asserting otherwise would be asserting against the framework rather than this.
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public void Exception_RoundTripsTypesCarryingAMemberOfTheirOwnKind()
+        {
+            // Arrange
+            System.Net.Mail.SmtpFailedRecipientsException smtp = new("delivery failed", [new System.Net.Mail.SmtpFailedRecipientException(System.Net.Mail.SmtpStatusCode.MailboxBusy, "someone@example.test")]);
+            System.Net.WebSockets.WebSocketException socket = new(System.Net.WebSockets.WebSocketError.InvalidState, "the socket was not open");
+
+            // Act
+            Exception restoredSmtp = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(smtp));
+            Exception restoredSocket = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(socket));
+
+            // Assert
+            _ = Assert.IsType<System.Net.Mail.SmtpFailedRecipientsException>(restoredSmtp);
+            Assert.Equal("delivery failed", restoredSmtp.Message);
+            _ = Assert.IsType<System.Net.WebSockets.WebSocketException>(restoredSocket);
+            Assert.Equal("the socket was not open", restoredSocket.Message);
+        }
+
+        /// <summary>
+        /// Verifies that an aggregate nested inside another survives, since a task awaiting tasks produces
+        /// exactly that and it is the case the array type is reached through twice.
+        /// </summary>
+        [Fact]
+        public void Exception_RoundTripsNestedFaultedTaskFailures()
+        {
+            // Arrange
+            AggregateException original = new("the outer task faulted", new AggregateException("the inner task faulted", new InvalidOperationException("the leaf")));
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes<Exception>(original));
+
+            // Assert
+            AggregateException aggregate = Assert.IsType<AggregateException>(restored);
+            AggregateException inner = Assert.IsType<AggregateException>(Assert.Single(aggregate.InnerExceptions));
+            Assert.Equal("the leaf", Assert.Single(inner.InnerExceptions).Message);
+        }
+
+        /// <summary>
+        /// Verifies that an exception chain deeper than the reader's quota is refused rather than descended.
+        /// </summary>
+        /// <remarks>
+        /// The client runs in the logged-on user's session and is therefore theirs to control, so what it
+        /// writes back is chosen by an unprivileged caller. Reading it recursively without a depth limit
+        /// hands that caller the server's stack: a graph nested far enough to exhaust it fits inside the
+        /// pipe's 16MB frame cap several times over, and a StackOverflowException cannot be caught, so the
+        /// SYSTEM process would go without the error path ever running. Refusing the read is the point.
+        /// </remarks>
+        [Fact]
+        public void DeserializeFromBytes_RefusesAnExceptionChainDeeperThanTheQuota()
+        {
+            // Arrange
+            Exception original = new InvalidOperationException("the innermost failure");
+            for (int i = 0; i < 1000; i++)
+            {
+                original = new InvalidOperationException("an outer failure", original);
+            }
+            byte[] serialized = DataSerialization.SerializeToBytes(original);
+
+            // Act
+            SerializationException failure = Assert.Throws<SerializationException>(() => DataSerialization.DeserializeFromBytes<Exception>(serialized));
+
+            // Assert
+            Assert.NotNull(failure);
+        }
+
+        /// <summary>
+        /// Verifies that an exception chain of the depth a real failure carries still survives the trip.
+        /// </summary>
+        /// <remarks>The quota has to sit above anything worth reporting, or the limit that stops a hostile
+        /// client also throws away the diagnostics the server exists to relay.</remarks>
+        [Fact]
+        public void Exception_RoundTripsANestedChain()
+        {
+            // Arrange
+            Exception original = new InvalidOperationException("the innermost failure");
+            for (int i = 0; i < 8; i++)
+            {
+                original = new InvalidOperationException("an outer failure", original);
+            }
+
+            // Act
+            Exception restored = DataSerialization.DeserializeFromBytes<Exception>(DataSerialization.SerializeToBytes(original));
+
+            // Assert
+            int depth = 0;
+            for (Exception? current = restored; current is not null; current = current.InnerException)
+            {
+                depth++;
+            }
+            Assert.Equal(9, depth);
+            Assert.Equal("the innermost failure", restored.GetBaseException().Message);
+        }
+
+        /// <summary>
         /// Verifies that a collection survives the trip with its contents, which is the case a serializer
         /// is most likely to get half right.
         /// </summary>

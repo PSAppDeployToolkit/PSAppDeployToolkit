@@ -54,7 +54,7 @@ function Set-ADTDeferHistory
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTDeferHistory
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTDeferHistory.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Set-ADTDeferHistory.ps1
 
     #>
 

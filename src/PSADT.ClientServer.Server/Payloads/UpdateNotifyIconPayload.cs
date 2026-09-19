@@ -25,5 +25,21 @@ namespace PSADT.ClientServer.Payloads
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
             MessageText = messageText;
         }
+
+        /// <summary>
+        /// Confirms the payload's invariants once it has been read off the wire.
+        /// </summary>
+        /// <remarks>DataContractSerializer allocates without running a constructor, so a member the sender left
+        /// out keeps its CLR default and what the constructor refuses arrives unrefused.</remarks>
+        /// <param name="context">The streaming context, which is not used.</param>
+        /// <exception cref="SerializationException">Thrown if the payload arrived without any message text.</exception>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            if (string.IsNullOrWhiteSpace(MessageText))
+            {
+                throw new SerializationException($"The deserialized {nameof(UpdateNotifyIconPayload)} has no message text.");
+            }
+        }
     }
 }

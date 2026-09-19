@@ -501,6 +501,148 @@ namespace PSADT.Tests.Utilities
         }
 
         /// <summary>
+        /// Verifies that the scoped setter writes the persisted scope and leaves this process alone.
+        /// </summary>
+        /// <remarks>
+        /// This overload forwards to the full one rather than calling the framework, so this is what
+        /// confirms the forwarding lands where it should: the value in the hive, stored plainly, and
+        /// nothing in the process scope, which a registry write never touches.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_WithATargetWritesOnlyThePersistedScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "a value", EnvironmentVariableTarget.User);
+
+                // Assert
+                Assert.Equal("a value", ReadUserValue(name, out RegistryValueKind kind));
+                Assert.Equal(RegistryValueKind.String, kind);
+                Assert.False(Environment.GetEnvironmentVariables().Contains(name), $"A persisted write left '{name}' behind in the process environment.");
+            }
+            finally
+            {
+                RemoveUserValue(name);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the scoped setter still reaches the process scope when that is what is asked for.
+        /// </summary>
+        /// <remarks>
+        /// A process variable has no registry behind it, so the full overload hands this case back to the
+        /// process-scoped setter that forwarded to it. That hand-back is the one path where the forwarding
+        /// could close into a loop, and this is what walks it.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_WithAProcessTargetSetsTheProcessScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                // Act
+                EnvironmentUtilities.SetEnvironmentVariable(name, "a value", EnvironmentVariableTarget.Process);
+
+                // Assert
+                Assert.Equal("a value", Environment.GetEnvironmentVariables()[name]);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the scoped removal takes the variable out of the persisted scope.
+        /// </summary>
+        [Fact]
+        public void RemoveEnvironmentVariable_WithATargetClearsThePersistedScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                WriteUserValue(name, "a value", RegistryValueKind.String);
+
+                // Act
+                EnvironmentUtilities.RemoveEnvironmentVariable(name, EnvironmentVariableTarget.User);
+
+                // Assert
+                Assert.False(
+                    Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User).Contains(name),
+                    $"The removal left '{name}' behind in the user environment.");
+            }
+            finally
+            {
+                RemoveUserValue(name);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the scoped removal still reaches the process scope, the other half of the
+        /// hand-back the setter above walks.
+        /// </summary>
+        [Fact]
+        public void RemoveEnvironmentVariable_WithAProcessTargetClearsTheProcessScope()
+        {
+            // Arrange
+            string name = NewVariableName();
+            try
+            {
+                Environment.SetEnvironmentVariable(name, "a value");
+
+                // Act
+                EnvironmentUtilities.RemoveEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+
+                // Assert
+                Assert.False(Environment.GetEnvironmentVariables().Contains(name), $"The removal left '{name}' behind in the process environment.");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, value: null);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the scoped setter refuses a name that could not be read back.
+        /// </summary>
+        /// <remarks>
+        /// Neither scoped overload checked anything beyond the name being present while it called the
+        /// framework, and forwarding brings the full overload's validation with it. A caller that was
+        /// getting such a name past this one now gets an exception, so it is asserted here rather than
+        /// left to be discovered.
+        /// </remarks>
+        [Fact]
+        public void SetEnvironmentVariable_WithATargetRefusesANameContainingAnEqualsSign()
+        {
+            // Arrange
+            string name = $"{NewVariableName()}=EMBEDDED";
+
+            // Act & Assert
+            _ = Assert.Throws<FormatException>(() => EnvironmentUtilities.SetEnvironmentVariable(name, "a value", EnvironmentVariableTarget.User));
+            AssertNothingWasPersisted(name);
+        }
+
+        /// <summary>
+        /// Verifies that the scoped removal refuses the same name the setter above does, since it inherits
+        /// the same validation by the same route.
+        /// </summary>
+        [Fact]
+        public void RemoveEnvironmentVariable_WithATargetRefusesANameContainingAnEqualsSign()
+        {
+            // Arrange
+            string name = $"{NewVariableName()}=EMBEDDED";
+
+            // Act & Assert
+            _ = Assert.Throws<FormatException>(() => EnvironmentUtilities.RemoveEnvironmentVariable(name, EnvironmentVariableTarget.User));
+            AssertNothingWasPersisted(name);
+        }
+
+        /// <summary>
         /// Verifies that appending reads what the target scope holds rather than what this process holds.
         /// </summary>
         /// <remarks>
@@ -516,7 +658,7 @@ namespace PSADT.Tests.Utilities
             string name = NewVariableName();
             try
             {
-                Environment.SetEnvironmentVariable(name, "target", EnvironmentVariableTarget.User);
+                WriteUserValue(name, "target", RegistryValueKind.String);
                 Environment.SetEnvironmentVariable(name, "process");
 
                 // Act
@@ -527,7 +669,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
                 Environment.SetEnvironmentVariable(name, value: null);
             }
         }
@@ -548,7 +690,7 @@ namespace PSADT.Tests.Utilities
             string name = NewVariableName();
             try
             {
-                Environment.SetEnvironmentVariable(name, $"keep{Path.PathSeparator}drop", EnvironmentVariableTarget.User);
+                WriteUserValue(name, $"keep{Path.PathSeparator}drop", RegistryValueKind.String);
                 Environment.SetEnvironmentVariable(name, $"process{Path.PathSeparator}drop");
 
                 // Act
@@ -559,7 +701,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
                 Environment.SetEnvironmentVariable(name, value: null);
             }
         }
@@ -591,7 +733,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -616,7 +758,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -648,7 +790,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -676,7 +818,7 @@ namespace PSADT.Tests.Utilities
             }
             finally
             {
-                Environment.SetEnvironmentVariable(name, value: null, EnvironmentVariableTarget.User);
+                RemoveUserValue(name);
             }
         }
 
@@ -693,6 +835,23 @@ namespace PSADT.Tests.Utilities
             using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment", writable: true)
                 ?? throw new InvalidOperationException("The user's environment key is not there to write to.");
             key.SetValue(name, value, kind);
+        }
+
+        /// <summary>
+        /// Takes a value back out of the user's environment key, whether or not it is there.
+        /// </summary>
+        /// <remarks>
+        /// The framework's scoped setter would do this too, but it broadcasts the change with a call that
+        /// waits on every top-level window that is slow to answer - seconds per call on an ordinary desktop,
+        /// and this file would pay it once or twice per test. Nothing here is listening for the broadcast,
+        /// so the write is made where the wrapper makes it and the notification is left out.
+        /// </remarks>
+        /// <param name="name">The variable to take away.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the user's environment key is not there.</exception>
+        private static void RemoveUserValue(string name)
+        {
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("The user's environment key is not there to write to.");
+            key.DeleteValue(name, throwOnMissingValue: false);
         }
 
         /// <summary>

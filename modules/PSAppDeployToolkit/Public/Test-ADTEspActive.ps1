@@ -40,7 +40,7 @@ function Test-ADTEspActive
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTEspActive
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTEspActive.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTEspActive.ps1
     #>
 
     [CmdletBinding()]

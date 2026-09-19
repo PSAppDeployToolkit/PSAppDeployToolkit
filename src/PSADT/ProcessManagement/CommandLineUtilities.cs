@@ -805,36 +805,50 @@ namespace PSADT.ProcessManagement
                 return "\"\"";
             }
 
-            // Check whether the argument is a key-value pair that must be emitted verbatim.
+            // NSIS's /D= must never be quoted even with spaces in the path, and the installer reads the rest
+            // of the line itself, so it goes out as it stands whatever that would otherwise parse back as.
             int equalsPos = argument.IndexOf('=', StringComparison.Ordinal);
-            if (equalsPos > 0 && equalsPos < argument.Length - 1 && (IsQuotedKeyValueValue(argument, equalsPos) || IsNsisDestinationArgument(argument, equalsPos)))
+            if (equalsPos > 0 && equalsPos < argument.Length - 1 && IsNsisDestinationArgument(argument, equalsPos))
             {
-                // Already quoted, or NSIS's /D= which must never be quoted even with spaces in the path.
-                // Everything else falls through to the escaping below to survive being parsed back out.
                 return argument;
             }
 
-            // Check for PowerShell-style flag:value patterns (e.g., -Key:value with spaces).
-            if (TryEscapeFlagWithSeparatedValue(argument, out string escaped))
-            {
-                return escaped;
-            }
+            // Whichever of the friendlier rules applied, one argument has to arrive as one argument. Passing an
+            // argument list rather than a command line string is the caller saying where each of theirs ends,
+            // so a rule that would hand the child two of them gives way to the escaping that will not.
+            string candidate = EscapeArgumentLeniently();
+            return SurvivesBeingWrittenVerbatim(candidate) ? candidate : EscapeArgumentStrict(argument);
 
-            // Check for flag+path pattern (e.g., -sfx_oC:\Path\To\Output).
-            // This handles cases like 7-Zip's -sfx_o"C:\Path" where the path is attached to the flag.
-            if (TryEscapeFlagWithAttachedPath(argument, out escaped))
+            string EscapeArgumentLeniently()
             {
-                return escaped;
-            }
+                // A key-value pair whose value is already quoted, which is the form an installer expects.
+                if (equalsPos > 0 && equalsPos < argument.Length - 1 && IsQuotedKeyValueValue(argument, equalsPos))
+                {
+                    return argument;
+                }
 
-            // Check for non-flag name:value patterns produced by tokenized PowerShell hashtable keys with spaces.
-            if (TryEscapeSeparatedValue(argument, 0, out escaped))
-            {
-                return escaped;
-            }
+                // Check for PowerShell-style flag:value patterns (e.g., -Key:value with spaces).
+                if (TryEscapeFlagWithSeparatedValue(argument, out string escaped))
+                {
+                    return escaped;
+                }
 
-            // For all other cases, use the standard strict escaping.
-            return EscapeArgumentStrict(argument);
+                // Check for flag+path pattern (e.g., -sfx_oC:\Path\To\Output).
+                // This handles cases like 7-Zip's -sfx_o"C:\Path" where the path is attached to the flag.
+                if (TryEscapeFlagWithAttachedPath(argument, out escaped))
+                {
+                    return escaped;
+                }
+
+                // Check for non-flag name:value patterns produced by tokenized PowerShell hashtable keys with spaces.
+                if (TryEscapeSeparatedValue(argument, 0, out escaped))
+                {
+                    return escaped;
+                }
+
+                // For all other cases, use the standard strict escaping.
+                return EscapeArgumentStrict(argument);
+            }
         }
 
         /// <summary>
@@ -847,6 +861,27 @@ namespace PSADT.ProcessManagement
         {
             ReadOnlySpan<char> value = argument.AsSpan(equalsPos + 1);
             return value.Length > 1 && value[0] == '"' && value[^1] == '"';
+        }
+
+        /// <summary>
+        /// Determines whether an argument still reads as one argument when written to a command line as it stands.
+        /// </summary>
+        /// <remarks>
+        /// Starting and ending with a quote does not make something a single quoted token. The same is true of
+        /// <c language="text">K="a" /qn X="b"</c>, which is three, and writing it out untouched hands the child a
+        /// command line the caller did not ask for: the array form of an argument list exists precisely so that
+        /// one element stays one argument.
+        /// <para>
+        /// Counting quotes does not separate the two either, an installer property carrying doubled quotes being
+        /// a single argument with six of them. Parsing it is what settles it, under the strict rules because
+        /// those are the ones the child will apply rather than the ones this assembly relaxes for reading.
+        /// </para>
+        /// </remarks>
+        /// <param name="argument">The argument to test.</param>
+        /// <returns>True if the argument reads back as exactly one argument, otherwise false.</returns>
+        private static bool SurvivesBeingWrittenVerbatim(string argument)
+        {
+            return CommandLineToArgumentListStrict(argument).Count is 1;
         }
 
         /// <summary>

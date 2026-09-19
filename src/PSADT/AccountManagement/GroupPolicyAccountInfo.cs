@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Security;
 using System.Security.Principal;
 using Microsoft.Win32;
 
@@ -21,13 +22,13 @@ namespace PSADT.AccountManagement
         /// <remarks>This method accesses the Group Policy Data Store in the Windows registry to gather
         /// account information. It returns a collection of <see cref="GroupPolicyAccountInfo"/> objects, each
         /// containing details about a user account and its associated security identifier (SID). If the data store is
-        /// unavailable or no valid entries are found, an empty list is returned.</remarks>
+        /// unavailable, no valid entries are found, or no entry can be read, an empty list is returned.</remarks>
         /// <returns>A read-only list of <see cref="GroupPolicyAccountInfo"/> objects representing the account information stored
         /// in Group Policy. The list will be empty if no valid entries are found.</returns>
         public static IReadOnlyList<GroupPolicyAccountInfo> Get()
         {
             // Confirm we have a Group Policy Data Store to work with.
-            using RegistryKey? datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
+            using RegistryKey? datastore = OpenDataStoreSubKey(GroupPolicyDataStorePath);
             if (datastore is null)
             {
                 return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
@@ -44,7 +45,7 @@ namespace PSADT.AccountManagement
                 }
 
                 // Skip over the entry if there's no indices.
-                using RegistryKey? indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}");
+                using RegistryKey? indices = OpenDataStoreSubKey($@"{GroupPolicyDataStorePath}\{sid}");
                 if (indices is null)
                 {
                     continue;
@@ -54,7 +55,7 @@ namespace PSADT.AccountManagement
                 foreach (string index in indices.GetSubKeyNames())
                 {
                     // If the username is available, add it to the list and skip to the next SID.
-                    using RegistryKey? info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
+                    using RegistryKey? info = OpenDataStoreSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
                     if (info?.GetValue("szName", defaultValue: null) is string username && !string.IsNullOrWhiteSpace(username))
                     {
                         accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
@@ -62,6 +63,27 @@ namespace PSADT.AccountManagement
                 }
             }
             return accountInfoList.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Opens a key beneath the Group Policy Data Store, treating one that cannot be read as one that is not there.
+        /// </summary>
+        /// <remarks>Each account's entry carries its own permissions, and an unprivileged caller can enumerate the names
+        /// under the data store without being permitted to open every one of them. Refusing the whole read over a single
+        /// inaccessible account would discard the accounts that were readable, which are the ones the caller is asking
+        /// about - the caller's own account among them.</remarks>
+        /// <param name="path">The path of the key to open, relative to <see cref="Registry.LocalMachine"/>.</param>
+        /// <returns>The opened key, or <see langword="null"/> if it does not exist or cannot be read.</returns>
+        private static RegistryKey? OpenDataStoreSubKey(string path)
+        {
+            try
+            {
+                return Registry.LocalMachine.OpenSubKey(path);
+            }
+            catch (SecurityException)
+            {
+                return null;
+            }
         }
 
         /// <summary>

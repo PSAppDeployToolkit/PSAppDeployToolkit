@@ -971,8 +971,12 @@ namespace PSADT.ShortcutManagement
         /// Gets an unsigned integer property value from the property store.
         /// </summary>
         /// <param name="key">The property key.</param>
-        /// <returns>The unsigned integer value, or 0 if the property is not set.</returns>
+        /// <returns>The unsigned integer value, or <see langword="null"/> if the property is not set.</returns>
         /// <exception cref="FileFormatException">Thrown when the property has an unexpected type.</exception>
+        /// <remarks>A four-byte value is taken whichever way it was signed. The properties read through here are
+        /// unsigned and this writes them as VT_UI4, but a shortcut written by something else may hold VT_I4 and
+        /// says the same thing in the same bits. The conversion is spelt unchecked because the repository builds
+        /// checked, where a negative value would otherwise throw rather than be reinterpreted.</remarks>
         private uint? GetUInt32Property(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -981,8 +985,8 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                return vt is VARENUM.VT_I4 && propVariant.Anonymous.Anonymous.Anonymous.lVal < 0
-                    ? (uint)propVariant.Anonymous.Anonymous.Anonymous.lVal
+                return vt is VARENUM.VT_I4
+                    ? unchecked((uint)propVariant.Anonymous.Anonymous.Anonymous.lVal)
                     : vt is VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal
                     : vt is not VARENUM.VT_EMPTY

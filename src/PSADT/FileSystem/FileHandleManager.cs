@@ -339,10 +339,12 @@ namespace PSADT.FileSystem
                         bool fileDupHandleAddRef = false; bool objectBufferAddRef = false;
                         try
                         {
-                            // Start the thread to retrieve the object name and wait for the outcome.
+                            // Started without the DLL thread attach notifications, which keeps it off the
+                            // loader lock: one terminated below while holding that lock orphans it and hangs
+                            // every later load. Its routine reaches everything through baked-in addresses.
                             fileDupHandle.DangerousAddRef(ref fileDupHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                             PatchStartRoutineBuffer(startRoutineBuffer, fileDupHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                            _ = NativeMethods.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                            _ = NativeMethods.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer, CreateFlags: THREAD_CREATE_FLAGS.THREAD_CREATE_FLAGS_SKIP_THREAD_ATTACH);
                             NTSTATUS res;
                             using (hThread)
                             {

@@ -25,7 +25,8 @@ namespace PSADT.DeviceManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception will never be thrown during operation.")]
         static HardwareInfo()
         {
-            Span<byte> buffer = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(buffer);
+            // On the heap, as the length is the firmware's to report and nothing bounds it below int.MaxValue.
+            Span<byte> buffer = new byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(buffer);
             PlatformFirmwareInformation = PlatformFirmwareInformation.Get(buffer) ?? throw new NotSupportedException("The SMBIOS query for Platform Firmware Information returned a null result.");
             SystemInformation = SystemInformation.Get(buffer) ?? throw new NotSupportedException("The SMBIOS query for System Information returned a null result.");
             SystemEnclosure = SystemEnclosure.Get(buffer) ?? throw new NotSupportedException("The SMBIOS query for System Enclosure returned a null result.");

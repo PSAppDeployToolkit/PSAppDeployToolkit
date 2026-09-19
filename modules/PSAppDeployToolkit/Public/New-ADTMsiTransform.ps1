@@ -60,7 +60,7 @@ function New-ADTMsiTransform
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTMsiTransform
 
     .LINK
-        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTMsiTransform.ps1
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/New-ADTMsiTransform.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]

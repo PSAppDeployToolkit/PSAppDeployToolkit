@@ -33,5 +33,13 @@ Describe 'Invoke-ADTClientServerOperation' {
                 { Invoke-ADTClientServerOperation -ProgressDialogOpen -User 'not a user' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
             }
         }
+
+        It 'Requires a silent restart to be asked for without waiting' {
+            # SilentRestart has no counterpart on ServerInstance, so it only works via the argv route that
+            # -NoWait selects. Without it the call reaches a SilentRestartAsync() that does not exist,
+            # which being mandatory turns into a binding failure instead.
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Delay | Should -BeFalse
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Delay, NoWait | Should -BeTrue
+        }
     }
 }

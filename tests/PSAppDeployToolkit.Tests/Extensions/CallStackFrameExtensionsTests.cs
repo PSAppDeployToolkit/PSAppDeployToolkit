@@ -218,7 +218,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         {
             // Asserted rather than assumed: a shape the engine stopped producing would otherwise quietly stop being
             // covered.
-            FrameCase? match = cases.FirstOrDefault(frameCase => string.Equals(frameCase.Shape, shape, StringComparison.Ordinal));
+            FrameCase? match = cases.FirstOrDefault(frameCase => shape.Equals(frameCase.Shape, StringComparison.Ordinal));
             Assert.NotNull(match);
             return match.Frame;
         }
