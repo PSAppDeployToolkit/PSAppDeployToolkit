@@ -13,7 +13,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
         Mock -ModuleName PSAppDeployToolkit Copy-ADTFile {
         }
         Mock -ModuleName PSAppDeployToolkit Get-ADTUserProfiles {
-            if ($PesterBoundParameters.LoadProfilePaths)
+            if ($PesterBoundParameters.ContainsKey('LoadProfilePaths'))
             {
                 [PSADT.AccountManagement.UserProfileInfo]::new(
                     'User1',
@@ -200,6 +200,40 @@ Describe 'Copy-ADTFileToUserProfiles' {
             {
                 Copy-ADTFileToUserProfiles -Path "$SourcePath\test.txt" -LiteralPath "$SourcePath\test2.txt" -Destination 'Test'
             } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
+        }
+    }
+
+    Context 'Profile path loading' {
+        # Loading the shell folder paths mounts the registry hive of every logged off user, so it must
+        # only happen for a base path that actually needs one of them.
+        It 'Does not load the shell folder paths for the default base path' {
+            Copy-ADTFileToUserProfiles -Path "$SourcePath\test.txt" -Destination 'Test'
+
+            Should -Invoke -ModuleName 'PSAppDeployToolkit' -CommandName 'Get-ADTUserProfiles' -Times 1 -Exactly -ParameterFilter {
+                !$PesterBoundParameters.ContainsKey('LoadProfilePaths')
+            }
+            Should -Invoke -ModuleName 'PSAppDeployToolkit' -CommandName 'Copy-ADTFile' -Times 1 -Exactly -ParameterFilter {
+                $Destination -eq 'C:\Users\User1\Test'
+            }
+        }
+
+        It 'Does not load the shell folder paths for an explicit -BasePath of Profile' {
+            Copy-ADTFileToUserProfiles -Path "$SourcePath\test.txt" -Destination 'Test' -BasePath Profile
+
+            Should -Invoke -ModuleName 'PSAppDeployToolkit' -CommandName 'Get-ADTUserProfiles' -Times 1 -Exactly -ParameterFilter {
+                !$PesterBoundParameters.ContainsKey('LoadProfilePaths')
+            }
+        }
+
+        It 'Loads the shell folder paths for a non-default base path' {
+            Copy-ADTFileToUserProfiles -Path "$SourcePath\test.txt" -Destination 'Test' -BasePath Documents
+
+            Should -Invoke -ModuleName 'PSAppDeployToolkit' -CommandName 'Get-ADTUserProfiles' -Times 1 -Exactly -ParameterFilter {
+                $LoadProfilePaths
+            }
+            Should -Invoke -ModuleName 'PSAppDeployToolkit' -CommandName 'Copy-ADTFile' -Times 1 -Exactly -ParameterFilter {
+                $Destination -eq 'C:\Users\User1\Documents\Test'
+            }
         }
     }
 }

@@ -225,8 +225,9 @@ function Copy-ADTFileToUserProfiles
         {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
-        if ($BasePath -ne 'ProfilePath')
+        if ($BasePath -ne 'Profile')
         {
+            # Only the shell folder paths need loading, ProfilePath is always populated.
             $GetUserProfileSplat.LoadProfilePaths = $true
         }
 
