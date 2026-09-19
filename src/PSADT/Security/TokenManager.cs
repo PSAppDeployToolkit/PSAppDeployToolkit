@@ -43,16 +43,14 @@ namespace PSADT.Security
         /// <summary>
         /// Checks whether any acquisition route may serve the request.
         /// </summary>
-        /// <remarks>Named as the union of the routes rather than reduced to the administrator test they currently share, so that
-        /// it continues to describe every route if any of them changes. Process discovery is a search of the target session and
-        /// can come up empty, so a caller that holds a no-token fallback wants
-        /// <see cref="TryGetUserPrimaryTokenAsync(uint, ElevatedTokenType, bool)"/>, which reaches that fallback rather than
-        /// answering a question no check can settle in advance.</remarks>
+        /// <remarks>Process discovery is a search of the target session and can come up empty, so a caller that holds a no-token
+        /// fallback wants <see cref="TryGetUserPrimaryTokenAsync(uint, ElevatedTokenType, bool)"/>, which reaches that fallback
+        /// rather than answering a question no check can settle in advance.</remarks>
         /// <param name="sessionId">The requested desktop session.</param>
         /// <returns>Whether acquisition may be attempted.</returns>
         internal static bool CanGetUserPrimaryToken(uint sessionId)
         {
-            return (CanGetTokenFromProcess || CallerCanRetrieveTokens) && SessionIdIsValidForVending(sessionId);
+            return CallerCanRetrieveTokens && SessionIdIsValidForVending(sessionId);
         }
 
         /// <summary>
@@ -576,13 +574,11 @@ namespace PSADT.Security
         private static readonly bool CanGetTokenViaWts = AccountUtilities.CallerIsLocalSystem;
 
         /// <summary>
-        /// Indicates whether the current execution context has a token acquisition route that is available irrespective of what
-        /// the target session happens to be running.
+        /// Indicates whether the current execution context has any route at all to a user token from another session.
         /// </summary>
-        /// <remarks>Process discovery is deliberately not named here. It searches the target session for a suitable process, so
-        /// it can come up empty against a session that is otherwise perfectly serviceable, and acquisition then falls through to
-        /// the broker. Naming it would report a route as available to every administrator, including one running from a network
-        /// path the Local System account cannot read, where that fall through is refused.</remarks>
-        private static readonly bool CallerCanRetrieveTokens = CanGetTokenViaBroker || CanGetTokenViaWts;
+        /// <remarks>Reduces to the administrator test, as every route requires one and the narrower flags only decide which
+        /// route is taken rather than whether any is open. Named as the union regardless, so that it keeps describing every
+        /// route should one of them come to require something else.</remarks>
+        private static readonly bool CallerCanRetrieveTokens = CanGetTokenFromProcess || CanGetTokenViaBroker || CanGetTokenViaWts;
     }
 }
