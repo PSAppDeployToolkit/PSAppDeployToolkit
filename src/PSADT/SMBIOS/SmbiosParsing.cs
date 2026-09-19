@@ -93,6 +93,14 @@ namespace PSADT.SMBIOS
                     return parser(buffer, offset, length);
                 }
 
+                // The end-of-table structure is the last one the firmware published, so anything after it is
+                // padding rather than a structure. Firmware is free to pad, and reading on would take those
+                // bytes as a header and refuse the table over a length the firmware never declared.
+                if (buffer[offset] == (byte)SmbiosType.EndOfTable)
+                {
+                    break;
+                }
+
                 // Move to the next structure, skipping unformatted string fields. A double terminator indicates the end.
                 offset += length; while (offset < buffer.Length - 1 && !(buffer[offset] is 0 && buffer[offset + 1] is 0))
                 {
