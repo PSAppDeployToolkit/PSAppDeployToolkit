@@ -138,6 +138,48 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
+        /// Verifies that padding written after the end-of-table structure is not read as a structure.
+        /// </summary>
+        /// <remarks>Firmware is free to pad the table out past the structures it published, and those bytes are
+        /// zeroes rather than a header. Reading one as a structure declares a length of zero, which the length check
+        /// refuses, so a table that merely lacks the structure asked for would be reported as malformed instead.
+        /// That answer travels a long way: the only caller builds its structures in a static constructor, so the
+        /// type stays faulted for the life of the process and every environment table built after it fails.</remarks>
+        [Fact]
+        public void ReadStructure_DoesNotReadPaddingAfterTheEndOfTable()
+        {
+            // Arrange: a table the firmware padded with zeroes past its end-of-table structure.
+            byte[] table = SmbiosTestDataBuilder.BuildRawSmbios(
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.Inactive, 0x1000, [0xAA]),
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0xFFFE, [])
+            );
+            byte[] padded = new byte[table.Length + 16];
+            table.CopyTo(padded, 0);
+
+            // Assert: reported missing, which it is, rather than refused as a structure the padding never was.
+            _ = Assert.Throws<SmbiosTypeNotFoundException>(() => SmbiosParsing.ReadStructure(padded, SmbiosType.SystemInformation, FakeStructureParser));
+        }
+
+        /// <summary>
+        /// Verifies that the walk stops at the end-of-table structure rather than reading on past it.
+        /// </summary>
+        /// <remarks>The end-of-table structure is what the firmware uses to say it published nothing further, so
+        /// bytes after it are not part of the table whether or not they read like a structure. Taking them as one
+        /// is what makes padding look malformed.</remarks>
+        [Fact]
+        public void ReadStructure_StopsAtTheEndOfTable()
+        {
+            // Arrange: a well formed structure written after the terminator, which is past what the table declares.
+            byte[] table = SmbiosTestDataBuilder.BuildRawSmbios(
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0xFFFE, []),
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.SystemInformation, 0x1000, [0xAA])
+            );
+
+            // Assert
+            _ = Assert.Throws<SmbiosTypeNotFoundException>(() => SmbiosParsing.ReadStructure(table, SmbiosType.SystemInformation, FakeStructureParser));
+        }
+
+        /// <summary>
         /// Verifies that an index past the end of a structure's own strings does not reach the next structure's.
         /// </summary>
         /// <remarks>A string set ends with an empty string, and the set belonging to the structure that follows
