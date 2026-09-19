@@ -496,7 +496,7 @@ function Open-ADTSession
         }
 
         # Remove any values from $PSBoundParameters that are null (empty strings, mostly).
-        $null = ($PSBoundParameters.GetEnumerator().Where({ [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
+        $null = ($PSBoundParameters.GetEnumerator().Where({ !(Out-ADTString -InputObject $_.Value) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
     }
 
     process

@@ -49,7 +49,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
                 $_.PSObject.Properties | & {
                     process
                     {
-                        if (($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$') -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
+                        if (($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$') -and (Out-ADTString -InputObject $_.Value))
                         {
                             # Handle bools as string values.
                             if ($_.Value -match '^(True|False)$')

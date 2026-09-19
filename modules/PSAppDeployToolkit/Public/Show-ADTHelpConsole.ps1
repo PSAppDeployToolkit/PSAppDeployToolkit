@@ -70,7 +70,7 @@ function Show-ADTHelpConsole
                     $help = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
                     foreach ($exportedCommand in $_.ExportedCommands.Keys)
                     {
-                        $help.Add($exportedCommand, [System.String]::Join([System.Environment]::NewLine, ((Get-Help -Name $exportedCommand -Full | Out-String -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::Value) + [System.Environment]::NewLine)
+                        $help.Add($exportedCommand, (Get-Help -Name $exportedCommand -Full | Out-ADTString).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::Value) + [System.Environment]::NewLine)
                     }
 
                     # Add the dictionary of commands and their help to the collector.

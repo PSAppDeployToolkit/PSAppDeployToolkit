@@ -83,7 +83,7 @@ function Select-ADTUniqueObject
         $InputObject | & {
             process
             {
-                if (![System.String]::IsNullOrWhiteSpace(($_ | Out-String)))
+                if ($_ | Out-ADTString)
                 {
                     $buffer.Add($_)
                 }
