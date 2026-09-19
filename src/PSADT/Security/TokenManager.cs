@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
@@ -56,8 +58,8 @@ namespace PSADT.Security
         /// <summary>
         /// Retrieves a session token, reporting the absence of one rather than raising it.
         /// </summary>
-        /// <remarks>For a caller holding a fallback to use when no token can be had. Absorbs a refusal and an environmental
-        /// failure, which are the outcomes a fallback exists for; an undefined elevation is a caller error and still raises.</remarks>
+        /// <remarks>For a caller holding a fallback to use when no token can be had. Absorbs every failure meaning no token, per
+        /// <see cref="IsAcquisitionFailure"/>; an undefined elevation is the caller's own error and still raises.</remarks>
         /// <param name="sessionId">The requested desktop session.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is requested.</param>
@@ -73,7 +75,7 @@ namespace PSADT.Security
             {
                 return await GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException)
+            catch (Exception ex) when (IsAcquisitionFailure(ex))
             {
                 return null;
                 throw;
@@ -83,8 +85,8 @@ namespace PSADT.Security
         /// <summary>
         /// Retrieves a primary token for the expected user, reporting the absence of one rather than raising it.
         /// </summary>
-        /// <remarks>Absorbs the identity check as well as the refusals, as a session that has changed hands has no token for the
-        /// user who was asked about.</remarks>
+        /// <remarks>Absorbs the identity check as well, as a session that has changed hands has no token for the user who was
+        /// asked about.</remarks>
         /// <param name="user">The expected desktop user.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is requested.</param>
@@ -100,11 +102,24 @@ namespace PSADT.Security
             {
                 return await GetUserPrimaryTokenAsync(user, elevatedTokenType, uiAccess).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException)
+            catch (Exception ex) when (IsAcquisitionFailure(ex))
             {
                 return null;
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a failure to acquire a token means there is no token rather than that the caller erred.
+        /// </summary>
+        /// <remarks>The same set <c language="csharp">ProcessTokenProvider</c> treats as a candidate failure, less the argument failures, which
+        /// carry an undefined elevation and belong to the caller. Named as a set rather than listed at each catch so that the
+        /// native layer surfacing a refusal as something new is handled in one place.</remarks>
+        /// <param name="exception">The failure to classify.</param>
+        /// <returns>Whether the failure means no token was available.</returns>
+        private static bool IsAcquisitionFailure(Exception exception)
+        {
+            return exception is Win32Exception or InvalidOperationException or UnauthorizedAccessException or SecurityException or IdentityNotMappedException;
         }
 
         /// <summary>
