@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Management.Automation;
 using PSAppDeployToolkit.Utilities;
 
@@ -10,9 +11,9 @@ namespace PSAppDeployToolkit.Attributes
     /// Specifies that a collection parameter or property must contain only unique elements.
     /// </summary>
     /// <remarks>
-    /// For string elements, uniqueness is evaluated using the configured <see cref="StringComparison"/> value.
-    /// For non-string elements, uniqueness is evaluated using the type's equality implementation.
-    /// Null elements are not valid. Non-collection values are treated as valid.
+    /// For string elements, and for the path a <see cref="FileSystemInfo"/> names, uniqueness is evaluated using the
+    /// configured <see cref="StringComparison"/> value. For all other elements, uniqueness is evaluated using the
+    /// type's equality implementation. Null elements are not valid. Non-collection values are treated as valid.
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3253:Constructor and destructor declarations should not be redundant", Justification = "This primary constructor is required for PowerShell.")]
     public sealed class ValidateUniqueAttribute() : ValidateArgumentsAttribute
@@ -97,7 +98,7 @@ namespace PSAppDeployToolkit.Attributes
             /// <returns><see langword="true"/> if they are the same; otherwise, <see langword="false"/>.</returns>
             public new bool Equals(object? x, object? y)
             {
-                return x is string first && y is string second
+                return ComparisonKey(x) is string first && ComparisonKey(y) is string second
                     ? string.Equals(first, second, stringComparison)
                     : EqualityComparer<object?>.Default.Equals(x, y);
             }
@@ -109,7 +110,21 @@ namespace PSAppDeployToolkit.Attributes
             /// <returns>Its hash code, or zero where it has none.</returns>
             public int GetHashCode(object? obj)
             {
-                return obj is string value ? _stringComparer.GetHashCode(value) : obj?.GetHashCode() ?? 0;
+                return ComparisonKey(obj) is string value ? _stringComparer.GetHashCode(value) : obj?.GetHashCode() ?? 0;
+            }
+
+            /// <summary>
+            /// Reduces an element to the string it is compared by, where it has one.
+            /// </summary>
+            /// <remarks>A <see cref="FileSystemInfo"/> compares by reference, so two of them naming one path are not the
+            /// same element to anything using default equality. Paths reach here as one whenever a parameter is typed
+            /// as <see cref="DirectoryInfo"/> or <see cref="FileInfo"/> rather than as a string, and the caller that
+            /// passed the same path twice meant the same thing either way.</remarks>
+            /// <param name="value">The element to reduce.</param>
+            /// <returns>The string to compare it by, or <see langword="null"/> where it has none.</returns>
+            private static string? ComparisonKey(object? value)
+            {
+                return value as string ?? (value as FileSystemInfo)?.FullName;
             }
 
             /// <summary>
