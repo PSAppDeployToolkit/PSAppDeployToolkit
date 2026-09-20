@@ -183,7 +183,9 @@ Describe 'Out-ADTString' {
 
     Context 'Parameters' {
         It 'Requires InputObject' {
-            { InModuleScope -ModuleName PSAppDeployToolkit { Out-ADTString } } | Should -Throw -ExpectedMessage '*missing mandatory parameters: InputObject*'
+            # Asked of the declaration rather than by leaving the argument out, because a
+            # host able to prompt does exactly that and hangs the run waiting on input.
+            Test-ADTMandatoryParameter -Command (InModuleScope PSAppDeployToolkit { Get-Command Out-ADTString }) -Parameter InputObject | Should -BeTrue
         }
 
         It 'Rethrows a failure against itself' {
