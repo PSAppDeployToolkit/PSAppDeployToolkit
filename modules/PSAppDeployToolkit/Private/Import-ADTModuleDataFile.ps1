@@ -66,9 +66,9 @@ function Private:Import-ADTModuleDataFile
     $initialUICulture = $UICulture
     $importedData = while ($true)
     {
-        if ($Script:ADT.ModuleDefaults.$section.ContainsKey($UICulture.Name))
+        if (($defaultSection = (Get-ADTModuleDefaults).$section).ContainsKey($UICulture.Name))
         {
-            $Script:ADT.ModuleDefaults.$section.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
             $UICulture = $initialUICulture
             break
         }

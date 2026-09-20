@@ -4,40 +4,33 @@
 #
 #-----------------------------------------------------------------------------
 
-# Store the module info in a variable for further usage.
-New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
-
-# Dot-source our initial imports.
-. (Join-Path -Path $PSScriptRoot -ChildPath ImportsFirst.ps1)
-
-# Dot-source our imports.
-if (!$Module.Compiled)
+# Rethrowing caught exceptions makes the error output from Import-Module look better.
+try
 {
-    try
-    {
-        New-Variable -Name ModuleFiles -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Private)); [System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Public))), $null))
-        $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
-        $PrivateFuncs = [System.Collections.Generic.HashSet[System.String]]::new()
-        $null = $ModuleFiles | & {
-            process
-            {
-                if ([System.IO.Path]::GetDirectoryName($_.FullName).EndsWith('Private'))
-                {
-                    $PrivateFuncs.Add($_.BaseName)
-                }
-                $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.BaseName)")
-            }
-        }
-        New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
-        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
-        Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-        $ModuleFiles.FullName | . { process { . $_ } }
-    }
-    catch
-    {
-        throw
-    }
-}
+    # Dot-source our initial imports.
+    . (Join-Path -Path $PSScriptRoot -ChildPath ImportsFirst.ps1)
 
-# Dot-source our final imports.
-. (Join-Path -Path $PSScriptRoot -ChildPath 'ImportsLast.ps1')
+    # Dot-source our imports.
+    $PrivateFuncs = [System.Collections.Generic.HashSet[System.String]]::new()
+    New-Variable -Name ModuleFiles -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.IO.FileInfo]]$([System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Private)); [System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Public))))
+    New-Variable -Name FunctionPaths -Option Constant -Force -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]($ModuleFiles | & {
+                process
+                {
+                    if ([System.IO.Path]::GetDirectoryName($_.FullName).EndsWith('Private'))
+                    {
+                        $null = $PrivateFuncs.Add($_.BaseName)
+                    }
+                    return "Microsoft.PowerShell.Core\Function::$($_.BaseName)"
+                }
+            }))
+    New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
+    Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+    $ModuleFiles.FullName | . { process { . $_ } }
+
+    # Dot-source our final imports.
+    . (Join-Path -Path $PSScriptRoot -ChildPath 'ImportsLast.ps1')
+}
+catch
+{
+    throw
+}

@@ -21,7 +21,7 @@ function Private:Exit-ADTInvocation
     )
 
     # Invoke on-exit callbacks.
-    $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnExit)))
+    $callbackErrors = foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnExit | & { process { return $_ } }))
     {
         try
         {
@@ -34,9 +34,9 @@ function Private:Exit-ADTInvocation
     }
 
     # Attempt to close down any dialog or client/server process here as an additional safety item.
-    $clientOpen = if ($Script:ADT.ClientServerProcess)
+    $clientOpen = if (Test-ADTClientServerActive)
     {
-        if ($Script:ADT.ClientServerProcess.ProgressDialogOpenAsync().ConfigureAwait($false).GetAwaiter().GetResult())
+        if (($clientServerInstance = Get-ADTClientServerInstance).ProgressDialogOpenAsync().ConfigureAwait($false).GetAwaiter().GetResult())
         {
             try
             {
@@ -47,7 +47,7 @@ function Private:Exit-ADTInvocation
                 $_
             }
         }
-        if ($Script:ADT.ClientServerProcess.NotifyIconOpenAsync().ConfigureAwait($false).GetAwaiter().GetResult())
+        if ($clientServerInstance.NotifyIconOpenAsync().ConfigureAwait($false).GetAwaiter().GetResult())
         {
             try
             {
@@ -60,7 +60,7 @@ function Private:Exit-ADTInvocation
         }
         try
         {
-            Close-ADTClientServerProcess
+            Close-ADTClientServerInstance
         }
         catch
         {
@@ -68,28 +68,28 @@ function Private:Exit-ADTInvocation
         }
     }
 
-    # Flag the module as uninitialized upon last session closure.
-    $Script:ADT.Initialized = $false
-
     # Invoke a silent restart on the device if specified.
-    if ($null -ne $Script:ADT.RestartOnExitCountdown)
+    if ((Test-ADTModuleInitialized) -and ($null -ne ($moduleState = Get-ADTModuleState).RestartOnExitCountdown))
     {
         $icsoParams = @{
             User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
             SilentRestart = $true
-            Delay = $Script:ADT.RestartOnExitCountdown
+            Delay = $moduleState.RestartOnExitCountdown
             NoWait = $true
         }
-        if ($null -ne $Script:ADT.ShutdownReasonText)
+        if ($null -ne $moduleState.ShutdownReasonText)
         {
-            $icsoParams.Add('ShutdownReasonText', $Script:ADT.ShutdownReasonText)
+            $icsoParams.Add('ShutdownReasonText', $moduleState.ShutdownReasonText)
         }
-        if ($Script:ADT.ShutdownNoForceCloseApps)
+        if ($moduleState.ShutdownNoForceCloseApps)
         {
             $icsoParams.Add('NoForceCloseApps', $true)
         }
         Invoke-ADTClientServerOperation @icsoParams
     }
+
+    # Flag the module as uninitialized upon last session closure.
+    Reset-ADTModuleState
 
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.

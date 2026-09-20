@@ -49,17 +49,14 @@ function Get-ADTEnvironmentTable
     (
     )
 
-    # Return the environment database if initialized.
-    if (!$Script:ADT.Environment)
+    # Return the environment database if initialized. Rethrown from here so the caller's own line
+    # is what the error reports, rather than a line inside this module that means nothing to them.
+    try
     {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-            ErrorId = 'ADTEnvironmentDatabaseEmpty'
-            TargetObject = $Script:ADT.Environment
-            RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        return (Get-ADTModuleState).Environment
     }
-    return $Script:ADT.Environment
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }

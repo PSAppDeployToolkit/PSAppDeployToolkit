@@ -188,7 +188,7 @@ function Get-ADTBoundParametersAndDefaultValues
                         process
                         {
                             # Filter out common parameters.
-                            if ($Script:PowerShellCommonParameters -notcontains $_.Key)
+                            if (!$Script:PowerShellCommonParameters.Contains($_.Key))
                             {
                                 $obj.Add($_.Key, $_.Value)
                             }

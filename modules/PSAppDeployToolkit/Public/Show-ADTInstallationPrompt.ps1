@@ -252,7 +252,7 @@ function Show-ADTInstallationPrompt
         else
         {
             $adtConfig = Get-ADTConfig
-            $adtLanguage = $Script:ADT.Language
+            $adtLanguage = Get-ADTStringLanguage
             $adtStrings = Get-ADTStringTable -SessionState $sessionState
         }
 
@@ -565,9 +565,9 @@ function Show-ADTInstallationPrompt
         finally
         {
             # Close the client/server process if we're running without a session.
-            if (!$adtSession -and $Script:ADT.ClientServerProcess)
+            if (!$adtSession -and (Test-ADTClientServerActive))
             {
-                Close-ADTClientServerProcess
+                Close-ADTClientServerInstance
             }
         }
     }

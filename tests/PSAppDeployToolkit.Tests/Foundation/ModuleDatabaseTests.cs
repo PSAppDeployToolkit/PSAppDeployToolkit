@@ -30,11 +30,11 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// was loaded some other way - not that a command was missed.
         /// </remarks>
         [Fact]
-        public void Get_SaysTheAssemblyWasNotLoadedByTheModule()
+        public void GetSessionState_SaysTheAssemblyWasNotLoadedByTheModule()
         {
             Assert.Contains(
                 "only supports loading via the PSAppDeployToolkit PowerShell module",
-                Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Get()).Message,
+                Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.GetImportDuration()).Message,
                 StringComparison.Ordinal);
             Assert.Contains(
                 "only supports loading via the PSAppDeployToolkit PowerShell module",
@@ -52,6 +52,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         [Fact]
         public void GetEnvironment_NamesTheCommandThatInitialisesTheModule()
         {
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabaseWithoutState();
             foreach (Func<object> reader in new Func<object>[] { ModuleDatabase.GetEnvironment, ModuleDatabase.GetConfig, ModuleDatabase.GetStrings })
             {
                 Assert.Contains(
@@ -65,9 +66,19 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Verifies that a database with nothing in it is not mistaken for an initialised one.
         /// </summary>
         [Fact]
-        public void IsInitialized_IsFalseUntilSomethingIsSeated()
+        public void IsInitialized_IsFalseUntilStateIsSeated()
         {
-            Assert.False(ModuleDatabase.IsInitialized());
+            // Three states rather than two: no database is the assembly loaded outside the module and is refused
+            // rather than answered, a database without state is the module imported and nothing more.
+            static void ReadIsInitialized()
+            {
+                _ = ModuleDatabase.IsInitialized();
+            }
+            _ = Assert.Throws<InvalidOperationException>(ReadIsInitialized);
+            using (powerShell.SeatModuleDatabaseWithoutState())
+            {
+                Assert.False(ModuleDatabase.IsInitialized());
+            }
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
             Assert.True(ModuleDatabase.IsInitialized());
         }
@@ -113,9 +124,9 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// is for.
         /// </remarks>
         [Fact]
-        public void GetEnvironment_StillRefusesWhenNoTableWasSeated()
+        public void GetEnvironment_StillRefusesWhenNoStateWasSeated()
         {
-            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabaseWithoutState();
             Assert.Contains(
                 "[Initialize-ADTModule] is called",
                 Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.GetEnvironment()).Message,
@@ -130,9 +141,12 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// empty-list cases are reached in normal running - before a session opens and after the last one closes.
         /// </remarks>
         [Fact]
-        public void IsDeploymentSessionActive_IsFalseWithNoDatabaseAndWithNoSessions()
+        public void IsDeploymentSessionActive_IsFalseBeforeAnySessionOpens()
         {
-            Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            using (powerShell.SeatModuleDatabaseWithoutState())
+            {
+                Assert.False(ModuleDatabase.IsDeploymentSessionActive());
+            }
             using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
             Assert.False(ModuleDatabase.IsDeploymentSessionActive());
         }
@@ -270,16 +284,13 @@ namespace PSAppDeployToolkit.Tests.Foundation
         {
             using IDisposable scope = powerShell.Enter();
 
-            // Arrange
-            PSObject database = new();
-            database.Properties.Add(new PSNoteProperty("Initialized", value: true));
-
-            // Assert
+            // Assert: a valid session state still gets the guard's message rather than a complaint about the
+            // null database beside it, which is the ordering being shown.
             Assert.Contains(
                 "can only be initialized from within the PSAppDeployToolkit module",
-                Assert.Throws<InvalidOperationException>(() => ModuleDatabase.Init(database)).Message,
+                Assert.Throws<InvalidOperationException>(() => ModuleDatabase.Init(powerShell.ModuleSessionState, null!, DateTime.Now)).Message,
                 StringComparison.Ordinal);
-            _ = Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Init(null!));
+            _ = Assert.Throws<InvalidOperationException>(static () => ModuleDatabase.Init(null!, null!, default));
         }
 
         /// <summary>

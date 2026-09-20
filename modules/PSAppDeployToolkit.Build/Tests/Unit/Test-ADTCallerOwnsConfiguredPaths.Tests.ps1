@@ -26,7 +26,7 @@ Describe 'Test-ADTCallerOwnsConfiguredPaths' {
         It 'Reads the seated config when none is supplied' {
             # Every caller but Import-ADTConfig relies on this, since the config is established by then.
             InModuleScope -ModuleName PSAppDeployToolkit {
-                $ADT.Config.Toolkit.PathsBasedOnSystemContext | Should -BeFalse
+                (Get-ADTConfig).Toolkit.PathsBasedOnSystemContext | Should -BeFalse
                 Test-ADTCallerOwnsConfiguredPaths | Should -Be (Get-ADTEnvironmentTable).IsAdmin
             }
         }

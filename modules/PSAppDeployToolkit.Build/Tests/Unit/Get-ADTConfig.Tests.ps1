@@ -12,7 +12,7 @@ Describe 'Get-ADTConfig' {
         It 'Refuses to hand back a config that was never loaded' {
             # The message names Initialize-ADTModule, which is the whole point: a caller reaching for config
             # too early should be told what to do rather than given an empty table.
-            { Get-ADTConfig } | Should -Throw -ErrorId 'ADTConfigNotLoaded,Get-ADTConfig'
+            { Get-ADTConfig } | Should -Throw -ErrorId 'ADTModuleNotInitialized,Get-ADTConfig'
         }
     }
 
@@ -44,7 +44,7 @@ Describe 'Get-ADTConfig' {
 
         It 'Hands back the same table the module holds' {
             # Not a copy: the toolkit mutates config in place during a deployment, and a copy would drop it.
-            $script:Config | Should -Be (InModuleScope PSAppDeployToolkit { $ADT.Config })
+            $script:Config | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Config })
         }
     }
 }

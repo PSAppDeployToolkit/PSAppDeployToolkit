@@ -43,5 +43,5 @@ function Test-ADTModuleInitialized
         https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/modules/PSAppDeployToolkit/Public/Test-ADTModuleInitialized.ps1
     #>
 
-    return $Script:ADT.Initialized
+    return $null -ne $Script:Module.State
 }

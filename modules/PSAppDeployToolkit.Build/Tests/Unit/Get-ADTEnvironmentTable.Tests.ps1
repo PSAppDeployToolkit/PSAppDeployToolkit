@@ -10,7 +10,7 @@ AfterAll {
 Describe 'Get-ADTEnvironmentTable' {
     Context 'Before initialisation' {
         It 'Refuses to hand back an environment that was never built' {
-            { Get-ADTEnvironmentTable } | Should -Throw -ErrorId 'ADTEnvironmentDatabaseEmpty,Get-ADTEnvironmentTable'
+            { Get-ADTEnvironmentTable } | Should -Throw -ErrorId 'ADTModuleNotInitialized,Get-ADTEnvironmentTable'
         }
     }
 
@@ -48,7 +48,7 @@ Describe 'Get-ADTEnvironmentTable' {
         }
 
         It 'Hands back the same table the module holds' {
-            $script:Environment | Should -Be (InModuleScope PSAppDeployToolkit { $ADT.Environment })
+            $script:Environment | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Environment })
         }
     }
 }

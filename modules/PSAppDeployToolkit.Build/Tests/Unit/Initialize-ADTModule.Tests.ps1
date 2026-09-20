@@ -14,16 +14,18 @@ AfterAll {
 Describe 'Initialize-ADTModule' {
     Context 'Functionality' {
         It 'Leaves the module unusable until it is called' {
-            InModuleScope PSAppDeployToolkit { $ADT.Config } | Should -BeNullOrEmpty
-            InModuleScope PSAppDeployToolkit { $ADT.Strings } | Should -BeNullOrEmpty
-            InModuleScope PSAppDeployToolkit { $ADT.Environment } | Should -BeNullOrEmpty
+            # The state is what holds all three, so an uninitialized module has none of them to be empty.
+            InModuleScope PSAppDeployToolkit { $Module.State } | Should -BeNullOrEmpty
+            { Get-ADTConfig } | Should -Throw
+            { Get-ADTStringTable } | Should -Throw
+            { Get-ADTEnvironmentTable } | Should -Throw
         }
 
         It 'Populates the config, strings and environment' {
             Initialize-ADTModule -InformationAction SilentlyContinue
-            InModuleScope PSAppDeployToolkit { $ADT.Config.Count } | Should -BeGreaterThan 0
-            InModuleScope PSAppDeployToolkit { $ADT.Strings.Count } | Should -BeGreaterThan 0
-            InModuleScope PSAppDeployToolkit { $ADT.Environment } | Should -Not -BeNullOrEmpty
+            InModuleScope PSAppDeployToolkit { $Module.State.Config.Count } | Should -BeGreaterThan 0
+            InModuleScope PSAppDeployToolkit { $Module.State.Strings.Count } | Should -BeGreaterThan 0
+            InModuleScope PSAppDeployToolkit { $Module.State.Environment } | Should -Not -BeNullOrEmpty
         }
 
         It 'Marks the module as initialised' {
@@ -31,11 +33,13 @@ Describe 'Initialize-ADTModule' {
         }
 
         It 'Records how long it took' {
-            InModuleScope PSAppDeployToolkit { $ADT.Durations.ModuleInit.TotalMilliseconds } | Should -BeGreaterThan 0
+            InModuleScope PSAppDeployToolkit { $Module.State.InitDuration.TotalMilliseconds } | Should -BeGreaterThan 0
         }
 
         It 'Resets the last exit code' {
-            InModuleScope PSAppDeployToolkit { $ADT.LastExitCode } | Should -Be 0
+            # Nothing has exited yet, which is no exit code rather than a successful one. A caller reaching
+            # for it before anything has closed is asking a question that has no answer, and gets none.
+            InModuleScope PSAppDeployToolkit { Get-ADTModuleExitCode } | Should -BeNullOrEmpty
         }
 
         It 'Can be called again to reload the config' {

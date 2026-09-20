@@ -202,7 +202,7 @@ function Write-ADTLogEntry
         }
         if ($logEntries)
         {
-            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnLogEntry)))
+            foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnLogEntry | & { process { return $_ } }))
             {
                 $logEntries | & $callback
             }

@@ -219,7 +219,7 @@ function Show-ADTInstallationRestartPrompt
         else
         {
             $adtConfig = Get-ADTConfig
-            $adtLanguage = $Script:ADT.Language
+            $adtLanguage = Get-ADTStringLanguage
             $adtStrings = Get-ADTStringTable -SessionState $sessionState
         }
 
@@ -305,12 +305,12 @@ function Show-ADTInstallationRestartPrompt
             if ($SilentRestart)
             {
                 Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
-                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
+                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
-                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                    $moduleState.ShutdownReasonText = $ShutdownReasonText
                 }
-                $Script:ADT.ShutdownNoForceCloseApps = !!$NoForceCloseApps
+                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {
@@ -325,12 +325,12 @@ function Show-ADTInstallationRestartPrompt
             Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
             if ($adtSession)
             {
-                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
+                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
-                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                    $moduleState.ShutdownReasonText = $ShutdownReasonText
                 }
-                $Script:ADT.ShutdownNoForceCloseApps = !!$NoForceCloseApps
+                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
             }
             else
             {

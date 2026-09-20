@@ -42,14 +42,14 @@ Describe 'Close-ADTSession' {
         It 'Removes the session from the stack' {
             $null = Open-Probe
             Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
-            InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count } | Should -Be 0
+            InModuleScope PSAppDeployToolkit { (Get-ADTDeploymentSessions).Count } | Should -Be 0
         }
 
         It 'Removes only the innermost session when several are nested' {
             $outer = Open-Probe -AppName 'Outer'
             $null = Open-Probe -AppName 'Inner'
             Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
-            InModuleScope PSAppDeployToolkit { $ADT.Sessions.Count } | Should -Be 1
+            InModuleScope PSAppDeployToolkit { (Get-ADTDeploymentSessions).Count } | Should -Be 1
             (Get-ADTSession).InstallName | Should -BeExactly $outer.InstallName
         }
 

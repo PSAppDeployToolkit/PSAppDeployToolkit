@@ -51,7 +51,7 @@ function Private:New-ADTDialogOptionsObject
             {
                 $PSCmdlet.ThrowTerminatingError($_)
             }
-            if ($null -ne ($dialogAssetValue = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals($dialogAssetKey) }).Item2.PipelineElements.Expression | Select-Object -ExpandProperty Value -ErrorAction Ignore))
+            if ($null -ne ($dialogAssetValue = (Get-ADTModuleDefaults).Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals($dialogAssetKey) }).Item2.PipelineElements.Expression | Select-Object -ExpandProperty Value -ErrorAction Ignore))
             {
                 Write-ADTLogEntry -Message "$($_.Exception.InnerException.Message.Replace($dialogAssetName, $dialogAssetKey).TrimEnd('.')): $($_.Exception.InnerException.InnerException.Message.TrimEnd('.')). Substituting with default asset." -Severity Warning
                 $configAssets.$dialogAssetKey = $Data.$dialogAssetName = $dialogAssetValue.PSObject.BaseObject

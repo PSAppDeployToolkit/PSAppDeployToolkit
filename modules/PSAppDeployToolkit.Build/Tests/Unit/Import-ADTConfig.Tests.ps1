@@ -12,7 +12,7 @@ AfterAll {
 Describe 'Import-ADTConfig' {
     Context 'The module defaults' {
         BeforeAll {
-            $script:Config = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTConfig -BaseDirectory $null }
+            $script:Config = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $null }
         }
 
         It 'Returns every section the module reads from' {
@@ -43,7 +43,7 @@ Describe 'Import-ADTConfig' {
             try
             {
                 $env:TEMP = 'C:\ADTNotTheHardenedTemp'
-                $config = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTConfig -BaseDirectory $null }
+                $config = InModuleScope -ModuleName PSAppDeployToolkit { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $null }
                 $config.Toolkit.TempPath | Should -BeLike "$([System.IO.Path]::GetTempPath().TrimEnd('\'))\*"
                 $config.Toolkit.TempPath | Should -Not -BeLike 'C:\ADTNotTheHardenedTemp*'
             }
@@ -80,7 +80,7 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultTimeout = 4242 } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                (Import-ADTConfig -BaseDirectory $Dir).UI.DefaultTimeout | Should -Be 4242
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.DefaultTimeout | Should -Be 4242
             }
         }
 
@@ -90,8 +90,8 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultTimeout = 4242 } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                $merged = Import-ADTConfig -BaseDirectory $Dir
-                $merged.UI.DialogStyle | Should -BeExactly (Import-ADTConfig -BaseDirectory $null).UI.DialogStyle
+                $merged = Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir
+                $merged.UI.DialogStyle | Should -BeExactly (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $null).UI.DialogStyle
             }
         }
 
@@ -101,7 +101,7 @@ Describe 'Import-ADTConfig' {
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ Assets = @{ Logo = 'Local.png' } }"
             Set-Content -LiteralPath "$dir\Local.png" -Value 'placeholder'
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                (Import-ADTConfig -BaseDirectory $Dir).Assets.Logo | Should -BeExactly "$Dir\Local.png"
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).Assets.Logo | Should -BeExactly "$Dir\Local.png"
             }
         }
 
@@ -111,7 +111,7 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ Assets = @{ Logo = '..\Elsewhere.png' } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                (Import-ADTConfig -BaseDirectory $Dir).Assets.Logo | Should -BeExactly "$Dir\Elsewhere.png"
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).Assets.Logo | Should -BeExactly "$Dir\Elsewhere.png"
             }
         }
 
@@ -126,7 +126,7 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ LanguageOverride = '$Legacy' } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir; Modern = $Modern } {
-                (Import-ADTConfig -BaseDirectory $Dir).UI.LanguageOverride | Should -BeExactly $Modern
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.LanguageOverride | Should -BeExactly $Modern
             }
         }
     }
@@ -135,7 +135,7 @@ Describe 'Import-ADTConfig' {
         It 'Leaves the redirection on admin rights by default' {
             # The mode has to be opt-in, since turning it on moves an administrator's deferral history to HKCU.
             InModuleScope -ModuleName PSAppDeployToolkit {
-                (Import-ADTConfig -BaseDirectory $null).Toolkit.PathsBasedOnSystemContext | Should -BeFalse
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $null).Toolkit.PathsBasedOnSystemContext | Should -BeFalse
             }
         }
 
@@ -168,7 +168,7 @@ Describe 'Import-ADTConfig' {
 }
 "@
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir; Decider = $Decider } {
-                $config = Import-ADTConfig -BaseDirectory $Dir
+                $config = Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir
                 $expected = if ((Get-ADTEnvironmentTable).$Decider)
                 {
                     'Owned'
@@ -201,7 +201,7 @@ Describe 'Import-ADTConfig' {
 }
 '@
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                (Import-ADTConfig -BaseDirectory $Dir).MSI.LogPath | Should -BeExactly 'C:\Owned\MsiLogs'
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).MSI.LogPath | Should -BeExactly 'C:\Owned\MsiLogs'
             }
         }
     }
@@ -216,7 +216,7 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultTimeout = $Value } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                { Import-ADTConfig -BaseDirectory $Dir } | Should -Throw -ErrorId 'ConfigIntLessThanOrEqualToZero,Import-ADTConfig'
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir } | Should -Throw -ErrorId 'ConfigIntLessThanOrEqualToZero,Import-ADTConfig'
             }
         }
 
@@ -226,7 +226,7 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultExitCode = 0; DeferExitCode = 0 } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                (Import-ADTConfig -BaseDirectory $Dir).UI.DefaultExitCode | Should -Be 0
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.DefaultExitCode | Should -Be 0
             }
         }
 
@@ -235,25 +235,25 @@ Describe 'Import-ADTConfig' {
             $null = New-Item -Path $dir -ItemType Directory -Force
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DialogStyle = 'Nonsense' } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
-                { Import-ADTConfig -BaseDirectory $Dir } | Should -Throw
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir } | Should -Throw
             }
         }
 
         It 'Refuses the same directory twice' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTConfig -BaseDirectory 'C:\Windows', 'C:\Windows' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTConfig'
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory 'C:\Windows', 'C:\Windows' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTConfig'
             }
         }
 
         It 'Refuses a blank directory' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                { Import-ADTConfig -BaseDirectory '   ' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTConfig'
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory '   ' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTConfig'
             }
         }
 
         It 'Reports a directory holding no config at all' {
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = "$TestDrive\Nothing" } {
-                { Import-ADTConfig -BaseDirectory $Dir } | Should -Throw
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir } | Should -Throw
             }
         }
     }

@@ -84,7 +84,7 @@ function Add-ADTModuleCallback
     # Add the specified callbacks if they're not already in the list.
     try
     {
-        $callbacks = $Script:ADT.Callbacks.$Hookpoint
+        $callbacks = (Get-ADTModuleCallbacks).$Hookpoint
         for ($i = $Callback.Length - 1; $i -ge 0; $i--)
         {
             $item = $Callback[$i]

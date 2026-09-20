@@ -12,7 +12,11 @@ function Private:Import-ADTConfig
         [Parameter(Mandatory = $true)]
         [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [System.String[]]$BaseDirectory
+        [System.String[]]$BaseDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.EnvironmentTable]$Environment
     )
 
     # Internal filter to process asset file paths.
@@ -130,8 +134,8 @@ function Private:Import-ADTConfig
     }
 
     # Import the config from disk and verify all integers are valid.
-    $integerKeys = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
-    $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
+    $integerKeys = (Get-ADTModuleDefaults).Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
+    $null = $PSBoundParameters.Remove('Environment'); $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
     $config | Confirm-ADTConfigIntegersGreaterThanZero
     Update-ADTConfigTempVariables -Config $config
 
@@ -157,7 +161,7 @@ function Private:Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    (Get-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
+    $Environment.PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Change paths to user accessible ones if the caller doesn't own the configured ones.

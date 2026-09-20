@@ -18,9 +18,9 @@ function Private:Import-ADTStringTable
         [ValidateNotNullOrEmpty()]
         [System.Globalization.CultureInfo]$UICulture,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$Config = (Get-ADTConfig)
+        [System.Collections.Hashtable]$Config
     )
 
     # Import string table, perform value substitutions, then return it to the caller.
