@@ -122,13 +122,14 @@ function Invoke-ADTCommandWithRetries
             try
             {
                 # Attempt to get command from our lookup table.
+                [System.Management.Automation.CommandInfo]$commandObj = $null
                 $commandObj = if ($Command -is [System.Management.Automation.CommandInfo])
                 {
                     $Command
                 }
-                elseif ($Script:CommandTable.ContainsKey($Command))
+                elseif ($Script:CommandTable.TryGetValue($Command, [ref]$commandObj))
                 {
-                    $Script:CommandTable.$Command
+                    $commandObj
                 }
                 else
                 {
