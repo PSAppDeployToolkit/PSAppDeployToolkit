@@ -1003,6 +1003,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="exitMessage">An optional exit message to use when closing the session.</param>
         /// <returns>The exit code.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the last exit code is not available.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
         public int Close(string? exitMessage = null)
         {
@@ -1058,7 +1059,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Update the module's last tracked exit code.
-            if (ExitCode is not 0)
+            if (ModuleDatabase.GetLastExitCode() is null || ExitCode is not 0)
             {
                 ModuleDatabase.SetLastExitCode(ExitCode);
             }
@@ -1100,7 +1101,7 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }
             }
-            return ExitCode;
+            return ModuleDatabase.GetLastExitCode() ?? throw new InvalidProgramException("The last exit code is not available.");
         }
 
         /// <summary>

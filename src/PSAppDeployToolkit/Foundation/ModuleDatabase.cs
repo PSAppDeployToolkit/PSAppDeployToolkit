@@ -274,6 +274,15 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
+        /// Retrieves the last exit code from the module's state. This method accesses the 'LastExitCode' property of the module's state and returns the most recent exit code recorded during the module's execution.
+        /// </summary>
+        /// <returns>The last exit code of the module, or null if no exit code is available.</returns>
+        internal static int? GetLastExitCode()
+        {
+            return GetModuleState().LastExitCode;
+        }
+
+        /// <summary>
         /// Sets the last exit code in the module's state. This method updates the LastExitCode property of the module's state with the provided exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
