@@ -67,9 +67,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             // Assert
             Assert.Empty(state.Sessions);
             Assert.Null(state.LastExitCode);
-            Assert.Null(state.RestartOnExitCountdown);
-            Assert.Null(state.ShutdownReasonText);
-            Assert.Null(state.ShutdownNoForceCloseApps);
+            Assert.Null(state.RestartOnExitOptions);
         }
 
         /// <summary>

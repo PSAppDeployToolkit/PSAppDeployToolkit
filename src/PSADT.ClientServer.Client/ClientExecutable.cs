@@ -27,6 +27,7 @@ using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSADT.WindowsRuntime.UI.Notifications;
 using PSADT.WindowsRuntime.UI.Shell;
+using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
 using Windows.UI.Notifications;
 using Windows.Win32.Foundation;
@@ -774,26 +775,11 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    // Parse the argument list and initialise required variables.
-                    ReadOnlyDictionary<string, string> arguments = ArgvToDictionary(argv);
-                    bool noForceCloseApps = false;
-
                     // Parse the command line arguments and perform the requested operation.
-                    if (!arguments.TryGetValue("Delay", out string? delayArg) || !TimeSpan.TryParse(delayArg, CultureInfo.InvariantCulture, out TimeSpan delayValue))
-                    {
-                        throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
-                    }
-                    if (arguments.TryGetValue("ShutdownReasonText", out string? shutdownReason) && string.IsNullOrWhiteSpace(shutdownReason))
-                    {
-                        throw new ClientException("An invalid ShutdownReasonText was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
-                    }
-                    if (arguments.TryGetValue("NoForceCloseApps", out string? noForceCloseAppsStr) && !bool.TryParse(noForceCloseAppsStr, out noForceCloseApps))
-                    {
-                        throw new ClientException("An invalid NoForceCloseApps was specified on the command line. If provided, it must be parsable as a boolean.", ClientExitCode.InvalidArguments);
-                    }
+                    RestartOnExitOptions restartOnExitData = DeserializeString<RestartOnExitOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)));
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    await Task.Delay(delayValue, default).ConfigureAwait(false);
-                    await DeviceUtilities.RestartComputerAsync(shutdownReason, noForceCloseApps).ConfigureAwait(false);
+                    await Task.Delay(restartOnExitData.Countdown, default).ConfigureAwait(false);
+                    await DeviceUtilities.RestartComputerAsync(restartOnExitData.Reason, restartOnExitData.NoForceCloseApps).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }

@@ -69,21 +69,13 @@ function Private:Exit-ADTInvocation
     }
 
     # Invoke a silent restart on the device if specified.
-    if ((Test-ADTModuleInitialized) -and ($null -ne ($moduleState = Get-ADTModuleState).RestartOnExitCountdown))
+    if ((Test-ADTModuleInitialized) -and ($null -ne ($restartOnExitData = (Get-ADTModuleState).RestartOnExitOptions)))
     {
         $icsoParams = @{
             User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
             SilentRestart = $true
-            Delay = $moduleState.RestartOnExitCountdown
+            Options = $restartOnExitData
             NoWait = $true
-        }
-        if ($null -ne $moduleState.ShutdownReasonText)
-        {
-            $icsoParams.Add('ShutdownReasonText', $moduleState.ShutdownReasonText)
-        }
-        if ($moduleState.ShutdownNoForceCloseApps)
-        {
-            $icsoParams.Add('NoForceCloseApps', $true)
         }
         Invoke-ADTClientServerOperation @icsoParams
     }

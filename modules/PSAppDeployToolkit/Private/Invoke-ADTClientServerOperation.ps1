@@ -157,19 +157,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Options,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
-        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.TimeSpan]$Delay,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ShutdownReasonText,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
-        [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]

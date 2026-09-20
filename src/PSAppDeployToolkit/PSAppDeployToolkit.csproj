@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PSADT.CodeAnalysis\PSADT.CodeAnalysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>

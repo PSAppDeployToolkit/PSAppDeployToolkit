@@ -61,7 +61,7 @@ namespace PSAppDeployToolkit.Tests
             Array.Sort(found, StringComparer.Ordinal);
 
             // Assert
-            Assert.Equal(["DeferHistory", "LogEntry"], found);
+            Assert.Equal(["DeferHistory", "LogEntry", "RestartOnExitOptions"], found);
         }
 
         /// <summary>

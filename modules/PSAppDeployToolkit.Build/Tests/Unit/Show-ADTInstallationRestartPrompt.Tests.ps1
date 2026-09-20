@@ -39,7 +39,7 @@ Describe 'Show-ADTInstallationRestartPrompt' {
         It 'Arms nothing for the end of the deployment' {
             Show-ADTInstallationRestartPrompt
             InModuleScope -ModuleName PSAppDeployToolkit {
-                $Module.State.RestartOnExitCountdown | Should -BeNullOrEmpty
+                $Module.State.RestartOnExitOptions | Should -BeNullOrEmpty
             }
         }
 

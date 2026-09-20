@@ -75,19 +75,9 @@ namespace PSAppDeployToolkit.Foundation
         public IList<DeploymentSession> Sessions { get; } = [];
 
         /// <summary>
-        /// Gets or sets the countdown value for restarting the module on exit.
+        /// Gets or sets the data required to restart the module on exit, if applicable.
         /// </summary>
-        public uint? RestartOnExitCountdown { get; set; }
-
-        /// <summary>
-        /// Gets or sets the reason text for shutting down the module.
-        /// </summary>
-        public string? ShutdownReasonText { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to force close applications during shutdown.
-        /// </summary>
-        public bool? ShutdownNoForceCloseApps { get; set; }
+        public RestartOnExitOptions? RestartOnExitOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the last exit code for the module.

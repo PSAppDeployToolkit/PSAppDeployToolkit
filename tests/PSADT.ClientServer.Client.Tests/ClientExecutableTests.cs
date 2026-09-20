@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Client.Tests.TestHelpers;
+using PSAppDeployToolkit.Foundation;
 using Xunit;
 
 namespace PSADT.ClientServer.Client.Tests
@@ -21,8 +22,8 @@ namespace PSADT.ClientServer.Client.Tests
     /// <c language="csharp">Environment.FailFast</c>.
     /// <para>
     /// Nothing here changes machine state. Where a switch would, only the guards that reject bad
-    /// arguments before it acts are exercised, which for <c language="text">/SilentRestart</c> means the delay is never
-    /// given a value that parses.
+    /// arguments before it acts are exercised, which for <c language="text">/SilentRestart</c> means the options are
+    /// never given content that reads.
     /// </para>
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
@@ -266,6 +267,30 @@ namespace PSADT.ClientServer.Client.Tests
         public void DeserializeString_ReportsInvalidOptionsForContentItCannotRead()
         {
             AssertRefused(ClientExitCode.InvalidOptions, static () => DeserializeString<string>("not serialized content"));
+        }
+
+        /// <summary>
+        /// Confirms the options a silent restart carries survive the hop the client reads them on.
+        /// </summary>
+        /// <remarks>
+        /// As far as that operation can be followed here, since running it restarts the device: what the
+        /// module writes with <c language="csharp">DataSerialization</c> is what the client reads back. A member the
+        /// serializer was not told to carry arrives as a default, and the client restarts on that.
+        /// </remarks>
+        [Fact]
+        public void DeserializeString_ReadsTheOptionsASilentRestartCarries()
+        {
+            // Arrange
+            RestartOnExitOptions options = new(TimeSpan.FromMinutes(5), "a maintenance window", noForceCloseApps: true);
+
+            // Act
+            RestartOnExitOptions restored = DeserializeString<RestartOnExitOptions>(DataSerialization.SerializeToString(options));
+
+            // Assert
+            Assert.Equal(TimeSpan.FromMinutes(5), restored.Countdown);
+            Assert.Equal("a maintenance window", restored.Reason);
+            Assert.True(restored.NoForceCloseApps);
+            Assert.Equal(options, restored);
         }
 
         /// <summary>
@@ -529,6 +554,7 @@ namespace PSADT.ClientServer.Client.Tests
         [InlineData("/GetProcessWindowInfo")]
         [InlineData("/SendKeys")]
         [InlineData("/ShellExecuteProcess")]
+        [InlineData("/SilentRestart")]
         public async Task Client_ReportsNoOptionsWhenAnOperationNeedingThemHasNone(string operation)
         {
             Assert.SkipUnless(TestEnvironment.CanRunClient, ClientRequired);
@@ -620,19 +646,23 @@ namespace PSADT.ClientServer.Client.Tests
         }
 
         /// <summary>
-        /// Confirms a silent restart is refused when its delay cannot be parsed. The delay is
-        /// deliberately unparseable: a value that parses reaches the restart.
+        /// Confirms a silent restart is refused when its options cannot be read. The options are
+        /// deliberately unreadable: options that read reach the restart.
         /// </summary>
+        /// <remarks>
+        /// Both forms of the switch are named because this is the only place either one is reached. The
+        /// restart cannot be run at all, so nothing else would notice a form that stopped dispatching.
+        /// </remarks>
         /// <param name="operation">The long or short form of the switch.</param>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Theory]
         [InlineData("/SilentRestart")]
         [InlineData("/sr")]
-        public async Task Client_RefusesASilentRestartWithNoUsableDelay(string operation)
+        public async Task Client_RefusesASilentRestartWhoseOptionsCannotBeRead(string operation)
         {
             Assert.SkipUnless(TestEnvironment.CanRunClient, ClientRequired);
-            ClientResult result = await ClientProcess.RunAsync(operation, "-Delay", "notatimespan").ConfigureAwait(true);
-            Assert.Equal(ClientExitCode.InvalidArguments, result.ExitCodeAsEnum);
+            ClientResult result = await ClientProcess.RunAsync(operation, "-Options", "notserializedcontent").ConfigureAwait(true);
+            Assert.Equal(ClientExitCode.InvalidOptions, result.ExitCodeAsEnum);
         }
 
         /// <summary>

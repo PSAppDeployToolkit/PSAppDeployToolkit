@@ -38,8 +38,14 @@ Describe 'Invoke-ADTClientServerOperation' {
             # SilentRestart has no counterpart on ServerInstance, so it only works via the argv route that
             # -NoWait selects. Without it the call reaches a SilentRestartAsync() that does not exist,
             # which being mandatory turns into a binding failure instead.
-            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Delay | Should -BeFalse
-            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Delay, NoWait | Should -BeTrue
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Options | Should -BeFalse
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, Options, NoWait | Should -BeTrue
+        }
+
+        It 'Requires a silent restart to say what it is restarting for' {
+            # The countdown, the reason and the force-close switch all travel as one serialized object
+            # now, so a call without it reaches the client with nothing to act on.
+            Test-ADTParameterSetSatisfied -Command (InModuleScope PSAppDeployToolkit { Get-Command Invoke-ADTClientServerOperation }) -Parameter SilentRestart, User, NoWait | Should -BeFalse
         }
     }
 }

@@ -299,18 +299,24 @@ function Show-ADTInstallationRestartPrompt
             }
         }
 
+        # Determine the reason text every silent restart below carries. An unbound string parameter is an
+        # empty string rather than nothing at all, which the constructor refuses, so it becomes a real null.
+        $restartReason = if (!$PSBoundParameters.ContainsKey('ShutdownReasonText'))
+        {
+            [System.Management.Automation.Language.NullString]::Value
+        }
+        else
+        {
+            $ShutdownReasonText
+        }
+
         # If in non-interactive mode.
         if ($adtSession -and $adtSession.IsSilent())
         {
             if ($SilentRestart)
             {
                 Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
-                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
-                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
-                {
-                    $moduleState.ShutdownReasonText = $ShutdownReasonText
-                }
-                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
+                (Get-ADTModuleState).RestartOnExitOptions = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
             }
             else
             {
@@ -323,30 +329,18 @@ function Show-ADTInstallationRestartPrompt
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
             Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
+            $restartOnExitData = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
             if ($adtSession)
             {
-                ($moduleState = Get-ADTModuleState).RestartOnExitCountdown = $SilentCountdown
-                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
-                {
-                    $moduleState.ShutdownReasonText = $ShutdownReasonText
-                }
-                $moduleState.ShutdownNoForceCloseApps = !!$NoForceCloseApps
+                (Get-ADTModuleState).RestartOnExitOptions = $restartOnExitData
             }
             else
             {
                 $icsoParams = @{
                     User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
                     SilentRestart = $true
-                    Delay = $SilentCountdown
+                    Options = $restartOnExitData
                     NoWait = $true
-                }
-                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
-                {
-                    $icsoParams.Add('ShutdownReasonText', $ShutdownReasonText)
-                }
-                if ($NoForceCloseApps)
-                {
-                    $icsoParams.Add('NoForceCloseApps', $true)
                 }
                 Invoke-ADTClientServerOperation @icsoParams
             }
