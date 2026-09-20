@@ -17,7 +17,7 @@ function Private:Get-ADTModuleState
             Exception = [System.InvalidProgramException]::new("Cannot retrieve the module state while the module is not initialized.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTModuleNotInitialized'
-            RecommendedAction = "Please report this error to the PSAppDeployToolkit team."
+            RecommendedAction = "Please initialize the module with [Initialize-ADTModule] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
