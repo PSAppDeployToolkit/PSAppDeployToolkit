@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using PSADT.PowerShellTestFixture;
+using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
 using PSAppDeployToolkit.Tests.TestHelpers;
 using Xunit;
@@ -146,23 +148,30 @@ namespace PSAppDeployToolkit.Tests.Logging
         /// Verifies that a debug message is dropped unless the configuration asks for it.
         /// </summary>
         /// <remarks>
-        /// Checked against the configuration rather than a parameter, so a caller cannot force one through. With no
-        /// database seated at all there is no configuration to consult and the message is dropped, which is the safer
-        /// default for a toolkit that may be logging before initialisation.
+        /// Checked against the configuration rather than a parameter, so a caller cannot force one through. Before the
+        /// module is initialised there is no seated configuration and the shipped one answers instead, so a debug
+        /// message written during import obeys the same setting as one written afterwards - which it did not before
+        /// the shipped configuration became readable, when it was dropped regardless.
         /// </remarks>
         [Fact]
         public void WriteLogEntry_DropsADebugMessageUnlessTheConfigurationAsksForIt()
         {
-            // Assert: no database at all.
+            // Assert: nothing seated, so the shipped configuration decides. It says no.
             Assert.Empty(Write(["a message"], debugMessage: true));
 
-            // Assert: a database that says no.
-            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogDebugMessage = false }))
+            // Assert: nothing seated, and a shipped configuration that says yes.
+            using (powerShell.SeatModuleDatabaseWithoutState(new ModuleConfiguration { LogDebugMessage = true }))
+            {
+                Assert.True(Assert.Single(Write(["a message"], debugMessage: true)).DebugMessage);
+            }
+
+            // Assert: a seated configuration that says no, over a shipped one that says yes.
+            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogDebugMessage = false }, environment: null, defaults: new ModuleConfiguration { LogDebugMessage = true }))
             {
                 Assert.Empty(Write(["a message"], debugMessage: true));
             }
 
-            // Assert: a database that says yes.
+            // Assert: a seated configuration that says yes.
             using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogDebugMessage = true }))
             {
                 LogEntry entry = Assert.Single(Write(["a message"], debugMessage: true));
@@ -255,49 +264,119 @@ namespace PSAppDeployToolkit.Tests.Logging
         }
 
         /// <summary>
-        /// Verifies that the format falls back to the configuration, and then to CMTrace.
+        /// Verifies that the format comes from the seated configuration, and from the shipped one before there is one.
         /// </summary>
         /// <remarks>
-        /// The final fallback matters because logging can happen before the module is initialised, and a log with no
-        /// format at all would be worse than one in the wrong format.
+        /// The fallback used to be CMTrace outright, whatever the module shipped. Reading the shipped configuration
+        /// instead means a log entry written before initialisation is in the same format as the rest of that
+        /// deployment's, which is what makes the two halves of a log readable as one file.
+        /// <para>
+        /// Each case names a shipped format that differs from what is being asserted where one is seated, so a
+        /// reader taking the wrong table of the two cannot agree by accident.
+        /// </para>
         /// </remarks>
         [Fact]
-        public void WriteLogEntry_TakesTheFormatFromTheConfigurationAndFallsBackToCMTrace()
+        public void WriteLogEntry_TakesTheFormatFromTheSeatedConfigurationAndThenTheShippedOne()
         {
             // Arrange
             using TempDirectory temp = new();
 
-            // Act: the configuration names Legacy.
-            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "Legacy" }))
+            // Act: seated names Legacy while shipped names CMTrace.
+            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "Legacy" }, environment: null, defaults: new ModuleConfiguration { LogStyle = "CMTrace" }))
             {
-                _ = Write(["from config"], logFileDirectory: temp.FullName, logFileName: "config.log");
+                _ = Write(["from the seated configuration"], logFileDirectory: temp.FullName, logFileName: "seated.log");
             }
 
-            // Act: no database, so no configuration to read.
-            _ = Write(["no config"], logFileDirectory: temp.FullName, logFileName: "fallback.log");
+            // Act: nothing seated, so the shipped configuration answers. Once for each format, since a fallback
+            // hard-coded to either would agree with one of them.
+            using (powerShell.SeatModuleDatabaseWithoutState(new ModuleConfiguration { LogStyle = "Legacy" }))
+            {
+                _ = Write(["from the shipped configuration"], logFileDirectory: temp.FullName, logFileName: "shipped-legacy.log");
+            }
+            using (powerShell.SeatModuleDatabaseWithoutState(new ModuleConfiguration { LogStyle = "CMTrace" }))
+            {
+                _ = Write(["from the shipped configuration"], logFileDirectory: temp.FullName, logFileName: "shipped-cmtrace.log");
+            }
 
             // Assert
-            Assert.DoesNotContain("<![LOG[", File.ReadAllText(temp.GetPath("config.log")), StringComparison.Ordinal);
-            Assert.Contains("<![LOG[", File.ReadAllText(temp.GetPath("fallback.log")), StringComparison.Ordinal);
+            Assert.DoesNotContain("<![LOG[", File.ReadAllText(temp.GetPath("seated.log")), StringComparison.Ordinal);
+            Assert.DoesNotContain("<![LOG[", File.ReadAllText(temp.GetPath("shipped-legacy.log")), StringComparison.Ordinal);
+            Assert.Contains("<![LOG[", File.ReadAllText(temp.GetPath("shipped-cmtrace.log")), StringComparison.Ordinal);
         }
 
         /// <summary>
-        /// Verifies that a configuration naming a format it does not recognise falls back rather than failing.
+        /// Verifies that a configuration naming a format the toolkit does not recognise is refused rather than guessed at.
         /// </summary>
+        /// <remarks>
+        /// It used to fall back to CMTrace. Refusing agrees with what opening a session has always done - a session
+        /// reads the same setting through <c language="csharp">Enum.Parse</c> and cannot start without it - so the
+        /// setting now fails the same way wherever it is read, rather than being tolerated in one place and fatal in
+        /// the other. Nothing validates it when the configuration is imported, so a typo in
+        /// <c language="text">config.psd1</c> reaches both.
+        /// </remarks>
         [Fact]
-        public void WriteLogEntry_FallsBackWhenTheConfiguredFormatIsNotRecognised()
+        public void WriteLogEntry_RefusesAConfiguredFormatItDoesNotRecognise()
+        {
+            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "NotAFormat" }))
+            {
+                _ = Assert.Throws<ArgumentException>(static () => Write(["a message"]));
+            }
+            using (powerShell.SeatModuleDatabaseWithoutState(new ModuleConfiguration { LogStyle = "NotAFormat" }))
+            {
+                _ = Assert.Throws<ArgumentException>(static () => Write(["a message"]));
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a format named by the caller is used without a configured one being read at all.
+        /// </summary>
+        /// <remarks>
+        /// The path <c language="powershell">Write-ADTLogEntry</c> takes when it is handed a log file and a format
+        /// with no initialised module behind it. Asserted against a configuration whose own format would throw, so
+        /// what is shown is that it was not consulted rather than that it agreed.
+        /// </remarks>
+        [Fact]
+        public void WriteLogEntry_TakesAFormatFromTheCallerWithoutReadingTheConfiguredOne()
         {
             // Arrange
             using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "NotAFormat" });
 
             // Act
-            using (powerShell.SeatModuleDatabase(new ModuleConfiguration { LogStyle = "NotAFormat" }))
-            {
-                _ = Write(["a message"], logFileDirectory: temp.FullName, logFileName: "test.log");
-            }
+            _ = Write(["a message"], logFileDirectory: temp.FullName, logFileName: "test.log", logStyle: LogStyle.Legacy);
 
             // Assert
-            Assert.Contains("<![LOG[", File.ReadAllText(temp.GetPath("test.log")), StringComparison.Ordinal);
+            Assert.DoesNotContain("<![LOG[", File.ReadAllText(temp.GetPath("test.log")), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that a configuration missing the parts this reads is named rather than dereferenced.
+        /// </summary>
+        /// <remarks>
+        /// Both are reachable from a hand-edited <c language="text">config.psd1</c>, and both used to pass silently:
+        /// a missing section left every setting unread, and a missing format fell back. They fail here instead,
+        /// which is a worthwhile trade only because the message says which part is missing.
+        /// </remarks>
+        [Fact]
+        public void WriteLogEntry_NamesThePartOfTheConfigurationThatIsMissing()
+        {
+            // Arrange
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(new ModuleConfiguration());
+            IDictionary toolkit = Assert.IsType<IDictionary>(ModuleDatabase.GetConfig()["Toolkit"], exactMatch: false);
+
+            // Assert: the format alone.
+            toolkit.Remove("LogStyle");
+            Assert.Contains(
+                "'LogStyle'",
+                Assert.Throws<InvalidOperationException>(static () => Write(["a message"])).Message,
+                StringComparison.Ordinal);
+
+            // Assert: the whole section.
+            ModuleDatabase.GetConfig().Remove("Toolkit");
+            Assert.Contains(
+                "'Toolkit'",
+                Assert.Throws<InvalidProgramException>(static () => Write(["a message"])).Message,
+                StringComparison.Ordinal);
         }
 
         /// <summary>

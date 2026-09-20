@@ -38,7 +38,7 @@ Describe 'Get-ADTStringTable' {
         }
 
         It 'Hands back the same table the module holds' {
-            $script:Strings | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Strings })
+            $script:Strings | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.StringTable })
         }
 
         It 'Returns a separate copy when given a session state' {
@@ -51,7 +51,7 @@ Describe 'Get-ADTStringTable' {
 
         It 'Leaves the shared table unexpanded when a copy is taken' {
             $null = Get-ADTStringTable -SessionState $ExecutionContext.SessionState
-            Get-ADTStringTable | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.Strings })
+            Get-ADTStringTable | Should -Be (InModuleScope PSAppDeployToolkit { $Module.State.StringTable })
         }
     }
 }

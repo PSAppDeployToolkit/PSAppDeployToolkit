@@ -38,12 +38,12 @@ namespace PSAppDeployToolkit.Tests.Foundation
             CultureInfo language = CultureInfo.GetCultureInfo("en-AU");
 
             // Act
-            ModuleState state = new(Directories(@"C:\Script"), Directories(@"C:\Config"), Directories(@"C:\Strings"), environment, config, language, strings, DateTime.Now);
+            ModuleState state = new(Directories(@"C:\Script"), Directories(@"C:\Config"), Directories(@"C:\Strings"), environment, config, strings, language, DateTime.Now);
 
             // Assert
             Assert.Same(environment, state.Environment);
             Assert.Same(config, state.Config);
-            Assert.Same(strings, state.Strings);
+            Assert.Same(strings, state.StringTable);
             Assert.Same(language, state.Language);
             Assert.Equal([@"C:\Script"], [.. state.Directories.Script.Select(static d => d.FullName)]);
             Assert.Equal([@"C:\Config"], [.. state.Directories.Config.Select(static d => d.FullName)]);
@@ -109,10 +109,10 @@ namespace PSAppDeployToolkit.Tests.Foundation
             ReadOnlyCollection<DirectoryInfo> directories = Directories(@"C:\Script");
 
             // Assert
-            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, null!, Config(), CultureInfo.InvariantCulture, Strings(), DateTime.Now));
-            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, null!, CultureInfo.InvariantCulture, Strings(), DateTime.Now));
-            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, Config(), CultureInfo.InvariantCulture, null!, DateTime.Now));
-            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, Config(), null!, Strings(), DateTime.Now));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, null!, Config(), Strings(), CultureInfo.InvariantCulture, DateTime.Now));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, null!, Strings(), CultureInfo.InvariantCulture, DateTime.Now));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, Config(), null!, CultureInfo.InvariantCulture, DateTime.Now));
+            _ = Assert.Throws<ArgumentNullException>(() => new ModuleState(directories, directories, directories, environment, Config(), Strings(), null!, DateTime.Now));
         }
 
         /// <summary>
@@ -131,8 +131,8 @@ namespace PSAppDeployToolkit.Tests.Foundation
             ReadOnlyCollection<DirectoryInfo> directories = Directories(@"C:\Script");
 
             // Assert
-            _ = Assert.Throws<ArgumentException>(() => new ModuleState(directories, directories, directories, environment, [], CultureInfo.InvariantCulture, Strings(), DateTime.Now));
-            _ = Assert.Throws<ArgumentException>(() => new ModuleState(directories, directories, directories, environment, Config(), CultureInfo.InvariantCulture, [], DateTime.Now));
+            _ = Assert.Throws<ArgumentException>(() => new ModuleState(directories, directories, directories, environment, [], Strings(), CultureInfo.InvariantCulture, DateTime.Now));
+            _ = Assert.Throws<ArgumentException>(() => new ModuleState(directories, directories, directories, environment, Config(), [], CultureInfo.InvariantCulture, DateTime.Now));
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             EnvironmentTable environment = powerShell.NewEnvironmentTable();
 
             // Act
-            ModuleState state = new(Directories(@"C:\Script"), configDirectories: null, stringDirectories: null, environment, Config(), CultureInfo.InvariantCulture, Strings(), DateTime.Now);
+            ModuleState state = new(Directories(@"C:\Script"), configDirectories: null, stringDirectories: null, environment, Config(), Strings(), CultureInfo.InvariantCulture, DateTime.Now);
 
             // Assert
             _ = Assert.Single(state.Directories.Script);
@@ -189,7 +189,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         {
             using IDisposable scope = powerShell.Enter();
             ReadOnlyCollection<DirectoryInfo> directories = Directories(@"C:\Script");
-            return new ModuleState(directories, directories, directories, powerShell.NewEnvironmentTable(), Config(), CultureInfo.InvariantCulture, Strings(), initStartDateTime ?? DateTime.Now);
+            return new ModuleState(directories, directories, directories, powerShell.NewEnvironmentTable(), Config(), Strings(), CultureInfo.InvariantCulture, initStartDateTime ?? DateTime.Now);
         }
 
         /// <summary>

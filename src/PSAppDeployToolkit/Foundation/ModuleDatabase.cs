@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="importStartTime">The DateTime representing the start time of the import operation. This parameter is used to calculate the import duration.</param>
         /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="database"/> parameter is null.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is OK, we don't need nanosecond precision..")]
+        [SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is OK, we don't need nanosecond precision..")]
         public static void Init(SessionState sessionState, ModuleDatabase database, DateTime importStartTime)
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
@@ -144,6 +145,56 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
+        /// Retrieves a specific configuration value from the database based on the provided section and key.
+        /// </summary>
+        /// <remarks>Use <see cref="TryGetConfigValue{T}(string, string, out T)"/> for a setting a configuration is
+        /// allowed to omit. The <see langword="notnull"/> constraint here is what keeps the two apart, and it has to
+        /// be a constraint rather than a convention: a nullable annotation on a type argument is gone by the time
+        /// this runs, so without it a caller could ask for a nullable type and be handed a null that the compiler
+        /// believed could not happen.
+        /// <para>
+        /// This is also the reader to use for a setting that is optional but must be of its own type when present,
+        /// since the other one passes over a value of the wrong type rather than naming it.
+        /// </para></remarks>
+        /// <typeparam name="T">The type of the configuration value to retrieve.</typeparam>
+        /// <param name="section">The section of the configuration from which to retrieve the value.</param>
+        /// <param name="key">The key of the configuration value to retrieve.</param>
+        /// <returns>The configuration value cast to the specified type.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the configuration section or key is not available or cannot be cast to the specified type.</exception>
+        [SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This makes no sense here; the rule can't see these are string messages")]
+        public static T GetConfigValue<T>(string section, string key) where T : notnull
+        {
+            return GetConfigSection(section)[key] is not T value
+                ? throw new InvalidOperationException($"The configuration key '{key}' in section '{section}' is not available or cannot be cast to type '{typeof(T).Name}'.")
+                : value;
+        }
+
+        /// <summary>
+        /// Retrieves a specific configuration value that the configuration is permitted to omit.
+        /// </summary>
+        /// <remarks>A key that is absent, a key holding null and a key holding something of another type are all the
+        /// same answer here, since none of them supplied a value of the type asked for. A caller that needs a value
+        /// of another type reported rather than passed over should use <see cref="GetConfigValue{T}(string, string)"/>,
+        /// which names it. The section is not optional either way: one that is missing means the configuration is
+        /// malformed rather than that every setting in it was declined, so it is refused rather than reported.</remarks>
+        /// <typeparam name="T">The type of the configuration value to retrieve.</typeparam>
+        /// <param name="section">The section of the configuration from which to retrieve the value.</param>
+        /// <param name="key">The key of the configuration value to retrieve.</param>
+        /// <param name="value">The configuration value cast to the specified type, or the default of that type if the configuration supplied no such value.</param>
+        /// <returns><see langword="true"/> if the configuration supplied a value of the specified type; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the configuration section is not available.</exception>
+        public static bool TryGetConfigValue<T>(string section, string key, [NotNullWhen(true)] out T? value) where T : notnull
+        {
+            if (GetConfigSection(section)[key] is T typedValue)
+            {
+                value = typedValue;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+
+        /// <summary>
         /// Retrieves a dictionary containing string values from the database properties.
         /// </summary>
         /// <remarks>This method accesses the 'Strings' property of the database, which must be properly
@@ -152,9 +203,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>An IDictionary containing the string values. Returns null if the database is not initialized or the property
         /// is not found.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the database is not initialized or the property 'Strings' is not available.</exception>
-        public static IDictionary GetStrings()
+        public static IDictionary GetStringTable()
         {
-            return GetModuleState().Strings;
+            return GetModuleState().StringTable;
         }
 
         /// <summary>
@@ -201,6 +252,25 @@ namespace PSAppDeployToolkit.Foundation
         internal static TimeSpan GetInitDuration()
         {
             return GetModuleState().InitDuration;
+        }
+
+        /// <summary>
+        /// Retrieves the default configuration values from the module's database. This method accesses the 'Defaults' property of the database and returns the default configuration as a dictionary.
+        /// </summary>
+        /// <returns>An IDictionary containing the default configuration values for the module.</returns>
+        internal static IDictionary GetDefaultConfig()
+        {
+            return GetModuleData().Defaults.GetDefaultConfig();
+        }
+
+        /// <summary>
+        /// Retrieves the default string values from the module's database. This method accesses the 'Defaults' property of the database and returns the default strings as a dictionary.
+        /// </summary>
+        /// <param name="locale">An optional CultureInfo parameter representing the locale for which to retrieve the default string values. If null, the default locale is used.</param>
+        /// <returns>An IDictionary containing the default string values for the module.</returns>
+        internal static IDictionary GetDefaultStringTable(CultureInfo? locale = null)
+        {
+            return GetModuleData().Defaults.GetDefaultStringTable(locale);
         }
 
         /// <summary>
@@ -269,6 +339,18 @@ namespace PSAppDeployToolkit.Foundation
         private static ModuleState GetModuleState()
         {
             return GetModuleData().State ?? throw new InvalidOperationException(_initErrorMessage);
+        }
+
+        /// <summary>
+        /// Retrieves the table holding one section of the configuration.
+        /// </summary>
+        /// <param name="section">The section of the configuration to retrieve.</param>
+        /// <returns>An IDictionary containing that section's settings.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the configuration section is not available, or is not a table.</exception>
+        [SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This makes no sense here; the rule can't see these are string messages")]
+        private static IDictionary GetConfigSection(string section)
+        {
+            return GetConfig()[section] as IDictionary ?? throw new InvalidOperationException($"The configuration section '{section}' is not available.");
         }
 
         /// <summary>

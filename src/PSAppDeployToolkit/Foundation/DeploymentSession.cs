@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -56,9 +55,6 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Establish initial variable values.
                 EnvironmentTable adtEnv = ModuleDatabase.GetEnvironment();
-                IDictionary adtConfig = ModuleDatabase.GetConfig();
-                IDictionary configUI = (IDictionary)adtConfig["UI"]!;
-                IDictionary configToolkit = (IDictionary)adtConfig["Toolkit"]!;
                 bool forceProcessDetection = false;
                 bool writtenDivider = false;
 
@@ -73,14 +69,14 @@ namespace PSAppDeployToolkit.Foundation
                 NTAccount processNtAccount = adtEnv.ProcessNTAccount;
 
                 // Set up constant values for the lifetime of the deployment session.
-                ConfigLogPath = new((string)configToolkit["LogPath"]!);
-                LogStyle = (LogStyle)Enum.Parse(typeof(LogStyle), (string)configToolkit["LogStyle"]!);
-                LogMaxHistory = (int)configToolkit["LogMaxHistory"]!;
-                CompressLogs = (bool)configToolkit["CompressLogs"]!;
-                LogWriteToHost = (bool)configToolkit["LogWriteToHost"]!;
-                LogHostOutputToStdStreams = (bool)configToolkit["LogHostOutputToStdStreams"]!;
-                DefaultExitCode = (int)configUI["DefaultExitCode"]!;
-                DeferExitCode = (int)configUI["DeferExitCode"]!;
+                ConfigLogPath = new(ModuleDatabase.GetConfigValue<string>("Toolkit", "LogPath"));
+                LogStyle = Enum.Parse<LogStyle>(ModuleDatabase.GetConfigValue<string>("Toolkit", "LogStyle"));
+                LogMaxHistory = ModuleDatabase.GetConfigValue<int>("Toolkit", "LogMaxHistory");
+                CompressLogs = ModuleDatabase.GetConfigValue<bool>("Toolkit", "CompressLogs");
+                LogWriteToHost = ModuleDatabase.GetConfigValue<bool>("Toolkit", "LogWriteToHost");
+                LogHostOutputToStdStreams = ModuleDatabase.GetConfigValue<bool>("Toolkit", "LogHostOutputToStdStreams");
+                DefaultExitCode = ModuleDatabase.GetConfigValue<int>("UI", "DefaultExitCode");
+                DeferExitCode = ModuleDatabase.GetConfigValue<int>("UI", "DeferExitCode");
 
                 // Set up date and time backwards compatibility variables for the deployment session.
                 CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
@@ -442,7 +438,7 @@ namespace PSAppDeployToolkit.Foundation
                 InstallName = invalidChars.Replace(DoubleUnderscoreRegex.Replace(InstallName.Trim('_').Replace(" ", newValue: null, StringComparison.Ordinal), "_"), string.Empty);
 
                 // Set the Defer History registry path.
-                RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
+                RegKeyDeferBase = $@"{ModuleDatabase.GetConfigValue<string>("Toolkit", "RegPath")}\{appDeployToolkitName}\DeferHistory";
                 RegKeyDeferHistory = $@"{RegKeyDeferBase}\{InstallName}";
 
 
@@ -467,14 +463,14 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Append subfolder path if configured to do so.
-                if ((bool)configToolkit["LogToHierarchy"]!)
+                if (ModuleDatabase.GetConfigValue<bool>("Toolkit", "LogToHierarchy"))
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", newValue: null, StringComparison.Ordinal))).FullName);
 
                     // Check how many hierarchy levels to keep based on configuration.
                     DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
-                    int logMaxHierarchy = (int)configToolkit["LogMaxHierarchy"]!;
+                    int logMaxHierarchy = ModuleDatabase.GetConfigValue<int>("Toolkit", "LogMaxHierarchy");
                     int hierarchyDirectoriesCount = hierarchyDirectories.Length;
                     if (hierarchyDirectoriesCount > logMaxHierarchy)
                     {
@@ -484,23 +480,23 @@ namespace PSAppDeployToolkit.Foundation
                         }
                     }
                 }
-                else if ((bool)configToolkit["LogToSubfolder"]!)
+                else if (ModuleDatabase.GetConfigValue<bool>("Toolkit", "LogToSubfolder"))
                 {
                     LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
                 // Establish whether the caller owns the configured log path. This mirrors the redirection Import-ADTConfig performs, so that the file name matches wherever the path ended up.
-                bool callerOwnsLogPath = (bool)configToolkit["PathsBasedOnSystemContext"]! ? AccountUtilities.CallerIsLocalSystem : AccountUtilities.CallerIsAdmin;
+                bool callerOwnsLogPath = ModuleDatabase.GetConfigValue<bool>("Toolkit", "PathsBasedOnSystemContext") ? AccountUtilities.CallerIsLocalSystem : AccountUtilities.CallerIsAdmin;
 
                 // Generate the log filename to use. Append the username unless the caller owns the log path, since everybody else lacks the rights to modify files within it that belong to other users.
                 DefaultLogName = invalidChars.Replace($"{InstallName}_{SubstitutionPlaceholder}_{DeploymentType}{(!callerOwnsLogPath ? $"_{adtEnv.EnvUserName}" : string.Empty)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName, fileNameOnly: true);
                 FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
-                int logMaxSize = (int)configToolkit["LogMaxSize"]!;
+                int logMaxSize = ModuleDatabase.GetConfigValue<int>("Toolkit", "LogMaxSize");
                 bool logFileSizeExceeded = logFile.Exists && (logMaxSize > 0) && ((logFile.Length / 1_048_576.0) > logMaxSize);
 
                 // Check if log file needs to be rotated.
-                if ((logFile.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
+                if ((logFile.Exists && !ModuleDatabase.GetConfigValue<bool>("Toolkit", "LogAppend")) || logFileSizeExceeded)
                 {
                     try
                     {
@@ -693,7 +689,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv.UICulture}].");
 
                 // Advise whether the UI language was overridden.
-                if (configUI["LanguageOverride"] is string languageOverride)
+                if (ModuleDatabase.TryGetConfigValue("UI", "LanguageOverride", out string? languageOverride))
                 {
                     WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
                 }

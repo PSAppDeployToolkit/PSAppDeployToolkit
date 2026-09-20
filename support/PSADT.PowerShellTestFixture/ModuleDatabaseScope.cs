@@ -32,15 +32,19 @@ namespace PSADT.PowerShellTestFixture
         /// <param name="sessionState">The module session state, which is what script blocks are invoked against.</param>
         /// <param name="moduleInfo">The module the session state belongs to, which the database records.</param>
         /// <param name="environment">The environment table the state is built around, where there is state.</param>
-        internal ModuleDatabaseScope(ModuleConfiguration? configuration, SessionState sessionState, PSModuleInfo moduleInfo, EnvironmentTable? environment)
+        /// <param name="defaults">The configuration the module ships, which readers fall back to before it is
+        /// initialized, or <see langword="null"/> for the shipped values unaltered.</param>
+        internal ModuleDatabaseScope(ModuleConfiguration? configuration, SessionState sessionState, PSModuleInfo moduleInfo, EnvironmentTable? environment, ModuleConfiguration? defaults = null)
         {
-            // A database carries what the module knows before it is initialized. The defaults are shaped rather than
-            // real: one config entry and at least one string entry, each keyed on an empty string.
+            // A database carries what the module knows before it is initialized, and the defaults are part of that.
+            // They have to be readable rather than merely present: the module ships them as script blocks whose
+            // syntax trees are walked for a hashtable, so a placeholder script block with nothing in it fails at the
+            // walk rather than at the read.
             Database = new ModuleDatabase(
                 new Dictionary<string, IReadOnlyDictionary<string, ScriptBlock>>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Config", new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase) { { string.Empty, ScriptBlock.Create(string.Empty) } } },
-                    { "Strings", new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase) { { string.Empty, ScriptBlock.Create(string.Empty) } } },
+                    { "Config", new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase) { { string.Empty, (defaults ?? new ModuleConfiguration()).ToScriptBlock() } } },
+                    { "Strings", DefaultStrings },
                 },
                 new Hashtable { { "ModuleVersion", "4.0.0" } },
                 moduleInfo,
@@ -59,8 +63,8 @@ namespace PSADT.PowerShellTestFixture
                     directories,
                     environment ?? throw new ArgumentNullException(nameof(environment), "A database seating state needs an environment table."),
                     configuration.ToHashtable(),
+                    new Hashtable(StringComparer.OrdinalIgnoreCase) { { SeatedStringKey, SeatedStringValue } },
                     CultureInfo.GetCultureInfo("en-US"),
-                    new Hashtable { { "Placeholder", string.Empty } },
                     DateTime.Now);
             }
 
@@ -83,6 +87,40 @@ namespace PSADT.PowerShellTestFixture
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when this scope seated no state, which is what holds them.</exception>
         public IList<DeploymentSession> Sessions => Database.State?.Sessions ?? throw new InvalidOperationException("This scope seated no module state, so there are no sessions to reach.");
+
+        /// <summary>
+        /// The one key the seated string table carries, for a test asserting a string was read from the state rather
+        /// than from the defaults.
+        /// </summary>
+        public const string SeatedStringKey = "Placeholder";
+
+        /// <summary>
+        /// What the seated string table holds under <see cref="SeatedStringKey"/>.
+        /// </summary>
+        public const string SeatedStringValue = "from the seated state";
+
+        /// <summary>
+        /// The locale the shipped string defaults carry a table for besides the neutral one.
+        /// </summary>
+        /// <remarks>
+        /// One localised table is enough to tell a locale lookup apart from the neutral fallback, which is the only
+        /// thing separating the two branches of a defaults read.
+        /// </remarks>
+        public const string DefaultStringsLocale = "en-AU";
+
+        /// <summary>
+        /// What each shipped string table holds, keyed on the locale it belongs to.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> DefaultStringValues { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { string.Empty, "from the neutral defaults" },
+            { DefaultStringsLocale, "from the Australian defaults" },
+        };
+
+        /// <summary>
+        /// The key every shipped string table carries, so a locale is told from the neutral fallback by its value.
+        /// </summary>
+        public const string DefaultStringKey = "Placeholder";
 
         /// <summary>
         /// Puts back whatever database was seated before.
@@ -109,6 +147,19 @@ namespace PSADT.PowerShellTestFixture
         {
             return (Signature)SignatureConstructor.Invoke([typeof(ModuleDatabaseScope).Assembly.Location, TrustENoSignature]);
         }
+
+        /// <summary>
+        /// The string tables the module ships, one per locale plus the neutral one every lookup falls back to.
+        /// </summary>
+        /// <remarks>
+        /// Each is a script block whose body is a single hashtable literal, which is the shape the readers of the
+        /// shipped defaults walk for.
+        /// </remarks>
+        private static IReadOnlyDictionary<string, ScriptBlock> DefaultStrings => field ??= new Dictionary<string, ScriptBlock>(StringComparer.OrdinalIgnoreCase)
+        {
+            { string.Empty, ScriptBlock.Create($"@{{ {DefaultStringKey} = '{DefaultStringValues[string.Empty]}' }}") },
+            { DefaultStringsLocale, ScriptBlock.Create($"@{{ {DefaultStringKey} = '{DefaultStringValues[DefaultStringsLocale]}' }}") },
+        };
 
         /// <summary>
         /// Whatever was seated before, which is almost always nothing.

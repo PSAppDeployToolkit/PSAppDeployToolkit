@@ -59,9 +59,9 @@ function Get-ADTStringTable
 
     # Return a copied hashtable with variables expanded if a SessionState is provided, otherwise just return a reference to what we've got.
     # Rethrown from here so the caller's own line is what the error reports, rather than a line inside this module that means nothing to them.
-    $strings = try
+    $stringTable = try
     {
-        (Get-ADTModuleState).Strings
+        (Get-ADTModuleState).StringTable
     }
     catch
     {
@@ -69,9 +69,9 @@ function Get-ADTStringTable
     }
     if ($PSBoundParameters.ContainsKey('SessionState'))
     {
-        $strings = [PSADT.ClientServer.DataSerialization]::DeserializeFromBytes([PSADT.ClientServer.DataSerialization]::SerializeToBytes($strings), [System.Collections.Hashtable])
-        Expand-ADTVariablesInHashtable -Hashtable $strings -SessionState $SessionState
-        return $strings
+        $stringTable = [PSADT.ClientServer.DataSerialization]::DeserializeFromBytes([PSADT.ClientServer.DataSerialization]::SerializeToBytes($stringTable), [System.Collections.Hashtable])
+        Expand-ADTVariablesInHashtable -Hashtable $stringTable -SessionState $SessionState
+        return $stringTable
     }
-    return $strings
+    return $stringTable
 }

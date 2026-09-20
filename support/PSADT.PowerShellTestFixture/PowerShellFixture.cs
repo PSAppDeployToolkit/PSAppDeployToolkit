@@ -146,10 +146,12 @@ namespace PSADT.PowerShellTestFixture
         /// </remarks>
         /// <param name="configuration">The configuration the types under test should read.</param>
         /// <param name="environment">The environment table, where the test needs a particular one.</param>
+        /// <param name="defaults">The configuration the module ships, where the test needs it to differ from the
+        /// seated one so that it can tell which of the two was read.</param>
         /// <returns>A scope that puts back whatever database was seated before.</returns>
-        public ModuleDatabaseScope SeatModuleDatabase(ModuleConfiguration configuration, EnvironmentTable? environment = null)
+        public ModuleDatabaseScope SeatModuleDatabase(ModuleConfiguration configuration, EnvironmentTable? environment = null, ModuleConfiguration? defaults = null)
         {
-            return new ModuleDatabaseScope(configuration, ModuleSessionState, FixtureModuleInfo, environment ?? SharedEnvironment);
+            return new ModuleDatabaseScope(configuration, ModuleSessionState, FixtureModuleInfo, environment ?? SharedEnvironment, defaults);
         }
 
         /// <summary>
@@ -160,10 +162,12 @@ namespace PSADT.PowerShellTestFixture
         /// names <c language="powershell">Initialize-ADTModule</c>. Reachable in earnest, since the database is seated
         /// at import and the state only when that command runs.
         /// </remarks>
+        /// <param name="defaults">The configuration the module ships, which is all a database with no state has to
+        /// answer from.</param>
         /// <returns>A scope that puts back whatever database was seated before.</returns>
-        public ModuleDatabaseScope SeatModuleDatabaseWithoutState()
+        public ModuleDatabaseScope SeatModuleDatabaseWithoutState(ModuleConfiguration? defaults = null)
         {
-            return new ModuleDatabaseScope(configuration: null, ModuleSessionState, FixtureModuleInfo, environment: null);
+            return new ModuleDatabaseScope(configuration: null, ModuleSessionState, FixtureModuleInfo, environment: null, defaults);
         }
 
         /// <summary>

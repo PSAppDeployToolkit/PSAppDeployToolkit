@@ -147,15 +147,15 @@ function Initialize-ADTModule
                 $environment = New-ADTEnvironmentTable @PSBoundParameters
                 $config = Import-ADTConfig -BaseDirectory $configDirectories -Environment $environment
                 $language = Get-ADTStringLanguage -Environment $environment -Config $config
-                $strings = Import-ADTStringTable -BaseDirectory $stringsDirectories -Config $config -UICulture $language
+                $stringTable = Import-ADTStringTable -BaseDirectory $stringsDirectories -Config $config -UICulture $language
                 $Script:Module.State = [PSAppDeployToolkit.Foundation.ModuleState]::new(
                     $scriptDirectories,
                     $configDirectories,
                     $stringsDirectories,
                     $environment,
                     $config,
+                    $stringTable,
                     $language,
-                    $strings,
                     $moduleInitStart
                 )
             }

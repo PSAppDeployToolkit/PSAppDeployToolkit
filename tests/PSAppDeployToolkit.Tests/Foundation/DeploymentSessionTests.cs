@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -191,6 +192,156 @@ namespace PSAppDeployToolkit.Tests.Foundation
             Assert.False(session.TerminalServerMode);
             Assert.False(session.DisableLogging);
             Assert.False(session.RequireAdmin);
+        }
+
+        /// <summary>
+        /// Verifies that every setting the constructor reads from the configuration lands on the field that belongs to it.
+        /// </summary>
+        /// <remarks>
+        /// Ten near-identical reads, each naming a section and a key as string literals with nothing checking that
+        /// the pair belongs together, which is where a transposed key or a pasted-and-not-edited line hides. The two
+        /// exit codes live in a different section from everything else and are the pair most likely to be crossed, so
+        /// they are set to values nothing else uses. Read off the fields directly because none of the ten has a public
+        /// surface, and reaching them through the behaviour each one changes would test the behaviour instead.
+        /// </remarks>
+        [Fact]
+        public void DeploymentSession_MapsEveryConfiguredSettingToItsOwnField()
+        {
+            // Arrange: every value distinct from every other of its type, so a pair read the wrong way round cannot
+            // agree by accident.
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            ModuleConfiguration configuration = Configuration(temp);
+            configuration.LogStyle = "Legacy";
+            configuration.LogMaxHistory = 17;
+            configuration.LogMaxSize = 23;
+            configuration.DefaultExitCode = 60101;
+            configuration.DeferExitCode = 60102;
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(configuration, powerShell.NewEnvironmentTable());
+
+            // Act
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+
+            // Assert
+            Assert.Equal(temp.GetPath("Logs"), FieldOf<DirectoryInfo>(session, "ConfigLogPath").FullName);
+            Assert.Equal(LogStyle.Legacy, FieldOf<LogStyle>(session, "LogStyle"));
+            Assert.Equal(17, FieldOf<int>(session, "LogMaxHistory"));
+            Assert.Equal(60101, FieldOf<int>(session, "DefaultExitCode"));
+            Assert.Equal(60102, FieldOf<int>(session, "DeferExitCode"));
+            Assert.StartsWith($@"{configuration.RegPath}\", FieldOf<string>(session, "RegKeyDeferBase"), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that each flag the constructor reads from the configuration lands on the field that belongs to it.
+        /// </summary>
+        /// <remarks>
+        /// Separated from the settings above because three booleans cannot all differ from one another in one run, so
+        /// two of them read the wrong way round would agree. One case per flag, each turning on exactly the one it is
+        /// for, which leaves no pair agreeing in every case.
+        /// </remarks>
+        /// <param name="compressLogs">Whether logs are compressed on closure.</param>
+        /// <param name="logWriteToHost">Whether log entries are echoed to the host.</param>
+        /// <param name="logHostOutputToStdStreams">Whether host output bypasses PowerShell.</param>
+        [Theory]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(false, false, true)]
+        public void DeploymentSession_MapsEachConfiguredFlagToItsOwnField(bool compressLogs, bool logWriteToHost, bool logHostOutputToStdStreams)
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            ModuleConfiguration configuration = Configuration(temp);
+            configuration.CompressLogs = compressLogs;
+            configuration.LogWriteToHost = logWriteToHost;
+            configuration.LogHostOutputToStdStreams = logHostOutputToStdStreams;
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(configuration, powerShell.NewEnvironmentTable());
+
+            // Act
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+
+            // Assert
+            Assert.Equal(compressLogs, FieldOf<bool>(session, "CompressLogs"));
+            Assert.Equal(logWriteToHost, FieldOf<bool>(session, "LogWriteToHost"));
+            Assert.Equal(logHostOutputToStdStreams, FieldOf<bool>(session, "LogHostOutputToStdStreams"));
+        }
+
+        /// <summary>
+        /// Verifies that a configured language override is reported, and that nothing is said when there is none.
+        /// </summary>
+        /// <remarks>
+        /// The one configured setting read as a nullable rather than as a value, since a deployment that has not
+        /// overridden its language is the ordinary case rather than a misconfiguration.
+        /// </remarks>
+        [Fact]
+        public void DeploymentSession_ReportsAConfiguredLanguageOverrideOnlyWhenThereIsOne()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            ModuleConfiguration overridden = Configuration(temp);
+            overridden.LanguageOverride = "en-AU";
+
+            // Act
+            IReadOnlyList<LogEntry> withOverride = LogBufferOf(overridden);
+            IReadOnlyList<LogEntry> withoutOverride = LogBufferOf(Configuration(temp));
+
+            // Assert
+            Assert.Contains(withOverride, static entry => entry.Message.Contains("[en-AU]", StringComparison.Ordinal));
+            Assert.DoesNotContain(withoutOverride, static entry => entry.Message.Contains("override the detected primary UI language", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Verifies that a language override that is not a language is passed over rather than stopping the session.
+        /// </summary>
+        /// <remarks>
+        /// The one configured setting a deployment reads without insisting on it, so a value of the wrong type reads
+        /// as no override at all and the session opens. Worth pinning because it is the only one of the ten that
+        /// behaves this way: every other setting stops the session if the configuration got it wrong, and a reader
+        /// skimming the constructor would reasonably expect this one to as well.
+        /// </remarks>
+        [Fact]
+        public void DeploymentSession_PassesOverALanguageOverrideThatIsNotALanguage()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Assert.IsType<IDictionary>(ModuleDatabase.GetConfig()["UI"], exactMatch: false)["LanguageOverride"] = 3081;
+
+            // Act
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+
+            // Assert
+            Assert.DoesNotContain(session.GetLogBuffer(), static entry => entry.Message.Contains("override the detected primary UI language", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Verifies that a configured setting the constructor cannot read is named rather than guessed at.
+        /// </summary>
+        /// <remarks>
+        /// A setting removed from <c language="text">config.psd1</c> used to fail on the cast that followed it, which
+        /// named the type it could not convert and not the setting that was wrong. What is being pinned is that the
+        /// name survives the constructor's own failure handling, which closes the half-built session and wraps
+        /// whatever went wrong before rethrowing it.
+        /// </remarks>
+        [Fact]
+        public void DeploymentSession_NamesTheConfiguredSettingItCouldNotRead()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Assert.IsType<IDictionary>(ModuleDatabase.GetConfig()["Toolkit"], exactMatch: false).Remove("LogMaxHistory");
+
+            // Act
+            Exception failure = ThrowsLeavingTheProcessExitCodeAlone<ApplicationException>(static () => new DeploymentSession(MinimalParameters(), noExitOnClose: true, compatibilityMode: false));
+
+            // Assert
+            Assert.Contains(
+                "'LogMaxHistory'",
+                Assert.IsType<InvalidOperationException>(failure.InnerException).Message,
+                StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1827,6 +1978,38 @@ namespace PSAppDeployToolkit.Tests.Foundation
                 ?? throw new InvalidOperationException("DeploymentSession no longer carries a Settings field for the tests to read.");
             return (DeploymentSettings)(field.GetValue(session)
                 ?? throw new InvalidOperationException("DeploymentSession's Settings field held nothing."));
+        }
+
+        /// <summary>
+        /// Reads one of the settings a session took from the configuration.
+        /// </summary>
+        /// <remarks>
+        /// None of them has a public surface, so the field is the only place the mapping can be asserted as a
+        /// mapping rather than as its distant consequences.
+        /// </remarks>
+        /// <typeparam name="T">The type the field holds.</typeparam>
+        /// <param name="session">The session to read.</param>
+        /// <param name="name">The field to read.</param>
+        /// <returns>What the field holds.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the field is gone or holds nothing, since a
+        /// silently skipped assertion would be worse than a failure.</exception>
+        [SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The settings a session takes from the configuration are private with no public surface, so reading the field is the only way to assert the mapping.")]
+        private static T FieldOf<T>(DeploymentSession session, string name)
+        {
+            FieldInfo field = typeof(DeploymentSession).GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException($"DeploymentSession no longer carries a {name} field for the tests to read.");
+            return (T)(field.GetValue(session) ?? throw new InvalidOperationException($"DeploymentSession's {name} field held nothing."));
+        }
+
+        /// <summary>
+        /// Opens a session against the given configuration and hands back what it wrote to its log.
+        /// </summary>
+        /// <param name="configuration">The configuration to open the session against.</param>
+        /// <returns>The session's log entries.</returns>
+        private IReadOnlyList<LogEntry> LogBufferOf(ModuleConfiguration configuration)
+        {
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(configuration, powerShell.NewEnvironmentTable());
+            return new DeploymentSession(MinimalParameters(), noExitOnClose: true, compatibilityMode: false).GetLogBuffer();
         }
 
         /// <summary>

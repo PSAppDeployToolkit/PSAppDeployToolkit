@@ -63,8 +63,8 @@ namespace PSAppDeployToolkit.Logging
             // Perform early return checks before wasting time.
             DateTime dateNow = DateTime.Now;
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
-            IDictionary? configToolkit = ModuleDatabase.IsInitialized() ? (IDictionary?)ModuleDatabase.GetConfig()["Toolkit"] : null;
-            if (debugMessage && configToolkit?["LogDebugMessage"] is not true)
+            IDictionary configToolkit = (!ModuleDatabase.IsInitialized() ? ModuleDatabase.GetDefaultConfig() : ModuleDatabase.GetConfig())["Toolkit"] as IDictionary ?? throw new InvalidProgramException("Failed to retrieve the 'Toolkit' configuration.");
+            if (debugMessage && configToolkit["LogDebugMessage"] is not true)
             {
                 return new ReadOnlyCollection<LogEntry>([]);
             }
@@ -112,7 +112,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
-            logStyle ??= !Enum.TryParse(configToolkit?["LogStyle"] as string, out LogStyle styleEnum) ? LogStyle.CMTrace : styleEnum;
+            logStyle ??= Enum.Parse<LogStyle>(configToolkit["LogStyle"] as string ?? throw new InvalidOperationException("Failed to retrieve the 'LogStyle' configuration."));
             severity ??= LogSeverity.Info;
 
             // Build out the log entries and confirm whether there's anything to log.

@@ -24,16 +24,12 @@ Describe 'Initialize-ADTModule' {
         It 'Populates the config, strings and environment' {
             Initialize-ADTModule -InformationAction SilentlyContinue
             InModuleScope PSAppDeployToolkit { $Module.State.Config.Count } | Should -BeGreaterThan 0
-            InModuleScope PSAppDeployToolkit { $Module.State.Strings.Count } | Should -BeGreaterThan 0
+            InModuleScope PSAppDeployToolkit { $Module.State.StringTable.Count } | Should -BeGreaterThan 0
             InModuleScope PSAppDeployToolkit { $Module.State.Environment } | Should -Not -BeNullOrEmpty
         }
 
         It 'Marks the module as initialised' {
             Test-ADTModuleInitialized | Should -BeTrue
-        }
-
-        It 'Records how long it took' {
-            InModuleScope PSAppDeployToolkit { $Module.State.InitDuration.TotalMilliseconds } | Should -BeGreaterThan 0
         }
 
         It 'Resets the last exit code' {

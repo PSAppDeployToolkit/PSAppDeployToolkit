@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 
 namespace PSAppDeployToolkit.Foundation
 {
@@ -45,6 +48,25 @@ namespace PSAppDeployToolkit.Foundation
             }
             Config = defaults["Config"];
             Strings = defaults["Strings"];
+        }
+
+        /// <summary>
+        /// Gets the default configuration values for the module as a hashtable.
+        /// </summary>
+        /// <returns>A hashtable containing the default configuration values for the module.</returns>
+        public IDictionary GetDefaultConfig()
+        {
+            return (Hashtable)((CommandExpressionAst)((PipelineAst)((ScriptBlockAst)Config[string.Empty].Ast).EndBlock.Statements[0]).PipelineElements[0]).Expression.SafeGetValue();
+        }
+
+        /// <summary>
+        /// Gets the default string values for the module as a hashtable.
+        /// </summary>
+        /// <param name="locale">The culture info representing the locale for which to retrieve the default string values.</param>
+        /// <returns>A hashtable containing the default string values for the module.</returns>
+        public IDictionary GetDefaultStringTable(CultureInfo? locale = null)
+        {
+            return (Hashtable)((CommandExpressionAst)((PipelineAst)((ScriptBlockAst)Strings[locale?.Name ?? string.Empty].Ast).EndBlock.Statements[0]).PipelineElements[0]).Expression.SafeGetValue();
         }
 
         /// <summary>
