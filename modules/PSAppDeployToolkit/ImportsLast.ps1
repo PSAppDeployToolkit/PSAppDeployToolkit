@@ -188,7 +188,7 @@ try
                                             }
                                         }
                                     })
-                            ), [System.StringComparer]::OrdinalIgnoreCase)),
+                            ), [System.StringComparer]::Ordinal)),
                     [System.Collections.Generic.KeyValuePair[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.ScriptBlock]]]::new('Strings', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock][]](
                                 [System.Collections.Generic.KeyValuePair[System.String, System.Management.Automation.ScriptBlock]]::new([System.String]::Empty, {
                                         @{
@@ -4734,8 +4734,8 @@ try
                                             }
                                         }
                                     })
-                            ), [System.StringComparer]::OrdinalIgnoreCase))
-                ), [System.StringComparer]::OrdinalIgnoreCase),
+                            ), [System.StringComparer]::Ordinal))
+                ), [System.StringComparer]::Ordinal),
             (Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1),
             $(if ($MyInvocation.MyCommand.Name.Equals('ImportsLast.ps1')) { (Get-PSCallStack)[1].InvocationInfo } else { $MyInvocation }).MyCommand.ScriptBlock.Module,
             $Module.Assemblies,
@@ -4749,7 +4749,7 @@ try
                             ':\\',
                             ':',
                             '\\'
-                        ), [System.StringComparer]::OrdinalIgnoreCase)),
+                        ), [System.StringComparer]::Ordinal)),
                 [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('PathReplacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKLM', 'HKEY_LOCAL_MACHINE\'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCR', 'HKEY_CLASSES_ROOT\'),
@@ -4757,17 +4757,17 @@ try
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKU', 'HKEY_USERS\'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKCC', 'HKEY_CURRENT_CONFIG\'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKPD', 'HKEY_PERFORMANCE_DATA\')
-                        ), [System.StringComparer]::OrdinalIgnoreCase)),
+                        ), [System.StringComparer]::Ordinal)),
                 [System.Collections.Generic.KeyValuePair[System.String, System.Object]]::new('WOW64Replacements', [System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE\\', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_LOCAL_MACHINE\\SOFTWARE$', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'),
                             [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\', 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\')
-                        ), [System.StringComparer]::OrdinalIgnoreCase))
-            ), [System.StringComparer]::OrdinalIgnoreCase))
+                        ), [System.StringComparer]::Ordinal))
+            ), [System.StringComparer]::Ordinal))
 
     # Array of all PowerShell common parameter names.
-    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters), [System.StringComparer]::OrdinalIgnoreCase))
+    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.String[]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters), [System.StringComparer]::Ordinal))
 
     # Lookup table for preference variables and their associated CommonParameter name.
     New-Variable -Name PreferenceVariableTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.String][]](
@@ -4778,7 +4778,7 @@ try
                 [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Verbose', 'VerbosePreference'),
                 [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('WhatIf', 'WhatIfPreference'),
                 [System.Collections.Generic.KeyValuePair[System.String, System.String]]::new('Debug', 'DebugPreference')
-            ), [System.StringComparer]::OrdinalIgnoreCase))
+            ), [System.StringComparer]::Ordinal))
 
     # Lookup table for service status translation mapping.
     New-Variable -Name ServiceStatusTable -Option Constant -Value ([System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary([System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus][]](
@@ -4786,7 +4786,7 @@ try
                 [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('PausePending', [System.ServiceProcess.ServiceControllerStatus]::Paused),
                 [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('StartPending', [System.ServiceProcess.ServiceControllerStatus]::Running),
                 [System.Collections.Generic.KeyValuePair[System.String, System.ServiceProcess.ServiceControllerStatus]]::new('StopPending', [System.ServiceProcess.ServiceControllerStatus]::Stopped)
-            ), [System.StringComparer]::OrdinalIgnoreCase))
+            ), [System.StringComparer]::Ordinal))
 
     # Set all functions as read-only, export all public definitions and finalise the CommandTable.
     Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
