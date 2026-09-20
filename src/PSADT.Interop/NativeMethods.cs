@@ -3825,15 +3825,14 @@ namespace PSADT.Interop
         /// <param name="szValueBuf">An optional buffer that receives the string value. If provided, it must be large enough to hold the string,
         /// including the terminating null character.</param>
         /// <param name="pcchValueBuf">On entry, specifies the size of the buffer in characters. On exit, receives the length of the retrieved
-        /// string, including the terminating null character.</param>
+        /// string, not including the terminating null character. Zero is a value rather than a failure: a field holding
+        /// an empty string, or holding nothing at all, reports that length.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns ERROR_SUCCESS if the string is retrieved
         /// successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR MsiRecordGetString(SafeHandle hRecord, uint iField, [Optional] Span<char> szValueBuf, out uint pcchValueBuf)
         {
             ArgumentException.ThrowIfNullOrInvalid(hRecord); pcchValueBuf = (uint)szValueBuf.Length;
-            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiRecordGetString(hRecord, iField, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfZero(pcchValueBuf, "The length of the string value retrieved is zero.");
-            return res;
+            return ((WIN32_ERROR)PInvoke.MsiRecordGetString(hRecord, iField, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
         }
 
         /// <summary>

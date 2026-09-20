@@ -371,6 +371,50 @@ namespace PSADT.Tests.WindowsInstaller
         }
 
         /// <summary>
+        /// Verifies that a column whose rows are mostly empty reads back as the values it does hold.
+        /// </summary>
+        /// <remarks>
+        /// A nullable column is the ordinary case - InstallExecuteSequence carries a condition on seven of
+        /// its sixty-seven rows - and an empty field is a value rather than a failure, so the rows holding
+        /// nothing are skipped and the rest come through. Pinned because the interop wrapper once refused a
+        /// returned length of zero, which made every one of those rows an exception, and every test here
+        /// read the property table, whose values are never empty.
+        /// </remarks>
+        [Fact]
+        public void GetMsiTableColumnValues_ReadsAColumnThatIsEmptyOnMostRows()
+        {
+            // Arrange
+            FileInfo package = TestEnvironment.TestMsiPackage;
+
+            // Act
+            IReadOnlyList<object> conditions = MsiUtilities.GetMsiTableColumnValues(package.FullName, "InstallExecuteSequence", 2);
+
+            // Assert: only the populated rows, and nothing blank carried through as one
+            Assert.NotEmpty(conditions);
+            Assert.Contains("VersionNT", conditions);
+            Assert.All(conditions, static condition => Assert.False(string.IsNullOrWhiteSpace(condition as string), "Expected an empty field to be skipped rather than listed."));
+        }
+
+        /// <summary>
+        /// Verifies that a value column that is empty on a row leaves that row out of the dictionary rather
+        /// than failing the whole read.
+        /// </summary>
+        [Fact]
+        public void GetMsiTableDictionary_SkipsARowWhoseValueIsEmpty()
+        {
+            // Arrange
+            FileInfo package = TestEnvironment.TestMsiPackage;
+
+            // Act
+            IReadOnlyDictionary<string, object>? conditions = MsiUtilities.GetMsiTableDictionary(package.FullName, "InstallExecuteSequence", 1, 2);
+
+            // Assert: the action carrying a condition is keyed, and the one carrying none is absent
+            Assert.NotNull(conditions);
+            Assert.Equal("VersionNT", Assert.Contains("InstallServices", conditions));
+            Assert.DoesNotContain("InstallFiles", conditions);
+        }
+
+        /// <summary>
         /// Verifies that the state of a product that was never installed is reported as unknown rather
         /// than as installed, which is what decides whether an uninstall is attempted.
         /// </summary>
