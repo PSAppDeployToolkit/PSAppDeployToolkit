@@ -80,7 +80,7 @@ namespace PSADT.AccountManagement
             {
                 return Registry.LocalMachine.OpenSubKey(path);
             }
-            catch (SecurityException)
+            catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException)
             {
                 return null;
             }
