@@ -94,7 +94,7 @@ function Dismount-ADTWimFile
                     # Perform the dismount and discard all changes.
                     try
                     {
-                        $null = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
+                        $null = Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Dismount-WindowsImage) -Path $wimFile.Path -Discard
                     }
                     catch
                     {
@@ -123,7 +123,7 @@ function Dismount-ADTWimFile
 
                         # Attempt the dismount again.
                         Write-ADTLogEntry -Message "Dismounting WIM file at path [$($wimFile.Path)]."
-                        $null = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
+                        $null = Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Dismount-WindowsImage) -Path $wimFile.Path -Discard
                     }
                     Write-ADTLogEntry -Message "Successfully dismounted WIM file."
                     Remove-Item -LiteralPath $wimFile.Path -Force -Confirm:$false

@@ -40,6 +40,6 @@ function Private:Close-ADTClientServerInstance
     finally
     {
         Remove-Variable -Name ClientServerInstance -Scope Script -Force -Confirm:$false
-        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name $MyInvocation.MyCommand.Name)
     }
 }

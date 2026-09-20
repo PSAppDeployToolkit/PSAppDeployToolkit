@@ -102,7 +102,7 @@ function Close-ADTInstallationProgress
         finally
         {
             # Remove any callback that might be lingering in the backing buffer.
-            Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+            Remove-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name $MyInvocation.MyCommand.Name)
         }
 
         # Close the client/server process when we're running sessionless.

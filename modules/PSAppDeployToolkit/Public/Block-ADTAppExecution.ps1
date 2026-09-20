@@ -203,7 +203,7 @@ function Block-ADTAppExecution
                     $nstParams = @{
                         Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
                         Trigger = New-ScheduledTaskTrigger -AtStartup
-                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
+                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$((Get-ADTCommand -Name Unblock-ADTAppExecutionInternal).ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
                         Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
                     $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
@@ -236,7 +236,7 @@ function Block-ADTAppExecution
                 }
 
                 # Add callback to remove all blocked app executions during the shutdown of the final session.
-                Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Unblock-ADTAppExecution'
+                Add-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name Unblock-ADTAppExecution)
             }
             catch
             {

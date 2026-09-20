@@ -878,7 +878,7 @@ function Start-ADTMsiProcess
                 $PSBoundParameters.GetEnumerator() | & {
                     begin
                     {
-                        [System.String[]]$sapParams = $Script:CommandTable.'Start-ADTProcess'.Parameters.Keys
+                        [System.String[]]$sapParams = (Get-ADTCommand -Name Start-ADTProcess).Parameters.Keys
                     }
 
                     process

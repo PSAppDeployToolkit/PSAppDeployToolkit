@@ -83,7 +83,7 @@ function Unblock-ADTAppExecution
                 }
                 finally
                 {
-                    Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+                    Remove-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name $MyInvocation.MyCommand.Name)
                 }
             }
             catch

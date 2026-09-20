@@ -142,7 +142,7 @@ function Show-ADTNotifyIcon
                             AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                             MessageText = $ToolTipText
                         })
-                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTNotifyIcon'
+                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name Close-ADTNotifyIcon)
                 }
                 else
                 {

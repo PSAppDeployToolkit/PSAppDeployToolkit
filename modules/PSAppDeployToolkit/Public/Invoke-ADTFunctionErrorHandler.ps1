@@ -147,7 +147,7 @@ function Invoke-ADTFunctionErrorHandler
     {
         $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.ParameterSetName.Equals('AdditionalResolveErrorProperties'))
         {
-            $raerProps.Add('Property', $($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value; $AdditionalResolveErrorProperties))
+            $raerProps.Add('Property', $((Get-ADTCommand -Name Resolve-ADTErrorRecord).ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value; $AdditionalResolveErrorProperties))
         }
         elseif ($PSCmdlet.ParameterSetName.Equals('ResolveErrorProperties'))
         {

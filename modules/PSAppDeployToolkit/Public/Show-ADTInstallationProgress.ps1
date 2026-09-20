@@ -286,7 +286,7 @@ function Show-ADTInstallationProgress
                     # Create the new progress dialog.
                     Write-ADTLogEntry -Message "Creating a progress dialog with $([System.String]::Join(', ', ('StatusMessage', 'StatusMessageDetail', 'StatusBarPercentage').ForEach({ if ($PSBoundParameters.ContainsKey($_)) { "[$($_): $($PSBoundParameters.$_)]" } })))."
                     Invoke-ADTClientServerOperation -ShowProgressDialog -User $runAsActiveUser -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
-                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback (Get-ADTCommand -Name Close-ADTInstallationProgress)
                 }
                 else
                 {

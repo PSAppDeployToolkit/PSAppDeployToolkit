@@ -1106,7 +1106,7 @@ function Start-ADTProcess
                 # property list belongs to a parameter set that -Silent and -DisableErrorResolving are not in.
                 if ($SecureArgumentList)
                 {
-                    $iafehParams.Add('ResolveErrorProperties', ($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if (!$_.Equals('PositionMessage')) { return $_ } } }))
+                    $iafehParams.Add('ResolveErrorProperties', ((Get-ADTCommand -Name Resolve-ADTErrorRecord).ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if (!$_.Equals('PositionMessage')) { return $_ } } }))
                 }
                 Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -ErrorAction Stop
             }

@@ -200,14 +200,14 @@ function Remove-ADTFolder
                             }
                             if ($PSCmdlet.ShouldProcess($item, 'Delete empty folder recursively'))
                             {
-                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item.FullName -Force -Recurse
+                                Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $item.FullName -Force -Recurse
                             }
                             continue
                         }
                         Write-ADTLogEntry -Message "Deleting folder [$item] recursively..."
                         if ($PSCmdlet.ShouldProcess($item, 'Delete folder recursively'))
                         {
-                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force -Recurse
+                            Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $item -Force -Recurse
                         }
                         continue
                     }
@@ -218,7 +218,7 @@ function Remove-ADTFolder
                     {
                         if ($PSCmdlet.ShouldProcess($item, 'Delete empty folder'))
                         {
-                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force
+                            Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $item -Force
                         }
                         continue
                     }
@@ -233,7 +233,7 @@ function Remove-ADTFolder
                             if (($childItem | Get-ChildItem -Force | Measure-Object).Count -eq 0)
                             {
                                 # The folder is empty, delete it
-                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
+                                Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $childItem.FullName -Force
                             }
                             else
                             {
@@ -244,7 +244,7 @@ function Remove-ADTFolder
                         else
                         {
                             # Item is a file. Delete it.
-                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
+                            Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $childItem.FullName -Force
                         }
                     }
                     if ($SubfoldersSkipped)
@@ -259,7 +259,7 @@ function Remove-ADTFolder
                         throw (New-ADTErrorRecord @naerParams)
                     }
                     # Try to delete the folder again now that it should be empty.
-                    Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force
+                    Invoke-ADTCommandWithRetries -Command (Get-ADTCommand -Name Remove-Item) -LiteralPath $item -Force
                 }
                 catch
                 {
