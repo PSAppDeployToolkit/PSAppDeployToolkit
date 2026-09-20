@@ -21,7 +21,7 @@ function Private:Reset-ADTModuleState
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ModuleStateResetWhileInUse'
             TargetObject = (Get-PSCallStack)
-            RecommendedAction = "Review the scriptblock provided and try again."
+            RecommendedAction = "Please close the active deployment session before resetting the module state and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
