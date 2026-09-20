@@ -1,10 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
-using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
@@ -32,11 +31,19 @@ namespace PSADT.Utilities
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, lParam: "TraySettings");
 
             // Terminate the StartMenuExperienceHost to refresh the start menu. Windows restarts this process instantly.
-            foreach (Process process in RunningProcessInfo.Get([new("StartMenuExperienceHost")]).Select(static rpi => rpi.Process))
+            foreach (Process process in Process.GetProcessesByName("StartMenuExperienceHost"))
             {
                 using (process)
                 {
-                    process.Kill();
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+                    {
+                        continue;
+                        throw;
+                    }
                 }
             }
         }
