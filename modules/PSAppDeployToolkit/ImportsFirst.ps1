@@ -178,7 +178,7 @@ try
                         }
                     }
                 }))
-        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, [System.StringComparer]::OrdinalIgnoreCase)) -Force
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }
 }
