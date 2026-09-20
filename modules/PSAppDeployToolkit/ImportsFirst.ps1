@@ -81,7 +81,6 @@ try
     # Store build information pertaining to this module's state. This will get redefined
     # at the end as its proper type onces assemblies have been successfully loaded.
     New-Variable -Name Module -Option ReadOnly -Force -Value ([ordered]@{
-            Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
             Assemblies = if (!$PSVersionTable.PSEdition.Equals('Desktop'))
             {
                 [System.Collections.ObjectModel.ReadOnlyCollection[System.IO.FileInfo]]("$PSScriptRoot\lib\net8.0\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net8.0\PSADT.Interop.dll", "$PSScriptRoot\lib\net8.0\PSADT.dll", "$PSScriptRoot\lib\net8.0\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net8.0\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net8.0\Microsoft.Windows.SDK.NET.dll", "$PSScriptRoot\lib\net8.0\PSADT.WindowsRuntime.dll")
