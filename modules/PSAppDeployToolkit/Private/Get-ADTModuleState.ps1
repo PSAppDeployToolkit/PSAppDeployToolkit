@@ -14,7 +14,7 @@ function Private:Get-ADTModuleState
     if (!(Test-ADTModuleInitialized))
     {
         $naerParams = @{
-            Exception = [System.InvalidProgramException]::new("Cannot retrieve the module state while the module is not initialized.")
+            Exception = [System.InvalidOperationException]::new("Cannot retrieve the module state while the module is not initialized.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTModuleNotInitialized'
             RecommendedAction = "Please initialize the module with [Initialize-ADTModule] and try again."
