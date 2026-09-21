@@ -1786,6 +1786,66 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that the session's own sets put the deferral codes above a restart and below a failure.
+        /// </summary>
+        /// <remarks>
+        /// The offered codes are the two the session defers with: 60001 is the default and 60012 the deferral.
+        /// </remarks>
+        /// <param name="startExitCode">The exit code the session is already carrying.</param>
+        /// <param name="exitCode">The deferral code being offered to it.</param>
+        /// <param name="expected">Whether the offered code should be taken.</param>
+        [Theory]
+        [InlineData(0, 60001, true)]
+        [InlineData(0, 60012, true)]
+        [InlineData(3010, 60001, true)]
+        [InlineData(3010, 60012, true)]
+        [InlineData(60012, 60001, true)]
+        [InlineData(1, 60001, false)]
+        [InlineData(1, 60012, false)]
+        public void TrySetExitCode_JudgesTheDeferralCodesAsARetryWhenGivenNoSets(int startExitCode, int exitCode, bool expected)
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(startExitCode);
+
+            // Act
+            bool taken = session.TrySetExitCode(exitCode);
+
+            // Assert
+            Assert.Equal(expected, taken);
+            Assert.Equal(expected ? exitCode : startExitCode, session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that the deferral codes mean nothing to the sets a caller hands over.
+        /// </summary>
+        /// <remarks>
+        /// A caller's sets name what one process returned, where a deferral is the session's own affair, so the same
+        /// code is a failure to the one overload and a retry to the other.
+        /// </remarks>
+        [Fact]
+        public void TrySetExitCode_LeavesTheDeferralCodesOutOfTheGivenSets()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(1);
+
+            // Assert: the session's own sets make a retry of it, which a failure outranks.
+            Assert.False(session.TrySetExitCode(60012));
+            Assert.Equal(1, session.GetExitCode());
+
+            // Assert: sets the caller handed over make a failure of it, which nothing outranks.
+            Assert.True(session.TrySetExitCode(60012, callerSuccessExitCodes, callerRebootExitCodes));
+            Assert.Equal(60012, session.GetExitCode());
+        }
+
+        /// <summary>
         /// Verifies that a code in both of the given sets is judged as asking for a restart.
         /// </summary>
         /// <remarks>

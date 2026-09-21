@@ -1315,13 +1315,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>The deployment status.</returns>
         public DeploymentStatus GetDeploymentStatus()
         {
-            return (ExitCode == DefaultExitCode) || (ExitCode == DeferExitCode)
-                ? DeploymentStatus.FastRetry
-                : AppRebootExitCodes.Contains(ExitCode)
-                ? DeploymentStatus.RestartRequired
-                : AppSuccessExitCodes.Contains(ExitCode)
-                ? DeploymentStatus.Complete
-                : DeploymentStatus.Error;
+            return GetDeploymentStatus(ExitCode);
         }
 
         /// <summary>
@@ -1379,23 +1373,22 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Sets the exit code, judged against the session's own sets, unless doing so would downgrade the session's
-        /// status.
+        /// Sets the exit code, judged as <see cref="GetDeploymentStatus()"/> would judge it, unless doing so would
+        /// downgrade the session's status.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
         /// <returns>True if the exit code was set; otherwise, false.</returns>
         public bool TrySetExitCode(int exitCode)
         {
-            return TrySetExitCode(exitCode, AppSuccessExitCodes, AppRebootExitCodes);
+            return TrySetExitCode(exitCode, GetDeploymentStatus(exitCode));
         }
 
         /// <summary>
         /// Sets the exit code, unless doing so would downgrade the session's status.
         /// </summary>
         /// <remarks>The given sets are the caller's own, which is a separate judgement to the one
-        /// <see cref="GetDeploymentStatus"/> makes against the session's. The two are ranked against each other by
-        /// <see cref="DeploymentStatus"/>'s declared order, so a later success cannot clear an earlier failure,
-        /// restart or deferral.</remarks>
+        /// <see cref="GetDeploymentStatus()"/> makes against the session's, and one that has no deferral codes in
+        /// it.</remarks>
         /// <param name="exitCode">The exit code to set.</param>
         /// <param name="successExitCodes">The exit codes the caller treats as success.</param>
         /// <param name="rebootExitCodes">The exit codes the caller treats as requiring a restart.</param>
@@ -1405,17 +1398,11 @@ namespace PSAppDeployToolkit.Foundation
         {
             ArgumentNullException.ThrowIfNull(successExitCodes);
             ArgumentNullException.ThrowIfNull(rebootExitCodes);
-            DeploymentStatus exitCodeStatus = rebootExitCodes.Contains(exitCode)
+            return TrySetExitCode(exitCode, rebootExitCodes.Contains(exitCode)
                 ? DeploymentStatus.RestartRequired
                 : successExitCodes.Contains(exitCode)
                 ? DeploymentStatus.Complete
-                : DeploymentStatus.Error;
-            if (GetDeploymentStatus() > exitCodeStatus)
-            {
-                return false;
-            }
-            SetExitCode(exitCode);
-            return true;
+                : DeploymentStatus.Error);
         }
 
         /// <summary>
@@ -1431,6 +1418,40 @@ namespace PSAppDeployToolkit.Foundation
         #endregion Public methods.
         #region Private methods.
 
+
+        /// <summary>
+        /// Judges an exit code against the session's own sets.
+        /// </summary>
+        /// <param name="exitCode">The exit code to judge.</param>
+        /// <returns>The status the exit code amounts to.</returns>
+        private DeploymentStatus GetDeploymentStatus(int exitCode)
+        {
+            return (exitCode == DefaultExitCode) || (exitCode == DeferExitCode)
+                ? DeploymentStatus.FastRetry
+                : AppRebootExitCodes.Contains(exitCode)
+                ? DeploymentStatus.RestartRequired
+                : AppSuccessExitCodes.Contains(exitCode)
+                ? DeploymentStatus.Complete
+                : DeploymentStatus.Error;
+        }
+
+        /// <summary>
+        /// Sets the exit code, unless the status it amounts to would downgrade the session's own.
+        /// </summary>
+        /// <remarks>The two are ranked against each other by <see cref="DeploymentStatus"/>'s declared order, so a
+        /// later success cannot clear an earlier failure, restart or deferral.</remarks>
+        /// <param name="exitCode">The exit code to set.</param>
+        /// <param name="exitCodeStatus">The status the exit code amounts to.</param>
+        /// <returns>True if the exit code was set; otherwise, false.</returns>
+        private bool TrySetExitCode(int exitCode, DeploymentStatus exitCodeStatus)
+        {
+            if (GetDeploymentStatus() > exitCodeStatus)
+            {
+                return false;
+            }
+            SetExitCode(exitCode);
+            return true;
+        }
 
         /// <summary>
         /// Writes a log divider.
