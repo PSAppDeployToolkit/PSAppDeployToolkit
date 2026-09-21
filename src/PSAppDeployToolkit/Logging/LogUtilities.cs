@@ -112,7 +112,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
-            logStyle ??= Enum.Parse<LogStyle>(configToolkit["LogStyle"] as string ?? throw new InvalidOperationException("Failed to retrieve the 'LogStyle' configuration."));
+            logStyle ??= Enum.Parse<LogStyle>(configToolkit["LogStyle"] as string ?? throw new InvalidOperationException("Failed to retrieve the 'LogStyle' configuration."), ignoreCase: true);
             severity ??= LogSeverity.Info;
 
             // Build out the log entries and confirm whether there's anything to log.
