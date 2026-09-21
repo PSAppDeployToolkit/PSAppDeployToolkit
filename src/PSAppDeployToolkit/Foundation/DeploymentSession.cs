@@ -1379,6 +1379,46 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
+        /// Sets the exit code, judged against the session's own sets, unless doing so would downgrade the session's
+        /// status.
+        /// </summary>
+        /// <param name="exitCode">The exit code to set.</param>
+        /// <returns>True if the exit code was set; otherwise, false.</returns>
+        public bool TrySetExitCode(int exitCode)
+        {
+            return TrySetExitCode(exitCode, AppSuccessExitCodes, AppRebootExitCodes);
+        }
+
+        /// <summary>
+        /// Sets the exit code, unless doing so would downgrade the session's status.
+        /// </summary>
+        /// <remarks>The given sets are the caller's own, which is a separate judgement to the one
+        /// <see cref="GetDeploymentStatus"/> makes against the session's. The two are ranked against each other by
+        /// <see cref="DeploymentStatus"/>'s declared order, so a later success cannot clear an earlier failure,
+        /// restart or deferral.</remarks>
+        /// <param name="exitCode">The exit code to set.</param>
+        /// <param name="successExitCodes">The exit codes the caller treats as success.</param>
+        /// <param name="rebootExitCodes">The exit codes the caller treats as requiring a restart.</param>
+        /// <returns>True if the exit code was set; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when either set of exit codes is null.</exception>
+        public bool TrySetExitCode(int exitCode, IReadOnlyList<int> successExitCodes, IReadOnlyList<int> rebootExitCodes)
+        {
+            ArgumentNullException.ThrowIfNull(successExitCodes);
+            ArgumentNullException.ThrowIfNull(rebootExitCodes);
+            DeploymentStatus exitCodeStatus = rebootExitCodes.Contains(exitCode)
+                ? DeploymentStatus.RestartRequired
+                : successExitCodes.Contains(exitCode)
+                ? DeploymentStatus.Complete
+                : DeploymentStatus.Error;
+            if (GetDeploymentStatus() > exitCodeStatus)
+            {
+                return false;
+            }
+            SetExitCode(exitCode);
+            return true;
+        }
+
+        /// <summary>
         /// Add the mounted WIM files.
         /// </summary>
         /// <param name="wimFile">The WIM file to add to the list for dismounting upon session closure.</param>

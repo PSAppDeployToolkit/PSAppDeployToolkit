@@ -1698,6 +1698,162 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that an exit code is only taken when it is at least as severe as where the session already sits.
+        /// </summary>
+        /// <remarks>
+        /// The starting codes stand for the four statuses in the order the enum declares them: 0 is complete, 3010
+        /// asks for a restart, 60012 is a deferral and 1 is a failure.
+        /// </remarks>
+        /// <param name="startExitCode">The exit code the session is already carrying.</param>
+        /// <param name="exitCode">The exit code being offered to it.</param>
+        /// <param name="expected">Whether the offered code should be taken.</param>
+        [Theory]
+        [InlineData(0, 4001, true)]
+        [InlineData(0, 4002, true)]
+        [InlineData(0, 4003, true)]
+        [InlineData(3010, 4001, false)]
+        [InlineData(3010, 4002, true)]
+        [InlineData(3010, 4003, true)]
+        [InlineData(60012, 4001, false)]
+        [InlineData(60012, 4002, false)]
+        [InlineData(60012, 4003, true)]
+        [InlineData(1, 4001, false)]
+        [InlineData(1, 4002, false)]
+        [InlineData(1, 4003, true)]
+        public void TrySetExitCode_TakesACodeOnlyWhenItIsAtLeastAsSevereAsTheSession(int startExitCode, int exitCode, bool expected)
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(startExitCode);
+
+            // Act
+            bool taken = session.TrySetExitCode(exitCode, callerSuccessExitCodes, callerRebootExitCodes);
+
+            // Assert
+            Assert.Equal(expected, taken);
+            Assert.Equal(expected ? exitCode : startExitCode, session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that the sets a caller hands over decide what a code means, not the ones the session holds.
+        /// </summary>
+        [Fact]
+        public void TrySetExitCode_JudgesACodeByTheGivenSetsRatherThanTheSessionsOwn()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+
+            // Assert: a code the session calls a success is taken where the caller calls it a restart.
+            session.SetExitCode(3010);
+            Assert.True(session.TrySetExitCode(0, [], [0]));
+            Assert.Equal(0, session.GetExitCode());
+
+            // Assert: a code the session calls a restart is refused where the caller calls it a success.
+            session.SetExitCode(3010);
+            Assert.False(session.TrySetExitCode(1641, [1641], []));
+            Assert.Equal(3010, session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that the session's own sets judge the code when the caller hands none over.
+        /// </summary>
+        [Fact]
+        public void TrySetExitCode_FallsBackToTheSessionsOwnSetsWhenGivenNone()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Dictionary<string, object> parameters = MinimalParameters();
+            parameters.Add("AppSuccessExitCodes", customAppSuccessExitCodes);
+            parameters.Add("AppRebootExitCodes", customAppRebootExitCodes);
+            DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(customAppRebootExitCodes[0]);
+
+            // Assert: a code the session's own set calls a restart is taken.
+            Assert.True(session.TrySetExitCode(customAppRebootExitCodes[1]));
+            Assert.Equal(customAppRebootExitCodes[1], session.GetExitCode());
+
+            // Assert: a code the session's own set calls a success is refused, since a restart is still outstanding.
+            Assert.False(session.TrySetExitCode(customAppSuccessExitCodes[0]));
+            Assert.Equal(customAppRebootExitCodes[1], session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that a code in both of the given sets is judged as asking for a restart.
+        /// </summary>
+        /// <remarks>
+        /// Nothing stops a caller putting the same code in both sets, so the order they are consulted in decides it.
+        /// </remarks>
+        [Fact]
+        public void TrySetExitCode_JudgesACodeInBothSetsAsAskingForARestart()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(3010);
+
+            // Act
+            bool taken = session.TrySetExitCode(5000, [5000], [5000]);
+
+            // Assert: a success would have been refused by a session already needing a restart.
+            Assert.True(taken);
+            Assert.Equal(5000, session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that a code in neither set is a failure, which empty sets make of every code.
+        /// </summary>
+        [Fact]
+        public void TrySetExitCode_TakesAnyCodeWhenGivenEmptySets()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(1);
+
+            // Act
+            bool taken = session.TrySetExitCode(0, [], []);
+
+            // Assert
+            Assert.True(taken);
+            Assert.Equal(0, session.GetExitCode());
+        }
+
+        /// <summary>
+        /// Verifies that a set left null is refused by name rather than read as an empty one.
+        /// </summary>
+        [Fact]
+        public void TrySetExitCode_RefusesASetItWasNotGiven()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            DeploymentSession session = new(MinimalParameters(), noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(3010);
+
+            // Act
+            ArgumentNullException success = Assert.Throws<ArgumentNullException>(() => session.TrySetExitCode(0, null!, []));
+            ArgumentNullException reboot = Assert.Throws<ArgumentNullException>(() => session.TrySetExitCode(0, [], null!));
+
+            // Assert
+            Assert.Equal("successExitCodes", success.ParamName);
+            Assert.Equal("rebootExitCodes", reboot.ParamName);
+            Assert.Equal(3010, session.GetExitCode());
+        }
+
+        /// <summary>
         /// Verifies that closing a session hands back its exit code and marks it closed.
         /// </summary>
         [Fact]
@@ -2054,5 +2210,16 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// The exit codes a custom application uses to signal that it needs a reboot, for the tests that need them.
         /// </summary>
         private static readonly int[] customAppRebootExitCodes = [7001, 7002];
+
+        /// <summary>
+        /// The exit codes a caller offering one treats as success, which the session holds in neither of its sets.
+        /// </summary>
+        private static readonly int[] callerSuccessExitCodes = [4001];
+
+        /// <summary>
+        /// The exit codes a caller offering one treats as needing a reboot, which the session holds in neither of its
+        /// sets.
+        /// </summary>
+        private static readonly int[] callerRebootExitCodes = [4002];
     }
 }

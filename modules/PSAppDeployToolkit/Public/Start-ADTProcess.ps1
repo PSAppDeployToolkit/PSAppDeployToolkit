@@ -595,26 +595,8 @@ function Start-ADTProcess
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
 
-            # Start working out whether we can set the exit code or not.
-            $adtSessionStatus = $adtSession.GetDeploymentStatus()
-            $isSuccessCode = $SuccessExitCodes.Contains($ExitCode)
-            $isRestartCode = $RebootExitCodes.Contains($ExitCode)
-            $isFailureCode = !$isSuccessCode -and !$isRestartCode
-            if ($isFailureCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::Error))
-            {
-                $adtSession.SetExitCode($ExitCode)
-                return
-            }
-            if ($isRestartCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::RestartRequired))
-            {
-                $adtSession.SetExitCode($ExitCode)
-                return
-            }
-            if ($isSuccessCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::Complete))
-            {
-                $adtSession.SetExitCode($ExitCode)
-                return
-            }
+            # Let the session work out whether it can take the exit code or not.
+            $null = $adtSession.TrySetExitCode($ExitCode, $SuccessExitCodes, $RebootExitCodes)
         }
 
         # Initalize function and get required objects.
