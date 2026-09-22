@@ -356,13 +356,10 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     for (int i = 0; i < selector.Items.Count; i++)
                     {
                         SelectSection(selector, i, window.Dispatcher);
-                        foreach (ColorTile tile in DemoTestHost.FindVisualChildren<ColorTile>(SectionPanel(page)))
+                        foreach (ColorTile tile in DemoTestHost.FindVisualChildren<ColorTile>(SectionPanel(page)).Where(static tile => tile.Tag is not null))
                         {
                             // Palette tiles name a Color rather than a live brush; they carry no Tag.
-                            if (tile.Tag is not null)
-                            {
-                                _ = resourceKeys.Add(tile.ColorBrushName);
-                            }
+                            _ = resourceKeys.Add(tile.ColorBrushName);
                         }
                     }
 
@@ -433,9 +430,8 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
 
         private static string? FindLiteralGeometryAttribute(string source)
         {
-            foreach (string attribute in (string[])["Margin", "Padding", "CornerRadius", "FontSize", "Width", "Height", "MinWidth", "MinHeight", "BorderThickness"])
+            foreach (string token in (ReadOnlySpan<string>)["Margin=\"", "Padding=\"", "CornerRadius=\"", "FontSize=\"", "Width=\"", "Height=\"", "MinWidth=\"", "MinHeight=\"", "BorderThickness=\""])
             {
-                string token = attribute + "=\"";
                 int index = source.IndexOf(token, StringComparison.Ordinal);
                 while (index >= 0)
                 {
