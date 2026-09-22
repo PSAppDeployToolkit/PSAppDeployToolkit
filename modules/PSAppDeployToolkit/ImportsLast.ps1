@@ -271,9 +271,9 @@ try
                                             ProgressPrompt = @{
                                                 # Default message displayed in the progress bar.
                                                 Message = @{
-                                                    Install = 'Installation in progress. Please wait…'
-                                                    Repair = 'Repair in progress. Please wait…'
-                                                    Uninstall = 'Uninstallation in progress. Please wait…'
+                                                    Install = 'Installation in progress. Please wait...'
+                                                    Repair = 'Repair in progress. Please wait...'
+                                                    Uninstall = 'Uninstallation in progress. Please wait...'
                                                 }
 
                                                 # Default message detail displayed in the progress bar.
@@ -504,9 +504,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'التثبيت قيد التقدم. الرجاء الانتظار…'
-                                                    Repair = 'الإصلاح قيد التقدم. الرجاء الانتظار…'
-                                                    Uninstall = 'إلغاء التثبيت قيد التقدم. الرجاء الانتظار…'
+                                                    Install = 'التثبيت قيد التقدم. الرجاء الانتظار...'
+                                                    Repair = 'الإصلاح قيد التقدم. الرجاء الانتظار...'
+                                                    Uninstall = 'إلغاء التثبيت قيد التقدم. الرجاء الانتظار...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'سيتم إغلاق هذه النافذة تلقائياً عند اكتمال التثبيت.'
@@ -669,9 +669,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'В момента се извършва инсталация. Моля, изчакайте…'
-                                                    Repair = 'В момента се извършва поправка. Моля, изчакайте…'
-                                                    Uninstall = 'В момента се извършва деинсталация. Моля, изчакайте…'
+                                                    Install = 'В момента се извършва инсталация. Моля, изчакайте...'
+                                                    Repair = 'В момента се извършва поправка. Моля, изчакайте...'
+                                                    Uninstall = 'В момента се извършва деинсталация. Моля, изчакайте...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Този прозорец ще се затвори автоматично, когато инсталацията завърши.'
@@ -834,9 +834,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Probíhá instalace. Počkejte prosím…'
-                                                    Repair = 'Probíhá oprava. Počkejte prosím…'
-                                                    Uninstall = 'Probíhá odinstalace. Počkejte prosím…'
+                                                    Install = 'Probíhá instalace. Počkejte prosím...'
+                                                    Repair = 'Probíhá oprava. Počkejte prosím...'
+                                                    Uninstall = 'Probíhá odinstalace. Počkejte prosím...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Toto okno se po dokončení instalace automaticky zavře.'
@@ -999,9 +999,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installation i gang. Vent venligst…'
-                                                    Repair = 'Reparation i gang. Vent venligst…'
-                                                    Uninstall = 'Afinstallation i gang. Vent venligst…'
+                                                    Install = 'Installation i gang. Vent venligst...'
+                                                    Repair = 'Reparation i gang. Vent venligst...'
+                                                    Uninstall = 'Afinstallation i gang. Vent venligst...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Dette vindue lukkes automatisk, når installationen er færdig.'
@@ -1164,9 +1164,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installation wird ausgeführt. Bitte warten…'
-                                                    Repair = 'Reparatur wird ausgeführt. Bitte warten…'
-                                                    Uninstall = 'Deinstallation wird ausgeführt. Bitte warten…'
+                                                    Install = 'Installation wird ausgeführt. Bitte warten...'
+                                                    Repair = 'Reparatur wird ausgeführt. Bitte warten...'
+                                                    Uninstall = 'Deinstallation wird ausgeführt. Bitte warten...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Dieses Fenster wird automatisch geschlossen, wenn die Installation abgeschlossen ist.'
@@ -1329,9 +1329,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Η εγκατάσταση βρίσκεται σε εξέλιξη. Παρακαλώ περιμένετε…'
-                                                    Repair = 'Επισκευή σε εξέλιξη. Παρακαλώ περιμένετε…'
-                                                    Uninstall = 'Απεγκατάσταση σε εξέλιξη. Παρακαλώ περιμένετε…'
+                                                    Install = 'Η εγκατάσταση βρίσκεται σε εξέλιξη. Παρακαλώ περιμένετε...'
+                                                    Repair = 'Επισκευή σε εξέλιξη. Παρακαλώ περιμένετε...'
+                                                    Uninstall = 'Απεγκατάσταση σε εξέλιξη. Παρακαλώ περιμένετε...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η εγκατάσταση.'
@@ -1494,9 +1494,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Instalación en curso. Por favor espere…'
-                                                    Repair = 'Reparación en curso. Por favor espere…'
-                                                    Uninstall = 'Desinstalación en curso. Por favor espere…'
+                                                    Install = 'Instalación en curso. Por favor espere...'
+                                                    Repair = 'Reparación en curso. Por favor espere...'
+                                                    Uninstall = 'Desinstalación en curso. Por favor espere...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Esta ventana se cerrará automáticamente cuando finalice la instalación.'
@@ -1659,9 +1659,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Asennus käynnissä. Odota…'
-                                                    Repair = 'Korjaus käynnissä. Odota…'
-                                                    Uninstall = 'Asennuksen poisto käynnissä. Odota…'
+                                                    Install = 'Asennus käynnissä. Odota...'
+                                                    Repair = 'Korjaus käynnissä. Odota...'
+                                                    Uninstall = 'Asennuksen poisto käynnissä. Odota...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Tämä ikkuna sulkeutuu automaattisesti, kun asennus on valmis.'
@@ -1824,9 +1824,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installation en cours. Veuillez patienter…'
-                                                    Repair = 'Réparation en cours. Veuillez patienter…'
-                                                    Uninstall = 'Désinstallation en cours. Veuillez patienter…'
+                                                    Install = 'Installation en cours. Veuillez patienter...'
+                                                    Repair = 'Réparation en cours. Veuillez patienter...'
+                                                    Uninstall = 'Désinstallation en cours. Veuillez patienter...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = "Cette fenêtre se fermera automatiquement lorsque l'installation sera terminée."
@@ -1989,9 +1989,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'התקנה בעיצומה. אנא המתן…'
-                                                    Repair = 'תיקון מתבצע. אנא המתן…'
-                                                    Uninstall = 'הסרת ההתקנה מתבצעת. אנא המתן…'
+                                                    Install = 'התקנה בעיצומה. אנא המתן...'
+                                                    Repair = 'תיקון מתבצע. אנא המתן...'
+                                                    Uninstall = 'הסרת ההתקנה מתבצעת. אנא המתן...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'חלון זה ייסגר אוטומטית עם השלמת ההתקנה.'
@@ -2154,9 +2154,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Telepítés folyamatban. Kérjük várjon…'
-                                                    Repair = 'Javítás folyamatban. Kérjük várjon…'
-                                                    Uninstall = 'Eltávolítás folyamatban. Kérjük várjon…'
+                                                    Install = 'Telepítés folyamatban. Kérjük várjon...'
+                                                    Repair = 'Javítás folyamatban. Kérjük várjon...'
+                                                    Uninstall = 'Eltávolítás folyamatban. Kérjük várjon...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Ez az ablak automatikusan bezáródik, ha a telepítés befejeződött.'
@@ -2319,9 +2319,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installazione in corso. Attendere prego…'
-                                                    Repair = 'Riparazione in corso. Attendere…'
-                                                    Uninstall = 'Disinstallazione in corso. Attendere prego…'
+                                                    Install = 'Installazione in corso. Attendere prego...'
+                                                    Repair = 'Riparazione in corso. Attendere...'
+                                                    Uninstall = 'Disinstallazione in corso. Attendere prego...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = "Questa finestra si chiuderà automaticamente al termine dell'installazione."
@@ -2484,9 +2484,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'インストール中です。しばらくお待ちください…'
-                                                    Repair = '修復中です。しばらくお待ちください…'
-                                                    Uninstall = 'アンインストール中です。しばらくお待ちください…'
+                                                    Install = 'インストール中です。しばらくお待ちください...'
+                                                    Repair = '修復中です。しばらくお待ちください...'
+                                                    Uninstall = 'アンインストール中です。しばらくお待ちください...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'インストールが完了すると、このウィンドウは自動的に閉じられます。'
@@ -2649,9 +2649,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = '설치 중입니다. 잠시만 기다려주세요…'
-                                                    Repair = '수리 중입니다. 잠시만 기다려주세요…'
-                                                    Uninstall = '제거 중입니다. 잠시만 기다려주세요…'
+                                                    Install = '설치 중입니다. 잠시만 기다려주세요...'
+                                                    Repair = '수리 중입니다. 잠시만 기다려주세요...'
+                                                    Uninstall = '제거 중입니다. 잠시만 기다려주세요...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = '설치가 완료되면 이 창이 자동으로 닫힙니다.'
@@ -2814,9 +2814,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Notiek instalēšana. Lūdzu, uzgaidiet…'
-                                                    Repair = 'Notiek labošana. Lūdzu, uzgaidiet…'
-                                                    Uninstall = 'Notiek atinstalēšana. Lūdzu, uzgaidiet…'
+                                                    Install = 'Notiek instalēšana. Lūdzu, uzgaidiet...'
+                                                    Repair = 'Notiek labošana. Lūdzu, uzgaidiet...'
+                                                    Uninstall = 'Notiek atinstalēšana. Lūdzu, uzgaidiet...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Šis logs aizvērsies automātiski, kad instalēšana būs pabeigta.'
@@ -2979,9 +2979,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installasjon pågår. Vennligst vent …'
-                                                    Repair = 'Reparasjon pågår. Vennligst vent…'
-                                                    Uninstall = 'Avinstalleringen pågår. Vennligst vent…'
+                                                    Install = 'Installasjon pågår. Vennligst vent ...'
+                                                    Repair = 'Reparasjon pågår. Vennligst vent...'
+                                                    Uninstall = 'Avinstalleringen pågår. Vennligst vent...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Dette vinduet lukkes automatisk når installasjonen er fullført.'
@@ -3144,9 +3144,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installatie wordt uitgevoerd. Even geduld a.u.b…'
-                                                    Repair = 'Reparatie wordt uitgevoerd. Even geduld a.u.b…'
-                                                    Uninstall = 'De-installatie wordt uitgevoerd. Even geduld a.u.b…'
+                                                    Install = 'Installatie wordt uitgevoerd. Even geduld a.u.b...'
+                                                    Repair = 'Reparatie wordt uitgevoerd. Even geduld a.u.b...'
+                                                    Uninstall = 'De-installatie wordt uitgevoerd. Even geduld a.u.b...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Dit venster wordt automatisch gesloten als de installatie voltooid is.'
@@ -3309,9 +3309,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Instalacja w toku. Proszę czekać…'
-                                                    Repair = 'Trwa naprawa. Proszę czekać…'
-                                                    Uninstall = 'Trwa dezinstalacja. Proszę czekać…'
+                                                    Install = 'Instalacja w toku. Proszę czekać...'
+                                                    Repair = 'Trwa naprawa. Proszę czekać...'
+                                                    Uninstall = 'Trwa dezinstalacja. Proszę czekać...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'To okno zamknie się automatycznie po zakończeniu instalacji.'
@@ -3474,9 +3474,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Instalação em curso. Aguarde…'
-                                                    Repair = 'Reparação em curso. Aguarde…'
-                                                    Uninstall = 'Desinstalação em curso. Aguarde…'
+                                                    Install = 'Instalação em curso. Aguarde...'
+                                                    Repair = 'Reparação em curso. Aguarde...'
+                                                    Uninstall = 'Desinstalação em curso. Aguarde...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Esta janela fechar-se-á automaticamente quando a instalação estiver concluída.'
@@ -3639,9 +3639,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Instalação em andamento. Por favor, aguarde…'
-                                                    Repair = 'Reparo em andamento. Por favor, aguarde…'
-                                                    Uninstall = 'Desinstalação em andamento. Aguarde…'
+                                                    Install = 'Instalação em andamento. Por favor, aguarde...'
+                                                    Repair = 'Reparo em andamento. Por favor, aguarde...'
+                                                    Uninstall = 'Desinstalação em andamento. Aguarde...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Esta janela se fechará automaticamente quando a instalação for concluída.'
@@ -3804,9 +3804,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Идет установка. Пожалуйста, подождите…'
-                                                    Repair = 'Выполняется восстановление. Пожалуйста, подождите…'
-                                                    Uninstall = 'Выполняется деинсталляция. Пожалуйста, подождите…'
+                                                    Install = 'Идет установка. Пожалуйста, подождите...'
+                                                    Repair = 'Выполняется восстановление. Пожалуйста, подождите...'
+                                                    Uninstall = 'Выполняется деинсталляция. Пожалуйста, подождите...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Это окно автоматически закроется, когда установка будет завершена.'
@@ -3969,9 +3969,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Inštalácia prebieha. Počkajte prosím…'
-                                                    Repair = 'Prebieha oprava. Počkajte prosím…'
-                                                    Uninstall = 'Prebieha odinštalovanie. Prosím, počkajte…'
+                                                    Install = 'Inštalácia prebieha. Počkajte prosím...'
+                                                    Repair = 'Prebieha oprava. Počkajte prosím...'
+                                                    Uninstall = 'Prebieha odinštalovanie. Prosím, počkajte...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Toto okno sa po dokončení inštalácie automaticky zatvorí.'
@@ -4134,9 +4134,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Installation pågår. Var god vänta…'
-                                                    Repair = 'Reparation pågår. Var god vänta…'
-                                                    Uninstall = 'Avinstallation pågår. Var god vänta…'
+                                                    Install = 'Installation pågår. Var god vänta...'
+                                                    Repair = 'Reparation pågår. Var god vänta...'
+                                                    Uninstall = 'Avinstallation pågår. Var god vänta...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Detta fönster stängs automatiskt när installationen är klar.'
@@ -4299,9 +4299,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = 'Kurulum devam ediyor. Lütfen bekleyin…'
-                                                    Repair = 'Onarım devam ediyor. Lütfen bekleyin…'
-                                                    Uninstall = 'Kaldırma işlemi devam ediyor. Lütfen bekleyin…'
+                                                    Install = 'Kurulum devam ediyor. Lütfen bekleyin...'
+                                                    Repair = 'Onarım devam ediyor. Lütfen bekleyin...'
+                                                    Uninstall = 'Kaldırma işlemi devam ediyor. Lütfen bekleyin...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = 'Yükleme tamamlandığında bu pencere otomatik olarak kapanacaktır.'
@@ -4464,9 +4464,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = '正在安装。请稍候……'
-                                                    Repair = '修复中。请稍候…'
-                                                    Uninstall = '卸载中。请稍候…'
+                                                    Install = '正在安装。请稍候......'
+                                                    Repair = '修复中。请稍候...'
+                                                    Uninstall = '卸载中。请稍候...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = '安装完成后，此窗口将自动关闭。'
@@ -4629,9 +4629,9 @@ try
                                             }
                                             ProgressPrompt = @{
                                                 Message = @{
-                                                    Install = '安裝中。 請稍候…'
-                                                    Repair = '維修中。 請稍候…'
-                                                    Uninstall = '正在卸載。 請稍候…'
+                                                    Install = '安裝中。 請稍候...'
+                                                    Repair = '維修中。 請稍候...'
+                                                    Uninstall = '正在卸載。 請稍候...'
                                                 }
                                                 MessageDetail = @{
                                                     Install = '安裝完成後，此視窗將自動關閉。'
