@@ -24,7 +24,7 @@ function Reset-ADTDeferHistory
         This function does not return any objects.
 
     .EXAMPLE
-        Reset-DeferHistory
+        Reset-ADTDeferHistory
 
     .NOTES
         An active ADT session is required to use this function.

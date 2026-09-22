@@ -23,7 +23,7 @@ function Get-ADTCommandTable
     .OUTPUTS
         System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]
 
-        Returns PSAppDeployTookit's safe command lookup table as a ReadOnlyDictionary.
+        Returns PSAppDeployToolkit's safe command lookup table as a ReadOnlyDictionary.
 
     .EXAMPLE
         Get-ADTCommandTable

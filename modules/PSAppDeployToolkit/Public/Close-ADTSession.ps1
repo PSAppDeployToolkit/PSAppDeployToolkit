@@ -145,22 +145,25 @@ function Close-ADTSession
                     $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]." -DisableErrorResolving:$false
                 }
             }
-            foreach ($callback in $(if ($deploymentSessions.Count.Equals(1)) { Get-ADTModuleCallback -Hookpoint OnFinish | & { process { return $_ } } }))
+            if ($deploymentSessions.Count.Equals(1))
             {
-                try
+                foreach ($callback in (Get-ADTModuleCallback -Hookpoint OnFinish | & { process { return $_ } }))
                 {
                     try
                     {
-                        & $callback
+                        try
+                        {
+                            & $callback
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
                     }
                     catch
                     {
-                        Write-Error -ErrorRecord $_
+                        $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]." -DisableErrorResolving:$false
                     }
-                }
-                catch
-                {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]." -DisableErrorResolving:$false
                 }
             }
         )

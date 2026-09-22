@@ -29,7 +29,7 @@ function Get-ADTIniSection
     .OUTPUTS
         Collections.Specialized.OrderedDictionary
 
-        Returns the value of the specified section and key.
+        Returns the specified section as an ordered dictionary of key-value pairs.
 
     .EXAMPLE
         Get-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes'

@@ -50,7 +50,7 @@ function New-ADTZipFile
         This function does not generate any output.
 
     .EXAMPLE
-        New-ADTZipFile -SourceDirectory 'E:\Testing\Logs' -DestinationPath 'E:\Testing\TestingLogs.zip'
+        New-ADTZipFile -LiteralPath 'E:\Testing\Logs' -DestinationPath 'E:\Testing\TestingLogs.zip'
 
     .NOTES
         An active ADT session is NOT required to use this function.
