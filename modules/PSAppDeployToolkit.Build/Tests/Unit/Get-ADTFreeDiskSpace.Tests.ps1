@@ -22,8 +22,13 @@ Describe 'Get-ADTFreeDiskSpace' {
         }
 
         It 'Defaults to the drive Windows is installed on' {
-            $systemDrive = [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory)
-            Get-ADTFreeDiskSpace | Should -Be (Get-ADTFreeDiskSpace -Drive $systemDrive)
+            # Asserted on the parameter default itself, as comparing free space cannot tell two drives apart
+            # on a single-drive machine. Get-Command does not surface defaults, so it comes from the AST and
+            # is evaluated in the module's scope, where it would resolve at runtime.
+            $parameters = (Get-Command -Name Get-ADTFreeDiskSpace).ScriptBlock.Ast.Body.ParamBlock.Parameters
+            $default = ($parameters | Where-Object { $_.Name.VariablePath.UserPath.Equals('Drive') }).DefaultValue
+            $resolved = & (Get-Module -Name PSAppDeployToolkit) ([System.Management.Automation.ScriptBlock]::Create($default.Extent.Text))
+            $resolved | Should -Be ([System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory))
         }
 
         It 'Accepts a drive given as <Case>' -ForEach @(
