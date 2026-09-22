@@ -1369,6 +1369,56 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that archiving the logs removes the oldest archives beyond the configured history.
+        /// </summary>
+        /// <remarks>
+        /// Counted before the archive is written rather than after, so the pending one has to be allowed for. Left
+        /// out, the directory keeps one more archive than was asked for and never sheds it, since every later run
+        /// counts the same way.
+        /// </remarks>
+        [Fact]
+        public void Close_ArchivingTheLogsKeepsOnlyTheConfiguredHistory()
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            ModuleConfiguration configuration = Configuration(temp);
+            configuration.CompressLogs = true;
+            configuration.LogMaxHistory = 2;
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(configuration, powerShell.NewEnvironmentTable());
+            Dictionary<string, object> parameters = MinimalParameters();
+            parameters["AppName"] = UniqueAppName();
+            DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
+            DirectoryInfo staging = session.LogPath;
+
+            // Arrange: the history already full, aged so their order is not in doubt.
+            string archiveDirectory = Directory.CreateDirectory(configuration.LogPath).FullName;
+            string[] existing = [$"{session.InstallName}_{session.DeploymentType}_older.zip", $"{session.InstallName}_{session.DeploymentType}_newer.zip"];
+            for (int index = 0; index < existing.Length; index++)
+            {
+                string path = Path.Join(archiveDirectory, existing[index]);
+                File.WriteAllText(path, existing[index]);
+                File.SetLastWriteTime(path, DateTime.Now.AddDays(index - existing.Length));
+            }
+
+            // Act
+            try
+            {
+                _ = session.Close(exitMessage: null);
+
+                // Assert: three archives competed for two places and the oldest lost.
+                string[] archives = [.. new DirectoryInfo(archiveDirectory).GetFiles("*.zip").Select(static file => file.Name)];
+                Assert.Equal(2, archives.Length);
+                Assert.Contains(existing[1], archives, StringComparer.Ordinal);
+                Assert.DoesNotContain(existing[0], archives, StringComparer.Ordinal);
+            }
+            finally
+            {
+                Delete(staging);
+            }
+        }
+
+        /// <summary>
         /// Verifies that a deployment with nothing to close resolves to silent.
         /// </summary>
         /// <remarks>

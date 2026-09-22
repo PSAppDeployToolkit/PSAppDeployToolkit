@@ -1082,8 +1082,8 @@ namespace PSAppDeployToolkit.Foundation
                     FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(destArchiveFileName.Replace(SubstitutionPlaceholder, "*", StringComparison.Ordinal)).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                     destArchiveFileName = destArchiveFileName.Replace(SubstitutionPlaceholder, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.Ordinal), StringComparison.Ordinal);
 
-                    // Keep only the max number of archive files.
-                    int archiveFilesCount = archiveFiles.Length;
+                    // Keep only the max number of archive files, counting the one about to be created.
+                    int archiveFilesCount = archiveFiles.Length + 1;
                     if (archiveFilesCount > LogMaxHistory)
                     {
                         foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - LogMaxHistory))
