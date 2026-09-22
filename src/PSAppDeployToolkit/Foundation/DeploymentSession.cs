@@ -1219,22 +1219,17 @@ namespace PSAppDeployToolkit.Foundation
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            PSObject? history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, providerSpecificPickList: null).FirstOrDefault();
-            if (history is null)
+            if (ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, providerSpecificPickList: null).FirstOrDefault() is not PSObject history)
             {
                 return null;
             }
-            object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
-            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
-            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
-            object? deferRunInterval = history.Properties["DeferRunInterval"]?.Value;
-            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null && deferRunInterval is null ? null : new
-            (
-                deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
-                deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
-                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null,
-                deferRunInterval is not null ? TimeSpan.Parse((string)deferRunInterval, CultureInfo.InvariantCulture) : null
-            );
+            DateTime? deferDeadline = history.Properties["DeferDeadline"]?.Value is string deferDeadlineString ? DateTime.Parse(deferDeadlineString, CultureInfo.InvariantCulture) : null;
+            uint? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value is int deferTimesRemainingInt ? (uint)deferTimesRemainingInt : null;
+            DateTime? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value is string deferRunIntervalLastTimeString ? DateTime.Parse(deferRunIntervalLastTimeString, CultureInfo.InvariantCulture) : null;
+            TimeSpan? deferRunInterval = history.Properties["DeferRunInterval"]?.Value is string deferRunIntervalString ? TimeSpan.Parse(deferRunIntervalString, CultureInfo.InvariantCulture) : null;
+            return deferRunIntervalLastTime is not null || deferTimesRemaining is not null || deferDeadline is not null || deferRunInterval is not null
+                ? new(deferTimesRemaining, deferDeadline, deferRunIntervalLastTime, deferRunInterval)
+                : null;
         }
 
         /// <summary>

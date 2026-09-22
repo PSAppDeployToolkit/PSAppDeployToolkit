@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "PSADT.ClientServer.Server/1.0.0": {
         "dependencies": {
-          "Microsoft.Bcl.Cryptography": "10.0.11",
+          "Microsoft.Bcl.Cryptography": "10.0.12",
           "PSADT": "1.0.0",
           "PSADT.Interop": "1.0.0",
           "PSADT.UserInterface": "1.0.0",
@@ -18,14 +18,14 @@
           "PSADT.ClientServer.Server.dll": {}
         }
       },
-      "Microsoft.Bcl.Cryptography/10.0.11": {
+      "Microsoft.Bcl.Cryptography/10.0.12": {
         "dependencies": {
-          "System.Formats.Asn1": "10.0.11"
+          "System.Formats.Asn1": "10.0.12"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Bcl.Cryptography.dll": {
-            "assemblyVersion": "10.0.0.11",
-            "fileVersion": "10.0.1126.37416"
+            "assemblyVersion": "10.0.0.12",
+            "fileVersion": "10.0.1226.42308"
           }
         }
       },
@@ -67,22 +67,22 @@
           }
         }
       },
-      "System.Drawing.Common/8.0.30": {
+      "System.Drawing.Common/8.0.31": {
         "dependencies": {
           "Microsoft.Win32.SystemEvents": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.3026.37301"
+            "fileVersion": "8.0.3126.42106"
           }
         }
       },
-      "System.Formats.Asn1/10.0.11": {
+      "System.Formats.Asn1/10.0.12": {
         "runtime": {
           "lib/net8.0/System.Formats.Asn1.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.1126.37416"
+            "fileVersion": "10.0.1226.42308"
           }
         }
       },
@@ -94,11 +94,11 @@
           }
         }
       },
-      "System.Linq.AsyncEnumerable/10.0.11": {
+      "System.Linq.AsyncEnumerable/10.0.12": {
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.1126.37416"
+            "fileVersion": "10.0.1226.42308"
           }
         }
       },
@@ -136,7 +136,7 @@
       },
       "PSADT.Interop/1.0.0": {
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "10.0.11"
+          "System.Linq.AsyncEnumerable": "10.0.12"
         },
         "runtime": {
           "PSADT.Interop.dll": {
@@ -149,7 +149,7 @@
         "dependencies": {
           "PSADT": "1.0.0",
           "PSAppDeployToolkit": "1.0.0",
-          "System.Drawing.Common": "8.0.30"
+          "System.Drawing.Common": "8.0.31"
         },
         "runtime": {
           "PSADT.UserInterface.dll": {
@@ -178,12 +178,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Microsoft.Bcl.Cryptography/10.0.11": {
+    "Microsoft.Bcl.Cryptography/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-7foJyHT7LbitR/l0BGJ2T86U6cULoc0P6mc+/Ih1Hj1nPOL8Wh2qc1DF4rn2sUzlcJH4tZ8M2A75/Xqrce2QGg==",
-      "path": "microsoft.bcl.cryptography/10.0.11",
-      "hashPath": "microsoft.bcl.cryptography.10.0.11.nupkg.sha512"
+      "sha512": "sha512-gRMy9aW3sAZxKGQwfIh5i/sB7gqCLnhRowjyuCYnZEqM3LyZ+SUi9MlMc4pq3a+ddUflo86yp7vJ9lOy3u0xBw==",
+      "path": "microsoft.bcl.cryptography/10.0.12",
+      "hashPath": "microsoft.bcl.cryptography.10.0.12.nupkg.sha512"
     },
     "Microsoft.Win32.SystemEvents/8.0.0": {
       "type": "package",
@@ -199,19 +199,19 @@
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.30": {
+    "System.Drawing.Common/8.0.31": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0XmCxBax3vO/h4xT51UlB8JMe0+IzFrxpHETX8/KpSiwtCITygcrXTzlQMVFn8dSe0C7fsdux6M3FIkQsJiV+g==",
-      "path": "system.drawing.common/8.0.30",
-      "hashPath": "system.drawing.common.8.0.30.nupkg.sha512"
+      "sha512": "sha512-xCTGg7fw7JE8j3feXaedW8/n7FGfPV5OyAllr+6Hed1w5Q40EFDrT1fL9Xyuj/eQcikYpvVU7Z8RJO0HVjQfzQ==",
+      "path": "system.drawing.common/8.0.31",
+      "hashPath": "system.drawing.common.8.0.31.nupkg.sha512"
     },
-    "System.Formats.Asn1/10.0.11": {
+    "System.Formats.Asn1/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-OxAZMMykBaKsD+r2jXujE0f/ldcRfwsfLDXOZRI7iOAPNwfwIwwnj8HCR0NdEP7oxH8PKQs/pqseNcRwFx3BVQ==",
-      "path": "system.formats.asn1/10.0.11",
-      "hashPath": "system.formats.asn1.10.0.11.nupkg.sha512"
+      "sha512": "sha512-Xu4MyfkDjUTxqFk+vhUXdoICN8uG9X6rL1qRb0HXcIkV6YEVzxuFkXKiBG+/ikoB9CO1w8zFdXJPY036I08fnQ==",
+      "path": "system.formats.asn1/10.0.12",
+      "hashPath": "system.formats.asn1.10.0.12.nupkg.sha512"
     },
     "System.IO.Packaging/8.0.1": {
       "type": "package",
@@ -220,12 +220,12 @@
       "path": "system.io.packaging/8.0.1",
       "hashPath": "system.io.packaging.8.0.1.nupkg.sha512"
     },
-    "System.Linq.AsyncEnumerable/10.0.11": {
+    "System.Linq.AsyncEnumerable/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg==",
-      "path": "system.linq.asyncenumerable/10.0.11",
-      "hashPath": "system.linq.asyncenumerable.10.0.11.nupkg.sha512"
+      "sha512": "sha512-c6AKlCepUfNX+54w0W3mzI00NgGa6GPtOm3YDcqVFKzQ89LOajiwDdg43xBAOxRchZ+OIenGQjaYdsFvRIoFTQ==",
+      "path": "system.linq.asyncenumerable/10.0.12",
+      "hashPath": "system.linq.asyncenumerable.10.0.12.nupkg.sha512"
     },
     "System.ServiceProcess.ServiceController/8.0.1": {
       "type": "package",

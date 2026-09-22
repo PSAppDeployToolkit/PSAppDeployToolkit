@@ -4,9 +4,9 @@
     "net8.0-windows10.0.22621": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.200, )",
-        "resolved": "3.0.200",
-        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+        "requested": "[3.0.269, )",
+        "resolved": "3.0.269",
+        "contentHash": "AWU5BKF9ZQW8DKYcJuHJ5IW2Wx1AK8iaaHTYD62XDquVOmQ1ErDI/GaFXWN9vtuxyVG2SHx1/e77xZHJK5kjhQ=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -16,9 +16,9 @@
       },
       "Microsoft.Extensions.StaticAnalysis": {
         "type": "Direct",
-        "requested": "[10.9.0, )",
-        "resolved": "10.9.0",
-        "contentHash": "nr/qlyyeJI+NTEQ9DbWBwK0bZcmztw9N6lIwhKlANaZLH/LGf5G1T2kgOcPyE/w9viYu/+54gq/J8p8zpbKyAg==",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "MnUBTyalxH+t/6n/Kt6nuYGVFfJY9eGtBZ5P2gQNx2yRtPCec/jeiN+PCm16zpl+q3mdf/xEqoO/J3KBioMRCQ==",
         "dependencies": {
           "Microsoft.VisualStudio.Threading.Analyzers": "17.14.15",
           "SonarAnalyzer.CSharp": "10.16.0.128591"
@@ -26,7 +26,7 @@
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.31, )",
+        "requested": "[8.0.31, 9.0.0)",
         "resolved": "8.0.31",
         "contentHash": "OJdAGATV2QoVWL11zlDLEluA06q8rK+cgZR47ohrO8V+Qj5z9dlvN7bG9/0e5t0IOe+yD8tREC0bpsEgDGrzIQ=="
       },
@@ -49,7 +49,7 @@
       "psadt.interop": {
         "type": "Project",
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "[10.0.11, )"
+          "System.Linq.AsyncEnumerable": "[10.0.12, )"
         }
       },
       "psadt.windowsruntime": {
@@ -60,9 +60,9 @@
       },
       "System.Linq.AsyncEnumerable": {
         "type": "CentralTransitive",
-        "requested": "[10.0.11, )",
-        "resolved": "10.0.11",
-        "contentHash": "vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg=="
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "c6AKlCepUfNX+54w0W3mzI00NgGa6GPtOm3YDcqVFKzQ89LOajiwDdg43xBAOxRchZ+OIenGQjaYdsFvRIoFTQ=="
       }
     },
     "net8.0-windows10.0.22621/win-x64": {}

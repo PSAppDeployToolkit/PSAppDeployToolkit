@@ -851,11 +851,11 @@ namespace PSADT.ShortcutManagement
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
                 return vt is VARENUM.VT_BOOL
-                    ? propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0
+                    ? propVariant.Anonymous.Anonymous.Anonymous.boolVal != VARIANT_BOOL.VARIANT_FALSE
                     : vt is VARENUM.VT_I4
                     ? propVariant.Anonymous.Anonymous.Anonymous.lVal is not 0
                     : vt is VARENUM.VT_UI4
-                    ? propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0
+                    ? propVariant.Anonymous.Anonymous.Anonymous.ulVal is not 0
                     : vt is not VARENUM.VT_EMPTY
                     ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                     : null;

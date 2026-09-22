@@ -475,11 +475,11 @@ namespace PSADT.ShortcutManagement
                     propertyStorage.ReadMultiple([propertySpec], propertyValues);
                     VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
                     return vt is VARENUM.VT_BOOL
-                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != 0
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != VARIANT_BOOL.VARIANT_FALSE
                         : vt is VARENUM.VT_I4
                         ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal is not 0
                         : vt is VARENUM.VT_UI4
-                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal is not 0
                         : vt is not VARENUM.VT_EMPTY
                         ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                         : null;

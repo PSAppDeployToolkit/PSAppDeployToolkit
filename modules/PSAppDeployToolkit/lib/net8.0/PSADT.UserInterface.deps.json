@@ -10,7 +10,7 @@
         "dependencies": {
           "PSADT": "1.0.0",
           "PSAppDeployToolkit": "1.0.0",
-          "System.Drawing.Common": "8.0.30"
+          "System.Drawing.Common": "8.0.31"
         },
         "runtime": {
           "PSADT.UserInterface.dll": {}
@@ -54,14 +54,14 @@
           }
         }
       },
-      "System.Drawing.Common/8.0.30": {
+      "System.Drawing.Common/8.0.31": {
         "dependencies": {
           "Microsoft.Win32.SystemEvents": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.3026.37301"
+            "fileVersion": "8.0.3126.42106"
           }
         }
       },
@@ -73,11 +73,11 @@
           }
         }
       },
-      "System.Linq.AsyncEnumerable/10.0.11": {
+      "System.Linq.AsyncEnumerable/10.0.12": {
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.1126.37416"
+            "fileVersion": "10.0.1226.42308"
           }
         }
       },
@@ -115,7 +115,7 @@
       },
       "PSADT.Interop/1.0.0": {
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "10.0.11"
+          "System.Linq.AsyncEnumerable": "10.0.12"
         },
         "runtime": {
           "PSADT.Interop.dll": {
@@ -158,12 +158,12 @@
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.30": {
+    "System.Drawing.Common/8.0.31": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0XmCxBax3vO/h4xT51UlB8JMe0+IzFrxpHETX8/KpSiwtCITygcrXTzlQMVFn8dSe0C7fsdux6M3FIkQsJiV+g==",
-      "path": "system.drawing.common/8.0.30",
-      "hashPath": "system.drawing.common.8.0.30.nupkg.sha512"
+      "sha512": "sha512-xCTGg7fw7JE8j3feXaedW8/n7FGfPV5OyAllr+6Hed1w5Q40EFDrT1fL9Xyuj/eQcikYpvVU7Z8RJO0HVjQfzQ==",
+      "path": "system.drawing.common/8.0.31",
+      "hashPath": "system.drawing.common.8.0.31.nupkg.sha512"
     },
     "System.IO.Packaging/8.0.1": {
       "type": "package",
@@ -172,12 +172,12 @@
       "path": "system.io.packaging/8.0.1",
       "hashPath": "system.io.packaging.8.0.1.nupkg.sha512"
     },
-    "System.Linq.AsyncEnumerable/10.0.11": {
+    "System.Linq.AsyncEnumerable/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg==",
-      "path": "system.linq.asyncenumerable/10.0.11",
-      "hashPath": "system.linq.asyncenumerable.10.0.11.nupkg.sha512"
+      "sha512": "sha512-c6AKlCepUfNX+54w0W3mzI00NgGa6GPtOm3YDcqVFKzQ89LOajiwDdg43xBAOxRchZ+OIenGQjaYdsFvRIoFTQ==",
+      "path": "system.linq.asyncenumerable/10.0.12",
+      "hashPath": "system.linq.asyncenumerable.10.0.12.nupkg.sha512"
     },
     "System.ServiceProcess.ServiceController/8.0.1": {
       "type": "package",

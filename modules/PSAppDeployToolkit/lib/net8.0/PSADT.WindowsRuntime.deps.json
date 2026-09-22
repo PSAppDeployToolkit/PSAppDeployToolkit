@@ -27,17 +27,17 @@
           }
         }
       },
-      "System.Linq.AsyncEnumerable/10.0.11": {
+      "System.Linq.AsyncEnumerable/10.0.12": {
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.1126.37416"
+            "fileVersion": "10.0.1226.42308"
           }
         }
       },
       "PSADT.Interop/1.0.0": {
         "dependencies": {
-          "System.Linq.AsyncEnumerable": "10.0.11"
+          "System.Linq.AsyncEnumerable": "10.0.12"
         },
         "runtime": {
           "PSADT.Interop.dll": {
@@ -59,12 +59,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "System.Linq.AsyncEnumerable/10.0.11": {
+    "System.Linq.AsyncEnumerable/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-vn8GVFHsTXAwrz4y1rSmVO3BP3E1/IiK5Lg4KBDJDYNTKBXzhCgU4FUR0tu2sRqXJjTTUMdVuyBuWVAXusFGOg==",
-      "path": "system.linq.asyncenumerable/10.0.11",
-      "hashPath": "system.linq.asyncenumerable.10.0.11.nupkg.sha512"
+      "sha512": "sha512-c6AKlCepUfNX+54w0W3mzI00NgGa6GPtOm3YDcqVFKzQ89LOajiwDdg43xBAOxRchZ+OIenGQjaYdsFvRIoFTQ==",
+      "path": "system.linq.asyncenumerable/10.0.12",
+      "hashPath": "system.linq.asyncenumerable.10.0.12.nupkg.sha512"
     },
     "PSADT.Interop/1.0.0": {
       "type": "project",
