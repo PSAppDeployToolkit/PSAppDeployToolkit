@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.269" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.270" />
     <PackageVersion Include="Meziantou.Polyfill" Version="1.0.165" />
     <PackageVersion Include="Microsoft.Bcl.Cryptography" Version="10.0.12" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
