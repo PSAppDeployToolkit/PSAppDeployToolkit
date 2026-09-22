@@ -188,7 +188,7 @@ function New-ADTTemplate
                 }
                 if ($_ -match '\.(?:exe|ps1|pdb)$')
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LauncherName -ProvidedValue $_ -ExceptionMessage "The specified launcher base name should not contains a file extension."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LauncherName -ProvidedValue $_ -ExceptionMessage "The specified launcher base name should not contain a file extension."))
                 }
                 return $true
             })]
