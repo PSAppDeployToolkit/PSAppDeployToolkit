@@ -356,14 +356,7 @@ namespace Fluence.Wpf.Tests.Theming
 
             // The other direction: a live value the snapshot does not record. Regenerate the
             // golden files with Golden_WriteCurrentResolvedValuesAsync and copy them over.
-            foreach (string key in actual.Keys.Order(StringComparer.Ordinal))
-            {
-                if (!golden.ContainsKey(key))
-                {
-                    drift.Add("UNRECORDED " + key + " in " + theme);
-                }
-            }
-
+            drift.AddRange(actual.Keys.Where(key => !golden.ContainsKey(key)).Order(StringComparer.Ordinal).Select(key => "UNRECORDED " + key + " in " + theme));
             Assert.Empty(drift);
         }
 
