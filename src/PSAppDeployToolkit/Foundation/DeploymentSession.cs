@@ -1019,9 +1019,23 @@ namespace PSAppDeployToolkit.Foundation
                 ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
             }
 
+            // Finalise the exit code before the closing message is built.
+            DeploymentStatus deploymentStatus = GetDeploymentStatus();
+            bool restartPassThru = deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru;
+            if (deploymentStatus is not DeploymentStatus.FastRetry and not DeploymentStatus.Error)
+            {
+                if (!restartPassThru)
+                {
+                    ExitCode = 0;
+                }
+                else if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
+                {
+                    ExitCode = 3010;
+                }
+            }
+
             // Process resulting exit code.
             string deployString = string.Create(CultureInfo.InvariantCulture, $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {SubstitutionPlaceholder} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}]{(exitMessage is not null && !string.IsNullOrWhiteSpace(exitMessage) ? $": {exitMessage.TrimEnd('.')}" : null)}.");
-            DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
@@ -1040,18 +1054,10 @@ namespace PSAppDeployToolkit.Foundation
                 case DeploymentStatus.Complete:
                 default:
                     {
-                        if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
-                        {
-                            ExitCode = deploymentStatus is DeploymentStatus.RestartRequired ? 3010 : 0;
-                        }
                         WriteLogEntry(deployString.Replace(SubstitutionPlaceholder, "completed", StringComparison.Ordinal), LogSeverity.Success);
-                        if (deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
+                        if (restartPassThru)
                         {
                             WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
-                        }
-                        else
-                        {
-                            ExitCode = 0;
                         }
                         ResetDeferHistory();
                         break;

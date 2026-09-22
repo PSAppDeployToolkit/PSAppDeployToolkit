@@ -2035,6 +2035,97 @@ namespace PSAppDeployToolkit.Tests.Foundation
         }
 
         /// <summary>
+        /// Verifies that the exit code named in the closing entry is the one <c language="csharp">Close</c> hands back.
+        /// </summary>
+        /// <remarks>
+        /// The closing message used to be built before the status switch had finished with the exit code, so a
+        /// deployment whose code was rewritten on the way out logged the code it arrived with and returned another.
+        /// Three rewrites do that: exiting with MSI codes, a suppressed reboot pass-through, and any completion,
+        /// which is zeroed whatever success code it carried. The first entry the close writes is the closing one,
+        /// since nothing else in this configuration logs ahead of it.
+        /// </remarks>
+        /// <param name="exitCode">The exit code the deployment finished with.</param>
+        /// <param name="exitWithMsiCodes">Whether the session was told to exit with MSI codes.</param>
+        /// <param name="suppressRebootPassThru">Whether the session was told to suppress the reboot pass-through.</param>
+        /// <param name="expected">The exit code the caller and the log should both be given.</param>
+        [Theory]
+        [InlineData(1641, false, false, 1641)]
+        [InlineData(1641, true, false, 3010)]
+        [InlineData(1641, false, true, 0)]
+        [InlineData(1641, true, true, 0)]
+        [InlineData(3010, false, false, 3010)]
+        [InlineData(1707, false, false, 0)]
+        [InlineData(1707, true, false, 0)]
+        [InlineData(0, false, false, 0)]
+        [InlineData(1, false, false, 1)]
+        [InlineData(60012, false, false, 60012)]
+        public void Close_NamesTheSameExitCodeItHandsBack(int exitCode, bool exitWithMsiCodes, bool suppressRebootPassThru, int expected)
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Dictionary<string, object> parameters = MinimalParameters();
+            parameters.Add("AppSuccessExitCodes", nonZeroAppSuccessExitCodes);
+            if (exitWithMsiCodes)
+            {
+                parameters.Add("ExitWithMsiCodes", new SwitchParameter(isPresent: true));
+            }
+            if (suppressRebootPassThru)
+            {
+                parameters.Add("SuppressRebootPassThru", new SwitchParameter(isPresent: true));
+            }
+            DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(exitCode);
+            int written = session.GetLogBuffer().Count;
+
+            // Act
+            int returned = session.Close(exitMessage: null);
+
+            // Assert
+            Assert.Equal(expected, returned);
+            Assert.EndsWith($"with exit code [{returned.ToString(CultureInfo.InvariantCulture)}].", session.GetLogBuffer().Skip(written).First().Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that a restart is flagged after the closing entry only when the deployment asked for one and the
+        /// pass-through was left alone.
+        /// </summary>
+        /// <remarks>
+        /// Suppressing the pass-through is what zeroes the exit code, so the flag and the zeroing have to keep
+        /// agreeing with each other: a deployment told to keep quiet about a restart must not announce one.
+        /// </remarks>
+        /// <param name="exitCode">The exit code the deployment finished with.</param>
+        /// <param name="suppressRebootPassThru">Whether the session was told to suppress the reboot pass-through.</param>
+        /// <param name="expected">Whether a restart should be flagged.</param>
+        [Theory]
+        [InlineData(1641, false, true)]
+        [InlineData(1641, true, false)]
+        [InlineData(0, false, false)]
+        [InlineData(1, false, false)]
+        public void Close_FlagsARestartOnlyWhenTheRebootPassThruIsNotSuppressed(int exitCode, bool suppressRebootPassThru, bool expected)
+        {
+            // Arrange
+            using IDisposable scope = powerShell.Enter();
+            using TempDirectory temp = new();
+            using ModuleDatabaseScope database = powerShell.SeatModuleDatabase(Configuration(temp), powerShell.NewEnvironmentTable());
+            Dictionary<string, object> parameters = MinimalParameters();
+            if (suppressRebootPassThru)
+            {
+                parameters.Add("SuppressRebootPassThru", new SwitchParameter(isPresent: true));
+            }
+            DeploymentSession session = new(parameters, noExitOnClose: true, compatibilityMode: false);
+            session.SetExitCode(exitCode);
+            int written = session.GetLogBuffer().Count;
+
+            // Act
+            _ = session.Close(exitMessage: null);
+
+            // Assert
+            Assert.Equal(expected, session.GetLogBuffer().Skip(written).Any(static entry => string.Equals(entry.Message, "A restart has been flagged as required.", StringComparison.Ordinal)));
+        }
+
+        /// <summary>
         /// Verifies that each convenience overload reaches the one that does the work with what it was given.
         /// </summary>
         /// <remarks>
@@ -2310,6 +2401,12 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// The exit codes a typical application uses to signal that it needs a reboot, for the tests that need them.
         /// </summary>
         private static readonly int[] typicalAppRebootExitCodes = [3010];
+
+        /// <summary>
+        /// Success exit codes including one that is not zero, for the tests that need a completion the session has
+        /// to zero on its way out.
+        /// </summary>
+        private static readonly int[] nonZeroAppSuccessExitCodes = [0, 1707];
 
         /// <summary>
         /// The exit codes a custom application uses to signal success and deferral, for the tests that need them.
