@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Check out repository
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # https://github.com/actions/checkout/releases/tag/v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # https://github.com/actions/checkout/releases/tag/v7.0.1
 
     - name: Display the path
       shell: powershell
@@ -31,7 +31,7 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Cache NuGet packages
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # https://github.com/actions/cache/releases/tag/v5.0.5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # https://github.com/actions/cache/releases/tag/v6.1.0
       with:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -40,7 +40,7 @@ jobs:
 
     - name: Cache PowerShell modules
       id: psmodule-cache
-      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # https://github.com/actions/cache/releases/tag/v5.0.3
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # https://github.com/actions/cache/releases/tag/v6.1.0
       with:
         path: ~\Documents\WindowsPowerShell\Modules
         key: ${{ runner.os }}-psmodule-PSScriptAnalyzer-1.25.0-Pester-6.1.0-platyPS-0.14.2-Alt3.Docusaurus.Powershell-1.0.37
@@ -65,7 +65,7 @@ jobs:
 
     - name: Azure Login
       if: github.repository == 'PSAppDeployToolkit/PSAppDeployToolkit' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x' || github.ref == 'refs/heads/4.2.x')
-      uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43  # https://github.com/Azure/login/releases/tag/v3.0.0
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906  # https://github.com/Azure/login/releases/tag/v3.1.0
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -109,7 +109,7 @@ jobs:
         archive: false
 
     - name: Upload v4 ZeroConfig module template
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: ${{ steps.exports.outputs.Template_v4_ZeroConfig }}
         if-no-files-found: error
