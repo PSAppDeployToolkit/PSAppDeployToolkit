@@ -57,16 +57,51 @@ Describe 'Show-ADTInstallationRestartPrompt' {
             Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter SilentCountdown, Title, Subtitle | Should -BeFalse
         }
 
+        # A countdown and no countdown at all remain the two ways of shaping the dialog, so naming both
+        # is still a contradiction whether or not the call also says what to do in silence.
+        It 'Refuses a countdown alongside no countdown <Name>' -ForEach @(
+            @{ Name = 'on its own'; Parameter = 'Countdown', 'NoCountdown', 'Title', 'Subtitle' }
+            @{ Name = 'with a silent restart'; Parameter = 'Countdown', 'NoCountdown', 'SilentRestart', 'Title', 'Subtitle' }
+            @{ Name = 'with a hide cutoff'; Parameter = 'CountdownNoHide', 'NoCountdown', 'Title', 'Subtitle' }
+        ) {
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter $Parameter | Should -BeFalse
+        }
+
+        # -SilentRestart only says what is to happen should the deployment turn out to be silent. An
+        # interactive one still shows the dialog, so everything that shapes that dialog has to bind
+        # alongside it; each of these named a set the parameter was absent from and could not be asked for.
+        It 'Accepts -<Parameter2> alongside a silent restart' -ForEach @(
+            @{ Parameter2 = 'Countdown' }
+            @{ Parameter2 = 'CountdownNoHide' }
+            @{ Parameter2 = 'PersistPrompt' }
+            @{ Parameter2 = 'CustomMessage' }
+            @{ Parameter2 = 'CustomMessageText' }
+            @{ Parameter2 = 'AllowCancel' }
+        ) {
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter SilentRestart, $Parameter2, Title, Subtitle | Should -BeTrue
+        }
+
+        # The dialog the silent restart path falls back to can be the countdown one or the immediate one,
+        # and the silent countdown has to survive either choice.
+        It 'Accepts a silent countdown <Name>' -ForEach @(
+            @{ Name = 'with a countdown dialog'; Parameter = 'SilentRestart', 'SilentCountdown', 'Countdown', 'Title', 'Subtitle' }
+            @{ Name = 'with no countdown dialog'; Parameter = 'SilentRestart', 'SilentCountdown', 'NoCountdown', 'Title', 'Subtitle' }
+        ) {
+            Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter $Parameter | Should -BeTrue
+        }
+
         # Both parameters that shape the shutdown.exe call have to reach every path ending in a restart,
         # and each path sits in a different parameter set. A set one was left out of binds nothing and
         # the caller's intent is dropped without an error, as -ShutdownReasonText was on the silent path.
         It 'Accepts <Parameter2> on the <Name> path' -ForEach @(
             @{ Name = 'countdown'; Parameter2 = 'NoForceCloseApps'; Parameter = 'Countdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
             @{ Name = 'no countdown'; Parameter2 = 'NoForceCloseApps'; Parameter = 'NoCountdown', 'NoForceCloseApps', 'Title', 'Subtitle' }
-            @{ Name = 'silent restart'; Parameter2 = 'NoForceCloseApps'; Parameter = 'SilentRestart', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'countdown silent restart'; Parameter2 = 'NoForceCloseApps'; Parameter = 'Countdown', 'SilentRestart', 'NoForceCloseApps', 'Title', 'Subtitle' }
+            @{ Name = 'no countdown silent restart'; Parameter2 = 'NoForceCloseApps'; Parameter = 'NoCountdown', 'SilentRestart', 'NoForceCloseApps', 'Title', 'Subtitle' }
             @{ Name = 'countdown'; Parameter2 = 'ShutdownReasonText'; Parameter = 'Countdown', 'ShutdownReasonText', 'Title', 'Subtitle' }
             @{ Name = 'no countdown'; Parameter2 = 'ShutdownReasonText'; Parameter = 'NoCountdown', 'ShutdownReasonText', 'Title', 'Subtitle' }
-            @{ Name = 'silent restart'; Parameter2 = 'ShutdownReasonText'; Parameter = 'SilentRestart', 'ShutdownReasonText', 'Title', 'Subtitle' }
+            @{ Name = 'countdown silent restart'; Parameter2 = 'ShutdownReasonText'; Parameter = 'Countdown', 'SilentRestart', 'ShutdownReasonText', 'Title', 'Subtitle' }
+            @{ Name = 'no countdown silent restart'; Parameter2 = 'ShutdownReasonText'; Parameter = 'NoCountdown', 'SilentRestart', 'ShutdownReasonText', 'Title', 'Subtitle' }
         ) {
             Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter $Parameter | Should -BeTrue
         }
