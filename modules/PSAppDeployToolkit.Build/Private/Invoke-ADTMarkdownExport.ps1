@@ -116,7 +116,7 @@ function Invoke-ADTMarkdownExport
                                 {
                                     $CommonParameter.Substring(0, $CommonParameter.Length - 1)
                                 }
-                                elseif ($p.EndsWith('.'))
+                                elseif ($CommonParameter.EndsWith('.'))
                                 {
                                     $CommonParameter.Substring(0, $CommonParameter.Length - 1)
                                 }
@@ -130,7 +130,7 @@ function Invoke-ADTMarkdownExport
                         {
                             $CommonParameters += $NewParameter
                         }
-                        $CommonParameters[-1] = "and $($CommonParameters[-1]). "
+                        $CommonParameters[-1] = "and $($CommonParameters[-1])."
                         return "This cmdlet supports the common parameters: " + (($CommonParameters | Sort-Object) -join ', ')
                     }
                     if ($null -ne (Compare-Object -ReferenceObject $content -DifferenceObject $newContent))
