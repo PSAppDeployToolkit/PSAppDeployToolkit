@@ -1186,8 +1186,8 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// format that cannot be read back would show. The deadline is written as universal time and read back
         /// without one, so it is the instant rather than the reading that has to survive.
         /// <para>
-        /// The run interval is written and never read: the history a caller gets back has nowhere to put it. So it
-        /// is checked in the registry directly, which is the only place it can be seen.
+        /// The run interval is written and read back through <see cref="DeploymentSession.GetDeferHistory"/>, so the test verifies both the
+        /// round-trip value on the returned history and that the registry value was persisted as expected.
         /// </para>
         /// </remarks>
         [Fact]
@@ -1211,8 +1211,9 @@ namespace PSAppDeployToolkit.Tests.Foundation
             Assert.Equal(3u, history.DeferTimesRemaining);
             Assert.Equal(deadline, Assert.NotNull(history.DeferDeadline).ToUniversalTime());
             Assert.Equal(lastTime, Assert.NotNull(history.DeferRunIntervalLastTime).ToUniversalTime());
+            Assert.Equal(TimeSpan.FromHours(1), history.DeferRunInterval);
 
-            // Assert: the run interval reached the registry even though nothing reads it back.
+            // Assert: the run interval was also persisted to the registry.
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey($@"{registry.SubKeyName}\{PowerShellFixture.ModuleName}\DeferHistory\{session.InstallName}");
             Assert.NotNull(key);
             Assert.Equal("01:00:00", key.GetValue("DeferRunInterval"));
