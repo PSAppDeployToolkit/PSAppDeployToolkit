@@ -226,6 +226,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
             Assert.Equal(temp.GetPath("Logs"), FieldOf<DirectoryInfo>(session, "ConfigLogPath").FullName);
             Assert.Equal(LogStyle.Legacy, FieldOf<LogStyle>(session, "LogStyle"));
             Assert.Equal(17, FieldOf<int>(session, "LogMaxHistory"));
+            Assert.Equal(23, FieldOf<int>(session, "LogMaxSize"));
             Assert.Equal(60101, FieldOf<int>(session, "DefaultExitCode"));
             Assert.Equal(60102, FieldOf<int>(session, "DeferExitCode"));
             Assert.StartsWith($@"{configuration.RegPath}\", FieldOf<string>(session, "RegKeyDeferBase"), StringComparison.Ordinal);
