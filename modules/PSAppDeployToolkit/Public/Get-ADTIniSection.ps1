@@ -34,7 +34,7 @@ function Get-ADTIniSection
     .EXAMPLE
         Get-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes'
 
-        This example retrieves the section of the 'Notes' of the specified INI file.
+        This example retrieves the 'Notes' section from the specified INI file.
 
     .NOTES
         An active ADT session is NOT required to use this function.
