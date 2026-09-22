@@ -277,7 +277,7 @@ namespace PSAppDeployToolkit.Foundation
 
                     // Subst the new DirFiles path to eliminate any potential path length issues.
                     IReadOnlyList<DriveInfo> usedLetters = adtEnv.EnvLogicalDrives;
-                    if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
+                    if (DriveLetters.FirstOrDefault(l => !usedLetters.Any(u => string.Equals(u.Name, l.Name, StringComparison.OrdinalIgnoreCase))) is DriveInfo availLetter)
                     {
                         WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
                         _ = NativeMethods.DefineDosDevice(0, availLetter.Name, DirFiles.FullName);
