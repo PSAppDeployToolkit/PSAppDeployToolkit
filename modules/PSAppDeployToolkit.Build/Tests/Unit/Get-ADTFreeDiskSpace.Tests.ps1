@@ -8,8 +8,8 @@
 
 Describe 'Get-ADTFreeDiskSpace' {
     Context 'Functionality' {
-        It 'Returns a double' {
-            Get-ADTFreeDiskSpace | Should -BeOfType ([System.Double])
+        It 'Returns an unsigned 64-bit integer' {
+            Get-ADTFreeDiskSpace | Should -BeOfType ([System.UInt64])
         }
 
         It 'Reports the free space in megabytes' {

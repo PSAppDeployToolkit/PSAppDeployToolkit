@@ -22,7 +22,7 @@ function Get-ADTFreeDiskSpace
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Double
+        System.UInt64
 
         Returns the free disk space in MB.
 
@@ -47,7 +47,7 @@ function Get-ADTFreeDiskSpace
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Double])]
+    [OutputType([System.UInt64])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -69,7 +69,7 @@ function Get-ADTFreeDiskSpace
     process
     {
         Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
-        $freeDiskSpace = [System.Math]::Round($Drive.AvailableFreeSpace / 1MB)
+        [System.UInt64]$freeDiskSpace = [System.Math]::Round($Drive.AvailableFreeSpace / 1MB)
         Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
         return $freeDiskSpace
     }
