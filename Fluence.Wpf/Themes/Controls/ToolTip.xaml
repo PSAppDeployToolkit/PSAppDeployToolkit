@@ -5,11 +5,20 @@
 
     <!--
         Fluent Design ToolTip style.
-        Authority: WinUI 3 ToolTip_themeresources.xaml (brush keys, font size, padding).
-        Note: DropShadowEffect is intentionally omitted on the inner Border - WPF bitmap
-        effects on a Border with CornerRadius produce squared-off artifacts at the rounded
-        corners in a Popup (see DropDownButton.xaml). System drop shadow (HasDropShadow=True)
-        is used instead, which is applied at the Popup window level without artifacts.
+        Authority: WinUI 3 ToolTip_themeresources.xaml (brush keys, font size, padding,
+        ControlCornerRadius :52).
+        Elevation is cast by an empty ShadowCaster sibling painted behind the surface, exactly
+        as FlyoutPresenter.xaml does, carrying FlyoutShadowEffect. WPF's HasDropShadow does
+        nothing once a control has a custom Template (verified in the dotnet/wpf sources: the
+        System.Windows.Controls.ToolTip default style is the only consumer of HasDropShadow,
+        via a trigger this template replaces), so it is not set here. The effect sits on the
+        caster rather than on ToolTipSurface itself because a WPF bitmap effect on a Border
+        with CornerRadius produces squared-off artifacts at the rounded corners in a Popup
+        (see DropDownButton.xaml).
+        The WinUI ToolTipMaxWidth of 320 (ToolTip_themeresources.xaml:51,77) sits on
+        ToolTipSurface below, not on this control: the control itself is the gutter plus the
+        plate, so a limit set here would constrain the gutter too and shrink the plate by 32px
+        (the gutter is 16px per side). Setting it on the plate keeps the WinUI number literal.
     -->
     <!--
         Suppress the system tooltip popup fade: WPF's ToolTip binds its internal host
@@ -22,53 +31,106 @@
     <PopupAnimation x:Key="{x:Static SystemParameters.ToolTipPopupAnimationKey}">None</PopupAnimation>
 
     <Style TargetType="{x:Type controls:ToolTip}">
-        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="HasDropShadow" Value="True" />
-        <Setter Property="MaxWidth" Value="320" />
+        <Setter Property="HorizontalOffset" Value="-16" />
         <Setter Property="Padding" Value="9,6,9,8" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ToolTip}">
-                    <Border
-                        x:Name="ToolTipSurface"
-                        Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{DynamicResource OverlayCornerRadius}"
-                        UseLayoutRounding="True">
-                        <ContentPresenter
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            TextElement.FontFamily="{TemplateBinding FontFamily}"
-                            TextElement.FontSize="{TemplateBinding FontSize}"
-                            TextElement.Foreground="{TemplateBinding Foreground}" />
-                    </Border>
+                    <!--
+                        The fade plays on this root, not the surface alone, so the opaque
+                        ShadowCaster behind the surface fades with it. Fading only the surface let
+                        the caster paint a blank plate at full strength on the first frame of every
+                        show. The root starts hidden so no frame composites at rest before the fade
+                        seeds its start pose.
+                    -->
+                    <Grid
+                        x:Name="ToolTipRoot"
+                        Margin="16"
+                        Opacity="0">
+                        <!--
+                            Elevation caster: an empty sibling behind the surface, because WPF
+                            drops ClearType for text under an Effect and the surface opts into it.
+                            The root's 16px margin is the popup's shadow gutter: WPF sizes a popup
+                            HWND to exactly its child's layout size, so without it the effect is
+                            clipped to the plate and only the corner notches survive. The style's
+                            HorizontalOffset and VerticalOffset of -16 pull the tooltip back so the
+                            plate keeps its position. A consumer's own ToolTipService.HorizontalOffset
+                            or ToolTipService.VerticalOffset set on the owner element wins over these
+                            style setters and shifts the plate by that much.
+                        -->
+                        <Border
+                            x:Name="ShadowCaster"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                            Effect="{DynamicResource FlyoutShadowEffect}"
+                            UseLayoutRounding="True" />
+                        <Border
+                            x:Name="ToolTipSurface"
+                            MaxWidth="320"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                            RenderOptions.ClearTypeHint="Enabled"
+                            UseLayoutRounding="True">
+                            <ContentPresenter
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                TextElement.FontSize="{TemplateBinding FontSize}"
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                                <!--
+                                Styling scoped to this presenter, because the content arrives as a
+                                string and the TextBlock that draws it is generated here: the implicit
+                                TextBlock style in Typography.xaml:43-47 sizes every unstyled TextBlock
+                                at 14 and beats the inherited TextElement values above, so the declared
+                                size never reached the text. The style extends the implicit one rather
+                                than replacing it, so anything Typography.xaml adds later still reaches
+                                the text; FontWeight is bound so the tooltip's own weight wins over the
+                                Regular the implicit style stamps.
+                            -->
+                                <ContentPresenter.Resources>
+                                    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:ToolTip}}}" />
+                                        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:ToolTip}}}" />
+                                        <Setter Property="FontWeight" Value="{Binding FontWeight, RelativeSource={RelativeSource AncestorType={x:Type controls:ToolTip}}}" />
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:ToolTip}}}" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <!--
                             Open fade, WinUI ToolTip_themeresources.xaml FadeInThemeAnimation
                             precedent: opacity 0 to 1 over 83ms (ControlFasterAnimationDuration)
-                            on the 0.8,0,0,1 spline (ControlFastOutSlowInKeySpline);
+                            on the 0,0,0,1 spline (ControlFastOutSlowInKeySpline);
                             Typography.xaml motion tokens, mirrored literally because storyboard
                             attributes cannot reference them. Opacity-only by design: tooltips
                             are a high-frequency surface (no translate/scale), and an
                             opacity-only entrance stays reduced-motion friendly without a code
                             gate. SourceName anchors the trigger to the template child so it
-                            only hooks once the template has instantiated. No exit animation -
-                            WinUI closes tooltips instantly.
+                            only hooks once the template has instantiated. WinUI plays a
+                            FadeOutThemeAnimation on close (ToolTip_themeresources.xaml:61); this
+                            port has no exit animation yet (not implemented, not a parity claim
+                            that WinUI closes instantly) because coordinating an exit fade with
+                            the native ToolTip's own close/popup teardown needs more plumbing
+                            than the open fade does.
                         -->
                         <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="ToolTipSurface">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ToolTipSurface" Storyboard.TargetProperty="Opacity">
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ToolTipRoot" Storyboard.TargetProperty="Opacity">
                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                         <SplineDoubleKeyFrame
-                                            KeySpline="0.8,0,0,1"
+                                            KeySpline="0,0,0,1"
                                             KeyTime="0:0:0.083"
                                             Value="1" />
                                     </DoubleAnimationUsingKeyFrames>
@@ -80,6 +142,7 @@
             </Setter.Value>
         </Setter>
         <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalOffset" Value="-16" />
     </Style>
 
 </ResourceDictionary>

@@ -46,6 +46,7 @@ namespace Fluence.Wpf.Controls
     /// </summary>
     [TemplatePart(Name = PART_Popup, Type = typeof(Popup))]
     [TemplatePart(Name = PART_DropdownBorder, Type = typeof(System.Windows.Controls.Border))]
+    [TemplatePart(Name = PART_DropdownRoot, Type = typeof(Panel))]
     [TemplateVisualState(GroupName = "FocusedStates", Name = "Focused")]
     [TemplateVisualState(GroupName = "FocusedStates", Name = "Unfocused")]
     [TemplateVisualState(GroupName = "EditableFocusedStates", Name = "EditableFocused")]
@@ -54,6 +55,7 @@ namespace Fluence.Wpf.Controls
     {
         // Template part names.
         private const string PART_DropdownBorder = "PART_DropdownBorder";
+        private const string PART_DropdownRoot = "PART_DropdownRoot";
         private const string PART_Popup = "PART_Popup";
 
         /// <summary>
@@ -254,6 +256,14 @@ namespace Fluence.Wpf.Controls
             base.OnDropDownClosed(e);
             IsDropDownOpenedUpward = false;
             _ = _popup?.Placement = PlacementMode.Bottom;
+
+            // Re-hide the dropdown root so the next open cannot composite a frame at rest before
+            // the reveal seeds its start pose (see BeginDropdownReveal).
+            if (GetTemplateChild(PART_DropdownRoot) is Panel dropdownRoot)
+            {
+                dropdownRoot.BeginAnimation(OpacityProperty, animation: null);
+                SetDropdownRootOpacity(dropdownRoot, 0.0);
+            }
         }
 
         /// <inheritdoc />
@@ -315,21 +325,36 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Plays the dropdown open reveal each time the dropdown opens: the dropdown surface
         /// slides 8 px in from the control edge (down from above for a downward dropdown, up
-        /// from below for an upward one, per <see cref="IsDropDownOpenedUpward"/>) while
-        /// fading 0 to 1, mirroring the previous template storyboard: 167 ms on the 0.8,0,0,1
+        /// from below for an upward one, per <see cref="IsDropDownOpenedUpward"/>) while the
+        /// dropdown root (surface plus the elevation caster behind it, so the caster never
+        /// paints a blank plate at full strength while the surface is still transparent) fades
+        /// 0 to 1, mirroring the previous template storyboard: 167 ms on the 0,0,0,1
         /// spline (the Typography.xaml ControlFastAnimationDuration and
         /// ControlFastOutSlowInKeySpline motion tokens, mirrored by value). The reveal moved
         /// from the template's MultiTrigger storyboards into code (FlyoutPresenter precedent)
         /// so it can consult the reduced-motion gate; a re-templated control without the
         /// canonical dropdown parts is left alone. The animations use
-        /// <see cref="FillBehavior.Stop"/>; the completed handlers stamp the rest values and
-        /// release the clocks so nothing stays animated once the reveal settles.
+        /// <see cref="FillBehavior.Stop"/> over base values that are already the rest values,
+        /// so the clock ending is enough to leave the dropdown open and in place; the completed
+        /// handlers only release the clocks so nothing stays animated.
         /// </summary>
         private void BeginDropdownReveal()
         {
+            // A re-templated control without the dropdown root has nothing to reveal. The root
+            // is the faded element (not the surface border) so the opaque elevation caster
+            // behind the surface fades with it instead of painting a blank plate at full
+            // strength on the first frame.
+            if (GetTemplateChild(PART_DropdownRoot) is not Panel dropdownRoot)
+            {
+                return;
+            }
+
             if (GetTemplateChild(PART_DropdownBorder) is not System.Windows.Controls.Border border ||
                 border.RenderTransform is not TranslateTransform translate)
             {
+                // No slide parts to drive, but the template root starts hidden, so it still has
+                // to be shown or the dropdown would never appear.
+                ShowDropdownRootAtRest(dropdownRoot);
                 return;
             }
 
@@ -339,17 +364,26 @@ namespace Fluence.Wpf.Controls
             {
                 translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
                 translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
-                border.BeginAnimation(OpacityProperty, animation: null);
-                border.SetCurrentValue(OpacityProperty, 1.0);
+                ShowDropdownRootAtRest(dropdownRoot);
                 return;
             }
 
             double startOffset = IsDropDownOpenedUpward ? RevealOffsetPixels : -RevealOffsetPixels;
 
             // Seed the discrete start so the first rendered frame never flashes the rest
-            // position: the offset toward the control edge, fully transparent.
+            // position: the offset toward the control edge. SetCurrentValue is the right tool
+            // for the slide, because BeginAnimation discards the current-value slot and the
+            // base underneath it is the default 0, which is already the rest position.
             translate.SetCurrentValue(TranslateTransform.YProperty, startOffset);
-            border.SetCurrentValue(OpacityProperty, 0.0);
+
+            // Opacity cannot use that: the template stamps Opacity="0" on the root, so the base
+            // under a released clock is hidden rather than the rest value. The local value the
+            // reveal writes is therefore the REST value, and the reveal's own discrete keyframe
+            // at time zero is what makes the first frame transparent. Writing the start value
+            // here instead left the dropdown invisible from the moment the FillBehavior.Stop
+            // clock ended until the Completed handler arrived, which is the defect that hid the
+            // flyout.
+            SetDropdownRootOpacity(dropdownRoot, 1.0);
 
             DoubleAnimationUsingKeyFrames slideAnimation = CreateRevealAnimation(startOffset, 0.0);
             slideAnimation.Completed += (_, _) =>
@@ -361,12 +395,39 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0);
             fadeAnimation.Completed += (_, _) =>
             {
-                border.SetCurrentValue(OpacityProperty, 1.0);
-                border.BeginAnimation(OpacityProperty, animation: null);
+                SetDropdownRootOpacity(dropdownRoot, 1.0);
+                dropdownRoot.BeginAnimation(OpacityProperty, animation: null);
             };
 
             translate.BeginAnimation(TranslateTransform.YProperty, slideAnimation);
-            border.BeginAnimation(OpacityProperty, fadeAnimation);
+            dropdownRoot.BeginAnimation(OpacityProperty, fadeAnimation);
+        }
+
+        /// <summary>
+        /// Releases any reveal clock on the dropdown root and stamps it fully opaque. The
+        /// template starts the root hidden, so every path that skips the fade has to show it.
+        /// </summary>
+        /// <param name="dropdownRoot">The dropdown root panel resolved from the template.</param>
+        private static void ShowDropdownRootAtRest(Panel dropdownRoot)
+        {
+            dropdownRoot.BeginAnimation(OpacityProperty, animation: null);
+            SetDropdownRootOpacity(dropdownRoot, 1.0);
+        }
+
+        /// <summary>
+        /// Writes the dropdown root opacity as a local value. The template stamps
+        /// <c language="xaml">Opacity="0"</c> on the root so a popup frame composited before the
+        /// reveal starts is invisible, and a local value outranks the current value that
+        /// <c language="csharp">SetCurrentValue</c> writes, so the reveal has to set the local
+        /// value or a Stop-fill animation would fall back to the hidden template value when its
+        /// clock is released. The value the reveal writes is the rest value, for the same
+        /// reason: the base is where the property lands when the clock ends.
+        /// </summary>
+        /// <param name="dropdownRoot">The dropdown root panel resolved from the template.</param>
+        /// <param name="opacity">The opacity to stamp.</param>
+        private static void SetDropdownRootOpacity(Panel dropdownRoot, double opacity)
+        {
+            dropdownRoot.SetValue(OpacityProperty, opacity);
         }
 
         /// <summary>
@@ -389,7 +450,7 @@ namespace Fluence.Wpf.Controls
                     new SplineDoubleKeyFrame(
                         to,
                         KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(RevealMilliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                        MotionHelper.FastOutSlowInKeySpline),
                 },
             };
         }

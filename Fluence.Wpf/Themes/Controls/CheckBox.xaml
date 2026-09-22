@@ -10,6 +10,10 @@
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <!--  WinUI parity: DefaultCheckBoxStyle sets HorizontalAlignment=Left (CheckBox_themeresources.xaml:284) so the box and label hug the left edge instead of stretching across the parent.  -->
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <!--  WinUI parity: DefaultCheckBoxStyle sets MinWidth to CheckBoxMinWidth, 120 (CheckBox_themeresources.xaml:273,290).  -->
+        <Setter Property="MinWidth" Value="120" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:CheckBox}">
@@ -185,6 +189,7 @@
                                 </Setter.Value>
                             </Setter>
                         </MultiTrigger>
+                        <!--  WinUI parity: CheckBoxCheckGlyphForegroundIndeterminatePressed (CheckBox_themeresources.xaml:75) is TextOnAccentFillColorSecondaryBrush; the Fluence indeterminate glyph is IndeterminateDash.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsPressed" Value="True" />
@@ -193,6 +198,7 @@
                             <Setter TargetName="IndicatorCheckedPressed" Property="Opacity" Value="1" />
                             <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndeterminateDash" Property="Background" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
                             <Setter TargetName="IndicatorHost" Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
@@ -221,7 +227,7 @@
                                             Storyboard.TargetProperty="Opacity">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.1"
                                                 Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -231,7 +237,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.7" />
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="1.0" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -241,7 +247,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.7" />
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="1.0" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -265,6 +271,7 @@
                             <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="1" />
                         </MultiTrigger>
+                        <!--  WinUI parity: CheckBoxCheckGlyphForegroundCheckedPressed (CheckBox_themeresources.xaml:71) is TextOnAccentFillColorSecondaryBrush, not the rest-state Primary.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
@@ -273,6 +280,7 @@
                             <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorCheckedPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="CheckGlyph" Property="Stroke" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
                             <Setter TargetName="CheckGlyph" Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
@@ -299,6 +307,7 @@
                             <Setter TargetName="IndeterminateDash" Property="Opacity" Value="1" />
                         </Trigger>
 
+                        <!--  WinUI parity: CheckBoxCheckBackgroundStrokeCheckedDisabled (CheckBox_themeresources.xaml:48) is ControlStrongStrokeColorDisabledBrush, the stroke family, not AccentFillColorDisabledBrush (same resolved value, wrong family). The Fluence-only opaque IndicatorAccentBackdrop plate must also drop out while disabled.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
@@ -307,7 +316,8 @@
                             <Setter TargetName="IndicatorChecked" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="IndicatorCheckedHover" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="IndicatorCheckedPressed" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="CheckGlyph" Property="Stroke" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
                         </MultiTrigger>
@@ -320,7 +330,8 @@
                             <Setter TargetName="IndicatorCheckedHover" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="IndicatorCheckedPressed" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="IndeterminateDash" Property="Background" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
-                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>

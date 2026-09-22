@@ -103,6 +103,18 @@ namespace Fluence.Wpf.Theming
             {
                 m["AccentFillColorDisabled"] = dark ? Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x37, 0, 0, 0);
                 m["SystemFillColorAttention"] = dark ? p.Light2 : p.Accent;
+
+                // Accent acrylic fallbacks. WinUI builds these as AcrylicBrush recipes whose
+                // FallbackColor is the accent ramp entry itself (AcrylicBrush_themeresources.xaml:49,
+                // :51 for the Default dictionary, :101, :103 for Light): dark takes Dark1 for Default
+                // and Dark2 for Base, light takes Light3 for both. A WPF popup surface is not
+                // DWM-composited, so the fallback is what this library publishes, exactly as it does
+                // for the non-accent AcrylicBackgroundFillColor* pair in the per-theme tables. High
+                // contrast is skipped here, like SystemFillColorAttention above, and served by
+                // Theme.HighContrast.xaml: the ramp is not a system colour, and every other acrylic
+                // Color in that table is a fixed literal.
+                m["AccentAcrylicBackgroundFillColorDefault"] = dark ? p.Dark1 : p.Light3;
+                m["AccentAcrylicBackgroundFillColorBase"] = dark ? p.Dark2 : p.Light3;
             }
 
             // Title-bar colors (from UpdateTitleBarColors)

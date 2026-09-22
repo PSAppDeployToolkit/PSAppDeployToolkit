@@ -34,8 +34,7 @@ $app = New-Object System.Windows.Application
 # --- 5. Turn the theme engine on. Auto = follow the Windows light/dark setting. ---
 [Fluence.Wpf.ApplicationThemeManager]::Apply(
     [Fluence.Wpf.ApplicationTheme]::Auto,
-    [Fluence.Wpf.BackdropType]::Mica,
-    $true)
+    [Fluence.Wpf.WindowBackdropType]::Mica)
 [Fluence.Wpf.ApplicationAccentColorManager]::ApplySystemAccent()
 
 # --- 6. Build the window from inline XAML. ---
@@ -73,9 +72,9 @@ $xaml = @'
 $window = [System.Windows.Markup.XamlReader]::Parse($xaml)
 
 # --- 7. Wire the theme buttons. ---
-$window.FindName('LightBtn').add_Click({ [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Light, [Fluence.Wpf.BackdropType]::Mica, $true) })
-$window.FindName('DarkBtn').add_Click({  [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Dark,  [Fluence.Wpf.BackdropType]::Mica, $true) })
-$window.FindName('AutoBtn').add_Click({  [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Auto,  [Fluence.Wpf.BackdropType]::Mica, $true) })
+$window.FindName('LightBtn').add_Click({ [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Light, [Fluence.Wpf.WindowBackdropType]::Mica) })
+$window.FindName('DarkBtn').add_Click({  [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Dark,  [Fluence.Wpf.WindowBackdropType]::Mica) })
+$window.FindName('AutoBtn').add_Click({  [Fluence.Wpf.ApplicationThemeManager]::Apply([Fluence.Wpf.ApplicationTheme]::Auto,  [Fluence.Wpf.WindowBackdropType]::Mica) })
 
 # A small palette to cycle through with ApplyCustomAccent(Color).
 $accents = @(

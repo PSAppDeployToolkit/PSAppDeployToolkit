@@ -35,8 +35,7 @@ $app = New-Object System.Windows.Application
 # --- 5. Turn the theme engine on. Auto = follow the Windows light/dark setting. ---
 [Fluence.Wpf.ApplicationThemeManager]::Apply(
     [Fluence.Wpf.ApplicationTheme]::Auto,
-    [Fluence.Wpf.BackdropType]::Mica,
-    $true)
+    [Fluence.Wpf.WindowBackdropType]::Mica)
 [Fluence.Wpf.ApplicationAccentColorManager]::ApplySystemAccent()
 
 # --- 6. Load XAML from a file instead of an inline string (XamlReader.Load over a file stream). ---
@@ -62,7 +61,7 @@ if ($null -ne $themeCombo) {
             3       { [Fluence.Wpf.ApplicationTheme]::HighContrast }
             default { [Fluence.Wpf.ApplicationTheme]::Auto }
         }
-        [Fluence.Wpf.ApplicationThemeManager]::Apply($theme, [Fluence.Wpf.BackdropType]::Mica, $true)
+        [Fluence.Wpf.ApplicationThemeManager]::Apply($theme, [Fluence.Wpf.WindowBackdropType]::Mica)
     })
 }
 # The "Cycle accent" button steps through a small palette of custom accents.

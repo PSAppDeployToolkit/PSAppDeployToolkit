@@ -1,34 +1,54 @@
 ﻿# ![Fluence.WPF Banner](./assets/Fluence_OGImage.png)
 
-## Introduction
+Windows 11 Fluent Design controls and theming for WPF, implemented in plain WPF with no Windows App SDK dependency.
 
-Windows 11 Fluent Design controls and theming for WPF applications targeting **.NET Framework 4.7.2**, **.NET 8**, and **.NET 10** on **Windows 10** (1809+), with enhanced visuals on **Windows 11**.
+[![NuGet](https://img.shields.io/nuget/v/Fluence.Wpf.svg)](https://www.nuget.org/packages/Fluence.Wpf)
+[![Downloads](https://img.shields.io/nuget/dt/Fluence.Wpf.svg)](https://www.nuget.org/packages/Fluence.Wpf)
+[![Build](https://github.com/sintaxasn/Fluence.Wpf/actions/workflows/build.yml/badge.svg)](https://github.com/sintaxasn/Fluence.Wpf/actions/workflows/build.yml)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
+[![Targets](https://img.shields.io/badge/targets-net472%20%7C%20net8.0--windows%20%7C%20net10.0--windows-informational.svg)](#requirements)
 
-**Current build:** `0.8.19-preview` (2026-08-30).
+## Install
 
-**Docs:** see the Markdown guides under [`docs/`](docs/) (start with [Getting started](docs/getting-started.md)).
+The package publishes to nuget.org from the `v0.9.0-pre` tag, so the two NuGet badges above stay
+blank and the command below fails until that tag is pushed. Until then, reference
+`Fluence.Wpf/Fluence.Wpf.csproj` directly, or build a local package with
+`dotnet pack Fluence.Wpf/Fluence.Wpf.csproj -c Release`.
 
-<!-- ## Features -->
+```powershell
+dotnet add package Fluence.Wpf
+```
 
-- **Theming with auto Light / Dark mode** - Auto (follow Windows), Light, Dark, or High Contrast.
-- **Accent colors** - System accent palette, app-defined accent, and custom accent ramps mapped to WinUI-style resource keys.
-- **50+ Fluent-styled controls** - accessible and themed, aligned with their WinUI 3 counterparts.
-- **PowerShell and .NET Framework 4.7.2 support** - build modern UIs for scripts and legacy apps without migrating to .NET 5+ or the Windows App SDK.
-- **Small footprint** - ~680 KB for the single library assembly.
+```xml
+<PackageReference Include="Fluence.Wpf" />
+```
 
-## Key controls
+## Use it
 
-- **FluenceWindow** - A window with **Mica**, **Acrylic**, and **Tabbed (Mica Alt)** backdrops, rounded corners, configurable minimize / maximize / close buttons, and an extensible title bar for a WinUI-style search box or custom content.
-- **Controls** - 50+ Fluent-styled controls including Button, HyperlinkButton, DropDownButton, SplitButton, ToggleSplitButton, RepeatButton, ToggleButton, CheckBox, RadioButton, ToggleSwitch, TextBox, PasswordBox (the native control, styled and extended in place), AutoSuggestBox, ComboBox, Slider, NumberBox, DatePicker, TimePicker, ColorPicker, ProgressBar, ProgressRing, InfoBar, InfoBadge, RatingControl, PersonPicture, ListView, ListBox, Expander, Card (clickable), NavigationView, BreadcrumbBar, PipsPager, ContextMenu, MenuItem, Menu, ToolTip, Flyout, TeachingTip, CommandBarFlyout, ContentDialog, TreeView, TreeViewItem, Separator, FontIcon, Border, StackPanel, DockPanel, SmoothScrollViewer, plus TabView and ScrollBar themes. See the [control catalog](#control-catalog) for the full list.
-- **Typography** - Styles or Attached properties on `TextBlock` for the WinUI type ramp (Caption / Body / BodyStrong / Subtitle / Title / TitleLarge / Display).
-- **TabView** - Multi-document surface over `TabControl` with per-tab close (`CloseRequested` / `TabCloseRequested`), trailing add-tab button (`AddTabButtonClick`), per-tab icons, `TabWidthMode`, `CloseButtonOverlayMode`, and horizontal overflow scroll.
-- **NavigationView** - `Top`, `Left`, and `LeftCompact` pane modes with animated shared selection indicator, pane toggle + back button in the 48 px rail, and WinUI 3 content-region border (`CornerRadius="8,0,0,0"`, `NavigationViewContentSeparatorBrush` top/left stroke).
+```csharp
+using Fluence.Wpf;
 
-## Demos
+// App.xaml.cs, before the first window is shown.
+ApplicationThemeManager.Apply(ApplicationTheme.Auto, WindowBackdropType.Mica);
+```
 
-- **Gallery** - A code-behind WPF app for visual verification: theme swatches, accent picker, DWM backdrops, grouped control pages (Colors, Icons, Typography, Buttons, Selection, Inputs, Forms, Data, Data Binding, Trees, Menus, Navigation, Tabs, Layout, Status, Accessibility, Settings), inline examples, and embedded source for each one.
-- **MVVM Pattern** - A minimal Task Manager (`Fluence.Wpf.Demo.Mvvm`) built with CommunityToolkit.Mvvm. It uses `[ObservableProperty]`, `[RelayCommand]`, filter bindings, and progress reporting with no code-behind.
-- **PowerShell** - Build UIs for scripts from Windows PowerShell 5.1, without installing PowerShell 7, .NET 9 / 10, or the Windows App SDK.
+```xml
+<fluence:FluenceWindow
+    x:Class="MyApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    ExtendsContentIntoTitleBar="True"
+    SystemBackdropType="Mica"
+    Title="My App">
+    <fluence:FluenceWindow.TitleBar>
+        <fluence:TitleBar Title="My App" />
+    </fluence:FluenceWindow.TitleBar>
+    <fluence:Button Content="Click me" Appearance="Accent" Margin="24" />
+</fluence:FluenceWindow>
+```
+
+[Getting started](docs/getting-started.md) has the full setup, including theme switching and the system theme watcher.
 
 ## Screenshots
 
@@ -40,109 +60,50 @@ Windows 11 Fluent Design controls and theming for WPF applications targeting **.
 | ![MVVM (Light)](./docs/screenshots/mvvm-light.png) | ![MVVM (Dark)](./docs/screenshots/mvvm-dark.png) |
 | ![PowerShell (Light)](./docs/screenshots/powershell-light.png) | ![PowerShell (Dark)](./docs/screenshots/powershell-dark.png) |
 
-## Quick Start
+## What is in the box
 
-1. Add a project reference to `Fluence.Wpf` (or reference the built `Fluence.Wpf.dll` / local package).
-2. In `App.xaml.cs` (before showing the main window):
+**62 public `Fluence.Wpf.Controls` types that derive from `FrameworkElement`**, from `Button` and `TextBox` through `NavigationView`, `TabView`, `ContentDialog`, `ColorPicker` and `TreeView`, each aligned with its WinUI 3 counterpart and covered by tests. See the [control catalog](docs/controls.md) for the full list and the per-control notes.
 
-```csharp
-Fluence.Wpf.ApplicationThemeManager.Apply(
-    Fluence.Wpf.ApplicationTheme.Auto,
-    Fluence.Wpf.BackdropType.Mica,
-    updateAccent: true);
-Fluence.Wpf.ApplicationAccentColorManager.ApplySystemAccent();
-```
+**A theme engine** that resolves Light, Dark, High Contrast and Auto (follow Windows), generates the accent ramp from the OS palette or a colour you pin, and republishes every brush through `DynamicResource` so a running application re-themes with no restart and no per-control code. See [theming](docs/theming.md).
 
-1. Use `Fluence.Wpf.Controls.FluenceWindow`, or call `ApplicationThemeManager.Apply(...)` at startup and place Fluence controls in a standard `Window`.
+**`FluenceWindow`**, a window with Mica, Acrylic and Tabbed DWM backdrops, rounded corners, configurable caption buttons, and a title-bar content slot for a search box or your own content.
 
-Optional XML namespace mapping:
+**Three target frameworks**, so the same UI runs on .NET Framework 4.7.2, .NET 8 and .NET 10, and from Windows PowerShell 5.1 and PowerShell 7 through the `Fluence.Wpf.PowerShell` module or a bare `Add-Type`, with no Windows App SDK anywhere. See [PowerShell](docs/powershell/README.md).
 
-```xml
-xmlns:fluence="http://schemas.fluencewpf.com"
-```
+## Demos
 
-## Control catalog
-
-| Area                | Types                                                                                                                                       |
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| Window              | `FluenceWindow`, `TitleBar`                                                                                                                  |
-| Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `RepeatButton`, `ToggleButton`                           |
-| Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`                     |
-| Text                | `TextBox`, `PasswordBox` (native, styled via `PasswordBoxExtensions`), `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions` |
-| Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem`                                                                                        |
-| Tabs                | `TabControl`, `TabItem`, `TabView`, `TabViewItem`                                                                                           |
-| Feedback            | `ProgressBar`, `ProgressRing`, `InfoBar`, `InfoBadge`, `RatingControl`                                                                      |
-| Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`, `BreadcrumbBar`, `BreadcrumbBarItem`, `PipsPager` |
-| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`, `FlyoutBase`, `Flyout`, `FlyoutPresenter`, `TeachingTip`, `CommandBarFlyout`, `AppBarButton` |
-| Dialogs             | `ContentDialog`                                                                                                                            |
-| Trees & collections | `TreeView`, `TreeViewItem`                                                                                                                  |
-| Layout / surfaces   | `Card`, `Expander`, `Border`, `StackPanel`, `DockPanel`, `SmoothScrollViewer`, `Separator`                                                  |
-| Person / social     | `PersonPicture`                                                                                                                             |
-| Icons               | `FontIcon`                                                                                                                                  |
-
-## Installation
-
-A NuGet package is coming. For now, use a project reference or build a local package:
-
-```powershell
-dotnet pack Fluence.Wpf/Fluence.Wpf.csproj -c Release -o ./artifacts
-```
-
-Or clone or submodule this repository and add a **project reference** to `Fluence.Wpf/Fluence.Wpf.csproj`.
-
-## Requirements
-
-- .NET Framework 4.7.2, .NET 8, or .NET 10 (Windows) - the library ships `net472`, `net8.0-windows10.0.26100.0`, and `net10.0-windows10.0.26100.0`
-- Windows 10 version 1809 or later
-- Windows 11 recommended for full Mica / Acrylic / Tabbed backdrop support
-
-## Building from Source
-
-Prerequisites: [.NET SDK](https://dotnet.microsoft.com/download) (includes MSBuild), Windows.
-
-```powershell
-dotnet restore Fluence.Wpf.sln
-dotnet build Fluence.Wpf.sln -c Release
-dotnet test Fluence.Wpf.sln -c Release
-```
-
-## Running the Demos
-
-- **Gallery demo** - all controls, themes, backdrops, accent picker, and NavigationView modes:
+- **Gallery** (`Fluence.Wpf.Demo`): 17 catalog pages organized by control category, each with a live example and its source next to it, plus theme, accent and backdrop switching.
+- **MVVM Task Manager** (`Fluence.Wpf.Demo.Mvvm`): a minimal CommunityToolkit.Mvvm application with no interaction logic in code-behind.
+- **PowerShell module** (`Fluence.Wpf.PowerShell.Module`): the `Fluence.Wpf.PowerShell` script module, with runnable examples under `examples/`, for Windows PowerShell 5.1 and PowerShell 7.
+- **PowerShell, no module** (`Fluence.Wpf.Demo.PowerShell`): four standalone scripts that build a themed WPF UI from Windows PowerShell 5.1 with `Add-Type` alone.
 
 ```powershell
 dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -c Release
 ```
 
-Use `-f net472` or `-f net10.0-windows10.0.26100.0` to force a specific gallery target framework.
+## Requirements
 
-**MVVM Task Manager demo** - minimal `FluenceWindow` + CommunityToolkit.Mvvm example with no code-behind:
-
-```powershell
-dotnet run --project Fluence.Wpf.Demo.Mvvm/Fluence.Wpf.Demo.Mvvm.csproj
-```
-
-Or set either project as the startup project in Visual Studio and press F5.
-
-- **PowerShell demos** - four standalone scripts for PowerShell 5.1 that build WinUI-styled WPF UIs without writing C#:
-
-See the [README.md](./Fluence.Wpf.Demo.PowerShell/README.md) for details.
+- .NET Framework 4.7.2, .NET 8, or .NET 10 on Windows. The package ships `net472`, `net8.0-windows10.0.26100.0` and `net10.0-windows10.0.26100.0`.
+- Windows 10 version 1809 or later.
+- Windows 11 for Mica, Acrylic and Tabbed backdrops and for DWM rounded corners. On Windows 10 those degrade to a legacy acrylic or to an opaque surface, with no code change.
 
 ## Documentation
-
-The guides live under [`docs/`](docs/). A hosted documentation site is planned but not yet set up.
 
 - [Getting started](docs/getting-started.md) - reference, startup calls, local pack
 - [Theming](docs/theming.md) - merge order, accent, backdrop, watcher
 - [Controls](docs/controls.md) - catalog aligned with the demo gallery
-- [PowerShell](docs/powershell.md) - theme a WPF window from Windows PowerShell 5.1
+- [WinUI parity](docs/winui-parity.md) - where Fluence matches WinUI 3 and where it knowingly differs
+- [PowerShell](docs/powershell/README.md) - the `Fluence.Wpf.PowerShell` module: tutorial, how-to guides, cmdlet reference
 - [Migration guide](docs/migration-guide.md) - generic move from other Fluent-style stacks
-- [Contributing](docs/contributing.md) - build matrix, tests, PR notes
+- [Contributing](CONTRIBUTING.md) - build matrix, tests, PR notes
 - [Release checklist](docs/release.md) - package, CI, screenshots, and tag flow
+- [Roadmap](docs/roadmap.md) - release policy and what comes next
+- [Changelog](CHANGELOG.md) - every released change
+- [Known issues](KNOWN_ISSUES.md)
 
 ## Contributing
 
-The contributor guide is at [docs/contributing.md](docs/contributing.md). It covers the build matrix, WPF test harness, visual verification expectations, changelog policy, and documentation rules.
+The contributor guide is at [CONTRIBUTING.md](CONTRIBUTING.md). It covers the build matrix, WPF test harness, visual verification expectations, changelog policy, and documentation rules.
 
 For AI-assisted work, read [AGENTS.md](AGENTS.md) first.
 
@@ -150,4 +111,4 @@ For AI-assisted work, read [AGENTS.md](AGENTS.md) first.
 
 Licensed under the [BSD 3-Clause License](LICENSE).
 
-Copyright © 2026 Dan Cunningham.
+Copyright 2026 Dan Cunningham.

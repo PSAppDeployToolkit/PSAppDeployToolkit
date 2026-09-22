@@ -10,54 +10,49 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Grid RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform>
-                            <ScaleTransform x:Name="ThumbScale" ScaleX="1" ScaleY="1" />
-                        </Grid.RenderTransform>
+                    <Grid>
                         <!--
-                            Opaque sub-layer under the thumb fill so the hover/drag accent
-                            brushes (AccentFillColorSecondary 0.9 / Tertiary 0.8 / Disabled)
-                            composite against a surface-matched solid rather than the
-                            translucent card or Mica beneath the slider. Always visible
-                            because the thumb is always rendered.
+                            Outer capsule: fixed fill and stroke in every state (WinUI 3
+                            SliderOuterThumbBackground / SliderThumbBorderBrush, Slider_themeresources.xaml:18-19,
+                            carry no PointerOver/Pressed/Disabled variant). Only the inner dot below reacts to state.
                         -->
-                        <Ellipse
-                            x:Name="ThumbAccentBackdrop"
-                            Width="20"
-                            Height="20"
-                            Fill="{DynamicResource AccentFillBackdropBrush}" />
                         <Ellipse
                             x:Name="ThumbEllipse"
                             Width="20"
                             Height="20"
-                            Fill="{DynamicResource AccentFillColorDefaultBrush}"
-                            Stroke="{DynamicResource AccentControlElevationBorderBrush}"
+                            Fill="{DynamicResource ControlSolidFillColorDefaultBrush}"
+                            Stroke="{DynamicResource ControlElevationBorderBrush}"
                             StrokeThickness="1" />
                         <Ellipse
                             x:Name="ThumbInnerDot"
-                            Width="8"
-                            Height="8"
+                            Width="12"
+                            Height="12"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <ScaleTransform x:Name="ThumbScale" ScaleX="0.86" ScaleY="0.86" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <!--  WI-3 B11: WinUI canonical thumb scale - hover 1.167, pressed 0.86, ControlFastOutSlowIn (0.8,0,0,1)  -->
+                        <!--  WinUI canonical thumb inner-dot scale: rest 0.86, hover 1.167, pressed 0.71, disabled 1.167, all on ControlFastOutSlowIn (0,0,0,1). The duration is the one the target state calls for, as WinUI's own states do (Slider_themeresources.xaml:206-251): Normal and Disabled take ControlFastAnimationDuration (167 ms), PointerOver and Pressed take ControlNormalAnimationDuration (250 ms).  -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="1.167" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="1.167" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
@@ -68,36 +63,36 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
-                                                Value="1" />
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="0.86" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
-                                                Value="1" />
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="0.86" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
-                                                Value="0.86" />
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="0.71" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
-                                                Value="0.86" />
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="0.71" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -107,14 +102,14 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="1.167" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="1.167" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
@@ -122,8 +117,39 @@
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="ThumbEllipse" Property="Stroke" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbScale"
+                                            Storyboard.TargetProperty="ScaleX"
+                                            To="1.167"
+                                            Duration="0:0:0.167" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbScale"
+                                            Storyboard.TargetProperty="ScaleY"
+                                            To="1.167"
+                                            Duration="0:0:0.167" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbScale"
+                                            Storyboard.TargetProperty="ScaleX"
+                                            To="0.86"
+                                            Duration="0:0:0.167" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbScale"
+                                            Storyboard.TargetProperty="ScaleY"
+                                            To="0.86"
+                                            Duration="0:0:0.167" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -181,9 +207,8 @@
     </Style>
 
     <Style TargetType="{x:Type controls:Slider}">
-        <Setter Property="Background" Value="{DynamicResource ControlFillColorPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <!--  SliderTrackFill (Slider_themeresources.xaml:20): the unfilled track background, fixed across rest/hover/pressed.  -->
+        <Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
         <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         <Setter Property="MinHeight" Value="40" />
@@ -213,7 +238,7 @@
                                 Height="4"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top"
-                                Fill="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                Fill="{DynamicResource ControlStrongFillColorDefaultBrush}"
                                 IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                                 IsSelectionRangeEnabled="{TemplateBinding IsSelectionRangeEnabled}"
                                 Maximum="{TemplateBinding Maximum}"
@@ -231,7 +256,7 @@
                                 Height="4"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Bottom"
-                                Fill="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                Fill="{DynamicResource ControlStrongFillColorDefaultBrush}"
                                 IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                                 IsSelectionRangeEnabled="{TemplateBinding IsSelectionRangeEnabled}"
                                 Maximum="{TemplateBinding Maximum}"
@@ -244,14 +269,13 @@
                                 Ticks="{TemplateBinding Ticks}"
                                 Visibility="Collapsed" />
 
+                            <!--  SliderBorderThemeThickness is 0 (Slider_themeresources.xaml:7); WinUI draws no track stroke.  -->
                             <Border
                                 x:Name="TrackBackground"
                                 Height="4"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Background="{TemplateBinding Background}"
-                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                BorderThickness="1"
                                 CornerRadius="2" />
 
                             <Track
@@ -274,10 +298,19 @@
                                 <Track.Thumb>
                                     <Thumb x:Name="Thumb" Style="{StaticResource SliderThumbStyle}" />
                                 </Track.Thumb>
+                                <!--
+                                    IncreaseButton stays Transparent (SliderTrackSegmentStyle's default) so the
+                                    unfilled track is painted exactly once, by TrackBackground below. WinUI's
+                                    Slider template has one HorizontalTrackRect for the unfilled track plus
+                                    HorizontalDecreaseRect for the filled part, not two stacked layers
+                                    (Slider_themeresources.xaml). Giving this RepeatButton its own
+                                    Background="{TemplateBinding Background}" would stack a second
+                                    ControlStrongFillColorDefaultBrush layer over TrackBackground: the two
+                                    partial-alpha fills compose to a darker unfilled track than WinUI shows.
+                                -->
                                 <Track.IncreaseRepeatButton>
                                     <RepeatButton
                                         x:Name="IncreaseButton"
-                                        Background="{TemplateBinding Background}"
                                         Command="Slider.IncreaseLarge"
                                         Style="{StaticResource SliderTrackSegmentStyle}" />
                                 </Track.IncreaseRepeatButton>
@@ -314,27 +347,23 @@
                             <Setter TargetName="BottomTick" Property="Width" Value="4" />
                         </Trigger>
 
+                        <!--
+                            SliderTrackFillPointerOver / Pressed both equal SliderTrackFill (Slider_themeresources.xaml:20-22),
+                            so the unfilled track never changes color on hover or drag; only the accent value fill
+                            (DecreaseButton) reacts, per SliderTrackValueFillPointerOver/Pressed (:25-26).
+                        -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!--  ControlFastAnimationDuration (167 ms) thumb reveal  -->
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="Thumb"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.167" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger SourceName="Thumb" Property="IsDragging" Value="True">
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                            <Setter TargetName="TrackBackground" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
-                            <Setter Property="Opacity" Value="0.8" />
+                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="TopTick" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                            <Setter TargetName="BottomTick" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
                         </Trigger>
 
                         <Trigger Property="TickPlacement" Value="TopLeft">

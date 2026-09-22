@@ -50,15 +50,15 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// A numeric input control with optional spin buttons and min/max clamping.
     /// </summary>
-    [TemplatePart(Name = PartTextBox, Type = typeof(System.Windows.Controls.TextBox))]
-    [TemplatePart(Name = PartUpButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
-    [TemplatePart(Name = PartDownButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
+    [TemplatePart(Name = PART_TextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_UpButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
+    [TemplatePart(Name = PART_DownButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
     public class NumberBox : Control
     {
         // Template part names. These must match the names used in the default control template.
-        private const string PartTextBox = "PART_TextBox";
-        private const string PartUpButton = "PART_UpButton";
-        private const string PartDownButton = "PART_DownButton";
+        private const string PART_TextBox = "PART_TextBox";
+        private const string PART_UpButton = "PART_UpButton";
+        private const string PART_DownButton = "PART_DownButton";
 
         /// <summary>
         /// Initializes static members of the NumberBox class and overrides the default style metadata.
@@ -143,9 +143,9 @@ namespace Fluence.Wpf.Controls
         public static readonly DependencyProperty SpinButtonPlacementModeProperty =
             DependencyProperty.Register(
                 nameof(SpinButtonPlacementMode),
-                typeof(SpinButtonPlacementMode),
+                typeof(NumberBoxSpinButtonPlacementMode),
                 typeof(NumberBox),
-                new FrameworkPropertyMetadata(SpinButtonPlacementMode.Compact));
+                new FrameworkPropertyMetadata(NumberBoxSpinButtonPlacementMode.Compact));
 
         /// <summary>
         /// Identifies the <see cref="AcceptsExpression"/> dependency property.
@@ -252,9 +252,9 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Gets or sets where spin buttons are shown.
         /// </summary>
-        public SpinButtonPlacementMode SpinButtonPlacementMode
+        public NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode
         {
-            get => (SpinButtonPlacementMode)GetValue(SpinButtonPlacementModeProperty);
+            get => (NumberBoxSpinButtonPlacementMode)GetValue(SpinButtonPlacementModeProperty);
             set => SetValue(SpinButtonPlacementModeProperty, value);
         }
 
@@ -295,7 +295,8 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Updates <see cref="Value"/> from <see cref="Text"/> if parsing succeeds.
+        /// Updates <see cref="Value"/> from <see cref="Text"/> if parsing succeeds, and clears
+        /// <see cref="Value"/> to <see cref="double.NaN"/> when the field is empty.
         /// </summary>
         /// <returns><see langword="true"/> if a number was parsed and applied; otherwise <see langword="false"/>.</returns>
         public bool TryParseText()
@@ -305,7 +306,17 @@ namespace Fluence.Wpf.Controls
             {
                 s = s.Trim();
             }
-            if (!double.TryParse(s, NumberStyles.Any, CultureInfo.CurrentCulture, out double parsed))
+            // WinUI commits NaN for empty text and reads NaN as "value not set (cleared)"
+            // (NumberBox.cpp:120, :488), so an emptied field clears rather than keeping the number
+            // it last held and leaving the two out of step. Nothing parsed, so the result is false.
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                Value = double.NaN;
+                return false;
+            }
+            // NumberStyles.Any accepts the culture's NaN symbol. The cleared state is reached by
+            // emptying the field, not by typing that symbol, so the symbol is text that did not parse.
+            if (!double.TryParse(s, NumberStyles.Any, CultureInfo.CurrentCulture, out double parsed) || double.IsNaN(parsed))
             {
                 return false;
             }
@@ -328,18 +339,30 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Increments <see cref="Value"/> by <see cref="SmallChange"/> with clamping.
+        /// Increments <see cref="Value"/> by <see cref="SmallChange"/> with clamping. A cleared
+        /// value has nothing to step from, so the call does nothing.
         /// </summary>
         protected virtual void OnUpClick()
         {
+            // WinUI guards its own StepValue the same way (NumberBox.cpp:605): NaN plus SmallChange
+            // is NaN, so stepping a cleared box would only produce another cleared box.
+            if (double.IsNaN(Value))
+            {
+                return;
+            }
             Value = ClampValue(Value + SmallChange);
         }
 
         /// <summary>
-        /// Decrements <see cref="Value"/> by <see cref="SmallChange"/> with clamping.
+        /// Decrements <see cref="Value"/> by <see cref="SmallChange"/> with clamping. A cleared
+        /// value has nothing to step from, so the call does nothing.
         /// </summary>
         protected virtual void OnDownClick()
         {
+            if (double.IsNaN(Value))
+            {
+                return;
+            }
             Value = ClampValue(Value - SmallChange);
         }
 
@@ -380,9 +403,9 @@ namespace Fluence.Wpf.Controls
             }
             _partUpButton?.Click -= OnPartUpButtonClick;
             _partDownButton?.Click -= OnPartDownButtonClick;
-            _partTextBox = GetTemplateChild(PartTextBox) as System.Windows.Controls.TextBox;
-            _partUpButton = GetTemplateChild(PartUpButton) as System.Windows.Controls.Primitives.RepeatButton;
-            _partDownButton = GetTemplateChild(PartDownButton) as System.Windows.Controls.Primitives.RepeatButton;
+            _partTextBox = GetTemplateChild(PART_TextBox) as System.Windows.Controls.TextBox;
+            _partUpButton = GetTemplateChild(PART_UpButton) as System.Windows.Controls.Primitives.RepeatButton;
+            _partDownButton = GetTemplateChild(PART_DownButton) as System.Windows.Controls.Primitives.RepeatButton;
             if (_partTextBox is not null)
             {
                 _partTextBox.KeyDown += OnPartTextBoxKeyDown;
@@ -391,18 +414,19 @@ namespace Fluence.Wpf.Controls
             _partUpButton?.Click += OnPartUpButtonClick;
             _partDownButton?.Click += OnPartDownButtonClick;
             UpdateTextFromValue();
+            UpdateSpinButtonsEnabled();
         }
 
         private static object CoerceValueCallback(DependencyObject d, object baseValue)
         {
+            // NaN is the cleared state, not out-of-range input, so the bounds do not apply to it.
+            // WinUI exempts it from the same coercion: InvalidInputOverwritten only runs for a value
+            // that is not NaN (NumberBox.cpp:463), because NaN is how it represents "value not set"
+            // (NumberBox.cpp:120). Stepping a cleared box is what has to be guarded instead, and
+            // OnUpClick and OnDownClick do that, so a cleared value can no longer strand the field.
             NumberBox box = (NumberBox)d;
             double v = (double)baseValue;
-            if (double.IsNaN(v))
-            {
-                return baseValue;
-            }
-            double clamped = box.ClampValue(v);
-            return double.IsNaN(clamped) ? baseValue : clamped;
+            return double.IsNaN(v) ? v : box.ClampValue(v);
         }
 
         private static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -411,6 +435,7 @@ namespace Fluence.Wpf.Controls
             NumberBox box = (NumberBox)d;
             box.OnValueChanged((double)e.OldValue, (double)e.NewValue);
             box.UpdateTextFromValue();
+            box.UpdateSpinButtonsEnabled();
         }
 
         private static void OnMinMaxPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -468,9 +493,22 @@ namespace Fluence.Wpf.Controls
             OnDownClick();
         }
 
+        private void UpdateSpinButtonsEnabled()
+        {
+            // A cleared value cannot be stepped, so the buttons that step it are disabled while it
+            // is cleared. WinUI gates its own UpdateSpinButtonEnabled on the same test
+            // (NumberBox.cpp:686).
+            bool canStep = !double.IsNaN(Value);
+            _partUpButton?.SetCurrentValue(IsEnabledProperty, canStep);
+            _partDownButton?.SetCurrentValue(IsEnabledProperty, canStep);
+        }
+
         private void UpdateTextFromValue()
         {
-            string formatted = Value.ToString(CultureInfo.CurrentCulture);
+            // A cleared value has no number to show, so the field goes empty and the placeholder,
+            // if the consumer set one, takes over. WinUI's UpdateTextToValue writes an empty string
+            // for the same reason (NumberBox.cpp:640).
+            string formatted = double.IsNaN(Value) ? string.Empty : Value.ToString(CultureInfo.CurrentCulture);
             _suppressTextSync = true;
             try
             {
@@ -488,8 +526,10 @@ namespace Fluence.Wpf.Controls
 
         private double ClampValue(double value)
         {
-            double min = Minimum;
-            double max = Maximum;
+            // A NaN bound is no bound. Math.Max and Math.Min propagate NaN, so left in place it
+            // would have switched clamping off for every value rather than for none.
+            double min = double.IsNaN(Minimum) ? double.MinValue : Minimum;
+            double max = double.IsNaN(Maximum) ? double.MaxValue : Maximum;
             if (min > max)
             {
                 (max, min) = (min, max);

@@ -16,14 +16,14 @@ Use the latest version of WinUI from the WinAppSDK. You can download the source 
 
 Addiionally, use the official Microsoft documentation and .NET reference sources for WPF behavior and API signatures. Focus on areas where Fluence.Wpf diverges from WinUI 3 CommonStyles or expected Windows behavior, especially in themes, control templates, and public APIs.
 
-## Authority Order
+## Authority order
 
 1. In-tree Fluence precedent.
 2. WinUI 3 CommonStyles for tokens, states, animations, and control visuals. Start with `Controls\Common_themeresources_any.xaml` in the download above..
 3. .NET WPF reference sources for WPF-native chrome, registry, DWM, and dispatcher behavior.
 4. Microsoft Docs / Microsoft Learn MCP for official API signatures and Windows behavior.
 
-## Review Checklist
+## Review checklist
 
 - Read AGENTS.md for rules and guidelines to checklist against.
 

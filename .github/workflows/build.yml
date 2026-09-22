@@ -1,4 +1,4 @@
-name: Build & Test
+﻿name: Build & Test
 
 permissions:
   contents: read
@@ -47,14 +47,71 @@ jobs:
       # "rendered without throwing"); they run in full local test runs to refresh
       # docs/screenshots but are skipped here to keep CI fast.
       #
-      # global.json opts dotnet test into the Microsoft.Testing.Platform runner, so these steps
-      # use MTP options. The VSTest target these previously used is rejected outright by MTP on
-      # the .NET 10 SDK. Trait filtering is by the xunit trait name (Category), not TestCategory.
-      - name: Test (.NET Framework 4.7.2)
-        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net472.trx --results-directory TestResults/net472
+      # The suite runs on Microsoft Testing Platform, so these steps invoke the built test
+      # executable rather than dotnet test: the VSTest target the previous steps used is
+      # rejected outright by MTP on the .NET 10 SDK. Trait filtering is by the xunit trait
+      # name (Category), not TestCategory.
+      #
+      # Each TFM runs as two complementary lanes. A single-process whole-assembly run on
+      # net472 aborts with exit -1 at a non-deterministic point (see KNOWN_ISSUES.md). The
+      # lanes are exact complements of one explicit class list, so their union is provably
+      # the whole assembly and a newly added class lands in lane B automatically. The sum
+      # check below is what turns that into a guarantee.
+      - name: Test (.NET Framework 4.7.2, lane A)
+        run: Fluence.Wpf.Tests\bin\Release\net472\Fluence.Wpf.Tests.exe --filter-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net472.laneA.trx --results-directory TestResults/net472 --no-ansi --progress off
+        shell: cmd
 
-      - name: Test (.NET 10)
-        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net10.trx --results-directory TestResults/net10
+      - name: Test (.NET Framework 4.7.2, lane B)
+        run: Fluence.Wpf.Tests\bin\Release\net472\Fluence.Wpf.Tests.exe --filter-not-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net472.laneB.trx --results-directory TestResults/net472 --no-ansi --progress off
+        shell: cmd
+
+      - name: Test (.NET 10, lane A)
+        run: Fluence.Wpf.Tests\bin\Release\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net10.laneA.trx --results-directory TestResults/net10 --no-ansi --progress off
+        shell: cmd
+
+      - name: Test (.NET 10, lane B)
+        run: Fluence.Wpf.Tests\bin\Release\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-not-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --report-xunit-trx --report-xunit-trx-filename net10.laneB.trx --results-directory TestResults/net10 --no-ansi --progress off
+        shell: cmd
+
+      # The library ships three target frameworks and the suite above covers two of them. This
+      # lane loads the third, which is the one AGENTS.md designates for PowerShell 7 in-process
+      # consumption and the only one carrying WinRT.Runtime.dll, so the shipped binary is
+      # exercised rather than only built and packed. It is a smoke lane by design: the behaviour
+      # coverage lives in the two full lanes, where the source is identical.
+      - name: Test (.NET 8, smoke lane)
+        run: Fluence.Wpf.Tests.Smoke\bin\Release\net8.0-windows10.0.26100.0\Fluence.Wpf.Tests.Smoke.exe --report-xunit-trx --report-xunit-trx-filename net8.smoke.trx --results-directory TestResults/net8 --no-ansi --progress off
+        shell: cmd
+
+      # The lanes are complements, so their case counts must sum to the whole assembly. This
+      # catches a typo that makes one filter diverge from the other, since the split then goes
+      # out of balance. It does not catch the same typo repeated identically in both filters:
+      # that would leave lane A empty and lane B carrying the whole assembly, and the sum is
+      # unchanged, though a single-process net472 run still aborts loudly (see KNOWN_ISSUES.md).
+      # The floors are the HEAD-of-branch case counts, matching the AGENTS.md baseline policy:
+      # adding tests raises the real total and must not redden CI, while a filter typo drops
+      # cases and does. They exclude the three Screenshots-category cases removed by
+      # --filter-not-trait above; net10 carries all three (the Mvvm capture only targets
+      # net10.0-windows10.0.26100.0), while net472 carries only the two that target it, so
+      # the two floors differ by one screenshot case, not by zero. Raise both when a release
+      # deliberately drops cases, alongside Fluence.Wpf.Tests/Baselines.
+      - name: Check lane case-count sums
+        shell: pwsh
+        run: |
+          $floor = @{ 'net472' = 1374; 'net10' = 1375 }
+          foreach ($tfm in $floor.Keys) {
+            $total = 0
+            foreach ($lane in 'laneA', 'laneB') {
+              $path = "TestResults/$tfm/$tfm.$lane.trx"
+              if (-not (Test-Path $path)) { Write-Error "Missing $path"; continue }
+              [xml]$trx = Get-Content $path
+              $total += [int]$trx.TestRun.ResultSummary.Counters.total
+            }
+            if ($total -lt $floor[$tfm]) {
+              Write-Error "$tfm : lanes summed to $total, below the floor of $($floor[$tfm]). Either a lane filter dropped cases, or cases were removed on purpose: in that case lower the floor in .github/workflows/build.yml and update Fluence.Wpf.Tests/Baselines."
+            } else {
+              Write-Host "$tfm : $total cases across both lanes."
+            }
+          }
 
       - name: Upload test results
         if: always()
@@ -93,7 +150,7 @@ jobs:
         with:
           name: fluence-wpf-release-dotnet472
           path: |
-            Fluence.Wpf/bin/Release/net472/Fluence.Wpf.dll
+            Fluence.Wpf/bin/Release/net472/*.dll
             Fluence.Wpf/bin/Release/net472/Fluence.Wpf.pdb
             Fluence.Wpf/bin/Release/net472/Fluence.Wpf.xml
           retention-days: 30
@@ -112,30 +169,136 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: fluence-wpf-nupkg
-          path: nupkg/*.nupkg
+          path: |
+            nupkg/*.nupkg
+            nupkg/*.snupkg
           retention-days: 30
 
-      # Publishing remains a manual release decision until the NuGet API key
-      # and first public version are intentionally configured.
-      # - name: Publish to NuGet (tagged releases only)
-      #   if: startsWith(github.ref, 'refs/tags/v')
-      #   run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+  # Script-module tooling and tests cannot block library artifacts or the .NET release.
+  # This job consumes the exact binaries uploaded by build; no second library build is needed.
+  powershell:
+    needs: build
+    runs-on: windows-latest
 
-  # Version tags (v*) run the full build/test/pack gates above and then publish a
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download library binaries (.NET Framework 4.7.2)
+        uses: actions/download-artifact@v8
+        with:
+          name: fluence-wpf-release-dotnet472
+          path: Fluence.Wpf/bin/Release/net472
+
+      - name: Download library binaries (.NET 8)
+        uses: actions/download-artifact@v8
+        with:
+          name: fluence-wpf-release-dotnet8
+          path: Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0
+
+      # Network setup is explicit and isolated from local package creation. Windows PowerShell
+      # needs the external NuGet provider; PowerShell 7 uses its bundled provider.
+      - name: Install pinned build tools (Windows PowerShell)
+        shell: powershell
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          if (-not (Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue | Where-Object { $_.Version -eq [version]'2.8.5.208' })) {
+            Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.208 -Scope CurrentUser -Force
+          }
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })) {
+            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force
+          }
+          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })) {
+            Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck
+          }
+
+      - name: Install pinned build tools (PowerShell 7)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })) {
+            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force
+          }
+          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })) {
+            Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck
+          }
+
+      - name: Stage PowerShell module libraries
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release
+
+      - name: Test PowerShell module (PowerShell 7)
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -TestResultPath TestResults/psmodule/pwsh.xml
+
+      - name: Test PowerShell module (PowerShell 7, MTA)
+        run: pwsh -NoProfile -MTA -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -SkipAnalyzer -TestResultPath TestResults/psmodule/pwsh-mta.xml
+
+      - name: Test PowerShell module (Windows PowerShell 5.1)
+        shell: cmd
+        run: powershell.exe -NoProfile -STA -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -TestResultPath TestResults/psmodule/desktop.xml
+
+      - name: Package PowerShell module
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Package-Module.ps1 -Configuration Release
+
+      - name: Upload PowerShell module package
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-ps-module-package
+          path: Fluence.Wpf.PowerShell.Module/artifacts/
+          if-no-files-found: error
+
+      - name: Upload PowerShell module test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-ps-module-test-results
+          path: TestResults/psmodule/
+          retention-days: 14
+
+  # Version tags (v*) run the .NET build/test/pack gates above and then publish a
   # GitHub release with the per-TFM library binaries, the demo, and the NuGet
-  # package attached. Tags containing '-pre' are marked as prereleases. Write
-  # permission is scoped to this job only; the build job stays read-only.
+  # package attached, and push the package to nuget.org. Tags carrying a
+  # SemVer prerelease identifier are marked as prereleases. Write permission is
+  # scoped to this job only; the build job stays read-only.
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: windows-latest
+    # The job runs in the "release" environment so its two irreversible steps, creating the
+    # GitHub release and pushing to nuget.org, can sit behind a required reviewer. The gate itself
+    # is repository configuration (Settings, Environments, "release", required reviewers), not
+    # something this file can declare; docs/release.md lists it as a precondition. Without that
+    # rule the environment exists but waits on nobody.
+    environment: release
     permissions:
       contents: write
 
     steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Runs before anything is published. A v1.0.0 tag on a tree still at
+      # 0.9.0-pre would otherwise publish a mislabeled package to nuget.org,
+      # which can only be unlisted, never replaced.
+      - name: Verify the tag matches the tree version
+        run: |
+          $version = (dotnet msbuild Fluence.Wpf/Fluence.Wpf.csproj -getProperty:Version -p:TargetFramework=net472 -nologo).Trim()
+          $expected = "v$version"
+          if ('${{ github.ref_name }}' -ne $expected) {
+            Write-Error "Tag ${{ github.ref_name }} does not match the tree version, which is $expected. Bump VersionPrefix and VersionSuffix in Directory.Build.props, or delete the tag and re-tag the right commit."
+            exit 1
+          }
+          Write-Host "Tag ${{ github.ref_name }} matches the tree version $version."
+
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
+          pattern: fluence-wpf-*
           path: artifacts
 
       - name: Stage release assets
@@ -146,15 +309,67 @@ jobs:
           Compress-Archive -Path artifacts/fluence-wpf-release-dotnet10/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net10.0-windows.zip"
           Compress-Archive -Path artifacts/fluence-wpf-demo/* -DestinationPath "dist/Fluence.Wpf.Demo-${{ github.ref_name }}-net472.zip"
           Copy-Item artifacts/fluence-wpf-nupkg/*.nupkg dist/
+          Copy-Item artifacts/fluence-wpf-nupkg/*.snupkg dist/
 
+      # The release notes are the CHANGELOG section for this version, not
+      # commit-generated prose. A missing section fails the job: shipping a
+      # release with no notes is worse than not shipping it.
+      - name: Slice the changelog for this version
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $lines = Get-Content CHANGELOG.md
+          $start = -1
+          for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match ('^##\s+\[' + [regex]::Escape($version) + '\]')) { $start = $i; break }
+          }
+          if ($start -lt 0) {
+            Write-Error "CHANGELOG.md has no '## [$version]' section. Add one before tagging."
+            exit 1
+          }
+          $end = $lines.Count
+          for ($i = $start + 1; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^##\s+\[') { $end = $i; break }
+          }
+          $slice = $lines[($start + 1)..($end - 1)]
+          Set-Content -Path release-notes.md -Value $slice -Encoding utf8NoBOM
+          Write-Host "Release notes:"
+          Get-Content release-notes.md
+
+      # gh release create fails outright if a release for this tag already exists,
+      # which is exactly what a re-run after a failed NuGet push below hits: the
+      # release published fine the first time, only the push failed. Checking
+      # first and skipping creation when the release exists lets a re-run reach
+      # the push instead of dying here every time. This never overwrites an
+      # existing release: it either creates one or leaves the existing one alone.
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # --repo makes gh operate without a local checkout (this job never checks
-          # out the tree; it only downloads the build artifacts).
-          $ghArgs = @('release', 'create', '${{ github.ref_name }}', '--repo', '${{ github.repository }}')
-          $ghArgs += (Get-ChildItem dist/* | ForEach-Object FullName)
-          $ghArgs += @('--title', 'Fluence.Wpf ${{ github.ref_name }}', '--generate-notes')
-          if ('${{ github.ref_name }}'.Contains('-pre')) { $ghArgs += '--prerelease' }
-          gh @ghArgs
+          $releaseExists = $false
+          try {
+            gh release view '${{ github.ref_name }}' --repo '${{ github.repository }}' *> $null
+            $releaseExists = ($LASTEXITCODE -eq 0)
+          } catch {
+            $releaseExists = $false
+          }
+          if ($releaseExists) {
+            Write-Host "Release ${{ github.ref_name }} already exists. Leaving it as is so this re-run reaches the NuGet push below."
+          } else {
+            $ghArgs = @('release', 'create', '${{ github.ref_name }}', '--repo', '${{ github.repository }}')
+            $ghArgs += (Get-ChildItem dist/* | ForEach-Object FullName)
+            $ghArgs += @('--title', 'Fluence.Wpf ${{ github.ref_name }}', '--notes-file', 'release-notes.md')
+            # Any SemVer prerelease identifier (-rc.1, -preview, -beta) marks a prerelease.
+            if ('${{ github.ref_name }}'.Contains('-')) { $ghArgs += '--prerelease' }
+            gh @ghArgs
+          }
+
+      # Last, so a failure in the release creation does not leave a package on
+      # nuget.org that cannot be replaced. dotnet nuget push already pushes the
+      # sibling .snupkg from the same folder when one is present, so pushing the
+      # .nupkg alone is enough; --skip-duplicate means a re-run whose package
+      # already reached nuget.org does not fail on that account. The release
+      # step above is what actually makes a re-run after this step fails safe to
+      # retry: it skips recreating a release that already exists and lands here.
+      - name: Publish to NuGet
+        run: |
+          dotnet nuget push dist/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

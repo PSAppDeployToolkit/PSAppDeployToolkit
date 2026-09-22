@@ -4,10 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:fluence="http://schemas.fluencewpf.com"
     Title="Fluence.Wpf - Control Gallery"
-    Width="1170"
-    Height="880"
-    MinWidth="1170"
-    MinHeight="880"
+    Width="1200"
+    Height="970"
+    MinWidth="1200"
+    MinHeight="970"
     Background="{DynamicResource ApplicationBackgroundBrush}"
     CornerStyle="Round"
     ExtendsContentIntoTitleBar="True"
@@ -24,10 +24,9 @@
             SizeChanged="TitleBarLayout_SizeChanged">
             <fluence:AutoSuggestBox
                 x:Name="NavSearchBox"
-                Width="300"
-                MinWidth="300"
+                Width="320"
+                MinWidth="320"
                 MaxWidth="475"
-                Margin="0,6,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 PlaceholderText="Search controls and samples..."
@@ -65,6 +64,21 @@
                     </fluence:NavigationViewItem.Icon>
                 </fluence:NavigationViewItem>
             </fluence:NavigationView.FooterMenuItems>
+
+            <!--
+                The gallery pages are Page objects, as the WinUI Gallery's own pages are, and WPF
+                only lets a Window or a Frame parent one. The shell therefore hosts them in a
+                Frame with its navigation chrome hidden; MainWindow keeps owning the back stack,
+                so the frame's own journal is cleared after every navigation. The frame is set as
+                the navigation view's Content: NavigationView derives from Selector, so a bare
+                child would join Items instead.
+            -->
+            <fluence:NavigationView.Content>
+                <Frame
+                    x:Name="PageFrame"
+                    Focusable="False"
+                    NavigationUIVisibility="Hidden" />
+            </fluence:NavigationView.Content>
         </fluence:NavigationView>
     </Grid>
 </fluence:FluenceWindow>

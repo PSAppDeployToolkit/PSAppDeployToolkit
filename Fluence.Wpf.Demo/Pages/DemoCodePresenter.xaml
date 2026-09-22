@@ -1,0 +1,45 @@
+﻿<!--
+    Copyright (C) 2026 Dan Cunningham. All rights reserved.
+
+    Inline code snippet presenter, modelled on the WinUI 3 Gallery's Controls/SampleCodePresenter.xaml
+    in its InlineSample state: the colorized code sits directly on the page (no plate, no stroke) with an
+    optional copy button floating at the top right. The viewer is built by DemoSourceHighlighter, the
+    same tokenizer the DemoSampleControl source expander uses. See DemoCodePresenter.xaml.cs.
+-->
+<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.DemoCodePresenter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Root"
+    d:DesignWidth="600"
+    mc:Ignorable="d">
+    <Grid>
+        <ContentControl
+            x:Name="CodeHost"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Center"
+            Focusable="False"
+            IsTabStop="False" />
+        <fluence:Border
+            x:Name="CopyButtonHost"
+            Margin="{DynamicResource DemoSourceCopyButtonHostMargin}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+            CornerRadius="{DynamicResource ControlCornerRadius}">
+            <fluence:Button
+                x:Name="CopyCodeButton"
+                MinWidth="{DynamicResource DemoCopyButtonMinWidth}"
+                Padding="{DynamicResource DemoSourceCopyButtonPadding}"
+                Appearance="Subtle"
+                AutomationProperties.Name="Copy code"
+                Click="CopyCodeButton_Click"
+                ToolTip="Copy code">
+                <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="{DynamicResource DemoCopyGlyphFontSize}" />
+            </fluence:Button>
+        </fluence:Border>
+    </Grid>
+</UserControl>

@@ -44,9 +44,11 @@ namespace Fluence.Wpf.Demo
     /// <see cref="ExternalException"/> with <c language="text">CLIPBRD_E_CANT_OPEN</c> (0x800401D0);
     /// clipboard managers, remote desktop sessions and synchronisation tools all cause this
     /// routinely. The owner usually releases within a few milliseconds, so the accepted remedy is a
-    /// short bounded retry rather than a single attempt. A copy that still fails after that returns
-    /// <see langword="false"/> instead of throwing, because a gallery copy button is not worth
-    /// terminating the application over.
+    /// short bounded retry rather than a single attempt. A copy that still fails after that reports
+    /// <see langword="false"/> through the completion callback instead of throwing, because a
+    /// gallery copy button is not worth terminating the application over. The retry runs on a
+    /// dispatcher timer, so the outcome is not known by the time <see cref="SetText"/> returns and
+    /// a caller that shows a success cue has to wait for the callback rather than assume success.
     /// </remarks>
     internal static class DemoClipboard
     {
@@ -66,7 +68,12 @@ namespace Fluence.Wpf.Demo
         /// currently owns it. Never throws.
         /// </summary>
         /// <param name="text">The text to copy. Null, empty, and whitespace are ignored.</param>
-        internal static void SetText(string? text)
+        /// <param name="onCompleted">
+        /// Raised on the UI thread once the copy has succeeded or the retries have run out, with
+        /// <see langword="true"/> only when the text actually reached the clipboard. Nothing is
+        /// raised for text that was ignored.
+        /// </param>
+        internal static void SetText(string? text, Action<bool>? onCompleted = null)
         {
             // The null test is explicit because net472 does not carry the NotNullWhen annotation on
             // string.IsNullOrWhiteSpace, so the checked-null flow does not reach Attempt without it.
@@ -75,7 +82,7 @@ namespace Fluence.Wpf.Demo
                 return;
             }
 
-            Attempt(text, MaxAttempts);
+            Attempt(text, MaxAttempts, onCompleted);
         }
 
         /// <summary>
@@ -83,26 +90,36 @@ namespace Fluence.Wpf.Demo
         /// </summary>
         /// <param name="text">The text to copy.</param>
         /// <param name="attemptsRemaining">How many attempts are left, including this one.</param>
-        private static void Attempt(string text, int attemptsRemaining)
+        /// <param name="onCompleted">Raised once the outcome is settled. See <see cref="SetText"/>.</param>
+        private static void Attempt(string text, int attemptsRemaining, Action<bool>? onCompleted)
         {
-            bool retry;
+            bool copied;
 
             try
             {
                 // SetDataObject with copy:true is what Clipboard.SetText calls internally, and the
                 // flush it performs is the step that throws while the clipboard is held elsewhere.
                 Clipboard.SetDataObject(text, copy: true);
-                retry = false;
+                copied = true;
             }
             catch (ExternalException)
             {
-                retry = attemptsRemaining > 1;
+                copied = false;
             }
 
-            if (retry)
+            if (copied)
             {
-                ScheduleRetry(text, attemptsRemaining - 1);
+                onCompleted?.Invoke(true);
+                return;
             }
+
+            if (attemptsRemaining > 1)
+            {
+                ScheduleRetry(text, attemptsRemaining - 1, onCompleted);
+                return;
+            }
+
+            onCompleted?.Invoke(false);
         }
 
         /// <summary>
@@ -110,11 +127,14 @@ namespace Fluence.Wpf.Demo
         /// </summary>
         /// <param name="text">The text to copy.</param>
         /// <param name="attemptsRemaining">How many attempts are left after this one is queued.</param>
-        private static void ScheduleRetry(string text, int attemptsRemaining)
+        /// <param name="onCompleted">Raised once the outcome is settled. See <see cref="SetText"/>.</param>
+        private static void ScheduleRetry(string text, int attemptsRemaining, Action<bool>? onCompleted)
         {
             Dispatcher? dispatcher = Application.Current?.Dispatcher;
             if (dispatcher is null)
             {
+                // With no dispatcher there is nowhere to run the retry, so the copy is over.
+                onCompleted?.Invoke(false);
                 return;
             }
 
@@ -126,7 +146,7 @@ namespace Fluence.Wpf.Demo
             timer.Tick += (_, _) =>
             {
                 timer.Stop();
-                Attempt(text, attemptsRemaining);
+                Attempt(text, attemptsRemaining, onCompleted);
             };
 
             timer.Start();

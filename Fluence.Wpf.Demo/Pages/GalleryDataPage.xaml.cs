@@ -31,7 +31,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryDataPage : UserControl
+    public partial class GalleryDataPage : Page
     {
         private static readonly string ListViewItemsXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Data.ListViewItems",
@@ -314,6 +314,42 @@ namespace Fluence.Wpf.Demo.Pages
                                                         "        }\n" +
                                                         "    }\n" +
                                                         "}\n";
+        private static readonly string ListViewGridStateXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Data.ListViewGridStateSample",
+                                                     "    <fluence:ListView\n" +
+                                                     "        x:Name=\"GridViewListView\"\n" +
+                                                     "        Height=\"230\"\n" +
+                                                     "        ItemsLayout=\"Grid\">\n" +
+                                                     "        <ListViewItem Content=\"Ana Bowman\" />\n" +
+                                                     "        <ListViewItem Content=\"Shawn Hughes\" />\n" +
+                                                     "        <ListViewItem Content=\"Oscar Ward\" />\n" +
+                                                     "    </fluence:ListView>\n");
+
+        private const string ListViewGridStateCSharpSource = "using System.Windows;\n" +
+                                                             "using System.Windows.Controls;\n" +
+                                                             "using Fluence.Wpf;\n" +
+                                                             "\n" +
+                                                             "namespace Fluence.Wpf.Demo.Pages.Data\n" +
+                                                             "{\n" +
+                                                             "    public partial class ListViewGridStateSample : UserControl\n" +
+                                                             "    {\n" +
+                                                             "        public ListViewGridStateSample()\n" +
+                                                             "        {\n" +
+                                                             "            InitializeComponent();\n" +
+                                                             "        }\n" +
+                                                             "\n" +
+                                                             "        private void GridLayout_Click(object sender, RoutedEventArgs e)\n" +
+                                                             "        {\n" +
+                                                             "            GridViewListView.ItemsLayout = ListViewItemsLayout.Grid;\n" +
+                                                             "        }\n" +
+                                                             "\n" +
+                                                             "        private void ListLayout_Click(object sender, RoutedEventArgs e)\n" +
+                                                             "        {\n" +
+                                                             "            GridViewListView.ItemsLayout = ListViewItemsLayout.List;\n" +
+                                                             "        }\n" +
+                                                             "    }\n" +
+                                                             "}\n";
+
         private static readonly string ImageXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Data.ImageSample",
                                                "    <WrapPanel\n" +
@@ -324,21 +360,21 @@ namespace Fluence.Wpf.Demo.Pages
                                                "            Height=\"96\"\n" +
                                                "            Margin=\"0,0,12,12\"\n" +
                                                "            CornerRadius=\"0\"\n" +
-                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureAnaBowman.png\"\n" +
+                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/ImageSampleDawnRidge.png\"\n" +
                                                "            Stretch=\"UniformToFill\" />\n" +
                                                "        <fluence:Image\n" +
                                                "            Width=\"96\"\n" +
                                                "            Height=\"96\"\n" +
                                                "            Margin=\"0,0,12,12\"\n" +
                                                "            CornerRadius=\"8\"\n" +
-                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPictureShawnHughes.png\"\n" +
+                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/ImageSampleHarbourNight.png\"\n" +
                                                "            Stretch=\"UniformToFill\" />\n" +
                                                "        <fluence:Image\n" +
                                                "            Width=\"96\"\n" +
                                                "            Height=\"96\"\n" +
                                                "            Margin=\"0,0,12,12\"\n" +
                                                "            CornerRadius=\"48\"\n" +
-                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/PersonPicturePriyaKapoor.png\"\n" +
+                                               "            Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/ImageSampleAurora.png\"\n" +
                                                "            Stretch=\"UniformToFill\" />\n" +
                                                "    </WrapPanel>\n");
         private const string ImageCSharpSource = "using System.Windows.Controls;\n" +
@@ -426,7 +462,18 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(3, ListBoxSelectionXamlSource, ListBoxSelectionCSharpSource),
                 new DemoSampleSource(4, PersonPictureXamlSource, PersonPictureCSharpSource),
                 new DemoSampleSource(5, CardVariantsXamlSource, CardVariantsCSharpSource),
-                new DemoSampleSource(6, ImageXamlSource, ImageCSharpSource));
+                new DemoSampleSource(6, ImageXamlSource, ImageCSharpSource),
+                new DemoSampleSource(7, ListViewGridStateXamlSource, ListViewGridStateCSharpSource));
+        }
+
+        private void GridLayout_Click(object sender, RoutedEventArgs e)
+        {
+            _ = GridViewListView?.ItemsLayout = ListViewItemsLayout.Grid;
+        }
+
+        private void ListLayout_Click(object sender, RoutedEventArgs e)
+        {
+            _ = GridViewListView?.ItemsLayout = ListViewItemsLayout.List;
         }
 
         private void AddListItem_Click(object sender, RoutedEventArgs e)

@@ -37,9 +37,18 @@
                             Background="{DynamicResource AccentFillBackdropBrush}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Opacity="0" />
+                        <!--
+                            WinUI DefaultButtonStyle sets BackgroundSizing=InnerBorderEdge: the fill
+                            stops at the inner edge of the stroke, so the stroke composites over the
+                            surface beneath the button, not over the fill. A brushless BorderThickness
+                            insets this Border's Background by the same amount (WPF draws Background
+                            inside BorderThickness even with no BorderBrush). Appearance=Accent
+                            resets it to 0 because AccentButtonStyle uses OuterBorderEdge.
+                        -->
                         <Border
                             x:Name="RestFill"
                             Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}" />
                         <Border
                             x:Name="OuterBorder"
@@ -82,7 +91,11 @@
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}">
                                 <ContentPresenter.Resources>
+                                    <!--  All three font properties are bound because the implicit style sets all three, and a Setter beats the value the control inherits down, so a consumer's FontFamily, FontSize or FontWeight would never reach the text otherwise. Foreground needs no rebind: the implicit style deliberately omits it. Same shape as InfoBadge, TabView, ToolTip and NavigationViewItemHeader.  -->
                                     <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:Button}}}" />
+                                        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:Button}}}" />
+                                        <Setter Property="FontWeight" Value="{Binding FontWeight, RelativeSource={RelativeSource AncestorType={x:Type controls:Button}}}" />
                                         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                     </Style>
                                 </ContentPresenter.Resources>
@@ -93,13 +106,13 @@
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
@@ -107,13 +120,13 @@
                         <Storyboard x:Key="ReleasedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -144,6 +157,8 @@
                             <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                             <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="1" />
+                            <!--  WinUI AccentButtonStyle: BackgroundSizing=OuterBorderEdge, the accent fill runs under its stroke.  -->
+                            <Setter TargetName="RestFill" Property="BorderThickness" Value="0" />
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
@@ -206,6 +221,7 @@
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </Trigger>
+                        <!--  WinUI parity: AccentFillColorDisabled (22% black in Light) composites over the live surface; the Fluence-only opaque AccentFillBackdrop plate must not sit under it while disabled.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsEnabled" Value="False" />
@@ -213,6 +229,7 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+                            <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>

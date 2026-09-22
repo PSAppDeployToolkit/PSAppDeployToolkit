@@ -70,8 +70,12 @@ namespace Fluence.Wpf.Automation
             : ToggleState.Off;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Toggle()
         {
+            // A UIA client reaches this directly, where input would never reach a disabled
+            // control, so the disabled state is enforced here as the SetValue providers do.
+            ThrowIfDisabled();
             ToggleSplitButton.Toggle();
         }
 
@@ -81,8 +85,11 @@ namespace Fluence.Wpf.Automation
             : ExpandCollapseState.Collapsed;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Expand()
         {
+            ThrowIfDisabled();
+
             // The read-only IsFlyoutOpen reflects the secondary ToggleButton, which is
             // part of the template; flipping the part opens the popup via the control's
             // Checked/Unchecked wiring. Without an applied template this is a no-op.
@@ -92,11 +99,25 @@ namespace Fluence.Wpf.Automation
         }
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Collapse()
         {
+            ThrowIfDisabled();
             ToggleSplitButton thisButton = ToggleSplitButton;
             System.Windows.Controls.Primitives.ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as System.Windows.Controls.Primitives.ToggleButton;
             _ = toggle?.IsChecked = false;
+        }
+
+        /// <summary>
+        /// Enforces the UIA contract that a provider refuses to act on a disabled control.
+        /// </summary>
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
+        private void ThrowIfDisabled()
+        {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
         }
 
         /// <summary>

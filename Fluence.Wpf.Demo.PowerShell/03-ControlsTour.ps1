@@ -34,8 +34,7 @@ $app = New-Object System.Windows.Application
 # --- 5. Turn the theme engine on. Auto = follow the Windows light/dark setting. ---
 [Fluence.Wpf.ApplicationThemeManager]::Apply(
     [Fluence.Wpf.ApplicationTheme]::Auto,
-    [Fluence.Wpf.BackdropType]::Mica,
-    $true)
+    [Fluence.Wpf.WindowBackdropType]::Mica)
 [Fluence.Wpf.ApplicationAccentColorManager]::ApplySystemAccent()
 
 # --- 6. Build the window from inline XAML. ---

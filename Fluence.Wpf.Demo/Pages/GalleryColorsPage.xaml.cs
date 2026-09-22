@@ -27,623 +27,1058 @@
  */
 
 using System;
+using System.Globalization;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryColorsPage : UserControl
+    /// <summary>
+    /// Colors design-reference page, a WPF rendering of the WinUI 3 Gallery Color page.
+    /// </summary>
+    /// <remarks>
+    /// The six sections below are transcribed from
+    /// <c language="text">WinUIGallery/Controls/DesignGuidance/ColorSections/*Section.xaml</c>: every group is one
+    /// <see cref="ColorPageExample"/> card followed by rows of <see cref="ColorTile"/> swatches, in the
+    /// Gallery's order and with the Gallery's column counts. Each tile is painted in the brush it names and
+    /// takes its text brush from the Gallery's per-tile pairing. Every brush, size, margin and radius is a
+    /// resource reference, so the whole page follows theme, accent and high contrast changes.
+    /// </remarks>
+    public partial class GalleryColorsPage : Page
     {
-        private const string SampleMarkup = "<TextBlock Foreground=\"{DynamicResource TextFillColorPrimaryBrush}\" />";
-        private const int TokensPerRow = 4;
+        private const string PrimaryText = "TextFillColorPrimaryBrush";
+        private const string InverseText = "TextFillColorInverseBrush";
+        private const string OnAccentText = "TextOnAccentFillColorPrimaryBrush";
 
-        private const string ThemeDictionaryXamlSource =
-            "<StackPanel>\n" +
-            "    <StackPanel.Resources>\n" +
-            "        <fluence:ThemeDictionary>\n" +
-            "            <fluence:ThemeDictionary.ThemeDictionaries>\n" +
-            "                <fluence:ThemeResourceDictionary ThemeKey=\"Default\">\n" +
-            "                    <SolidColorBrush x:Key=\"SampleBackgroundBrush\" Color=\"#EEEEEE\" />\n" +
-            "                    <SolidColorBrush x:Key=\"SampleTextBrush\" Color=\"#333333\" />\n" +
-            "                    <sys:String x:Key=\"SampleThemeString\">Light theme</sys:String>\n" +
-            "                </fluence:ThemeResourceDictionary>\n" +
-            "                <fluence:ThemeResourceDictionary ThemeKey=\"Dark\">\n" +
-            "                    <SolidColorBrush x:Key=\"SampleBackgroundBrush\" Color=\"#333333\" />\n" +
-            "                    <SolidColorBrush x:Key=\"SampleTextBrush\" Color=\"#EEEEEE\" />\n" +
-            "                    <sys:String x:Key=\"SampleThemeString\">Dark theme</sys:String>\n" +
-            "                </fluence:ThemeResourceDictionary>\n" +
-            "            </fluence:ThemeDictionary.ThemeDictionaries>\n" +
-            "        </fluence:ThemeDictionary>\n" +
-            "    </StackPanel.Resources>\n" +
-            "    <fluence:Border Background=\"{DynamicResource SampleBackgroundBrush}\">\n" +
-            "        <TextBlock Foreground=\"{DynamicResource SampleTextBrush}\" Text=\"{DynamicResource SampleThemeString}\" />\n" +
-            "    </fluence:Border>\n" +
-            "    <TextBlock\n" +
-            "        Foreground=\"{fluence:ThemeResource TextFillColorSecondaryBrush}\"\n" +
-            "        Text=\"ThemeResource re-resolves canonical tokens on every theme change.\" />\n" +
-            "</StackPanel>\n";
+        // The Gallery paints its accent tiles with a foreground that is white in every theme (its
+        // TextOnAccentFillColorDefaultBrush); the published token with that shape here is
+        // TextOnAccentFillColorSelectedText, which ColorMap seeds white for both themes. Only the
+        // accent fill tiles below are dark in both themes, so a theme-following foreground would
+        // render black-on-dark in Light for those. The text-control border and accent-acrylic
+        // tiles are not dark in both themes (in Light the acrylic fills resolve pale and the
+        // border reads as a light grey), so those pick their foreground by contrast instead; see
+        // ColorTile.AutoContrastForeground.
+        private const string AlwaysWhiteText = "TextOnAccentFillColorSelectedTextBrush";
+        private const string QuarternarySurface = "SolidBackgroundFillColorQuarternaryBrush";
+        private const string CardStroke = "CardStrokeColorDefaultBrush";
+        private const string SingleStroke = "DemoSingleBorderThickness";
+        private const string ControlRadius = "ControlCornerRadius";
+        private const string OverlayRadius = "OverlayCornerRadius";
+        private const string SurfaceWidth = "DemoColorExampleSurfaceWidth";
+        private const string SurfaceHeight = "DemoColorExampleSurfaceHeight";
 
-        private static readonly ColorSection[] Sections =
+        // A generated abstract image standing in for photography the Control On Image Fill
+        // example floats a control over; see CreateControlOnImageExample and FrozenBitmap.
+        private static readonly BitmapImage ControlOnImageSample =
+            FrozenBitmap("Resources/SampleMedia/ControlOnImageSample.png");
+
+        private static readonly ColorSectionData[] Sections =
         [
             new(
                 "Text",
-                "Text color resources provide primary, secondary, disabled, accent, and on-accent foreground roles.",
-                "TextFillColorPrimaryBrush",
-                "SolidBackgroundFillColorBaseBrush",
-                "CardStrokeColorDefaultBrush",
+                intro: null,
                 [
-                    new("Primary text", "Primary labels and headings.", "TextFillColorPrimaryBrush"),
-                    new("Secondary text", "Body text and supporting details.", "TextFillColorSecondaryBrush"),
-                    new("Tertiary text", "Low emphasis metadata.", "TextFillColorTertiaryBrush"),
-                    new("Disabled text", "Unavailable commands and values.", "TextFillColorDisabledBrush"),
-                    new("Placeholder text", "Input placeholder content.", "TextPlaceholderColorBrush"),
-                    new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush"),
-                    new("Accent text primary", "Links and accent-forward text.", "AccentTextFillColorPrimaryBrush"),
-                    new("Accent text secondary", "Pressed or secondary accent text.", "AccentTextFillColorSecondaryBrush"),
-                    new("Accent text tertiary", "Hover or tertiary accent text.", "AccentTextFillColorTertiaryBrush"),
-                    new("Accent text disabled", "Disabled accent text.", "AccentTextFillColorDisabledBrush"),
-                    new("On accent primary", "Text over accent fill.", "TextOnAccentFillColorPrimaryBrush"),
-                    new("On accent secondary", "Secondary text over accent fill.", "TextOnAccentFillColorSecondaryBrush"),
-                    new("On accent disabled", "Disabled text over accent fill.", "TextOnAccentFillColorDisabledBrush"),
-                    new("Selected text", "Selected text over accent selection.", "TextOnAccentFillColorSelectedTextBrush"),
+                    new(
+                        "Text",
+                        "For UI labels and static text.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateGlyph(PrimaryText),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Text / Primary", "Rest or Hover", "TextFillColorPrimaryBrush", OnAccentText),
+                                new("Text / Secondary", "Rest or Hover", "TextFillColorSecondaryBrush", OnAccentText),
+                                new("Text / Tertiary", "Pressed only (not accessible)", "TextFillColorTertiaryBrush", OnAccentText),
+                                new("Text / Disabled", "Disabled only (not accessible)", "TextFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Accent Text",
+                        "Recommended for links.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateGlyph("AccentTextFillColorPrimaryBrush"),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Accent Text / Primary", "Rest or Hover", "AccentTextFillColorPrimaryBrush", OnAccentText),
+                                new("Accent Text / Secondary", "Rest or Hover", "AccentTextFillColorSecondaryBrush", OnAccentText),
+                                new("Accent Text / Tertiary", "Pressed only (not accessible)", "AccentTextFillColorTertiaryBrush", OnAccentText),
+                                new("Accent Text / Disabled", "Disabled only (not accessible)", "AccentTextFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Text On Accent",
+                        "Used for text on accent colored controls or fills.",
+                        "AccentFillColorDefaultBrush",
+                        OnAccentText,
+                        static () => CreateGlyph(OnAccentText),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Text on Accent / Primary", "Rest or Hover", "TextOnAccentFillColorPrimaryBrush", PrimaryText),
+                                new("Text on Accent / Secondary", "Pressed only (not accessible)", "TextOnAccentFillColorSecondaryBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Text on Accent / Disabled", "Disabled only (not accessible)", "TextOnAccentFillColorDisabledBrush", foregroundKey: null),
+                                new("Text on Accent / Selected Text", "For highlighted text in text entry experiences", "TextOnAccentFillColorSelectedTextBrush", foregroundKey: null),
+                            ]),
+                        ]),
                 ]),
             new(
                 "Fill",
-                "Fill resources describe interactive control surfaces, subtle fills, accent fills, and on-image fills.",
-                "TextOnAccentFillColorPrimaryBrush",
-                "AccentFillColorDefaultBrush",
-                "AccentControlElevationBorderBrush",
+                intro: null,
                 [
-                    new("Control default", "Resting control fill.", "ControlFillColorDefaultBrush"),
-                    new("Control secondary", "Control hover fill.", "ControlFillColorSecondaryBrush"),
-                    new("Control tertiary", "Control pressed fill.", "ControlFillColorTertiaryBrush"),
-                    new("Control quaternary", "Alternative pressed fill.", "ControlFillColorQuarternaryBrush"),
-                    new("Control input active", "Active input fill.", "ControlFillColorInputActiveBrush"),
-                    new("Control disabled", "Disabled control fill.", "ControlFillColorDisabledBrush"),
-                    new("Control transparent", "Transparent control fill.", "ControlFillColorTransparentBrush"),
-                    new("Strong fill default", "Strong foreground fill.", "ControlStrongFillColorDefaultBrush"),
-                    new("Strong fill disabled", "Disabled strong fill.", "ControlStrongFillColorDisabledBrush"),
-                    new("Solid fill default", "Opaque control fill.", "ControlSolidFillColorDefaultBrush"),
-                    new("Subtle transparent", "Transparent subtle fill.", "SubtleFillColorTransparentBrush"),
-                    new("Subtle secondary", "Subtle hover fill.", "SubtleFillColorSecondaryBrush"),
-                    new("Subtle tertiary", "Subtle pressed fill.", "SubtleFillColorTertiaryBrush"),
-                    new("Subtle disabled", "Disabled subtle fill.", "SubtleFillColorDisabledBrush"),
-                    new("Alt transparent", "Alternative transparent fill.", "ControlAltFillColorTransparentBrush"),
-                    new("Alt secondary", "Alternative rest fill.", "ControlAltFillColorSecondaryBrush"),
-                    new("Alt tertiary", "Alternative hover fill.", "ControlAltFillColorTertiaryBrush"),
-                    new("Alt quaternary", "Alternative pressed fill.", "ControlAltFillColorQuarternaryBrush"),
-                    new("Alt disabled", "Disabled alternative fill.", "ControlAltFillColorDisabledBrush"),
-                    new("Accent default", "Primary accent fill.", "AccentFillColorDefaultBrush"),
-                    new("Accent secondary", "Accent hover fill.", "AccentFillColorSecondaryBrush"),
-                    new("Accent tertiary", "Accent pressed fill.", "AccentFillColorTertiaryBrush"),
-                    new("Accent disabled", "Disabled accent fill.", "AccentFillColorDisabledBrush"),
-                    new("Selected background", "Selected text background.", "AccentFillColorSelectedTextBackgroundBrush"),
-                    new("On image default", "Controls over imagery.", "ControlOnImageFillColorDefaultBrush"),
-                    new("On image secondary", "Hovered controls over imagery.", "ControlOnImageFillColorSecondaryBrush"),
-                    new("On image tertiary", "Pressed controls over imagery.", "ControlOnImageFillColorTertiaryBrush"),
-                    new("On image disabled", "Disabled controls over imagery.", "ControlOnImageFillColorDisabledBrush"),
+                    new(
+                        "Control Fill",
+                        "Fill used for standard controls.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => new Controls.Button { Content = "Text" },
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control / Default", "Rest", "ControlFillColorDefaultBrush", PrimaryText),
+                                new("Control / Secondary", "Hover", "ControlFillColorSecondaryBrush", PrimaryText),
+                                new("Control / Tertiary", "Pressed", "ControlFillColorTertiaryBrush", PrimaryText),
+                                new("Control / Quarternary", "Rest (Pill Button control)", "ControlFillColorQuarternaryBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Control / Disabled", "Disabled", "ControlFillColorDisabledBrush", PrimaryText),
+                                new("Control / Transparent", "Rest", "ControlFillColorTransparentBrush", PrimaryText),
+                                new("Control / Input Active", "Active/focused text input fields", "ControlFillColorInputActiveBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Control Alt Fill",
+                        "Fill used for the 'off' states of toggle controls.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateToggleSwitch(narrow: false),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control Alt / Transparent", string.Empty, "ControlAltFillColorTransparentBrush", PrimaryText),
+                                new("Control Alt / Secondary", "Rest", "ControlAltFillColorSecondaryBrush", PrimaryText),
+                                new("Control Alt / Tertiary", "Hover", "ControlAltFillColorTertiaryBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Control Alt / Quarternary", "Pressed", "ControlAltFillColorQuarternaryBrush", PrimaryText),
+                                new("Control Alt / Disabled", "Disabled", "ControlAltFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Neutral Solid",
+                        "Fills used for Sliders thumb control to cover the track beneath it.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateSlider,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control Solid / Default", "Rest", "ControlSolidFillColorDefaultBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Neutral Strong",
+                        "Used for controls that must meet contrast ratio requirements of 3:1.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateScrollBar,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control Strong / Default", "Rest or hover", "ControlStrongFillColorDefaultBrush", InverseText),
+                                new("Control Strong / Disabled", "Disabled only (not accessible)", "ControlStrongFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Subtle Fill",
+                        "Used for list items and fills that are transparent at rest and appear upon interaction.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateSubtleFillExample,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Subtle / Transparent", "Rest", "SubtleFillColorTransparentBrush", PrimaryText),
+                                new("Subtle / Secondary", "Hover", "SubtleFillColorSecondaryBrush", PrimaryText),
+                                new("Subtle / Tertiary", "Pressed", "SubtleFillColorTertiaryBrush", PrimaryText),
+                                new("Subtle / Disabled", "Disabled only (not accessible)", "SubtleFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Control On Image Fill",
+                        "Used for controls living on top of imagery.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateControlOnImageExample,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control On Image Fill Default", "Rest", "ControlOnImageFillColorDefaultBrush", PrimaryText),
+                                new("Control On Image Fill Secondary", "Hover", "ControlOnImageFillColorSecondaryBrush", PrimaryText),
+                                new("Control On Image Fill Tertiary", "Pressed", "ControlOnImageFillColorTertiaryBrush", PrimaryText),
+                                new("Control On Image Fill Disabled", "Disabled only (not accessible)", "ControlOnImageFillColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Accent Fill",
+                        "Used for accent fills on controls.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => new Controls.Button { Content = "Text", Appearance = ControlAppearance.Accent },
+                        [
+                            new(rows: 1,
+                            [
+                                new("Accent / Default", "Rest", "AccentFillColorDefaultBrush", AlwaysWhiteText),
+                                new("Accent / Secondary", "Hover", "AccentFillColorSecondaryBrush", AlwaysWhiteText),
+                                new("Accent / Tertiary", "Pressed", "AccentFillColorTertiaryBrush", AlwaysWhiteText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Accent / Disabled", "Disabled", "AccentFillColorDisabledBrush", PrimaryText),
+                                new("Accent / Selected Text Background", "Highlighted/selected text background", "AccentFillColorSelectedTextBackgroundBrush", AlwaysWhiteText),
+                            ]),
+                        ]),
                 ]),
             new(
                 "Stroke",
-                "Stroke resources define dividers, card borders, strong focus rings, surface strokes, and accent strokes.",
-                "TextFillColorPrimaryBrush",
-                "CardBackgroundFillColorDefaultBrush",
-                "ControlStrokeColorDefaultBrush",
+                intro: null,
                 [
-                    new("Control stroke default", "Default control outline.", "ControlStrokeColorDefaultBrush"),
-                    new("Control stroke secondary", "Secondary control outline.", "ControlStrokeColorSecondaryBrush"),
-                    new("Control stroke tertiary", "Tertiary control outline.", "ControlStrokeColorTertiaryBrush"),
-                    new("On accent default", "Stroke over accent fill.", "ControlStrokeColorOnAccentDefaultBrush"),
-                    new("On accent secondary", "Secondary stroke over accent fill.", "ControlStrokeColorOnAccentSecondaryBrush"),
-                    new("On accent tertiary", "Tertiary stroke over accent fill.", "ControlStrokeColorOnAccentTertiaryBrush"),
-                    new("On accent disabled", "Disabled stroke over accent fill.", "ControlStrokeColorOnAccentDisabledBrush"),
-                    new("Strong on image", "Stroke for strong fills on images.", "ControlStrokeColorForStrongFillWhenOnImageBrush"),
-                    new("Card stroke", "Default card outline.", "CardStrokeColorDefaultBrush"),
-                    new("Card stroke solid", "Opaque card outline.", "CardStrokeColorDefaultSolidBrush"),
-                    new("Strong stroke", "Selection and focus rings.", "ControlStrongStrokeColorDefaultBrush"),
-                    new("Strong stroke disabled", "Disabled strong stroke.", "ControlStrongStrokeColorDisabledBrush"),
-                    new("Surface stroke", "Default surface outline.", "SurfaceStrokeColorDefaultBrush"),
-                    new("Flyout stroke", "Popup and flyout outline.", "SurfaceStrokeColorFlyoutBrush"),
-                    new("Inverse surface stroke", "Inverse surface outline.", "SurfaceStrokeColorInverseBrush"),
-                    new("Divider stroke", "Inline dividers.", "DividerStrokeColorDefaultBrush"),
+                    new(
+                        "Card Stroke",
+                        "Used for card and layer colors.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("CardBackgroundFillColorDefaultBrush", CardStroke, ControlRadius, "DemoColorExampleCardWidth", "DemoColorExampleCardStrokeHeight"),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Card Stroke / Default", "Card layer and strokes", "CardStrokeColorDefaultBrush", PrimaryText),
+                                new("Card Stroke / Default Solid", "Solid equivalent of Card Stroke / Default. Used in command bar for expanded states", "CardStrokeColorDefaultSolidBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Control Elevation (gradient strokes)",
+                        "Used for standard control strokes and stroke states.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => new Controls.Button { Content = "Text" },
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control / Border", "Rest", "ControlElevationBorderBrush", PrimaryText),
+                                new("Circle / Border", "Rest", "CircleElevationBorderBrush", PrimaryText),
+                                new("Text Control / Border", "Rest", "TextControlElevationBorderBrush", foregroundKey: null),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Text Control / Border Focused", "Active text fields", "TextControlElevationBorderFocusedBrush", PrimaryText),
+                                new("Accent Control / Border", "Rest", "AccentControlElevationBorderBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Control Stroke",
+                        "Used for gradient stops in elevation borders, and for control states.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => new Controls.Button { Content = "Text" },
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control Stroke / Default", "Used in Control Elevation Brushes. Pressed or Disabled", "ControlStrokeColorDefaultBrush", PrimaryText),
+                                new("Control Stroke / Secondary", "Used in Control Elevation Brushes", "ControlStrokeColorSecondaryBrush", PrimaryText),
+                                new("Control Stroke / On Accent Default", "Used in Control Elevation Brushes. Pressed or Disabled", "ControlStrokeColorOnAccentDefaultBrush", PrimaryText),
+                                new("Control Stroke / On Accent Secondary", "Used in Control Elevation Brushes", "ControlStrokeColorOnAccentSecondaryBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Control Stroke / On Accent Tertiary", "Linework on Accent controls, ie: dividers", "ControlStrokeColorOnAccentTertiaryBrush", PrimaryText),
+                                new("Control Stroke / On Accent Disabled", "Disabled", "ControlStrokeColorOnAccentDisabledBrush", PrimaryText),
+                                new("Control Stroke / For Strong Fill When On Image", "When used with a 'strong' fill color, ensures a 3:1 contrast on any background", "ControlStrokeColorForStrongFillWhenOnImageBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Control Strong Stroke",
+                        "Used for control strokes that must meet contrast ratio requirements of 3:1.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateToggleSwitch(narrow: true),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Control Strong Stroke / Default", "3:1 control border", "ControlStrongStrokeColorDefaultBrush", InverseText),
+                                new("Control Strong Stroke / Disabled", "Disabled", "ControlStrongStrokeColorDisabledBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Surface Stroke",
+                        "Used for strokes on background surfaces, ie: flyouts, windows, dialogs.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("AcrylicBackgroundFillColorBaseBrush", "SurfaceStrokeColorDefaultBrush", OverlayRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Surface Stroke / Default", "Window and dialog borders, theme inverse", "SurfaceStrokeColorDefaultBrush", PrimaryText),
+                                new("Surface Stroke / Flyout", "Control flyouts, always dark", "SurfaceStrokeColorFlyoutBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Divider Stroke",
+                        "Used for divider and graphic lines.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateDividerExample,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Divider Stroke / Default", "Content dividers", "DividerStrokeColorDefaultBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Focus Stroke",
+                        "Used for divider and graphic lines. Theme inverse; dark in light theme and light in dark theme.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateFocusExample,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Focus / Outer", "Outer stroke color", "FocusStrokeColorOuterBrush", InverseText),
+                                new("Focus / Inner", "Inner stroke color", "FocusStrokeColorInnerBrush", PrimaryText),
+                            ]),
+                        ]),
                 ]),
             new(
                 "Background",
-                "Background resources compose cards, layers, acrylic, mica, navigation content, and solid app surfaces.",
-                "TextFillColorPrimaryBrush",
-                "LayerFillColorDefaultBrush",
-                "CardStrokeColorDefaultBrush",
+                intro: null,
                 [
-                    new("Card default", "Default card surface.", "CardBackgroundFillColorDefaultBrush"),
-                    new("Card secondary", "Nested card surface.", "CardBackgroundFillColorSecondaryBrush"),
-                    new("Card tertiary", "Deeper nested card surface.", "CardBackgroundFillColorTertiaryBrush"),
-                    new("Smoke fill", "Modal smoke overlay.", "SmokeFillColorDefaultBrush"),
-                    new("Layer default", "Default layer surface.", "LayerFillColorDefaultBrush"),
-                    new("Layer alt", "Alternative layer surface.", "LayerFillColorAltBrush"),
-                    new("Layer on acrylic", "Layer over acrylic.", "LayerOnAcrylicFillColorDefaultBrush"),
-                    new("Layer on accent acrylic", "Layer over accent acrylic.", "LayerOnAccentAcrylicFillColorDefaultBrush"),
-                    new("Mica base alt default", "Default layer on mica base alt.", "LayerOnMicaBaseAltFillColorDefaultBrush"),
-                    new("Mica base alt secondary", "Secondary layer on mica base alt.", "LayerOnMicaBaseAltFillColorSecondaryBrush"),
-                    new("Mica base alt tertiary", "Tertiary layer on mica base alt.", "LayerOnMicaBaseAltFillColorTertiaryBrush"),
-                    new("Mica base alt transparent", "Transparent layer on mica base alt.", "LayerOnMicaBaseAltFillColorTransparentBrush"),
-                    new("Solid base", "App base surface.", "SolidBackgroundFillColorBaseBrush"),
-                    new("Solid secondary", "Secondary solid surface.", "SolidBackgroundFillColorSecondaryBrush"),
-                    new("Solid tertiary", "Tertiary solid surface.", "SolidBackgroundFillColorTertiaryBrush"),
-                    new("Solid quaternary", "Quaternary solid surface.", "SolidBackgroundFillColorQuarternaryBrush"),
-                    new("Solid quinary", "Quinary solid surface.", "SolidBackgroundFillColorQuinaryBrush"),
-                    new("Solid senary", "Senary solid surface.", "SolidBackgroundFillColorSenaryBrush"),
-                    new("Solid transparent", "Transparent solid surface.", "SolidBackgroundFillColorTransparentBrush"),
-                    new("Solid base alt", "Alternative base surface.", "SolidBackgroundFillColorBaseAltBrush"),
-                    new("Navigation content", "Navigation content background.", "NavigationViewContentBackgroundBrush"),
-                    new("Acrylic default", "Default acrylic fallback.", "AcrylicBackgroundFillColorDefaultBrush"),
-                    new("Acrylic base", "Base acrylic fallback.", "AcrylicBackgroundFillColorBaseBrush"),
+                    new(
+                        "Card Background",
+                        "Used to create 'cards' - content blocks that live on page and layer backgrounds.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("CardBackgroundFillColorDefaultBrush", CardStroke, ControlRadius, "DemoColorExampleCardWidth", "DemoColorExampleCardBackgroundHeight"),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Card Background / Default", "Default card color", "CardBackgroundFillColorDefaultBrush", PrimaryText),
+                                new("Card Background / Secondary", "Alternate card color: slightly darker", "CardBackgroundFillColorSecondaryBrush", PrimaryText),
+                                new("Card Background / Tertiary", "Default card hover and pressed color", "CardBackgroundFillColorTertiaryBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Smoke Background",
+                        "Used over windows and desktop to block them out as inaccessible.",
+                        "SmokeFillColorDefaultBrush",
+                        foregroundKey: null,
+                        static () => CreateSurface("CardBackgroundFillColorDefaultBrush", CardStroke, OverlayRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Smoke / Default", "Dims the background behind dialogs", "SmokeFillColorDefaultBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Layer",
+                        "Used on background colors of any material to create layering.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateLayerExample("AcrylicBackgroundFillColorBaseBrush", "LayerFillColorDefaultBrush"),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Layer / Default", "Content layer color", "LayerFillColorDefaultBrush", PrimaryText),
+                                new("Layer / Alt", "Alternate content layer color", "LayerFillColorAltBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Layer on Acrylic",
+                        "Used on background colors of any material to create layering.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateLayerExample("AcrylicBackgroundFillColorBaseBrush", "LayerOnAcrylicFillColorDefaultBrush"),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Layer On Acrylic / Default", "Content layer color on acrylic surfaces", "LayerOnAcrylicFillColorDefaultBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Layer on Mica Base Alt",
+                        "Used for fills on Tab control.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateTabExample,
+                        [
+                            new(rows: 1,
+                            [
+                                new("Layer On Mica Base Alt / Default", "Active Tab Rest, Content layer", "LayerOnMicaBaseAltFillColorDefaultBrush", PrimaryText),
+                                new("Layer On Mica Base Alt / Tertiary", "Active Tab Drag", "LayerOnMicaBaseAltFillColorTertiaryBrush", PrimaryText),
+                                new("Layer On Mica Base Alt / Transparent", "Inactive Tab Rest", "LayerOnMicaBaseAltFillColorTransparentBrush", PrimaryText),
+                                new("Layer On Mica Base Alt / Secondary", "Inactive Tab Hover", "LayerOnMicaBaseAltFillColorSecondaryBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Solid Background",
+                        "Solid background colors to place layers, cards or controls on.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("SolidBackgroundFillColorBaseBrush", CardStroke, ControlRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Solid Background / Base", "Used for the bottom most layer of an experience", "SolidBackgroundFillColorBaseBrush", PrimaryText),
+                                new("Solid Background / Base Alt", "Used for the bottom most layer of an experience", "SolidBackgroundFillColorBaseAltBrush", PrimaryText),
+                                new("Solid Background / Secondary", "Alternate base color for those who need a darker background color", "SolidBackgroundFillColorSecondaryBrush", PrimaryText),
+                                new("Solid Background / Tertiary", "Content layer color", "SolidBackgroundFillColorTertiaryBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("Solid Background / Quarternary", "Alt content layer color", "SolidBackgroundFillColorQuarternaryBrush", PrimaryText),
+                                new("Solid Background / Quinary", "Used for solid default card colors", "SolidBackgroundFillColorQuinaryBrush", PrimaryText),
+                                new("Solid Background / Senary", "Used for solid default card colors", "SolidBackgroundFillColorSenaryBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Acrylic Background",
+                        "Acrylic background colors to place layers, cards, or controls on.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("AcrylicBackgroundFillColorBaseBrush", CardStroke, OverlayRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Acrylic Background / Base", "Used for the bottom most layer of an acrylic surface only when the surface will use layers", "AcrylicBackgroundFillColorBaseBrush", PrimaryText),
+                                new("Acrylic Background / Default", "Default acrylic recipe used for control flyouts and surfaces that live with in the context of an app", "AcrylicBackgroundFillColorDefaultBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Accent Acrylic Background",
+                        "Acrylic background colors to place layers, cards, or controls on.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("AccentAcrylicBackgroundFillColorBaseBrush", CardStroke, OverlayRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Accent Acrylic Background / Base", "Used for the bottom most layer of an acrylic surface only when the surface will use layers", "AccentAcrylicBackgroundFillColorBaseBrush", foregroundKey: null),
+                                new("Accent Acrylic Background / Default", "Default acrylic recipe used for control flyouts and surfaces that live with in the context of an app", "AccentAcrylicBackgroundFillColorDefaultBrush", foregroundKey: null),
+                            ]),
+                        ]),
                 ]),
             new(
                 "Signal",
-                "Signal resources communicate attention, information, success, caution, critical, and neutral states.",
-                "TextFillColorPrimaryBrush",
-                "SystemFillColorSuccessBackgroundBrush",
-                "SystemFillColorSuccessBrush",
+                intro: null,
                 [
-                    new("Attention", "Attention foreground.", "SystemFillColorAttentionBrush"),
-                    new("Informational", "Informational foreground.", "SystemFillColorInformationalBrush"),
-                    new("Success", "Success foreground.", "SystemFillColorSuccessBrush"),
-                    new("Caution", "Caution foreground.", "SystemFillColorCautionBrush"),
-                    new("Critical", "Critical foreground.", "SystemFillColorCriticalBrush"),
-                    new("Neutral", "Neutral foreground.", "SystemFillColorNeutralBrush"),
-                    new("Solid neutral", "Opaque neutral foreground.", "SystemFillColorSolidNeutralBrush"),
-                    new("Attention background", "Attention background.", "SystemFillColorAttentionBackgroundBrush"),
-                    new("Success background", "Success background.", "SystemFillColorSuccessBackgroundBrush"),
-                    new("Caution background", "Caution background.", "SystemFillColorCautionBackgroundBrush"),
-                    new("Critical background", "Critical background.", "SystemFillColorCriticalBackgroundBrush"),
-                    new("Neutral background", "Neutral background.", "SystemFillColorNeutralBackgroundBrush"),
-                    new("Solid attention background", "Opaque attention background.", "SystemFillColorSolidAttentionBackgroundBrush"),
-                    new("Solid neutral background", "Opaque neutral background.", "SystemFillColorSolidNeutralBackgroundBrush"),
+                    new(
+                        "System",
+                        "Used for accent fills on controls.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        CreateInfoBar,
+                        [
+                            new(rows: 1,
+                            [
+                                new("System / Success", "Badge", "SystemFillColorSuccessBrush", InverseText),
+                                new("System / Caution", "Badge", "SystemFillColorCautionBrush", InverseText),
+                                new("System / Critical", "Badge", "SystemFillColorCriticalBrush", InverseText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("System / Success Background", "Infobar Background", "SystemFillColorSuccessBackgroundBrush", PrimaryText),
+                                new("System / Caution Background", "Infobar Background", "SystemFillColorCautionBackgroundBrush", PrimaryText),
+                                new("System / Critical Background", "Infobar Background", "SystemFillColorCriticalBackgroundBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("System / Attention", "Badge", "SystemFillColorAttentionBrush", InverseText),
+                                new("System / Neutral", "Badge", "SystemFillColorNeutralBrush", InverseText),
+                                new("System / Solid Neutral", "Neutral badges over content", "SystemFillColorSolidNeutralBrush", InverseText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("System / Attention Background", "Infobar Background", "SystemFillColorAttentionBackgroundBrush", PrimaryText),
+                                new("System / Neutral Background", "Infobar Background", "SystemFillColorNeutralBackgroundBrush", PrimaryText),
+                                new("System / Solid Neutral Background", "Neutral badges over content", "SystemFillColorSolidNeutralBackgroundBrush", PrimaryText),
+                            ]),
+                            new(rows: 1,
+                            [
+                                new("System / Solid Attention Background", string.Empty, "SystemFillColorSolidAttentionBackgroundBrush", PrimaryText),
+                            ]),
+                        ]),
                 ]),
             new(
                 "High Contrast",
-                "High contrast resources map directly to system colors so content follows the active Windows contrast theme.",
-                "SystemColorWindowTextColorBrush",
-                "SystemColorWindowColorBrush",
-                "SystemColorHighlightColorBrush",
+                "Brush names are the same in every theme; Windows chooses the colors from the active contrast theme. The first row shows the live system colors, so it is the palette this machine is running; the four below are the contrast themes Windows ships.",
                 [
-                    new("Window text", "System window foreground.", "SystemColorWindowTextColorBrush"),
-                    new("Window", "System window background.", "SystemColorWindowColorBrush"),
-                    new("Button face", "System button face.", "SystemColorButtonFaceColorBrush"),
-                    new("Button text", "System button text.", "SystemColorButtonTextColorBrush"),
-                    new("Highlight", "System selection background.", "SystemColorHighlightColorBrush"),
-                    new("Highlight text", "System selection foreground.", "SystemColorHighlightTextColorBrush"),
-                    new("Hotlight", "System link color.", "SystemColorHotlightColorBrush"),
-                    new("Gray text", "System disabled text.", "SystemColorGrayTextColorBrush"),
+                    new(
+                        title: null,
+                        string.Empty,
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        example: null,
+                        [
+                            new(rows: 2,
+                            [
+                                new("Window Text Color", "Foreground / Text color for Headings, body copy, lists, placeholder text, app and window borders, any UI that can't be interacted with", "SystemColorWindowTextColorBrush", "SystemColorWindowColorBrush"),
+                                new("Highlight Text Color", "Foreground color for text or UI that is selected, interacted with (hover, pressed), or in progress", "SystemColorHighlightTextColorBrush", "SystemColorHighlightColorBrush"),
+                                new("Button Text Color", "Foreground color for buttons and any UI that can be interacted with", "SystemColorButtonTextColorBrush", "SystemColorButtonFaceColorBrush"),
+                                new("Hotlight Color", "Foreground / Text color for hyperlink text", "SystemColorHotlightColorBrush", "SystemColorWindowColorBrush"),
+                                new("Window Color", "Background of pages, panes, popups, and windows", "SystemColorWindowColorBrush", "SystemColorWindowTextColorBrush"),
+                                new("Highlight Color", "Background or accent color for UI that is selected, interacted with (hover, pressed), or in progress", "SystemColorHighlightColorBrush", "SystemColorHighlightTextColorBrush"),
+                                new("Button Face Color", "Background color for buttons and any UI that can be interacted with", "SystemColorButtonFaceColorBrush", "SystemColorButtonTextColorBrush"),
+                                new("Gray Text Color / Disabled", "Foreground / Text color for Inactive (disabled) UI", "SystemColorGrayTextColorBrush", "SystemColorWindowColorBrush"),
+                            ]),
+                        ]),
+                    new(
+                        "Aquatic",
+                        "The shipped Aquatic contrast theme.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        example: null,
+                        [
+                            new(rows: 2, HighContrastPalette("#FFFFFF", "#202020", "#263B50", "#8EE3F0", "#FFFFFF", "#202020", "#75E9FC", "#A6A6A6")),
+                        ],
+                        headingOnly: true),
+                    new(
+                        "Desert",
+                        "The shipped Desert contrast theme.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        example: null,
+                        [
+                            new(rows: 2, HighContrastPalette("#3D3D3D", "#FFFAEF", "#FFF5E3", "#903909", "#202020", "#FFFAEF", "#1C5E75", "#676767")),
+                        ],
+                        headingOnly: true),
+                    new(
+                        "Dusk",
+                        "The shipped Dusk contrast theme.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        example: null,
+                        [
+                            new(rows: 2, HighContrastPalette("#FFFFFF", "#2D3236", "#212D3B", "#ABCFF2", "#B6F6F0", "#2D3236", "#70EBDE", "#A6A6A6")),
+                        ],
+                        headingOnly: true),
+                    new(
+                        "Night Sky",
+                        "The shipped Night Sky contrast theme.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        example: null,
+                        [
+                            new(rows: 2, HighContrastPalette("#FFFFFF", "#000000", "#2B2B2B", "#D6B4FD", "#FFEE32", "#000000", "#8080FF", "#A6A6A6")),
+                        ],
+                        headingOnly: true),
                 ]),
         ];
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GalleryColorsPage"/> class.
+        /// </summary>
         public GalleryColorsPage()
         {
             InitializeComponent();
-            CopyCodeSampleButton.Tag = SampleMarkup;
-            ThemeDictionarySampleText.Text = ThemeDictionaryXamlSource;
-            BuildSectionTabs();
+            BuildSections();
         }
 
-        private void BuildSectionTabs()
+        private void BuildSections()
         {
+            if (ColorSectionSelector.Items.Count != Sections.Length)
+            {
+                throw new InvalidOperationException("The Colors page declares " + ColorSectionSelector.Items.Count.ToString(CultureInfo.InvariantCulture) + " selector items but " + Sections.Length.ToString(CultureInfo.InvariantCulture) + " sections.");
+            }
+
+            _sectionPanels = new FrameworkElement[Sections.Length];
             for (int i = 0; i < Sections.Length; i++)
             {
-                TabItem tabItem = new()
+                Controls.SelectorBarItem item = (Controls.SelectorBarItem)ColorSectionSelector.Items[i];
+                if (!string.Equals(item.Text, Sections[i].Title, StringComparison.Ordinal))
                 {
-                    Header = Sections[i].Title,
-                    Content = CreateSection(Sections[i]),
-                    Tag = "ColorSectionTab",
-                };
-                _ = ColorSectionTabs.Items.Add(tabItem);
-            }
-
-            ColorSectionTabs.SelectedIndex = 0;
-        }
-
-        private UIElement CreateSection(ColorSection section)
-        {
-            Controls.StackPanel sectionPanel = new()
-            {
-                Margin = new Thickness(0, 20, 0, 0),
-                Orientation = Orientation.Vertical,
-                Spacing = 20,
-            };
-            if (section.IsTextSection)
-            {
-                _ = sectionPanel.Children.Add(CreateTextExamples());
-                return sectionPanel;
-            }
-
-            _ = sectionPanel.Children.Add(CreateExamplePanel(section));
-            _ = sectionPanel.Children.Add(CreateTokenRows(section.Tokens));
-            return sectionPanel;
-        }
-
-        private UIElement CreateTextExamples()
-        {
-            Controls.StackPanel examples = new()
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 20,
-            };
-
-            _ = examples.Children.Add(CreateTextExampleGroup(
-                "Text",
-                "For UI labels and static text.",
-                "TextFillColorPrimaryBrush",
-                "SolidBackgroundFillColorBaseBrush",
-                "CardStrokeColorDefaultBrush",
-                [
-                    new("Text / Primary", "Rest or hover.", "TextFillColorPrimaryBrush"),
-                    new("Text / Secondary", "Body text and supporting details.", "TextFillColorSecondaryBrush"),
-                    new("Text / Tertiary", "Pressed or low emphasis.", "TextFillColorTertiaryBrush"),
-                    new("Text / Disabled", "Disabled only.", "TextFillColorDisabledBrush"),
-                ]));
-
-            _ = examples.Children.Add(CreateTextExampleGroup(
-                "Accent Text",
-                "Recommended for links.",
-                "AccentTextFillColorPrimaryBrush",
-                "SolidBackgroundFillColorBaseBrush",
-                "CardStrokeColorDefaultBrush",
-                [
-                    new("Accent Text / Primary", "Rest or hover.", "AccentTextFillColorPrimaryBrush"),
-                    new("Accent Text / Secondary", "Secondary accent text.", "AccentTextFillColorSecondaryBrush"),
-                    new("Accent Text / Tertiary", "Pressed accent text.", "AccentTextFillColorTertiaryBrush"),
-                    new("Accent Text / Disabled", "Disabled accent text.", "AccentTextFillColorDisabledBrush"),
-                ]));
-
-            _ = examples.Children.Add(CreateTextExampleGroup(
-                "Text On Accent",
-                "Used for text on accent colored controls or fills.",
-                "TextOnAccentFillColorPrimaryBrush",
-                "AccentFillColorDefaultBrush",
-                "AccentControlElevationBorderBrush",
-                [
-                    new("Text on Accent / Primary", "Rest or hover.", "TextOnAccentFillColorPrimaryBrush"),
-                    new("Text on Accent / Secondary", "Pressed only.", "TextOnAccentFillColorSecondaryBrush"),
-                    new("Text on Accent / Disabled", "Disabled only.", "TextOnAccentFillColorDisabledBrush"),
-                    new("Text on Accent / Selected Text", "Highlighted text in text entry experiences.", "TextOnAccentFillColorSelectedTextBrush"),
-                ]));
-
-            _ = examples.Children.Add(CreateTextSectionAdditionalTokens());
-            return examples;
-        }
-
-        private UIElement CreateTextSectionAdditionalTokens()
-        {
-            ColorToken[] additionalTokens =
-            [
-                new("Placeholder text", "Input placeholder content.", "TextPlaceholderColorBrush"),
-                new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush"),
-            ];
-
-            Controls.Border panel = new()
-            {
-                Padding = new Thickness(16),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-            };
-            panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
-            panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
-
-            Controls.StackPanel stack = new()
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 12,
-            };
-            _ = stack.Children.Add(CreateText("Additional text tokens", "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush"));
-            _ = stack.Children.Add(CreateTokenRows(additionalTokens));
-            panel.Child = stack;
-            return panel;
-        }
-
-        private UIElement CreateTextExampleGroup(
-            string title,
-            string description,
-            string exampleForegroundKey,
-            string exampleBackgroundKey,
-            string exampleBorderKey,
-            ColorToken[] tokens)
-        {
-            Controls.Border panel = new()
-            {
-                Padding = new Thickness(16),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-            };
-            panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
-            panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
-
-            Controls.StackPanel stack = new()
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 12,
-            };
-            TextBlock titleBlock = CreateText(title, "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush");
-            titleBlock.Tag = "ColorExampleTitle";
-            _ = stack.Children.Add(titleBlock);
-            _ = stack.Children.Add(CreateText(description, styleKey: null, "TextFillColorSecondaryBrush"));
-            _ = stack.Children.Add(CreateTextPreviewSurface(title, exampleForegroundKey, exampleBackgroundKey, exampleBorderKey));
-            _ = stack.Children.Add(CreateTokenRows(tokens));
-            panel.Child = stack;
-            return panel;
-        }
-
-        private static UIElement CreateTextPreviewSurface(
-            string title,
-            string foregroundKey,
-            string backgroundKey,
-            string borderKey)
-        {
-            Controls.Border preview = new()
-            {
-                MinHeight = 104,
-                Padding = new Thickness(18),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-            };
-            preview.SetResourceReference(Border.BackgroundProperty, backgroundKey);
-            preview.SetResourceReference(Border.BorderBrushProperty, borderKey);
-
-            TextBlock sample = new()
-            {
-                Text = "Aa",
-                FontSize = 42,
-                FontWeight = FontWeights.SemiBold,
-                Tag = title + " Preview",
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            sample.SetResourceReference(TextBlock.ForegroundProperty, foregroundKey);
-            preview.Child = sample;
-            return preview;
-        }
-
-        private UIElement CreateExamplePanel(ColorSection section)
-        {
-            Controls.Border panel = new()
-            {
-                Margin = new Thickness(0, 36, 0, 8),
-                Padding = new Thickness(12),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-            };
-            panel.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
-            panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
-
-            Controls.StackPanel stack = new()
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 8,
-            };
-            _ = stack.Children.Add(CreateText(section.Title + " resources", "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush"));
-            _ = stack.Children.Add(CreateText(section.Description, styleKey: null, "TextFillColorSecondaryBrush"));
-            _ = stack.Children.Add(CreatePreviewSurface(section));
-            panel.Child = stack;
-            return panel;
-        }
-
-        private static UIElement CreatePreviewSurface(ColorSection section)
-        {
-            Controls.Border preview = new()
-            {
-                MinHeight = 92,
-                Padding = new Thickness(16),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-            };
-            preview.SetResourceReference(Border.BackgroundProperty, section.ExampleBackgroundKey);
-            preview.SetResourceReference(Border.BorderBrushProperty, section.ExampleBorderKey);
-
-            TextBlock textBlock = new()
-            {
-                Text = section.Title + " preview",
-                FontSize = 18,
-                FontWeight = FontWeights.SemiBold,
-                TextWrapping = TextWrapping.Wrap,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            textBlock.SetResourceReference(TextBlock.ForegroundProperty, section.ExampleForegroundKey);
-            preview.Child = textBlock;
-            return preview;
-        }
-
-        private UIElement CreateTokenRows(ColorToken[] tokens)
-        {
-            Controls.StackPanel rows = new()
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 4,
-            };
-
-            for (int start = 0; start < tokens.Length; start += TokensPerRow)
-            {
-                int count = Math.Min(TokensPerRow, tokens.Length - start);
-                UniformGrid rowGrid = new()
-                {
-                    Columns = count,
-                    Rows = 1,
-                };
-
-                for (int offset = 0; offset < count; offset++)
-                {
-                    _ = rowGrid.Children.Add(CreateTokenTile(tokens[start + offset], offset, count));
+                    throw new InvalidOperationException("Colors selector item '" + item.Text + "' does not match section '" + Sections[i].Title + "'.");
                 }
 
-                Controls.Border rowBorder = new()
+                _sectionPanels[i] = CreateSection(Sections[i]);
+            }
+
+            // Every section is built up front, as the tabbed version built every tab's content,
+            // so switching sections is a content swap rather than a rebuild.
+            ColorSectionSelector.SelectionChanged += OnSectionSelectionChanged;
+            ColorSectionSelector.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Navigates the section presenter, choosing the slide direction from the move the way the
+        /// WinUI Gallery's own Color page does (ColorPage.xaml.cs): a later section slides in from
+        /// the right, an earlier one from the left.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void OnSectionSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = ColorSectionSelector.SelectedIndex;
+            if (_sectionPanels is null || index < 0 || index >= _sectionPanels.Length)
+            {
+                return;
+            }
+
+            ColorSectionPresenter.TransitionEffect = index > _selectedSectionIndex
+                ? SlideNavigationTransitionEffect.FromRight
+                : SlideNavigationTransitionEffect.FromLeft;
+            ColorSectionPresenter.Content = _sectionPanels[index];
+            _selectedSectionIndex = index;
+        }
+
+        /// <summary>
+        /// The built section views, one per selector item, or null before the page is built. Each
+        /// is the section's own scroll host, so the scrollbar sits inside the presenter and slides
+        /// with the section it belongs to.
+        /// </summary>
+        private FrameworkElement[]? _sectionPanels;
+
+        /// <summary>
+        /// The section the presenter is showing, so the next navigation knows which way to slide.
+        /// </summary>
+        private int _selectedSectionIndex;
+
+        /// <summary>
+        /// Builds one section: its content stack inside its own scroll host. The scroll host is
+        /// focusable so a click in the section hands it Home, End, Page Up and Page Down, leaving
+        /// the arrow keys to the SelectorBar the click came from.
+        /// </summary>
+        /// <param name="section">The section to build.</param>
+        /// <returns>The section view.</returns>
+        private static FrameworkElement CreateSection(ColorSectionData section)
+        {
+            Controls.StackPanel panel = new();
+            panel.SetResourceReference(Controls.StackPanel.SpacingProperty, "DemoColorSectionSpacing");
+            panel.SetResourceReference(MarginProperty, "DemoColorSectionContentMargin");
+
+            if (section.Intro is not null)
+            {
+                TextBlock intro = new() { Text = section.Intro, TextWrapping = TextWrapping.Wrap };
+                intro.SetResourceReference(StyleProperty, "BodyTextBlockStyle");
+                intro.SetResourceReference(MarginProperty, "DemoMediumTopGapMargin");
+                _ = panel.Children.Add(intro);
+            }
+
+            foreach (ColorGroupData group in section.Groups)
+            {
+                if (group.Title is not null && group.HeadingOnly)
                 {
-                    CornerRadius = new CornerRadius(8),
-                    Child = rowGrid,
-                    Tag = "ColorTokenRow",
+                    TextBlock heading = new() { Text = group.Title, TextWrapping = TextWrapping.Wrap };
+                    heading.SetResourceReference(StyleProperty, "SubtitleTextBlockStyle");
+                    heading.SetResourceReference(MarginProperty, "DemoColorExampleMargin");
+                    _ = panel.Children.Add(heading);
+                }
+                else if (group.Title is not null)
+                {
+                    ColorPageExample example = new()
+                    {
+                        Title = group.Title,
+                        Description = group.Description,
+                        ExampleContent = group.Example?.Invoke(),
+                    };
+                    example.SetResourceReference(BackgroundProperty, group.BackgroundKey);
+                    if (group.ForegroundKey is not null)
+                    {
+                        example.SetResourceReference(ForegroundProperty, group.ForegroundKey);
+                    }
+
+                    _ = panel.Children.Add(example);
+                }
+
+                foreach (ColorTileRowData row in group.Rows)
+                {
+                    _ = panel.Children.Add(CreateTileGrid(row));
+                }
+            }
+
+            Controls.SmoothScrollViewer scroll = new()
+            {
+                Content = panel,
+                Focusable = true,
+            };
+            scroll.SetResourceReference(StyleProperty, "GalleryPageScrollViewerStyle");
+            scroll.SetResourceReference(MarginProperty, "DemoPageScrollHostMargin");
+            return scroll;
+        }
+
+        // WinUI Gallery GalleryTileGridStyle: tiles sit on the base solid background inside a 1px card stroke at
+        // OverlayCornerRadius. WPF's Border does not clip children to that radius, so the corner tiles round
+        // their own outer corners instead.
+        /// <summary>
+        /// Builds the eight tiles of one shipped high contrast palette, in the Gallery's order and
+        /// with its colour pairings (HighContrastSection.xaml). The brush keys are the same in every
+        /// palette, which is the point the section makes: Windows picks the colours, the app keeps
+        /// naming the same brushes.
+        /// </summary>
+        /// <param name="windowText">Window text colour.</param>
+        /// <param name="window">Window background colour.</param>
+        /// <param name="highlightText">Highlight text colour.</param>
+        /// <param name="highlight">Highlight background colour.</param>
+        /// <param name="buttonText">Button text colour.</param>
+        /// <param name="buttonFace">Button face colour.</param>
+        /// <param name="hotlight">Hyperlink colour.</param>
+        /// <param name="grayText">Disabled text colour.</param>
+        /// <returns>The palette's tiles, laid out as four columns over two rows.</returns>
+        private static ColorTileData[] HighContrastPalette(
+            string windowText,
+            string window,
+            string highlightText,
+            string highlight,
+            string buttonText,
+            string buttonFace,
+            string hotlight,
+            string grayText)
+        {
+            return
+            [
+                new("Window Text Color", "Foreground / Text color for Headings, body copy, lists, placeholder text, app and window borders, any UI that can't be interacted with", "SystemColorWindowTextColor", foregroundKey: null, windowText, window),
+                new("Highlight Text Color", "Foreground color for text or UI that is selected, interacted with (hover, pressed), or in progress", "SystemColorHighlightTextColor", foregroundKey: null, highlightText, highlight),
+                new("Button Text Color", "Foreground color for buttons and any UI that can be interacted with", "SystemColorButtonTextColor", foregroundKey: null, buttonText, buttonFace),
+                new("Hotlight Color", "Foreground / Text color for hyperlink text", "SystemColorHotlightColor", foregroundKey: null, hotlight, window),
+                new("Window Color", "Background of pages, panes, popups, and windows", "SystemColorWindowColor", foregroundKey: null, window, windowText),
+                new("Highlight Color", "Background or accent color for UI that is selected, interacted with (hover, pressed), or in progress", "SystemColorHighlightColor", foregroundKey: null, highlight, highlightText),
+                new("Button Face Color", "Background color for buttons and any UI that can be interacted with", "SystemColorButtonFaceColor", foregroundKey: null, buttonFace, buttonText),
+                new("Gray Text Color / Disabled", "Foreground / Text color for Inactive (disabled) UI", "SystemColorGrayTextColor", foregroundKey: null, grayText, window),
+            ];
+        }
+
+        /// <summary>
+        /// Returns a frozen brush for a literal hex colour from one of the shipped high contrast
+        /// palettes.
+        /// </summary>
+        /// <param name="hex">The colour, as the Gallery writes it.</param>
+        /// <returns>The frozen brush.</returns>
+        private static SolidColorBrush Frozen(string hex)
+        {
+            SolidColorBrush brush = new((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            return brush;
+        }
+
+        private static Controls.Border CreateTileGrid(ColorTileRowData row)
+        {
+            int columns = row.Tiles.Length / row.Rows;
+            UniformGrid grid = new() { Rows = row.Rows, Columns = columns };
+
+            for (int i = 0; i < row.Tiles.Length; i++)
+            {
+                ColorTileData data = row.Tiles[i];
+                int rowIndex = i / columns;
+                int columnIndex = i % columns;
+                ColorTile tile = new()
+                {
+                    ColorName = data.Name,
+                    ColorExplanation = data.Explanation,
+                    ColorBrushName = data.BrushKey,
+                    ShowSeparator = columnIndex < columns - 1,
+                    // A live tile carries its key so the tests and the copy button can read it; a
+                    // high contrast palette tile paints a fixed colour and has no live brush.
+                    Tag = data.LiteralBackground is null ? data.BrushKey : null,
                 };
-                _ = rows.Children.Add(rowBorder);
+                if (data.LiteralBackground is not null)
+                {
+                    // A high contrast palette tile: the Gallery prints the four shipped contrast
+                    // themes as fixed values, so these do not follow the live theme.
+                    tile.Background = Frozen(data.LiteralBackground);
+                    tile.Foreground = Frozen(data.LiteralForeground ?? "#FFFFFF");
+                }
+                else
+                {
+                    tile.SetResourceReference(BackgroundProperty, data.BrushKey);
+                    if (data.ForegroundKey is null)
+                    {
+                        // The Gallery paints this tile with literal Black; see ColorTile.AutoContrastForeground.
+                        tile.AutoContrastForeground = true;
+                    }
+                    else
+                    {
+                        tile.SetResourceReference(ForegroundProperty, data.ForegroundKey);
+                    }
+                }
+                tile.SetResourceReference(ColorTile.TileCornerRadiusProperty, GetTileCornerRadiusKey(rowIndex, columnIndex, row.Rows, columns));
+                _ = grid.Children.Add(tile);
             }
 
-            return rows;
+            Controls.Border surface = new() { Child = grid };
+            surface.SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+            surface.SetResourceReference(Border.BorderBrushProperty, CardStroke);
+            surface.SetResourceReference(Border.BorderThicknessProperty, SingleStroke);
+            surface.SetResourceReference(Border.CornerRadiusProperty, OverlayRadius);
+            return surface;
         }
 
-        private UIElement CreateTokenTile(ColorToken token, int index, int count)
+        private static string GetTileCornerRadiusKey(int rowIndex, int columnIndex, int rows, int columns)
         {
-            CornerRadius cornerRadius = GetGroupedTileCornerRadius(index, count);
-            Controls.Border tile = new()
+            bool first = columnIndex is 0;
+            bool last = columnIndex == columns - 1;
+            bool top = rowIndex is 0;
+            bool bottom = rowIndex == rows - 1;
+            return (rows is 1, first, last, top, bottom) switch
             {
-                MinHeight = 166,
-                Margin = new Thickness(2),
-                BorderThickness = new Thickness(1),
-                CornerRadius = cornerRadius,
-                Tag = token.ResourceKey,
-            };
-            tile.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
-            tile.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
-
-            Controls.StackPanel content = new()
-            {
-                Margin = new Thickness(10),
-                Orientation = Orientation.Vertical,
-                Spacing = 8,
-            };
-
-            Border swatch = new()
-            {
-                Height = 78,
-                BorderThickness = new Thickness(1),
-                CornerRadius = cornerRadius,
-            };
-            swatch.SetResourceReference(Border.BackgroundProperty, token.ResourceKey);
-            swatch.SetResourceReference(Border.BorderBrushProperty, "DividerStrokeColorDefaultBrush");
-            _ = content.Children.Add(swatch);
-
-            _ = content.Children.Add(CreateTokenDetails(token));
-            _ = content.Children.Add(CreateText(token.Description, styleKey: null, "TextFillColorSecondaryBrush", 12));
-            _ = content.Children.Add(CreateResourceKeyRow(token.ResourceKey));
-            tile.Child = content;
-            return tile;
-        }
-
-        private static CornerRadius GetGroupedTileCornerRadius(int index, int count)
-        {
-            const double outerRadius = 8.0;
-            const double innerRadius = 4.0;
-
-            return (count, index) switch
-            {
-                (1, _) => new CornerRadius(outerRadius),
-                (_, 0) => new CornerRadius(outerRadius, innerRadius, innerRadius, outerRadius),
-                _ when index == count - 1 => new CornerRadius(innerRadius, outerRadius, outerRadius, innerRadius),
-                _ => new CornerRadius(innerRadius),
+                (true, true, true, _, _) => "DemoColorTileOnlyCornerRadius",
+                (true, true, false, _, _) => "DemoColorTileFirstCornerRadius",
+                (true, false, true, _, _) => "DemoColorTileLastCornerRadius",
+                (true, _, _, _, _) => "DemoColorTileMiddleCornerRadius",
+                (false, true, _, true, _) => "DemoColorTileTopLeftCornerRadius",
+                (false, _, true, true, _) => "DemoColorTileTopRightCornerRadius",
+                (false, true, _, _, true) => "DemoColorTileBottomLeftCornerRadius",
+                (false, _, true, _, true) => "DemoColorTileBottomRightCornerRadius",
+                _ => "DemoColorTileMiddleCornerRadius",
             };
         }
 
-        private UIElement CreateTokenDetails(ColorToken token)
+        private static TextBlock CreateGlyph(string foregroundKey)
         {
-            Grid header = new();
-            header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            TextBlock title = CreateText(token.Title, styleKey: null, "TextFillColorPrimaryBrush", 13);
-            title.FontWeight = FontWeights.SemiBold;
-            title.VerticalAlignment = VerticalAlignment.Center;
-            Grid.SetColumn(title, 0);
-            _ = header.Children.Add(title);
-
-            Controls.Button copyButton = new()
-            {
-                Appearance = ControlAppearance.Subtle,
-                Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
-                MinHeight = 28,
-                MinWidth = 28,
-                Padding = new Thickness(6, 3, 6, 3),
-                Tag = token.ResourceKey,
-                ToolTip = "Copy " + token.ResourceKey,
-            };
-            copyButton.Click += CopyTokenButton_Click;
-            Grid.SetColumn(copyButton, 1);
-            _ = header.Children.Add(copyButton);
-
-            return header;
+            TextBlock glyph = new() { Text = "Aa", FontWeight = FontWeights.SemiBold };
+            glyph.SetResourceReference(TextBlock.FontSizeProperty, "DemoColorExampleGlyphFontSize");
+            glyph.SetResourceReference(TextBlock.ForegroundProperty, foregroundKey);
+            return glyph;
         }
 
-        private UIElement CreateResourceKeyRow(string resourceKey)
+        private static Controls.ToggleSwitch CreateToggleSwitch(bool narrow)
         {
-            TextBlock resourceText = CreateText(resourceKey, styleKey: null, "TextFillColorTertiaryBrush", 12);
-            resourceText.SetResourceReference(TextBlock.FontFamilyProperty, "DemoMonospaceFontFamily");
-            resourceText.TextWrapping = TextWrapping.Wrap;
-            return resourceText;
-        }
-
-        private TextBlock CreateText(string text, string? styleKey, string foregroundKey, double? fontSize = null)
-        {
-            TextBlock textBlock = new()
+            Controls.ToggleSwitch toggle = new() { OnContent = string.Empty, OffContent = string.Empty };
+            if (narrow)
             {
-                Text = text,
-                TextWrapping = TextWrapping.Wrap,
-            };
-            textBlock.SetResourceReference(TextBlock.ForegroundProperty, foregroundKey);
-
-            if (styleKey is not null && TryFindResource(styleKey) is Style style)
-            {
-                textBlock.Style = style;
+                toggle.SetResourceReference(MinWidthProperty, "DemoColorExampleToggleSwitchWidth");
+                toggle.SetResourceReference(MaxWidthProperty, "DemoColorExampleToggleSwitchWidth");
             }
 
-            if (fontSize is not null)
+            return toggle;
+        }
+
+        private static Controls.Slider CreateSlider()
+        {
+            Controls.Slider slider = new() { Maximum = 100, Value = 40 };
+            slider.SetResourceReference(MinWidthProperty, "DemoColorExampleSliderMinWidth");
+            return slider;
+        }
+
+        private static ScrollBar CreateScrollBar()
+        {
+            ScrollBar scrollBar = new()
             {
-                textBlock.FontSize = fontSize.Value;
+                Orientation = Orientation.Horizontal,
+                Maximum = 100,
+                Value = 40,
+                ViewportSize = 40,
+            };
+            scrollBar.SetResourceReference(StyleProperty, "HorizontalScrollBarStyle");
+            scrollBar.SetResourceReference(WidthProperty, "DemoColorExampleScrollBarWidth");
+            scrollBar.SetResourceReference(HeightProperty, "DemoColorExampleScrollBarHeight");
+            return scrollBar;
+        }
+
+        private static StackPanel CreateSubtleFillExample()
+        {
+            Controls.Border rest = new() { Child = new TextBlock { Text = "Rest" } };
+            rest.SetResourceReference(Border.PaddingProperty, "DemoColorExampleSubtleRestPadding");
+
+            Controls.Border hover = new() { Child = new TextBlock { Text = "Hover" } };
+            hover.SetResourceReference(Border.PaddingProperty, "DemoColorExampleSubtleHoverPadding");
+            hover.SetResourceReference(MinWidthProperty, "DemoColorExampleSubtleHoverMinWidth");
+            hover.SetResourceReference(BackgroundProperty, "SubtleFillColorSecondaryBrush");
+            hover.SetResourceReference(Border.CornerRadiusProperty, ControlRadius);
+
+            StackPanel panel = new();
+            _ = panel.Children.Add(rest);
+            _ = panel.Children.Add(hover);
+            return panel;
+        }
+
+        // The Gallery places a control over a photo. This repo is BSD 3-Clause and cannot ship
+        // third party stock photography, so ControlOnImageSample.png is a generated abstract
+        // image (a soft diagonal gradient plus a few blurred translucent shapes) that reads as
+        // imagery rather than a flat UI surface.
+        private static Grid CreateControlOnImageExample()
+        {
+            Controls.Image photo = new() { Source = ControlOnImageSample, Stretch = Stretch.UniformToFill };
+            photo.SetResourceReference(Controls.Image.CornerRadiusProperty, ControlRadius);
+            AutomationProperties.SetName(photo, "Sample photograph");
+
+            Controls.Border badge = CreateSurface("ControlOnImageFillColorDefaultBrush", "ControlStrongStrokeColorDefaultBrush", ControlRadius, "DemoColorExampleOnImageBadgeSize", "DemoColorExampleOnImageBadgeSize");
+            badge.HorizontalAlignment = HorizontalAlignment.Right;
+            badge.VerticalAlignment = VerticalAlignment.Top;
+            badge.SetResourceReference(MarginProperty, "DemoColorExampleOnImageBadgeMargin");
+
+            Grid image = new();
+            image.SetResourceReference(WidthProperty, "DemoColorExampleImageWidth");
+            image.SetResourceReference(HeightProperty, "DemoColorExampleImageHeight");
+            _ = image.Children.Add(photo);
+            _ = image.Children.Add(badge);
+            return image;
+        }
+
+        /// <summary>
+        /// Loads a frozen, cached <see cref="BitmapImage"/> for a demo asset embedded as a
+        /// resource in this assembly.
+        /// </summary>
+        /// <param name="assemblyRelativePath">The resource path, relative to this assembly.</param>
+        /// <returns>The frozen bitmap, safe to share across every instance of the example.</returns>
+        private static BitmapImage FrozenBitmap(string assemblyRelativePath)
+        {
+            // Composed rather than a literal absolute pack URI (S1075): a relative Uri resolves
+            // against Application.ResourceAssembly, which defaults to the entry assembly, so it
+            // would miss the resource under the test host, whose entry assembly is not
+            // Fluence.Wpf.Demo. Naming this assembly explicitly by its own name keeps the pack URI
+            // correct in both the shipped demo executable and the test host process.
+            string assemblyName = typeof(GalleryColorsPage).Assembly.GetName().Name ?? "Fluence.Wpf.Demo";
+            string packUri = $"pack://application:,,,/{assemblyName};component/{assemblyRelativePath}";
+            BitmapImage bitmap = new(new Uri(packUri, UriKind.Absolute));
+            bitmap.Freeze();
+            return bitmap;
+        }
+
+        private static Controls.Border CreateDividerExample()
+        {
+            Controls.Border divider = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Stretch };
+            divider.SetResourceReference(Border.BorderBrushProperty, "DividerStrokeColorDefaultBrush");
+            divider.SetResourceReference(Border.BorderThicknessProperty, "DemoColorTileSeparatorThickness");
+
+            Controls.Border surface = CreateSurface("AcrylicBackgroundFillColorBaseBrush", "SurfaceStrokeColorDefaultBrush", OverlayRadius, SurfaceWidth, SurfaceHeight);
+            surface.Child = divider;
+            return surface;
+        }
+
+        private static Controls.Border CreateFocusExample()
+        {
+            Controls.Border content = CreateSurface(backgroundKey: null, "SurfaceStrokeColorDefaultBrush", OverlayRadius, SurfaceWidth, SurfaceHeight);
+            content.Child = new TextBlock { Text = "Text", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+
+            Controls.Border inner = new() { Child = content };
+            inner.SetResourceReference(Border.BorderBrushProperty, "FocusStrokeColorInnerBrush");
+            inner.SetResourceReference(Border.BorderThicknessProperty, "DemoColorExampleFocusStrokeThickness");
+            inner.SetResourceReference(Border.CornerRadiusProperty, "DemoColorExampleFocusInnerCornerRadius");
+
+            Controls.Border outer = new() { Child = inner };
+            outer.SetResourceReference(Border.BorderBrushProperty, "FocusStrokeColorOuterBrush");
+            outer.SetResourceReference(Border.BorderThicknessProperty, "DemoColorExampleFocusStrokeThickness");
+            outer.SetResourceReference(Border.CornerRadiusProperty, "DemoColorExampleFocusOuterCornerRadius");
+            return outer;
+        }
+
+        private static Controls.Border CreateLayerExample(string? backgroundKey, string layerKey)
+        {
+            Controls.Border layer = new() { HorizontalAlignment = HorizontalAlignment.Right };
+            layer.SetResourceReference(WidthProperty, "DemoColorExampleLayerInnerWidth");
+            layer.SetResourceReference(BackgroundProperty, layerKey);
+            layer.SetResourceReference(Border.BorderBrushProperty, CardStroke);
+            layer.SetResourceReference(Border.BorderThicknessProperty, "DemoColorExampleLayerInnerBorderThickness");
+
+            Controls.Border surface = CreateSurface(backgroundKey, CardStroke, OverlayRadius, SurfaceWidth, SurfaceHeight);
+            surface.Child = layer;
+            return surface;
+        }
+
+        // The Gallery shows a TabViewItem over live Mica; here a tab-shaped surface is painted with the Mica Base Alt layer fallback.
+        private static Controls.Border CreateTabExample()
+        {
+            Controls.Border tab = CreateSurface("LayerOnMicaBaseAltFillColorDefaultBrush", "ControlStrokeColorSecondaryBrush", ControlRadius, "DemoColorExampleTabItemWidth", "DemoColorExampleTabItemHeight");
+            tab.Child = new TextBlock { Text = "Text", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            tab.SetResourceReference(MarginProperty, "DemoColorExampleTabItemMargin");
+            return tab;
+        }
+
+        private static Controls.InfoBar CreateInfoBar()
+        {
+            return new Controls.InfoBar
+            {
+                Title = "Title",
+                Message = "This is body text. Windows 11 is faster and more intuitive.",
+                Severity = InfoBarSeverity.Error,
+                IsOpen = true,
+                IsClosable = false,
+            };
+        }
+
+        private static Controls.Border CreateSurface(string? backgroundKey, string borderKey, string cornerRadiusKey, string widthKey, string heightKey)
+        {
+            Controls.Border surface = new();
+            if (backgroundKey is not null)
+            {
+                surface.SetResourceReference(BackgroundProperty, backgroundKey);
             }
 
-            return textBlock;
+            surface.SetResourceReference(Border.BorderBrushProperty, borderKey);
+            surface.SetResourceReference(Border.BorderThicknessProperty, SingleStroke);
+            surface.SetResourceReference(Border.CornerRadiusProperty, cornerRadiusKey);
+            surface.SetResourceReference(WidthProperty, widthKey);
+            surface.SetResourceReference(HeightProperty, heightKey);
+            return surface;
         }
 
-        private void CopyCodeSampleButton_Click(object sender, RoutedEventArgs e)
-        {
-            DemoClipboard.SetText(SampleMarkup);
-        }
-
-        private void CopyThemeDictionarySampleButton_Click(object sender, RoutedEventArgs e)
-        {
-            DemoClipboard.SetText(ThemeDictionaryXamlSource);
-        }
-
-        private static void CopyTokenButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Controls.Button { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
-            {
-                DemoClipboard.SetText(resourceKey);
-            }
-        }
-
-        private sealed class ColorSection(
-            string title,
-            string description,
-            string exampleForegroundKey,
-            string exampleBackgroundKey,
-            string exampleBorderKey,
-            ColorToken[] tokens)
+        private sealed class ColorSectionData(string title, string? intro, ColorGroupData[] groups)
         {
             public string Title { get; } = title;
 
-            public string Description { get; } = description;
+            public string? Intro { get; } = intro;
 
-            public bool IsTextSection => string.Equals(Title, "Text", StringComparison.Ordinal);
-
-            public string ExampleForegroundKey { get; } = exampleForegroundKey;
-
-            public string ExampleBackgroundKey { get; } = exampleBackgroundKey;
-
-            public string ExampleBorderKey { get; } = exampleBorderKey;
-
-            public ColorToken[] Tokens { get; } = tokens;
+            public ColorGroupData[] Groups { get; } = groups;
         }
 
-        private sealed class ColorToken(string title, string description, string resourceKey)
+        private sealed class ColorGroupData(string? title, string description, string backgroundKey, string? foregroundKey, Func<UIElement>? example, ColorTileRowData[] rows, bool headingOnly = false)
         {
-            public string Title { get; } = title;
+            public string? Title { get; } = title;
+
+            /// <summary>
+            /// True for a group the Gallery introduces with a plain heading rather than a
+            /// ColorPageExample card, as its high contrast palettes are.
+            /// </summary>
+            public bool HeadingOnly { get; } = headingOnly;
 
             public string Description { get; } = description;
 
-            public string ResourceKey { get; } = resourceKey;
+            public string BackgroundKey { get; } = backgroundKey;
+
+            public string? ForegroundKey { get; } = foregroundKey;
+
+            public Func<UIElement>? Example { get; } = example;
+
+            public ColorTileRowData[] Rows { get; } = rows;
+        }
+
+        private sealed class ColorTileRowData(int rows, ColorTileData[] tiles)
+        {
+            public int Rows { get; } = rows;
+
+            public ColorTileData[] Tiles { get; } = tiles;
+        }
+
+        private sealed class ColorTileData(string name, string explanation, string brushKey, string? foregroundKey, string? literalBackground = null, string? literalForeground = null)
+        {
+            public string Name { get; } = name;
+
+            public string Explanation { get; } = explanation;
+
+            public string BrushKey { get; } = brushKey;
+
+            public string? ForegroundKey { get; } = foregroundKey;
+
+            /// <summary>
+            /// The literal tile colour, for the high contrast palettes the Gallery prints as fixed
+            /// values rather than as live theme brushes. Null means the tile paints
+            /// <see cref="BrushKey"/> from the current theme.
+            /// </summary>
+            public string? LiteralBackground { get; } = literalBackground;
+
+            /// <summary>
+            /// The literal text colour that pairs with <see cref="LiteralBackground"/>.
+            /// </summary>
+            public string? LiteralForeground { get; } = literalForeground;
         }
     }
 }

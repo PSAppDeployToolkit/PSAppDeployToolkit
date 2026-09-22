@@ -132,14 +132,21 @@
                                 Fill="{DynamicResource AccentFillColorTertiaryBrush}"
                                 Opacity="0" />
 
-                            <!--  Inner dot (color adapts to accent luminance via TextOnAccent)  -->
+                            <!--
+                                Inner dot (color adapts to accent luminance via TextOnAccent).
+                                WinUI parity: RadioButtonCheckGlyphStroke family (RadioButton_themeresources.xaml:38-44) -
+                                CircleElevationBorderBrush at rest, AccentControlElevationBorderBrush while checked,
+                                ControlElevationBorderBrush while checked and disabled.
+                            -->
                             <Ellipse
                                 x:Name="InnerDot"
                                 Width="0"
                                 Height="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                                Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Stroke="{DynamicResource CircleElevationBorderBrush}"
+                                StrokeThickness="1" />
                         </Grid>
 
                         <!--  Content  -->
@@ -207,26 +214,37 @@
                             </Setter>
                         </MultiTrigger>
 
-                        <!--  Checked  -->
+                        <!--
+                            Checked. The anonymous storyboard below grows the dot, and the named
+                            state storyboards (hover, pressed, disabled) animate the same property
+                            afterwards. WPF layers a later trigger's storyboard over an earlier
+                            trigger's rather than replacing it, even under SnapshotAndReplace, so
+                            each RemoveStoryboard uncovers this grow again rather than dropping the
+                            dot to the template base of 0. Read on its own the handoff looks like it
+                            loses the checked size, and two reviewers have now reported it as a
+                            defect; RadioButton_CheckedDot_KeepsItsCheckedSizeWhenAStateStoryboardIsReleasedAsync
+                            pins the real behaviour.
+                        -->
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="OuterEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="OuterEllipseHover" Property="Opacity" Value="0" />
                             <Setter TargetName="OuterEllipsePressed" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="1" />
                             <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="1" />
+                            <Setter TargetName="InnerDot" Property="Stroke" Value="{DynamicResource AccentControlElevationBorderBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <!--  ControlFastAnimationDuration (167 ms) inner-dot grow  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="8" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="8" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -238,13 +256,13 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.100"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.100"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -253,7 +271,13 @@
                             </Trigger.ExitActions>
                         </Trigger>
 
-                        <!--  Checked + Hover  -->
+                        <!--
+                            Checked + Hover. WinUI grows the check glyph while the pointer is over it
+                            (RadioButton_themeresources.xaml:255,258), from its resting 12 to 14 over
+                            ControlNormalAnimationDuration on the fast out slow in spline. Fluence rests
+                            the dot at 8 rather than 12, so the WinUI ratios are applied to that base:
+                            14/12 of 8 is 9.33, and 10/12 of 8 is 6.67 for the pressed state below.
+                        -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
@@ -262,22 +286,72 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipseHover" Property="Opacity" Value="1" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard x:Name="RadioDotHoverStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="9.33" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="9.33" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="RadioDotHoverStoryboard" />
+                            </MultiTrigger.ExitActions>
                         </MultiTrigger>
 
-                        <!--  Checked + Pressed  -->
+                        <!--
+                            Checked + Pressed. The dot shrank here by a stamped setter, where WinUI
+                            animates its CheckGlyph (RadioButton_themeresources.xaml:292,295) over
+                            ControlNormalAnimationDuration. Releasing over the control re-enters the
+                            hover trigger above, which grows the dot back to its hover size.
+                        -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsPressed" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="InnerDot" Property="Height" Value="6" />
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipseHover" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipsePressed" Property="Opacity" Value="1" />
-                            <Setter TargetName="InnerDot" Property="Width" Value="6" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard x:Name="RadioDotPressedStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="6.67" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
+                                                Value="6.67" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="RadioDotPressedStoryboard" />
+                            </MultiTrigger.ExitActions>
                         </MultiTrigger>
 
-                        <!--  Disabled  -->
+                        <!--
+                            Disabled. WinUI parity: RadioButtonCheckGlyphFillDisabled (RadioButton_themeresources.xaml:37)
+                            is the same TextOnAccentFillColorPrimary used in every other state, not TextFillColorDisabled;
+                            RadioButtonCheckGlyphStrokeCheckedDisabled is ControlElevationBorderBrush. The Fluence-only
+                            opaque IndicatorAccentBackdrop plate must also drop out while disabled.
+                        -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="OuterEllipse" Property="Fill" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipseHover" Property="Fill" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
@@ -285,13 +359,52 @@
                             <Setter TargetName="CheckedEllipse" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="CheckedEllipseHover" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="CheckedEllipsePressed" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="InnerDot" Property="Fill" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="InnerDot" Property="Fill" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter TargetName="InnerDot" Property="Stroke" Value="{DynamicResource ControlElevationBorderBrush}" />
+                            <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="DescriptionText" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipse" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipseHover" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipsePressed" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
                         </Trigger>
+
+                        <!--
+                            Disabled + Checked. WinUI grows the glyph to 14 over
+                            ControlFastAnimationDuration while disabled
+                            (RadioButton_themeresources.xaml:338,341), the same size it takes on hover,
+                            because the disabled accent plate behind it carries far less contrast. The
+                            checked condition is Fluence specific: the dot is hidden by a zero size
+                            rather than by opacity, so an unguarded disabled state would reveal it on an
+                            unchecked button.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False" />
+                                <Condition Property="IsChecked" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard x:Name="RadioDotDisabledStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="9.33" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="9.33" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="RadioDotDisabledStoryboard" />
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

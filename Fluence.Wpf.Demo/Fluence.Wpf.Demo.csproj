@@ -21,7 +21,9 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Resource Include="Resources\ControlImages\*.png" />
+    <Resource Include="Resources\SampleMedia\*.png" />
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
+    <Content Include="Resources\BootstrapIcons.LICENSE.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

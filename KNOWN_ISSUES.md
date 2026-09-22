@@ -4,10 +4,84 @@ This file tracks optional follow-ups and deliberate non-features. Filed bugs wit
 reproductions live on the issue tracker; this is the consolidated view for
 maintainers.
 
+## Tree selection and unrealized data-bound branches
+
+Multiple-selection cascading follows existing `TreeViewItem` containers. For a
+collapsed data-bound branch whose descendant containers have not been created,
+checking the parent does not select those unrealized data items, and newly
+realized child containers do not inherit that earlier checked state. Applications
+that need selection of an entire data hierarchy should maintain that selection in
+their data model. The removal/reset reconciliation in this branch removes detached
+containers from `SelectedItems`; it does not add data-model selection propagation. A checked collapsed parent keeps its state when its bound children change but remain unrealized; only a genuinely empty child collection clears that parent state.
+This limitation needs a separate API and realization-policy decision before any
+claim of complete data-bound cascading support.
+
 ## Current follow-ups (not defects)
 
+- **Inline STA and embedded hosts own final dispatcher cleanup** - removing the
+  module preserves WPF's process-wide Application so later imports can reuse it.
+  A host using its own STA thread must finish all UI work and shut down its WPF
+  dispatcher on that thread before terminating the runspace. Embedded scripts must
+  leave this decision to the host. An idle live dispatcher can otherwise cause a
+  CLR shutdown assertion after successful UI work. This was reproduced with the
+  standalone PowerShell 7 STA test runner; its terminal finally block now checks
+  for leaked windows and shuts down the owned dispatcher before exiting.
+  The module automatically retires its secondary UI dispatcher during orderly exit
+  of the primary, unpushed ConsoleHost session. Child runspaces and custom hosts do
+  not register this hook, because their closure must not retire a shared process
+  application. Forced process termination is outside this cleanup contract.
+  Both passing Pester assertions and a zero process exit code are required for a
+  successful render gate; a shutdown assertion must never be treated as a pass.
+
+- **A single-process `net472` run of the whole test assembly aborts** - two
+  attempts at running `Fluence.Wpf.Tests\bin\Debug\net472\Fluence.Wpf.Tests.exe`
+  with no class filter both died with exit `-1`, no failure output, no crash
+  dump and no Application event-log entry. The first died after 48 seconds; the
+  second after 1 minute 56 seconds, about 591 tests in. The abort point moved
+  between runs, so it is non-deterministic, and neither run named a test. Class
+  filtering is unaffected: the same assembly completes when it is split, and the
+  two complementary lanes AGENTS.md section 6 describes cover all cases in about
+  2 minutes 57 seconds. CI and the pull-request template therefore run both TFMs
+  as two lanes and sum the case counts, which keeps the union provably equal to
+  the whole assembly. Nothing here is known to be a product defect; the
+  suspicion is a WPF or dispatcher resource exhaustion late in a very long
+  single-process `net472` run, and confirming that needs a dump captured at the
+  abort, which no attempt has produced yet.
+
+- **`TimePicker_Cancel_RevertsPendingSelectionAsync` is flaky on `net472`** -
+  `Fluence.Wpf.Tests/Control/TimePickerTests.cs` fails there with "The selector
+  flyout must open before the cancel scenario" after about 2.45 seconds, and
+  passes on `net10`. It passes in isolation. This is flyout-open timing, not a
+  product defect: the test asserts the flyout is open before it clicks Cancel,
+  and on `net472` the popup occasionally has not composited by the time the
+  dispatcher drain returns. Do not treat a failure of this test alone as a
+  regression, and do not add a fixed delay to hide it; the fix is a
+  condition-based wait on the popup's `IsOpen`, which is a follow-up.
+
+- **`RadioButton_Checked_HasAccentFillAsync` fails in a `net472` whole-suite
+  run and passes in isolation** - `Fluence.Wpf.Tests/Control/RadioButtonTests.cs`
+  failed during a single-process `net472` run of the whole assembly twice
+  while this branch was executing, once during Task 4 and again during
+  Task 5. Both times, running the test alone immediately afterward reproduced
+  the same isolated-pass result, so the whole-suite-only pattern was confirmed
+  on both occasions rather than observed once. Nothing in the project's prior
+  flaky-test notes named this test. This is grouped with the whole-assembly
+  abort above as a suspected symptom of the same `net472` resource pressure
+  late in a long single-process run, not a defect in the accent-fill
+  assertion; the two-lane split in AGENTS.md section 6 covers this test
+  without reproducing the failure.
+
+- **`GallerySettingsPage_NavigationStyleCombo_FollowsShellPaneToggleAsync`
+  failed once in a Lane A run and has not reproduced** -
+  `Fluence.Wpf.Tests/Gallery/DemoShellTests.cs` failed once during the Lane A
+  run in Task 24 of this branch's own execution; a subsequent Lane A run did
+  not reproduce the failure, and it has not failed again since. This is
+  recorded as a single unreproduced observation, not an established flake:
+  do not treat one failure of this test as a regression by itself, but do
+  not dismiss a second occurrence either.
+
 - **Windows 10 legacy acrylic is unverified on real hardware** - the
-  `SetWindowCompositionAttribute` acrylic path (`BackdropType.Acrylic` on
+  `SetWindowCompositionAttribute` acrylic path (`WindowBackdropType.Acrylic` on
   Windows 10 build 17063+) is covered by pure policy tests only. The resolution
   rules, the plan values, and the `0xAABBGGRR` tint packing are pinned by
   `WindowPolicyTests` and `NativeMethodsTests`, but nothing in the suite can
@@ -47,6 +121,37 @@ maintainers.
   `IsBackEnabled` + `BackRequested` are exposed, but the library does **not**
   track page history. The demo does not use the back button; consumers are
   expected to own their own back stack and route `BackRequested`.
+- **Translucent layers over a DWM backdrop lose alpha precision on a 10 bpc
+  display** - symptom: under `WindowBackdropType.Mica` in Light the `NavigationView`
+  content canvas (`LayerFillColorDefault`, `#80FFFFFF`) reads darker than the
+  pane and title bar, which straight alpha compositing cannot produce. Measured
+  on a desktop whose active display path reports `bitsPerColorChannel = 10`
+  (`DisplayConfigGetDeviceInfo`, SDR, HDR off): a plain WPF window with
+  `WindowChrome` and `DWMSBT_MAINWINDOW` composites its client alpha over the
+  backdrop with the alpha rounded to two bits, {0, 1/3, 2/3, 1}, so
+  `#80FFFFFF` (alpha 0.502 rounds to 2/3) lands at 128 + Mica/3 = 209 instead
+  of the 249 the token specifies, `#24000000` is invisible, and `#60FFFFFF`
+  saturates to white. Colour channels keep full precision. The same figures
+  come out of iNKORE.UI.WPF.Modern on the same desktop, and the quantisation is
+  absent under `WindowBackdropType.None`, where WPF blends the layer itself. The
+  likely mechanism is a `R10G10B10A2` composition surface when the output is
+  10 bits per channel; this is inferred from the measurement, not documented
+  by Microsoft, and is not yet verified against an 8 bpc display. Only
+  `WindowBackdropType.Mica` was measured quantising under
+  `DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO` flags `0x4` (10 bpc, advanced color
+  off); enabling the GPU driver's 10-bit pixel format (AMD Adrenalin, Gaming,
+  Graphics) reported advanced color enabled (flags `0x7`), and under that
+  state Mica, Acrylic, and Tabbed all read full precision. `Tabbed` is
+  included in the fix below by DWM material-family inference, not
+  measurement: it shares the same `DWMSBT_MAINWINDOW` / `DWMSBT_TABBEDWINDOW`
+  family as Mica but was measured only under `0x7`. `Acrylic` is excluded:
+  it too was measured only under `0x7`, where it read full precision, and was
+  never measured under the quantising `0x4` flags, so there is no basis yet
+  to include or exclude it. The library now applies an opaque pre-blend
+  automatically when the window's display reports more than 8 bits per
+  channel with advanced color off and the effective backdrop is Mica or
+  Tabbed; an 8 bpc display, or a 10 bpc display with advanced color enabled,
+  keeps the canonical translucent token.
 - **`RenderTargetBitmap` vs DWM backdrop** - DWM Mica / Acrylic is composed by
   the window manager and is **not** visible to `RenderTargetBitmap`. The
   screenshot harness hosts the gallery inside a plain `Window` with a solid
@@ -110,6 +215,45 @@ maintainers.
   menu is not picked up until the item is shown again. Fitting stays first-fit
   greedy, so a narrow item after a wide one keeps its place on the strip instead
   of being pushed into the menu with everything that follows it.
+- **`TitleBar` has no deactivated family** - WinUI's `TitleBar` dims eight
+  regions (back button, pane toggle, left header, icon, title text, subtitle
+  text, content presenter, right header) when the window loses activation,
+  most to `TitleBarDeactivatedOpacity` (0.5) and the text elements to
+  `TextFillColorTertiaryBrush` (`TitleBar.xaml:25-133`,
+  `TitleBar_themeresources.xaml:86` under WinUI CommonStyles). `FluenceWindow`
+  dims only its own title text; the icon, subtitle, and title-bar content
+  slots stay at full opacity on deactivation. See `docs/winui-parity.md`
+  section 8.
+- **High contrast interaction states collapse into one** - Fluence's high
+  contrast table resolves both `SubtleFillColorSecondary` and
+  `SubtleFillColorTertiary` to `SystemColors.Control`, so hover, pressed, and
+  selected visuals on menu items, list rows, and `NavigationView` items are
+  indistinguishable from each other and from the resting surface. WinUI keeps
+  these states visually distinct in high contrast by mapping pointer-over and
+  pressed to two different System accent-derived brushes
+  (`NavigationView_themeresources.xaml:142-143`). See `docs/winui-parity.md`
+  section 7.
+- **Pressed states are absent on stock WPF item containers** -
+  `ListViewItem`, `ListBoxItem`, `TreeViewItem`, and `TabViewItem` derive from
+  WPF base classes with no `IsPressed` concept the way `ButtonBase` has, so
+  none of them draw a pressed visual state, unlike their WinUI counterparts.
+  See `docs/winui-parity.md` section 8.
+- **`NumberBox` `Compact` mode is a hover-reveal panel, not a popup** - WinUI's
+  `Compact` spin-button mode opens an acrylic popup with 36px increment and
+  decrement buttons; Fluence instead reveals an inline panel on hover. See
+  `docs/winui-parity.md` sections 4 and 5.
+- **Text controls have no `Header` or `Description` template parts** -
+  `TextBox` and `PasswordBox` carry neither slot, so a consumer wanting a
+  label or helper text above or below the field must add its own
+  `TextBlock`; `NumberBox`'s header also does not dim when the control is
+  disabled, unlike WinUI's. See `docs/winui-parity.md` section 5.
+- **`TreeView`, `TabView`, and `PipsPager` geometry gaps** - `TreeView` and
+  `TabView` selection and separator metrics, and `PipsPager` pip pitch and
+  hover sizing, were not part of the current colour and role fix pass and
+  still differ from their WinUI CommonStyles sources (`TabView` draws no
+  inter-tab separator or corner fillets; `PipsPager` does not scale pips or
+  use a pressed scale on its nav buttons). See `docs/winui-parity.md`
+  section 6 for the full geometry table.
 
 ## net472 accessibility API gaps
 

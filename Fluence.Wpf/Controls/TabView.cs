@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,17 +57,17 @@ namespace Fluence.Wpf.Controls
     /// shown or hidden based on whether the tab strip overflows the available width.
     /// </para>
     /// </remarks>
-    [TemplatePart(Name = PartAddTabButton, Type = typeof(ButtonBase))]
-    [TemplatePart(Name = PartScrollBackButton, Type = typeof(RepeatButton))]
-    [TemplatePart(Name = PartScrollForwardButton, Type = typeof(RepeatButton))]
-    [TemplatePart(Name = PartTabContentScroller, Type = typeof(ScrollViewer))]
+    [TemplatePart(Name = PART_AddTabButton, Type = typeof(ButtonBase))]
+    [TemplatePart(Name = PART_ScrollBackButton, Type = typeof(RepeatButton))]
+    [TemplatePart(Name = PART_ScrollForwardButton, Type = typeof(RepeatButton))]
+    [TemplatePart(Name = PART_TabContentScroller, Type = typeof(ScrollViewer))]
     public class TabView : TabControl
     {
         // Template part names - must match names in the default control template.
-        private const string PartAddTabButton = "PART_AddTabButton";
-        private const string PartScrollBackButton = "PART_ScrollBackButton";
-        private const string PartScrollForwardButton = "PART_ScrollForwardButton";
-        private const string PartTabContentScroller = "PART_TabContentScroller";
+        private const string PART_AddTabButton = "PART_AddTabButton";
+        private const string PART_ScrollBackButton = "PART_ScrollBackButton";
+        private const string PART_ScrollForwardButton = "PART_ScrollForwardButton";
+        private const string PART_TabContentScroller = "PART_TabContentScroller";
 
         // Scroll amount for each click of the scroll navigation buttons. This is a fixed value rather than
         private const double ScrollAmount = 200.0;
@@ -116,7 +117,7 @@ namespace Fluence.Wpf.Controls
         public static readonly RoutedEvent TabCloseRequestedEvent = EventManager.RegisterRoutedEvent(
             nameof(TabCloseRequested),
             RoutingStrategy.Bubble,
-            typeof(RoutedEventHandler),
+            typeof(EventHandler<TabViewTabCloseRequestedEventArgs>),
             typeof(TabView));
 
         static TabView()
@@ -132,7 +133,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         public TabView()
         {
-            AddHandler(TabViewItem.CloseRequestedEvent, new RoutedEventHandler(OnChildCloseRequested));
+            AddHandler(TabViewItem.CloseRequestedEvent, new EventHandler<TabViewTabCloseRequestedEventArgs>(OnChildCloseRequested));
         }
 
         /// <summary>
@@ -177,8 +178,7 @@ namespace Fluence.Wpf.Controls
         /// Raised when the user clicks the close (×) button of a <see cref="TabViewItem"/>. The event
         /// args include the container and the bound item; consumers decide whether to remove it.
         /// </summary>
-        [SuppressMessage("Design", "S3908", Justification = "RoutedEventHandler is required by WPF's routed event infrastructure.")]
-        public event RoutedEventHandler TabCloseRequested
+        public event EventHandler<TabViewTabCloseRequestedEventArgs> TabCloseRequested
         {
             add => AddHandler(TabCloseRequestedEvent, value);
             remove => RemoveHandler(TabCloseRequestedEvent, value);
@@ -195,10 +195,10 @@ namespace Fluence.Wpf.Controls
             _scrollBackButton?.Click -= OnScrollBackClick;
             _scrollForwardButton?.Click -= OnScrollForwardClick;
             _tabContentScroller?.ScrollChanged -= OnTabScrollChanged;
-            _addTabButton = GetTemplateChild(PartAddTabButton) as ButtonBase;
-            _scrollBackButton = GetTemplateChild(PartScrollBackButton) as RepeatButton;
-            _scrollForwardButton = GetTemplateChild(PartScrollForwardButton) as RepeatButton;
-            _tabContentScroller = GetTemplateChild(PartTabContentScroller) as ScrollViewer;
+            _addTabButton = GetTemplateChild(PART_AddTabButton) as ButtonBase;
+            _scrollBackButton = GetTemplateChild(PART_ScrollBackButton) as RepeatButton;
+            _scrollForwardButton = GetTemplateChild(PART_ScrollForwardButton) as RepeatButton;
+            _tabContentScroller = GetTemplateChild(PART_TabContentScroller) as ScrollViewer;
             _addTabButton?.Click += OnAddTabButtonClick;
             _scrollBackButton?.Click += OnScrollBackClick;
             _scrollForwardButton?.Click += OnScrollForwardClick;
@@ -219,6 +219,63 @@ namespace Fluence.Wpf.Controls
         protected override bool IsItemItsOwnContainerOverride(object item)
         {
             return item is TabViewItem;
+        }
+
+        /// <inheritdoc />
+        protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+        {
+            base.PrepareContainerForItemOverride(element, item);
+
+            // Containers are generated lazily during layout, after OnItemsChanged has run, so
+            // the freshly prepared container must trigger its own leading-separator refresh.
+            // This also covers ItemsSource-bound items, where the container is not the data item
+            // itself and RelativeSource PreviousData binding has no adjacency information to bind to.
+            UpdateLeadingSeparators();
+        }
+
+        /// <inheritdoc />
+        protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsChanged(e);
+
+            // Adds, removes, moves, and resets can all change which tab is first or adjacent to
+            // the selection; refresh the realized containers immediately (new containers refresh
+            // again when prepared).
+            UpdateLeadingSeparators();
+        }
+
+        /// <inheritdoc />
+        protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+        {
+            base.OnSelectionChanged(e);
+
+            // The selected tab and its immediate neighbors need their leading separator
+            // recomputed whenever the selection moves.
+            UpdateLeadingSeparators();
+        }
+
+        /// <summary>
+        /// Reapplies <see cref="TabViewItem.LeadingSeparatorVisibility"/> across all realized
+        /// containers: the separator is collapsed for the first tab in the strip and for either
+        /// tab flanking the current selection, matching the WinUI TabViewItemSeparator behavior.
+        /// </summary>
+        private void UpdateLeadingSeparators()
+        {
+            int lastIndex = Items.Count - 1;
+            for (int index = 0; index <= lastIndex; index++)
+            {
+                if (ItemContainerGenerator.ContainerFromIndex(index) is not TabViewItem container)
+                {
+                    continue;
+                }
+
+                bool isFirst = index is 0;
+                bool isSelected = index == SelectedIndex;
+                bool previousIsSelected = index > 0 && index - 1 == SelectedIndex;
+                container.LeadingSeparatorVisibility = isFirst || isSelected || previousIsSelected
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
         }
 
         private void OnAddTabButtonClick(object sender, RoutedEventArgs e)
@@ -258,16 +315,11 @@ namespace Fluence.Wpf.Controls
                 : Visibility.Collapsed;
         }
 
-        private void OnChildCloseRequested(object sender, RoutedEventArgs e)
+        private void OnChildCloseRequested(object? sender, TabViewTabCloseRequestedEventArgs e)
         {
-            if (e is not TabViewTabCloseRequestedEventArgs inner)
-            {
-                return;
-            }
-
             // Consumers should handle one aggregate close request from TabView rather
             // than both the child TabViewItem event and the forwarded parent event.
-            TabViewTabCloseRequestedEventArgs forwarded = new(TabCloseRequestedEvent, this, inner.Tab, inner.Item);
+            TabViewTabCloseRequestedEventArgs forwarded = new(TabCloseRequestedEvent, this, e.Tab, e.Item);
             RaiseEvent(forwarded);
             e.Handled = true;
         }

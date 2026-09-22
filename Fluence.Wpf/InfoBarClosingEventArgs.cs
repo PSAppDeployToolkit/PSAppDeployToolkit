@@ -34,12 +34,23 @@ namespace Fluence.Wpf
     /// <summary>
     /// Provides data for the <see cref="InfoBar.Closing"/> event.
     /// </summary>
-    public class InfoBarClosingEventArgs : EventArgs
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="InfoBarClosingEventArgs"/> class.
+    /// </remarks>
+    /// <param name="reason">Why the info bar is closing.</param>
+    public class InfoBarClosingEventArgs(InfoBarCloseReason reason) : EventArgs
     {
         /// <summary>
         /// Gets or sets a value indicating whether the close operation should be canceled.
         /// Set to <see langword="true"/> to prevent the <see cref="InfoBar"/> from closing.
         /// </summary>
         public bool Cancel { get; set; }
+
+        /// <summary>
+        /// Gets the reason the info bar is closing. It matches the
+        /// <see cref="InfoBarClosedEventArgs.Reason"/> of the <see cref="InfoBar.Closed"/> that
+        /// follows when the close is not canceled.
+        /// </summary>
+        public InfoBarCloseReason Reason { get; } = reason;
     }
 }

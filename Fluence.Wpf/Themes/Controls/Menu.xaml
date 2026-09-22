@@ -15,6 +15,13 @@
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <!--
+            MenuBarHeight = 40 (WinUI 3 MenuBar.xaml DefaultMenuBarStyle sets MinHeight, not
+            Height, to this resource). Fluence's Menu is the WPF counterpart of WinUI's MenuBar,
+            so the bar is floored at that height rather than pinned to it, so a consumer that
+            puts taller content in a top-level item is not clipped.
+        -->
+        <Setter Property="MinHeight" Value="40" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
             <Setter.Value>

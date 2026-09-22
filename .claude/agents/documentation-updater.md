@@ -106,15 +106,15 @@ Before finishing, confirm:
 Return a concise report in this shape:
 
 ```markdown
-## Documentation Update Report
+## Documentation update report
 
-### Changes Made
+### Changes made
 | File | Section | Change |
 |------|---------|--------|
 | README.md | Installation | Updated Node.js version |
 | docs/api.md | /users endpoint | Added new query parameter |
 
-### Drift Detected
+### Drift detected
 - [File]: [What's outdated and still needs updating]
 
 ### Suggestions

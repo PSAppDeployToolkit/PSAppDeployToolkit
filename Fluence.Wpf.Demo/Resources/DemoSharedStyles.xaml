@@ -1,6 +1,6 @@
 ﻿<!--
     Copyright (C) 2026 Dan Cunningham. All rights reserved.
-    
+
     Shared demo gallery styles (merged by App.xaml and test host).
 -->
 <ResourceDictionary
@@ -11,9 +11,26 @@
 
     <!--  **** Demo App Layout ****  -->
 
-    <Thickness x:Key="DemoPageContentMargin">36,24,36,48</Thickness>
-    <Thickness x:Key="DemoPageTitleMargin">0,0,0,8</Thickness>
+    <!--  WinUI 3 Gallery ControlPage content margin parity: left and top match the Gallery's ItemPage.xaml root margin; the right side is trimmed 1px narrower than the left to leave room for the page ScrollViewer's Auto vertical scrollbar gutter (GalleryPageScrollViewerStyle) without shifting the visible card's right edge. The bottom is 0: this margin sits on the content Grid whose last row is the scroll host, so a bottom inset here is dead space under the scroller rather than trailing room after the last card. Trailing room belongs on the scrolling content (DemoPageScrollContentMargin), where it scrolls with the samples.  -->
+    <Thickness x:Key="DemoPageContentMargin">45,24,44,0</Thickness>
+    <!--  The same page margin for a page whose root IS the scroll host (GalleryHomePage), so this margin lands on the scrolling content rather than on a Grid above it. The bottom inset is the Gallery's trailing room after the last card, and here it scrolls with the content, so it is carried rather than dropped.  -->
+    <Thickness x:Key="DemoPageStackContentMargin">45,24,44,48</Thickness>
     <Thickness x:Key="DemoPageDescriptionMargin">0,0,0,24</Thickness>
+    <!--
+        Scroll-host geometry, measured against the WinUI 3 Gallery at 150% DPI. The Gallery puts its
+        page ScrollViewer outside the ItemPage content margin entirely, so the rail rides the window
+        frame at the far right of the navigation view's content and the sample cards keep the page
+        margin. Here the scroll host lives inside the content Grid, so it gives the whole right page
+        margin back (DemoPageScrollHostMargin) to reach the frame, and the scrolling content pays the
+        same amount again (DemoPageScrollContentMargin) so the cards still end where the page title
+        does. The scrolling content also carries the Gallery's 48 dip bottom inset, so the trailing
+        room after the last card scrolls with the samples instead of standing as dead space under the
+        scroll host. The Colors page uses the same host margin for its per-section scroll hosts, with
+        DemoColorSectionContentMargin as its matching gutter, so every page's rail sits in the same
+        place.
+    -->
+    <Thickness x:Key="DemoPageScrollHostMargin">0,0,-44,0</Thickness>
+    <Thickness x:Key="DemoPageScrollContentMargin">0,0,44,48</Thickness>
     <Thickness x:Key="DemoCompactStackSpacingMargin">0,0,0,8</Thickness>
     <Thickness x:Key="DemoTextTopGapMargin">0,6,0,0</Thickness>
     <!--  Vertical margin is split top/bottom (6+6) rather than bottom-only (0+12) so a control group centered in a demo sample card sits equidistant from the card's top and bottom. Total spacing is unchanged: 12px between wrapped rows, 12px between items horizontally, flush-left.  -->
@@ -34,8 +51,21 @@
     <Thickness x:Key="DemoTabContentMargin">20</Thickness>
     <Thickness x:Key="DemoListItemMargin">0,4</Thickness>
     <Thickness x:Key="DemoNavigationHeaderMargin">12,8</Thickness>
-    <Thickness x:Key="DemoNavigationContentMargin">20</Thickness>
+    <Thickness x:Key="DemoNavigationContentMargin">20,20,20,0</Thickness>
     <Thickness x:Key="DemoNavigationDescriptionMargin">0,6,0,0</Thickness>
+    <!--  GalleryPageHeader (WinUI Gallery Controls/PageHeader.xaml): title row, then an action row at Margin 0,12,0,12 whose buttons are 31 tall with 4px gaps (per-button Margin in WinUI, Spacing here); drop-down content is icon 16 plus text at Spacing 8; the AppBarSeparator between theme and copy-link is 1px wide with 8px vertical inset.  -->
+    <sys:Double x:Key="DemoPageHeaderActionSpacing">4</sys:Double>
+    <Thickness x:Key="DemoPageHeaderActionRowMargin">0,12,0,12</Thickness>
+    <sys:Double x:Key="DemoPageHeaderButtonHeight">31</sys:Double>
+    <!--  WinUI Gallery PageHeader action row: the icon-only theme toggle, copy-link and favorite buttons measure 40 wide (distinct from DemoCopyButtonMinWidth, which stays 32 for the unrelated code/color copy buttons elsewhere).  -->
+    <sys:Double x:Key="DemoPageHeaderActionButtonMinWidth">40</sys:Double>
+    <sys:Double x:Key="DemoPageHeaderIconFontSize">16</sys:Double>
+    <sys:Double x:Key="DemoPageHeaderDropDownContentSpacing">8</sys:Double>
+    <sys:Double x:Key="DemoPageHeaderFlyoutMinWidth">220</sys:Double>
+    <Thickness x:Key="DemoPageHeaderFlyoutSeparatorMargin">0,8</Thickness>
+    <sys:Double x:Key="DemoPageHeaderSeparatorWidth">1</sys:Double>
+    <Thickness x:Key="DemoPageHeaderSeparatorMargin">0,8</Thickness>
+    <Geometry x:Key="DemoGitHubIconGeometry">M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z</Geometry>
     <Thickness x:Key="DemoFlyoutPanelMargin">4</Thickness>
     <Thickness x:Key="DemoSingleBorderThickness">1</Thickness>
     <Thickness x:Key="DemoDataBindingSecondaryTextMargin">32,0,0,0</Thickness>
@@ -52,16 +82,70 @@
     <!--  Vertical padding pairs with the 32px WinUI chevron backplate to keep the 48px source header height.  -->
     <Thickness x:Key="DemoSampleSourceHeaderPadding">24,8</Thickness>
     <Thickness x:Key="DemoSampleSourceTabMargin">16,8,16,16</Thickness>
+    <!--  WinUI Gallery ControlExample.xaml: the source SelectorBar carries Margin 4,0,0,0 above the code presenters.  -->
+    <Thickness x:Key="DemoSampleSourceSelectorMargin">4,0,0,0</Thickness>
     <Thickness x:Key="DemoSourceCodeDocumentPadding">12</Thickness>
     <Thickness x:Key="DemoSourceCopyButtonHostMargin">0,8,8,0</Thickness>
     <Thickness x:Key="DemoSourceCopyButtonPadding">8,4</Thickness>
     <Thickness x:Key="DemoSourceChevronMargin">8,0,0,0</Thickness>
-    <Thickness x:Key="DemoCodeCardBottomGapMargin">0,0,0,20</Thickness>
-    <Thickness x:Key="DemoCodeCopyButtonGapMargin">12,0,0,0</Thickness>
+    <!--  DemoCodePresenter (WinUI Gallery SampleCodePresenter, inline state): body-size code, 14/20, no plate.  -->
+    <sys:Double x:Key="DemoCodePresenterLineHeight">20</sys:Double>
+    <Thickness x:Key="DemoCodePresenterPadding">0,4</Thickness>
+    <Thickness x:Key="DemoCodePresenterMargin">0,16,0,0</Thickness>
     <sys:Double x:Key="DemoCopyButtonMinWidth">32</sys:Double>
+    <sys:Double x:Key="DemoCopyGlyphFontSize">16</sys:Double>
     <FontFamily x:Key="DemoMonospaceFontFamily">Cascadia Mono, Consolas</FontFamily>
     <sys:Double x:Key="DemoSampleOutputMinWidth">220</sys:Double>
     <sys:Double x:Key="DemoSampleRightRailMinWidth">220</sys:Double>
+    <!--  WinUI Gallery ControlExample demo area is taller than a bare control needs (93 dip for a single-control sample); DemoRegionGrid's MinHeight makes up the difference (93 minus the 16+16 DemoSampleCardPadding top/bottom margin) without capping taller multi-row samples.  -->
+    <sys:Double x:Key="DemoSampleDemoAreaMinHeight">61</sys:Double>
+
+    <!--  **** Demo Colors Page ****  -->
+    <!--  WinUI Gallery Color page metrics: App.xaml ColorSectionSpacing (4), ColorPageExample.xaml (Margin 0,36,0,8; Padding 12; RowSpacing 4; content Margin 0,8,0,0), ColorTile.xaml (Padding 12; RowSpacing 6 with the explanation pulled up 4; content row MinHeight 30), and the example element sizes in ColorSections/*Section.xaml.  -->
+    <sys:Double x:Key="DemoColorSectionSpacing">4</sys:Double>
+    <Thickness x:Key="DemoColorExampleMargin">0,36,0,8</Thickness>
+    <Thickness x:Key="DemoColorExamplePadding">12</Thickness>
+    <Thickness x:Key="DemoColorExampleDescriptionMargin">0,4,0,0</Thickness>
+    <Thickness x:Key="DemoColorExampleContentMargin">0,8,0,0</Thickness>
+    <sys:Double x:Key="DemoColorExampleGlyphFontSize">42</sys:Double>
+    <Thickness x:Key="DemoColorTilePadding">12</Thickness>
+    <Thickness x:Key="DemoColorTileExplanationMargin">0,2,0,0</Thickness>
+    <Thickness x:Key="DemoColorTileBrushNameMargin">0,6,0,0</Thickness>
+    <sys:Double x:Key="DemoColorTileContentMinHeight">30</sys:Double>
+    <Thickness x:Key="DemoColorTileSeparatorThickness">0,0,1,0</Thickness>
+    <!--  Tile end radii are OverlayCornerRadius (8) minus the 1px tile-grid stroke, so tiles sit flush inside the rounded grid surface without clipping.  -->
+    <CornerRadius x:Key="DemoColorTileOnlyCornerRadius">7</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileFirstCornerRadius">7,0,0,7</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileLastCornerRadius">0,7,7,0</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileTopLeftCornerRadius">7,0,0,0</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileTopRightCornerRadius">0,7,0,0</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileBottomRightCornerRadius">0,0,7,0</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileBottomLeftCornerRadius">0,0,0,7</CornerRadius>
+    <CornerRadius x:Key="DemoColorTileMiddleCornerRadius">0</CornerRadius>
+    <sys:Double x:Key="DemoColorExampleSurfaceWidth">120</sys:Double>
+    <sys:Double x:Key="DemoColorExampleSurfaceHeight">40</sys:Double>
+    <sys:Double x:Key="DemoColorExampleCardWidth">60</sys:Double>
+    <sys:Double x:Key="DemoColorExampleCardStrokeHeight">48</sys:Double>
+    <sys:Double x:Key="DemoColorExampleCardBackgroundHeight">30</sys:Double>
+    <sys:Double x:Key="DemoColorExampleLayerInnerWidth">90</sys:Double>
+    <Thickness x:Key="DemoColorExampleLayerInnerBorderThickness">1,0,0,0</Thickness>
+    <sys:Double x:Key="DemoColorExampleSliderMinWidth">240</sys:Double>
+    <sys:Double x:Key="DemoColorExampleScrollBarWidth">200</sys:Double>
+    <sys:Double x:Key="DemoColorExampleScrollBarHeight">20</sys:Double>
+    <sys:Double x:Key="DemoColorExampleToggleSwitchWidth">40</sys:Double>
+    <sys:Double x:Key="DemoColorExampleTabItemWidth">150</sys:Double>
+    <sys:Double x:Key="DemoColorExampleTabItemHeight">30</sys:Double>
+    <Thickness x:Key="DemoColorExampleTabItemMargin">8</Thickness>
+    <sys:Double x:Key="DemoColorExampleImageHeight">150</sys:Double>
+    <sys:Double x:Key="DemoColorExampleImageWidth">240</sys:Double>
+    <sys:Double x:Key="DemoColorExampleOnImageBadgeSize">20</sys:Double>
+    <Thickness x:Key="DemoColorExampleOnImageBadgeMargin">8</Thickness>
+    <Thickness x:Key="DemoColorExampleSubtleRestPadding">8</Thickness>
+    <Thickness x:Key="DemoColorExampleSubtleHoverPadding">12</Thickness>
+    <sys:Double x:Key="DemoColorExampleSubtleHoverMinWidth">120</sys:Double>
+    <Thickness x:Key="DemoColorExampleFocusStrokeThickness">2</Thickness>
+    <CornerRadius x:Key="DemoColorExampleFocusOuterCornerRadius">10</CornerRadius>
+    <CornerRadius x:Key="DemoColorExampleFocusInnerCornerRadius">9</CornerRadius>
 
     <!--  **** Demo Styles *** Settings \ Accent Color  -->
 
@@ -149,16 +233,6 @@
 
     <!--  **** Demo Styles *** Shared General  -->
 
-    <Style
-        x:Key="PageTitleStyle"
-        BasedOn="{StaticResource {x:Type TextBlock}}"
-        TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="Margin" Value="{DynamicResource DemoPageTitleMargin}" />
-    </Style>
-
     <!--  **** Demo Styles *** Gallery Page Shared  -->
 
     <Style x:Key="GalleryPageRootStyle" TargetType="{x:Type Grid}">
@@ -175,7 +249,7 @@
 
     <Style x:Key="GalleryPageContentStackStyle" TargetType="{x:Type StackPanel}">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="{DynamicResource DemoPageContentMargin}" />
+        <Setter Property="Margin" Value="{DynamicResource DemoPageStackContentMargin}" />
     </Style>
 
     <Style x:Key="GalleryPageContentGridStyle" TargetType="{x:Type Grid}">
@@ -261,20 +335,10 @@
         x:Key="SectionDescriptionStyle"
         BasedOn="{StaticResource {x:Type TextBlock}}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <!--  WinUI Gallery parity: ItemPage.xaml's descriptionText TextBlock (WinUIGallery/Pages/ItemPage.xaml:53-61) uses BodyTextBlockStyle, which does not override Foreground, so it resolves to the page's default (primary) text color rather than a secondary/dimmed one.  -->
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="Margin" Value="{DynamicResource DemoPageDescriptionMargin}" />
         <Setter Property="TextWrapping" Value="Wrap" />
-    </Style>
-
-    <Style
-        x:Key="DemoCodeSampleTextStyle"
-        BasedOn="{StaticResource {x:Type TextBlock}}"
-        TargetType="{x:Type TextBlock}">
-        <Setter Property="FontFamily" Value="{StaticResource DemoMonospaceFontFamily}" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style
@@ -345,4 +409,83 @@
         </Style.Triggers>
     </Style>
 
+    <!--  WinUI Gallery ColorPage.xaml: the SelectorBar carries Margin -12,0,0,0 so its first label aligns with the text above.  -->
+    <Thickness x:Key="DemoColorSelectorBarMargin">-12,4,0,0</Thickness>
+    <!--
+        The section content pays back the whole right page margin its scroll host gave up
+        (DemoPageScrollHostMargin), so the rail rides the window frame as it does on every other
+        gallery page and the tiles still line up with the page title on the left. The 48 dip bottom is
+        the Gallery's trailing room after the last tile row, scrolling with the section.
+    -->
+    <Thickness x:Key="DemoColorSectionContentMargin">0,0,44,48</Thickness>
+    <Thickness x:Key="DemoNoMargin">0</Thickness>
+
+    <!--  Home: the theme-aware brand lockup leads a compact native control catalog.  -->
+    <Thickness x:Key="HomeHeroMargin">0,16,0,36</Thickness>
+    <Thickness x:Key="HomeSocialLinksMargin">0,12,0,0</Thickness>
+    <Thickness x:Key="HomeActionsMargin">0,16,0,0</Thickness>
+    <Thickness x:Key="HomeSectionDescriptionMargin">0,6,0,20</Thickness>
+    <Thickness x:Key="HomeCatalogGridMargin">-6,0,-6,0</Thickness>
+    <Thickness x:Key="HomeFoundationsHeadingMargin">0,24,0,16</Thickness>
+
+    <!--  Exact Bootstrap Icons SVG paths (MIT); sources and license: BootstrapIcons.LICENSE.md.  -->
+    <Geometry x:Key="HomeGitHubGeometry">F1M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8</Geometry>
+    <Geometry x:Key="HomeLinkedInGeometry">F1M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z</Geometry>
+
+    <Style x:Key="HomeBrandImageStyle" TargetType="{x:Type Image}">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="MaxWidth" Value="620" />
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
+    <Style x:Key="HomeSecondaryTextStyle" BasedOn="{StaticResource BodyTextBlockStyle}" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="HomeIntroStyle" BasedOn="{StaticResource HomeSecondaryTextStyle}" TargetType="{x:Type TextBlock}">
+        <Setter Property="Margin" Value="0,20,0,0" />
+        <Setter Property="MaxWidth" Value="480" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="HomeSocialLinkStyle" BasedOn="{StaticResource {x:Type fluence:HyperlinkButton}}" TargetType="{x:Type fluence:HyperlinkButton}">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Margin" Value="4,0,4,0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <Style x:Key="HomeSocialIconStyle" TargetType="{x:Type Path}">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type fluence:HyperlinkButton}}}" />
+    </Style>
+
+    <Style x:Key="HomeCatalogCardStyle" TargetType="{x:Type fluence:Card}">
+        <Setter Property="IsClickable" Value="True" />
+        <Setter Property="Margin" Value="6,0,6,12" />
+        <Setter Property="MinHeight" Value="104" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+    </Style>
+
+    <Style x:Key="HomeFoundationCardStyle" BasedOn="{StaticResource HomeCatalogCardStyle}" TargetType="{x:Type fluence:Card}">
+        <Setter Property="MinHeight" Value="88" />
+        <Setter Property="Variant" Value="Outlined" />
+    </Style>
+
+    <Style x:Key="HomeCatalogIconStyle" TargetType="{x:Type fluence:FontIcon}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="IconFontSize" Value="20" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="HomeCardDescriptionStyle" BasedOn="{StaticResource CaptionTextBlockStyle}" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
 </ResourceDictionary>

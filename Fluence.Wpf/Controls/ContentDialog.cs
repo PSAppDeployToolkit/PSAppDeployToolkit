@@ -56,6 +56,7 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_PrimaryButton, Type = typeof(ButtonBase))]
     [TemplatePart(Name = PART_SecondaryButton, Type = typeof(ButtonBase))]
     [TemplatePart(Name = PART_CloseButton, Type = typeof(ButtonBase))]
+    [TemplatePart(Name = PART_DialogOverlayHost, Type = typeof(Panel))]
     public class ContentDialog : ContentControl
     {
         // Template part names.
@@ -66,7 +67,15 @@ namespace Fluence.Wpf.Controls
         // Name of the optional full-window overlay host panel a window template may expose
         // (FluenceWindow does) so the dialog can dim and block the entire window, title bar
         // included, instead of only the content adorner layer.
-        private const string DialogOverlayHostPart = "PART_DialogOverlayHost";
+        private const string PART_DialogOverlayHost = "PART_DialogOverlayHost";
+
+        // Keep the reservation on the owner itself, without a static window registry.
+        private static readonly DependencyProperty ActiveDialogProperty =
+            DependencyProperty.RegisterAttached(
+                "ActiveDialog",
+                typeof(ContentDialog),
+                typeof(ContentDialog),
+                new PropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Initializes static members of the ContentDialog class and overrides the default
@@ -397,12 +406,12 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Occurs after the dialog has been added to the owner window's adorner layer.
         /// </summary>
-        public event EventHandler? Opened;
+        public event EventHandler<ContentDialogOpenedEventArgs>? Opened;
 
         /// <summary>
         /// Occurs after the dialog has been removed from the owner window's adorner layer.
         /// </summary>
-        public event EventHandler? Closed;
+        public event EventHandler<ContentDialogClosedEventArgs>? Closed;
 
         /// <summary>
         /// Shows the dialog modally over the active window (or the application main window)
@@ -414,12 +423,13 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <returns>A task that completes with the dialog result when the dialog closes.</returns>
         /// <exception cref="InvalidOperationException">
-        /// The dialog is already open, no owner window could be resolved, the owner window has
+        /// This dialog or another dialog on the same owner is already open, no owner window could be resolved, the owner window has
         /// no <see cref="UIElement"/> content root, or no adorner layer exists above the owner
         /// window content.
         /// </exception>
         public Task<ContentDialogResult> ShowAsync()
         {
+            VerifyAccess();
             if (_showCompletionSource is not null)
             {
                 throw new InvalidOperationException(
@@ -427,13 +437,18 @@ namespace Fluence.Wpf.Controls
             }
 
             Window owner = ResolveOwnerWindow();
+            if (owner.GetValue(ActiveDialogProperty) is ContentDialog)
+            {
+                throw new InvalidOperationException(
+                    "This window already has an open ContentDialog. Wait for its ShowAsync task to complete before opening another dialog.");
+            }
 
             // Prefer a full-window overlay host: a FluenceWindow exposes PART_DialogOverlayHost,
             // a panel that spans the title bar and the content, so the dialog dims and blocks the
             // entire window (including title-bar content such as a search box). Fall back to the
             // content adorner layer for plain windows, whose client area carries no extra chrome.
             Panel? overlayHost =
-                (owner as Control)?.Template?.FindName(DialogOverlayHostPart, owner) as Panel;
+                (owner as Control)?.Template?.FindName(PART_DialogOverlayHost, owner) as Panel;
 
             UIElement? adornedContent = null;
             AdornerLayer? adornerLayer = null;
@@ -453,44 +468,56 @@ namespace Fluence.Wpf.Controls
 
             TaskCompletionSource<ContentDialogResult> completionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _showCompletionSource = completionSource;
-            _previousFocus = Keyboard.FocusedElement;
-            _overlayRoot = BuildOverlayRoot();
-
-            if (overlayHost is not null)
-            {
-                _overlayHostPanel = overlayHost;
-                _ = overlayHost.Children.Add(_overlayRoot);
-            }
-            else
-            {
-                _hostLayer = adornerLayer;
-                _hostAdorner = new DialogHostAdorner(adornedContent!, _overlayRoot);
-                adornerLayer!.Add(_hostAdorner);
-            }
-
-            // Defense in depth (and the only block on the adorner path, where the smoke covers
-            // just the content): swallow any pointer press in the owner window whose source is
-            // not inside the dialog, keeping chrome such as a title-bar search box inert. Key
-            // input gets the same treatment so chrome that already holds keyboard focus cannot
-            // be typed into while the dialog is modal; key events whose source is inside the
-            // dialog pass through untouched, preserving the dialog's own Tab cycle and keys.
             _owner = owner;
-            _ownerInputBlocker = OnOwnerPreviewMouseDown;
-            owner.AddHandler(PreviewMouseDownEvent, _ownerInputBlocker, handledEventsToo: true);
-            _ownerKeyInputBlocker = OnOwnerPreviewKeyDown;
-            owner.AddHandler(PreviewKeyDownEvent, _ownerKeyInputBlocker, handledEventsToo: true);
+            owner.SetValue(ActiveDialogProperty, this);
+            try
+            {
+                _previousFocus = Keyboard.FocusedElement;
+                _overlayRoot = BuildOverlayRoot();
 
-            // If the owner window closes while the dialog is open (Alt+F4 or the native close
-            // button on a plain window), close the dialog too so the pending ShowAsync task
-            // completes instead of hanging forever. CloseDialog unsubscribes.
-            owner.Closed += OnOwnerClosed;
+                if (overlayHost is not null)
+                {
+                    _overlayHostPanel = overlayHost;
+                    _ = overlayHost.Children.Add(_overlayRoot);
+                }
+                else
+                {
+                    _hostLayer = adornerLayer;
+                    _hostAdorner = new DialogHostAdorner(adornedContent!, _overlayRoot);
+                    adornerLayer!.Add(_hostAdorner);
+                }
 
-            // The template (and with it the command buttons) is applied during the layout
-            // pass that realizes the adorner, so move initial focus once layout has run.
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(MoveInitialFocus));
+                // Defense in depth (and the only block on the adorner path, where the smoke covers
+                // just the content): swallow any pointer press in the owner window whose source is
+                // not inside the dialog, keeping chrome such as a title-bar search box inert. Key
+                // input gets the same treatment so chrome that already holds keyboard focus cannot
+                // be typed into while the dialog is modal; key events whose source is inside the
+                // dialog pass through untouched, preserving the dialog's own Tab cycle and keys.
+                _ownerInputBlocker = OnOwnerPreviewMouseDown;
+                owner.AddHandler(PreviewMouseDownEvent, _ownerInputBlocker, handledEventsToo: true);
+                _ownerKeyInputBlocker = OnOwnerPreviewKeyDown;
+                owner.AddHandler(PreviewKeyDownEvent, _ownerKeyInputBlocker, handledEventsToo: true);
 
-            BeginOpenAnimation();
-            Opened?.Invoke(this, EventArgs.Empty);
+                // If the owner window closes while the dialog is open (Alt+F4 or the native close
+                // button on a plain window), close the dialog too so the pending ShowAsync task
+                // completes instead of hanging forever. CloseDialog unsubscribes.
+                owner.Closed += OnOwnerClosed;
+
+                // The template (and with it the command buttons) is applied during the layout
+                // pass that realizes the adorner, so move initial focus once layout has run.
+                _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(MoveInitialFocus));
+
+                BeginOpenAnimation();
+                Opened?.Invoke(this, new ContentDialogOpenedEventArgs());
+            }
+            catch
+            {
+                // An unsupported parent, template failure or Opened handler must not leave
+                // either this instance or the owner reserved by an unsuccessful show.
+                CompleteClose(ContentDialogResult.None, raiseClosed: false);
+                throw;
+            }
+
             return completionSource.Task;
         }
 
@@ -627,7 +654,9 @@ namespace Fluence.Wpf.Controls
         /// <param name="e">The event data.</param>
         private void OnOwnerClosed(object? sender, EventArgs e)
         {
-            CloseDialog(ContentDialogResult.None);
+            // An exit animation may already be pending when the owner closes. Its clocks
+            // need not tick again, so finish synchronously even in that case.
+            CompleteClose(ContentDialogResult.None);
         }
 
         /// <summary>
@@ -659,7 +688,7 @@ namespace Fluence.Wpf.Controls
             // storyboard attributes cannot reference and code therefore mirrors by value:
             // ControlFasterAnimationDuration (83 ms) for the linear opacity rise and
             // ControlNormalAnimationDuration (250 ms) with ControlFastOutSlowInKeySpline
-            // (0.8,0,0,1) for the scale settle.
+            // (0,0,0,1) for the scale settle.
             DoubleAnimationUsingKeyFrames opacityAnimation = new()
             {
                 FillBehavior = FillBehavior.Stop,
@@ -691,7 +720,7 @@ namespace Fluence.Wpf.Controls
                     new SplineDoubleKeyFrame(
                         1.0,
                         KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(OpenScaleMilliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                        MotionHelper.FastOutSlowInKeySpline),
                 },
             };
         }
@@ -922,7 +951,7 @@ namespace Fluence.Wpf.Controls
 
             // WinUI ContentDialog_themeresources.xaml "To=DialogHidden" transition: scale
             // 1.0 to 1.05 over 167 ms (ControlFastAnimationDuration) on
-            // ControlFastOutSlowInKeySpline (0.8,0,0,1), opacity 1 to 0 linear over 83 ms
+            // ControlFastOutSlowInKeySpline (0,0,0,1), opacity 1 to 0 linear over 83 ms
             // (ControlFasterAnimationDuration); code mirrors the Typography.xaml token
             // values. The keyframe tracks omit the discrete start so each animation departs
             // from the live value, which keeps a close during the entrance continuing from
@@ -941,12 +970,9 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames scaleYAnimation = CreateCloseScaleAnimation();
             scaleXAnimation.Completed += (_, _) =>
             {
-                // CompleteClose collapses the dialog before the clocks are released, so the
-                // Stop-fill revert to the base values can never paint a frame.
+                // Teardown releases the clocks before notifying Closed, whose handler may
+                // immediately show the same dialog again with fresh entrance animations.
                 CompleteClose(result);
-                scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
-                scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation: null);
-                BeginAnimation(OpacityProperty, animation: null);
             };
 
             BeginAnimation(OpacityProperty, opacityAnimation);
@@ -970,7 +996,7 @@ namespace Fluence.Wpf.Controls
                     new SplineDoubleKeyFrame(
                         1.05,
                         KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(CloseScaleMilliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                        MotionHelper.FastOutSlowInKeySpline),
                 },
             };
         }
@@ -983,7 +1009,8 @@ namespace Fluence.Wpf.Controls
         /// motion is disabled or the dialog is not rendered.
         /// </summary>
         /// <param name="result">The result to close the dialog with.</param>
-        private void CompleteClose(ContentDialogResult result)
+        /// <param name="raiseClosed">Whether a successfully opened dialog is closing.</param>
+        private void CompleteClose(ContentDialogResult result, bool raiseClosed = true)
         {
             if (_showCompletionSource is null)
             {
@@ -992,55 +1019,75 @@ namespace Fluence.Wpf.Controls
 
             TaskCompletionSource<ContentDialogResult> completionSource = _showCompletionSource;
             _showCompletionSource = null;
+            Window? owner = _owner;
 
-            if (_owner is not null)
+            try
             {
-                if (_ownerInputBlocker is not null)
+                if (_owner is not null)
                 {
-                    _owner.RemoveHandler(PreviewMouseDownEvent, _ownerInputBlocker);
+                    if (_ownerInputBlocker is not null)
+                    {
+                        _owner.RemoveHandler(PreviewMouseDownEvent, _ownerInputBlocker);
+                    }
+
+                    if (_ownerKeyInputBlocker is not null)
+                    {
+                        _owner.RemoveHandler(PreviewKeyDownEvent, _ownerKeyInputBlocker);
+                    }
+
+                    _owner.Closed -= OnOwnerClosed;
                 }
 
-                if (_ownerKeyInputBlocker is not null)
+                _owner = null;
+                _ownerInputBlocker = null;
+                _ownerKeyInputBlocker = null;
+
+                _overlayRoot?.Children.Remove(this);
+
+                // Back to the at-rest contract: a dialog that is not overlay-hosted renders nothing.
+                SetCurrentValue(VisibilityProperty, Visibility.Collapsed);
+
+                // Undo the exit state stamped by CloseDialog so a reshown dialog is interactive.
+                SetCurrentValue(IsHitTestVisibleProperty, value: true);
+                _isClosing = false;
+
+                _overlayHostPanel?.Children.Remove(_overlayRoot);
+                _overlayHostPanel = null;
+
+                if (_hostAdorner is not null)
                 {
-                    _owner.RemoveHandler(PreviewKeyDownEvent, _ownerKeyInputBlocker);
+                    _hostLayer?.Remove(_hostAdorner);
+                    _hostAdorner = null;
                 }
 
-                _owner.Closed -= OnOwnerClosed;
+                _hostLayer = null;
+                _overlayRoot = null;
+
+                BeginAnimation(OpacityProperty, animation: null);
+                if (RenderTransform is ScaleTransform { IsFrozen: false } scale)
+                {
+                    scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+                    scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation: null);
+                }
+
+                if (_previousFocus is not null)
+                {
+                    _ = Keyboard.Focus(_previousFocus);
+                    _previousFocus = null;
+                }
             }
-
-            _owner = null;
-            _ownerInputBlocker = null;
-            _ownerKeyInputBlocker = null;
-
-            _overlayRoot?.Children.Remove(this);
-
-            // Back to the at-rest contract: a dialog that is not overlay-hosted renders nothing.
-            SetCurrentValue(VisibilityProperty, Visibility.Collapsed);
-
-            // Undo the exit state stamped by CloseDialog so a reshown dialog is interactive.
-            SetCurrentValue(IsHitTestVisibleProperty, value: true);
-            _isClosing = false;
-
-            _overlayHostPanel?.Children.Remove(_overlayRoot);
-            _overlayHostPanel = null;
-
-            if (_hostAdorner is not null)
+            finally
             {
-                _hostLayer?.Remove(_hostAdorner);
-                _hostAdorner = null;
+                if (owner is not null && ReferenceEquals(owner.GetValue(ActiveDialogProperty), this))
+                {
+                    owner.ClearValue(ActiveDialogProperty);
+                }
+                _ = completionSource.TrySetResult(result);
             }
-
-            _hostLayer = null;
-            _overlayRoot = null;
-
-            if (_previousFocus is not null)
+            if (raiseClosed)
             {
-                _ = Keyboard.Focus(_previousFocus);
-                _previousFocus = null;
+                Closed?.Invoke(this, new ContentDialogClosedEventArgs(result));
             }
-
-            _ = completionSource.TrySetResult(result);
-            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

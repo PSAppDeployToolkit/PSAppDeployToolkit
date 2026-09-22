@@ -38,7 +38,7 @@ namespace Fluence.Wpf.Demo.Pages
     /// <summary>
     /// Gallery page demonstrating ObservableCollection binding and ListView SelectionMode variants.
     /// </summary>
-    public partial class GalleryDataBindingPage : UserControl
+    public partial class GalleryDataBindingPage : Page
     {
         private static readonly string ObservableCollectionListViewXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.DataBinding.ObservableCollectionListView",

@@ -3,6 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
 
+    <!--  The item corner radius is the published ComboBoxItemCornerRadius (WinUI's 3, deliberately not ControlCornerRadius 4), defined beside the other corner radii in SpecialBrushes.AddSharedTokens so an application overriding corner radii reaches it through a supported key.  -->
+
     <Style x:Key="ComboBoxToggleStyle" TargetType="{x:Type ToggleButton}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -25,14 +27,17 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="12,8" />
+        <!--  WinUI ComboBoxItemThemePadding = 11,5,11,7 (ComboBox_themeresources_perf2026.xaml line 335)  -->
+        <Setter Property="Padding" Value="11,5,11,7" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <!--  WinUI LayoutRoot Margin = 5,2,5,2 (ComboBox_themeresources_perf2026.xaml line 568)  -->
                     <Border
                         x:Name="OuterBorder"
+                        Margin="5,2,5,2"
                         Background="Transparent"
-                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        CornerRadius="{DynamicResource ComboBoxItemCornerRadius}">
                         <Grid>
                             <ContentPresenter
                                 Margin="{TemplateBinding Padding}"
@@ -41,15 +46,29 @@
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <!--  WinUI ComboBoxItemPillWidth 3, ComboBoxItemPillHeight 16, ComboBoxItemPillCornerRadius 1.5, pill Margin 1,0,0,0 (ComboBox_themeresources_perf2026.xaml lines 325, 324, 346 and 526)  -->
                             <Border
                                 x:Name="SelectionIndicator"
-                                Width="3.5"
+                                Width="3"
                                 Height="16"
+                                Margin="1,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                CornerRadius="2"
-                                Opacity="0" />
+                                Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
+                                CornerRadius="1.5"
+                                Opacity="0"
+                                RenderTransformOrigin="0.5,0.5">
+                                <!--
+                                    The pill takes the shared indicator brush rather than the accent fill
+                                    directly. WinUI keys it separately (ComboBoxItemPillFillBrush, the accent
+                                    fill in light and dark at ComboBox_themeresources.xaml:106,316) but swaps
+                                    it in high contrast (:211), and the shared key is where Fluence keeps that
+                                    swap for every other selection indicator in the library.
+                                -->
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="SelectionIndicatorScale" />
+                                </Border.RenderTransform>
+                            </Border>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -57,7 +76,7 @@
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                             <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
                         </Trigger>
                         <MultiTrigger>
@@ -72,13 +91,66 @@
                                 <Condition Property="IsSelected" Value="True" />
                                 <Condition Property="IsEnabled" Value="False" />
                             </MultiTrigger.Conditions>
+                            <!--  The pill keeps full strength while the item is selected and disabled, as WinUI's SelectedDisabled state does (ComboBox_themeresources.xaml:689-692); only the row fill and the text take disabled tokens.  -->
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="0.4" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </Trigger>
+
+                        <!--
+                            Pressing a selected row squashes its pill to ComboBoxItemPillMinScale 0.625 over
+                            ComboBoxItemScaleAnimationDuration 167 ms on the fast out slow in spline, which is
+                            WinUI's SelectedPressed state (ComboBox_themeresources.xaml:726-727, constants
+                            :326 and :330). WPF's ComboBoxItem carries no IsPressed property, so the press is
+                            read from the mouse button events the item already receives.
+                        -->
+                        <EventTrigger RoutedEvent="UIElement.PreviewMouseLeftButtonDown">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="SelectionIndicatorScale"
+                                        Storyboard.TargetProperty="ScaleY"
+                                        To="0.625"
+                                        Duration="0:0:0.167">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="UIElement.PreviewMouseLeftButtonUp">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="SelectionIndicatorScale"
+                                        Storyboard.TargetProperty="ScaleY"
+                                        To="1"
+                                        Duration="0:0:0.167">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="UIElement.MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="SelectionIndicatorScale"
+                                        Storyboard.TargetProperty="ScaleY"
+                                        To="1"
+                                        Duration="0:0:0.167">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -97,6 +169,7 @@
                             BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
                             BorderThickness="2"
                             CornerRadius="{DynamicResource ControlCornerRadius}" />
+                        <!--  The inner focus ring sits 1 dip inside the outer one, so its radius is the control radius less that inset rather than a token of its own.  -->
                         <Border
                             Margin="-2"
                             BorderBrush="{DynamicResource FocusStrokeColorInnerBrush}"
@@ -118,7 +191,8 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource ComboBoxItemStyle}" />
-        <Setter Property="MaxDropDownHeight" Value="480" />
+        <!--  WinUI ComboBox MaxDropDownHeight = 504 (ComboBox_themeresources_perf2026.xaml line 361)  -->
+        <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="MinHeight" Value="32" />
         <Setter Property="Padding" Value="10,5,6,6" />
         <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
@@ -212,74 +286,93 @@
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"
+                            HorizontalOffset="-16"
+                            VerticalOffset="-16"
                             Focusable="False"
                             IsOpen="{TemplateBinding IsDropDownOpen}"
                             Placement="Bottom"
                             PlacementTarget="{Binding ElementName=MainBorder}"
                             PopupAnimation="None">
                             <!--
-                                No RenderOptions.ClearTypeHint="Enabled" here, unlike the opaque
-                                popup backplates in ContextMenu / AutoSuggestBox / DatePicker /
-                                TimePicker / DropDownButton / SplitButton / ToggleSplitButton /
-                                FlyoutPresenter. AcrylicBackgroundFillColorDefaultBrush is alpha F0,
-                                and the AcrylicNoiseBrush overlay sits on top of it, so this surface
-                                is translucent. ClearType cannot blend subpixel coverage against a
-                                translucent layered-window surface and degrades instead of helping,
-                                which is the same reasoning that keeps the FluenceWindow root at Auto.
+                                PART_DropdownBorder paints AcrylicBackgroundFillColorDefaultBrush
+                                (opaque), the same acrylic-fallback token FlyoutPresenter /
+                                ContextMenu / AutoSuggestBox / DatePicker / TimePicker /
+                                CommandBarFlyout / SplitButton / ToggleSplitButton / DropDownButton
+                                use for their popup backplates, matching the WinUI acrylic
+                                FallbackColor, so it takes the same
+                                RenderOptions.ClearTypeHint="Enabled" treatment as those opaque
+                                plates. The AcrylicNoiseBrush overlay is declared before the
+                                ScrollViewer in the Grid, so it paints behind the item text rather
+                                than over it and does not reintroduce a translucent layer between the
+                                glyphs and the eye.
                             -->
-                            <Grid>
+                            <!--
+                                The reveal fades this root, not the dropdown surface alone, so the
+                                opaque ShadowCaster behind the surface fades with it. Fading only the
+                                surface left the caster painting a blank dark plate at full strength
+                                on the first frame of every open, which read as a black flash before
+                                the dropdown resolved. The root starts hidden: a popup HWND can be
+                                created and shown before ComboBox.OnDropDownOpened runs (WPF does not
+                                order the IsDropDownOpen invalidation against the Popup.IsOpen
+                                template binding), so an unhidden root can composite one frame at
+                                rest before the reveal seeds its start pose.
+                            -->
+                            <Grid x:Name="PART_DropdownRoot" Margin="16" Opacity="0">
                                 <!--
-                                    Elevation is cast by an empty sibling behind the dropdown. The
-                                    caster is opaque (SolidBackgroundFillColorTertiary) rather than
-                                    the acrylic fill, because a translucent caster casts a washed out
-                                    shadow. No layout gutter is needed: PopupRoot already sizes a
-                                    popup window about 15 px larger per side than its child.
+                                    Elevation is cast by an empty sibling behind the dropdown, painted
+                                    with the same opaque AcrylicBackgroundFillColorDefaultBrush as the
+                                    plate below it. This Grid's 16px margin is the popup's shadow
+                                    gutter: WPF sizes a popup HWND to exactly its child's layout size,
+                                    so without it the effect is clipped to the plate and only the
+                                    corner notches survive. PART_Popup's HorizontalOffset and
+                                    VerticalOffset of -16 pull it back so the plate keeps its position.
                                 -->
                                 <Border
                                     x:Name="ShadowCaster"
                                     MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                     Margin="0,4,0,0"
-                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                                     CornerRadius="{TemplateBinding DropdownCornerRadius}"
                                     Effect="{DynamicResource FlyoutShadowEffect}"
                                     RenderTransform="{Binding RenderTransform, ElementName=PART_DropdownBorder}"
                                     RenderTransformOrigin="0.5,0" />
-                            <Border
-                                x:Name="PART_DropdownBorder"
-                                MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
-                                MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                                Margin="0,4,0,0"
-                                Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{TemplateBinding DropdownCornerRadius}"
-                                RenderTransformOrigin="0.5,0">
-                                <Border.RenderTransform>
-                                    <TranslateTransform x:Name="DropdownTranslate" />
-                                </Border.RenderTransform>
-                                <Grid>
-                                    <!--  The noise overlay fills the rounded popup shape. Its CornerRadius  -->
-                                    <!--  MUST track the outer PART_DropdownBorder.CornerRadius so that when  -->
-                                    <!--  the popup opens upward (IsDropDownOpenedUpward=True) the outer goes  -->
-                                    <!--  flat at the bottom and the noise does the same - otherwise the noise  -->
-                                    <!--  paints rounded bottom corners that no longer match the outer flat  -->
-                                    <!--  edge, which reads as "bottom corners not properly rounded".  -->
-                                    <Border
-                                        x:Name="NoiseOverlay"
-                                        Background="{DynamicResource AcrylicNoiseBrush}"
-                                        CornerRadius="{TemplateBinding DropdownCornerRadius}"
-                                        Opacity="0.04" />
-                                    <ScrollViewer
-                                        Margin="4"
-                                        CanContentScroll="True"
-                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                        Style="{DynamicResource ScrollViewerStyle}"
-                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
-                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </Border>
+                                <Border
+                                    x:Name="PART_DropdownBorder"
+                                    MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                    RenderOptions.ClearTypeHint="Enabled"
+                                    RenderTransformOrigin="0.5,0">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="DropdownTranslate" />
+                                    </Border.RenderTransform>
+                                    <Grid>
+                                        <!--  The noise overlay fills the rounded popup shape. Its CornerRadius  -->
+                                        <!--  MUST track the outer PART_DropdownBorder.CornerRadius so that when  -->
+                                        <!--  the popup opens upward (IsDropDownOpenedUpward=True) the outer goes  -->
+                                        <!--  flat at the bottom and the noise does the same - otherwise the noise  -->
+                                        <!--  paints rounded bottom corners that no longer match the outer flat  -->
+                                        <!--  edge, which reads as "bottom corners not properly rounded".  -->
+                                        <Border
+                                            x:Name="NoiseOverlay"
+                                            Background="{DynamicResource AcrylicNoiseBrush}"
+                                            CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                            Opacity="0.04" />
+                                        <!--  WinUI ComboBoxDropdownBorderPadding is 0 and the items presenter carries ComboBoxDropdownContentMargin = 0,4; the horizontal inset comes from each item's own 5,2,5,2 margin (ComboBox_themeresources_perf2026.xaml lines 107, 339 and 546).  -->
+                                        <ScrollViewer
+                                            CanContentScroll="True"
+                                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                            Style="{DynamicResource ScrollViewerStyle}"
+                                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                                            <ItemsPresenter Margin="0,4" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
                             </Grid>
                         </Popup>
                         <!--

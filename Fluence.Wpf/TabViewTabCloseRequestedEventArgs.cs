@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Windows;
 using Fluence.Wpf.Controls;
 
@@ -52,5 +53,16 @@ namespace Fluence.Wpf
         /// Gets the data item bound to <see cref="Tab"/>, or the tab itself when items are declared inline.
         /// </summary>
         public object Item { get; } = item;
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// The routed event declares <see cref="EventHandler{TEventArgs}"/> rather than
+        /// <see cref="RoutedEventHandler"/>, so the base implementation would fall back to
+        /// <see cref="Delegate.DynamicInvoke"/>. Casting here keeps dispatch a direct call.
+        /// </remarks>
+        protected override void InvokeEventHandler(Delegate genericHandler, object genericTarget)
+        {
+            ((EventHandler<TabViewTabCloseRequestedEventArgs>)genericHandler)(genericTarget, this);
+        }
     }
 }

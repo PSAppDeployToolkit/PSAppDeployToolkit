@@ -7,41 +7,93 @@
     <Style TargetType="{x:Type controls:InfoBadge}">
         <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBrush}" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorInverseBrush}" />
+        <!--  WinUI InfoBadgeValueFontSize = 11 (InfoBadge_themeresources.xaml:10), on a ValueTextBlock that sets no weight (InfoBadge.xaml:82) and so inherits the default body Normal. Fluence stamped SemiBold to hold the numeral legible on an accent fill; at 11 dip that reads as a heavier and visibly larger numeral than WinUI's, so the weight follows WinUI instead.  -->
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <!--  WinUI keys the badge's own foreground (InfoBadgeForeground, InfoBadge_themeresources.xaml:5) rather than reusing a text token, because the numeral sits on a filled capsule and has to pair with whatever that plate is. Outside high contrast all five severities resolve to the on-accent text colour, as WinUI's does; in high contrast they split, because the Attention plate is the system highlight and the other four are the window text colour.  -->
+        <Setter Property="Foreground" Value="{DynamicResource InfoBadgeAttentionForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="MaxHeight" Value="24" />
-        <Setter Property="MinHeight" Value="24" />
-        <Setter Property="MinWidth" Value="34" />
-        <Setter Property="Padding" Value="0,2,0,2" />
+        <!--  WinUI InfoBadge is IsTabStop False (InfoBadge_themeresources.xaml:54). WPF's Control also defaults Focusable to true, which WinUI's does not, so a badge inside a NavigationViewItem would otherwise be Tab reachable and take focus on click.  -->
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <!--  WinUI InfoBadgeMaxHeight = 16, InfoBadgeMinHeight = InfoBadgeMinWidth = 4, InfoBadgePadding = 0 (InfoBadge_themeresources.xaml:7-13). The 4 dip floor is the dot; the 16 dip ceiling is the value and icon pill.  -->
+        <Setter Property="MaxHeight" Value="16" />
+        <Setter Property="MinHeight" Value="4" />
+        <Setter Property="MinWidth" Value="4" />
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:InfoBadge}">
                     <Grid>
+                        <!--  The radius follows the measured height: InfoBadge recomputes it as half the height on every size change, the way WinUI feeds TemplateSettings.InfoBadgeCornerRadius (InfoBadge.cpp OnSizeChanged), so the capsule stays a capsule at any height between the 4 dip dot and the 16 dip pill.  -->
+                        <!--
+                            The pill stands 16 dip tall, WinUI's InfoBadgeMaxHeight
+                            (InfoBadge_themeresources.xaml:9), for a value and for an icon alike. WinUI
+                            gets there from the 2 dip bottom inset on its text and icon margins, which
+                            also nudges its glyphs optically upward; WPF's 11 dip line box is 14.67 and
+                            centres in the pill without that nudge, so the height is asked for here
+                            instead and the numeral keeps an even 0.67 dip above and below it. The
+                            control's own MinHeight stays WinUI's 4 dip floor, which belongs to the dot
+                            beside this border rather than to the capsule.
+                        -->
                         <Border
                             x:Name="BadgeBorder"
                             MinWidth="{TemplateBinding MinWidth}"
-                            MinHeight="{TemplateBinding MinHeight}"
+                            MinHeight="16"
                             MaxHeight="{TemplateBinding MaxHeight}"
                             Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="12">
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <!--
+                                The inset is per display kind, which is why it is not on this element: WinUI gives a
+                                value or a font glyph ValueInfoBadgeTextMargin / IconInfoBadgeFontIconMargin 4,0,4,2
+                                and a drawn icon the uniform IconInfoBadgeIconMargin 4,4,4,4
+                                (InfoBadge_themeresources.xaml:14-16). The states below apply whichever one the kind
+                                calls for.
+
+                                The horizontal 4s are WinUI's and set the capsule's width. The vertical 2 is not
+                                carried: it nudges WinUI's own digits optically, and WPF's line box for 11 dip Segoe
+                                UI Variable is already the full 16 dip of the pill, so the same inset arranges the
+                                text into 14 and clips it, low in the capsule. Dropping it lets VerticalAlignment
+                                centre the text in the pill, which is where WinUI's lands.
+                            -->
                             <ContentPresenter
                                 x:Name="ContentArea"
+                                Margin="4,0,4,0"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Content="{TemplateBinding Content}"
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.FontWeight="{TemplateBinding FontWeight}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                                <ContentPresenter.Resources>
+                                    <!--
+                                        The value arrives as a string, so the presenter generates the
+                                        TextBlock that draws it, and an implicit TextBlock style beats
+                                        the inherited TextElement values above: Typography.xaml:43-47
+                                        sizes every unstyled TextBlock at 14, which drew the numeral at
+                                        14 dip in a 16 dip pill. Its line box measured 18.67, so the
+                                        digits overflowed the capsule and sat low in it. A style scoped
+                                        to this presenter wins that contest and hands the numeral the
+                                        badge's own typography back. It extends the implicit style rather
+                                        than replacing it, so anything Typography.xaml adds later still
+                                        reaches the numeral.
+                                    -->
+                                    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:InfoBadge}}}" />
+                                        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:InfoBadge}}}" />
+                                        <Setter Property="FontWeight" Value="{Binding FontWeight, RelativeSource={RelativeSource AncestorType={x:Type controls:InfoBadge}}}" />
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:InfoBadge}}}" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
                         </Border>
-                        <!--  Dot mode: 8x8 circle when no content  -->
+                        <!--  Dot mode: the 4 dip floor WinUI's InfoBadgeMinHeight / InfoBadgeMinWidth leave when the badge has neither a value nor an icon.  -->
                         <Ellipse
                             x:Name="DotIndicator"
-                            Width="8"
-                            Height="8"
+                            Width="4"
+                            Height="4"
                             Fill="{TemplateBinding Background}"
                             Visibility="Collapsed" />
                         <VisualStateManager.VisualStateGroups>
@@ -57,8 +109,14 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!--  Icon / FontIcon / Value: show pill badge  -->
-                                <VisualState x:Name="Icon" />
+                                <!--  Icon / FontIcon / Value: show the pill. A drawn icon takes WinUI's uniform 4,4,4,4; a font glyph and a value keep the 4,0,4,0 the presenter already carries.  -->
+                                <VisualState x:Name="Icon">
+                                    <Storyboard>
+                                        <ThicknessAnimationUsingKeyFrames Storyboard.TargetName="ContentArea" Storyboard.TargetProperty="Margin">
+                                            <DiscreteThicknessKeyFrame KeyTime="0" Value="4,4,4,4" />
+                                        </ThicknessAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="FontIcon" />
                                 <VisualState x:Name="Value" />
                             </VisualStateGroup>
@@ -69,18 +127,22 @@
                         <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Informational}">
                             <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorSolidNeutralBrush}" />
                             <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorSolidNeutralBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource InfoBadgeInformationalForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Success}">
                             <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorSuccessBrush}" />
                             <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource InfoBadgeSuccessForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Critical}">
                             <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}" />
                             <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource InfoBadgeCriticalForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Caution}">
                             <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
                             <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource InfoBadgeCautionForegroundBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

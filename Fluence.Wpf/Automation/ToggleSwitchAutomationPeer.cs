@@ -87,8 +87,16 @@ namespace Fluence.Wpf.Automation
             : ToggleState.Indeterminate;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Toggle()
         {
+            // A UIA client reaches this directly, where input would never reach a disabled
+            // control, so the disabled state is enforced here as the SetValue providers do.
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
+
             bool? current = ToggleSwitch.IsChecked;
             ToggleSwitch.IsChecked = current is not true;
         }

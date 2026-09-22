@@ -7,10 +7,18 @@
         Fluent RatingControl style.
         Authority: WinUI 3 RatingControl_themeresources.xaml + RatingControl.xaml.
         Star glyphs: Segoe Fluent Icons U+E734 (StarEmpty) / U+E735 (StarFilled).
-        Filled stars:  AccentFillColorDefaultBrush.
-        Empty stars:   TextFillColorSecondaryBrush.
-        Disabled:      TextFillColorDisabledBrush.
-        Hover preview: AccentFillColorDefaultBrush (all stars up to hovered index).
+        Brushes chosen in RatingControl.RefreshStars(), not in this template:
+        Set stars:            AccentFillColorDefaultBrush (RatingControlSelectedForeground /
+                               RatingControlPointerOverSelectedForeground - the same brush,
+                               so an already-set star does not change while hovering).
+        Unset stars:           TextFillColorSecondaryBrush (RatingControlUnselectedForeground).
+        Hover preview (stars
+        above the current
+        value, within the
+        hover index):          ControlAltFillColorTertiaryBrush (RatingControlPointerOverUnselectedForeground).
+        Disabled set stars:    TextFillColorDisabledBrush (RatingControlDisabledSelectedForeground).
+        Disabled unset stars:  TextFillColorSecondaryBrush (unchanged from rest - WinUI has no
+                               disabled-unselected token distinct from the ordinary one).
         PART_StarsPanel: code-generated star TextBlocks, updated by RefreshStars().
         PART_Caption: optional caption TextBlock, Collapsed when Caption is empty.
     -->

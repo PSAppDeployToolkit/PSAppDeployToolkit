@@ -26,11 +26,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -55,87 +52,9 @@ namespace Fluence.Wpf.Demo.Pages
     /// </remarks>
     public partial class DemoSampleControl : ContentControl
     {
-        private enum SourceLanguage
-        {
-            PlainText = 0,
-            Xaml = 1,
-            CSharp = 2,
-        }
-
-        private static readonly HashSet<string> CSharpKeywords = new(StringComparer.Ordinal)
-        {
-            "abstract",
-            "as",
-            "base",
-            "bool",
-            "break",
-            "case",
-            "catch",
-            "class",
-            "const",
-            "continue",
-            "decimal",
-            "default",
-            "delegate",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "event",
-            "explicit",
-            "extern",
-            "false",
-            "finally",
-            "fixed",
-            "float",
-            "for",
-            "foreach",
-            "if",
-            "implicit",
-            "in",
-            "int",
-            "interface",
-            "internal",
-            "is",
-            "lock",
-            "namespace",
-            "new",
-            "null",
-            "object",
-            "operator",
-            "out",
-            "override",
-            "params",
-            "private",
-            "protected",
-            "public",
-            "readonly",
-            "ref",
-            "return",
-            "sealed",
-            "short",
-            "sizeof",
-            "static",
-            "string",
-            "struct",
-            "switch",
-            "this",
-            "throw",
-            "true",
-            "try",
-            "typeof",
-            "uint",
-            "ulong",
-            "unchecked",
-            "unsafe",
-            "ushort",
-            "using",
-            "var",
-            "virtual",
-            "void",
-            "volatile",
-            "while",
-        };
+        private const double SourceFontSize = 12;
+        private const double SourceLineHeight = 18;
+        private const double SourceViewerMinHeight = 220;
 
         /// <summary>
         /// Identifies the <see cref="SampleDescription"/> dependency property.
@@ -379,7 +298,8 @@ namespace Fluence.Wpf.Demo.Pages
         private void ResetSource()
         {
             _sourceLoaded = false;
-            SourceTabControl?.Items.Clear();
+            SourceSelector?.Items.Clear();
+            SourceContentHost?.SetCurrentValue(ContentProperty, value: null);
 
             UpdateSourceVisibility();
             if ((SourceExpander?.IsExpanded) is true)
@@ -401,38 +321,48 @@ namespace Fluence.Wpf.Demo.Pages
             }
 
             _sourceLoaded = true;
-            SourceTabControl.Items.Clear();
+            SourceSelector.Items.Clear();
             if (!string.IsNullOrWhiteSpace(XamlSource))
             {
-                AddSourceTab("XAML", XamlSource, SourceLanguage.Xaml);
+                AddSourceTab("XAML", XamlSource, DemoSourceLanguage.Xaml);
             }
 
             if (!string.IsNullOrWhiteSpace(CSharpSource))
             {
-                AddSourceTab("C#", CSharpSource, SourceLanguage.CSharp);
+                AddSourceTab("C#", CSharpSource, DemoSourceLanguage.CSharp);
             }
         }
 
-        private void AddSourceTab(string header, string source, SourceLanguage language)
+        private void AddSourceTab(string header, string source, DemoSourceLanguage language)
         {
-            TabItem tab = new()
+            // The pane hangs off the item rather than being rebuilt on every selection change,
+            // the way the WinUI Gallery keeps one SampleCodePresenter per SelectorBarItem.
+            Controls.SelectorBarItem item = new()
             {
-                Header = header,
-                Content = CreateSourcePane(source, language),
+                Text = header,
+                Tag = CreateSourcePane(source, language),
             };
-            _ = SourceTabControl.Items.Add(tab);
+            _ = SourceSelector.Items.Add(item);
 
-            if (SourceTabControl.SelectedIndex < 0)
+            if (SourceSelector.SelectedIndex < 0)
             {
-                SourceTabControl.SelectedIndex = 0;
+                SourceSelector.SelectedIndex = 0;
             }
         }
 
-        private static Grid CreateSourcePane(string source, SourceLanguage language)
+        private void SourceSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            object? pane = (SourceSelector.SelectedItem as Controls.SelectorBarItem)?.Tag;
+            SourceContentHost.SetCurrentValue(ContentProperty, pane);
+        }
+
+        private static Grid CreateSourcePane(string source, DemoSourceLanguage language)
         {
             Grid panel = new();
 
-            RichTextBox viewer = CreateSourceViewer(source, language);
+            RichTextBox viewer = DemoSourceHighlighter.CreateViewer(source, language, SourceFontSize, SourceLineHeight, GetThicknessResource("DemoSourceCodeDocumentPadding", new Thickness(12)));
+            viewer.Name = "SourceTextViewer";
+            viewer.MinHeight = SourceViewerMinHeight;
             _ = panel.Children.Add(viewer);
 
             Border copyButtonHost = CreateCopyButtonHost(CreateCopyButton(source));
@@ -481,262 +411,6 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 DemoClipboard.SetText(source);
             }
-        }
-
-        private static RichTextBox CreateSourceViewer(string source, SourceLanguage language)
-        {
-            RichTextBox viewer = new()
-            {
-                BorderThickness = new Thickness(0),
-                FontSize = 12,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                IsReadOnly = true,
-                MinHeight = 220,
-                Name = "SourceTextViewer",
-                Padding = new Thickness(0),
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            };
-            viewer.SetResourceReference(BackgroundProperty, "SystemFillColorSolidAttentionBackgroundBrush");
-            viewer.SetResourceReference(ForegroundProperty, "TextFillColorPrimaryBrush");
-            viewer.SetResourceReference(FontFamilyProperty, "DemoMonospaceFontFamily");
-            viewer.Document = CreateSourceDocument(source, language);
-            return viewer;
-        }
-
-        private static FlowDocument CreateSourceDocument(string source, SourceLanguage language)
-        {
-            FlowDocument document = new()
-            {
-                FontSize = 12,
-                PagePadding = GetThicknessResource("DemoSourceCodeDocumentPadding", new Thickness(12)),
-            };
-            document.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush");
-            document.SetResourceReference(TextElement.FontFamilyProperty, "DemoMonospaceFontFamily");
-
-            Paragraph paragraph = new()
-            {
-                LineHeight = 18,
-                Margin = new Thickness(0),
-            };
-            document.Blocks.Add(paragraph);
-
-            string normalized = (source ?? string.Empty).Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
-            string[] lines = normalized.Split('\n');
-            for (int i = 0; i < lines.Length; i++)
-            {
-                AddFormattedLine(paragraph, lines[i], language);
-                if (i < lines.Length - 1)
-                {
-                    paragraph.Inlines.Add(new LineBreak());
-                }
-            }
-
-            return document;
-        }
-
-        // The following methods implement a lightweight hand-rolled tokenizer for XAML and C#.
-        // A third-party syntax-highlighting library is intentionally avoided to keep the demo
-        // dependency-free; the tokenizer only needs to colorize the read-only source preview
-        // (keywords, string literals, comments, XML tag punctuation) and correctness on
-        // edge-cases is a secondary concern.
-
-        private static void AddFormattedLine(Paragraph paragraph, string line, SourceLanguage language)
-        {
-            if (language is SourceLanguage.Xaml)
-            {
-                AddXamlLine(paragraph, line);
-                return;
-            }
-
-            if (language is SourceLanguage.CSharp)
-            {
-                AddCSharpLine(paragraph, line);
-                return;
-            }
-
-            AddRun(paragraph, line, "TextFillColorPrimaryBrush");
-        }
-
-        private static void AddXamlLine(Paragraph paragraph, string line)
-        {
-            int index = 0;
-            while (index < line.Length)
-            {
-                if (StartsWith(line, index, "<!--"))
-                {
-                    AddRun(paragraph, line[index..], "TextFillColorSecondaryBrush");
-                    return;
-                }
-
-                char current = line[index];
-                if (current is '"' or '\'')
-                {
-                    int end = FindQuotedTextEnd(line, index, current);
-                    AddRun(paragraph, line[index..end], "SystemFillColorCautionBrush");
-                    index = end;
-                    continue;
-                }
-
-                if (current is '<' or '>' or '/')
-                {
-                    AddRun(paragraph, line[index..(index + 1)], "AccentTextFillColorPrimaryBrush");
-                    index++;
-                    continue;
-                }
-
-                if (IsXamlNameStart(current))
-                {
-                    int start = index;
-                    while (index < line.Length && IsXamlNameChar(line[index]))
-                    {
-                        index++;
-                    }
-
-                    string name = line[start..index];
-                    int next = SkipWhiteSpace(line, index);
-                    string resourceKey = next < line.Length && line[next] == '='
-                        ? "SystemFillColorSuccessBrush"
-                        : "AccentTextFillColorPrimaryBrush";
-                    AddRun(paragraph, name, resourceKey);
-                    continue;
-                }
-
-                int plainStart = index;
-                while (index < line.Length &&
-                       line[index] != '<' &&
-                       line[index] != '>' &&
-                       line[index] != '/' &&
-                       line[index] != '"' &&
-                       line[index] != '\'' &&
-                       !IsXamlNameStart(line[index]))
-                {
-                    index++;
-                }
-
-                AddRun(paragraph, line[plainStart..index], "TextFillColorPrimaryBrush");
-            }
-        }
-
-        private static void AddCSharpLine(Paragraph paragraph, string line)
-        {
-            int index = 0;
-            while (index < line.Length)
-            {
-                if (StartsWith(line, index, "//"))
-                {
-                    AddRun(paragraph, line[index..], "TextFillColorSecondaryBrush");
-                    return;
-                }
-
-                char current = line[index];
-                if (current == '"')
-                {
-                    int end = FindQuotedTextEnd(line, index, current);
-                    AddRun(paragraph, line[index..end], "SystemFillColorCautionBrush");
-                    index = end;
-                    continue;
-                }
-
-                if (current == '\'' && index + 2 < line.Length)
-                {
-                    int end = FindQuotedTextEnd(line, index, current);
-                    AddRun(paragraph, line[index..end], "SystemFillColorCautionBrush");
-                    index = end;
-                    continue;
-                }
-
-                if (char.IsLetter(current) || current == '_')
-                {
-                    int start = index;
-                    while (index < line.Length && (char.IsLetterOrDigit(line[index]) || line[index] == '_'))
-                    {
-                        index++;
-                    }
-
-                    string word = line[start..index];
-                    AddRun(paragraph, word, CSharpKeywords.Contains(word)
-                        ? "AccentTextFillColorPrimaryBrush"
-                        : "TextFillColorPrimaryBrush");
-                    continue;
-                }
-
-                int plainStart = index;
-                while (index < line.Length &&
-                       !StartsWith(line, index, "//") &&
-                       line[index] != '"' &&
-                       line[index] != '\'' &&
-                       !char.IsLetter(line[index]) &&
-                       line[index] != '_')
-                {
-                    index++;
-                }
-
-                AddRun(paragraph, line[plainStart..index], "TextFillColorPrimaryBrush");
-            }
-        }
-
-        private static void AddRun(Paragraph paragraph, string text, string resourceKey)
-        {
-            if (text.Length is 0)
-            {
-                return;
-            }
-
-            Run run = new(text);
-            run.SetResourceReference(TextElement.ForegroundProperty, resourceKey);
-            paragraph.Inlines.Add(run);
-        }
-
-        private static bool StartsWith(string text, int index, string value)
-        {
-            return index + value.Length <= text.Length &&
-                string.Compare(text, index, value, 0, value.Length, StringComparison.Ordinal) is 0;
-        }
-
-        private static int FindQuotedTextEnd(string text, int start, char quote)
-        {
-            int index = start + 1;
-            while (index < text.Length)
-            {
-                if (text[index] == '\\')
-                {
-                    index += 2;
-                    continue;
-                }
-
-                if (text[index] == quote)
-                {
-                    return index + 1;
-                }
-
-                index++;
-            }
-
-            return text.Length;
-        }
-
-        private static int SkipWhiteSpace(string text, int index)
-        {
-            while (index < text.Length && char.IsWhiteSpace(text[index]))
-            {
-                index++;
-            }
-
-            return index;
-        }
-
-        private static bool IsXamlNameStart(char value)
-        {
-            return char.IsLetter(value) || value == '_' || value == ':';
-        }
-
-        private static bool IsXamlNameChar(char value)
-        {
-            return char.IsLetterOrDigit(value) ||
-                   value == '_' ||
-                   value == ':' ||
-                   value == '.' ||
-                   value == '-';
         }
 
         private static Thickness GetThicknessResource(string key, Thickness fallback)

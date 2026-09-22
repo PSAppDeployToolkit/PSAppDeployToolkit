@@ -31,7 +31,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryFormsPage : UserControl
+    public partial class GalleryFormsPage : Page
     {
         private static readonly string SignInFormXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Forms.SignInForm",

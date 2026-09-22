@@ -7,12 +7,14 @@
         Fluent Design CommandBarFlyout presenter + AppBarButton styles.
         Authority: WinUI 3 CommandBarFlyout_themeresources.xaml (flyout surface, subtle
         backplates) translated to the in-tree flyout idiom:
-        SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
-        OverlayCornerRadius (see FlyoutPresenter.xaml / ContextMenu.xaml).
+        AcrylicBackgroundFillColorDefaultBrush (the opaque WPF-popup fallback for WinUI's
+        translucent acrylic surface, see FlyoutPresenter.xaml) + ControlStrokeColorDefaultBrush
+        (CommandBarFlyoutBorderBrush, :7) + OverlayCornerRadius (see ContextMenu.xaml).
         Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
         FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
-        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
-        sizes a popup window about 15 px larger per side than its child.
+        effect is not on the surface itself, and the template root carries a 16px transparent
+        gutter, because WPF sizes a popup HWND to exactly its child's layout size and the effect
+        would otherwise be clipped to the plate.
     -->
 
     <!--
@@ -59,18 +61,18 @@
                             </ContentPresenter>
                         </Viewbox>
                     </Border>
-                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0.8,0,0,1 ControlFastOutSlowIn spline).  -->
+                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0,0,0,1 ControlFastOutSlowIn spline).  -->
                     <ControlTemplate.Resources>
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
@@ -78,13 +80,13 @@
                         <Storyboard x:Key="ReleasedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -96,6 +98,7 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Backplate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource PressedScaleStoryboard}" />
                             </Trigger.EnterActions>
@@ -182,18 +185,18 @@
                                 Text="{TemplateBinding Label}" />
                         </Grid>
                     </Border>
-                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0.8,0,0,1 ControlFastOutSlowIn spline).  -->
+                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0,0,0,1 ControlFastOutSlowIn spline).  -->
                     <ControlTemplate.Resources>
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
@@ -201,13 +204,13 @@
                         <Storyboard x:Key="ReleasedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -219,6 +222,7 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Backplate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource PressedScaleStoryboard}" />
                             </Trigger.EnterActions>
@@ -243,8 +247,8 @@
         180px flyout menu minimum (ContextMenu.xaml).
     -->
     <Style TargetType="{x:Type controls:CommandBarFlyoutPresenter}">
-        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
@@ -252,11 +256,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:CommandBarFlyoutPresenter}">
-                    <Grid>
+                    <Grid Margin="16">
                         <!--
                             Elevation caster: an empty sibling behind the surface, so the effect never
-                            covers the text. No layout gutter is needed, PopupRoot already reserves
-                            about 15 px per side for popup shadows.
+                            covers the text. The template root carries a 16px transparent gutter,
+                            because WPF sizes a popup HWND to exactly its child's layout size and the
+                            effect would otherwise be clipped to the plate.
                         -->
                         <Border
                             x:Name="ShadowCaster"
@@ -264,76 +269,86 @@
                             CornerRadius="{DynamicResource OverlayCornerRadius}"
                             Effect="{DynamicResource FlyoutShadowEffect}"
                             UseLayoutRounding="True" />
-                    <Border
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{DynamicResource OverlayCornerRadius}"
-                        UseLayoutRounding="True">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            UseLayoutRounding="True">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                            <!--  Primary bar  -->
-                            <StackPanel
-                                Grid.Row="0"
-                                Margin="4"
-                                Orientation="Horizontal">
-                                <ItemsControl x:Name="PART_PrimaryItemsControl" Focusable="False">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                                <controls:AppBarButton
-                                    x:Name="PART_MoreButton"
-                                    Label="See more"
+                                <!--  Primary bar  -->
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Margin="4"
+                                    Orientation="Horizontal">
+                                    <ItemsControl x:Name="PART_PrimaryItemsControl" Focusable="False">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                    <controls:AppBarButton
+                                        x:Name="PART_MoreButton"
+                                        Label="See more"
+                                        Visibility="Collapsed">
+                                        <controls:AppBarButton.Icon>
+                                            <controls:FontIcon
+                                                x:Name="MoreButtonIcon"
+                                                Glyph="&#xE712;"
+                                                RenderTransformOrigin="0.5,0.5">
+                                                <controls:FontIcon.RenderTransform>
+                                                    <RotateTransform x:Name="MoreButtonIconRotation" Angle="0" />
+                                                </controls:FontIcon.RenderTransform>
+                                            </controls:FontIcon>
+                                        </controls:AppBarButton.Icon>
+                                    </controls:AppBarButton>
+                                </StackPanel>
+
+                                <!--  Secondary (overflow) area, toggled by PART_MoreButton via IsExpanded  -->
+                                <StackPanel
+                                    x:Name="PART_SecondaryHost"
+                                    Grid.Row="1"
+                                    RenderTransformOrigin="0,0"
                                     Visibility="Collapsed">
-                                    <controls:AppBarButton.Icon>
-                                        <controls:FontIcon
-                                            x:Name="MoreButtonIcon"
-                                            Glyph="&#xE712;"
-                                            RenderTransformOrigin="0.5,0.5">
-                                            <controls:FontIcon.RenderTransform>
-                                                <RotateTransform x:Name="MoreButtonIconRotation" Angle="0" />
-                                            </controls:FontIcon.RenderTransform>
-                                        </controls:FontIcon>
-                                    </controls:AppBarButton.Icon>
-                                </controls:AppBarButton>
-                            </StackPanel>
-
-                            <!--  Secondary (overflow) area, toggled by PART_MoreButton via IsExpanded  -->
-                            <StackPanel
-                                x:Name="PART_SecondaryHost"
-                                Grid.Row="1"
-                                RenderTransformOrigin="0,0"
-                                Visibility="Collapsed">
-                                <StackPanel.RenderTransform>
-                                    <ScaleTransform x:Name="SecondaryHostScale" ScaleX="1" ScaleY="1" />
-                                </StackPanel.RenderTransform>
-                                <Border
-                                    Height="1"
-                                    Margin="4,2"
-                                    Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
-                                <ItemsControl
-                                    x:Name="PART_SecondaryItemsControl"
-                                    MinWidth="180"
-                                    Margin="2,0,2,2"
-                                    Focusable="False">
-                                    <ItemsControl.Resources>
-                                        <Style BasedOn="{StaticResource CommandBarFlyoutSecondaryAppBarButtonStyle}" TargetType="{x:Type controls:AppBarButton}" />
-                                    </ItemsControl.Resources>
-                                </ItemsControl>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+                                    <StackPanel.RenderTransform>
+                                        <ScaleTransform x:Name="SecondaryHostScale" ScaleX="1" ScaleY="1" />
+                                    </StackPanel.RenderTransform>
+                                    <Border
+                                        Height="1"
+                                        Margin="4,2"
+                                        Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                                    <!--
+                                        WinUI caps the overflow list at MaxWidth 440
+                                        (CommandBarFlyout_themeresources_perf2026.xaml line 531) so a long
+                                        command label wraps or ellipsises instead of widening the whole bar.
+                                        WinUI's matching MaxHeight of 480 (line 532) is not set here: it caps
+                                        a list that WinUI scrolls inside its own ScrollViewer, and this
+                                        template has no scroll host, so the cap alone would clip commands
+                                        out of reach rather than scroll to them.
+                                    -->
+                                    <ItemsControl
+                                        x:Name="PART_SecondaryItemsControl"
+                                        MinWidth="180"
+                                        MaxWidth="440"
+                                        Margin="2,0,2,2"
+                                        Focusable="False">
+                                        <ItemsControl.Resources>
+                                            <Style BasedOn="{StaticResource CommandBarFlyoutSecondaryAppBarButtonStyle}" TargetType="{x:Type controls:AppBarButton}" />
+                                        </ItemsControl.Resources>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <!--
-                            Overflow expand/collapse over 167ms on the 0.8,0,0,1 spline
+                            Overflow expand/collapse over 167ms on the 0,0,0,1 spline
                             (Typography.xaml motion tokens ControlFastAnimationDuration +
                             ControlFastOutSlowInKeySpline; storyboard attributes need literal
                             values). The reveal is a top-anchored ScaleY 0 to 1 on the secondary
@@ -355,17 +370,24 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SecondaryHost" Storyboard.TargetProperty="Visibility">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <!--
+                                            The expand takes ControlNormalAnimationDuration where the
+                                            collapse below takes the fast one, which is WinUI's own
+                                            asymmetry: CommandBarFlyout_themeresources.xaml:699 gives the
+                                            Collapsed to ExpandedUp transition 250 ms and :737 gives the
+                                            return 167 ms, so the overflow opens unhurried and leaves quickly.
+                                        -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SecondaryHostScale" Storyboard.TargetProperty="ScaleY">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonIconRotation" Storyboard.TargetProperty="Angle">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.25"
                                                 Value="180" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
@@ -380,13 +402,13 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SecondaryHostScale" Storyboard.TargetProperty="ScaleY">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonIconRotation" Storyboard.TargetProperty="Angle">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>

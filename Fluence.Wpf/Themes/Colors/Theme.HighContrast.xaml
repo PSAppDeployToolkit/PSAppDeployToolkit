@@ -10,15 +10,11 @@
     <!--  Application Background  -->
     <Color x:Key="ApplicationBackgroundColor">#FF000000</Color>
 
-    <!--  Keyboard Focus  -->
-    <Color x:Key="KeyboardFocusBorderColor">#FF1AEBFF</Color>
-
     <!--  Text Fill Colors  -->
     <Color x:Key="TextFillColorPrimary">#FFFFFFFF</Color>
     <Color x:Key="TextFillColorSecondary">#FFFFFFFF</Color>
     <Color x:Key="TextFillColorTertiary">#FF3FF23F</Color>
     <Color x:Key="TextFillColorDisabled">#FF3FF23F</Color>
-    <Color x:Key="TextPlaceholderColor">#FF3FF23F</Color>
     <Color x:Key="TextFillColorInverse">#FF000000</Color>
 
     <!--  Control Fill Colors  -->
@@ -59,9 +55,6 @@
     <!--  Control Stroke Colors  -->
     <Color x:Key="ControlStrokeColorDefault">#FF808080</Color>
     <Color x:Key="ControlStrokeColorSecondary">#FF808080</Color>
-    <!--  Seam between the NavigationView pane/header and the content presenter. The brush is overridden to the system control-dark color in SpecialBrushes.AddHighContrastBrushes, matching the other control strokes.  -->
-    <Color x:Key="NavigationViewContentSeparator">#FF808080</Color>
-    <Color x:Key="ControlStrokeColorTertiary">#FFFFFFFF</Color>
     <Color x:Key="ControlStrokeColorOnAccentDefault">#FF000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentSecondary">#FF000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentTertiary">#FF000000</Color>
@@ -121,10 +114,12 @@
     <!--  Acrylic Background Fill Colors  -->
     <Color x:Key="AcrylicBackgroundFillColorDefault">#FF000000</Color>
     <Color x:Key="AcrylicBackgroundFillColorBase">#FF000000</Color>
+    <!--  The accent pair is computed from the ramp for Light and Dark (ColorMap.Build) and fixed here, like SystemFillColorAttention; the brushes resolve to the live highlight.  -->
+    <Color x:Key="AccentAcrylicBackgroundFillColorDefault">#FF1AEBFF</Color>
+    <Color x:Key="AccentAcrylicBackgroundFillColorBase">#FF1AEBFF</Color>
 
     <!--  System Fill Colors  -->
     <Color x:Key="SystemFillColorAttention">#FF1AEBFF</Color>
-    <Color x:Key="SystemFillColorInformational">#FFFFFFFF</Color>
     <Color x:Key="SystemFillColorSuccess">#FFFFFFFF</Color>
     <Color x:Key="SystemFillColorCaution">#FFFFFFFF</Color>
     <Color x:Key="SystemFillColorCritical">#FFFFFFFF</Color>
@@ -137,12 +132,6 @@
     <Color x:Key="SystemFillColorNeutralBackground">#FF000000</Color>
     <Color x:Key="SystemFillColorSolidAttentionBackground">#FF1AEBFF</Color>
     <Color x:Key="SystemFillColorSolidNeutralBackground">#FF000000</Color>
-
-    <!--  Window Chrome - Close Button (HC static fallbacks)  -->
-    <Color x:Key="WindowCloseFillColorHover">#FF1AEBFF</Color>
-    <Color x:Key="WindowCloseFillColorPressed">#FF1AEBFF</Color>
-    <Color x:Key="WindowCloseForegroundHover">#FF000000</Color>
-    <Color x:Key="WindowCloseForegroundPressed">#FF000000</Color>
 
     <!--  Accent Color fallbacks (static HC defaults)  -->
     <Color x:Key="SystemAccentColor">#FF1AEBFF</Color>
@@ -167,5 +156,11 @@
 
     <!--  NavigationView content area (transparent - HC Window color via brush in C# SpecialBrushes)  -->
     <Color x:Key="NavigationViewContentBackground">#FF000000</Color>
+
+    <!--
+        TeachingTipTopHighlight: transparent in High Contrast (WinUI 3
+        TeachingTip_themeresources.xaml, HighContrast dictionary, uses Transparent).
+    -->
+    <Color x:Key="TeachingTipTopHighlight">#00000000</Color>
 
 </ResourceDictionary>

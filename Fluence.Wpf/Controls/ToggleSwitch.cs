@@ -44,12 +44,12 @@ namespace Fluence.Wpf.Controls
     /// <remarks>Inspired by WinUI's ToggleSwitch.</remarks>
     [TemplatePart(Name = PartSwitchKnob, Type = typeof(FrameworkElement))]
     [TemplatePart(Name = PartSwitchThumb, Type = typeof(FrameworkElement))]
-    [TemplatePart(Name = PartSwitchThumbInput, Type = typeof(Thumb))]
+    [TemplatePart(Name = PART_SwitchThumbInput, Type = typeof(Thumb))]
     public class ToggleSwitch : ToggleButton
     {
         private const string PartSwitchKnob = "SwitchKnob";
         private const string PartSwitchThumb = "SwitchThumb";
-        private const string PartSwitchThumbInput = "PART_SwitchThumbInput";
+        private const string PART_SwitchThumbInput = "PART_SwitchThumbInput";
         private const double KnobOffOffset = 0.0;
         private const double KnobOnOffset = 20.0;
         private const double DragCommitOffset = 10.0;
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Controls
 
             _switchKnob = GetTemplateChild(PartSwitchKnob) as FrameworkElement;
             _switchThumb = GetTemplateChild(PartSwitchThumb) as FrameworkElement;
-            _thumbInput = GetTemplateChild(PartSwitchThumbInput) as Thumb;
+            _thumbInput = GetTemplateChild(PART_SwitchThumbInput) as Thumb;
             _knobTranslate = ResolveKnobTranslate();
             _switchThumbScale = ResolveThumbScale();
 

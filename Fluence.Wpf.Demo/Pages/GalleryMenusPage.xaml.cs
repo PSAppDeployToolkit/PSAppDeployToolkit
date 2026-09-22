@@ -33,7 +33,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryMenusPage : UserControl
+    public partial class GalleryMenusPage : Page
     {
         private static readonly string MenuBarXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Menus.MenuBar",

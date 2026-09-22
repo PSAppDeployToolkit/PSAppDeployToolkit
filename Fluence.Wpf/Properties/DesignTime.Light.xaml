@@ -7,6 +7,8 @@
     <!--  Regenerate with the RegenerateDesignTimeResources test after an intentional engine change.  -->
 
     <!--  Colors  -->
+    <Color x:Key="AccentAcrylicBackgroundFillColorBase">#FF8DCDFF</Color>
+    <Color x:Key="AccentAcrylicBackgroundFillColorDefault">#FF8DCDFF</Color>
     <Color x:Key="AccentFillBackdrop">#FFFFFFFF</Color>
     <Color x:Key="AccentFillColorDefault">#FF005BA1</Color>
     <Color x:Key="AccentFillColorDisabled">#37000000</Color>
@@ -18,8 +20,8 @@
     <Color x:Key="AccentTextFillColorSecondary">#FF00213B</Color>
     <Color x:Key="AccentTextFillColorTertiary">#FF005BA1</Color>
     <Color x:Key="AcrylicBackgroundFillColorBase">#FFEEEEEE</Color>
-    <Color x:Key="AcrylicBackgroundFillColorDefault">#F0F9F9F9</Color>
-    <Color x:Key="ApplicationBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="AcrylicBackgroundFillColorDefault">#FFF9F9F9</Color>
+    <Color x:Key="ApplicationBackgroundColor">#FFF3F3F3</Color>
     <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
     <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
     <Color x:Key="CardBackgroundFillColorTertiary">#FFFFFFFF</Color>
@@ -49,7 +51,6 @@
     <Color x:Key="ControlStrokeColorOnAccentSecondary">#66000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentTertiary">#37000000</Color>
     <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
-    <Color x:Key="ControlStrokeColorTertiary">#9E000000</Color>
     <Color x:Key="ControlStrongFillColorDefault">#72000000</Color>
     <Color x:Key="ControlStrongFillColorDisabled">#51000000</Color>
     <Color x:Key="ControlStrongStrokeColorDefault">#72000000</Color>
@@ -57,7 +58,6 @@
     <Color x:Key="DividerStrokeColorDefault">#0F000000</Color>
     <Color x:Key="FocusStrokeColorInner">#B3FFFFFF</Color>
     <Color x:Key="FocusStrokeColorOuter">#E4000000</Color>
-    <Color x:Key="KeyboardFocusBorderColor">#BE000000</Color>
     <Color x:Key="LayerFillColorAlt">#FFFFFFFF</Color>
     <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
     <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#40FFFFFF</Color>
@@ -67,7 +67,6 @@
     <Color x:Key="LayerOnMicaBaseAltFillColorTertiary">#FFF9F9F9</Color>
     <Color x:Key="LayerOnMicaBaseAltFillColorTransparent">#00000000</Color>
     <Color x:Key="NavigationViewContentBackground">#80FFFFFF</Color>
-    <Color x:Key="NavigationViewContentSeparator">#29000000</Color>
     <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
     <Color x:Key="SolidBackgroundFillColorBase">#FFF3F3F3</Color>
     <Color x:Key="SolidBackgroundFillColorBaseAlt">#FFDADADA</Color>
@@ -100,7 +99,6 @@
     <Color x:Key="SystemFillColorCautionBackground">#FFFFF4CE</Color>
     <Color x:Key="SystemFillColorCritical">#FFC42B1C</Color>
     <Color x:Key="SystemFillColorCriticalBackground">#FFFDE7E9</Color>
-    <Color x:Key="SystemFillColorInformational">#FF8A8A8A</Color>
     <Color x:Key="SystemFillColorNeutral">#72000000</Color>
     <Color x:Key="SystemFillColorNeutralBackground">#06000000</Color>
     <Color x:Key="SystemFillColorSolidAttentionBackground">#FFF7F7F7</Color>
@@ -108,6 +106,7 @@
     <Color x:Key="SystemFillColorSolidNeutralBackground">#FFF3F3F3</Color>
     <Color x:Key="SystemFillColorSuccess">#FF0F7B0F</Color>
     <Color x:Key="SystemFillColorSuccessBackground">#FFDFF6DD</Color>
+    <Color x:Key="TeachingTipTopHighlight">#99FFFFFF</Color>
     <Color x:Key="TextFillColorDisabled">#5C000000</Color>
     <Color x:Key="TextFillColorInverse">#FFFFFFFF</Color>
     <Color x:Key="TextFillColorPrimary">#E4000000</Color>
@@ -117,19 +116,16 @@
     <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFFFF</Color>
     <Color x:Key="TextOnAccentFillColorSecondary">#B3FFFFFF</Color>
     <Color x:Key="TextOnAccentFillColorSelectedText">#FFFFFFFF</Color>
-    <Color x:Key="TextPlaceholderColor">#9E000000</Color>
     <Color x:Key="TitleBarActiveColor">#FFFFFFFF</Color>
     <Color x:Key="TitleBarInactiveColor">#FFFFFFFF</Color>
     <Color x:Key="WindowBorderColor">#FFFFFFFF</Color>
     <Color x:Key="WindowCloseButtonBackgroundPointerOver">#FFC42B1C</Color>
     <Color x:Key="WindowCloseButtonBackgroundPressed">#FFB4271C</Color>
     <Color x:Key="WindowCloseButtonForegroundPointerOver">#FFFFFFFF</Color>
-    <Color x:Key="WindowCloseFillColorHover">#FFC42B1C</Color>
-    <Color x:Key="WindowCloseFillColorPressed">#FFB4271C</Color>
-    <Color x:Key="WindowCloseForegroundHover">#FFFFFFFF</Color>
-    <Color x:Key="WindowCloseForegroundPressed">#FFFFFFFF</Color>
 
     <!--  Solid color brushes  -->
+    <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="#FF8DCDFF" />
+    <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="#FF8DCDFF" />
     <SolidColorBrush x:Key="AccentFillBackdropBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#FF005BA1" />
     <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#37000000" />
@@ -141,8 +137,9 @@
     <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="#FF00213B" />
     <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="#FF005BA1" />
     <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#FFEEEEEE" />
-    <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#F0F9F9F9" />
-    <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#FFF9F9F9" />
+    <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#FFF3F3F3" />
+    <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="#FFF3F3F3" />
     <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#B3FFFFFF" />
     <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#80F6F6F6" />
     <SolidColorBrush x:Key="CardBackgroundFillColorTertiaryBrush" Color="#FFFFFFFF" />
@@ -172,7 +169,6 @@
     <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="#66000000" />
     <SolidColorBrush x:Key="ControlStrokeColorOnAccentTertiaryBrush" Color="#37000000" />
     <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="#29000000" />
-    <SolidColorBrush x:Key="ControlStrokeColorTertiaryBrush" Color="#9E000000" />
     <SolidColorBrush x:Key="ControlStrongFillColorDefaultBrush" Color="#72000000" />
     <SolidColorBrush x:Key="ControlStrongFillColorDisabledBrush" Color="#51000000" />
     <SolidColorBrush x:Key="ControlStrongStrokeColorDefaultBrush" Color="#72000000" />
@@ -180,7 +176,11 @@
     <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="#0F000000" />
     <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="#B3FFFFFF" />
     <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="#E4000000" />
-    <SolidColorBrush x:Key="KeyboardFocusBorderColorBrush" Color="#BE000000" />
+    <SolidColorBrush x:Key="InfoBadgeAttentionForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="InfoBadgeCautionForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="InfoBadgeCriticalForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="InfoBadgeInformationalForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="InfoBadgeSuccessForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="#80FFFFFF" />
     <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="#40FFFFFF" />
@@ -190,9 +190,8 @@
     <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTertiaryBrush" Color="#FFF9F9F9" />
     <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTransparentBrush" Color="#00000000" />
     <SolidColorBrush x:Key="NavigationViewContentBackgroundBrush" Color="#80FFFFFF" />
-    <SolidColorBrush x:Key="NavigationViewContentSeparatorBrush" Color="#29000000" />
-    <SolidColorBrush x:Key="NavigationViewSelectionIndicatorBrush" Color="#FF0078D4" />
-    <SolidColorBrush x:Key="ScrollBarTrackFillBrush" Color="#F0F9F9F9" />
+    <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#FF005BA1" />
+    <SolidColorBrush x:Key="ScrollBarTrackFillBrush" Color="#FFF9F9F9" />
     <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="#4D000000" />
     <SolidColorBrush x:Key="SolidBackgroundFillColorBaseAltBrush" Color="#FFDADADA" />
     <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="#FFF3F3F3" />
@@ -225,7 +224,6 @@
     <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="#FF9D5D00" />
     <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="#FFFDE7E9" />
     <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="#FFC42B1C" />
-    <SolidColorBrush x:Key="SystemFillColorInformationalBrush" Color="#FF8A8A8A" />
     <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="#06000000" />
     <SolidColorBrush x:Key="SystemFillColorNeutralBrush" Color="#72000000" />
     <SolidColorBrush x:Key="SystemFillColorSolidAttentionBackgroundBrush" Color="#FFF7F7F7" />
@@ -233,6 +231,7 @@
     <SolidColorBrush x:Key="SystemFillColorSolidNeutralBrush" Color="#FF8A8A8A" />
     <SolidColorBrush x:Key="SystemFillColorSuccessBackgroundBrush" Color="#FFDFF6DD" />
     <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="#FF0F7B0F" />
+    <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#99FFFFFF" />
     <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="#5C000000" />
     <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#E4000000" />
@@ -242,17 +241,12 @@
     <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#B3FFFFFF" />
     <SolidColorBrush x:Key="TextOnAccentFillColorSelectedTextBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextPlaceholderColorBrush" Color="#9E000000" />
     <SolidColorBrush x:Key="TitleBarActiveColorBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="TitleBarInactiveColorBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="WindowBorderColorBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="WindowCloseButtonBackgroundPointerOverBrush" Color="#FFC42B1C" />
     <SolidColorBrush x:Key="WindowCloseButtonBackgroundPressedBrush" Color="#FFB4271C" />
     <SolidColorBrush x:Key="WindowCloseButtonForegroundPointerOverBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="WindowCloseFillColorHoverBrush" Color="#FFC42B1C" />
-    <SolidColorBrush x:Key="WindowCloseFillColorPressedBrush" Color="#FFB4271C" />
-    <SolidColorBrush x:Key="WindowCloseForegroundHoverBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="WindowCloseForegroundPressedBrush" Color="#FFFFFFFF" />
 
     <!--  Elevation border brushes  -->
     <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
@@ -289,6 +283,7 @@
     </LinearGradientBrush>
 
     <!--  Layout tokens  -->
+    <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
     <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
     <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="PopupCornerRadius">8</CornerRadius>

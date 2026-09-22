@@ -217,7 +217,7 @@ namespace Fluence.Wpf.Demo
             object? page = EnsurePageContent(selected);
             if (page is not null)
             {
-                DemoNav.Content = page;
+                ShowPage(page);
                 AnimatePageInIfChanged(page);
             }
 
@@ -275,7 +275,7 @@ namespace Fluence.Wpf.Demo
             if (ReferenceEquals(DemoNav.SelectedItem, item) && EnsurePageContent(item) is object page)
             {
                 _currentNavigationItem ??= item;
-                DemoNav.Content = page;
+                ShowPage(page);
                 AnimatePageInIfChanged(page);
                 UpdateBackNavigationState();
             }
@@ -305,13 +305,13 @@ namespace Fluence.Wpf.Demo
                 return;
             }
 
-            if (!ReferenceEquals(DemoNav.Content, page) && !_isNavigatingBack && _currentNavigationItem is not null)
+            if (!ReferenceEquals(PageFrame.Content, page) && !_isNavigatingBack && _currentNavigationItem is not null)
             {
                 _navigationBackStack.Add(_currentNavigationItem);
             }
 
             _currentNavigationItem = SettingsNavigationItem;
-            DemoNav.Content = page;
+            ShowPage(page);
             AnimatePageInIfChanged(page);
             UpdateBackNavigationState();
         }
@@ -522,6 +522,29 @@ namespace Fluence.Wpf.Demo
             }
         }
 
+        /// <summary>
+        /// Shows a gallery page in the shell frame. The pages are <see cref="Page"/> objects, which
+        /// WPF only lets a <see cref="Window"/> or a <see cref="Frame"/> parent, so the shell
+        /// navigates the frame rather than assigning the navigation view's content directly. The
+        /// frame's own journal is dropped immediately: this window owns the back stack, and a
+        /// second history would let Backspace or a mouse back button walk a different one.
+        /// </summary>
+        /// <param name="page">The page to show.</param>
+        private void ShowPage(object page)
+        {
+            if (ReferenceEquals(PageFrame.Content, page))
+            {
+                return;
+            }
+
+            _ = PageFrame.Navigate(page);
+
+            while (PageFrame.CanGoBack)
+            {
+                _ = PageFrame.RemoveBackEntry();
+            }
+        }
+
         private void AnimatePageInIfChanged(object page)
         {
             if (page is null || ReferenceEquals(_lastAnimatedPageContent, page))
@@ -536,7 +559,7 @@ namespace Fluence.Wpf.Demo
         /// <summary>
         /// Plays the Fluent "page refresh" transition on the incoming page: the content slides
         /// up <see cref="PageRefreshOffsetPixels"/> while fading 0 to 1 over
-        /// <see cref="PageRefreshMilliseconds"/> on the 0.8,0,0,1 decelerating spline (the
+        /// <see cref="PageRefreshMilliseconds"/> on the 0,0,0,1 decelerating spline (the
         /// Typography.xaml ControlFastOutSlowInKeySpline motion token, mirrored by value).
         /// Top-level navigation switches use page refresh per the Fluent page-transition
         /// guidance (slide up + fade in, 300 ms, decelerate). The start pose is seeded as a
@@ -620,7 +643,7 @@ namespace Fluence.Wpf.Demo
                     new SplineDoubleKeyFrame(
                         to,
                         KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(PageRefreshMilliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                        new KeySpline(0.0, 0.0, 0.0, 1.0)),
                 },
             };
         }
@@ -753,10 +776,12 @@ namespace Fluence.Wpf.Demo
         {
             if (_titleBarIconView is null)
             {
+                // WinUI 3 Gallery title-bar icon parity: 16x16, not the 20x20 chrome max the
+                // TitleBar template reserves for PART_IconPresenter.
                 _titleBarIconView = new System.Windows.Controls.Image
                 {
-                    Width = 20,
-                    Height = 20,
+                    Width = 16,
+                    Height = 16,
                     VerticalAlignment = VerticalAlignment.Center,
                 };
                 RenderOptions.SetBitmapScalingMode(_titleBarIconView, BitmapScalingMode.HighQuality);

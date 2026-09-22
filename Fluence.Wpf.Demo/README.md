@@ -18,7 +18,7 @@ dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -c Debug
 ## The 60-second mental model
 
 1. **`App.xaml.cs` -> `OnStartup`** turns the theme engine on *before* any window exists:
-   `ApplicationThemeManager.Apply(ApplicationTheme.Auto, BackdropType.Mica)` then
+   `ApplicationThemeManager.Apply(ApplicationTheme.Auto, WindowBackdropType.Mica)` then
    `ApplicationAccentColorManager.ApplySystemAccent()`. This publishes all the brushes the
    controls bind to. Then it merges the gallery's own `Resources/DemoSharedStyles.xaml` and
    shows `MainWindow`.
@@ -27,10 +27,28 @@ dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -c Debug
    has a `Tag`; `NavigateTo(tag)` swaps the content frame to the matching `Gallery*Page` and
    keeps a lightweight visited-page stack for the shell Back button.
 3. **Each page** is a `UserControl` under `Pages/`. Most pages are a `SmoothScrollViewer` over a
-   `StackPanel` of `DemoSampleControl` cards. (A few direct reference pages, such as Typography,
-   render catalog content without a trailing source expander.)
+   `StackPanel` of `DemoSampleControl` cards, opening with a shared `GalleryPageHeader` (page
+   title plus Documentation, Toggle theme, and Favorite actions). (The Icons catalog page renders
+   its content directly without a trailing source expander.)
 4. **`DemoSampleControl`** is the reusable "sample card": a description, the live control(s), an
    optional options rail, and an expandable XAML/C# source viewer.
+
+## Gallery home
+
+The homepage is a direct catalog and landing composition rather than a discrete control
+sample page. The theme-aware Fluence.WPF lockup is its largest visual element, with a
+620 DIP maximum width that shrinks to fit the viewport. A short introduction and compact
+GitHub and LinkedIn icon links sit below the artwork, followed by the control catalog.
+The homepage has no live preview; interactive samples and source tabs live on their
+destination pages.
+
+The catalog reduces its columns when the available content width narrows. Colors,
+typography and interaction feedback come from the library's existing resources and
+control templates, so Light, Dark, High Contrast and accent changes follow the normal
+theme pipeline. The appearance link opens Settings; the Menus and Trees links open
+their dedicated pages. The social links use native HyperlinkButton controls with
+keyboard focus, accessible names and tooltips. Their vector artwork comes from
+[Bootstrap Icons under the MIT license](Resources/BootstrapIcons.LICENSE.md).
 
 ## How a page wires its samples (the one piece of "magic")
 

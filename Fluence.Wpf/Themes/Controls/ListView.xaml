@@ -54,8 +54,7 @@
                             <Border
                                 x:Name="SelectedOverlay"
                                 Background="{DynamicResource SubtleFillColorTransparentBrush}"
-                                CornerRadius="{DynamicResource ControlCornerRadius}"
-                                Opacity="1" />
+                                CornerRadius="{DynamicResource ControlCornerRadius}" />
                             <ContentPresenter
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -75,7 +74,7 @@
                                 Margin="2,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
                                 CornerRadius="1.5"
                                 IsHitTestVisible="False"
                                 Opacity="0" />
@@ -104,9 +103,12 @@
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <!--  WinUI fades the pill in linearly over 83 ms and does not move it.  -->
+                                        <!--  WinUI fades the pill over ControlFastAnimationDuration (167 ms) on ControlFastOutSlowInKeySpline and does not move it (ItemContainer.xaml:54,73,95,105).  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -115,7 +117,10 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="0" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -131,9 +136,12 @@
                             <Setter TargetName="SelectedOverlay" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                         </MultiDataTrigger>
 
+                        <!--
+                            WinUI uses only ListViewItemDisabledThemeOpacity, 0.3, on the whole
+                            item presenter with no foreground swap (ListViewItem_themeresources.xaml:6).
+                        -->
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                            <Setter Property="Opacity" Value="0.5" />
+                            <Setter Property="Opacity" Value="0.3" />
                         </Trigger>
 
                         <MultiTrigger>

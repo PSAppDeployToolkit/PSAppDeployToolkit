@@ -48,7 +48,13 @@
                         <!--  Photo ellipse - Fill set from code; Hidden by default.  -->
                         <Ellipse x:Name="PART_ImageEllipse" Visibility="Hidden" />
 
-                        <!--  Badge: bottom-right corner, AccentFillColorDefaultBrush background.  -->
+                        <!--
+                            Badge: bottom-right corner, AccentFillColorDefaultBrush background.
+                            Stroke is ControlFillColorTransparentBrush
+                            (PersonPictureEllipseBadgeStrokeThemeBrush,
+                            PersonPicture_themeresources.xaml:8), not the avatar's own Background;
+                            WinUI does not cut a ring matching the surface beneath.
+                        -->
                         <Grid
                             x:Name="PART_BadgeGrid"
                             Height="16"
@@ -62,7 +68,7 @@
                                 Height="16"
                                 MinWidth="16"
                                 Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                BorderBrush="{TemplateBinding Background}"
+                                BorderBrush="{DynamicResource ControlFillColorTransparentBrush}"
                                 BorderThickness="2"
                                 CornerRadius="8" />
                             <TextBlock

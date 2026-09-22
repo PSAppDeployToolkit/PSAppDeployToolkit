@@ -93,6 +93,19 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private const double DefaultTitleBarHeight = 48d;
 
+        /// <summary>
+        /// Window-scoped resource key for the opaque pre-blend resolved by
+        /// <see cref="WindowPolicy.ResolveContentLayerPreBlend"/>. Set on <see cref="FrameworkElement.Resources"/>
+        /// (this window, not the application) so it shadows the translucent
+        /// <c language="xaml">NavigationViewContentBackground</c>-derived brush for every
+        /// <c language="csharp">DynamicResource</c> consumer inside this window only; removed (not set to
+        /// <see langword="null"/>) when the substitution does not apply, so lookups fall through to
+        /// the canonical slot-[0] value. Ownership of this key is tracked by
+        /// <see cref="_contentLayerPreBlendApplied"/>: a consumer who sets this key themselves (for
+        /// example before the window is shown) is never overwritten or cleared.
+        /// </summary>
+        private const string ContentLayerPreBlendResourceKey = "NavigationViewContentBackgroundBrush";
+
         #endregion Constants
 
         #region Value converters
@@ -133,9 +146,9 @@ namespace Fluence.Wpf.Controls
         public static readonly DependencyProperty SystemBackdropTypeProperty =
             DependencyProperty.Register(
                 "SystemBackdropType",
-                typeof(BackdropType),
+                typeof(WindowBackdropType),
                 typeof(FluenceWindow),
-                new PropertyMetadata(BackdropType.Auto, OnSystemBackdropTypeChanged));
+                new PropertyMetadata(WindowBackdropType.Auto, OnSystemBackdropTypeChanged));
 
         /// <summary>
         /// Identifies the <see cref="CornerStyle"/> dependency property.
@@ -143,9 +156,9 @@ namespace Fluence.Wpf.Controls
         public static readonly DependencyProperty CornerStyleProperty =
             DependencyProperty.Register(
                 "CornerStyle",
-                typeof(CornerPreference),
+                typeof(WindowCornerPreference),
                 typeof(FluenceWindow),
-                new PropertyMetadata(CornerPreference.Round, OnCornerStyleChanged));
+                new PropertyMetadata(WindowCornerPreference.Round, OnCornerStyleChanged));
 
         /// <summary>
         /// Identifies the <see cref="MarginMaximized"/> dependency property.
@@ -294,18 +307,18 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Gets or sets the requested system backdrop (Mica, Acrylic, Tabbed, or none).
         /// </summary>
-        public BackdropType SystemBackdropType
+        public WindowBackdropType SystemBackdropType
         {
-            get => (BackdropType)GetValue(SystemBackdropTypeProperty);
+            get => (WindowBackdropType)GetValue(SystemBackdropTypeProperty);
             set => SetValue(SystemBackdropTypeProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the preferred window corner rounding policy for DWM.
         /// </summary>
-        public CornerPreference CornerStyle
+        public WindowCornerPreference CornerStyle
         {
-            get => (CornerPreference)GetValue(CornerStyleProperty);
+            get => (WindowCornerPreference)GetValue(CornerStyleProperty);
             set => SetValue(CornerStyleProperty, value);
         }
 
@@ -615,6 +628,12 @@ namespace Fluence.Wpf.Controls
             // MarginMaximized is derived from device-pixel system metrics divided by the window
             // scale factor, so moving to a monitor with a different scale invalidates it.
             UpdateShellMetrics();
+
+            // A DPI change also fires when the window is dragged to a different monitor, which can
+            // carry a different display color depth. ApplyBackdrop re-reads it and refreshes
+            // ResolveContentLayerPreBlend along with the rest of the backdrop; the call is cheap and
+            // idempotent when nothing actually changed.
+            ApplyBackdrop();
         }
 
         /// <inheritdoc />
@@ -859,6 +878,8 @@ namespace Fluence.Wpf.Controls
                 transparencyEffectsEnabled,
                 GetLegacyAcrylicTintColor());
 
+            ApplyContentLayerPreBlend(plan.EffectiveBackdrop);
+
             SolidColorBrush backgroundBrush = new(plan.BackgroundColor);
             backgroundBrush.Freeze();
             Background = backgroundBrush;
@@ -873,7 +894,11 @@ namespace Fluence.Wpf.Controls
             // None) lets the DWM backdrop show through from the first composed frame, which is why
             // the reference Fluent window libraries need no first-paint cloak. Mirrors the WPF-UI
             // WindowBackdrop.RemoveBackground flow.
-            if (_hwndSource?.CompositionTarget is not null)
+            // WM_DISPLAYCHANGE can reach this method after the HwndSource has started tearing down
+            // (a display change during window close is possible), so guard on IsDisposed rather than
+            // just a null check: writing to CompositionTarget on a disposed source throws, and this
+            // path must never throw out of a WndProc hook.
+            if (_hwndSource is { IsDisposed: false, CompositionTarget: not null })
             {
                 _hwndSource.CompositionTarget.BackgroundColor = plan.BackgroundColor;
             }
@@ -902,6 +927,93 @@ namespace Fluence.Wpf.Controls
                 _ = NativeMethods.SetMicaEffect(_handle, plan.UseLegacyMicaEffect);
             }
             ApplyLegacyAcrylic(plan);
+        }
+
+        /// <summary>
+        /// Sets or clears the window-scoped <see cref="ContentLayerPreBlendResourceKey"/> brush for
+        /// the effective backdrop just resolved by <see cref="ApplyBackdrop"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reads the live display color depth (via <see cref="DisplayDepthProbe"/>, so tests can
+        /// force it), the canonical <c language="text">LayerOnMicaBaseAltFillColorTertiary</c> WinUI token
+        /// (authoritative per AGENTS.md 4.2), and the two tokens the fallback composite needs when
+        /// that key is not defined, then delegates the decision to the pure
+        /// <see cref="WindowPolicy.ResolveContentLayerPreBlend"/>. The result is applied as the
+        /// bottom-most layer of the affected control: a pre-blended opaque plate restores the
+        /// brightness the translucent token specifies, and everything WPF composites on top of it is
+        /// then blended by WPF itself at full precision, so it is unaffected by the DWM alpha
+        /// quantisation this substitutes for. See the KNOWN_ISSUES.md entry "Translucent layers over
+        /// a DWM backdrop lose alpha precision on a 10 bpc display".
+        /// </para>
+        /// <para>
+        /// Called on every <see cref="ApplyBackdrop"/> (theme and backdrop changes already re-run
+        /// it), and separately from the events that can move a window to a different display path: a
+        /// display settings change (<c language="csharp">WM_DISPLAYCHANGE</c> in <see cref="WndProc"/>), a DPI
+        /// change (<see cref="OnDpiChanged"/>), and a monitor move at equal DPI, which raises neither
+        /// of those (<c language="csharp">WM_WINDOWPOSCHANGED</c> in <see cref="WndProc"/>, gated on the cached
+        /// <see cref="_lastMonitor"/> so it costs one <c language="csharp">MonitorFromWindow</c> call per message
+        /// when nothing changed). All are cheap and idempotent.
+        /// </para>
+        /// </remarks>
+        /// <param name="effectiveBackdrop">The effective backdrop just resolved by <see cref="ApplyBackdrop"/>.</param>
+        private void ApplyContentLayerPreBlend(WindowBackdropType effectiveBackdrop)
+        {
+            DisplayColorDepth colorDepth = _handle == IntPtr.Zero
+                ? default
+                : DisplayDepthProbe.GetColorDepth(_handle);
+
+            if (_handle != IntPtr.Zero)
+            {
+                // Keep the WM_WINDOWPOSCHANGED cache in sync with every apply, not just the ones it
+                // triggers itself, so a monitor move detected via WM_DISPLAYCHANGE or OnDpiChanged
+                // does not also look like an unhandled move to the next WM_WINDOWPOSCHANGED.
+                _lastMonitor = PInvoke.MonitorFromWindow((HWND)_handle, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            }
+
+            Color? canonicalPreBlend = TryFindResource("LayerOnMicaBaseAltFillColorTertiary") is Color canonical
+                ? canonical
+                : null;
+            Color? layerFill = TryFindResource("NavigationViewContentBackground") is Color layer ? layer : null;
+            Color? solidBase = TryFindResource("SolidBackgroundFillColorBase") is Color solid ? solid : null;
+
+            Color? preBlend = canonicalPreBlend is not null || (layerFill is not null && solidBase is not null)
+                ? WindowPolicy.ResolveContentLayerPreBlend(
+                    effectiveBackdrop,
+                    ApplicationThemeManager.GetResolvedTheme(),
+                    colorDepth,
+                    canonicalPreBlend,
+                    layerFill ?? default,
+                    solidBase ?? default)
+                : null;
+
+            SetContentLayerPreBlend(preBlend);
+        }
+
+        /// <summary>
+        /// Applies the ownership rule for <see cref="ContentLayerPreBlendResourceKey"/>: this window
+        /// only ever sets or removes a value it previously set itself, tracked by
+        /// <see cref="_contentLayerPreBlendApplied"/>, so a consumer's own window-scoped override is
+        /// never overwritten or cleared.
+        /// </summary>
+        /// <param name="preBlend">The resolved pre-blend, or <see langword="null"/> when no substitution applies.</param>
+        private void SetContentLayerPreBlend(Color? preBlend)
+        {
+            if (preBlend is Color preBlendColor)
+            {
+                if (_contentLayerPreBlendApplied || !Resources.Contains(ContentLayerPreBlendResourceKey))
+                {
+                    SolidColorBrush preBlendBrush = new(preBlendColor);
+                    preBlendBrush.Freeze();
+                    Resources[ContentLayerPreBlendResourceKey] = preBlendBrush;
+                    _contentLayerPreBlendApplied = true;
+                }
+            }
+            else if (_contentLayerPreBlendApplied)
+            {
+                Resources.Remove(ContentLayerPreBlendResourceKey);
+                _contentLayerPreBlendApplied = false;
+            }
         }
 
         /// <summary>
@@ -950,6 +1062,16 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// The alpha forced onto <c language="xaml">AcrylicBackgroundFillColorDefault</c>'s RGB for the Windows 10
+        /// legacy acrylic accent policy tint. WPF has no acrylic renderer, so the token itself now
+        /// carries the WinUI <c language="csharp">AcrylicBrush</c> <c language="csharp">FallbackColor</c> (opaque), the
+        /// color every acrylic surface in the library paints as a solid plate. The legacy accent
+        /// policy is the one consumer that still needs a translucent tint, so it forces this fixed
+        /// alpha back onto the token's RGB rather than reading the token's own alpha.
+        /// </summary>
+        private const byte LegacyAcrylicTintAlpha = 0xF0;
+
+        /// <summary>
         /// Resolves the tint color handed to the Windows 10 legacy acrylic accent policy from the
         /// live theme resources, so a theme change re-tints the window through the ordinary
         /// <see cref="ApplyBackdrop"/> re-run with no separate subscription.
@@ -957,37 +1079,46 @@ namespace Fluence.Wpf.Controls
         /// <remarks>
         /// Unlike the DWM system backdrops, the legacy accent policy supplies no tint of its own:
         /// without one the window shows raw blurred desktop. The
-        /// <c language="xaml">AcrylicBackgroundFillColorDefault</c> token carries the WinUI tint including its
-        /// alpha, and that alpha is used as-is. Some reference implementations scale the token's
-        /// alpha by a further constant (iNKORE uses 0.8) to compensate for the legacy blur being
-        /// weaker than DWM acrylic; Fluence does not, so a Windows 10 window matches the token that
-        /// every other acrylic surface in the library is drawn from. The theme fallback background
-        /// is used when the token is missing, which keeps the window opaque and legible rather than
-        /// letting a transparent-black default erase the tint entirely.
+        /// <c language="xaml">AcrylicBackgroundFillColorDefault</c> token is opaque (the WinUI
+        /// <c language="csharp">AcrylicBrush</c> <c language="csharp">FallbackColor</c>, used as-is by every other
+        /// acrylic plate in the library), so this method forces <see cref="LegacyAcrylicTintAlpha"/>
+        /// onto the token's RGB instead of using the token's own alpha, splitting the opaque plate
+        /// color from the translucent legacy tint. Some reference implementations scale the alpha by
+        /// a further constant (iNKORE uses 0.8) to compensate for the legacy blur being weaker than
+        /// DWM acrylic; Fluence does not. The theme fallback background is used opaque when the token
+        /// is missing, which keeps the window legible rather than letting a transparent-black default
+        /// erase the tint entirely.
         /// </remarks>
         /// <returns>The tint color for the accent policy.</returns>
         private Color GetLegacyAcrylicTintColor()
         {
             return TryFindResource("AcrylicBackgroundFillColorDefault") is Color tintColor
-                ? tintColor
+                ? Color.FromArgb(LegacyAcrylicTintAlpha, tintColor.R, tintColor.G, tintColor.B)
                 : GetFallbackBackgroundColor();
         }
 
         /// <summary>
-        /// Applies the template border brush and the DWM border color for the current activation and
-        /// window state. Called on activation, deactivation, state change, and accent change.
+        /// Applies the template border brush and thickness, and the DWM border color, for the current
+        /// activation and window state. Called on activation, deactivation, state change, and accent change.
         /// </summary>
+        /// <remarks>
+        /// Both template properties go through <see cref="DependencyObject.SetCurrentValue(DependencyProperty, object)"/>
+        /// rather than a plain assignment, so the declarative base value (a consumer's own style setter or binding
+        /// on <see cref="Control.BorderBrushProperty"/> or <see cref="Control.BorderThicknessProperty"/>) survives
+        /// underneath this call; the consumer's value is overridden only while the shell manages the realised
+        /// window, not replaced outright.
+        /// </remarks>
         private void ApplyFrame()
         {
             WindowCapabilities capabilities = WindowCapabilities.Current;
             FramePlan plan = WindowPolicy.BuildFramePlan(
-                WindowState,
                 IsActive,
                 ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
                 capabilities,
                 ApplicationAccentColorManager.SystemAccentColor);
 
-            BorderBrush = TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent;
+            SetCurrentValue(BorderBrushProperty, TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent);
+            SetCurrentValue(BorderThicknessProperty, plan.TemplateBorderThickness);
             if (_handle != IntPtr.Zero && capabilities.SupportsBorderColor)
             {
                 _ = NativeMethods.SetBorderColor(_handle, plan.DwmBorderColor);
@@ -1016,14 +1147,30 @@ namespace Fluence.Wpf.Controls
         /// Resolves the opaque background color used when no DWM backdrop is active, picked from the
         /// resolved theme.
         /// </summary>
-        private static Color GetFallbackBackgroundColor()
+        /// <remarks>
+        /// Reads the published <c language="csharp">ApplicationBackgroundBrush</c> instead of duplicating its
+        /// per-theme literals here, so the engine's color table is the single source of truth (it also
+        /// carries the WinUI <c language="csharp">ApplicationPageBackgroundThemeBrush</c> parity, resolved from
+        /// <c language="csharp">SolidBackgroundFillColorBase</c>, and the live High Contrast override from
+        /// <see cref="SystemColors.WindowColor"/> via the theme engine's HC rebuild). The lookup starts at
+        /// this window so a window-scoped <c language="csharp">ApplicationBackgroundBrush</c> override is honoured,
+        /// exactly as <see cref="GetLegacyAcrylicTintColor"/> does for its tint. The literal fallback below only
+        /// covers the case where no theme has been applied yet or the resource is missing, matching the same
+        /// token values so a pre-Apply window still looks right.
+        /// </remarks>
+        private Color GetFallbackBackgroundColor()
         {
+            if (TryFindResource("ApplicationBackgroundBrush") is SolidColorBrush brush)
+            {
+                return brush.Color;
+            }
+
             ApplicationTheme resolvedTheme = ApplicationThemeManager.GetResolvedTheme();
             return resolvedTheme is ApplicationTheme.Dark
                 ? Color.FromRgb(0x20, 0x20, 0x20)
                 : resolvedTheme is ApplicationTheme.HighContrast
                 ? SystemColors.WindowColor
-                : Color.FromRgb(0xFA, 0xFA, 0xFA);
+                : Color.FromRgb(0xF3, 0xF3, 0xF3);
         }
 
         #endregion Window shell (chrome, backdrop, corners, frame)
@@ -1050,20 +1197,22 @@ namespace Fluence.Wpf.Controls
         /// SizeToContent-driven resize the root visual's arrange lags one layout pass behind the new
         /// client size: the HWND (and <see cref="FrameworkElement.ActualWidth"/> /
         /// <see cref="FrameworkElement.ActualHeight"/>) already reflect the grown size while the
-        /// template root <c language="xaml">Border</c> is still arranged to the previous, smaller desired size. The
-        /// gap reads as a rounded accent border floating inside the DWM border (set via
-        /// <c language="csharp">DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
-        /// longer coincide. An interactive resize hides it because it ends with a real <c language="csharp">WM_SIZE</c>
-        /// that re-arranges the content; a SizeToContent first paint or auto-grow never produces that
-        /// <c language="csharp">WM_SIZE</c>.
+        /// template root <c language="xaml">Border</c> is still arranged to the previous, smaller desired size. On
+        /// Windows 11, where <see cref="ApplyFrame"/> resolves the template border to 0 dp, the visible symptom is
+        /// the window's own background not filling the client area at the right and bottom edges. On Windows 10,
+        /// where the template still draws a 1 dp border, the same lag instead reads as a rounded accent border
+        /// floating inside the DWM border (set via <c language="csharp">DWMWA_BORDER_COLOR</c>) on every edge,
+        /// because the template border and the DWM border no longer coincide. An interactive resize hides either
+        /// symptom because it ends with a real <c language="csharp">WM_SIZE</c> that re-arranges the content; a
+        /// SizeToContent first paint or auto-grow never produces that <c language="csharp">WM_SIZE</c>.
         /// <para>
         /// The correction directly arranges the single visual child to a rect of the window's current
         /// <see cref="FrameworkElement.ActualWidth"/> x <see cref="FrameworkElement.ActualHeight"/>
         /// (which equal the client area in DIPs), reproducing the re-arrange a real <c language="csharp">WM_SIZE</c>
         /// would trigger without freezing <see cref="Window.SizeToContent"/> - so the window still
-        /// grows when its content grows and stays single-bordered after growing. The
+        /// grows when its content grows and again fills the client area exactly after growing. The
         /// <c language="csharp">SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
-        /// render with the borders coincident, and a re-entrancy guard prevents the child arrange from
+        /// render filling the client area, and a re-entrancy guard prevents the child arrange from
         /// recursing through <see cref="FrameworkElement.SizeChanged"/>.
         /// </para>
         /// </remarks>
@@ -1101,8 +1250,10 @@ namespace Fluence.Wpf.Controls
             try
             {
                 // Re-arrange the root visual to the full client area. This mirrors the re-arrange a
-                // real WM_SIZE performs, collapsing the inset so the template border coincides with
-                // the DWM border. SizeToContent stays active for the next content change.
+                // real WM_SIZE performs, collapsing the inset so the content again fills the client
+                // area exactly (Windows 11: the background; Windows 10: the 1 dp template border, so
+                // it coincides with the DWM border). SizeToContent stays active for the next content
+                // change.
                 child.Arrange(new Rect(0.0, 0.0, width, height));
             }
             finally
@@ -1318,7 +1469,7 @@ namespace Fluence.Wpf.Controls
             {
                 HandleGetMinMaxInfo(hwnd, lParam, ref handled);
             }
-            else if (msg == PInvoke.WM_NCLBUTTONUP && wParam.ToInt32() == PInvoke.HTMAXBUTTON)
+            else if (msg == PInvoke.WM_NCLBUTTONUP && IsMaxButtonRelease(wParam))
             {
                 HandleMaxButtonClick(ref handled);
             }
@@ -1331,6 +1482,28 @@ namespace Fluence.Wpf.Controls
             {
                 _inSizeMove = false;
                 RestoreLegacyAcrylicAfterDrag();
+            }
+            else if (msg == PInvoke.WM_DISPLAYCHANGE)
+            {
+                // The display path (resolution, color depth, or monitor count) just changed. A
+                // re-run of ApplyBackdrop is cheap and idempotent, and it is the only place that
+                // re-reads the display color depth feeding ResolveContentLayerPreBlend, so a
+                // display-settings change without a monitor move (unlike OnDpiChanged) still
+                // refreshes the pre-blend.
+                ApplyBackdrop();
+            }
+            else if (msg == PInvoke.WM_WINDOWPOSCHANGED)
+            {
+                // A move between two monitors at the same DPI raises neither WM_DPICHANGED nor
+                // WM_DISPLAYCHANGE, so this is the only signal left for that case. One
+                // MonitorFromWindow call per message keeps the cost flat regardless of how often the
+                // window moves; ApplyBackdrop (which itself refreshes _lastMonitor) only re-runs when
+                // the monitor actually changed.
+                HMONITOR monitor = PInvoke.MonitorFromWindow((HWND)hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+                if (monitor != _lastMonitor)
+                {
+                    ApplyBackdrop();
+                }
             }
             return IntPtr.Zero;
         }
@@ -1470,6 +1643,22 @@ namespace Fluence.Wpf.Controls
 
             Marshal.StructureToPtr(mmi, lParam, fDeleteOld: false);
             handled = true;
+        }
+
+        /// <summary>
+        /// Whether a <c language="csharp">WM_NCLBUTTONUP</c> wParam is the snap-layout max/restore
+        /// hit-test code. Decoded through <see cref="IntPtr.ToInt64"/>, never
+        /// <see cref="IntPtr.ToInt32"/>: on a 64-bit process wParam is a full 64-bit value, any
+        /// process on the desktop can post one, and <c language="csharp">ToInt32</c> throws
+        /// <see cref="OverflowException"/> for anything outside 32 bits. An exception escaping an
+        /// <see cref="HwndSource"/> hook tears the process down, so a single posted message would
+        /// have crashed the host. Internal so tests can pin the decode.
+        /// </summary>
+        /// <param name="wParam">The message parameter.</param>
+        /// <returns><see langword="true"/> when the release was over the max button hit area.</returns>
+        internal static bool IsMaxButtonRelease(IntPtr wParam)
+        {
+            return wParam.ToInt64() == PInvoke.HTMAXBUTTON;
         }
 
         /// <summary>
@@ -1828,6 +2017,24 @@ namespace Fluence.Wpf.Controls
         /// <see cref="OnClosed(EventArgs)"/>.
         /// </summary>
         private HwndSource? _hwndSource;
+
+        /// <summary>
+        /// <see langword="true"/> when this window last set <see cref="ContentLayerPreBlendResourceKey"/>
+        /// on its own <see cref="FrameworkElement.Resources"/> in <see cref="ApplyContentLayerPreBlend"/>.
+        /// Ownership, not mere presence: a consumer who sets that key themselves (for example before
+        /// the window is first shown) leaves this <see langword="false"/>, so
+        /// <see cref="ApplyContentLayerPreBlend"/> never overwrites or removes a value it did not
+        /// itself set.
+        /// </summary>
+        private bool _contentLayerPreBlendApplied;
+
+        /// <summary>
+        /// The monitor <see cref="_handle"/> was on as of the last <see cref="ApplyBackdrop"/>, used
+        /// by <c>WM_WINDOWPOSCHANGED</c> to detect a move to a different monitor at the same DPI
+        /// (which raises no <c>WM_DPICHANGED</c>) without re-reading the display color depth on
+        /// every window-position message.
+        /// </summary>
+        private HMONITOR _lastMonitor;
 
         /// <summary>
         /// <see langword="true"/> while the Windows 10 legacy acrylic accent policy is applied to

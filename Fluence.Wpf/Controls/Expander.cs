@@ -29,6 +29,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Fluence.Wpf.Helpers;
@@ -54,8 +55,10 @@ namespace Fluence.Wpf.Controls
         private const string Row1DefName = "Row1Def";
 
         // WinUI Expander.xaml ExpandDown/CollapseDown splines (0,0,0,1 / 1,1,0,1), 333/167 ms.
-        // These are the WinUI-literal Expander values, deliberately not the repo-wide 0.8,0,0,1
-        // spline. 333 ms mirrors the Typography.xaml ControlSlowAnimationDuration token and
+        // These are the WinUI-literal Expander values and stay literal here even though the
+        // expand spline now has the same value as the repo-wide decelerating token that
+        // MotionHelper mirrors. The collapse spline has no such twin, and WinUI owns the two as
+        // a pair. 333 ms mirrors the Typography.xaml ControlSlowAnimationDuration token and
         // 167 ms mirrors ControlFastAnimationDuration; code-built animations cannot reference
         // the XAML TimeSpan tokens, so the values are mirrored here (ContentDialog pattern).
         private const double ExpandSlideMilliseconds = 333;
@@ -91,6 +94,32 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// Converter that keeps only the top edge of a <see cref="CornerRadius"/> or
+        /// <see cref="Thickness"/> value and zeroes the bottom edge. The Expander template in
+        /// <c language="csharp">Themes/Controls/Expander.xaml</c> consumes this field through
+        /// <c language="csharp">{x:Static controls:Expander.TopCornerRadiusFilter}</c>. The field
+        /// is declared as the public <see cref="IValueConverter"/> interface, rather than the
+        /// internal converter type it constructs, because <c language="csharp">{x:Static}</c>
+        /// sites inside deferred <c language="csharp">Setter.Value</c> and
+        /// <c language="csharp">ControlTemplate</c> content are re-resolved at runtime by
+        /// <see cref="System.Windows.Markup.StaticExtension"/> through public-only reflection,
+        /// which cannot see an internal field regardless of assembly.
+        /// </summary>
+        public static readonly IValueConverter TopCornerRadiusFilter =
+            new CornerRadiusFilterConverter { Edge = CornerRadiusFilterEdge.Top };
+
+        /// <summary>
+        /// Converter that keeps only the bottom edge of a <see cref="CornerRadius"/> or
+        /// <see cref="Thickness"/> value and zeroes the top edge. The Expander template in
+        /// <c language="csharp">Themes/Controls/Expander.xaml</c> consumes this field through
+        /// <c language="csharp">{x:Static controls:Expander.BottomCornerRadiusFilter}</c>. See
+        /// <see cref="TopCornerRadiusFilter"/> for why the field's declared type is the public
+        /// <see cref="IValueConverter"/> interface rather than the internal converter type.
+        /// </summary>
+        public static readonly IValueConverter BottomCornerRadiusFilter =
+            new CornerRadiusFilterConverter { Edge = CornerRadiusFilterEdge.Bottom };
+
+        /// <summary>
         /// Identifies the <see cref="CornerRadius"/> dependency property.
         /// </summary>
         public static readonly DependencyProperty CornerRadiusProperty =
@@ -107,6 +136,32 @@ namespace Fluence.Wpf.Controls
         {
             get => (CornerRadius)GetValue(CornerRadiusProperty);
             set => SetValue(CornerRadiusProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="HeaderBackground"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty HeaderBackgroundProperty =
+            DependencyProperty.Register(
+                nameof(HeaderBackground),
+                typeof(Brush),
+                typeof(Expander),
+                new FrameworkPropertyMetadata(defaultValue: null));
+
+        /// <summary>
+        /// Gets or sets the brush that fills the header tier.
+        /// </summary>
+        /// <remarks>
+        /// WinUI keys the two tiers separately: the header takes ExpanderHeaderBackground and
+        /// the content takes the control's own Background (Expander.xaml:111,114). This is the
+        /// header half of that pair, so a consumer can colour either tier without retemplating.
+        /// The default style supplies the card default fill, so leaving it unset keeps the
+        /// shipped look.
+        /// </remarks>
+        public Brush? HeaderBackground
+        {
+            get => (Brush?)GetValue(HeaderBackgroundProperty);
+            set => SetValue(HeaderBackgroundProperty, value);
         }
 
         /// <summary>

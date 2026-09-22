@@ -64,10 +64,11 @@ namespace Fluence.Wpf
                 // without an explicit teardown) cannot leak the window, its HwndSource hook, or
                 // this static registry entry.
                 window.Closed += OnWindowClosed;
-                if (!window.IsLoaded)
+                if (new WindowInteropHelper(window).Handle == IntPtr.Zero)
                 {
-                    // HwndSource does not exist until SourceInitialized. Defer the native
-                    // hook rather than forcing handle creation during construction.
+                    // Loaded is later than SourceInitialized. A caller inside or after
+                    // SourceInitialized already has a handle and must attach immediately,
+                    // even though Loaded has not fired yet.
                     window.SourceInitialized += OnWindowSourceInitialized;
                 }
                 else

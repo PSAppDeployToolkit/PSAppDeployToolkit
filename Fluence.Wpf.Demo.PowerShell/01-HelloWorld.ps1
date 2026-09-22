@@ -35,8 +35,7 @@ $app = New-Object System.Windows.Application
 # --- 5. Turn the theme engine on. Auto = follow the Windows light/dark setting. ---
 [Fluence.Wpf.ApplicationThemeManager]::Apply(
     [Fluence.Wpf.ApplicationTheme]::Auto,
-    [Fluence.Wpf.BackdropType]::Mica,
-    $true)
+    [Fluence.Wpf.WindowBackdropType]::Mica)
 [Fluence.Wpf.ApplicationAccentColorManager]::ApplySystemAccent()
 
 # --- 6. Build the window from inline XAML. ui: = the Fluence.Wpf.Controls namespace. ---
@@ -83,7 +82,7 @@ $cycleButton.add_Click({
     $script:tick++
     $name = $backdrops[$script:tick % $backdrops.Count]
     # Setting the window's SystemBackdropType re-applies the DWM backdrop live.
-    $window.SystemBackdropType = [Enum]::Parse([Fluence.Wpf.BackdropType], $name)
+    $window.SystemBackdropType = [Enum]::Parse([Fluence.Wpf.WindowBackdropType], $name)
     $backdropLabel.Text = "Backdrop: $name"
     $helloLabel.Text    = $greetings[$script:tick % $greetings.Count]
 })

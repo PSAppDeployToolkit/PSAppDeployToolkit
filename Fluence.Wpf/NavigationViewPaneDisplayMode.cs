@@ -45,7 +45,8 @@ namespace Fluence.Wpf
 
         /// <summary>
         /// A compact vertical pane that starts collapsed (icons only, 48px) and
-        /// expands as an overlay without pushing content.
+        /// expands in an inline two-column layout that pushes content, matching
+        /// the WinUI 3 PaneNotOverlaying state.
         /// </summary>
         LeftCompact = 2,
     }

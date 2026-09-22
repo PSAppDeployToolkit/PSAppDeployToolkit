@@ -34,14 +34,15 @@
                         CornerRadius="{TemplateBinding CornerRadius}"
                         UseLayoutRounding="True">
                         <Grid>
+                            <!--  WinUI parity: ItemContainer_themeresources.xaml:6-7 uses the Subtle fill family for the pointer-over/pressed reveal, not a 50% white ControlFill overlay.  -->
                             <Border
                                 x:Name="ClickHoverLayer"
-                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
                                 Opacity="0" />
                             <Border
                                 x:Name="ClickPressLayer"
-                                Background="{DynamicResource ControlFillColorTertiaryBrush}"
+                                Background="{DynamicResource SubtleFillColorTertiaryBrush}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
                                 Opacity="0" />
                             <Grid Margin="{TemplateBinding Padding}">
@@ -102,7 +103,7 @@
                         <Storyboard x:Key="HoverOnStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClickHoverLayer" Storyboard.TargetProperty="Opacity">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -110,7 +111,7 @@
                         <Storyboard x:Key="HoverOffStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClickHoverLayer" Storyboard.TargetProperty="Opacity">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0" />
                             </DoubleAnimationUsingKeyFrames>
@@ -118,7 +119,7 @@
                         <Storyboard x:Key="PressOnStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClickPressLayer" Storyboard.TargetProperty="Opacity">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -126,7 +127,7 @@
                         <Storyboard x:Key="PressOffStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClickPressLayer" Storyboard.TargetProperty="Opacity">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0" />
                             </DoubleAnimationUsingKeyFrames>
@@ -214,12 +215,36 @@
                             <Setter Property="Focusable" Value="True" />
                         </Trigger>
 
+                        <!--  Disabled border always reads as a plain card stroke, regardless of variant.  -->
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="ClickHoverLayer" Property="Opacity" Value="0" />
                             <Setter TargetName="ClickPressLayer" Property="Opacity" Value="0" />
                         </Trigger>
+                        <!--
+                            Only Default and Filled dim their background when disabled; Outlined's
+                            transparent background and Subtle's tonal fill must not be overridden.
+                            These two blocks are pixel-identical bar the Variant condition: WPF's
+                            MultiTrigger has no OR-of-values condition, and the data-bound
+                            alternative (MultiDataTrigger with RelativeSource TemplatedParent on
+                            IsEnabled) does not reliably fire from inside ControlTemplate.Triggers,
+                            so the duplication stays as two plain property-based MultiTriggers.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False" />
+                                <Condition Property="Variant" Value="{x:Static ui:CardVariant.Default}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False" />
+                                <Condition Property="Variant" Value="{x:Static ui:CardVariant.Filled}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

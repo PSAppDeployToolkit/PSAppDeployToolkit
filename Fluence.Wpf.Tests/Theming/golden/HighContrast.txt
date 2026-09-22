@@ -1,3 +1,5 @@
+AccentAcrylicBackgroundFillColorBase|#FF1AEBFF|#00000000
+AccentAcrylicBackgroundFillColorDefault|#FF1AEBFF|#00000000
 AccentFillBackdrop|#FFFFFFFF|#00000000
 AccentFillBackdropBrush|#00000000|#FFFFFFFF
 AccentFillColorDefault|#FF005BA1|#00000000
@@ -6,13 +8,17 @@ AccentFillColorDisabled|#FF3FF23F|#00000000
 AccentFillColorDisabledBrush|#00000000|#FF6D6D6D
 AccentFillColorSecondary|#E6005BA1|#00000000
 AccentFillColorSecondaryBrush|#00000000|#E6005BA1
+AccentFillColorSelectedTextBackground|#FF0078D4|#00000000
 AccentFillColorSelectedTextBackgroundBrush|#00000000|#FF0078D4
 AccentFillColorTertiary|#CC005BA1|#00000000
 AccentFillColorTertiaryBrush|#00000000|#CC005BA1
 AccentTextFillColorDisabled|#5C000000|#00000000
 AccentTextFillColorDisabledBrush|#00000000|#5C000000
+AccentTextFillColorPrimary|#FF003E6E|#00000000
 AccentTextFillColorPrimaryBrush|#00000000|#FF003E6E
+AccentTextFillColorSecondary|#FF00213B|#00000000
 AccentTextFillColorSecondaryBrush|#00000000|#FF00213B
+AccentTextFillColorTertiary|#FF005BA1|#00000000
 AccentTextFillColorTertiaryBrush|#00000000|#FF005BA1
 AcrylicBackgroundFillColorBase|#FF000000|#00000000
 AcrylicBackgroundFillColorBaseBrush|#00000000|#FFFFFFFF
@@ -20,6 +26,7 @@ AcrylicBackgroundFillColorDefault|#FF000000|#00000000
 AcrylicBackgroundFillColorDefaultBrush|#00000000|#FFFFFFFF
 ApplicationBackgroundBrush|#00000000|#FFFFFFFF
 ApplicationBackgroundColor|#FF000000|#00000000
+ApplicationPageBackgroundThemeBrush|#00000000|#FFFFFFFF
 CardBackgroundFillColorDefault|#FF000000|#00000000
 CardBackgroundFillColorDefaultBrush|#00000000|#FFF0F0F0
 CardBackgroundFillColorSecondary|#FF000000|#00000000
@@ -80,8 +87,6 @@ ControlStrokeColorOnAccentTertiary|#FF000000|#00000000
 ControlStrokeColorOnAccentTertiaryBrush|#00000000|#FFFFFFFF
 ControlStrokeColorSecondary|#FF808080|#00000000
 ControlStrokeColorSecondaryBrush|#00000000|#FFA0A0A0
-ControlStrokeColorTertiary|#FFFFFFFF|#00000000
-ControlStrokeColorTertiaryBrush|#00000000|#FF000000
 ControlStrongFillColorDefault|#FFFFFFFF|#00000000
 ControlStrongFillColorDefaultBrush|#00000000|#FF000000
 ControlStrongFillColorDisabled|#FF3FF23F|#00000000
@@ -95,7 +100,10 @@ DividerStrokeColorDefaultBrush|#00000000|#FFA0A0A0
 FocusStrokeColorInner|#FF000000|#00000000
 FocusStrokeColorInnerBrush|#00000000|#FFFFFFFF
 FocusStrokeColorOuter|#FF1AEBFF|#00000000
-KeyboardFocusBorderColor|#FF1AEBFF|#00000000
+InfoBadgeCautionForegroundBrush|#00000000|#FFFFFFFF
+InfoBadgeCriticalForegroundBrush|#00000000|#FFFFFFFF
+InfoBadgeInformationalForegroundBrush|#00000000|#FFFFFFFF
+InfoBadgeSuccessForegroundBrush|#00000000|#FFFFFFFF
 LayerFillColorAlt|#FF000000|#00000000
 LayerFillColorAltBrush|#00000000|#FFFFFFFF
 LayerFillColorDefault|#FF000000|#00000000
@@ -168,6 +176,7 @@ SystemAccentColorTertiary|#FF00213B|#00000000
 SystemAccentColorTertiaryBrush|#00000000|#FF005BA1
 SystemFillColorAttention|#FF1AEBFF|#00000000
 SystemFillColorAttentionBackground|#FF1AEBFF|#00000000
+SystemFillColorAttentionBackgroundBrush|#00000000|#FFFFFFFF
 SystemFillColorCaution|#FFFFFFFF|#00000000
 SystemFillColorCautionBackground|#FF000000|#00000000
 SystemFillColorCautionBackgroundBrush|#00000000|#FFFFFFFF
@@ -176,13 +185,12 @@ SystemFillColorCritical|#FFFFFFFF|#00000000
 SystemFillColorCriticalBackground|#FF000000|#00000000
 SystemFillColorCriticalBackgroundBrush|#00000000|#FFFFFFFF
 SystemFillColorCriticalBrush|#00000000|#FF000000
-SystemFillColorInformational|#FFFFFFFF|#00000000
-SystemFillColorInformationalBrush|#00000000|#FF000000
 SystemFillColorNeutral|#FFFFFFFF|#00000000
 SystemFillColorNeutralBackground|#FF000000|#00000000
 SystemFillColorNeutralBackgroundBrush|#00000000|#FFFFFFFF
 SystemFillColorNeutralBrush|#00000000|#FF000000
 SystemFillColorSolidAttentionBackground|#FF1AEBFF|#00000000
+SystemFillColorSolidAttentionBackgroundBrush|#00000000|#FFFFFFFF
 SystemFillColorSolidNeutral|#FFFFFFFF|#00000000
 SystemFillColorSolidNeutralBackground|#FF000000|#00000000
 SystemFillColorSolidNeutralBackgroundBrush|#00000000|#FFF0F0F0
@@ -191,6 +199,8 @@ SystemFillColorSuccess|#FFFFFFFF|#00000000
 SystemFillColorSuccessBackground|#FF000000|#00000000
 SystemFillColorSuccessBackgroundBrush|#00000000|#FFFFFFFF
 SystemFillColorSuccessBrush|#00000000|#FF000000
+TeachingTipTopHighlight|#00000000|#00000000
+TeachingTipTopHighlightBrush|#00000000|#00000000
 TextControlElevationBorderBrush|#00000000|#FFA0A0A0
 TextFillColorDisabled|#FF3FF23F|#00000000
 TextFillColorDisabledBrush|#00000000|#FF6D6D6D
@@ -210,8 +220,6 @@ TextOnAccentFillColorSecondary|#B3FFFFFF|#00000000
 TextOnAccentFillColorSecondaryBrush|#00000000|#B3FFFFFF
 TextOnAccentFillColorSelectedText|#FF000000|#00000000
 TextOnAccentFillColorSelectedTextBrush|#00000000|#FFFFFFFF
-TextPlaceholderColor|#FF3FF23F|#00000000
-TextPlaceholderColorBrush|#00000000|#FF6D6D6D
 TitleBarActiveColor|#FFFFFFFF|#00000000
 TitleBarActiveColorBrush|#00000000|#FFFFFFFF
 TitleBarInactiveColor|#FFFFFFFF|#00000000
@@ -221,9 +229,3 @@ WindowBorderColorBrush|#00000000|#FFFFFFFF
 WindowCloseButtonBackgroundPointerOver|#FFC42B1C|#00000000
 WindowCloseButtonBackgroundPressed|#FFB4271C|#00000000
 WindowCloseButtonForegroundPointerOver|#FFFFFFFF|#00000000
-WindowCloseFillColorHover|#FF1AEBFF|#00000000
-WindowCloseFillColorPressed|#FF1AEBFF|#00000000
-WindowCloseForegroundHover|#FF000000|#00000000
-WindowCloseForegroundHoverBrush|#00000000|#FFFFFFFF
-WindowCloseForegroundPressed|#FF000000|#00000000
-WindowCloseForegroundPressedBrush|#00000000|#FFFFFFFF

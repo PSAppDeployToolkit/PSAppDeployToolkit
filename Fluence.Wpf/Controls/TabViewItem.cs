@@ -26,7 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -37,11 +37,11 @@ namespace Fluence.Wpf.Controls
     /// A <see cref="TabItem"/> container used by <see cref="TabView"/> that renders an icon, a header,
     /// and an optional close button aligned with the WinUI 3 TabView visual language.
     /// </summary>
-    [TemplatePart(Name = PartCloseButton, Type = typeof(ButtonBase))]
+    [TemplatePart(Name = PART_CloseButton, Type = typeof(ButtonBase))]
     public class TabViewItem : TabItem
     {
         // Template part names.
-        private const string PartCloseButton = "PART_CloseButton";
+        private const string PART_CloseButton = "PART_CloseButton";
 
         /// <summary>
         /// Identifies the <see cref="IsClosable"/> dependency property.
@@ -63,13 +63,27 @@ namespace Fluence.Wpf.Controls
                 typeof(TabViewItem),
                 new PropertyMetadata(propertyChangedCallback: null));
 
+        private static readonly DependencyPropertyKey LeadingSeparatorVisibilityPropertyKey =
+            DependencyProperty.RegisterReadOnly(
+                nameof(LeadingSeparatorVisibility),
+                typeof(Visibility),
+                typeof(TabViewItem),
+                new FrameworkPropertyMetadata(Visibility.Visible));
+
+        /// <summary>
+        /// Identifies the <see cref="LeadingSeparatorVisibility"/> dependency property. Internal:
+        /// this is an implementation detail of the default template, not a consumer-facing DP.
+        /// </summary>
+        internal static readonly DependencyProperty LeadingSeparatorVisibilityProperty =
+            LeadingSeparatorVisibilityPropertyKey.DependencyProperty;
+
         /// <summary>
         /// Identifies the <see cref="CloseRequested"/> routed event.
         /// </summary>
         public static readonly RoutedEvent CloseRequestedEvent = EventManager.RegisterRoutedEvent(
             nameof(CloseRequested),
             RoutingStrategy.Bubble,
-            typeof(RoutedEventHandler),
+            typeof(EventHandler<TabViewTabCloseRequestedEventArgs>),
             typeof(TabViewItem));
 
         /// <summary>
@@ -105,11 +119,25 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// Gets the visibility of the hairline separator drawn at the leading edge of this tab,
+        /// between it and its previous sibling (WinUI TabViewItemSeparator). Computed by the
+        /// owning <see cref="TabView"/> from selection and position: collapsed for the first tab
+        /// in the strip and for either tab flanking the current selection. Internal: an
+        /// implementation detail of the default template, bound to it via
+        /// <c language="csharp">RelativeSource TemplatedParent</c> rather than
+        /// <c language="csharp">TemplateBinding</c>, and not settable by consumers.
+        /// </summary>
+        internal Visibility LeadingSeparatorVisibility
+        {
+            get => (Visibility)GetValue(LeadingSeparatorVisibilityProperty);
+            set => SetValue(LeadingSeparatorVisibilityPropertyKey, value);
+        }
+
+        /// <summary>
         /// Raised when the user clicks the per-tab close button. The parent <see cref="TabView"/>
         /// aggregates this into <see cref="TabView.TabCloseRequested"/> for convenience.
         /// </summary>
-        [SuppressMessage("Design", "S3908", Justification = "RoutedEventHandler is required by WPF's routed event infrastructure.")]
-        public event RoutedEventHandler CloseRequested
+        public event EventHandler<TabViewTabCloseRequestedEventArgs> CloseRequested
         {
             add => AddHandler(CloseRequestedEvent, value);
             remove => RemoveHandler(CloseRequestedEvent, value);
@@ -120,7 +148,7 @@ namespace Fluence.Wpf.Controls
         {
             base.OnApplyTemplate();
             _closeButton?.Click -= OnCloseButtonClick;
-            _closeButton = GetTemplateChild(PartCloseButton) as ButtonBase;
+            _closeButton = GetTemplateChild(PART_CloseButton) as ButtonBase;
             _closeButton?.Click += OnCloseButtonClick;
         }
 

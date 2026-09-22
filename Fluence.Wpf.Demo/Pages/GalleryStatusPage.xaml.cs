@@ -33,7 +33,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryStatusPage : UserControl
+    public partial class GalleryStatusPage : Page
     {
         private static readonly string ProgressBarValueXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Status.ProgressBarValue",
@@ -54,7 +54,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "            Maximum=\"100\"\n" +
                                                           "            Minimum=\"0\"\n" +
                                                           "            SmallChange=\"5\"\n" +
-                                                          "            SpinButtonPlacementMode=\"{x:Static fluence:SpinButtonPlacementMode.Inline}\"\n" +
+                                                          "            SpinButtonPlacementMode=\"{x:Static fluence:NumberBoxSpinButtonPlacementMode.Inline}\"\n" +
                                                           "            Value=\"50\" />\n" +
                                                           "        <Grid>\n" +
                                                           "            <Grid.ColumnDefinitions>\n" +
@@ -282,7 +282,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                        "            Maximum=\"100\"\n" +
                                                        "            Minimum=\"1\"\n" +
                                                        "            SmallChange=\"1\"\n" +
-                                                       "            SpinButtonPlacementMode=\"{x:Static fluence:SpinButtonPlacementMode.Inline}\"\n" +
+                                                       "            SpinButtonPlacementMode=\"{x:Static fluence:NumberBoxSpinButtonPlacementMode.Inline}\"\n" +
                                                        "            Value=\"{Binding Value, ElementName=DeterminateProgressRing, Mode=TwoWay}\" />\n" +
                                                        "        <TextBlock\n" +
                                                        "            x:Name=\"DeterminateProgressRingLabel\"\n" +

@@ -31,7 +31,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryNavigationPage : UserControl
+    public partial class GalleryNavigationPage : Page
     {
         private static readonly string LeftNavigationViewXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Navigation.LeftNavigationView",
@@ -155,7 +155,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                                "            <fluence:CheckBox\n" +
                                                                "                x:Name=\"BackEnabledToggle\"\n" +
                                                                "                Content=\"Back enabled\"\n" +
-                                                               "                IsChecked=\"True\" />\n" +
+                                                               "                IsChecked=\"False\" />\n" +
                                                                "    </StackPanel>\n");
 
         private const string CompactNavigationViewCSharpSource = "using System.Windows.Controls;\n" +
@@ -254,6 +254,12 @@ namespace Fluence.Wpf.Demo.Pages
         private readonly System.Collections.ObjectModel.ObservableCollection<string> _breadcrumbPath =
             ["Home", "Documents", "Design", "Specs"];
 
+        /// <summary>
+        /// The SelectorBar section the sample presenter is showing, so the next selection knows
+        /// which way to slide.
+        /// </summary>
+        private int _selectedSectionIndex;
+
         public GalleryNavigationPage()
         {
             InitializeComponent();
@@ -265,12 +271,94 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(3, CompactNavigationViewXamlSource, CompactNavigationViewCSharpSource),
                 new DemoSampleSource(4, InfoBadgeNavigationXamlSource, InfoBadgeNavigationCSharpSource),
                 new DemoSampleSource(5, BreadcrumbBarXamlSource, BreadcrumbBarCSharpSource),
-                new DemoSampleSource(6, PipsPagerXamlSource, PipsPagerCSharpSource));
+                new DemoSampleSource(6, PipsPagerXamlSource, PipsPagerCSharpSource),
+                new DemoSampleSource(7, SelectorBarXamlSource, SelectorBarCSharpSource));
 
             DemoBreadcrumbBar.ItemsSource = _breadcrumbPath;
 
             Loaded += GalleryNavigationPage_Loaded;
         }
+
+        private static readonly string SelectorBarXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Navigation.SectionSwitcher",
+                                                     "    <fluence:StackPanel HorizontalAlignment=\"Left\" Spacing=\"4\">\n" +
+                                                     "        <fluence:SelectorBar\n" +
+                                                     "            x:Name=\"Sections\"\n" +
+                                                     "            SelectionChanged=\"Sections_SelectionChanged\">\n" +
+                                                     "            <fluence:SelectorBarItem Text=\"Recent\">\n" +
+                                                     "                <fluence:SelectorBarItem.Icon>\n" +
+                                                     "                    <fluence:FontIcon Glyph=\"&#xE823;\" IconFontSize=\"16\" />\n" +
+                                                     "                </fluence:SelectorBarItem.Icon>\n" +
+                                                     "            </fluence:SelectorBarItem>\n" +
+                                                     "            <fluence:SelectorBarItem Text=\"Shared\">\n" +
+                                                     "                <fluence:SelectorBarItem.Icon>\n" +
+                                                     "                    <fluence:FontIcon Glyph=\"&#xE72D;\" IconFontSize=\"16\" />\n" +
+                                                     "                </fluence:SelectorBarItem.Icon>\n" +
+                                                     "            </fluence:SelectorBarItem>\n" +
+                                                     "            <fluence:SelectorBarItem Text=\"Favorites\">\n" +
+                                                     "                <fluence:SelectorBarItem.Icon>\n" +
+                                                     "                    <fluence:FontIcon Glyph=\"&#xE734;\" IconFontSize=\"16\" />\n" +
+                                                     "                </fluence:SelectorBarItem.Icon>\n" +
+                                                     "            </fluence:SelectorBarItem>\n" +
+                                                     "        </fluence:SelectorBar>\n" +
+                                                     "        <fluence:SlideNavigationPresenter\n" +
+                                                     "            x:Name=\"SectionHost\"\n" +
+                                                     "            Width=\"360\"\n" +
+                                                     "            Height=\"160\" />\n" +
+                                                     "    </fluence:StackPanel>\n");
+
+        private const string SelectorBarCSharpSource = "using System.Windows;\n" +
+                                                       "using System.Windows.Controls;\n" +
+                                                       "using Fluence.Wpf;\n" +
+                                                       "\n" +
+                                                       "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                       "{\n" +
+                                                       "    public partial class SectionSwitcher : UserControl\n" +
+                                                       "    {\n" +
+                                                       "        private int _selectedIndex;\n" +
+                                                       "\n" +
+                                                       "        public SectionSwitcher()\n" +
+                                                       "        {\n" +
+                                                       "            InitializeComponent();\n" +
+                                                       "            Sections.SelectedIndex = 0;\n" +
+                                                       "        }\n" +
+                                                       "\n" +
+                                                       "        private void Sections_SelectionChanged(object sender, SelectionChangedEventArgs e)\n" +
+                                                       "        {\n" +
+                                                       "            int index = Sections.SelectedIndex;\n" +
+                                                       "\n" +
+                                                       "            // Later section slides in from the right, earlier from the left.\n" +
+                                                       "            SectionHost.TransitionEffect = index > _selectedIndex\n" +
+                                                       "                ? SlideNavigationTransitionEffect.FromRight\n" +
+                                                       "                : SlideNavigationTransitionEffect.FromLeft;\n" +
+                                                       "            SectionHost.Content = CreateSection(index);\n" +
+                                                       "            _selectedIndex = index;\n" +
+                                                       "        }\n" +
+                                                       "\n" +
+                                                       "        // Each peer view carries the section content, not just its name.\n" +
+                                                       "        private static UIElement CreateSection(int index)\n" +
+                                                       "        {\n" +
+                                                       "            string[] titles = index switch\n" +
+                                                       "            {\n" +
+                                                       "                0 => [\"Quarterly review.docx\", \"Launch metrics.xlsx\", \"Design notes.md\"],\n" +
+                                                       "                1 => [\"Roadmap 2027\", \"Release checklist\", \"Budget forecast\"],\n" +
+                                                       "                _ => [\"Team handbook\", \"Support playbook\", \"Brand assets\"],\n" +
+                                                       "            };\n" +
+                                                       "\n" +
+                                                       "            StackPanel panel = new();\n" +
+                                                       "            foreach (string title in titles)\n" +
+                                                       "            {\n" +
+                                                       "                panel.Children.Add(new TextBlock\n" +
+                                                       "                {\n" +
+                                                       "                    Margin = new Thickness(0, 0, 0, 10),\n" +
+                                                       "                    Text = title,\n" +
+                                                       "                });\n" +
+                                                       "            }\n" +
+                                                       "\n" +
+                                                       "            return panel;\n" +
+                                                       "        }\n" +
+                                                       "    }\n" +
+                                                       "}\n";
 
         private static readonly string PipsPagerXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Navigation.CarouselPager",
@@ -322,9 +410,106 @@ namespace Fluence.Wpf.Demo.Pages
                 e.Item);
         }
 
+        private void DemoSelectorBar_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = DemoSelectorBar.SelectedIndex;
+            if (index < 0)
+            {
+                return;
+            }
+
+            // The WinUI Gallery's own Color page picks the effect the same way: a later peer
+            // slides in from the right, an earlier one from the left.
+            DemoSelectorBarPresenter.TransitionEffect = index > _selectedSectionIndex
+                ? SlideNavigationTransitionEffect.FromRight
+                : SlideNavigationTransitionEffect.FromLeft;
+
+            DemoSelectorBarPresenter.Content = CreateSelectorBarSection(index);
+            _selectedSectionIndex = index;
+        }
+
+        /// <summary>
+        /// Builds the peer view for one SelectorBar section, so the slide carries the kind of
+        /// content a real section holds instead of a single word.
+        /// </summary>
+        /// <param name="index">The zero-based index of the selected section.</param>
+        private static FrameworkElement CreateSelectorBarSection(int index)
+        {
+            (string Glyph, string Title, string Detail)[] rows = index switch
+            {
+                0 =>
+                [
+                    ("\uE8A5", "Quarterly review.docx", "Edited 12 minutes ago"),
+                    ("\uE8A5", "Launch metrics.xlsx", "Edited yesterday"),
+                    ("\uE8A5", "Design notes.md", "Edited on Monday"),
+                ],
+                1 =>
+                [
+                    ("\uE77B", "Roadmap 2027", "Shared with the design team"),
+                    ("\uE77B", "Release checklist", "Shared with quality assurance"),
+                    ("\uE77B", "Budget forecast", "Shared with finance"),
+                ],
+                _ =>
+                [
+                    ("\uE735", "Team handbook", "Pinned by you"),
+                    ("\uE735", "Support playbook", "Pinned by you"),
+                    ("\uE735", "Brand assets", "Pinned by you"),
+                ],
+            };
+
+            StackPanel panel = new() { Margin = new Thickness(0, 8, 0, 0) };
+            foreach ((string Glyph, string Title, string Detail) row in rows)
+            {
+                _ = panel.Children.Add(CreateSelectorBarRow(row.Glyph, row.Title, row.Detail));
+            }
+
+            return panel;
+        }
+
+        /// <summary>
+        /// Builds one row of a SelectorBar section: a leading glyph, the item title, and a
+        /// secondary detail line.
+        /// </summary>
+        /// <param name="glyph">The Segoe Fluent Icons glyph for the row.</param>
+        /// <param name="title">The primary text of the row.</param>
+        /// <param name="detail">The secondary text of the row.</param>
+        private static FrameworkElement CreateSelectorBarRow(string glyph, string title, string detail)
+        {
+            Grid row = new() { Margin = new Thickness(0, 0, 0, 10) };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            row.ColumnDefinitions.Add(new ColumnDefinition());
+
+            Controls.FontIcon icon = new()
+            {
+                Glyph = glyph,
+                IconFontSize = 16,
+                Margin = new Thickness(0, 0, 12, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            icon.SetResourceReference(Control.ForegroundProperty, "TextFillColorSecondaryBrush");
+            _ = row.Children.Add(icon);
+
+            StackPanel text = new();
+            Grid.SetColumn(text, 1);
+
+            TextBlock titleBlock = new() { Text = title };
+            titleBlock.SetResourceReference(StyleProperty, "BodyTextBlockStyle");
+            titleBlock.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorPrimaryBrush");
+            _ = text.Children.Add(titleBlock);
+
+            TextBlock detailBlock = new() { Text = detail };
+            detailBlock.SetResourceReference(StyleProperty, "CaptionTextBlockStyle");
+            detailBlock.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
+            _ = text.Children.Add(detailBlock);
+
+            _ = row.Children.Add(text);
+            return row;
+        }
+
         private void GalleryNavigationPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= GalleryNavigationPage_Loaded;
+            DemoSelectorBar.SelectedIndex = 0;
 
             LeftNavigationDemo.SelectedItem = LeftNavigationHomeItem;
             TopNavigationDemo.SelectedItem = TopNavigationOverviewItem;

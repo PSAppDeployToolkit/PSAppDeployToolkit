@@ -69,8 +69,11 @@ namespace Fluence.Wpf.Automation
             : ExpandCollapseState.Collapsed;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Expand()
         {
+            ThrowIfDisabled();
+
             // The read-only IsFlyoutOpen reflects the secondary ToggleButton, which is
             // part of the template. Automation clients opening a SplitButton without a
             // visual tree see no-op behavior; with a template applied, the overridden
@@ -81,14 +84,23 @@ namespace Fluence.Wpf.Automation
         }
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Collapse()
         {
+            ThrowIfDisabled();
             SplitButton.CloseFlyout();
         }
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Invoke()
         {
+            // Input never reaches a disabled control, but a UIA client calls this method directly,
+            // so the disabled state has to be enforced here or the host's own gate on the action
+            // (IsEnabled bound to an entitlement, a request in flight, an unmet precondition) is
+            // bypassed. Same contract as the SetValue providers and WPF's own ButtonAutomationPeer.
+            ThrowIfDisabled();
+
             // Route Invoke to the primary half by raising SplitButton.Click and executing Command.
             SplitButton button = SplitButton;
             button.RaiseEvent(new RoutedEventArgs(SplitButton.ClickEvent, button));
@@ -109,6 +121,18 @@ namespace Fluence.Wpf.Automation
             else if (command.CanExecute(parameter))
             {
                 command.Execute(parameter);
+            }
+        }
+
+        /// <summary>
+        /// Enforces the UIA contract that a provider refuses to act on a disabled control.
+        /// </summary>
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
+        private void ThrowIfDisabled()
+        {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
             }
         }
 

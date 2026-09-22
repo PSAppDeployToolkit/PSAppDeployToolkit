@@ -32,7 +32,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GallerySelectionPage : UserControl
+    public partial class GallerySelectionPage : Page
     {
         private bool _updatingSelectAll;
 

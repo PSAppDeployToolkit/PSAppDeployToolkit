@@ -66,15 +66,33 @@ namespace Fluence.Wpf.Automation
             : ExpandCollapseState.Collapsed;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Expand()
         {
+            // A UIA client reaches this directly, where input would never reach a disabled
+            // control, so the disabled state is enforced here as the SetValue providers do.
+            ThrowIfDisabled();
             DropDownButton.IsChecked = true;
         }
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void Collapse()
         {
+            ThrowIfDisabled();
             DropDownButton.IsChecked = false;
+        }
+
+        /// <summary>
+        /// Enforces the UIA contract that a provider refuses to act on a disabled control.
+        /// </summary>
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
+        private void ThrowIfDisabled()
+        {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
         }
 
         /// <summary>

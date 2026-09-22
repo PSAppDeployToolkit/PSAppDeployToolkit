@@ -98,22 +98,75 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Identifies the <see cref="ViewState"/> dependency property.
+        /// Identifies the <see cref="ItemsLayout"/> dependency property.
         /// </summary>
-        public static readonly DependencyProperty ViewStateProperty =
+        public static readonly DependencyProperty ItemsLayoutProperty =
             DependencyProperty.Register(
-                nameof(ViewState),
-                typeof(ListViewState),
+                nameof(ItemsLayout),
+                typeof(ListViewItemsLayout),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(ListViewState.Default));
+                new FrameworkPropertyMetadata(ListViewItemsLayout.List, OnItemsLayoutChanged));
 
         /// <summary>
-        /// Gets or sets the view state of the list view.
+        /// Gets or sets whether items run down the list one per row, or wrap across it as a grid.
         /// </summary>
-        public ListViewState ViewState
+        /// <remarks>
+        /// <see cref="ListViewItemsLayout.Grid"/> swaps the items panel for a wrapping one, which is
+        /// what WinUI's own <c language="csharp">GridView</c> does with its
+        /// <c language="csharp">ItemsWrapGrid</c>. WPF ships no virtualizing wrap panel, so the grid
+        /// layout gives up the virtualization the default vertical panel has; a very long grid is
+        /// better served by a consumer-supplied panel through
+        /// <see cref="ItemsControl.ItemsPanel"/>, which this property leaves alone once set. The
+        /// WPF <see cref="System.Windows.Controls.ListView.View"/> property is untouched: that one
+        /// takes a <see cref="GridView"/> of columns, a different thing.
+        /// </remarks>
+        public ListViewItemsLayout ItemsLayout
         {
-            get => (ListViewState)GetValue(ViewStateProperty);
-            set => SetValue(ViewStateProperty, value);
+            get => (ListViewItemsLayout)GetValue(ItemsLayoutProperty);
+            set => SetValue(ItemsLayoutProperty, value);
+        }
+
+        /// <summary>
+        /// Swaps the items panel to match the requested layout, unless the consumer has pinned a
+        /// panel of their own.
+        /// </summary>
+        /// <param name="d">The list view whose layout changed.</param>
+        /// <param name="e">The event data.</param>
+        private static void OnItemsLayoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ListView view = (ListView)d;
+            bool panelIsOurs = view.ItemsPanel is null || ReferenceEquals(view.ItemsPanel, GridItemsPanel);
+            if (!panelIsOurs && view.ReadLocalValue(ItemsPanelProperty) != DependencyProperty.UnsetValue)
+            {
+                return;
+            }
+
+            if ((ListViewItemsLayout)e.NewValue is ListViewItemsLayout.Grid)
+            {
+                view.SetCurrentValue(ItemsPanelProperty, GridItemsPanel);
+            }
+            else
+            {
+                view.ClearValue(ItemsPanelProperty);
+            }
+        }
+
+        /// <summary>
+        /// The panel the grid layout lays its items out in: one horizontal run that wraps.
+        /// </summary>
+        private static readonly ItemsPanelTemplate GridItemsPanel = CreateGridItemsPanel();
+
+        /// <summary>
+        /// Builds the wrapping panel template used by <see cref="ListViewItemsLayout.Grid"/>.
+        /// </summary>
+        /// <returns>A sealed items panel template hosting a horizontal <see cref="WrapPanel"/>.</returns>
+        private static ItemsPanelTemplate CreateGridItemsPanel()
+        {
+            FrameworkElementFactory panel = new(typeof(WrapPanel));
+            panel.SetValue(WrapPanel.OrientationProperty, Orientation.Horizontal);
+            ItemsPanelTemplate template = new(panel);
+            template.Seal();
+            return template;
         }
 
         /// <summary>

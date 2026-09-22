@@ -30,7 +30,7 @@ powershell.exe -STA -File .\01-HelloWorld.ps1
 3. `Add-Type` the WPF assemblies + the Fluence DLL.
 4. Create a `System.Windows.Application` **before** theming (otherwise the theme brushes have
    nowhere to publish).
-5. `ApplicationThemeManager.Apply(theme, backdrop, updateAccent)`.
+5. `ApplicationThemeManager.Apply(theme, backdrop)`.
 6. Parse XAML (`XamlReader.Parse` for a string, `XamlReader.Load` for a file), wire handlers
    with `$control.add_Click({ ... })`.
 7. `$app.Run($window)` to show the window and run the message loop.

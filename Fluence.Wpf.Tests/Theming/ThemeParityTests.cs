@@ -34,6 +34,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Fluence.Wpf.Tests.Infrastructure;
 using Fluence.Wpf.Theming;
 using Xunit;
 
@@ -56,19 +57,16 @@ namespace Fluence.Wpf.Tests.Theming
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightDerivedBrushKeys = new(StringComparer.Ordinal)
         {
+            "AccentAcrylicBackgroundFillColorBaseBrush",
+            "AccentAcrylicBackgroundFillColorDefaultBrush",
             "AccentControlElevationBorderBrush",
             "FocusStrokeColorOuterBrush",
-            "KeyboardFocusBorderColorBrush",
             "LayerOnAccentAcrylicFillColorDefaultBrush",
-            "NavigationViewSelectionIndicatorBrush",
-            "SystemFillColorAttentionBackgroundBrush",
+            "NavigationViewSelectionIndicatorForeground",
             "SystemFillColorAttentionBrush",
-            "SystemFillColorSolidAttentionBackgroundBrush",
             "TextControlElevationBorderFocusedBrush",
             "WindowCloseButtonBackgroundPointerOverBrush",
             "WindowCloseButtonBackgroundPressedBrush",
-            "WindowCloseFillColorHoverBrush",
-            "WindowCloseFillColorPressedBrush",
         };
 
         /// <summary>
@@ -81,6 +79,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightTextDerivedBrushKeys = new(StringComparer.Ordinal)
         {
+            "InfoBadgeAttentionForegroundBrush",
             "WindowCloseButtonForegroundPointerOverBrush",
         };
 
@@ -108,7 +107,7 @@ namespace Fluence.Wpf.Tests.Theming
                 // parity check hermetic, and the same machine-independent values are already
                 // covered by DesignTimeResourceTests.
                 FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
-                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
             }).ConfigureAwait(true);
 
@@ -201,7 +200,7 @@ namespace Fluence.Wpf.Tests.Theming
                 app.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
-                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 ResourceDictionary res = app.Resources;
@@ -237,6 +236,49 @@ namespace Fluence.Wpf.Tests.Theming
         }
 
         /// <summary>
+        /// Verifies the WinUI 3 asymmetry between ControlElevationBorderBrush and
+        /// AccentControlElevationBorderBrush: WinUI's Light theme dictionary flips
+        /// ControlElevationBorderBrush vertically (a ScaleY="-1" RelativeTransform), but its
+        /// Default/Dark theme dictionary defines the same key with no transform
+        /// (Common_themeresources_any.xaml Light block vs Default block). AccentControlElevationBorderBrush
+        /// is flipped in both theme dictionaries, so it must keep the transform regardless of theme.
+        /// </summary>
+        /// <param name="theme">The theme to verify.</param>
+        [Theory]
+        [InlineData(ApplicationTheme.Light)]
+        [InlineData(ApplicationTheme.Dark)]
+        public Task ControlElevationBorderBrush_FlipsOnlyInLightThemeAsync(ApplicationTheme theme)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                Application app = WpfTestSta.EnsureApplication();
+                app.Resources.MergedDictionaries.Clear();
+                ApplicationThemeManager.ResetForTesting();
+                ApplicationAccentColorManager.ResetForTesting();
+                ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+
+                ResourceDictionary res = app.Resources;
+                LinearGradientBrush control = Assert.IsType<LinearGradientBrush>(res["ControlElevationBorderBrush"]);
+                if (theme is ApplicationTheme.Light)
+                {
+                    ScaleTransform flip = Assert.IsType<ScaleTransform>(control.RelativeTransform);
+                    Assert.Equal(-1.0, flip.ScaleY, 0.001);
+                }
+                else
+                {
+                    Assert.True(control.RelativeTransform is null || control.RelativeTransform == Transform.Identity,
+                        "Dark ControlElevationBorderBrush must not flip (WinUI Default/Dark defines it with no transform).");
+                }
+
+                // AccentControlElevationBorderBrush flips in every non-HC theme.
+                LinearGradientBrush accent = Assert.IsType<LinearGradientBrush>(res["AccentControlElevationBorderBrush"]);
+                ScaleTransform accentFlip = Assert.IsType<ScaleTransform>(accent.RelativeTransform);
+                Assert.Equal(-1.0, accentFlip.ScaleY, 0.001);
+            });
+        }
+
+        /// <summary>
         /// Verifies that AccentResolver.Resolve produces structurally sound palettes for both
         /// System and Custom intents, and that the Custom path uses the generator ramp.
         /// </summary>
@@ -257,37 +299,103 @@ namespace Fluence.Wpf.Tests.Theming
 
         /// <summary>
         /// Verifies that the rebuilt engine reproduces every golden resolved Color and Brush value
-        /// (accent pinned to #0078D4) for Light, Dark, and HighContrast with zero drift.
+        /// (accent pinned to #0078D4) for Light, Dark, and HighContrast with zero drift, and that
+        /// the snapshot records every live Color and Brush in turn. Without the second direction a
+        /// key the snapshot omits is checked by nothing, which is how the two accent acrylic keys
+        /// carried an unverified high contrast value for a whole delta.
         /// </summary>
-        [Fact]
-        public async Task Rebuilt_MatchesGoldenResolvedValuesAsync()
+        /// <remarks>
+        /// The high contrast snapshot is only partly machine-independent. Its brushes bound to the
+        /// live highlight are excluded (see <see cref="HighContrastHighlightDerivedBrushKeys"/>), but
+        /// the many bound to the other seven members
+        /// <c language="csharp">AddHighContrastBrushes</c> reads
+        /// (<c language="csharp">SystemColors.WindowColor</c>,
+        /// <c language="csharp">WindowTextColor</c>, <c language="csharp">GrayTextColor</c>,
+        /// <c language="csharp">ControlColor</c>, <c language="csharp">ControlTextColor</c>,
+        /// <c language="csharp">ControlDarkColor</c> and <c language="csharp">ControlLightColor</c>)
+        /// are recorded at the values a standard desktop reports (white, black, #6D6D6D, #F0F0F0,
+        /// black, #A0A0A0 and #E3E3E3), because those do not follow the user's accent and a CI
+        /// runner never turns a high contrast theme on. A desktop that does report different values
+        /// would drift every one of those rows, so the high contrast case skips, with the mismatch
+        /// named, rather than fail for a reason that is not the engine's.
+        /// </remarks>
+        /// <param name="theme">The theme whose snapshot is checked.</param>
+        [Theory]
+        [InlineData(ApplicationTheme.Light)]
+        [InlineData(ApplicationTheme.Dark)]
+        [InlineData(ApplicationTheme.HighContrast)]
+        public async Task Rebuilt_MatchesGoldenResolvedValuesAsync(ApplicationTheme theme)
         {
-            foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
+            if (theme is ApplicationTheme.HighContrast && DescribeSystemColorMismatch() is string mismatch)
             {
-                IReadOnlyDictionary<string, (Color color, Color brush)> actual = await CaptureResolvedAsync(theme).ConfigureAwait(true);
-                string goldenPath = Path.Join(AppContext.BaseDirectory, "Theming", "golden", theme + ".txt");
-                Dictionary<string, (string, string)> golden = (await File.ReadAllLinesAsync(goldenPath, TestContext.Current.CancellationToken).ConfigureAwait(true))
-                    .Select(static l => l.Split('|'))
-                    .ToDictionary(static a => a[0], static a => (a[1], a[2]), StringComparer.Ordinal);
-
-                List<string> drift = [];
-                foreach (KeyValuePair<string, (string, string)> kv in golden)
-                {
-                    if (!actual.TryGetValue(kv.Key, out (Color color, Color brush) got))
-                    {
-                        drift.Add("MISSING " + kv.Key);
-                        continue;
-                    }
-                    string gc = Hex(got.color);
-                    string gb = Hex(got.brush);
-                    if (!string.Equals(gc, kv.Value.Item1, StringComparison.Ordinal) || !string.Equals(gb, kv.Value.Item2, StringComparison.Ordinal))
-                    {
-                        drift.Add(string.Format(CultureInfo.InvariantCulture, "{0} golden=({1},{2}) actual=({3},{4})",
-                            kv.Key, kv.Value.Item1, kv.Value.Item2, gc, gb));
-                    }
-                }
-                Assert.Empty(drift);
+                Assert.Skip("The high contrast snapshot records the standard desktop system colours; this desktop reports " + mismatch + ".");
             }
+
+            IReadOnlyDictionary<string, (Color color, Color brush)> actual = await CaptureResolvedAsync(theme).ConfigureAwait(true);
+            string goldenPath = Path.Join(AppContext.BaseDirectory, "Theming", "golden", theme + ".txt");
+            Dictionary<string, (string, string)> golden = (await File.ReadAllLinesAsync(goldenPath, TestContext.Current.CancellationToken).ConfigureAwait(true))
+                .Select(static l => l.Split('|'))
+                .ToDictionary(static a => a[0], static a => (a[1], a[2]), StringComparer.Ordinal);
+
+            List<string> drift = [];
+            foreach (KeyValuePair<string, (string, string)> kv in golden)
+            {
+                if (!actual.TryGetValue(kv.Key, out (Color color, Color brush) got))
+                {
+                    drift.Add("MISSING " + kv.Key);
+                    continue;
+                }
+                string gc = Hex(got.color);
+                string gb = Hex(got.brush);
+                if (!string.Equals(gc, kv.Value.Item1, StringComparison.Ordinal) || !string.Equals(gb, kv.Value.Item2, StringComparison.Ordinal))
+                {
+                    drift.Add(string.Format(CultureInfo.InvariantCulture, "{0} golden=({1},{2}) actual=({3},{4})",
+                        kv.Key, kv.Value.Item1, kv.Value.Item2, gc, gb));
+                }
+            }
+
+            // The other direction: a live value the snapshot does not record. Regenerate the
+            // golden files with Golden_WriteCurrentResolvedValuesAsync and copy them over.
+            foreach (string key in actual.Keys.Order(StringComparer.Ordinal))
+            {
+                if (!golden.ContainsKey(key))
+                {
+                    drift.Add("UNRECORDED " + key + " in " + theme);
+                }
+            }
+
+            Assert.Empty(drift);
+        }
+
+        /// <summary>
+        /// Names the first live system colour that differs from the value the high contrast
+        /// snapshot was captured with, or returns <see langword="null"/> when they all match.
+        /// </summary>
+        private static string? DescribeSystemColorMismatch()
+        {
+            // Every SystemColors member AddHighContrastBrushes reads, less the highlight pair, which
+            // HighContrastHighlightDerivedBrushKeys excludes from the snapshot instead. A member left
+            // out here is a member whose drift fails the case rather than skipping it.
+            (string name, Color live, Color assumed)[] expectations =
+            [
+                ("SystemColors.WindowColor", SystemColors.WindowColor, Color.FromRgb(0xFF, 0xFF, 0xFF)),
+                ("SystemColors.WindowTextColor", SystemColors.WindowTextColor, Color.FromRgb(0x00, 0x00, 0x00)),
+                ("SystemColors.GrayTextColor", SystemColors.GrayTextColor, Color.FromRgb(0x6D, 0x6D, 0x6D)),
+                ("SystemColors.ControlColor", SystemColors.ControlColor, Color.FromRgb(0xF0, 0xF0, 0xF0)),
+                ("SystemColors.ControlTextColor", SystemColors.ControlTextColor, Color.FromRgb(0x00, 0x00, 0x00)),
+                ("SystemColors.ControlDarkColor", SystemColors.ControlDarkColor, Color.FromRgb(0xA0, 0xA0, 0xA0)),
+                ("SystemColors.ControlLightColor", SystemColors.ControlLightColor, Color.FromRgb(0xE3, 0xE3, 0xE3)),
+            ];
+
+            foreach ((string name, Color live, Color assumed) in expectations)
+            {
+                if (live != assumed)
+                {
+                    return name + " as " + Hex(live) + " where the snapshot assumes " + Hex(assumed);
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -306,7 +414,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 Color highlight = SystemColors.HighlightColor;
@@ -336,7 +444,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 Color highlightText = SystemColors.HighlightTextColor;
@@ -396,7 +504,7 @@ namespace Fluence.Wpf.Tests.Theming
                 try
                 {
                     // First touch of the theme system.
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
                 }
                 finally
                 {
@@ -426,6 +534,117 @@ namespace Fluence.Wpf.Tests.Theming
             DirectoryInfo? d = new(AppContext.BaseDirectory);
             while (d is not null && !File.Exists(Path.Join(d.FullName, "Fluence.Wpf.sln"))) { d = d.Parent; }
             return d?.FullName ?? AppContext.BaseDirectory;
+        }
+
+        /// <summary>
+        /// Adds every string key defined directly by <paramref name="dictionary"/> to
+        /// <paramref name="keys"/>, then recurses into its merged dictionaries. A dictionary whose
+        /// Source is under Themes/Controls/ or Themes/Icons/ contributes nothing: its keys are
+        /// template internal, unsupported, and free to change in any release. The slot [0] marker
+        /// <see cref="FluenceThemeEngine.ComputedDictionaryMarker"/> is skipped for the same reason.
+        /// </summary>
+        /// <param name="dictionary">The dictionary to walk.</param>
+        /// <param name="keys">The set to fill.</param>
+        private static void CollectPublicKeys(ResourceDictionary dictionary, ISet<string> keys)
+        {
+            string source = dictionary.Source?.ToString() ?? string.Empty;
+            bool templateInternal =
+                source.Contains("Themes/Controls/", StringComparison.OrdinalIgnoreCase)
+                || source.Contains("Themes/Icons/", StringComparison.OrdinalIgnoreCase);
+
+            if (!templateInternal)
+            {
+                foreach (object key in dictionary.Keys)
+                {
+                    // The slot [0] marker is an internal bookkeeping key, not a token a consumer can
+                    // bind, so it stays out of the inventory this file freezes as the public
+                    // contract.
+                    if (key is string text && !string.Equals(text, FluenceThemeEngine.ComputedDictionaryMarker, StringComparison.Ordinal))
+                    {
+                        _ = keys.Add(text);
+                    }
+                }
+            }
+
+            foreach (ResourceDictionary merged in dictionary.MergedDictionaries)
+            {
+                CollectPublicKeys(merged, keys);
+            }
+        }
+
+        /// <summary>
+        /// The public XAML key set is frozen at 1.0 the way the CLR surface is frozen by
+        /// PublicApiAnalyzers. This asserts the Light theme's published keys against
+        /// Theming/golden/PublicKeys.txt and fails on an addition as well as a removal, so an
+        /// intentional change has to update the file in the same commit.
+        /// </summary>
+        /// <remarks>
+        /// Light is the reference theme. High contrast overrides the value of existing keys rather
+        /// than publishing new ones, so one file covers the contract.
+        /// The current set is always written to data/theme-golden/PublicKeys.txt, which is what an
+        /// intentional change copies over the committed file. The four golden files are therefore
+        /// stored the way File.WriteAllLinesAsync emits them, without a byte order mark, so that
+        /// copy is a content diff and not a whole-file one.
+        /// </remarks>
+        [Fact]
+        public async Task PublicKeyInventory_MatchesFrozenSetAsync()
+        {
+            SortedSet<string> actual = new(StringComparer.Ordinal);
+            await WpfTestSta.RunOnStaAsync(() =>
+            {
+                Application app = TestApp.EnsureLibraryTheme();
+                CollectPublicKeys(app.Resources, actual);
+            }).ConfigureAwait(true);
+
+            string outDirectory = Path.Join(FindRepoRoot(), "data", "theme-golden");
+            _ = Directory.CreateDirectory(outDirectory);
+            await File.WriteAllLinesAsync(
+                Path.Join(outDirectory, "PublicKeys.txt"), actual, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+            string frozenPath = Path.Join(AppContext.BaseDirectory, "Theming", "golden", "PublicKeys.txt");
+            Assert.True(File.Exists(frozenPath),
+                "Theming/golden/PublicKeys.txt is missing. Copy data/theme-golden/PublicKeys.txt over it.");
+
+            string[] frozen = await File.ReadAllLinesAsync(frozenPath, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            List<string> added = [.. actual.Except(frozen, StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+            List<string> removed = [.. frozen.Except(actual, StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+            Assert.True(added.Count is 0,
+                "New public keys are not in the frozen set: " + string.Join(", ", added));
+            Assert.True(removed.Count is 0,
+                "Frozen public keys no longer resolve: " + string.Join(", ", removed));
+        }
+
+        /// <summary>
+        /// Dark and high contrast publish exactly the Light key set. High contrast overrides the
+        /// value of existing keys rather than publishing new ones or dropping any, which is the
+        /// assumption that lets <see cref="PublicKeyInventory_MatchesFrozenSetAsync"/> sample Light
+        /// alone. Without this, a key computed for Light and Dark but skipped for high contrast, or
+        /// supplied by one theme's table and forgotten in another, would vanish from that theme
+        /// with nothing to notice: the value snapshots iterate the committed golden file, so a key
+        /// missing from the live set is checked by nothing.
+        /// </summary>
+        /// <param name="theme">The theme compared against Light.</param>
+        [Theory]
+        [InlineData(ApplicationTheme.Dark)]
+        [InlineData(ApplicationTheme.HighContrast)]
+        public async Task PublicKeyInventory_IsTheSameInEveryThemeAsync(ApplicationTheme theme)
+        {
+            SortedSet<string> light = new(StringComparer.Ordinal);
+            SortedSet<string> other = new(StringComparer.Ordinal);
+            await WpfTestSta.RunOnStaAsync(() =>
+            {
+                CollectPublicKeys(TestApp.EnsureLibraryTheme().Resources, light);
+                CollectPublicKeys(TestApp.EnsureLibraryTheme(theme).Resources, other);
+            }).ConfigureAwait(true);
+
+            List<string> missing = [.. light.Except(other, StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+            List<string> extra = [.. other.Except(light, StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+            Assert.True(missing.Count is 0,
+                theme + " does not publish keys Light publishes: " + string.Join(", ", missing));
+            Assert.True(extra.Count is 0,
+                theme + " publishes keys Light does not: " + string.Join(", ", extra));
         }
     }
 }

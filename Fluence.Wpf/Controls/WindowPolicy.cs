@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shell;
@@ -39,7 +40,7 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Pure-logic policy layer for <see cref="FluenceWindow"/>. All methods are stateless and
     /// side-effect-free so they can be unit tested without a window handle. The class maps the
-    /// requested <see cref="BackdropType"/> and OS capabilities to concrete DWM instructions and
+    /// requested <see cref="WindowBackdropType"/> and OS capabilities to concrete DWM instructions and
     /// WPF <see cref="WindowChrome"/> parameters, insulating the window code-behind from the
     /// capability-detection and downgrade rules.
     /// </summary>
@@ -96,16 +97,16 @@ namespace Fluence.Wpf.Controls
         /// backdrop and shadow state.
         /// </summary>
         /// <remarks>
-        /// When a DWM backdrop is active (<see cref="BackdropType.Mica"/>,
-        /// <see cref="BackdropType.Acrylic"/>, <see cref="BackdropType.Tabbed"/>, or
-        /// <see cref="BackdropType.Auto"/>), the thickness is <c language="csharp">-1</c> so DWM extends the glass
+        /// When a DWM backdrop is active (<see cref="WindowBackdropType.Mica"/>,
+        /// <see cref="WindowBackdropType.Acrylic"/>, <see cref="WindowBackdropType.Tabbed"/>, or
+        /// <see cref="WindowBackdropType.Auto"/>), the thickness is <c language="csharp">-1</c> so DWM extends the glass
         /// into the client area and the backdrop shows through. The same <c language="csharp">-1</c> is used when
         /// the caller requests a drop shadow without a backdrop, because the shadow is rendered
         /// via the DWM glass frame. When neither is active the thickness is a very-thin-but-nonzero
         /// value (<c language="csharp">0.00001</c>) so the resize border continues to hit-test while
         /// <see cref="WindowChrome"/>'s renderer does not paint a visible glass-frame artifact.
         /// This dual-path is intentional: setting <c language="csharp">-1</c> with
-        /// <see cref="BackdropType.None"/> on Windows 11 renders a visible glass artifact,
+        /// <see cref="WindowBackdropType.None"/> on Windows 11 renders a visible glass artifact,
         /// so the tiny nonzero value is the correct prevention mechanism.
         /// <para>
         /// The input is the <em>requested</em> backdrop, not the effective one, so a Windows 10
@@ -123,9 +124,9 @@ namespace Fluence.Wpf.Controls
         /// </param>
         /// <returns>The glass-frame thickness to assign to
         /// <see cref="WindowChrome.GlassFrameThickness"/>.</returns>
-        internal static Thickness GetGlassFrameThickness(BackdropType backdrop, bool hasShadow)
+        internal static Thickness GetGlassFrameThickness(WindowBackdropType backdrop, bool hasShadow)
         {
-            return backdrop is not BackdropType.None || hasShadow
+            return backdrop is not WindowBackdropType.None || hasShadow
                 ? new Thickness(-1)
                 : new Thickness(0.00001);
         }
@@ -165,10 +166,15 @@ namespace Fluence.Wpf.Controls
         ///   <item>
         ///     <term>WPF-template border</term>
         ///     <description>
-        ///       Active window with accent borders enabled gets a 2 dp border keyed to
+        ///       Active window with accent borders enabled gets a border keyed to
         ///       <c language="xaml">SystemAccentColorBrush</c>. Inactive windows revert to
-        ///       <c language="xaml">CardStrokeColorDefaultSolidBrush</c>. Maximized windows get a 0-thick border
-        ///       in every state.
+        ///       <c language="xaml">SurfaceStrokeColorDefaultBrush</c>. The thickness follows
+        ///       <paramref name="capabilities"/> rather than activation: zero when
+        ///       <see cref="WindowCapabilities.SupportsBorderColor"/> is <see langword="true"/> (Windows 11 owns the
+        ///       outer border via DWM), one device-independent pixel otherwise (Windows 10, where the template
+        ///       border is the only edge the window shows). The maximized 0-thick border is not decided here: it is
+        ///       a template trigger on <c language="csharp">WindowState</c> in
+        ///       <c language="xaml">Themes/Controls/FluenceWindow.xaml</c>, so this plan never sees window state.
         ///     </description>
         ///   </item>
         ///   <item>
@@ -183,7 +189,6 @@ namespace Fluence.Wpf.Controls
         ///   </item>
         /// </list>
         /// </remarks>
-        /// <param name="windowState">The current <see cref="WindowState"/>.</param>
         /// <param name="isActive">
         ///   <see langword="true"/> when <see cref="FluenceWindow"/> is the foreground window.
         /// </param>
@@ -195,19 +200,18 @@ namespace Fluence.Wpf.Controls
         /// <param name="accentColor">The current system accent color.</param>
         /// <returns>A <see cref="FramePlan"/> describing the border to apply.</returns>
         internal static FramePlan BuildFramePlan(
-            WindowState windowState,
             bool isActive,
             bool isAccentBorderEnabled,
             WindowCapabilities capabilities,
             Color accentColor)
         {
-            Thickness templateBorderThickness = windowState is WindowState.Maximized
-                ? new Thickness(0)
-                : new Thickness(2);
-
             string templateBorderBrushResourceKey = !isActive || !isAccentBorderEnabled
-                ? "CardStrokeColorDefaultSolidBrush"
+                ? "SurfaceStrokeColorDefaultBrush"
                 : "SystemAccentColorBrush";
+
+            Thickness templateBorderThickness = capabilities.SupportsBorderColor
+                ? new Thickness(0)
+                : new Thickness(1);
 
             uint dwmBorderColor = PInvoke.DWMWA_COLOR_DEFAULT;
             if (capabilities.SupportsBorderColor && isActive && isAccentBorderEnabled)
@@ -215,23 +219,38 @@ namespace Fluence.Wpf.Controls
                 dwmBorderColor = NativeMethods.ColorToColorRef(accentColor);
             }
 
-            return new FramePlan(templateBorderThickness, templateBorderBrushResourceKey, dwmBorderColor);
+            return new FramePlan(templateBorderBrushResourceKey, templateBorderThickness, dwmBorderColor);
         }
 
         /// <summary>
-        /// Resolves the <see cref="BackdropType"/> that will actually be applied after
+        /// Resolves the <see cref="WindowBackdropType"/> that will actually be applied after
         /// downgrading for OS capability gaps.
         /// </summary>
         /// <remarks>
         /// Downgrade rules:
         /// <list type="bullet">
         ///   <item>
+        ///     <term>HighContrast</term>
+        ///     <description>
+        ///       Suppresses every material outright and resolves straight to
+        ///       <see cref="WindowBackdropType.None"/>, before any OS-capability branching runs. Per
+        ///       Microsoft Learn "Materials in Windows apps": "High contrast mode: all materials are
+        ///       suppressed; the system applies high-contrast theme colors instead," and the Mica
+        ///       design page: "In High Contrast mode, users continue to see the familiar background
+        ///       color of their choosing in place of Mica." WinUI's
+        ///       <c language="csharp">SystemBackdropConfiguration.IsHighContrast</c> is documented as
+        ///       true when "the system or application high-contrast theme" is applied, which covers
+        ///       this library's in-app <see cref="ApplicationTheme.HighContrast"/> the same way it
+        ///       covers the OS-wide setting.
+        ///     </description>
+        ///   </item>
+        ///   <item>
         ///     <term>Auto / Mica</term>
         ///     <description>
-        ///       Resolves to <see cref="BackdropType.Mica"/> when either
+        ///       Resolves to <see cref="WindowBackdropType.Mica"/> when either
         ///       <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c> (22H2+) or the legacy
         ///       <c language="csharp">DWMWA_MICA_EFFECT</c> (21H2) is available; falls back to
-        ///       <see cref="BackdropType.None"/> on Windows 10.
+        ///       <see cref="WindowBackdropType.None"/> on Windows 10.
         ///     </description>
         ///   </item>
         ///   <item>
@@ -251,7 +270,7 @@ namespace Fluence.Wpf.Controls
         ///   </item>
         /// </list>
         /// </remarks>
-        /// <param name="requestedBackdrop">The <see cref="BackdropType"/> requested by the caller.</param>
+        /// <param name="requestedBackdrop">The <see cref="WindowBackdropType"/> requested by the caller.</param>
         /// <param name="capabilities">The OS capability snapshot.</param>
         /// <param name="isTransparencyEnabled">
         ///   <see langword="true"/> when the OS transparency-effects toggle is on. Defaults to
@@ -259,32 +278,44 @@ namespace Fluence.Wpf.Controls
         ///   that does not read the setting must not get a blur the user has turned off.
         /// </param>
         /// <param name="resolvedTheme">
-        ///   The resolved application theme. Only <see cref="ApplicationTheme.HighContrast"/>
-        ///   changes the outcome, by suppressing the Windows 10 legacy acrylic path.
+        ///   The resolved application theme. <see cref="ApplicationTheme.HighContrast"/> suppresses
+        ///   every DWM material outright and short-circuits to <see cref="WindowBackdropType.None"/> before
+        ///   any capability branching runs; every other value only affects the Windows 10 legacy
+        ///   acrylic branch indirectly, by virtue of never triggering that short-circuit.
         /// </param>
-        /// <returns>The effective <see cref="BackdropType"/> to apply.</returns>
-        internal static BackdropType ResolveEffectiveBackdrop(
-            BackdropType requestedBackdrop,
+        /// <returns>The effective <see cref="WindowBackdropType"/> to apply.</returns>
+        internal static WindowBackdropType ResolveEffectiveBackdrop(
+            WindowBackdropType requestedBackdrop,
             WindowCapabilities capabilities,
             bool isTransparencyEnabled = false,
             ApplicationTheme resolvedTheme = ApplicationTheme.Light)
         {
-            return requestedBackdrop switch
-            {
-                BackdropType.Auto or BackdropType.Mica =>
-                    capabilities.SupportsSystemBackdropType || capabilities.SupportsMicaEffect
-                        ? BackdropType.Mica
-                        : BackdropType.None,
+            // Microsoft Learn "Materials in Windows apps": "High contrast mode: all materials are
+            // suppressed; the system applies high-contrast theme colors instead." The Mica design
+            // page: "In High Contrast mode, users continue to see the familiar background color of
+            // their choosing in place of Mica." WinUI's SystemBackdropConfiguration.IsHighContrast is
+            // documented as true when "the system or application high-contrast theme" is applied,
+            // which covers this library's in-app HighContrast theme, not only an OS-wide setting. So
+            // this check runs first, ahead of any OS-capability downgrade, and covers Mica, Acrylic,
+            // and Tabbed on every Windows version, not only the Windows 10 legacy acrylic path.
+            return resolvedTheme is ApplicationTheme.HighContrast
+                ? WindowBackdropType.None
+                : requestedBackdrop switch
+                {
+                    WindowBackdropType.Auto or WindowBackdropType.Mica =>
+                        capabilities.SupportsSystemBackdropType || capabilities.SupportsMicaEffect
+                            ? WindowBackdropType.Mica
+                            : WindowBackdropType.None,
 
-                BackdropType.Acrylic or BackdropType.Tabbed =>
-                    ResolveTransparentBackdrop(requestedBackdrop, capabilities, isTransparencyEnabled, resolvedTheme),
+                    WindowBackdropType.Acrylic or WindowBackdropType.Tabbed =>
+                        ResolveTransparentBackdrop(requestedBackdrop, capabilities, isTransparencyEnabled),
 
-                BackdropType.None or _ => requestedBackdrop,
-            };
+                    WindowBackdropType.None or _ => requestedBackdrop,
+                };
         }
 
         /// <summary>
-        /// Resolves <see cref="BackdropType.Acrylic"/> and <see cref="BackdropType.Tabbed"/> against
+        /// Resolves <see cref="WindowBackdropType.Acrylic"/> and <see cref="WindowBackdropType.Tabbed"/> against
         /// the three mutually exclusive transparency mechanisms, newest first.
         /// </summary>
         /// <remarks>
@@ -300,34 +331,32 @@ namespace Fluence.Wpf.Controls
         ///   <item>
         ///     Windows 10 has neither attribute but does have the legacy accent policy, which
         ///     expresses acrylic and nothing else. Acrylic therefore survives when the build
-        ///     supports it, the user has transparency effects on, and the theme is not high
-        ///     contrast; high contrast is excluded because a blurred desktop behind text defeats
-        ///     the contrast guarantee the theme exists to make. Tabbed has no legacy equivalent
-        ///     and downgrades to None.
+        ///     supports it and the user has transparency effects on. Tabbed has no legacy equivalent
+        ///     and downgrades to None. The caller (<see cref="ResolveEffectiveBackdrop"/>) already
+        ///     returns <see cref="WindowBackdropType.None"/> before reaching this method whenever the
+        ///     resolved theme is <see cref="ApplicationTheme.HighContrast"/>, so this method never
+        ///     needs to consult the theme itself.
         ///   </item>
         /// </list>
         /// </remarks>
-        /// <param name="requestedBackdrop">Either <see cref="BackdropType.Acrylic"/> or <see cref="BackdropType.Tabbed"/>.</param>
+        /// <param name="requestedBackdrop">Either <see cref="WindowBackdropType.Acrylic"/> or <see cref="WindowBackdropType.Tabbed"/>.</param>
         /// <param name="capabilities">The OS capability snapshot.</param>
         /// <param name="isTransparencyEnabled">Whether the OS transparency-effects toggle is on.</param>
-        /// <param name="resolvedTheme">The resolved application theme.</param>
-        /// <returns>The effective <see cref="BackdropType"/> to apply.</returns>
-        private static BackdropType ResolveTransparentBackdrop(
-            BackdropType requestedBackdrop,
+        /// <returns>The effective <see cref="WindowBackdropType"/> to apply.</returns>
+        private static WindowBackdropType ResolveTransparentBackdrop(
+            WindowBackdropType requestedBackdrop,
             WindowCapabilities capabilities,
-            bool isTransparencyEnabled,
-            ApplicationTheme resolvedTheme)
+            bool isTransparencyEnabled)
         {
             return capabilities.SupportsSystemBackdropType
                 ? requestedBackdrop
                 : capabilities.SupportsMicaEffect
-                ? BackdropType.Mica
-                : requestedBackdrop is BackdropType.Acrylic
+                ? WindowBackdropType.Mica
+                : requestedBackdrop is WindowBackdropType.Acrylic
                     && capabilities.SupportsLegacyAcrylic
                     && isTransparencyEnabled
-                    && resolvedTheme is not ApplicationTheme.HighContrast
-                ? BackdropType.Acrylic
-                : BackdropType.None;
+                ? WindowBackdropType.Acrylic
+                : WindowBackdropType.None;
         }
 
         /// <summary>
@@ -362,7 +391,7 @@ namespace Fluence.Wpf.Controls
         ///   </item>
         /// </list>
         /// </remarks>
-        /// <param name="requestedBackdrop">The <see cref="BackdropType"/> requested by the caller.</param>
+        /// <param name="requestedBackdrop">The <see cref="WindowBackdropType"/> requested by the caller.</param>
         /// <param name="resolvedTheme">The resolved application theme (used for immersive dark mode).</param>
         /// <param name="capabilities">The OS capability snapshot.</param>
         /// <param name="fallbackBackgroundColor">
@@ -374,20 +403,22 @@ namespace Fluence.Wpf.Controls
         ///   already honours the setting itself.
         /// </param>
         /// <param name="legacyAcrylicTintColor">
-        ///   The tint color to record for the legacy acrylic accent policy, normally the
-        ///   <c language="xaml">AcrylicBackgroundFillColorDefault</c> theme token. Ignored on every path except the
-        ///   Windows 10 legacy acrylic one.
+        ///   The tint color to record for the legacy acrylic accent policy: the
+        ///   <c language="xaml">AcrylicBackgroundFillColorDefault</c> theme token's RGB with its alpha
+        ///   replaced by a forced <c language="csharp">0xF0</c> (see
+        ///   <see cref="FluenceWindow.GetLegacyAcrylicTintColor"/>), because the token itself is opaque.
+        ///   Ignored on every path except the Windows 10 legacy acrylic one.
         /// </param>
         /// <returns>A <see cref="BackdropPlan"/> describing all DWM writes to perform.</returns>
         internal static BackdropPlan BuildBackdropPlan(
-            BackdropType requestedBackdrop,
+            WindowBackdropType requestedBackdrop,
             ApplicationTheme resolvedTheme,
             WindowCapabilities capabilities,
             Color fallbackBackgroundColor,
             bool isTransparencyEnabled,
             Color legacyAcrylicTintColor)
         {
-            BackdropType effectiveBackdrop = ResolveEffectiveBackdrop(
+            WindowBackdropType effectiveBackdrop = ResolveEffectiveBackdrop(
                 requestedBackdrop,
                 capabilities,
                 isTransparencyEnabled,
@@ -395,15 +426,14 @@ namespace Fluence.Wpf.Controls
             bool isDark = resolvedTheme is ApplicationTheme.Dark;
 
             // None path: solid background, default caption color, explicit DWMSBT_NONE on 22H2+.
-            if (effectiveBackdrop is BackdropType.None)
+            if (effectiveBackdrop is WindowBackdropType.None)
             {
                 DWM_SYSTEMBACKDROP_TYPE? clearedSystemBackdrop = capabilities.SupportsSystemBackdropType
                     ? DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE
                     : null;
 
                 return new BackdropPlan(
-                    BackdropType.None,
-                    useTransparentBackground: false,
+                    WindowBackdropType.None,
                     fallbackBackgroundColor,
                     PInvoke.DWMWA_COLOR_DEFAULT,
                     clearedSystemBackdrop,
@@ -414,13 +444,12 @@ namespace Fluence.Wpf.Controls
             }
 
             // Mica on pre-22H2 Win11: legacy DWMWA_MICA_EFFECT; no DWMWA_SYSTEMBACKDROP_TYPE.
-            if (effectiveBackdrop is BackdropType.Mica
+            if (effectiveBackdrop is WindowBackdropType.Mica
                 && !capabilities.SupportsSystemBackdropType
                 && capabilities.SupportsMicaEffect)
             {
                 return new BackdropPlan(
-                    BackdropType.Mica,
-                    useTransparentBackground: true,
+                    WindowBackdropType.Mica,
                     Colors.Transparent,
                     PInvoke.DWMWA_COLOR_NONE,
                     systemBackdropType: null,
@@ -436,11 +465,10 @@ namespace Fluence.Wpf.Controls
             // only remaining discriminator is the absence of DWMWA_SYSTEMBACKDROP_TYPE. The caption
             // color is recorded with the same DWMWA_COLOR_NONE semantics as the DWM backdrops even
             // though Windows 10 never exposes DWMWA_CAPTION_COLOR for the caller to write.
-            if (effectiveBackdrop is BackdropType.Acrylic && !capabilities.SupportsSystemBackdropType)
+            if (effectiveBackdrop is WindowBackdropType.Acrylic && !capabilities.SupportsSystemBackdropType)
             {
                 return new BackdropPlan(
-                    BackdropType.Acrylic,
-                    useTransparentBackground: true,
+                    WindowBackdropType.Acrylic,
                     Colors.Transparent,
                     PInvoke.DWMWA_COLOR_NONE,
                     systemBackdropType: null,
@@ -453,7 +481,6 @@ namespace Fluence.Wpf.Controls
             // All other active backdrops on 22H2+: canonical DWMWA_SYSTEMBACKDROP_TYPE path.
             return new BackdropPlan(
                 effectiveBackdrop,
-                useTransparentBackground: true,
                 Colors.Transparent,
                 PInvoke.DWMWA_COLOR_NONE,
                 MapSystemBackdropType(effectiveBackdrop),
@@ -464,42 +491,169 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Maps a <see cref="CornerPreference"/> value to the corresponding
+        /// Maps a <see cref="WindowCornerPreference"/> value to the corresponding
         /// <c language="csharp">DWMWCP_*</c> constant for <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>.
         /// </summary>
         /// <remarks>
-        /// <see cref="CornerPreference.Default"/> and <see cref="CornerPreference.Round"/> both
+        /// <see cref="WindowCornerPreference.Default"/> and <see cref="WindowCornerPreference.Round"/> both
         /// map to DWMWCP_ROUND because <c language="csharp">Default</c> in the
         /// Fluence library means "the library default," which is rounded on Windows 11.
         /// </remarks>
         /// <param name="preference">The requested corner style.</param>
         /// <returns>The <c language="csharp">DWMWCP_*</c> constant to write via
         /// <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>.</returns>
-        internal static DWM_WINDOW_CORNER_PREFERENCE GetCornerPreference(CornerPreference preference)
+        internal static DWM_WINDOW_CORNER_PREFERENCE GetCornerPreference(WindowCornerPreference preference)
         {
             return preference switch
             {
-                CornerPreference.DoNotRound => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND,
-                CornerPreference.RoundSmall => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUNDSMALL,
-                CornerPreference.Default or CornerPreference.Round => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
+                WindowCornerPreference.DoNotRound => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND,
+                WindowCornerPreference.RoundSmall => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUNDSMALL,
+                WindowCornerPreference.Default or WindowCornerPreference.Round => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
                 _ => DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND,
             };
         }
 
         /// <summary>
-        /// Maps an effective <see cref="BackdropType"/> to the <c language="csharp">DWMSBT_*</c> constant for
+        /// The effective backdrops for which <see cref="ShouldApplyContentLayerPreBlend"/> applies
+        /// the opaque pre-blend. Only <see cref="WindowBackdropType.Mica"/> was measured quantising client
+        /// alpha under <c language="csharp">DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO</c> flags <c language="text">0x4</c> (10 bpc,
+        /// advanced color off); see the KNOWN_ISSUES.md entry "Translucent layers over a DWM
+        /// backdrop lose alpha precision on a 10 bpc display". <see cref="WindowBackdropType.Tabbed"/> is
+        /// included by inference, not measurement: it is the same DWM material family
+        /// (<c language="csharp">DWMSBT_MAINWINDOW</c> and <c language="csharp">DWMSBT_TABBEDWINDOW</c>) as Mica, but it was
+        /// measured only under flags <c language="text">0x7</c> (advanced color on), where it read full precision
+        /// like everything else. <see cref="WindowBackdropType.Acrylic"/> is excluded: it too was measured
+        /// only under <c language="text">0x7</c> and read full precision there, and was never measured under
+        /// <c language="text">0x4</c>, so there is no basis yet to include or exclude it on the quantising flag.
+        /// Kept as a single array so an Acrylic measurement under <c language="text">0x4</c> can extend (or leave
+        /// unchanged) the set with a one-line change.
+        /// </summary>
+        private static readonly WindowBackdropType[] PreBlendEligibleBackdrops = [WindowBackdropType.Mica, WindowBackdropType.Tabbed];
+
+        /// <summary>
+        /// Returns whether <see cref="ResolveContentLayerPreBlend"/> should substitute an opaque
+        /// content-layer color for the given effective backdrop, theme, and display color depth.
+        /// </summary>
+        /// <remarks>
+        /// Measured fact (KNOWN_ISSUES.md, "Translucent layers over a DWM backdrop lose alpha
+        /// precision on a 10 bpc display"): on a display path reporting
+        /// <c language="csharp">bitsPerColorChannel = 10</c> with advanced color <em>disabled</em>, DWM composites a
+        /// window's client alpha over a system backdrop with 2-bit alpha, so a translucent
+        /// content-layer token reads darker than it specifies. The same 10 bpc path with advanced
+        /// color <em>enabled</em> (measured by toggling the GPU driver's 10-bit pixel format
+        /// setting) was measured to composite at full precision, so the pre-blend must not apply
+        /// there. This method is pure: it takes the already-resolved backdrop, theme, and display
+        /// state and returns a value, so it can be unit tested without a window handle, a live
+        /// display, or DWM.
+        /// </remarks>
+        /// <param name="effectiveBackdrop">The backdrop that will actually be applied after capability downgrade (see <see cref="ResolveEffectiveBackdrop"/>).</param>
+        /// <param name="resolvedTheme">The resolved application theme.</param>
+        /// <param name="colorDepth">The display color depth for the monitor hosting the window.</param>
+        /// <returns>
+        ///   <see langword="false"/> when <paramref name="colorDepth"/> reports 8 bpc or fewer
+        ///   (including unknown), advanced color is enabled, the theme is
+        ///   <see cref="ApplicationTheme.HighContrast"/>, or <paramref name="effectiveBackdrop"/> is
+        ///   not one of <see cref="PreBlendEligibleBackdrops"/>; otherwise <see langword="true"/>.
+        /// </returns>
+        internal static bool ShouldApplyContentLayerPreBlend(
+            WindowBackdropType effectiveBackdrop,
+            ApplicationTheme resolvedTheme,
+            DisplayColorDepth colorDepth)
+        {
+            return colorDepth.BitsPerColorChannel > 8
+                && !colorDepth.AdvancedColorEnabled
+                && resolvedTheme is not ApplicationTheme.HighContrast
+                && Array.IndexOf(PreBlendEligibleBackdrops, effectiveBackdrop) >= 0;
+        }
+
+        /// <summary>
+        /// Resolves the opaque, pre-blended replacement for a translucent content-layer token when
+        /// the active display path cannot composite its alpha at full precision.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Per AGENTS.md 4.2, WinUI 3 CommonStyles is the authority for visual tokens, and WinUI
+        /// already ships the pre-blended value this substitution needs:
+        /// <c language="text">LayerOnMicaBaseAltFillColorTertiary</c> (<c language="text">#FFF9F9F9</c> Light,
+        /// <c language="text">#FF2C2C2C</c> Dark). When <paramref name="canonicalPreBlend"/> is supplied (the caller
+        /// resolved that key), it is returned as-is. The straight-alpha composite of
+        /// <paramref name="layerFill"/> over <paramref name="solidBase"/> is only a fallback for a
+        /// consumer whose theme dictionary does not define that key, computed per channel with the
+        /// alpha forced to <c language="csharp">0xFF</c>
+        /// (<c language="csharp">round(layerFill.A/255 * layerFill.channel + (1 - layerFill.A/255) * solidBase.channel)</c>,
+        /// <see cref="MidpointRounding.AwayFromZero"/>); for the canonical Light tokens
+        /// (<c language="text">#80FFFFFF</c> over <c language="text">#FFF3F3F3</c>) it reproduces the same
+        /// <c language="text">#FFF9F9F9</c> the canonical key already carries.
+        /// </para>
+        /// <para>
+        /// The caller applies the result as the bottom-most layer of the affected control (see
+        /// <see cref="FluenceWindow.ApplyBackdrop"/>): a pre-blended opaque plate restores
+        /// the brightness the token specifies, and everything WPF composites on top of it is then
+        /// blended by WPF itself at full precision, unaffected by the DWM quantisation.
+        /// </para>
+        /// </remarks>
+        /// <param name="effectiveBackdrop">The backdrop that will actually be applied after capability downgrade (see <see cref="ResolveEffectiveBackdrop"/>).</param>
+        /// <param name="resolvedTheme">The resolved application theme.</param>
+        /// <param name="colorDepth">The display color depth for the monitor hosting the window.</param>
+        /// <param name="canonicalPreBlend">The resolved <c language="text">LayerOnMicaBaseAltFillColorTertiary</c> token, or <see langword="null"/> when the theme dictionary does not define it.</param>
+        /// <param name="layerFill">The translucent content-layer token color (for example <c language="xaml">NavigationViewContentBackground</c>), used only for the fallback composite.</param>
+        /// <param name="solidBase">The opaque window-base token color the layer is composited over (for example <c language="xaml">SolidBackgroundFillColorBase</c>), used only for the fallback composite.</param>
+        /// <returns>
+        ///   The opaque pre-blended color to substitute, or <see langword="null"/> when
+        ///   <see cref="ShouldApplyContentLayerPreBlend"/> reports no substitution is needed.
+        /// </returns>
+        internal static Color? ResolveContentLayerPreBlend(
+            WindowBackdropType effectiveBackdrop,
+            ApplicationTheme resolvedTheme,
+            DisplayColorDepth colorDepth,
+            Color? canonicalPreBlend,
+            Color layerFill,
+            Color solidBase)
+        {
+            if (!ShouldApplyContentLayerPreBlend(effectiveBackdrop, resolvedTheme, colorDepth))
+            {
+                return null;
+            }
+            if (canonicalPreBlend is Color canonical)
+            {
+                return canonical;
+            }
+
+            double alpha = layerFill.A / 255.0;
+            byte r = ComposeChannel(alpha, layerFill.R, solidBase.R);
+            byte g = ComposeChannel(alpha, layerFill.G, solidBase.G);
+            byte b = ComposeChannel(alpha, layerFill.B, solidBase.B);
+            return Color.FromArgb(0xFF, r, g, b);
+        }
+
+        /// <summary>
+        /// Straight-alpha composites one 8-bit color channel of <see cref="ResolveContentLayerPreBlend"/>,
+        /// rounding away from zero.
+        /// </summary>
+        /// <param name="alpha">The foreground alpha in the <c language="csharp">[0, 1]</c> range.</param>
+        /// <param name="foreground">The foreground channel value.</param>
+        /// <param name="background">The background channel value.</param>
+        /// <returns>The composited channel value.</returns>
+        private static byte ComposeChannel(double alpha, byte foreground, byte background)
+        {
+            double composited = (alpha * foreground) + ((1.0 - alpha) * background);
+            return (byte)Math.Round(composited, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// Maps an effective <see cref="WindowBackdropType"/> to the <c language="csharp">DWMSBT_*</c> constant for
         /// <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>. Only called when the OS supports that attribute
-        /// (22H2+) and the effective backdrop is not <see cref="BackdropType.None"/>.
+        /// (22H2+) and the effective backdrop is not <see cref="WindowBackdropType.None"/>.
         /// </summary>
         /// <param name="backdropType">The effective backdrop type after capability resolution.</param>
         /// <returns>The <c language="csharp">DWMSBT_*</c> constant for the system backdrop.</returns>
-        private static DWM_SYSTEMBACKDROP_TYPE MapSystemBackdropType(BackdropType backdropType)
+        private static DWM_SYSTEMBACKDROP_TYPE MapSystemBackdropType(WindowBackdropType backdropType)
         {
             return backdropType switch
             {
-                BackdropType.Acrylic => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TRANSIENTWINDOW,
-                BackdropType.Tabbed => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW,
-                BackdropType.Mica or BackdropType.Auto or BackdropType.None or _ =>
+                WindowBackdropType.Acrylic => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TRANSIENTWINDOW,
+                WindowBackdropType.Tabbed => DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW,
+                WindowBackdropType.Mica or WindowBackdropType.Auto or WindowBackdropType.None or _ =>
                     DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW,
             };
         }

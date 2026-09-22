@@ -4,7 +4,7 @@
     xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
 
     <Style TargetType="{x:Type controls:HyperlinkButton}">
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
@@ -59,7 +59,11 @@
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}">
                                 <ContentPresenter.Resources>
+                                    <!--  All three font properties are bound because the implicit style sets all three, and a Setter beats the value the control inherits down, so a consumer's FontFamily, FontSize or FontWeight would never reach the text otherwise. Foreground needs no rebind: the implicit style deliberately omits it. Same shape as InfoBadge, TabView, ToolTip and NavigationViewItemHeader.  -->
                                     <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:HyperlinkButton}}}" />
+                                        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:HyperlinkButton}}}" />
+                                        <Setter Property="FontWeight" Value="{Binding FontWeight, RelativeSource={RelativeSource AncestorType={x:Type controls:HyperlinkButton}}}" />
                                         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                     </Style>
                                 </ContentPresenter.Resources>
@@ -87,9 +91,10 @@
                             <Setter TargetName="IconPresenter" Property="Margin" Value="0" />
                         </Trigger>
 
+                        <!--  WinUI parity: HyperlinkButton_themeresources.xaml Light dictionary. No pointer-over TextDecorations; WinUI carries no underline state.  -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter TargetName="MainContentPresenter" Property="TextBlock.TextDecorations" Value="Underline" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorSecondaryBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsPressed" Value="True">
@@ -99,7 +104,7 @@
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="OuterBorder" Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorDisabledBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

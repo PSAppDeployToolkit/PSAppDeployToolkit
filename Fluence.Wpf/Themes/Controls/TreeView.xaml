@@ -37,93 +37,128 @@
                             Background="Transparent"
                             CornerRadius="{DynamicResource ControlCornerRadius}">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="28" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-                                <!--  Expand/collapse toggle; Visibility driven by HasItems trigger  -->
-                                <ToggleButton
-                                    x:Name="Expander"
-                                    Grid.Column="0"
-                                    Width="28"
-                                    ClickMode="Press"
-                                    Focusable="False"
-                                    IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                    Visibility="Collapsed">
-                                    <ToggleButton.Template>
-                                        <ControlTemplate TargetType="ToggleButton">
-                                            <Grid Background="Transparent">
-                                                <!--  WI-5B.2: ChevronRight glyph, rotates 0°→90° on expand.  -->
-                                                <TextBlock
-                                                    x:Name="ChevronGlyph"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    FontFamily="Segoe Fluent Icons"
-                                                    FontSize="12"
-                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                    RenderTransformOrigin="0.5,0.5"
-                                                    Text="&#xE76C;">
-                                                    <TextBlock.RenderTransform>
-                                                        <RotateTransform x:Name="ChevronRotate" Angle="0" />
-                                                    </TextBlock.RenderTransform>
-                                                </TextBlock>
-                                            </Grid>
-                                            <ControlTemplate.Triggers>
-                                                <!--  Expand: animate chevron 0°→90° with ControlFastOutSlowIn easing (167ms).  -->
-                                                <Trigger Property="IsChecked" Value="True">
-                                                    <Trigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
-                                                                    <SplineDoubleKeyFrame
-                                                                        KeySpline="0.8,0,0,1"
-                                                                        KeyTime="0:0:0.167"
-                                                                        Value="90" />
-                                                                </DoubleAnimationUsingKeyFrames>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </Trigger.EnterActions>
-                                                    <Trigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
-                                                                    <SplineDoubleKeyFrame
-                                                                        KeySpline="0.8,0,0,1"
-                                                                        KeyTime="0:0:0.167"
-                                                                        Value="0" />
-                                                                </DoubleAnimationUsingKeyFrames>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </Trigger.ExitActions>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </ToggleButton.Template>
-                                </ToggleButton>
+                                    <!--  Expand/collapse toggle; Visibility driven by HasItems trigger  -->
+                                    <ToggleButton
+                                        x:Name="Expander"
+                                        Grid.Column="0"
+                                        Width="28"
+                                        ClickMode="Press"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Visibility="Collapsed">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Grid Background="Transparent">
+                                                    <!--  WI-5B.2: ChevronRight glyph, rotates 0°→90° on expand.  -->
+                                                    <TextBlock
+                                                        x:Name="ChevronGlyph"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FontFamily="Segoe Fluent Icons"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        RenderTransformOrigin="0.5,0.5"
+                                                        Text="&#xE76C;">
+                                                        <TextBlock.RenderTransform>
+                                                            <RotateTransform x:Name="ChevronRotate" Angle="0" />
+                                                        </TextBlock.RenderTransform>
+                                                    </TextBlock>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <!--  Expand: animate chevron 0°→90° with ControlFastOutSlowIn easing (167ms).  -->
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Trigger.EnterActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
+                                                                        <SplineDoubleKeyFrame
+                                                                            KeySpline="0,0,0,1"
+                                                                            KeyTime="0:0:0.167"
+                                                                            Value="90" />
+                                                                    </DoubleAnimationUsingKeyFrames>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.EnterActions>
+                                                        <Trigger.ExitActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
+                                                                        <SplineDoubleKeyFrame
+                                                                            KeySpline="0,0,0,1"
+                                                                            KeyTime="0:0:0.167"
+                                                                            Value="0" />
+                                                                    </DoubleAnimationUsingKeyFrames>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.ExitActions>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
 
-                                <controls:CheckBox
-                                    x:Name="SelectionCheckBox"
-                                    Grid.Column="1"
-                                    Margin="0,0,8,0"
+                                    <!--  A content-less checkbox in this Auto-width column must not inherit the WinUI DefaultCheckBoxStyle MinWidth of 120 (CheckBox.xaml), or every row grows a wide dead-click gap before the header text.  -->
+                                    <controls:CheckBox
+                                        x:Name="SelectionCheckBox"
+                                        Grid.Column="1"
+                                        Margin="0,0,8,0"
+                                        MinWidth="0"
+                                        VerticalAlignment="Center"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsSelectionChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        IsThreeState="True"
+                                        Visibility="Collapsed" />
+
+                                    <!--  PART_Header: item label / content  -->
+                                    <ContentPresenter
+                                        x:Name="PART_Header"
+                                        Grid.Column="2"
+                                        Margin="{TemplateBinding Padding}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        ContentSource="Header"
+                                        TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                        TextElement.FontSize="{TemplateBinding FontSize}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}" />
+                                </Grid>
+                                <!--
+                                    WinUI accent selection pill (TreeViewItem.xaml:130 upstream): 3x16,
+                                    RadiusX/Y 2, left-aligned with no inset margin, opacity toggled by
+                                    IsSelected. This geometry (radius 2, no margin) does not match
+                                    ListView.xaml / ListBox.xaml's SelectionIndicator, which instead
+                                    follows the WinUI TableView row indicator (controls/dev/TableView/
+                                    TableView.xaml): CornerRadius 1.5 with a 2,0,0,0 inset from the left
+                                    edge. TreeView keeps its own TreeViewItem.xaml-sourced radius rather
+                                    than the TableView one. The fill is NavigationViewSelectionIndicatorForeground,
+                                    shared with the NavigationView and ListView/ListBox pills
+                                    (SpecialBrushes.cs), not TreeViewItemSelectionIndicatorForeground's
+                                    raw accent binding.
+                                -->
+                                <!--
+                                    The item's own template sits inside one 20 dip indent per level (the
+                                    ItemsPresenter margin below), so an indicator left at rest would step
+                                    right with every level and the rail would walk down the tree. The
+                                    depth is pulled back out in TreeViewItem.UpdateSelectionIndicatorIndent,
+                                    which is the same split WinUI makes: indentation belongs to the
+                                    content, never to the indicator beside it.
+                                -->
+                                <Border
+                                    x:Name="SelectionIndicator"
+                                    Width="3"
+                                    Height="16"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    Focusable="False"
-                                    IsChecked="{Binding IsSelectionChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                    IsThreeState="True"
-                                    Visibility="Collapsed" />
-
-                                <!--  PART_Header: item label / content  -->
-                                <ContentPresenter
-                                    x:Name="PART_Header"
-                                    Grid.Column="2"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    ContentSource="Header"
-                                    TextElement.FontFamily="{TemplateBinding FontFamily}"
-                                    TextElement.FontSize="{TemplateBinding FontSize}"
-                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
+                                    CornerRadius="2"
+                                    IsHitTestVisible="False"
+                                    Opacity="0" />
                             </Grid>
                         </Border>
 
@@ -146,6 +181,7 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
                         </Trigger>
                         <!--
                             IsSelectionChecked deliberately has no background trigger: in
@@ -155,6 +191,8 @@
                         -->
                         <DataTrigger Binding="{Binding SelectionMode, RelativeSource={RelativeSource AncestorType={x:Type controls:TreeView}}}" Value="{x:Static fluence:TreeViewSelectionMode.Multiple}">
                             <Setter TargetName="SelectionCheckBox" Property="Visibility" Value="Visible" />
+                            <!--  The checkbox is the selection read in Multiple mode, so the rail would be a second answer to the same question.  -->
+                            <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -163,10 +201,32 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                         </MultiTrigger>
+                        <!--
+                            WinUI swaps to solid disabled fill/foreground tokens rather than fading
+                            the whole row (TreeView_themeresources.xaml:8 TreeViewItemBackgroundDisabled
+                            = SubtleFillColorDisabledBrush, :16 TreeViewItemForegroundDisabled =
+                            TextFillColorDisabledBrush).
+                        -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                            <Setter TargetName="ItemBorder" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorDisabledBrush}" />
                         </Trigger>
+
+                        <!--
+                            A selected row that is disabled dims its indicator, which WinUI's
+                            SelectedDisabled state does through TreeViewItemSelectionIndicatorForegroundDisabled
+                            (TreeViewItem.xaml:88, resolved to TextFillColorDisabledBrush at
+                            TreeView_themeresources.xaml:36) while holding its opacity at 1 (:92). The token is
+                            deliberately outside the accent family that ListBox and ListView take for the same
+                            state: WinUI drops the indicator out of accent entirely while the row cannot be acted on.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="SelectionIndicator" Property="Background" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

@@ -79,8 +79,19 @@ namespace Fluence.Wpf.Automation
         public virtual bool IsReadOnly => true;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The ring is disabled.</exception>
+        /// <exception cref="System.InvalidOperationException">
+        /// Always, for an enabled ring: progress is reported by the application, so the pattern is
+        /// read-only and a client that sets a value is told so rather than left to assume it took.
+        /// </exception>
         public virtual void SetValue(double value)
         {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
+
+            throw new System.InvalidOperationException("The progress ring reports progress and is read-only; its value cannot be set.");
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace Fluence.Wpf.Demo.Pages
     /// <summary>
     /// Gallery page demonstrating accessibility features: focus rings, tab order, HC brush mapping, RTL layout, live regions, and keyboard operability.
     /// </summary>
-    public partial class GalleryAccessibilityPage : UserControl
+    public partial class GalleryAccessibilityPage : Page
     {
         private static readonly string FocusAndTabOrderXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Accessibility.FocusAndTabOrder",

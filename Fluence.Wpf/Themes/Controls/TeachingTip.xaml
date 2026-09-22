@@ -7,11 +7,15 @@
     <!--
         Fluent Design TeachingTip style.
         Authority: WinUI 3 TeachingTip_themeresources.xaml (TeachingTipMinWidth 320 /
+        TeachingTipMinHeight 40 / TeachingTipMaxHeight 520 /
         TeachingTipMaxWidth 336; SemiBold 14px title over a wrapped secondary subtitle;
         a 20x10 tail on the edge facing the target, matching the WinUI TailPolygon points).
-        Surface treatment reuses the canonical in-tree flyout tokens from FlyoutPresenter.xaml:
-        SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
-        OverlayCornerRadius + the WinUI FlyoutContentThemePadding (16,15,16,17).
+        Surface treatment: SolidBackgroundFillColorTertiaryBrush is the WinUI TeachingTip's own
+        TeachingTipBackgroundBrush (TeachingTip_themeresources.xaml:8), not the shared flyout
+        acrylic fallback used by FlyoutPresenter.xaml. Border is SurfaceStrokeColorDefaultBrush
+        (TeachingTipBorderBrush, :5), and a 1px TeachingTipTopHighlightBrush line sits just inside
+        the top edge (:6, :98) plus OverlayCornerRadius + the WinUI FlyoutContentThemePadding
+        (16,15,16,17).
         The beak is an open Path (no closing segment), so only its two slanted edges are
         stroked; a 1px negative margin overlaps the surface border and the fill hides the seam.
         The control resolves ActualPlacement when it opens: a tip popped below its target
@@ -25,8 +29,13 @@
         alternate X (WinUI TeachingTipTitleStackPanelMarginWithHeaderCloseButton).
         Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
         FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
-        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
-        sizes a popup window about 15 px larger per side than its child.
+        effect is not on the surface itself, and the template root carries a 16px transparent
+        gutter, because WPF sizes a popup HWND to exactly its child's layout size and the effect
+        would otherwise be clipped to the plate.
+        The WinUI TeachingTipMinWidth / MaxWidth limits above sit on TipSurface below, not on this
+        control: the control itself is the gutter plus the plate, so a limit set here would
+        constrain the gutter too and shrink the plate by 32px on every axis (the gutter is 16px per
+        side). Setting them on the plate keeps the WinUI numbers literal.
     -->
 
     <!--
@@ -39,7 +48,9 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="Height" Value="24" />
+        <!--  WinUI TeachingTipAlternateCloseButtonSize = 40 (TeachingTip_themeresources_perf2026.xaml line 95)  -->
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Width" Value="40" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -70,7 +81,7 @@
 
     <Style TargetType="{x:Type controls:TeachingTip}">
         <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
@@ -78,15 +89,17 @@
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="MaxWidth" Value="336" />
-        <Setter Property="MinWidth" Value="320" />
         <Setter Property="Padding" Value="16,15,16,17" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:TeachingTip}">
-                    <Grid x:Name="TipRoot" UseLayoutRounding="True">
+                    <Grid x:Name="TipRoot" Margin="16" UseLayoutRounding="True">
+                        <!--  The expand and contract scale this group; the translate rests at (0,0) and is kept for a consumer storyboard.  -->
                         <Grid.RenderTransform>
-                            <TranslateTransform x:Name="TipTranslate" />
+                            <TransformGroup>
+                                <ScaleTransform x:Name="TipScale" />
+                                <TranslateTransform x:Name="TipTranslate" />
+                            </TransformGroup>
                         </Grid.RenderTransform>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -100,8 +113,10 @@
                         </Grid.ColumnDefinitions>
                         <!--
                             Elevation caster: an empty sibling in the same cell, painted behind the
-                            surface so the effect never covers the tip text. No layout gutter is
-                            needed, PopupRoot already reserves about 15 px per side for popup shadows.
+                            surface so the effect never covers the tip text. The template root
+                            carries a 16px transparent gutter, because WPF sizes a popup HWND to
+                            exactly its child's layout size and the effect would otherwise be
+                            clipped to the plate.
                         -->
                         <Border
                             x:Name="ShadowCaster"
@@ -114,6 +129,10 @@
                             x:Name="TipSurface"
                             Grid.Row="1"
                             Grid.Column="1"
+                            MaxWidth="336"
+                            MinWidth="320"
+                            MaxHeight="520"
+                            MinHeight="40"
                             Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -138,7 +157,7 @@
                                     x:Name="SubtitleText"
                                     Grid.Row="1"
                                     Margin="0,4,0,0"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{TemplateBinding Subtitle}"
                                     TextWrapping="Wrap" />
                                 <ContentPresenter
@@ -160,7 +179,6 @@
                                         x:Name="PART_ActionButton"
                                         MinWidth="0"
                                         Margin="0,0,8,0"
-                                        Appearance="Accent"
                                         Content="{TemplateBinding ActionButtonContent}" />
                                     <controls:Button
                                         x:Name="PART_CloseButton"
@@ -169,6 +187,27 @@
                                 </StackPanel>
                             </Grid>
                         </Border>
+                        <!--
+                            Plain 1px top highlight line. Authority: WinUI
+                            TeachingTipTopHighlightBrush (#0DFFFFFF, TeachingTip_themeresources.xaml:6),
+                            TeachingTipTopHighlightHeight (1, :98) and
+                            TeachingTipTopHighlightOffsetForBorder (0,1,0,0, :100). WinUI splits the
+                            line into left and right halves inside the clipped tip root; WPF does not
+                            clip a sibling to the surface's rounded corners, so a full-width square
+                            line would hang past the corner arc at both ends. The 1px side margins
+                            clear the border and the 7px top radii (OverlayCornerRadius 8 less the
+                            1px border) keep it on the plate.
+                        -->
+                        <Border
+                            x:Name="TopHighlight"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Height="1"
+                            Margin="1,1,1,0"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource TeachingTipTopHighlightBrush}"
+                            CornerRadius="7,7,0,0"
+                            IsHitTestVisible="False" />
                         <Path
                             x:Name="TopBeak"
                             Grid.Row="0"
@@ -227,13 +266,13 @@
                             <controls:FontIcon
                                 Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
                                 Glyph="&#xE711;"
-                                IconFontSize="12"
+                                IconFontSize="16"
                                 IsHitTestVisible="False" />
                         </Button>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <!--
-                            The open reveal (fade 83ms, 8px slide over 167ms on the 0.8,0,0,1
+                            The open reveal (fade 83ms, 8px slide over 167ms on the 0,0,0,1
                             spline; ControlFasterAnimationDuration / ControlFastAnimationDuration
                             / ControlFastOutSlowInKeySpline) lives in TeachingTip.OnLoaded,
                             following the FlyoutPresenter code-reveal precedent: a Loaded

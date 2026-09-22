@@ -59,6 +59,8 @@
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PipsPager.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ToggleSplitButton.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Image.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/SelectorBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/SlideNavigationPresenter.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>
