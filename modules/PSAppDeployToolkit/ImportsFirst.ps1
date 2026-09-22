@@ -79,7 +79,7 @@ try
     Set-StrictMode -Version 3
 
     # Store build information pertaining to this module's state. This will get redefined
-    # at the end as its proper type onces assemblies have been successfully loaded.
+    # at the end as its proper type once the assemblies have been successfully loaded.
     New-Variable -Name Module -Option ReadOnly -Force -Value ([ordered]@{
             Assemblies = if (!$PSVersionTable.PSEdition.Equals('Desktop'))
             {
