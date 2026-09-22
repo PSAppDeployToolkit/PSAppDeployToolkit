@@ -33,7 +33,7 @@ using Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryTabsPage : UserControl
+    public partial class GalleryTabsPage : Page
     {
         private static readonly string TabControlBasicsXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Tabs.TabControlBasics",
@@ -250,14 +250,14 @@ namespace Fluence.Wpf.Demo.Pages
                                                             "            UpdateStatus();\n" +
                                                             "        }\n" +
                                                             "\n" +
-                                                            "        private void DemoTabView_TabCloseRequested(object sender, RoutedEventArgs e)\n" +
+                                                            "        private void DemoTabView_TabCloseRequested(object sender, TabViewTabCloseRequestedEventArgs e)\n" +
                                                             "        {\n" +
-                                                            "            if (e is not TabViewTabCloseRequestedEventArgs args || args.Tab is null)\n" +
+                                                            "            if (e.Tab is null)\n" +
                                                             "            {\n" +
                                                             "                return;\n" +
                                                             "            }\n" +
                                                             "\n" +
-                                                            "            DemoTabView.Items.Remove(args.Tab);\n" +
+                                                            "            DemoTabView.Items.Remove(e.Tab);\n" +
                                                             "            UpdateStatus();\n" +
                                                             "        }\n" +
                                                             "\n" +
@@ -316,14 +316,14 @@ namespace Fluence.Wpf.Demo.Pages
             UpdateStatus();
         }
 
-        private void DemoTabView_TabCloseRequested(object sender, RoutedEventArgs e)
+        private void DemoTabView_TabCloseRequested(object sender, TabViewTabCloseRequestedEventArgs e)
         {
-            if (e is not TabViewTabCloseRequestedEventArgs args || DemoTabView is null || args.Tab is null)
+            if (DemoTabView is null || e.Tab is null)
             {
                 return;
             }
 
-            DemoTabView.Items.Remove(args.Tab);
+            DemoTabView.Items.Remove(e.Tab);
             UpdateStatus();
         }
 

@@ -1,6 +1,6 @@
 ﻿---
 name: new-control
-design-time and demo entries, an xUnit test partial using the STA harness, and the docs/CHANGELOG updates.
+design-time and demo entries, an xUnit test class using the STA harness, and the docs/CHANGELOG updates.
 disable-model-invocation: true
 ---
 
@@ -42,9 +42,9 @@ Resolve every visual or behavioural decision through AGENTS.md section 4: in-tre
 
 4. **Demo.** Add or extend a gallery page under `Fluence.Wpf.Demo/Pages/Gallery*.xaml`, following the section 14 DemoSampleControl contract (use the `demo-sample-page` skill if it is a discrete sample). Register the page in `MainWindow.NavigateTo(string tag)` if it should be navigable.
 
-5. **Tests (mandatory)** in a partial `Fluence.Wpf.Tests/ControlTests.<Area>.cs`.
-   - Copy the BSD header. Use `RunOnStaThread` / `WpfTestSta.Invoke`, `EnsureApplication`, and start the test body with `MergeGenericDictionary(Application.Current.Resources)`.
-   - Cover at minimum: default style applies, key template parts are found after `Window.Show()`, critical DP and visual-state transitions, and (if theme-sensitive) one cycle via `ThemeTestHelpers.ApplyStandardThemeCycle`. Drive protected `OnMouse*`/`OnKey*` members via a small probe subclass if needed (see `ClickableCardProbe`). Drain with `DrainDispatcher()` and close the window.
+5. **Tests (mandatory)** in `Fluence.Wpf.Tests/Control/<Name>Tests.cs` holding one sealed class.
+   - Copy the BSD header. Use `WpfTestSta.RunOnStaAsync`, and let the class own the reset through `IAsyncLifetime` calling `TestApp.EnsureLibraryTheme()` (or `IClassFixture<LightThemeFixture>` if no test in the class applies a theme, changes the accent, or toggles reduced motion).
+   - Cover at minimum: default style applies, key template parts are found after `Window.Show()`, critical DP and visual-state transitions, and (if theme-sensitive) one cycle via `ThemeTestHelpers.ApplyStandardThemeCycle`. Drive protected `OnMouse*`/`OnKey*` members via a small probe subclass if needed (see `ClickableCardProbe` in `Control/Rules/FluentStrokeTests.cs`). Drain with `WpfTestSta.DrainDispatcher()` and close through `CloseWindowAndDrain(window)`.
    - Do not weaken the HEAD-of-branch test count.
 
 6. **Docs.** Append the control to `docs/controls.md`, note any new brush family in `docs/theming.md`, and add a one-line entry under the current CHANGELOG section.
@@ -52,6 +52,6 @@ Resolve every visual or behavioural decision through AGENTS.md section 4: in-tre
 ## Verify before reporting done
 
 - `dotnet build Fluence.Wpf.sln -c Debug`: zero errors, zero warnings (TreatWarningsAsErrors) on both TFMs.
-- `dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-windows10.0.26100.0 --no-build` first (fast), then `-f net472 --no-build`. Both green; net count up by the tests you added.
+- `Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-not-trait "Category=Screenshots" --no-ansi --progress off` first (fast), then the `net472` two lanes from AGENTS.md section 6. Both green; net count up by the tests you added.
 - All `.cs` and `.xaml` saved UTF-8 with BOM, LF line endings.
 - Stage changes, show diffs, and wait for the user's explicit commit instruction.

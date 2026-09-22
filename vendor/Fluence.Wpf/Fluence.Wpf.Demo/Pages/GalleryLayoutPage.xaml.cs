@@ -30,7 +30,7 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryLayoutPage : UserControl
+    public partial class GalleryLayoutPage : Page
     {
         private const string BorderStackPanelXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
                                                           "<fluence:Border\n" +

@@ -53,7 +53,7 @@ namespace Fluence.Wpf.Demo
         {
             base.OnStartup(e);
 
-            ApplicationThemeManager.Apply(ApplicationTheme.Auto, BackdropType.Mica);
+            ApplicationThemeManager.Apply(ApplicationTheme.Auto, WindowBackdropType.Mica);
             ApplicationAccentColorManager.ApplySystemAccent();
             LoadDemoSharedStyles();
 
@@ -113,15 +113,15 @@ namespace Fluence.Wpf.Demo
             mainWindow.UpdateLayout();
             DrainDispatcher(mainWindow.Dispatcher);
 
-            ApplySmokeBackdrop(mainWindow, BackdropType.Mica);
-            ApplySmokeBackdrop(mainWindow, BackdropType.Acrylic);
-            ApplySmokeBackdrop(mainWindow, BackdropType.Tabbed);
-            ApplySmokeBackdrop(mainWindow, BackdropType.None);
+            ApplySmokeBackdrop(mainWindow, WindowBackdropType.Mica);
+            ApplySmokeBackdrop(mainWindow, WindowBackdropType.Acrylic);
+            ApplySmokeBackdrop(mainWindow, WindowBackdropType.Tabbed);
+            ApplySmokeBackdrop(mainWindow, WindowBackdropType.None);
 
             ApplicationAccentColorManager.ApplySystemAccent();
         }
 
-        private static void ApplySmokeBackdrop(MainWindow mainWindow, BackdropType backdrop)
+        private static void ApplySmokeBackdrop(MainWindow mainWindow, WindowBackdropType backdrop)
         {
             mainWindow.SystemBackdropType = backdrop;
             ApplicationThemeManager.Apply(ApplicationTheme.Light, backdrop);

@@ -41,8 +41,11 @@ namespace Fluence.Wpf.Controls
     /// Renders up to <see cref="MaxRating"/> star glyphs using Segoe Fluent Icons
     /// (U+E734 StarEmpty / U+E735 StarFilled).
     /// Authority: WinUI 3 RatingControl_themeresources.xaml + RatingControl.xaml.
-    /// Brush states: <c language="xaml">AccentFillColorDefaultBrush</c> (filled),
-    /// <c language="xaml">TextFillColorSecondaryBrush</c> (unset), <c language="xaml">TextFillColorDisabledBrush</c> (disabled).
+    /// Brush states: <c language="xaml">AccentFillColorDefaultBrush</c> (set, and while hovering to preview a
+    /// higher rating, still-set stars at or below the current value), <c language="xaml">ControlAltFillColorTertiaryBrush</c>
+    /// (the hover-preview stars above the current value), <c language="xaml">TextFillColorSecondaryBrush</c> (unset),
+    /// <c language="xaml">TextFillColorDisabledBrush</c> (disabled, set stars only - disabled unset stars stay
+    /// TextFillColorSecondaryBrush).
     /// </summary>
     [TemplatePart(Name = PART_StarsPanel, Type = typeof(System.Windows.Controls.StackPanel))]
     [TemplatePart(Name = PART_Caption, Type = typeof(System.Windows.Controls.TextBlock))]
@@ -304,7 +307,9 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            int displayCount = _hoverIndex > 0 ? _hoverIndex : (int)Math.Round(Value, MidpointRounding.ToEven);
+            int committedCount = (int)Math.Round(Value, MidpointRounding.ToEven);
+            int displayCount = _hoverIndex > 0 ? _hoverIndex : committedCount;
+            bool isHovering = _hoverIndex > 0;
             for (int i = 0; i < _starsPanel.Children.Count; i++)
             {
                 if (_starsPanel.Children[i] is not System.Windows.Controls.TextBlock star)
@@ -316,7 +321,18 @@ namespace Fluence.Wpf.Controls
                 star.Text = filled ? "\uE735" : "\uE734"; // StarFilled / StarEmpty
                 if (!IsEnabled)
                 {
-                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "TextFillColorDisabledBrush");
+                    // WinUI parity: RatingControlDisabledSelectedForeground dims only the set
+                    // stars; unset stars keep the ordinary TextFillColorSecondaryBrush.
+                    star.SetResourceReference(
+                        System.Windows.Controls.TextBlock.ForegroundProperty,
+                        filled ? "TextFillColorDisabledBrush" : "TextFillColorSecondaryBrush");
+                }
+                else if (filled && isHovering && (i + 1) > committedCount)
+                {
+                    // WinUI parity: RatingControlPointerOverUnselectedForeground previews the
+                    // stars a hover would add above the committed value; RatingControlPointerOverSelectedForeground
+                    // (same accent brush as Set) is used for filled stars already at or below it.
+                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "ControlAltFillColorTertiaryBrush");
                 }
                 else if (filled)
                 {

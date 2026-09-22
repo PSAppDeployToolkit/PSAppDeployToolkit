@@ -4,15 +4,15 @@
     ".NETFramework,Version=v4.7.2": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.200, )",
-        "resolved": "3.0.200",
-        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+        "requested": "[3.0.264, )",
+        "resolved": "3.0.264",
+        "contentHash": "6/w8WEGjJuzdWvmYB5pbGvCx5jV5OP3UQ4ats15cUAbBWTRUkoHx7IRoAUi82Vj0WZd8KvBqE9/3ed3J8594nQ=="
       },
       "Meziantou.Polyfill": {
         "type": "Direct",
-        "requested": "[1.0.164, )",
-        "resolved": "1.0.164",
-        "contentHash": "s7MyUOVqnFL3qa3Ed0OUR3HYNwYbnK7cQghrmppXLdrESLBHKdxGa7zJtrac7QJHxPQOQWuwGUvGaVxj9PGX4g=="
+        "requested": "[1.0.165, )",
+        "resolved": "1.0.165",
+        "contentHash": "u9G8kjxS76T2Uve2r8t1kp7Kmexkx0knswAp+Pxcz1abqkzOfuk9ka54rRJInsG77v2S2cI+OVIVUOAh1X/OPA=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -22,9 +22,9 @@
       },
       "Microsoft.Extensions.StaticAnalysis": {
         "type": "Direct",
-        "requested": "[10.9.0, )",
-        "resolved": "10.9.0",
-        "contentHash": "nr/qlyyeJI+NTEQ9DbWBwK0bZcmztw9N6lIwhKlANaZLH/LGf5G1T2kgOcPyE/w9viYu/+54gq/J8p8zpbKyAg==",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "MnUBTyalxH+t/6n/Kt6nuYGVFfJY9eGtBZ5P2gQNx2yRtPCec/jeiN+PCm16zpl+q3mdf/xEqoO/J3KBioMRCQ==",
         "dependencies": {
           "Microsoft.VisualStudio.Threading.Analyzers": "17.14.15",
           "SonarAnalyzer.CSharp": "10.16.0.128591"
@@ -78,16 +78,16 @@
       "fluence.wpf": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Bcl.Memory": "[10.0.11, )",
+          "Microsoft.Bcl.Memory": "[10.0.12, )",
           "System.Memory": "[4.6.3, )",
           "System.Runtime.CompilerServices.Unsafe": "[6.1.2, )"
         }
       },
       "Microsoft.Bcl.Memory": {
         "type": "CentralTransitive",
-        "requested": "[10.0.11, )",
-        "resolved": "10.0.11",
-        "contentHash": "gOK5j94niQhCvUXA5sXn/h4khL0ZHPlKZx//SJ9pwuydpWSDIPBpduLWty5MYMEJkWs/ewYbG1LAqfPLOprDgg==",
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "nFYTvCdZYqQnSKzhw3V1wWjESFrN8sYk1WAXYQSAkC0vDoHYySouF569g/hx9RzUXiZjTWxZR7gr7zDodG+Ufg==",
         "dependencies": {
           "System.Memory": "4.6.3",
           "System.Runtime.CompilerServices.Unsafe": "6.1.2",
@@ -115,9 +115,9 @@
     "net10.0-windows10.0.26100": {
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.200, )",
-        "resolved": "3.0.200",
-        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+        "requested": "[3.0.264, )",
+        "resolved": "3.0.264",
+        "contentHash": "6/w8WEGjJuzdWvmYB5pbGvCx5jV5OP3UQ4ats15cUAbBWTRUkoHx7IRoAUi82Vj0WZd8KvBqE9/3ed3J8594nQ=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -127,9 +127,9 @@
       },
       "Microsoft.Extensions.StaticAnalysis": {
         "type": "Direct",
-        "requested": "[10.9.0, )",
-        "resolved": "10.9.0",
-        "contentHash": "nr/qlyyeJI+NTEQ9DbWBwK0bZcmztw9N6lIwhKlANaZLH/LGf5G1T2kgOcPyE/w9viYu/+54gq/J8p8zpbKyAg==",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "MnUBTyalxH+t/6n/Kt6nuYGVFfJY9eGtBZ5P2gQNx2yRtPCec/jeiN+PCm16zpl+q3mdf/xEqoO/J3KBioMRCQ==",
         "dependencies": {
           "Microsoft.VisualStudio.Threading.Analyzers": "17.14.15",
           "SonarAnalyzer.CSharp": "10.16.0.128591"

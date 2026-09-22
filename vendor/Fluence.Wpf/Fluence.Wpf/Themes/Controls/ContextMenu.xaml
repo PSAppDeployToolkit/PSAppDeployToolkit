@@ -8,31 +8,40 @@
         Authority: WinUI 3 MenuFlyout_themeresources.xaml (brush keys, item heights, padding).
         Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
         FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
-        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
-        sizes a popup window about 15 px larger per side than its child.
+        effect is not on the surface itself. WPF sizes a popup HWND to exactly its child's layout
+        size, with no reserved gutter of any kind, so the root menu's template Grid carries a 16px
+        transparent margin and the ContextMenu style pulls the popup back by the same amount with
+        HorizontalOffset and VerticalOffset setters of -16 (WPF owns the root context menu's popup,
+        so those setters are the only handle into it). A submenu is a popup too and gets the same
+        16px margin on its own Grid and the same offsets on its own PART_Popup.
     -->
 
     <!--  ═══════════════════════════════════════════════════════════  -->
     <!--  ContextMenu container  -->
     <!--  ═══════════════════════════════════════════════════════════  -->
     <Style TargetType="{x:Type controls:ContextMenu}">
-        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="HorizontalOffset" Value="-16" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ContextMenu}">
-                    <Grid>
+                    <Grid Margin="16">
                         <!--
                             The elevation is cast by an empty sibling painted behind the surface,
                             because WPF drops ClearType for every text run under an Effect and the
-                            surface opts into it. No layout gutter is needed: PopupRoot already sizes
-                            a popup window about 15 px larger per side than its child, which is more
-                            than FlyoutShadowEffect bleeds.
+                            surface opts into it. This Grid's 16px margin is the popup's shadow
+                            gutter: WPF sizes a popup HWND to exactly its child's layout size, so
+                            without it the effect is clipped to the plate and only the corner
+                            notches survive. The style's HorizontalOffset and VerticalOffset of -16
+                            pull the popup back so the plate keeps its position. A consumer's own
+                            ContextMenuService.HorizontalOffset or ContextMenuService.VerticalOffset
+                            set on the owner element wins over these style setters and shifts the
+                            plate by that much.
                         -->
                         <Border
                             x:Name="ShadowCaster"
@@ -44,7 +53,7 @@
                         <Border
                             x:Name="MenuSurface"
                             MinWidth="180"
-                            Padding="2"
+                            Padding="0,2,0,2"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -60,6 +69,7 @@
             </Setter.Value>
         </Setter>
         <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalOffset" Value="-16" />
     </Style>
 
     <!--  ═══════════════════════════════════════════════════════════  -->
@@ -77,41 +87,49 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:MenuItem}">
+                    <!--
+                        WinUI MenuFlyoutItemMargin = 4,2,4,2 and MenuFlyoutItemThemePaddingNarrow =
+                        11,4,11,5 (MenuFlyout_themeresources_perf2026.xaml lines 259 and 261). The
+                        narrow padding is the one WinUI applies for pen, mouse and keyboard, which
+                        is every case a desktop app sees; the wider 11,8,11,9 is the touch variant.
+                    -->
                     <Border
                         x:Name="Bd"
-                        Margin="2,1"
+                        Margin="4,2,4,2"
                         Background="{TemplateBinding Background}"
                         CornerRadius="{DynamicResource ControlCornerRadius}">
-                        <Grid MinHeight="32" Margin="4,0">
+                        <Grid x:Name="ContentGrid" Margin="11,4,11,5">
                             <Grid.ColumnDefinitions>
                                 <!--  Icon / checkmark - shared-size keeps all items aligned  -->
-                                <ColumnDefinition Width="20" SharedSizeGroup="MenuIconCol" />
+                                <ColumnDefinition x:Name="IconColumn" Width="20" SharedSizeGroup="MenuIconCol" />
                                 <!--  Gap  -->
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition x:Name="GapColumn" Width="8" />
                                 <!--  Header text  -->
                                 <ColumnDefinition Width="*" />
                                 <!--  Keyboard shortcut  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition x:Name="GestureColumn" Width="Auto" />
                                 <!--  Gap + submenu arrow  -->
-                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition x:Name="ChevronColumn" Width="20" />
                             </Grid.ColumnDefinitions>
 
                             <!--  Submenu popup  -->
                             <Popup
                                 x:Name="PART_Popup"
                                 AllowsTransparency="True"
+                                HorizontalOffset="-16"
+                                VerticalOffset="-16"
                                 Focusable="False"
                                 IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
                                 Placement="Right"
                                 PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                                 PopupAnimation="None">
                                 <!--  SubMenuBorder: slide-in from X=-8 on open (167ms ControlFastOutSlowIn).  -->
-                                <Grid>
-                                    <!--  Elevation caster, as on the root menu. A submenu is a popup too and gets the same shadow; it shares the slide transform so the shadow travels with it.  -->
+                                <Grid Margin="16">
+                                    <!--  Elevation caster, as on the root menu. A submenu is a popup too and gets the same shadow; it shares the slide transform so the shadow travels with it. This Grid's 16px margin is the same shadow gutter the root menu carries, and PART_Popup's HorizontalOffset and VerticalOffset of -16 pull it back so the plate keeps its position.  -->
                                     <Border
                                         x:Name="SubMenuShadowCaster"
                                         MinWidth="180"
-                                        Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                        Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                                         CornerRadius="{DynamicResource OverlayCornerRadius}"
                                         Effect="{DynamicResource FlyoutShadowEffect}"
                                         RenderTransform="{Binding RenderTransform, ElementName=SubMenuBorder}"
@@ -119,8 +137,8 @@
                                     <Border
                                         x:Name="SubMenuBorder"
                                         MinWidth="180"
-                                        Padding="2"
-                                        Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                        Padding="0,2,0,2"
+                                        Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                                         BorderThickness="1"
                                         CornerRadius="{DynamicResource OverlayCornerRadius}"
@@ -143,8 +161,8 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 FontFamily="Segoe Fluent Icons"
-                                FontSize="14"
-                                Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                                FontSize="12"
+                                Foreground="{TemplateBinding Foreground}"
                                 Text="&#xE73E;"
                                 Visibility="Collapsed" />
 
@@ -181,7 +199,7 @@
                             <TextBlock
                                 x:Name="InputGestureText"
                                 Grid.Column="3"
-                                Margin="16,0,4,0"
+                                Margin="24,0,0,0"
                                 VerticalAlignment="Center"
                                 FontFamily="{TemplateBinding FontFamily}"
                                 FontSize="12"
@@ -197,7 +215,7 @@
                                 FontFamily="Segoe Fluent Icons"
                                 FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="&#xE76C;"
+                                Text="&#xE974;"
                                 Visibility="Collapsed" />
                         </Grid>
                     </Border>
@@ -212,7 +230,7 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SubMenuTranslate" Storyboard.TargetProperty="X">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -244,6 +262,50 @@
                         <Trigger Property="Role" Value="TopLevelHeader">
                             <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom" />
                         </Trigger>
+                        <!--
+                            TopLevelHeader / TopLevelItem: item is a direct child of Menu (the
+                            horizontal bar), so it renders label-only. The icon/checkmark, gap,
+                            input-gesture and chevron columns a flyout item needs are collapsed to
+                            zero width, and the box model switches from the flyout item's own
+                            Bd Margin (4,2,4,2) plus ContentGrid Margin (11,4,11,5) to the WinUI
+                            MenuBarItem
+                            metrics, applied directly on Bd so nothing else shifts them.
+                            Authority: WinUI 3 MenuBar_themeresources.xaml -
+                            MenuBarItemButtonPadding = 10,4,10,4, MenuBarItemMargin = 4,4,4,4
+                            (MenuBarHeight = 40 is set as MinHeight on the Menu style in Menu.xaml).
+                        -->
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="Bd" Property="Margin" Value="4,4,4,4" />
+                            <Setter TargetName="Bd" Property="Padding" Value="10,4,10,4" />
+                            <Setter TargetName="ContentGrid" Property="Margin" Value="0" />
+                            <Setter TargetName="IconColumn" Property="Width" Value="0" />
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                            <Setter TargetName="GestureColumn" Property="Width" Value="0" />
+                            <Setter TargetName="ChevronColumn" Property="Width" Value="0" />
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelItem">
+                            <Setter TargetName="Bd" Property="Margin" Value="4,4,4,4" />
+                            <Setter TargetName="Bd" Property="Padding" Value="10,4,10,4" />
+                            <Setter TargetName="ContentGrid" Property="Margin" Value="0" />
+                            <Setter TargetName="IconColumn" Property="Width" Value="0" />
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                            <Setter TargetName="GestureColumn" Property="Width" Value="0" />
+                            <Setter TargetName="ChevronColumn" Property="Width" Value="0" />
+                        </Trigger>
+                        <!--
+                            Top-level menu bar item: keep the pressed-style plate while its dropdown
+                            stays open, even after the mouse leaves into the popup and IsHighlighted
+                            drops. Authority: WinUI 3 MenuBarItem's "Selected" visual state
+                            (MenuBarItem.xaml:47-52) backed by MenuBarItemBackgroundSelected =
+                            SubtleFillColorTertiaryBrush (MenuBar_themeresources.xaml:10).
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Role" Value="TopLevelHeader" />
+                                <Condition Property="IsSubmenuOpen" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </MultiTrigger>
                         <!--  Show checkmark when checked and no custom icon  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -266,10 +328,19 @@
     <!--  ═══════════════════════════════════════════════════════════  -->
     <!--  Separator  -->
     <!--  ═══════════════════════════════════════════════════════════  -->
-    <Style TargetType="{x:Type Separator}">
+    <!--
+        Full-bleed: cancels the MenuItem's own 4,2,4,2 left/right margin so the separator line
+        spans edge to edge instead of sitting inset like a menu item. With the item margin at
+        WinUI's own value, WinUI's MenuFlyoutSeparatorThemePadding of -4,1,-4,1
+        (MenuFlyout_themeresources_perf2026.xaml line 258) carries over literally. Keyed to MenuItem.SeparatorStyleKey - the resource key WPF
+        looks up for a Separator added directly to a Menu/ContextMenu's Items - rather than an
+        implicit TargetType="Separator" style, so a Separator used outside a menu (a ToolBar, say)
+        is unaffected.
+    -->
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="{x:Type Separator}">
         <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
         <Setter Property="Height" Value="1" />
-        <Setter Property="Margin" Value="4,2" />
+        <Setter Property="Margin" Value="-4,1,-4,1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Separator}">

@@ -27,6 +27,7 @@
  */
 
 using System.Collections;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -113,6 +114,52 @@ namespace Fluence.Wpf.Controls
             if (element is TreeViewItem treeViewItem)
             {
                 treeViewItem.CoerceSelectionForOwner(this);
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsChanged(e);
+            ReconcileSelectionAfterItemsChanged(parent: null, e);
+        }
+
+        /// <summary>
+        /// Reconciles the live selection after a root or child collection changes, using
+        /// only its existing containers. Does not expand or realize any tree branch.
+        /// </summary>
+        /// <param name="parent">The changed child collection's owner, or null for the root.</param>
+        /// <param name="e">The collection change to reconcile.</param>
+        internal void ReconcileSelectionAfterItemsChanged(TreeViewItem? parent, NotifyCollectionChangedEventArgs e)
+        {
+            if (SelectionMode is not TreeViewSelectionMode.Multiple || _updatingSelectionChecks)
+            {
+                return;
+            }
+
+            // An unchecked addition cannot remove a selection or change an unchecked parent.
+            // Inspect only the added subtree instead of walking every existing root on each add.
+            if (e.Action is NotifyCollectionChangedAction.Add
+                && (parent is null || parent.IsSelectionChecked is false)
+                && e.NewItems is { } addedItems
+                && !ContainsSelectionState(parent ?? (ItemsControl)this, addedItems))
+            {
+                return;
+            }
+
+            _updatingSelectionChecks = true;
+            try
+            {
+                if (parent is not null)
+                {
+                    parent.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, GetChildSelectionState(parent));
+                    UpdateAncestorSelectionStates(parent);
+                }
+                RebuildMultipleSelectedItems();
+            }
+            finally
+            {
+                _updatingSelectionChecks = false;
             }
         }
 
@@ -353,11 +400,27 @@ namespace Fluence.Wpf.Controls
 
             return childCount switch
             {
-                0 => false,
+                0 => parent.Items.Count is 0 ? false : parent.IsSelectionChecked,
                 _ when checkedCount == childCount => true,
                 _ when checkedCount is 0 && !hasPartialChild => false,
                 _ => null,
             };
+        }
+
+        private static bool ContainsSelectionState(ItemsControl owner, IList items)
+        {
+            foreach (object item in items)
+            {
+                TreeViewItem? container = item as TreeViewItem
+                    ?? owner.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                if (container is not null
+                    && (container.IsSelectionChecked is not false || ContainsSelectionState(container, container.Items)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void RebuildMultipleSelectedItems()

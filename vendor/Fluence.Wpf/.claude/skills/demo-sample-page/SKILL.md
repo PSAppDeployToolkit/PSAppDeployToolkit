@@ -19,7 +19,7 @@ Scaffold a `Fluence.Wpf.Demo` sample page so it conforms to AGENTS.md section 14
 ```
 ScrollViewer
   StackPanel (page root)
-    TextBlock  - Page name           [Title typography]
+    GalleryPageHeader              [title row, then Documentation / Source drop-downs and theme, copy-link, favorite]
     TextBlock  - Page description    [Body, secondary foreground]
     for each sample:
       DemoSampleControl

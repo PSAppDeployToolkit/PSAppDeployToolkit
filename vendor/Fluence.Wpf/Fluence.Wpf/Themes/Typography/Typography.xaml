@@ -16,12 +16,21 @@
     <sys:TimeSpan x:Key="ControlFastAnimationDuration">0:0:0.167</sys:TimeSpan>
     <sys:TimeSpan x:Key="ControlNormalAnimationDuration">0:0:0.250</sys:TimeSpan>
     <sys:TimeSpan x:Key="ControlSlowAnimationDuration">0:0:0.333</sys:TimeSpan>
-    <!--  Canonical WinUI 3 / .NET 10 WPF decelerate curve: P1=(0,0), P2=(0,1).  -->
-    <KeySpline x:Key="ControlFastOutSlowInKeySpline">0.8,0,0,1</KeySpline>
+    <!--  Canonical WinUI 3 decelerate curve: P1=(0,0), P2=(0,1)
+         (Common_themeresources_any.xaml ControlFastOutSlowInKeySpline).  -->
+    <KeySpline x:Key="ControlFastOutSlowInKeySpline">0,0,0,1</KeySpline>
 
     <!--  Windows 11 Fluent - Typography layer  -->
     <!--  Prefer Display typography for large/small optical sizes; fall back when not installed.  -->
 
+    <!--
+        Two keys, one family. ContentControlThemeFontFamily is the WinUI name and is the
+        preferred key for new code. FluentFontFamily is the original Fluence name and is
+        consumed downstream through DynamicResource, where a rename fails silently, so it
+        ships for the life of 1.x. The two literals are kept in step by
+        ResourceAliasTests.FontFamilyAlias_ResolvesToTheSameFamily; edit both together.
+    -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI Variable Display, Segoe UI Variable, Segoe UI</FontFamily>
     <FontFamily x:Key="FluentFontFamily">Segoe UI Variable Display, Segoe UI Variable, Segoe UI</FontFamily>
 
     <!--

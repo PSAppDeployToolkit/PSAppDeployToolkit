@@ -38,9 +38,14 @@ namespace Fluence.Wpf.Demo.Pages
     /// <summary>
     /// Settings page for the demo shell.
     /// </summary>
-    public partial class GallerySettingsPage : UserControl
+    public partial class GallerySettingsPage : Page
     {
-        private const double PageHorizontalMargin = 72.0;
+        // The page-level horizontal inset (DemoPageContentMargin) now lives on the outer
+        // PageContentGrid via GalleryPageContentGridStyle, so SettingsScrollViewer.ActualWidth
+        // is already net of that margin, and the host borrows the scrollbar rail back out of it
+        // (DemoPageScrollHostMargin). This constant only needs the scrolling StackPanel's own
+        // right-hand gutter (DemoPageScrollContentMargin = 0,0,44,48); only its horizontal part matters here.
+        private const double PageHorizontalMargin = 44.0;
         private const double PageMaxWidth = 1064.0;
         private const double CompactSettingsWidth = 640.0;
         private const double RegularPickerWidth = 240.0;
@@ -82,6 +87,13 @@ namespace Fluence.Wpf.Demo.Pages
                 owner.DemoNavigationPaneStateChanged += Owner_DemoNavigationPaneStateChanged;
             }
 
+            // The gallery page header's theme toggle changes the theme through
+            // ApplicationThemeManager.Apply directly, bypassing AppThemeComboBox_SelectionChanged.
+            // Subscribing here (and unsubscribing on Unloaded, never in the constructor, see
+            // AGENTS.md section 9) keeps the combo in sync with an external theme change.
+            ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
+            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
+
             UpdatePageContentWidth(SettingsScrollViewer.ActualWidth);
             SyncSelections();
             UpdateThemeStateLabel(ApplicationThemeManager.CurrentTheme);
@@ -95,11 +107,29 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 owner.DemoNavigationPaneStateChanged -= Owner_DemoNavigationPaneStateChanged;
             }
+
+            ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
         }
 
         private void Owner_DemoNavigationPaneStateChanged(object? sender, EventArgs e)
         {
             SyncSelections();
+        }
+
+        private void ApplicationThemeManager_Changed(object? sender, ThemeChangedEventArgs e)
+        {
+            // Re-entrant guard: selecting the combo item here must not fire
+            // AppThemeComboBox_SelectionChanged back into ApplicationThemeManager.Apply.
+            _syncing = true;
+            try
+            {
+                SelectComboItemByTag(AppThemeComboBox, GetCurrentThemeOption());
+                UpdateThemeStateLabel(ApplicationThemeManager.CurrentTheme);
+            }
+            finally
+            {
+                _syncing = false;
+            }
         }
 
         private void SettingsScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -197,11 +227,11 @@ namespace Fluence.Wpf.Demo.Pages
         {
             return _owner?.SystemBackdropType switch
             {
-                BackdropType.Auto => SettingsBackdropOption.Auto,
-                BackdropType.Mica => SettingsBackdropOption.Mica,
-                BackdropType.Acrylic => SettingsBackdropOption.Acrylic,
-                BackdropType.Tabbed => SettingsBackdropOption.Tabbed,
-                BackdropType.None => SettingsBackdropOption.None,
+                WindowBackdropType.Auto => SettingsBackdropOption.Auto,
+                WindowBackdropType.Mica => SettingsBackdropOption.Mica,
+                WindowBackdropType.Acrylic => SettingsBackdropOption.Acrylic,
+                WindowBackdropType.Tabbed => SettingsBackdropOption.Tabbed,
+                WindowBackdropType.None => SettingsBackdropOption.None,
                 null => SettingsBackdropOption.Auto,
                 _ => SettingsBackdropOption.Auto,
             };
@@ -209,12 +239,20 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void AppThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_syncing || GetSelectedTag(AppThemeComboBox) is not SettingsThemeOption option)
+            // Fluence's ComboBox auto-selects its first item as soon as its items are populated
+            // (see Controls/ComboBox.cs OnItemsChanged/TryAutoSelectFirstItem), which happens
+            // synchronously during InitializeComponent, before this page has loaded and before
+            // SyncSelections has run. Without the IsLoaded guard that auto-select fires this
+            // handler with "Use system setting" and forces ApplicationThemeManager.Apply(Auto, ...)
+            // on the very first construction of the page, silently discarding whatever theme was
+            // already in effect. NavigationStyleComboBox_SelectionChanged already guards the same
+            // way for the same reason.
+            if (!IsLoaded || _syncing || GetSelectedTag(AppThemeComboBox) is not SettingsThemeOption option)
             {
                 return;
             }
 
-            ApplicationThemeManager.Apply(MapTheme(option), _owner?.SystemBackdropType ?? BackdropType.Auto);
+            ApplicationThemeManager.Apply(MapTheme(option), _owner?.SystemBackdropType ?? WindowBackdropType.Auto);
             UpdateThemeStateLabel(ApplicationThemeManager.CurrentTheme);
         }
 
@@ -230,12 +268,15 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_syncing || GetSelectedTag(BackdropComboBox) is not SettingsBackdropOption option)
+            // Same construction-time auto-select hazard as AppThemeComboBox_SelectionChanged: guard
+            // with IsLoaded so the very first page construction cannot force the backdrop back to
+            // the first ComboBoxItem ("Auto") before SyncSelections has synced the real value.
+            if (!IsLoaded || _syncing || GetSelectedTag(BackdropComboBox) is not SettingsBackdropOption option)
             {
                 return;
             }
 
-            BackdropType backdrop = MapBackdrop(option);
+            WindowBackdropType backdrop = MapBackdrop(option);
             if (_owner is MainWindow owner)
             {
                 owner.SystemBackdropType = backdrop;
@@ -357,16 +398,16 @@ namespace Fluence.Wpf.Demo.Pages
             };
         }
 
-        private static BackdropType MapBackdrop(SettingsBackdropOption option)
+        private static WindowBackdropType MapBackdrop(SettingsBackdropOption option)
         {
             return option switch
             {
-                SettingsBackdropOption.Auto => BackdropType.Auto,
-                SettingsBackdropOption.Mica => BackdropType.Mica,
-                SettingsBackdropOption.Acrylic => BackdropType.Acrylic,
-                SettingsBackdropOption.Tabbed => BackdropType.Tabbed,
-                SettingsBackdropOption.None => BackdropType.None,
-                _ => BackdropType.Auto,
+                SettingsBackdropOption.Auto => WindowBackdropType.Auto,
+                SettingsBackdropOption.Mica => WindowBackdropType.Mica,
+                SettingsBackdropOption.Acrylic => WindowBackdropType.Acrylic,
+                SettingsBackdropOption.Tabbed => WindowBackdropType.Tabbed,
+                SettingsBackdropOption.None => WindowBackdropType.None,
+                _ => WindowBackdropType.Auto,
             };
         }
 

@@ -85,7 +85,7 @@ $projectRoot = Get-ProjectRoot
 
 # Extensions whose content this check inspects (line endings, banned APIs, dashes, hex).
 $extensions = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
-@(".cs", ".xaml", ".csproj", ".props", ".targets", ".sln", ".slnx", ".md", ".yml", ".yaml", ".json", ".ps1", ".psm1", ".psd1") | ForEach-Object { [void]$extensions.Add($_) }
+@(".cs", ".xaml", ".csproj", ".props", ".targets", ".sln", ".slnx", ".md", ".yml", ".yaml", ".json", ".ps1", ".psm1", ".psd1", ".ps1xml") | ForEach-Object { [void]$extensions.Add($_) }
 
 # UTF-8 BOM is mandated only for these source types (AGENTS.md section 2). Other tracked types
 # (.yml/.yaml/.json/.ps1/.psm1/.psd1/.sln/.slnx) are still checked for line endings and content,

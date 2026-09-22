@@ -47,11 +47,13 @@
     </Style>
 
     <!--
-        Line buttons. Brushes follow the WinUI ScrollBarButton* tokens exactly:
-        rest background SubtleFillColorTransparent with a ControlStrongFillColorDefault arrow,
-        hover SubtleFillColorSecondary with a TextFillColorSecondary arrow,
-        pressed ControlStrongFillColorDefault with a TextFillColorSecondary arrow and a 0.875 glyph scale,
-        disabled ControlStrongFillColorDisabled arrow.
+        Line buttons. WinUI's HorizontalIncrementTemplate / HorizontalDecrementTemplate (and their
+        vertical counterparts, ScrollBar_themeresources.xaml:227-248) only ever animate the Arrow
+        glyph's Foreground across PointerOver / Pressed / Disabled; the Root background stays
+        ScrollBarButtonBackground (SubtleFillColorTransparent) in every state, so there is no hover
+        or press plate here. Foreground: rest ControlStrongFillColorDefault, hover and pressed
+        TextFillColorSecondary (pressed also applies a 0.875 glyph scale), disabled
+        ControlStrongFillColorDisabled.
     -->
     <Style x:Key="ScrollBarLineButtonStyle" TargetType="{x:Type RepeatButton}">
         <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
@@ -78,11 +80,9 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                             <Setter TargetName="ArrowGlyph" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
                             <Setter TargetName="ArrowGlyph" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                             <Setter TargetName="ArrowGlyph" Property="RenderTransform">
                                 <Setter.Value>
@@ -104,7 +104,10 @@
         The thumb fill. WinUI uses one brush for rest, hover, and pressed (ScrollBarThumbFill,
         ScrollBarThumbFillPointerOver, and ScrollBarThumbFillPressed are all
         ControlStrongFillColorDefaultBrush), so there is deliberately no hover or press colour change
-        here; the only state change is the disabled swap to ControlStrongFillColorDisabledBrush.
+        here. Disabled swaps the fill to ControlStrongFillColorDisabledBrush and fades the thumb to
+        fully transparent (HorizontalThumbTemplate / VerticalThumbTemplate Disabled visual state,
+        ScrollBar_themeresources.xaml:404, :421), so a disabled ScrollBar shows no draggable thumb
+        at all rather than a grayed-out one.
         Size and placement come from the Thumb element in each bar template, not from this style,
         so one template serves both orientations.
     -->
@@ -121,6 +124,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                            <Setter TargetName="ThumbVisual" Property="Opacity" Value="0" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

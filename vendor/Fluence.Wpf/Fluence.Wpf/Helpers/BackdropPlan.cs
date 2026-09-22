@@ -38,7 +38,6 @@ namespace Fluence.Wpf.Helpers
     /// handle without re-querying the OS.
     /// </summary>
     /// <param name="effectiveBackdrop">The backdrop type that will actually be applied after capability downgrade.</param>
-    /// <param name="useTransparentBackground">Indicates whether the window's client background must be transparent.</param>
     /// <param name="backgroundColor">The color that should be set on both <c language="csharp">Window.Background</c> and <c language="csharp">HwndSource.CompositionTarget.BackgroundColor</c>.</param>
     /// <param name="captionColor">The value to write to <c language="csharp">DWMWA_CAPTION_COLOR</c>.</param>
     /// <param name="systemBackdropType">The <c language="csharp">DWMSBT_*</c> value to write via <c language="csharp">DWMWA_SYSTEMBACKDROP_TYPE</c>, or <see langword="null"/> when the OS does not expose that attribute.</param>
@@ -47,8 +46,7 @@ namespace Fluence.Wpf.Helpers
     /// <param name="useLegacyAcrylic">Indicates whether the legacy Windows 10 acrylic accent state should be applied.</param>
     /// <param name="legacyAcrylicTintColor">The tint color to hand to the legacy acrylic accent policy.</param>
     internal sealed class BackdropPlan(
-        BackdropType effectiveBackdrop,
-        bool useTransparentBackground,
+        WindowBackdropType effectiveBackdrop,
         Color backgroundColor,
         uint captionColor,
         DWM_SYSTEMBACKDROP_TYPE? systemBackdropType,
@@ -59,27 +57,19 @@ namespace Fluence.Wpf.Helpers
     {
         /// <summary>
         /// Gets the backdrop type that will actually be applied after capability downgrade. For
-        /// example, <see cref="BackdropType.Acrylic"/> on a pre-22H2 Windows 11 build resolves to
-        /// <see cref="BackdropType.Mica"/>. On Windows 10, <see cref="BackdropType.Acrylic"/> can
+        /// example, <see cref="WindowBackdropType.Acrylic"/> on a pre-22H2 Windows 11 build resolves to
+        /// <see cref="WindowBackdropType.Mica"/>. On Windows 10, <see cref="WindowBackdropType.Acrylic"/> can
         /// survive as itself through the legacy accent path (see <see cref="UseLegacyAcrylic"/>);
-        /// every other transparent backdrop there resolves to <see cref="BackdropType.None"/>.
+        /// every other transparent backdrop there resolves to <see cref="WindowBackdropType.None"/>.
         /// </summary>
-        internal BackdropType EffectiveBackdrop { get; } = effectiveBackdrop;
-
-        /// <summary>
-        /// Gets a value indicating whether the window's client background must be transparent.
-        /// <see langword="true"/> for any active DWM system backdrop (Mica, Acrylic, Tabbed);
-        /// <see langword="false"/> for <see cref="BackdropType.None"/>, which paints a solid
-        /// fallback color to avoid revealing the default-black redirection surface.
-        /// </summary>
-        internal bool UseTransparentBackground { get; } = useTransparentBackground;
+        internal WindowBackdropType EffectiveBackdrop { get; } = effectiveBackdrop;
 
         /// <summary>
         /// Gets the <see cref="Color"/> that should be set on both
         /// <c language="csharp">Window.Background</c> and <c language="csharp">HwndSource.CompositionTarget.BackgroundColor</c>.
         /// <see cref="Colors.Transparent"/> when a system backdrop is active;
         /// the theme fallback color when <see cref="EffectiveBackdrop"/> is
-        /// <see cref="BackdropType.None"/>.
+        /// <see cref="WindowBackdropType.None"/>.
         /// </summary>
         internal Color BackgroundColor { get; private set; } = backgroundColor;
 
@@ -88,7 +78,7 @@ namespace Fluence.Wpf.Helpers
         /// DWMWA_COLOR_NONE when a transparent
         /// backdrop is active (so the system backdrop shows through the caption strip);
         /// DWMWA_COLOR_DEFAULT for
-        /// <see cref="BackdropType.None"/> (leave the DWM default in place).
+        /// <see cref="WindowBackdropType.None"/> (leave the DWM default in place).
         /// </summary>
         internal uint CaptionColor { get; } = captionColor;
 
@@ -122,7 +112,7 @@ namespace Fluence.Wpf.Helpers
         /// (<c language="csharp">ACCENT_ENABLE_ACRYLICBLURBEHIND</c> written through the undocumented
         /// <c language="csharp">SetWindowCompositionAttribute</c>) should be applied. <see langword="true"/> only on
         /// a Windows 10 build that supports it, when the requested backdrop is
-        /// <see cref="BackdropType.Acrylic"/>, the OS transparency-effects toggle is on, and the
+        /// <see cref="WindowBackdropType.Acrylic"/>, the OS transparency-effects toggle is on, and the
         /// resolved theme is not high contrast. Mutually exclusive with both a non-null
         /// <see cref="SystemBackdropType"/> and <see cref="UseLegacyMicaEffect"/>: the legacy
         /// accent path is only reachable on builds that expose neither DWM attribute.

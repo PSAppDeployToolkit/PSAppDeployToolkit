@@ -3,19 +3,45 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
 
+    <!--
+        WinUI parity: the header and content tiers each round only the corners they occupy,
+        derived from the control's own CornerRadius rather than a hardcoded literal (WinUI
+        TopCornerRadiusFilterConverter / BottomCornerRadiusFilterConverter, Expander.xaml:35,64,98).
+        The same filter also trims BorderThickness so the seam edge shared between the two tiers
+        carries no doubled border. The two converter instances are public static IValueConverter
+        fields on the public Expander control class (controls:Expander.TopCornerRadiusFilter /
+        BottomCornerRadiusFilter), reached from XAML through x:Static rather than a keyed resource.
+        The converter type and its Edge enum stay internal to the assembly; the fields are typed
+        as the public IValueConverter interface (not the internal converter type) because these
+        x:Static sites sit inside deferred Setter.Value / ControlTemplate content, which WPF
+        re-resolves at runtime through StaticExtension's public-only reflection, and an internal
+        field cannot be reached that way.
+    -->
+
     <Style x:Key="ExpanderHeaderToggleButton" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Background" Value="Transparent" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="16,11" />
+        <!--  WinUI ExpanderMinHeight 48 and ExpanderHeaderPadding 16,0,0,0 (Expander_themeresources.xaml:77,80). The header takes no vertical padding of its own: the 48 dip minimum and a centred row are what give it its height, and the chevron plate's own 32 dip square sits inside that.  -->
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="Padding" Value="16,0,0,0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <!--
+                        WinUI parity (Expander_themeresources.xaml:6, :9-14): the header owns its own
+                        CardBackground fill and 1px CardStroke border rather than sharing an outer card
+                        border with the content. Closed, it is the whole card and takes the control's
+                        CornerRadius whole (Expander.xaml:111); only an open expander clips the header
+                        to the two corners it still occupies, through the IsChecked triggers below,
+                        which is WinUI's ExpandDown and ExpandUp states (Expander.xaml:35,64).
+                    -->
                     <Border
                         x:Name="HeaderBorder"
                         Background="{TemplateBinding Background}"
-                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type controls:Expander}}}">
                         <Grid Margin="{TemplateBinding Padding}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -29,12 +55,20 @@
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <!--
+                                WinUI parity: the hover/pressed tint lives on the 32x32 chevron plate
+                                (ExpanderChevronButtonSize/Margin, Expander_themeresources.xaml:84-85),
+                                not on the header row, which never tints (:15-17).
+                            -->
                             <Border
+                                x:Name="ChevronPlate"
                                 Grid.Column="1"
-                                Width="20"
-                                Height="20"
-                                Margin="8,0,0,0"
+                                Width="32"
+                                Height="32"
+                                Margin="20,0,8,0"
                                 VerticalAlignment="Center"
+                                Background="{DynamicResource SubtleFillColorTransparentBrush}"
+                                CornerRadius="{DynamicResource ControlCornerRadius}"
                                 RenderTransformOrigin="0.5,0.5">
                                 <Border.RenderTransform>
                                     <RotateTransform x:Name="ChevronRotation" Angle="0" />
@@ -46,7 +80,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Data="M 2,4.5 L 6,8.5 L 10,4.5"
-                                    Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Stroke="{DynamicResource TextFillColorPrimaryBrush}"
                                     StrokeEndLineCap="Round"
                                     StrokeLineJoin="Round"
                                     StrokeStartLineCap="Round"
@@ -56,19 +90,19 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="ChevronPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter TargetName="ChevronPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                         </Trigger>
-                        <!--  WI-3 B13: WinUI canonical chevron easing - ControlFastOutSlowIn (0.8,0,0,1), 167ms  -->
+                        <!--  WI-3 B13: WinUI canonical chevron easing - ControlFastOutSlowIn (0,0,0,1), 167ms  -->
                         <Trigger Property="IsChecked" Value="True">
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotation" Storyboard.TargetProperty="Angle">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="180" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -80,7 +114,7 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotation" Storyboard.TargetProperty="Angle">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.167"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -88,13 +122,26 @@
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
+                        <!--  WinUI parity: ExpanderHeaderDisabledForeground dims text/chevron only; ExpanderHeaderDisabledBorderBrush (Expander_themeresources.xaml:13) is the same CardStrokeColorDefaultBrush as rest, so the header keeps its CardBackground/CardStroke instead of swapping to a ControlFill disabled look.  -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="Chevron" Property="Stroke" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </Trigger>
+                        <!--  ExpandDirection=Up mirrors the chevron; the corner mirror is in the open-state trigger below, since a closed header keeps the whole radius either way.  -->
                         <Trigger Property="Tag" Value="Up">
                             <Setter TargetName="Chevron" Property="Data" Value="M 2,8.5 L 6,4.5 L 10,8.5" />
                         </Trigger>
+                        <!--  Open, the content tier owns the far corners, so the header gives them up: the top pair for ExpandDirection=Down, the bottom pair for Up (WinUI ExpandDown / ExpandUp, Expander.xaml:35,64). The Up case follows this one so it wins.  -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type controls:Expander}}, Converter={x:Static controls:Expander.TopCornerRadiusFilter}}" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="Tag" Value="Up" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="HeaderBorder" Property="CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type controls:Expander}}, Converter={x:Static controls:Expander.BottomCornerRadiusFilter}}" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -103,30 +150,40 @@
     </Style>
 
     <Style TargetType="{x:Type controls:Expander}">
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <!--  Background is the content tier's fill, which is where WinUI's Expander paints it (Expander.xaml:114). The header tier has its own HeaderBackground, WinUI's ExpanderHeaderBackground, and never takes this one.  -->
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+        <!--  WinUI ExpanderHeaderBackground (Expander_themeresources.xaml:5 Default, :29 Light), surfaced as a property so a consumer can recolour the header tier without retemplating.  -->
+        <Setter Property="HeaderBackground" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <!--  WinUI ExpanderMinHeight 48 and ExpanderContentPadding 16 are set on the control and template-bound into both tiers, so a consumer retunes either one from the control (Expander.xaml:20,23,111,114).  -->
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="Padding" Value="16" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:Expander}">
-                    <Border
-                        x:Name="RootBorder"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <!--
+                        WinUI's Expander has no single outer card border: the header and the content
+                        each own their own CardBackground fill and CardStroke border (see
+                        ExpanderHeaderToggleButton and PART_ContentBorder below), so RootBorder is a
+                        plain, undecorated layout host here - a real Border only because
+                        DictionaryStabilityTests-style template-root checks expect one.
+                    -->
+                    <Border x:Name="RootBorder">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="Row0Def" Height="Auto" />
                                 <RowDefinition x:Name="Row1Def" Height="0" />
                             </Grid.RowDefinitions>
 
+                            <!--  The header tier paints HeaderBackground, WinUI's ExpanderHeaderBackground, which WinUI keys separately from the control's Background: that one belongs to the content tier (Expander_themeresources.xaml:5,29, Expander.xaml:111,114).  -->
                             <ToggleButton
                                 x:Name="PART_ToggleButton"
                                 Grid.Row="0"
+                                Background="{TemplateBinding HeaderBackground}"
                                 Content="{TemplateBinding Header}"
                                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
@@ -134,16 +191,28 @@
                                 FontSize="{TemplateBinding FontSize}"
                                 Foreground="{TemplateBinding Foreground}"
                                 IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                MinHeight="{TemplateBinding MinHeight}"
                                 OverridesDefaultStyle="True"
                                 Style="{StaticResource ExpanderHeaderToggleButton}" />
 
+                            <!--
+                                WinUI parity (Expander_themeresources.xaml:24-26, :87): the content tier
+                                carries its own CardBackgroundFillColorSecondary fill and a CardStroke
+                                border that skips the edge shared with the header, so the two tiers read
+                                as a single seam rather than a doubled line.
+                            -->
                             <Border
                                 x:Name="PART_ContentBorder"
                                 Grid.Row="1"
-                                ClipToBounds="True">
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static controls:Expander.BottomCornerRadiusFilter}}"
+                                ClipToBounds="True"
+                                CornerRadius="{TemplateBinding CornerRadius, Converter={x:Static controls:Expander.BottomCornerRadiusFilter}}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                Padding="{TemplateBinding Padding}">
                                 <ContentPresenter
                                     x:Name="ExpandSite"
-                                    Margin="16,0,16,16"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     Focusable="False" />
@@ -154,16 +223,18 @@
                         <!--
                             Row heights are owned end-to-end by Expander.cs (steady state and the
                             WinUI content slide); only the row placement swap stays declarative.
+                            Expanding up mirrors both tiers: content moves to the top row and gains the
+                            top corners plus the border edge it now shares with nothing, while the header
+                            (Tag="Up" trigger in ExpanderHeaderToggleButton) mirrors to the bottom corners.
                         -->
                         <Trigger Property="ExpandDirection" Value="Up">
                             <Setter TargetName="PART_ToggleButton" Property="Grid.Row" Value="1" />
                             <Setter TargetName="PART_ContentBorder" Property="Grid.Row" Value="0" />
-                            <Setter TargetName="ExpandSite" Property="Margin" Value="16,16,16,0" />
+                            <Setter TargetName="PART_ContentBorder" Property="BorderThickness" Value="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static controls:Expander.TopCornerRadiusFilter}}" />
+                            <Setter TargetName="PART_ContentBorder" Property="CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static controls:Expander.TopCornerRadiusFilter}}" />
                             <Setter TargetName="PART_ToggleButton" Property="Tag" Value="Up" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                            <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>

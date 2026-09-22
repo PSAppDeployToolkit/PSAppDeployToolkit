@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Helpers
     /// preserves <see cref="GridUnitType.Pixel"/>, which is sufficient for navigation
     /// pane expand / collapse transitions.
     /// </remarks>
-    public class GridLengthAnimation : AnimationTimeline
+    internal sealed class GridLengthAnimation : AnimationTimeline
     {
         /// <summary>
         /// Identifies the <see cref="From"/> dependency property. A sentinel

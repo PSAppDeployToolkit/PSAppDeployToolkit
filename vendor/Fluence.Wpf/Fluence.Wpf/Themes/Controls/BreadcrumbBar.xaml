@@ -12,12 +12,16 @@
         Crumb foreground follows the WinUI BreadcrumbBar ramp: rest TextFillColorPrimaryBrush
         (BreadcrumbBarNormalForegroundBrush), hover TextFillColorSecondaryBrush
         (BreadcrumbBarHoverForegroundBrush), press TextFillColorTertiaryBrush
-        (BreadcrumbBarPressedForegroundBrush) over a subtle fill plate, matching the in-tree
-        Button/HyperlinkButton subtle states. The current (last) crumb hides its chevron and
-        renders TextFillColorPrimaryBrush (BreadcrumbBarCurrentNormalForegroundBrush); its
-        SemiBold weight is a deliberate owner deviation (WinUI uses BreadcrumbBarItemFontWeight
-        Normal). WinUI's 1,3 content padding is widened to 4,3 so the subtle hover plate clears
-        the text.
+        (BreadcrumbBarPressedForegroundBrush). WinUI paints no hover or pressed plate on a crumb
+        (BreadcrumbBar.xaml:197, :211 upstream both set PART_ContentPresenter.Background back to
+        the same transparent BreadcrumbBarBackgroundBrush used at rest), so only the foreground
+        changes; there is no subtle fill here. The current (last) crumb hides its chevron and
+        renders TextFillColorPrimaryBrush at rest (BreadcrumbBarCurrentNormalForegroundBrush),
+        TextFillColorSecondaryBrush on hover, and TextFillColorTertiaryBrush pressed
+        (BreadcrumbBarCurrentHoverForegroundBrush / CurrentPressedForegroundBrush,
+        BreadcrumbBar_themeresources.xaml:15-16); its SemiBold weight is a deliberate owner
+        deviation (WinUI uses BreadcrumbBarItemFontWeight Normal). WinUI's 1,3 content padding is
+        widened to 4,3 to match the rest of this control's hit-target sizing.
         The chevron separator is the Fluence FontIcon with the WinUI
         BreadcrumbBarChevronLeftToRight glyph (E974) in TextFillColorPrimaryBrush
         (BreadcrumbBarNormalForegroundBrush), hit-test invisible so only the content plate is
@@ -72,18 +76,18 @@
                             IconFontSize="12"
                             IsHitTestVisible="False" />
                     </Grid>
-                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0.8,0,0,1 ControlFastOutSlowIn spline).  -->
+                    <!--  Press scale storyboards mirror Button.xaml (0.98 over 100ms on the 0,0,0,1 ControlFastOutSlowIn spline).  -->
                     <ControlTemplate.Resources>
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
@@ -91,13 +95,13 @@
                         <Storyboard x:Key="ReleasedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -115,7 +119,6 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="IsLastItem" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="ContentPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
@@ -123,7 +126,33 @@
                                 <Condition Property="IsPressed" Value="True" />
                                 <Condition Property="IsLastItem" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="ContentPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource PressedScaleStoryboard}" />
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource ReleasedScaleStoryboard}" />
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+
+                        <!--
+                            The current (last) crumb also has hover/pressed foreground states
+                            (WinUI CurrentPointerOver / CurrentPressed visual states,
+                            BreadcrumbBar_themeresources.xaml:15-16), distinct from its SemiBold
+                            rest color set above.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsLastItem" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsLastItem" Value="True" />
+                            </MultiTrigger.Conditions>
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
                             <MultiTrigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource PressedScaleStoryboard}" />

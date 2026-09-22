@@ -1,0 +1,53 @@
+﻿<!--
+    Copyright (C) 2026 Dan Cunningham. All rights reserved.
+
+    Colors page group example card, modelled on the WinUI 3 Gallery's
+    Controls/DesignGuidance/ColorPageExample.xaml: a subtitle title, a caption description at
+    0.8 opacity, and the centred example content, on the quarternary solid background inside a
+    1px card stroke at OverlayCornerRadius. See ColorPageExample.xaml.cs.
+-->
+<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.ColorPageExample"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Root"
+    d:DesignWidth="600"
+    Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+    <!--  The stock UserControl template paints Background as a square; the rounded card below paints it instead.  -->
+    <UserControl.Template>
+        <ControlTemplate TargetType="{x:Type UserControl}">
+            <ContentPresenter />
+        </ControlTemplate>
+    </UserControl.Template>
+    <fluence:Border
+        Margin="{DynamicResource DemoColorExampleMargin}"
+        Padding="{DynamicResource DemoColorExamplePadding}"
+        Background="{Binding Background, ElementName=Root}"
+        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+        BorderThickness="{DynamicResource DemoSingleBorderThickness}"
+        CornerRadius="{DynamicResource OverlayCornerRadius}">
+        <StackPanel>
+            <TextBlock
+                Foreground="{Binding Foreground, ElementName=Root}"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="{Binding Title, ElementName=Root}"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Margin="{DynamicResource DemoColorExampleDescriptionMargin}"
+                Foreground="{Binding Foreground, ElementName=Root}"
+                Opacity="0.8"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{Binding Description, ElementName=Root}"
+                TextWrapping="Wrap" />
+            <ContentPresenter
+                Margin="{DynamicResource DemoColorExampleContentMargin}"
+                HorizontalAlignment="Center"
+                Content="{Binding ExampleContent, ElementName=Root}" />
+        </StackPanel>
+    </fluence:Border>
+</UserControl>

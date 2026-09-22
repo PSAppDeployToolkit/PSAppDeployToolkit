@@ -50,16 +50,16 @@ namespace Fluence.Wpf.Controls
     /// A navigation control with a collapsible pane and content area, similar to WinUI NavigationView.
     /// Uses a single shared selection indicator that animates between items.
     /// </summary>
-    [TemplatePart(Name = PartBackButton, Type = typeof(System.Windows.Controls.Button))]
-    [TemplatePart(Name = PartContentPresenter, Type = typeof(ContentPresenter))]
-    [TemplatePart(Name = PartPaneItemsScrollViewer, Type = typeof(ScrollViewer))]
-    [TemplatePart(Name = PartPaneToggleButton, Type = typeof(System.Windows.Controls.Button))]
-    [TemplatePart(Name = PartSelectionIndicator, Type = typeof(FrameworkElement))]
-    [TemplatePart(Name = PartFooterItemsHost, Type = typeof(ItemsControl))]
-    [TemplatePart(Name = PartFooterSelectionIndicator, Type = typeof(FrameworkElement))]
+    [TemplatePart(Name = PART_BackButton, Type = typeof(System.Windows.Controls.Button))]
+    [TemplatePart(Name = PART_ContentPresenter, Type = typeof(ContentPresenter))]
+    [TemplatePart(Name = PART_PaneItemsScrollViewer, Type = typeof(ScrollViewer))]
+    [TemplatePart(Name = PART_PaneToggleButton, Type = typeof(System.Windows.Controls.Button))]
+    [TemplatePart(Name = PART_SelectionIndicator, Type = typeof(FrameworkElement))]
+    [TemplatePart(Name = PART_FooterItemsHost, Type = typeof(ItemsControl))]
+    [TemplatePart(Name = PART_FooterSelectionIndicator, Type = typeof(FrameworkElement))]
     [TemplatePart(Name = PartPaneColumn, Type = typeof(ColumnDefinition))]
-    [TemplatePart(Name = PartTopItemsHost, Type = typeof(FrameworkElement))]
-    [TemplatePart(Name = PartTopOverflowButton, Type = typeof(System.Windows.Controls.Button))]
+    [TemplatePart(Name = PART_TopItemsHost, Type = typeof(FrameworkElement))]
+    [TemplatePart(Name = PART_TopOverflowButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplateVisualState(GroupName = "BackButtonStates", Name = "BackButtonVisible")]
     [TemplateVisualState(GroupName = "BackButtonStates", Name = "BackButtonCollapsed")]
     public class NavigationView : Selector
@@ -67,53 +67,57 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Name of the back button template part.
         /// </summary>
-        public const string PartBackButton = "PART_BackButton";
+        internal const string PART_BackButton = "PART_BackButton";
 
         /// <summary>
         /// Name of the main content presenter template part.
         /// </summary>
-        public const string PartContentPresenter = "PART_ContentPresenter";
+        internal const string PART_ContentPresenter = "PART_ContentPresenter";
 
         /// <summary>
         /// Name of the scroll viewer that hosts pane items.
         /// </summary>
-        public const string PartPaneItemsScrollViewer = "PART_PaneItemsScrollViewer";
+        internal const string PART_PaneItemsScrollViewer = "PART_PaneItemsScrollViewer";
 
         /// <summary>
         /// Name of the pane collapse/expand toggle button.
         /// </summary>
-        public const string PartPaneToggleButton = "PART_PaneToggleButton";
+        internal const string PART_PaneToggleButton = "PART_PaneToggleButton";
 
         /// <summary>
         /// Name of the shared selection indicator element.
         /// </summary>
-        public const string PartSelectionIndicator = "PART_SelectionIndicator";
+        internal const string PART_SelectionIndicator = "PART_SelectionIndicator";
 
         /// <summary>
         /// Name of the items host that renders <see cref="FooterMenuItems"/>.
         /// </summary>
-        public const string PartFooterItemsHost = "PART_FooterItemsHost";
+        internal const string PART_FooterItemsHost = "PART_FooterItemsHost";
 
         /// <summary>
         /// Name of the selection indicator element for the footer items region.
         /// </summary>
-        public const string PartFooterSelectionIndicator = "PART_FooterSelectionIndicator";
+        internal const string PART_FooterSelectionIndicator = "PART_FooterSelectionIndicator";
 
         /// <summary>
         /// Name of the top pane items host template part.
         /// </summary>
-        public const string PartTopItemsHost = "PART_TopItemsHost";
+        internal const string PART_TopItemsHost = "PART_TopItemsHost";
 
         /// <summary>
         /// Name of the top pane overflow button template part.
         /// </summary>
-        public const string PartTopOverflowButton = "PART_TopOverflowButton";
+        internal const string PART_TopOverflowButton = "PART_TopOverflowButton";
 
         private const string PartPaneColumn = "PaneColumn";
         private const double PaneClosedWidth = 48.0;
-        private const double PaneClosedWithBackWidth = 96.0;
         private const double PaneOpenWidth = 320.0;
-        private const double PaneAnimationMilliseconds = 167.0;
+        // WinUI's SplitView opens its pane over 350 ms and closes it over 120 ms, both on the
+        // 0.1,0.9 0.2,1.0 key spline (SplitView_themeresources.xaml:65,236). The asymmetry is the
+        // point: the pane leaves quickly and arrives unhurried. WinUI translates an overlay pane
+        // where this animates an inline column's width, but the curve and the timings carry.
+        private const double PaneOpenAnimationMilliseconds = 350.0;
+        private const double PaneCloseAnimationMilliseconds = 120.0;
 
         private static readonly DependencyProperty IsTopOverflowCollapsedProperty =
             DependencyProperty.RegisterAttached(
@@ -171,11 +175,14 @@ namespace Fluence.Wpf.Controls
         }
 
         // Margins and offsets used in indicator and top overflow positioning calculations.
-        // The indicator sits just inside the selected item's rounded OuterBorder (Margin 4 + 2px
-        // stroke), flush against the inner edge with no padding gap, rather than floating in the
-        // pane to the left of the item.
-        private const double NavigationItemOuterHorizontalMargin = 9.0;
-        private const double NavigationItemChildIndicatorOffset = 44.0;
+        // The indicator sits flush with the left edge of the selected item's painted pill, drawn
+        // over the pill fill, which is where WinUI puts it: a top-level selected item in the WinUI
+        // 3 Gallery measures its indicator's left edge at the same x as the pill's. The pill starts
+        // at the item's own origin plus NavigationViewItemButtonMargin (4), so this is that 4.
+        private const double NavigationItemOuterHorizontalMargin = 4.0;
+        // Gap between the bottom edge of a top-mode item and the indicator under it. WinUI's top
+        // item template gives its indicator a 4 dip bottom margin inside the item.
+        private const double TopIndicatorBottomInset = 4.0;
         private const double TopOverflowReservedEndPadding = 12.0;
 
         // Width an item must clear beyond the fitting limit before the overflow pass brings it back
@@ -270,7 +277,7 @@ propertyChangedCallback: null,
             "PaneFooter",
             typeof(object),
             typeof(NavigationView),
-            new PropertyMetadata(propertyChangedCallback: null));
+            new PropertyMetadata(OnPaneFooterChanged));
 
         /// <summary>
         /// Identifies the <see cref="ContentBackground"/> dependency property.
@@ -312,6 +319,48 @@ defaultValue: null,
         /// </summary>
         public static readonly DependencyProperty FooterMenuItemsProperty = FooterMenuItemsPropertyKey.DependencyProperty;
 
+        private static readonly DependencyPropertyKey PaneFooterSeparatorVisibilityPropertyKey =
+            DependencyProperty.RegisterReadOnly(
+                nameof(PaneFooterSeparatorVisibility),
+                typeof(Visibility),
+                typeof(NavigationView),
+                new FrameworkPropertyMetadata(Visibility.Collapsed));
+
+        /// <summary>
+        /// Identifies the <see cref="PaneFooterSeparatorVisibility"/> dependency property. Internal:
+        /// this is an implementation detail of the default template, not a consumer-facing DP.
+        /// </summary>
+        internal static readonly DependencyProperty PaneFooterSeparatorVisibilityProperty =
+            PaneFooterSeparatorVisibilityPropertyKey.DependencyProperty;
+
+        private static readonly DependencyPropertyKey HostExtendsContentIntoTitleBarPropertyKey =
+            DependencyProperty.RegisterReadOnly(
+                nameof(HostExtendsContentIntoTitleBar),
+                typeof(bool),
+                typeof(NavigationView),
+                new FrameworkPropertyMetadata(defaultValue: false));
+
+        /// <summary>
+        /// Identifies the <see cref="HostExtendsContentIntoTitleBar"/> dependency property. Internal:
+        /// this is an implementation detail of the default template, not a consumer-facing DP.
+        /// </summary>
+        internal static readonly DependencyProperty HostExtendsContentIntoTitleBarProperty =
+            HostExtendsContentIntoTitleBarPropertyKey.DependencyProperty;
+
+        private static readonly DependencyPropertyKey HostHasTitleBarPropertyKey =
+            DependencyProperty.RegisterReadOnly(
+                nameof(HostHasTitleBar),
+                typeof(bool),
+                typeof(NavigationView),
+                new FrameworkPropertyMetadata(defaultValue: false));
+
+        /// <summary>
+        /// Identifies the <see cref="HostHasTitleBar"/> dependency property. Internal: this is an
+        /// implementation detail of the default template, not a consumer-facing DP.
+        /// </summary>
+        internal static readonly DependencyProperty HostHasTitleBarProperty =
+            HostHasTitleBarPropertyKey.DependencyProperty;
+
         /// <summary>
         /// Initializes static members of the NavigationView class and overrides the default style metadata.
         /// </summary>
@@ -332,6 +381,7 @@ defaultValue: null,
         {
             SetValue(FooterMenuItemsPropertyKey, new ObservableCollection<object>());
             FooterMenuItems.CollectionChanged += OnFooterMenuItemsChanged;
+            UpdatePaneFooterSeparatorVisibility();
             Loaded += OnLoaded;
             SizeChanged += OnSizeChanged;
             Unloaded += OnUnloaded;
@@ -474,6 +524,36 @@ defaultValue: null,
         public ObservableCollection<object> FooterMenuItems => (ObservableCollection<object>)GetValue(FooterMenuItemsProperty);
 
         /// <summary>
+        /// Gets the visibility of the divider drawn between the scrolling menu items and the pane
+        /// footer (WinUI's VisualItemsSeparator). Visible only while the footer holds something to
+        /// divide from, which is pinned footer menu items, free-form <see cref="PaneFooter"/>
+        /// content, or both. Internal: an implementation detail of the default template, bound to
+        /// it via <c language="csharp">RelativeSource TemplatedParent</c> rather than exposed to
+        /// consumers.
+        /// </summary>
+        internal Visibility PaneFooterSeparatorVisibility => (Visibility)GetValue(PaneFooterSeparatorVisibilityProperty);
+
+        /// <summary>
+        /// Gets a value indicating whether the owning <see cref="FluenceWindow"/> extends its
+        /// content into the title bar. Mirrored onto this control so the default template can read
+        /// it through <c language="csharp">RelativeSource TemplatedParent</c>. A
+        /// <c language="csharp">FindAncestor</c> binding would read the same value, but WPF
+        /// re-evaluates one while the window is tearing the visual tree down, when the ancestor is
+        /// already unreachable, and logs a binding error per trigger for every NavigationView on
+        /// the way out. Internal: an implementation detail of the template.
+        /// </summary>
+        internal bool HostExtendsContentIntoTitleBar => (bool)GetValue(HostExtendsContentIntoTitleBarProperty);
+
+        /// <summary>
+        /// Gets a value indicating whether the owning <see cref="FluenceWindow"/> carries title bar
+        /// content of its own, which the pane uses to decide whether to draw its own back and pane
+        /// toggle buttons. Mirrored for the same reason as
+        /// <see cref="HostExtendsContentIntoTitleBar"/>. Internal: an implementation detail of the
+        /// template.
+        /// </summary>
+        internal bool HostHasTitleBar => (bool)GetValue(HostHasTitleBarProperty);
+
+        /// <summary>
         /// Gets the currently selected footer item, or <see langword="null"/> when the active
         /// selection is in the main menu region (or nothing is selected).
         /// </summary>
@@ -487,12 +567,12 @@ defaultValue: null,
             _topOverflowButton?.Click -= OnTopOverflowButtonClick;
             StopPaneColumnAnimation();
             base.OnApplyTemplate();
-            _backButton = GetTemplateChild(PartBackButton) as System.Windows.Controls.Button;
+            _backButton = GetTemplateChild(PART_BackButton) as System.Windows.Controls.Button;
             _backButton?.Click += OnBackButtonClick;
-            _paneToggleButton = GetTemplateChild(PartPaneToggleButton) as System.Windows.Controls.Button;
+            _paneToggleButton = GetTemplateChild(PART_PaneToggleButton) as System.Windows.Controls.Button;
             _paneToggleButton?.Click += OnPaneToggleButtonClick;
-            _topItemsHost = GetTemplateChild(PartTopItemsHost) as FrameworkElement;
-            if (GetTemplateChild(PartTopOverflowButton) is System.Windows.Controls.Button topOverflowButton)
+            _topItemsHost = GetTemplateChild(PART_TopItemsHost) as FrameworkElement;
+            if (GetTemplateChild(PART_TopOverflowButton) is System.Windows.Controls.Button topOverflowButton)
             {
                 _topOverflowButton = topOverflowButton;
                 _topOverflowButton.Click += OnTopOverflowButtonClick;
@@ -503,9 +583,9 @@ defaultValue: null,
             }
 
             _paneColumn = GetTemplateChild(PartPaneColumn) as ColumnDefinition;
-            _selectionIndicator = GetTemplateChild(PartSelectionIndicator) as FrameworkElement;
+            _selectionIndicator = GetTemplateChild(PART_SelectionIndicator) as FrameworkElement;
             _indicatorHost = _selectionIndicator is not null ? VisualTreeHelper.GetParent(_selectionIndicator) as FrameworkElement : null;
-            _footerSelectionIndicator = GetTemplateChild(PartFooterSelectionIndicator) as FrameworkElement;
+            _footerSelectionIndicator = GetTemplateChild(PART_FooterSelectionIndicator) as FrameworkElement;
 
             // The footer indicator host must be an ancestor of the footer items so that
             // CalculateIndicatorPosition's TransformToAncestor succeeds. In Left/LeftCompact the
@@ -514,7 +594,7 @@ defaultValue: null,
             // origin, so its coordinate space matches the Grid's). Resolving the host from the items
             // host's parent therefore works for every pane mode, where using the indicator's immediate
             // parent (the Canvas in Top mode) is not an ancestor of the items and the transform fails.
-            FrameworkElement? footerItemsHost = GetTemplateChild(PartFooterItemsHost) as FrameworkElement;
+            FrameworkElement? footerItemsHost = GetTemplateChild(PART_FooterItemsHost) as FrameworkElement;
             _footerIndicatorHost = (footerItemsHost is not null ? VisualTreeHelper.GetParent(footerItemsHost) as FrameworkElement : null)
                 ?? (_footerSelectionIndicator is not null ? VisualTreeHelper.GetParent(_footerSelectionIndicator) as FrameworkElement : null);
             foreach (NavigationViewItem entry in FooterMenuItems.OfType<NavigationViewItem>())
@@ -551,7 +631,7 @@ defaultValue: null,
                 SelectedFooterItem.IsSelected = false;
                 SelectedFooterItem = null;
             }
-            _ = Dispatcher.BeginInvoke(new Action(() => RefreshIndicators(animate: true, previousItem)), DispatcherPriority.Loaded);
+            _ = Dispatcher.BeginInvoke(new Action(() => RefreshIndicators(animate: true)), DispatcherPriority.Loaded);
         }
 
         /// <inheritdoc />
@@ -668,15 +748,6 @@ defaultValue: null,
             return _paneColumn?.Width.Value ?? double.NaN;
         }
 
-        internal Point CalculateDepartPositionForTesting(
-            Point fromPosition,
-            NavigationViewItem? previousItem,
-            bool topMode,
-            double direction)
-        {
-            return CalculateDepartPosition(fromPosition, previousItem, topMode, direction);
-        }
-
         /// <summary>
         /// Programmatically selects a <see cref="FooterMenuItems"/> entry as if the user had invoked
         /// it: clears any main-menu selection, marks the footer item selected, moves the footer
@@ -702,14 +773,7 @@ defaultValue: null,
             bool isFooter = IsFooterItem(item);
             object invokedItem = isFooter ? item : GetDataFromContainer(item);
             ItemInvoked?.Invoke(this, new NavigationViewItemInvokedEventArgs(invokedItem, item, isSettingsInvoked: false));
-            if (isFooter)
-            {
-                SelectFooterItem(item);
-            }
-            else
-            {
-                SelectItemFromContainer(item);
-            }
+            SelectItemFromContainer(item);
         }
 
         /// <summary>
@@ -782,7 +846,26 @@ defaultValue: null,
                 }
             }
 
+            UpdatePaneFooterSeparatorVisibility();
             ScheduleIndicatorPosition(animate: false);
+        }
+
+        private static void OnPaneFooterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((NavigationView)d).UpdatePaneFooterSeparatorVisibility();
+        }
+
+        /// <summary>
+        /// Shows the divider above the pane footer only when there is something below it to divide
+        /// from: pinned footer menu items, free-form <see cref="PaneFooter"/> content, or both. A
+        /// pane with an empty footer would otherwise draw a rule against nothing.
+        /// </summary>
+        private void UpdatePaneFooterSeparatorVisibility()
+        {
+            bool hasFooterContent = FooterMenuItems.Count > 0 || PaneFooter is not null;
+            SetValue(
+                PaneFooterSeparatorVisibilityPropertyKey,
+                hasFooterContent ? Visibility.Visible : Visibility.Collapsed);
         }
 
         private void HookFooterItem(NavigationViewItem footerItem)
@@ -1027,7 +1110,11 @@ defaultValue: null,
 
         private void UpdateTitleBarExtensionForPaneMode()
         {
-            if (Window.GetWindow(this) is not FluenceWindow window || _updatingTitleBarExtension)
+            // Only the window's own shell pane drives the window's title bar extension. A
+            // NavigationView nested in page content is a control on the page, so letting it write
+            // FluenceWindow.ExtendsContentIntoTitleBar would let a Top mode sample switch the whole
+            // shell's title bar off the moment the page loaded.
+            if (!IsShellNavigationView() || Window.GetWindow(this) is not FluenceWindow window || _updatingTitleBarExtension)
             {
                 return;
             }
@@ -1075,7 +1162,13 @@ defaultValue: null,
                     FluenceWindow.ExtendsContentIntoTitleBarProperty,
                     typeof(FluenceWindow));
                 _titleBarExtensionDescriptor?.AddValueChanged(_titleBarExtensionWindow, OnTitleBarExtensionChanged);
+                _titleBarContentDescriptor ??= DependencyPropertyDescriptor.FromProperty(
+                    FluenceWindow.TitleBarProperty,
+                    typeof(FluenceWindow));
+                _titleBarContentDescriptor?.AddValueChanged(_titleBarExtensionWindow, OnTitleBarExtensionChanged);
             }
+
+            UpdateHostTitleBarState();
         }
 
         private void DetachTitleBarWindowWatcher()
@@ -1083,13 +1176,59 @@ defaultValue: null,
             if (_titleBarExtensionWindow is not null)
             {
                 _titleBarExtensionDescriptor?.RemoveValueChanged(_titleBarExtensionWindow, OnTitleBarExtensionChanged);
+                _titleBarContentDescriptor?.RemoveValueChanged(_titleBarExtensionWindow, OnTitleBarExtensionChanged);
                 _titleBarExtensionWindow = null;
             }
+
+            UpdateHostTitleBarState();
         }
 
         private void OnTitleBarExtensionChanged(object? sender, EventArgs e)
         {
+            UpdateHostTitleBarState();
             UpdateTitleBarExtensionForPaneMode();
+        }
+
+        /// <summary>
+        /// Copies the owning window's title bar state onto this control so the default template can
+        /// read it from the templated parent instead of walking up to the window itself. The walk
+        /// is the problem: during shutdown WPF re-evaluates the template's triggers after the
+        /// control has left the visual tree, the ancestor is no longer reachable, and each one logs
+        /// a "cannot find source" binding error. Mirroring the two values here keeps the triggers
+        /// on a source that is always resolvable.
+        /// </summary>
+        private void UpdateHostTitleBarState()
+        {
+            // Only the window's own shell pane answers to the window's title bar. A NavigationView
+            // nested inside page content (a gallery sample, say) is a control on the page, not the
+            // window's navigation surface, so the window's title bar neither hosts its chrome nor
+            // sets its pane height; it keeps drawing its own back and pane toggle buttons.
+            FluenceWindow? window = IsShellNavigationView() ? _titleBarExtensionWindow : null;
+            SetValue(HostExtendsContentIntoTitleBarPropertyKey, window?.ExtendsContentIntoTitleBar is true);
+            SetValue(HostHasTitleBarPropertyKey, window?.TitleBar is not null);
+        }
+
+        /// <summary>
+        /// Reports whether this is the window's shell navigation pane rather than one nested in the
+        /// content of another. Nesting is the test because the shell pane hosts the content every
+        /// other pane on screen sits inside, so an ancestor NavigationView means this one belongs
+        /// to a page rather than to the window.
+        /// </summary>
+        /// <returns><see langword="true"/> when no ancestor is a <see cref="NavigationView"/>.</returns>
+        private bool IsShellNavigationView()
+        {
+            DependencyObject? ancestor = VisualTreeHelper.GetParent(this);
+            while (ancestor is not null)
+            {
+                if (ancestor is NavigationView)
+                {
+                    return false;
+                }
+
+                ancestor = VisualTreeHelper.GetParent(ancestor);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1145,12 +1284,14 @@ defaultValue: null,
 
             ColumnDefinition paneColumn = _paneColumn;
             int animationGeneration = ++_paneColumnAnimationGeneration;
+            bool opening = targetWidth > currentWidth;
             GridLengthAnimation animation = new()
             {
                 From = new GridLength(currentWidth),
                 To = new GridLength(targetWidth),
-                Duration = new Duration(TimeSpan.FromMilliseconds(PaneAnimationMilliseconds)),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+                Duration = new Duration(TimeSpan.FromMilliseconds(
+                    opening ? PaneOpenAnimationMilliseconds : PaneCloseAnimationMilliseconds)),
+                EasingFunction = new KeySplineEase(0.1, 0.9, 0.2, 1.0),
                 FillBehavior = FillBehavior.Stop,
             };
 
@@ -1181,14 +1322,22 @@ defaultValue: null,
                 : GetClosedPaneWidth();
         }
 
-        private double GetClosedPaneWidth()
+        /// <summary>
+        /// The width of the closed pane, which is the compact rail. It does not depend on the back
+        /// button: the back button and the pane toggle share the chrome row above the rail and the
+        /// row is free to run wider than the rail, so showing the back button moves the toggle
+        /// along rather than widening the pane. Widening it here made enabling the back button look
+        /// like the pane had been opened, which is what pressing the toggle is for.
+        /// </summary>
+        /// <returns>The closed pane width in device independent pixels.</returns>
+        private static double GetClosedPaneWidth()
         {
-            return IsBackButtonVisible && IsBackEnabled ? PaneClosedWithBackWidth : PaneClosedWidth;
+            return PaneClosedWidth;
         }
 
         private void ScheduleIndicatorPosition(bool animate)
         {
-            _ = Dispatcher.BeginInvoke(new Action(() => RefreshIndicators(animate, previousItem: null)), DispatcherPriority.Loaded);
+            _ = Dispatcher.BeginInvoke(new Action(() => RefreshIndicators(animate)), DispatcherPriority.Loaded);
         }
 
         /// <summary>
@@ -1196,10 +1345,9 @@ defaultValue: null,
         /// at most one region (main menu or footer) owns the selection, so at most one indicator shows.
         /// </summary>
         /// <param name="animate">Indicates whether to animate the indicator movement.</param>
-        /// <param name="previousItem">The previously selected item, if any.</param>
-        private void RefreshIndicators(bool animate, NavigationViewItem? previousItem)
+        private void RefreshIndicators(bool animate)
         {
-            PositionIndicator(animate, previousItem);
+            PositionIndicator(animate);
             PositionFooterIndicator(animate);
         }
 
@@ -1224,31 +1372,17 @@ defaultValue: null,
 
             if (!shouldShow)
             {
-                if (topMode)
-                {
-                    // Animate the indicator out when leaving a selected footer item (e.g. navigating
-                    // away from Settings); snap to hidden when nothing was showing or animation is off.
-                    bool wasVisible = _footerSelectionIndicator.Opacity > 0.01;
-                    AnimateFooterIndicatorVisibility(appearing: false, topMode: true, animate && wasVisible);
-                }
-                else
-                {
-                    // Left / LeftCompact keep the historical instant hide.
-                    StopFooterAnimation();
-                    _footerSelectionIndicator.Opacity = 0.0;
-                }
+                // Animate the indicator out when leaving a selected footer item (e.g. navigating
+                // away from Settings); snap to hidden when nothing was showing or animation is off.
+                // Every pane mode fades it, as WinUI does: the indicator is one element whose
+                // appearance is animated by NavigationViewItemPresenter regardless of orientation,
+                // and only the axis it scales along follows the pane mode.
+                bool wasVisible = _footerSelectionIndicator.Opacity > 0.01;
+                AnimateFooterIndicatorVisibility(appearing: false, topMode, animate && wasVisible);
                 return;
             }
 
             Point targetPosition = CalculateIndicatorPosition(SelectedFooterItem!, _footerSelectionIndicator, _footerIndicatorHost, topMode);
-
-            if (!topMode)
-            {
-                // Left / LeftCompact keep the historical snap (no fade/scale flight).
-                StopFooterAnimation();
-                SnapIndicatorCore(_footerSelectionIndicator, targetPosition);
-                return;
-            }
 
             bool wasHidden = _footerSelectionIndicator.Opacity < 0.01;
             StopFooterAnimation();
@@ -1260,7 +1394,7 @@ defaultValue: null,
 
             // Fade + scale the indicator in when it first appears on a footer item; a reflow while it
             // is already shown just repositions it at full opacity.
-            AnimateFooterIndicatorVisibility(appearing: true, topMode: true, animate && wasHidden);
+            AnimateFooterIndicatorVisibility(appearing: true, topMode, animate && wasHidden);
         }
 
         /// <summary>
@@ -1389,7 +1523,7 @@ defaultValue: null,
             }
         }
 
-        private void PositionIndicator(bool animate, NavigationViewItem? previousItem)
+        private void PositionIndicator(bool animate)
         {
             if (_selectionIndicator is null || _indicatorHost is null)
             {
@@ -1419,7 +1553,7 @@ defaultValue: null,
             }
 
             Point currentPosition = GetCurrentIndicatorPosition();
-            AnimateIndicator(currentPosition, targetPosition, topMode, previousItem, nvi);
+            AnimateIndicator(currentPosition, targetPosition, topMode);
         }
 
         /// <summary>
@@ -1430,7 +1564,7 @@ defaultValue: null,
         /// <param name="host">The host element containing the indicator.</param>
         /// <param name="topMode">Indicates whether the navigation view is in top mode.</param>
         /// <returns>The calculated position for the indicator.</returns>
-        private Point CalculateIndicatorPosition(NavigationViewItem item, FrameworkElement indicator, FrameworkElement host, bool topMode)
+        private static Point CalculateIndicatorPosition(NavigationViewItem item, FrameworkElement indicator, FrameworkElement host, bool topMode)
         {
             try
             {
@@ -1438,27 +1572,31 @@ defaultValue: null,
                 Point itemPos = transform.Transform(new Point(0, 0));
                 if (topMode)
                 {
-                    return new Point(itemPos.X + ((item.ActualWidth - indicator.Width) / 2.0), 0.0);
+                    // The indicator is bottom aligned inside a host that spans the whole 48 dip bar,
+                    // while the items are centred in it, so at rest the indicator lies on the bar's
+                    // bottom edge rather than under the item it marks. WinUI makes the indicator a
+                    // child of the top item itself, inset from the item's own bottom edge, so the
+                    // translate here lifts it by the difference.
+                    double y = itemPos.Y + item.ActualHeight - TopIndicatorBottomInset - host.ActualHeight;
+                    return new Point(itemPos.X + ((item.ActualWidth - indicator.Width) / 2.0), y);
                 }
 
+                // Depth never moves the indicator. WinUI applies Depth() * c_itemIndentation (31,
+                // NavigationViewItemBase.h:63) to the presenter's ContentGrid alone
+                // (NavigationViewItemPresenter.cpp:264-276), and the indicator sits in a sibling
+                // wrapper grid nothing writes to (NavigationView_themeresources.xaml:601-604), so
+                // the selection rail stays one straight column down the pane at any tree depth.
                 double x = itemPos.X + NavigationItemOuterHorizontalMargin;
-                if (ShouldIndentSelectionIndicator(item, topMode))
-                {
-                    x += NavigationItemChildIndicatorOffset;
-                }
                 return new Point(x, itemPos.Y + ((item.ActualHeight - indicator.Height) / 2.0));
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
+                // TransformToAncestor throws this when the item is not under the host yet, which
+                // happens while a pane template is being swapped; the indicator is repositioned on
+                // the next pass, so the fallback offset is only ever seen for one frame.
                 Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                 return new Point(0, 0);
-                throw;
             }
-        }
-
-        private bool ShouldIndentSelectionIndicator(NavigationViewItem item, bool topMode)
-        {
-            return !topMode && (item?.IsChildItem) is true && (IsPaneOpen || (PaneDisplayMode is not (NavigationViewPaneDisplayMode.Left or NavigationViewPaneDisplayMode.LeftCompact)));
         }
 
         private Point GetCurrentIndicatorPosition()
@@ -1507,9 +1645,7 @@ defaultValue: null,
         private void AnimateIndicator(
             Point fromPosition,
             Point toPosition,
-            bool topMode,
-            NavigationViewItem? previousItem,
-            NavigationViewItem targetItem)
+            bool topMode)
         {
             if (_selectionIndicator is null)
             {
@@ -1566,206 +1702,96 @@ defaultValue: null,
                 scale.ScaleX = 1.0;
             }
 
-            Point departPosition = CalculateDepartPosition(fromPosition, previousItem, topMode, direction);
-            Point arriveStartPosition = CalculateArriveStartPosition(toPosition, targetItem, topMode, direction);
-            double departAxis = topMode ? departPosition.X : departPosition.Y;
-            Duration departDuration = new(TimeSpan.FromMilliseconds(90));
-            Duration arriveDuration = new(TimeSpan.FromMilliseconds(140));
-            CubicEase departEase = new() { EasingMode = EasingMode.EaseIn };
-            CubicEase arriveEase = new() { EasingMode = EasingMode.EaseOut };
+            // WinUI's indicator never blinks out between items, and it does not glide across the
+            // gap either: for a move inside one list it plays a rubber band (NavigationView.cpp,
+            // PlayIndicatorAnimations). The bar holds its old position and stretches until it spans
+            // both items, then its offset and its scale origin snap together at the one third mark,
+            // so the same stretched bar is now anchored at the destination and contracts into it.
+            // The snap is invisible because the bar covers both positions at that instant.
+            //
+            // WinUI animates Offset, Scale and CenterPoint on two per-item indicators. This port has
+            // one pane-level bar, so the three animations run on its own transform, and the scale
+            // origin stands in for CenterPoint.
+            double axisLength = GetIndicatorLength(topMode);
+            double distance = Math.Abs(toAxis - fromAxis);
+            double peakScale = axisLength > 0 ? (distance / axisLength) + 1.0 : 1.0;
+            bool forward = toAxis > fromAxis;
 
-            // To-only animations (no From): each begins from the live base value seeded above, so a
-            // retarget mid-flight hands off smoothly instead of snapping back to the old slot.
-            DoubleAnimation departAxisAnimation = new()
-            {
-                To = departAxis,
-                Duration = departDuration,
-                EasingFunction = departEase,
-                FillBehavior = FillBehavior.Stop,
-            };
-            DoubleAnimation departOpacityAnimation = new()
-            {
-                To = 0.0,
-                Duration = departDuration,
-                EasingFunction = departEase,
-                FillBehavior = FillBehavior.Stop,
-            };
-            DoubleAnimation departScaleAnimation = new()
-            {
-                To = 0.72,
-                Duration = departDuration,
-                EasingFunction = departEase,
-                FillBehavior = FillBehavior.Stop,
-            };
+            Duration travelDuration = new(TimeSpan.FromMilliseconds(600));
+            TimeSpan snapTime = TimeSpan.FromMilliseconds(200);
 
-            departAxisAnimation.Completed += delegate
+            // Offset: held, then stepped to the destination at the snap. WinUI uses a step easing
+            // function for the same reason; the stretch is what carries the eye across the gap.
+            DoubleAnimationUsingKeyFrames axisAnimation = new()
+            {
+                Duration = travelDuration,
+                FillBehavior = FillBehavior.Stop,
+            };
+            _ = axisAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame(fromAxis, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            _ = axisAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame(toAxis, KeyTime.FromTimeSpan(snapTime)));
+
+            // Scale: out to span the gap on WinUI's accelerating ramp, back to rest on its
+            // decelerating settle.
+            DoubleAnimationUsingKeyFrames scaleAnimation = new()
+            {
+                Duration = travelDuration,
+                FillBehavior = FillBehavior.Stop,
+            };
+            _ = scaleAnimation.KeyFrames.Add(new SplineDoubleKeyFrame(
+                peakScale,
+                KeyTime.FromTimeSpan(snapTime),
+                new KeySpline(0.9, 0.1, 1.0, 0.2)));
+            _ = scaleAnimation.KeyFrames.Add(new SplineDoubleKeyFrame(
+                1.0,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(600)),
+                new KeySpline(0.1, 0.9, 0.2, 1.0)));
+
+            // The scale origin is WinUI's CenterPoint: it sits on the edge the bar grows from, and
+            // snaps to the opposite edge as the offset lands, so the stretch that grew toward the
+            // destination becomes the stretch that contracts into it.
+            Point growOrigin = topMode
+                ? new Point(forward ? 0.0 : 1.0, 0.5)
+                : new Point(0.5, forward ? 0.0 : 1.0);
+            Point settleOrigin = topMode
+                ? new Point(forward ? 1.0 : 0.0, 0.5)
+                : new Point(0.5, forward ? 1.0 : 0.0);
+            PointAnimationUsingKeyFrames originAnimation = new()
+            {
+                Duration = travelDuration,
+                FillBehavior = FillBehavior.Stop,
+            };
+            _ = originAnimation.KeyFrames.Add(new DiscretePointKeyFrame(growOrigin, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            _ = originAnimation.KeyFrames.Add(new DiscretePointKeyFrame(settleOrigin, KeyTime.FromTimeSpan(snapTime)));
+
+            // Full opacity throughout: any clock left from an interrupted move is released so it
+            // cannot fade this one out underneath.
+            _selectionIndicator.BeginAnimation(OpacityProperty, animation: null);
+            _selectionIndicator.Opacity = 1.0;
+
+            axisAnimation.Completed += delegate
             {
                 if (animationId != _indicatorAnimationGeneration)
                 {
                     return;
                 }
+
                 translate.BeginAnimation(axisProperty, animation: null);
                 scale.BeginAnimation(scaleProperty, animation: null);
-                _selectionIndicator.BeginAnimation(OpacityProperty, animation: null);
-                if (topMode)
-                {
-                    translate.X = arriveStartPosition.X;
-                    translate.Y = toPosition.Y;
-                    scale.ScaleX = 0.72;
-                    scale.ScaleY = 1.0;
-                }
-                else
-                {
-                    translate.X = toPosition.X;
-                    translate.Y = arriveStartPosition.Y;
-                    scale.ScaleX = 1.0;
-                    scale.ScaleY = 0.72;
-                }
-                _selectionIndicator.Opacity = 0.0;
+                _selectionIndicator.BeginAnimation(RenderTransformOriginProperty, animation: null);
 
-                DoubleAnimation arriveAxisAnimation = new()
-                {
-                    To = toAxis,
-                    Duration = arriveDuration,
-                    EasingFunction = arriveEase,
-                    FillBehavior = FillBehavior.Stop,
-                };
-                DoubleAnimation arriveOpacityAnimation = new()
-                {
-                    To = 1.0,
-                    Duration = arriveDuration,
-                    EasingFunction = arriveEase,
-                    FillBehavior = FillBehavior.Stop,
-                };
-                DoubleAnimation arriveScaleAnimation = new()
-                {
-                    To = 1.0,
-                    Duration = arriveDuration,
-                    EasingFunction = arriveEase,
-                    FillBehavior = FillBehavior.Stop,
-                };
-
-                arriveAxisAnimation.Completed += delegate
-                {
-                    if (animationId != _indicatorAnimationGeneration)
-                    {
-                        return;
-                    }
-
-                    translate.BeginAnimation(axisProperty, animation: null);
-                    scale.BeginAnimation(scaleProperty, animation: null);
-                    _selectionIndicator.BeginAnimation(OpacityProperty, animation: null);
-
-                    translate.X = toPosition.X;
-                    translate.Y = toPosition.Y;
-                    scale.ScaleX = 1.0;
-                    scale.ScaleY = 1.0;
-                    _selectionIndicator.Opacity = 1.0;
-                    _indicatorPositioned = true;
-                };
-                translate.BeginAnimation(axisProperty, arriveAxisAnimation, HandoffBehavior.SnapshotAndReplace);
-                scale.BeginAnimation(scaleProperty, arriveScaleAnimation, HandoffBehavior.SnapshotAndReplace);
-                _selectionIndicator.BeginAnimation(OpacityProperty, arriveOpacityAnimation, HandoffBehavior.SnapshotAndReplace);
+                translate.X = toPosition.X;
+                translate.Y = toPosition.Y;
+                scale.ScaleX = 1.0;
+                scale.ScaleY = 1.0;
+                _selectionIndicator.RenderTransformOrigin = new Point(0.5, 0.5);
+                _selectionIndicator.Opacity = 1.0;
+                _indicatorPositioned = true;
             };
+
             _indicatorPositioned = true;
-            translate.BeginAnimation(axisProperty, departAxisAnimation, HandoffBehavior.SnapshotAndReplace);
-            scale.BeginAnimation(scaleProperty, departScaleAnimation, HandoffBehavior.SnapshotAndReplace);
-            _selectionIndicator.BeginAnimation(OpacityProperty, departOpacityAnimation, HandoffBehavior.SnapshotAndReplace);
-        }
-
-        private Point CalculateDepartPosition(
-            Point fromPosition,
-            NavigationViewItem? previousItem,
-            bool topMode,
-            double direction)
-        {
-            double length = GetIndicatorLength(topMode);
-            if (topMode)
-            {
-                double x = fromPosition.X + (direction * length);
-                if ((previousItem?.IsVisible) is true && previousItem.ActualWidth > 0)
-                {
-                    try
-                    {
-                        GeneralTransform transform = previousItem.TransformToAncestor(_indicatorHost);
-                        Point itemPos = transform.Transform(new Point(0, 0));
-                        x = direction > 0 ? itemPos.X + previousItem.ActualWidth : itemPos.X - length;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
-                        return new Point(x, fromPosition.Y);
-                        throw;
-                    }
-                }
-                return new Point(x, fromPosition.Y);
-            }
-
-            double y = fromPosition.Y + (direction * length);
-            if ((previousItem?.IsVisible) is true && previousItem.ActualHeight > 0)
-            {
-                try
-                {
-                    GeneralTransform transform = previousItem.TransformToAncestor(_indicatorHost);
-                    Point itemPos = transform.Transform(new Point(0, 0));
-                    y = direction > 0 ? itemPos.Y + previousItem.ActualHeight : itemPos.Y - length;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
-                    return new Point(fromPosition.X, y);
-                    throw;
-                }
-            }
-            return new Point(fromPosition.X, y);
-        }
-
-        private Point CalculateArriveStartPosition(
-            Point toPosition,
-            NavigationViewItem targetItem,
-            bool topMode,
-            double direction)
-        {
-            double length = GetIndicatorLength(topMode);
-            if (topMode)
-            {
-                double x = toPosition.X - (direction * length);
-                if ((targetItem?.IsVisible) is true && targetItem.ActualWidth > 0)
-                {
-                    try
-                    {
-                        GeneralTransform transform = targetItem.TransformToAncestor(_indicatorHost);
-                        Point itemPos = transform.Transform(new Point(0, 0));
-                        x = direction > 0 ? itemPos.X - length : itemPos.X + targetItem.ActualWidth;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
-                        return new Point(x, toPosition.Y);
-                        throw;
-                    }
-                }
-
-                return new Point(x, toPosition.Y);
-            }
-
-            double y = toPosition.Y - (direction * length);
-            if ((targetItem?.IsVisible) is true && targetItem.ActualHeight > 0)
-            {
-                try
-                {
-                    GeneralTransform transform = targetItem.TransformToAncestor(_indicatorHost);
-                    Point itemPos = transform.Transform(new Point(0, 0));
-                    y = direction > 0 ? itemPos.Y - length : itemPos.Y + targetItem.ActualHeight;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
-                    return new Point(toPosition.X, y);
-                    throw;
-                }
-            }
-            return new Point(toPosition.X, y);
+            _selectionIndicator.BeginAnimation(RenderTransformOriginProperty, originAnimation, HandoffBehavior.SnapshotAndReplace);
+            translate.BeginAnimation(axisProperty, axisAnimation, HandoffBehavior.SnapshotAndReplace);
+            scale.BeginAnimation(scaleProperty, scaleAnimation, HandoffBehavior.SnapshotAndReplace);
         }
 
         private double GetIndicatorLength(bool topMode)
@@ -1855,6 +1881,11 @@ defaultValue: null,
         {
             if (navItem is null)
             {
+                return;
+            }
+            if (IsFooterItem(navItem))
+            {
+                SelectFooterItem(navItem);
                 return;
             }
             object data = GetDataFromContainer(navItem);
@@ -2284,6 +2315,8 @@ defaultValue: null,
         private FluenceWindow? _titleBarExtensionWindow;
 
         private DependencyPropertyDescriptor? _titleBarExtensionDescriptor;
+
+        private DependencyPropertyDescriptor? _titleBarContentDescriptor;
 
         private ColumnDefinition? _paneColumn;
 

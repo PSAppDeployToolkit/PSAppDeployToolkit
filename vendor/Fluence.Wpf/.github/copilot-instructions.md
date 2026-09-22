@@ -94,13 +94,17 @@ Never fabricate Fluent semantics from imagination. Cite an authority.
 ```powershell
 dotnet restore Fluence.Wpf.sln
 dotnet build   Fluence.Wpf.sln -c Debug          # must be 0 errors / 0 warnings
-dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug
+Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-not-trait "Category=Screenshots" --no-ansi --progress off
 ```
 
-Both `net472` and `net10.0-windows10.0.26100.0` must pass. Tests are
-non-parallel (`[assembly: CollectionBehavior(DisableTestParallelization = true)]`
-plus `xunit.runner.json`). All UI-touching work goes
-through `WpfTestSta.Invoke`.
+Both `net472` and `net10.0-windows10.0.26100.0` must pass. The suite runs on
+Microsoft Testing Platform, so run the built executable rather than
+`dotnet test`; a single-process whole-assembly run on `net472` aborts, so run
+that TFM as two complementary lanes (see AGENTS.md section 6 and
+`KNOWN_ISSUES.md`). Tests are non-parallel
+(`[assembly: Parallelization(Mode = ParallelMode.None)]` plus
+`xunit.runner.json`). All UI-touching work goes through
+`WpfTestSta.RunOnStaAsync`.
 
 ---
 
@@ -118,15 +122,15 @@ through `WpfTestSta.Invoke`.
 
 ---
 
-## Background Terminal Commands
+## Background terminal commands
 
 - When polling background terminal commands, use short wait intervals (30-60 seconds per read) instead of multi-minute waits, so completed work is noticed promptly.
 
 ---
 
-## Testing Guidelines
+## Testing guidelines
 
-- In `Fluence.Wpf.Tests`, prefer direct calls to the canonical `WpfTestSta` helpers (e.g., `RunOnSta`, `EnsureApplication`, `DrainDispatcher`, etc.) instead of per-class wrapper/forwarder methods. Remove any duplicated wrapper logic when encountered.
+- In `Fluence.Wpf.Tests`, prefer direct calls to the canonical `WpfTestSta` and `TestApp` helpers (e.g., `RunOnStaAsync`, `EnsureLibraryTheme`, `DrainDispatcher`, etc.) instead of per-class wrapper/forwarder methods. Remove any duplicated wrapper logic when encountered.
 - Prefer eliding async/await for methods whose entire body is a single awaited Task-returning call: return the Task directly instead of async/await (e.g., `public Task X() { return WpfTestSta.RunOnStaAsync(...); }`). This applies even though Roslynator RCS1174 only covers Task<T>. Keep `new ValueTask(task)` wrapping only where required by interfaces like xUnit v3 IAsyncLifetime.
 - When an analyzer flags synchronous disposal in async methods (e.g., RCS1261), do not remove the using block or suppress with comments. Instead, use `await using` with ConfigureAwait, guarded by `#if NET..._OR_GREATER` / `#else using` conditionals for TFMs where IAsyncDisposable isn't available (net472). Pattern: `MemoryStream buffer = new(); await using (buffer.ConfigureAwait(true))` with `#else using (MemoryStream buffer = new())`.
 

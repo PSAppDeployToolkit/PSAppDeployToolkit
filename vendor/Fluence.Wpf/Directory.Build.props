@@ -19,9 +19,9 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Platforms>AnyCPU</Platforms>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <EmbedAllSources>false</EmbedAllSources>
-    <EmbedUntrackedSources>false</EmbedUntrackedSources>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
   </PropertyGroup>
 
@@ -40,29 +40,29 @@
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <RestoreLockedMode Condition="'$(GITHUB_ACTIONS)' == 'true'">true</RestoreLockedMode>
+    <!--
+      Normalises source paths in the PDB to repository-relative form, which is what makes a
+      SourceLink lookup resolve. Only on CI: a local build keeps absolute paths so a local
+      debugger steps into the working tree rather than fetching from GitHub.
+    -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
-  <!-- Common company/product metadata -->
+  <!--
+    The single source of the version. The SDK derives PackageVersion, AssemblyVersion,
+    FileVersion and InformationalVersion from these two, so declaring them separately only
+    creates a way for them to disagree. Do not restate the version in a csproj: a csproj
+    property wins over this file, which is exactly how a package can ship mislabeled.
+  -->
   <PropertyGroup>
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.8.19</VersionPrefix>
-    <VersionSuffix>preview</VersionSuffix>
-    <PackageVersion>0.8.19-preview</PackageVersion>
-    <AssemblyVersion>0.8.19.0</AssemblyVersion>
-    <FileVersion>0.8.19.0</FileVersion>
-    <InformationalVersion>0.8.19-preview</InformationalVersion>
-    <BuildDate>2026-08-30</BuildDate>
+    <VersionPrefix>0.9.0</VersionPrefix>
+    <VersionSuffix>pre</VersionSuffix>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>BuildDate</_Parameter1>
-      <_Parameter2>$(BuildDate)</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
 
   <!-- Debug configuration -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

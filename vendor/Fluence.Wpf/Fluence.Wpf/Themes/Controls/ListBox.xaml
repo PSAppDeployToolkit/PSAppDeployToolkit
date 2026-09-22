@@ -49,7 +49,7 @@
                                 Margin="2,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
                                 CornerRadius="1.5"
                                 IsHitTestVisible="False"
                                 Opacity="0" />
@@ -71,9 +71,12 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <!--  WinUI fades the pill in linearly over 83 ms and does not move it.  -->
+                                        <!--  WinUI fades the pill over ControlFastAnimationDuration (167 ms) on ControlFastOutSlowInKeySpline and does not move it (ItemContainer.xaml:54,73,95,105).  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -82,7 +85,10 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="0" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -145,7 +151,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5" />
+                            <!--  WinUI parity: ListViewItemDisabledThemeOpacity is 0.3, matching ListView.  -->
+                            <Setter Property="Opacity" Value="0.3" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

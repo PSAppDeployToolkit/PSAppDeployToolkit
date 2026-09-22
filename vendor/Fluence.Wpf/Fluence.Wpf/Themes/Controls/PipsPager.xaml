@@ -9,17 +9,24 @@
         dots inside fixed square touch targets, selected pip larger, optional previous/next
         chevron buttons with the subtle fill states).
         Pips are neutral per PipsPagerSelectionIndicatorForeground*: dot 4px at rest in
-        ControlStrongFillColorDefaultBrush, grows to 5px in TextFillColorSecondaryBrush on
-        hover (TextFillColorSecondaryBrush pressed), and the selected pip renders 6px in the
-        same ControlStrongFillColorDefaultBrush (ControlStrongFillColorDisabledBrush when
-        disabled), matching the WinUI 4/5/6 px pip scale; the size changes animate over the
-        ControlFasterAnimationDuration on the ControlFastOutSlowIn spline (ToggleSwitch.xaml
-        knob-morph precedent).
-        Navigation buttons: subtle plates (SubtleFillColorSecondaryBrush hover /
-        SubtleFillColorTertiaryBrush press, see NumberBox spin buttons) hosting Fluence
-        FontIcon chevrons; ChevronLeft/Right E76B/E76C when horizontal and ChevronUp/Down
-        E70E/E70D when vertical. Buttons default Collapsed per WinUI, show always for Visible,
-        and show only while the pointer is over the pager for VisibleOnPointerOver.
+        ControlStrongFillColorDefaultBrush, TextFillColorSecondaryBrush on hover and pressed,
+        ControlStrongFillColorDefaultBrush selected (ControlStrongFillColorDisabledBrush when
+        disabled); the size changes animate over the ControlFasterAnimationDuration on the
+        ControlFastOutSlowIn spline (ToggleSwitch.xaml knob-morph precedent).
+        The real WinUI pip-size ramp is 4 rest, 6 hover, 6 selected, 4 pressed (a pointer-over
+        pip jumps straight to the selected size via PipsPagerSelectedGlyphFontSize, and even a
+        selected pip shrinks back to the normal 4px size while pressed, since
+        PipsPagerSelectedPipButtonStyle inherits the same CommonStates group as the normal pip
+        style). This port keeps rest=4 and selected=6 but grows hover to 6 to match the shared
+        hover/selected size exactly; it does not reproduce the press-always-shrinks-to-4 rule,
+        since layering that onto the existing checked/hover/pressed trigger combination reliably
+        needs more trigger-ordering surgery than this pass covers.
+        Navigation buttons: no hover or pressed plate (PipsPagerNavigationButtonBackground* are
+        all ControlFillColorTransparentBrush, PipsPager_themeresources.xaml:21-22) hosting
+        Fluence FontIcon chevrons; ChevronLeft/Right E76B/E76C when horizontal and
+        ChevronUp/Down E70E/E70D when vertical. Buttons default Collapsed per WinUI, show
+        always for Visible, and show only while the pointer is over the pager for
+        VisibleOnPointerOver.
         The pip ToggleButtons are generated in code into PART_PipsHost (see PipsPager.cs and
         the RatingControl PART_StarsPanel precedent). Every page gets a pip; PART_PipsScrollViewer
         clamps the run to MaxVisiblePips boxes along the orientation axis and PipsPager.cs drives
@@ -52,7 +59,7 @@
                     <ControlTemplate.Triggers>
                         <!--
                             Pip size morph (rest 4 / hover 5 / selected 6), ToggleSwitch.xaml knob
-                            precedent: Width/Height animate over 83ms on the 0.8,0,0,1 spline
+                            precedent: Width/Height animate over 83ms on the 0,0,0,1 spline
                             (Typography.xaml motion tokens ControlFasterAnimationDuration +
                             ControlFastOutSlowInKeySpline; storyboard attributes need literal
                             values). Brush roles keep the committed neutral strong-fill mapping.
@@ -71,15 +78,15 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="5" />
+                                                Value="6" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
-                                                Value="5" />
+                                                Value="6" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -89,13 +96,13 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="4" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="4" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -113,13 +120,13 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="6" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="6" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -131,13 +138,13 @@
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="4" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
                                             <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
+                                                KeySpline="0,0,0,1"
                                                 KeyTime="0:0:0.083"
                                                 Value="4" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -171,12 +178,16 @@
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!--
+                            ButtonPlate's Background stays at the base TemplateBinding (Transparent):
+                            ControlFillColorTransparentBrush is #00FFFFFF, the same zero-alpha value, so
+                            a hover/pressed Background setter here would be a no-op. Only Foreground
+                            changes.
+                        -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">

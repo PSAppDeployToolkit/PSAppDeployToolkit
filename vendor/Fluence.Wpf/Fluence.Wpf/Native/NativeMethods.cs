@@ -32,8 +32,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Fluence.Wpf.Helpers;
 using Windows.Win32;
+using Windows.Win32.Devices.Display;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -375,19 +377,6 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Extends the DWM frame across the entire client area (the "sheet of glass" margins of
-        /// <c language="csharp">-1</c> on every edge), letting the backdrop composite behind the whole window.
-        /// </summary>
-        /// <param name="hwnd">The target window handle.</param>
-        /// <returns><see langword="true"/> on success.</returns>
-        public static bool ExtendFrameIntoClientArea(IntPtr hwnd)
-        {
-            MARGINS margins = new() { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
-            int result = PInvoke.DwmExtendFrameIntoClientArea((HWND)hwnd, in margins);
-            return result is 0;
-        }
-
-        /// <summary>
         /// Packs a <see cref="System.Windows.Media.Color"/> into the <c language="text">0x00BBGGRR</c> COLORREF
         /// layout that DWM color attributes such as DWMWA_BORDER_COLOR
         /// expect; the alpha channel is ignored. Despite the historical "ABGR" naming, the byte
@@ -686,5 +675,136 @@ namespace Fluence.Wpf.Native
         }
 
         #endregion OS version and taskbar helpers
+
+        #region Display color depth
+
+        /// <summary>
+        /// Reads the advanced-color state of the display path that currently hosts
+        /// <paramref name="hwnd"/>: the reported bits per color channel and whether advanced color
+        /// is enabled on that path. See the KNOWN_ISSUES.md entry "Translucent layers over a DWM
+        /// backdrop lose alpha precision on a 10 bpc display" for why both fields are needed: a
+        /// 10-bits-per-channel Windows output with advanced color off quantises DWM's client-alpha
+        /// compositing to two bits, but the same output with advanced color enabled (measured by
+        /// toggling the GPU driver's 10-bit pixel format setting) composites at full precision.
+        /// </summary>
+        /// <remarks>
+        /// The steps mirror the documented <c language="csharp">DisplayConfigGetDeviceInfo</c> recipe: resolve the
+        /// HMONITOR under the window, read its GDI device name via <c language="csharp">GetMonitorInfo</c> with a
+        /// <see cref="MONITORINFOEXW"/> (the plain <see cref="MONITORINFO"/> overload has no device
+        /// name), enumerate the active display paths via
+        /// <c language="csharp">GetDisplayConfigBufferSizes</c> / <c language="csharp">QueryDisplayConfig</c>, match the path whose
+        /// source GDI device name equals the monitor's (ordinal, case-insensitive, matching Win32's
+        /// own device-name comparison convention), and read that path's target advanced-color info.
+        /// Every step is best-effort: a zero handle, a failing API, or no matching path all fall
+        /// through to <see langword="default"/>, which reports bits per channel unknown (treated by
+        /// callers as 8, meaning no quantisation risk) and advanced color disabled.
+        /// <see cref="DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO.header"/> and
+        /// <see cref="DISPLAYCONFIG_SOURCE_DEVICE_NAME.header"/> are passed by reference rather than
+        /// by pointer: both structures place the header first, so a reference to that field is a
+        /// reference to the whole structure, which is exactly what <c language="csharp">DisplayConfigGetDeviceInfo</c>
+        /// needs to read the caller-supplied <c language="csharp">type</c>/<c language="csharp">size</c>/<c language="csharp">adapterId</c>/<c language="csharp">id</c> and
+        /// write the answer back into the same memory. In a cloned topology (the same desktop image
+        /// duplicated to several targets) more than one active path can share the same source GDI
+        /// device name; this method returns the first match, which is a reasonable approximation
+        /// since a clone's paths are typically driven by the same adapter and mode, but is not
+        /// guaranteed to be the exact path the monitor renders through.
+        /// </remarks>
+        /// <param name="hwnd">The window handle whose monitor is probed.</param>
+        /// <returns>
+        ///   The resolved <see cref="DisplayColorDepth"/>, or the unknown/disabled default when the
+        ///   display path could not be resolved.
+        /// </returns>
+        public static DisplayColorDepth GetDisplayColorDepth(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+            {
+                return default;
+            }
+
+            HMONITOR monitor = PInvoke.MonitorFromWindow((HWND)hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            if (monitor == IntPtr.Zero)
+            {
+                return default;
+            }
+
+            MONITORINFOEXW monitorInfoEx = new()
+            {
+                monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>() },
+            };
+            if (!PInvoke.GetMonitorInfo(monitor, ref monitorInfoEx.monitorInfo))
+            {
+                return default;
+            }
+            string monitorDeviceName = monitorInfoEx.szDevice.ToString();
+
+            // The topology can change between the buffer-size query and the fetch (a monitor
+            // attached or detached mid-call), which QueryDisplayConfig reports as
+            // ERROR_INSUFFICIENT_BUFFER rather than by silently truncating. Retry the pair a bounded
+            // number of times with freshly queried sizes rather than either failing outright or
+            // looping forever against a topology that keeps moving.
+            const int MaxQueryAttempts = 3;
+            DISPLAYCONFIG_PATH_INFO[]? paths = null;
+            uint pathCount = 0;
+            for (int attempt = 0; attempt < MaxQueryAttempts; attempt++)
+            {
+                if (PInvoke.GetDisplayConfigBufferSizes(QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out uint modeCount) is not WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    return default;
+                }
+
+                DISPLAYCONFIG_PATH_INFO[] candidatePaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+                DISPLAYCONFIG_MODE_INFO[] modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+                WIN32_ERROR queryResult = PInvoke.QueryDisplayConfig(QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, ref pathCount, candidatePaths, ref modeCount, modes);
+                if (queryResult is WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    paths = candidatePaths;
+                    break;
+                }
+                if (queryResult is not WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                {
+                    return default;
+                }
+            }
+            if (paths is null)
+            {
+                return default;
+            }
+
+            for (int i = 0; i < pathCount; i++)
+            {
+                DISPLAYCONFIG_PATH_INFO path = paths[i];
+
+                DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName = default;
+                sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+                sourceName.header.size = (uint)Marshal.SizeOf<DISPLAYCONFIG_SOURCE_DEVICE_NAME>();
+                sourceName.header.adapterId = path.sourceInfo.adapterId;
+                sourceName.header.id = path.sourceInfo.id;
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref sourceName.header) is not 0)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(sourceName.viewGdiDeviceName.ToString(), monitorDeviceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO colorInfo = default;
+                colorInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
+                colorInfo.header.size = (uint)Marshal.SizeOf<DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO>();
+                colorInfo.header.adapterId = path.targetInfo.adapterId;
+                colorInfo.header.id = path.targetInfo.id;
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref colorInfo.header) is not 0)
+                {
+                    continue;
+                }
+
+                return new DisplayColorDepth((int)colorInfo.bitsPerColorChannel, colorInfo.advancedColorEnabled);
+            }
+
+            return default;
+        }
+
+        #endregion Display color depth
     }
 }

@@ -34,6 +34,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Fluence.Wpf.Tests.Infrastructure;
 using Fluence.Wpf.Theming;
 using Xunit;
 
@@ -84,10 +85,10 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.Changed += OnChanged;
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
                     ResourceDictionary afterFirst = dicts[0];
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
                     ResourceDictionary afterSecond = dicts[0];
 
                     Assert.Equal(1, changedCount);
@@ -118,10 +119,10 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.Changed += OnChanged;
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
                     ResourceDictionary afterDark = dicts[0];
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
                     ResourceDictionary afterLight = dicts[0];
 
                     Assert.Equal(2, changedCount);
@@ -218,14 +219,14 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.Changed += OnChanged;
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.Mica, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
 
                     Assert.Equal(1, changedCount);
                     Assert.Same(before, dicts[0]);
-                    Assert.Equal(BackdropType.Mica, ApplicationThemeManager.CurrentBackdrop);
+                    Assert.Equal(WindowBackdropType.Mica, ApplicationThemeManager.CurrentBackdrop);
 
                     // A second call with the same backdrop is redundant in both respects.
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.Mica, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
 
                     Assert.Equal(1, changedCount);
                     Assert.Same(before, dicts[0]);
@@ -263,8 +264,7 @@ namespace Fluence.Wpf.Tests.Theming
                 {
                     ApplicationThemeManager.Apply(
                         ApplicationThemeManager.CurrentTheme,
-                        ApplicationThemeManager.CurrentBackdrop,
-                        updateAccent: false);
+                        ApplicationThemeManager.CurrentBackdrop);
 
                     Assert.Equal(1, changedCount);
                     Assert.NotSame(before, dicts[0]);
@@ -292,7 +292,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationAccentColorManager.ResetForTesting();
                 Application.Current.Resources.MergedDictionaries.Clear();
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
 
                 Collection<ResourceDictionary> after = Application.Current.Resources.MergedDictionaries;
                 Assert.Equal(3, after.Count);
@@ -315,7 +315,7 @@ namespace Fluence.Wpf.Tests.Theming
                 ResourceDictionary foreign = [];
                 dicts[0] = foreign;
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
 
                 Assert.Equal(3, dicts.Count);
                 Assert.NotSame(foreign, dicts[0]);
@@ -500,7 +500,7 @@ namespace Fluence.Wpf.Tests.Theming
         /// </summary>
         private static Collection<ResourceDictionary> SeedPinnedLightTheme()
         {
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
             ApplicationAccentColorManager.ApplyCustomAccent(PinnedAccent);
             return Application.Current.Resources.MergedDictionaries;
         }

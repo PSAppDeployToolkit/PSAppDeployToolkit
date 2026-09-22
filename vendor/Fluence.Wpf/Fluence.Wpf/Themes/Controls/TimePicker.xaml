@@ -9,9 +9,11 @@
         hour/minute/AM-PM segments with thin dividers, and a flyout of selector columns
         over an accept/dismiss button row; equal column weights).
         The field reuses the Fluence Button visuals (ControlFillColorDefaultBrush +
-        ControlElevationBorderBrush); the flyout surface reuses the canonical flyout tokens
-        from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
-        SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
+        ControlElevationBorderBrush); the flyout surface reuses the acrylic-fallback token
+        from FlyoutPresenter.xaml: AcrylicBackgroundFillColorDefaultBrush +
+        SurfaceStrokeColorFlyoutBrush + ControlCornerRadius (TimePicker_themeresources.xaml:270;
+        WinUI's own TimePickerFlyoutPresenter uses ControlCornerRadius, not the flyout
+        OverlayCornerRadius other Fluence popups share).
         The selector columns are LoopingSelectorList primitives: nine 40px rows with the
         selected row centred under the accent HighlightRect band, matching WinUI's
         TimePickerFlyoutPresenter. The hour and minute columns wrap endlessly; the AM/PM
@@ -134,123 +136,139 @@
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"
+                            HorizontalOffset="-16"
+                            VerticalOffset="-16"
                             Focusable="False"
                             Placement="Bottom"
                             PlacementTarget="{Binding ElementName=PART_FlyoutButton}"
                             PopupAnimation="None"
                             StaysOpen="False">
-                            <Grid>
+                            <!--
+                                The reveal fades this root, not the flyout surface alone, so the
+                                opaque ShadowCaster behind the surface fades with it. Fading only the
+                                surface left the caster painting a blank plate at full strength on
+                                the first frame of every open, which read as a flash before the
+                                flyout resolved. The root starts hidden so no frame composites at
+                                rest before the reveal seeds its start pose.
+                            -->
+                            <Grid
+                                x:Name="FlyoutRoot"
+                                Margin="16"
+                                Opacity="0">
                                 <!--
                                     Elevation caster: an empty sibling behind the surface, because WPF
                                     drops ClearType for text under an Effect and this surface opts into
-                                    it. No layout gutter is needed, PopupRoot already reserves about
-                                    15 px per side for popup shadows.
+                                    it. This Grid's 16px margin is the popup's shadow gutter: WPF sizes
+                                    a popup HWND to exactly its child's layout size, so without it the
+                                    effect is clipped to the plate and only the corner notches survive.
+                                    PART_Popup's HorizontalOffset and VerticalOffset of -16 pull it back
+                                    so the plate keeps its position.
                                 -->
                                 <Border
                                     x:Name="ShadowCaster"
                                     MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
                                     Margin="0,4,0,0"
-                                    Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
-                                    CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}"
                                     Effect="{DynamicResource FlyoutShadowEffect}"
                                     RenderTransform="{Binding RenderTransform, ElementName=FlyoutSurface}"
                                     UseLayoutRounding="True" />
-                            <Border
-                                x:Name="FlyoutSurface"
-                                MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
-                                Margin="0,4,0,0"
-                                Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
-                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{DynamicResource OverlayCornerRadius}"
-                                RenderOptions.ClearTypeHint="Enabled"
-                                UseLayoutRounding="True">
-                                <Border.RenderTransform>
-                                    <TranslateTransform x:Name="FlyoutSurfaceTranslate" />
-                                </Border.RenderTransform>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <!--  Height is nine LoopingSelectorList rows of 40 (WinUI TimePickerFlyoutPresenter).  -->
-                                    <Grid
-                                        x:Name="SelectorsGrid"
-                                        Grid.Row="0"
-                                        Height="360"
-                                        Margin="4">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="78*" />
-                                            <ColumnDefinition Width="78*" />
-                                            <ColumnDefinition x:Name="PeriodSelectorColumn" Width="78*" />
-                                        </Grid.ColumnDefinitions>
-                                        <!--
-                                            WinUI HighlightRect: one row tall, centred, behind every column, so the
-                                            selected row of each column reads as sitting on the accent band. The
-                                            columns paint no selected background of their own; they only flip the
-                                            selected row's foreground to TextOnAccentFillColorPrimaryBrush.
-                                        -->
+                                <Border
+                                    x:Name="FlyoutSurface"
+                                    MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                                    RenderOptions.ClearTypeHint="Enabled"
+                                    UseLayoutRounding="True">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="FlyoutSurfaceTranslate" />
+                                    </Border.RenderTransform>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <!--  Height is nine LoopingSelectorList rows of 40 (WinUI TimePickerFlyoutPresenter).  -->
+                                        <Grid
+                                            x:Name="SelectorsGrid"
+                                            Grid.Row="0"
+                                            Height="360"
+                                            Margin="4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="78*" />
+                                                <ColumnDefinition Width="78*" />
+                                                <ColumnDefinition x:Name="PeriodSelectorColumn" Width="78*" />
+                                            </Grid.ColumnDefinitions>
+                                            <!--
+                                                WinUI HighlightRect: one row tall, centred, behind every column, so the
+                                                selected row of each column reads as sitting on the accent band. The
+                                                columns paint no selected background of their own; they only flip the
+                                                selected row's foreground to TextOnAccentFillColorPrimaryBrush.
+                                            -->
+                                            <Border
+                                                x:Name="HighlightRect"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="3"
+                                                Height="{Binding ItemHeight, ElementName=PART_HourList}"
+                                                VerticalAlignment="Center"
+                                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="{DynamicResource ControlCornerRadius}"
+                                                IsHitTestVisible="False" />
+                                            <controls:LoopingSelectorList
+                                                x:Name="PART_HourList"
+                                                Grid.Column="0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                            <controls:LoopingSelectorList
+                                                x:Name="PART_MinuteList"
+                                                Grid.Column="1"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                            <controls:LoopingSelectorList
+                                                x:Name="PART_PeriodList"
+                                                Grid.Column="2"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                        </Grid>
                                         <Border
-                                            x:Name="HighlightRect"
-                                            Grid.Column="0"
-                                            Grid.ColumnSpan="3"
-                                            Height="{Binding ItemHeight, ElementName=PART_HourList}"
-                                            VerticalAlignment="Center"
-                                            Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                            CornerRadius="{DynamicResource ControlCornerRadius}"
-                                            IsHitTestVisible="False" />
-                                        <controls:LoopingSelectorList
-                                            x:Name="PART_HourList"
-                                            Grid.Column="0"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
-                                        <controls:LoopingSelectorList
-                                            x:Name="PART_MinuteList"
-                                            Grid.Column="1"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
-                                        <controls:LoopingSelectorList
-                                            x:Name="PART_PeriodList"
-                                            Grid.Column="2"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                            Grid.Row="1"
+                                            Height="1"
+                                            Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                                        <Grid Grid.Row="2" Margin="4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:Button
+                                                x:Name="PART_AcceptButton"
+                                                Grid.Column="0"
+                                                MinWidth="0"
+                                                Margin="0,0,2,0"
+                                                HorizontalAlignment="Stretch"
+                                                AutomationProperties.Name="Accept"
+                                                ToolTip="Accept">
+                                                <controls:FontIcon Glyph="&#xE8FB;" IconFontSize="16" />
+                                            </controls:Button>
+                                            <controls:Button
+                                                x:Name="PART_CancelButton"
+                                                Grid.Column="1"
+                                                MinWidth="0"
+                                                Margin="2,0,0,0"
+                                                HorizontalAlignment="Stretch"
+                                                AutomationProperties.Name="Cancel"
+                                                ToolTip="Cancel">
+                                                <controls:FontIcon Glyph="&#xE711;" IconFontSize="16" />
+                                            </controls:Button>
+                                        </Grid>
                                     </Grid>
-                                    <Border
-                                        Grid.Row="1"
-                                        Height="1"
-                                        Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
-                                    <Grid Grid.Row="2" Margin="4">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <controls:Button
-                                            x:Name="PART_AcceptButton"
-                                            Grid.Column="0"
-                                            MinWidth="0"
-                                            Margin="0,0,2,0"
-                                            HorizontalAlignment="Stretch"
-                                            AutomationProperties.Name="Accept"
-                                            ToolTip="Accept">
-                                            <controls:FontIcon Glyph="&#xE73E;" IconFontSize="12" />
-                                        </controls:Button>
-                                        <controls:Button
-                                            x:Name="PART_CancelButton"
-                                            Grid.Column="1"
-                                            MinWidth="0"
-                                            Margin="2,0,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            AutomationProperties.Name="Cancel"
-                                            ToolTip="Cancel">
-                                            <controls:FontIcon Glyph="&#xE711;" IconFontSize="12" />
-                                        </controls:Button>
-                                    </Grid>
-                                </Grid>
-                            </Border>
+                                </Border>
                             </Grid>
                         </Popup>
                     </Grid>
@@ -258,7 +276,7 @@
                         <!--
                             Flyout open reveal, ContextMenu.xaml submenu precedent: the surface
                             slides down from Y=-8 to 0 (the popup is Placement=Bottom) with a fade
-                            0 to 1 over 167ms on the 0.8,0,0,1 spline (Typography.xaml motion
+                            0 to 1 over 167ms on the 0,0,0,1 spline (Typography.xaml motion
                             tokens ControlFastAnimationDuration + ControlFastOutSlowInKeySpline;
                             storyboard attributes need literal values). The popup keeps
                             PopupAnimation=None so this storyboard owns the reveal.
@@ -269,14 +287,14 @@
                                     <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FlyoutSurfaceTranslate" Storyboard.TargetProperty="Y">
                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="-8" />
                                         <SplineDoubleKeyFrame
-                                            KeySpline="0.8,0,0,1"
+                                            KeySpline="0,0,0,1"
                                             KeyTime="0:0:0.167"
                                             Value="0" />
                                     </DoubleAnimationUsingKeyFrames>
-                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FlyoutSurface" Storyboard.TargetProperty="Opacity">
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FlyoutRoot" Storyboard.TargetProperty="Opacity">
                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                         <SplineDoubleKeyFrame
-                                            KeySpline="0.8,0,0,1"
+                                            KeySpline="0,0,0,1"
                                             KeyTime="0:0:0.167"
                                             Value="1" />
                                     </DoubleAnimationUsingKeyFrames>

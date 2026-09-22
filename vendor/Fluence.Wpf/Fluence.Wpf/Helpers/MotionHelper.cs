@@ -28,6 +28,7 @@
 
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Fluence.Wpf.Helpers
 {
@@ -41,6 +42,18 @@ namespace Fluence.Wpf.Helpers
     /// </summary>
     internal static class MotionHelper
     {
+        /// <summary>
+        /// The decelerating Fluent key spline every code-built reveal rides, mirroring the value
+        /// of the ControlFastOutSlowInKeySpline motion token in
+        /// <c language="text">Themes/Typography/Typography.xaml</c> (itself the WinUI
+        /// Common_themeresources_any.xaml value). Code cannot resolve a theme resource before the
+        /// dictionary is published, so the token is mirrored here once instead of at each call
+        /// site, and the mirror is pinned against the published token by
+        /// <c language="text">TypographyResourceContractTests</c>. The instance is frozen, so the
+        /// animations that share it stay free to be used from any thread.
+        /// </summary>
+        internal static readonly KeySpline FastOutSlowInKeySpline = CreateFastOutSlowInKeySpline();
+
         /// <summary>
         /// Gets or sets the test seam. When non-null, overrides the OS setting.
         /// Reset to null in test cleanup.
@@ -59,5 +72,16 @@ namespace Fluence.Wpf.Helpers
         /// </summary>
         internal static bool IsMotionEnabled =>
             OverrideIsMotionEnabled ?? (SystemParameters.ClientAreaAnimation && (RenderCapability.Tier >> 16) > 0);
+
+        /// <summary>
+        /// Builds the frozen <see cref="FastOutSlowInKeySpline"/> instance.
+        /// </summary>
+        /// <returns>The frozen key spline.</returns>
+        private static KeySpline CreateFastOutSlowInKeySpline()
+        {
+            KeySpline spline = new(0.0, 0.0, 0.0, 1.0);
+            spline.Freeze();
+            return spline;
+        }
     }
 }

@@ -31,6 +31,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Fluence.Wpf.Automation;
 
 namespace Fluence.Wpf.Controls
@@ -38,14 +39,12 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// An inline notification bar for displaying status messages with severity levels.
     /// </summary>
+    [TemplatePart(Name = PART_BannerPanel, Type = typeof(InfoBarPanel))]
     [TemplatePart(Name = PART_CloseButton, Type = typeof(System.Windows.Controls.Button))]
-    [TemplateVisualState(GroupName = "SeverityLevels", Name = "Informational")]
-    [TemplateVisualState(GroupName = "SeverityLevels", Name = "Success")]
-    [TemplateVisualState(GroupName = "SeverityLevels", Name = "Warning")]
-    [TemplateVisualState(GroupName = "SeverityLevels", Name = "Error")]
     public class InfoBar : ContentControl
     {
         // Template part names.
+        private const string PART_BannerPanel = "PART_BannerPanel";
         private const string PART_CloseButton = "PART_CloseButton";
 
         /// <summary>
@@ -110,7 +109,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Severity),
                 typeof(InfoBarSeverity),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(InfoBarSeverity.Informational, OnSeverityChanged));
+                new FrameworkPropertyMetadata(InfoBarSeverity.Informational, OnAnnouncingPropertyChanged));
 
         /// <summary>
         /// Gets or sets the severity level that determines the visual style of the info bar.
@@ -123,8 +122,10 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Returns the Segoe Fluent Icons glyph that represents <paramref name="severity"/>. This is the
-        /// single programmatic source for the severity glyphs; it mirrors the <c language="xaml">Severity</c> triggers in
-        /// Themes/Controls/InfoBar.xaml (WPF property triggers cannot call this method, so keep both in sync).
+        /// single programmatic source for the severity glyphs; it mirrors the <c language="xaml">StandardIcon</c>
+        /// severity triggers in Themes/Controls/InfoBar.xaml (WPF property triggers cannot call this method, so
+        /// keep both in sync). These are the WinUI InfoBar*IconGlyph codes (InfoBar_themeresources.xaml), the
+        /// glyph drawn on top of the IconBackground circle, not a standalone icon.
         /// </summary>
         /// <param name="severity">The severity to map.</param>
         /// <returns>A single-character glyph string in the Segoe Fluent Icons font.</returns>
@@ -133,10 +134,10 @@ namespace Fluence.Wpf.Controls
         {
             return severity switch
             {
-                InfoBarSeverity.Informational => "",
-                InfoBarSeverity.Success => "",
-                InfoBarSeverity.Warning => "",
-                InfoBarSeverity.Error => "",
+                InfoBarSeverity.Informational => "",
+                InfoBarSeverity.Success => "",
+                InfoBarSeverity.Warning => "",
+                InfoBarSeverity.Error => "",
                 _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, message: null),
             };
         }
@@ -168,10 +169,12 @@ namespace Fluence.Wpf.Controls
                 nameof(IsOpen),
                 typeof(bool),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(defaultValue: true, propertyChangedCallback: OnIsOpenChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, propertyChangedCallback: OnIsOpenChanged));
 
         /// <summary>
-        /// Gets or sets a value indicating whether the info bar is visible.
+        /// Gets or sets a value indicating whether the info bar is visible. The default is
+        /// <see langword="false"/>, as WinUI's is: a bar is declared closed and opened when the
+        /// condition it reports actually arises.
         /// </summary>
         public bool IsOpen
         {
@@ -263,7 +266,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CornerRadius),
                 typeof(CornerRadius),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(new CornerRadius(8)));
+                new FrameworkPropertyMetadata(new CornerRadius(4)));
 
         /// <summary>
         /// Gets or sets the corner radius of the info bar.
@@ -275,15 +278,101 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Occurs before the info bar closes. Set <see cref="InfoBarClosingEventArgs.Cancel"/>
-        /// to <see langword="true"/> to prevent closing.
+        /// Identifies the <see cref="CloseButtonStyle"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CloseButtonStyleProperty =
+            DependencyProperty.Register(
+                nameof(CloseButtonStyle),
+                typeof(Style),
+                typeof(InfoBar),
+                new FrameworkPropertyMetadata(defaultValue: null, OnCloseButtonStyleChanged));
+
+        /// <summary>
+        /// Gets or sets the style applied to the close button, WinUI's
+        /// <c language="csharp">InfoBar.CloseButtonStyle</c>.
+        /// </summary>
+        public Style? CloseButtonStyle
+        {
+            get => (Style?)GetValue(CloseButtonStyleProperty);
+            set => SetValue(CloseButtonStyleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="CloseButtonCommand"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CloseButtonCommandProperty =
+            DependencyProperty.Register(
+                nameof(CloseButtonCommand),
+                typeof(ICommand),
+                typeof(InfoBar),
+                new FrameworkPropertyMetadata(defaultValue: null));
+
+        /// <summary>
+        /// Gets or sets the command invoked when the close button is clicked, WinUI's
+        /// <c language="csharp">InfoBar.CloseButtonCommand</c>. The command runs in addition to the
+        /// close itself: the bar still closes unless a <see cref="Closing"/> handler cancels it.
+        /// </summary>
+        public ICommand? CloseButtonCommand
+        {
+            get => (ICommand?)GetValue(CloseButtonCommandProperty);
+            set => SetValue(CloseButtonCommandProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="CloseButtonCommandParameter"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CloseButtonCommandParameterProperty =
+            DependencyProperty.Register(
+                nameof(CloseButtonCommandParameter),
+                typeof(object),
+                typeof(InfoBar),
+                new FrameworkPropertyMetadata(defaultValue: null));
+
+        /// <summary>
+        /// Gets or sets the parameter passed to <see cref="CloseButtonCommand"/>.
+        /// </summary>
+        public object? CloseButtonCommandParameter
+        {
+            get => GetValue(CloseButtonCommandParameterProperty);
+            set => SetValue(CloseButtonCommandParameterProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when the close button is clicked, before the close itself runs, matching WinUI's
+        /// <c language="csharp">InfoBar.CloseButtonClick</c>. WinUI passes no arguments of its own
+        /// here, so neither does this. Cancel the close from <see cref="Closing"/>, not from here.
+        /// </summary>
+        public event EventHandler? CloseButtonClick;
+
+        /// <summary>
+        /// Occurs when the info bar opens, which is <see cref="IsOpen"/> going from
+        /// <see langword="false"/> to <see langword="true"/>. WinUI raises the same event from the
+        /// same transition. A <see cref="Closing"/> handler that cancels puts <see cref="IsOpen"/>
+        /// back without the bar ever having closed, and that revert is not a fresh open, so it
+        /// raises nothing here.
+        /// </summary>
+        public event EventHandler<InfoBarOpenedEventArgs>? Opened;
+
+        /// <summary>
+        /// Occurs before the info bar closes, whichever way the close started: the close button
+        /// or <see cref="IsOpen"/> set to <see langword="false"/> in code. Set
+        /// <see cref="InfoBarClosingEventArgs.Cancel"/> to <see langword="true"/> to prevent
+        /// closing; <see cref="IsOpen"/> goes back to <see langword="true"/> and
+        /// <see cref="Closed"/> is not raised.
         /// </summary>
         public event EventHandler<InfoBarClosingEventArgs>? Closing;
 
         /// <summary>
         /// Occurs after the info bar has closed.
         /// </summary>
-        public event EventHandler? Closed;
+        public event EventHandler<InfoBarClosedEventArgs>? Closed;
+
+        /// <summary>
+        /// Gets a value indicating whether the banner row stacked its title, message and action
+        /// rather than putting them on one line. The panel decides that during measure, so this is
+        /// only meaningful after a layout pass.
+        /// </summary>
+        internal bool IsBannerStacked => _bannerPanel?.IsVertical ?? false;
 
         /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -298,17 +387,35 @@ namespace Fluence.Wpf.Controls
             base.OnApplyTemplate();
             _closeButton = GetTemplateChild(PART_CloseButton) as System.Windows.Controls.Button;
             _closeButton?.Click += OnCloseButtonClick;
-            UpdateSeverityState(useTransitions: false);
+            _bannerPanel = GetTemplateChild(PART_BannerPanel) as InfoBarPanel;
+            ApplyCloseButtonStyle();
         }
 
-        private static void OnSeverityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        /// <summary>
+        /// Puts <see cref="CloseButtonStyle"/> on the close button, or restores the template's own
+        /// style when the property is cleared. Applied from code rather than from the template so
+        /// an unset property leaves the default style in place instead of nulling it.
+        /// </summary>
+        private void ApplyCloseButtonStyle()
         {
-            InfoBar bar = (InfoBar)d;
-            bar.UpdateSeverityState(useTransitions: true);
-            if (bar.IsOpen)
+            if (_closeButton is null)
             {
-                bar.AnnounceLiveRegion();
+                return;
             }
+
+            Style? style = CloseButtonStyle;
+            if (style is null)
+            {
+                _closeButton.ClearValue(StyleProperty);
+                return;
+            }
+
+            _closeButton.Style = style;
+        }
+
+        private static void OnCloseButtonStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((InfoBar)d).ApplyCloseButtonStyle();
         }
 
         private static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -316,8 +423,63 @@ namespace Fluence.Wpf.Controls
             InfoBar bar = (InfoBar)d;
             if ((bool)e.NewValue)
             {
-                bar.AnnounceLiveRegion();
+                // A cancelled close puts IsOpen back without the bar ever having closed, so it
+                // is not a fresh appearance: it neither announces a second time nor reports as an
+                // open that never happened.
+                if (!bar._revertingCancelledClose)
+                {
+                    bar.AnnounceLiveRegion();
+                    bar.RaiseOpened();
+                }
+
+                return;
             }
+
+            bar.RunClosePipeline();
+        }
+
+        /// <summary>
+        /// Raises <see cref="Opened"/> from the instance itself, so the sender is the bar rather
+        /// than whatever the static property callback was handed.
+        /// </summary>
+        private void RaiseOpened()
+        {
+            Opened?.Invoke(this, new InfoBarOpenedEventArgs());
+        }
+
+        /// <summary>
+        /// Runs the whole close pipeline from the <see cref="IsOpen"/> changed callback, the way
+        /// WinUI's InfoBar does (InfoBar.cpp OnIsOpenPropertyChanged): raises
+        /// <see cref="Closing"/> with the reason the close was started for, puts
+        /// <see cref="IsOpen"/> back to <see langword="true"/> when a handler cancels, and
+        /// otherwise raises <see cref="Closed"/> exactly once with the same reason. Driving both
+        /// events from the single property transition is what makes a handler's own
+        /// <c language="text">IsOpen = false</c> a no-op rather than a second close: the property
+        /// is already false by the time the handler runs.
+        /// </summary>
+        private void RunClosePipeline()
+        {
+            InfoBarCloseReason reason = _closeReason;
+            _closeReason = InfoBarCloseReason.Programmatic;
+
+            InfoBarClosingEventArgs closingArgs = new(reason);
+            Closing?.Invoke(this, closingArgs);
+            if (closingArgs.Cancel)
+            {
+                _revertingCancelledClose = true;
+                try
+                {
+                    IsOpen = true;
+                }
+                finally
+                {
+                    _revertingCancelledClose = false;
+                }
+
+                return;
+            }
+
+            Closed?.Invoke(this, new InfoBarClosedEventArgs(reason));
         }
 
         private static void OnAnnouncingPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -347,39 +509,40 @@ namespace Fluence.Wpf.Controls
             peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
-        /// <summary>
-        /// Transitions the control to the visual state matching the current <see cref="Severity"/>.
-        /// Called without transitions on initial template application; with transitions on runtime changes.
-        /// </summary>
-        /// <param name="useTransitions">Indicates whether to use visual transitions.</param>
-        private void UpdateSeverityState(bool useTransitions)
-        {
-            _ = VisualStateManager.GoToState(this, Severity switch
-            {
-                InfoBarSeverity.Success => "Success",
-                InfoBarSeverity.Warning => "Warning",
-                InfoBarSeverity.Error => "Error",
-                InfoBarSeverity.Informational or _ => "Informational",
-            }, useTransitions);
-        }
-
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             OnCloseButtonClick();
         }
 
         /// <summary>
-        /// Raises the <see cref="Closing"/> event. If not canceled, sets <see cref="IsOpen"/>
-        /// to <see langword="false"/> and raises the <see cref="Closed"/> event.
+        /// Stamps <see cref="InfoBarCloseReason.CloseButton"/> as the reason for the close the
+        /// button is about to start, then drives <see cref="IsOpen"/> to
+        /// <see langword="false"/>. The <see cref="Closing"/> and <see cref="Closed"/> events are
+        /// raised by the property's changed callback, so a cancelled close leaves the bar open
+        /// and a completed one raises <see cref="Closed"/> once, with this reason.
         /// </summary>
         protected virtual void OnCloseButtonClick()
         {
-            InfoBarClosingEventArgs args = new();
-            Closing?.Invoke(this, args);
-            if (!args.Cancel)
+            CloseButtonClick?.Invoke(this, EventArgs.Empty);
+
+            ICommand? command = CloseButtonCommand;
+            object? parameter = CloseButtonCommandParameter;
+            if (command?.CanExecute(parameter) is true)
+            {
+                command.Execute(parameter);
+            }
+
+            _closeReason = InfoBarCloseReason.CloseButton;
+            try
             {
                 IsOpen = false;
-                Closed?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                // A click on an already-closed bar changes nothing, so the pipeline never runs
+                // and never consumes the stamped reason. Clearing it here stops that reason
+                // leaking into the next, programmatic close.
+                _closeReason = InfoBarCloseReason.Programmatic;
             }
         }
 
@@ -387,5 +550,19 @@ namespace Fluence.Wpf.Controls
         /// Represents a reference to the close button control, or null if the button is not available.
         /// </summary>
         private System.Windows.Controls.Button? _closeButton;
+        private InfoBarPanel? _bannerPanel;
+
+        /// <summary>
+        /// The reason to report on the next close. Stamped by <see cref="OnCloseButtonClick()"/>
+        /// before it drives <see cref="IsOpen"/>, and consumed (and reset) by
+        /// <see cref="RunClosePipeline"/>. A close nothing stamped is programmatic.
+        /// </summary>
+        private InfoBarCloseReason _closeReason = InfoBarCloseReason.Programmatic;
+
+        /// <summary>
+        /// True while <see cref="RunClosePipeline"/> is putting <see cref="IsOpen"/> back after a
+        /// cancelled close, so the reopen is not announced as a fresh appearance.
+        /// </summary>
+        private bool _revertingCancelledClose;
     }
 }

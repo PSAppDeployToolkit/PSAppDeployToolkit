@@ -19,9 +19,56 @@
         literal colors appear in this template; chrome uses canonical theme tokens only.
         The channel sliders are stock WPF Sliders re-templated to a bare track so the
         full-width gradient underlay stays visible; they reuse the Fluence slider's
-        SliderThumbStyle and SliderTrackSegmentStyle (Slider.xaml) for the thumb and the
-        invisible-but-clickable track segments.
+        SliderTrackSegmentStyle (Slider.xaml) for the invisible-but-clickable track
+        segments, but bring their own ColorPickerThumbStyle rather than Slider's accent-
+        colored SliderThumbStyle (see that style's own remarks below).
     -->
+
+    <!--
+        Neutral channel-slider thumb, distinct from Slider.xaml's SliderThumbStyle.
+        Authority: WinUI 3 ColorPicker_themeresources.xaml:5-8 (ColorPickerSliderThumbBackground*
+        tokens) and ColorPicker.xaml:435-442 (the outer capsule reuses the same
+        SliderOuterThumbBackground / SliderThumbBorderBrush pair as the plain Slider thumb -
+        Fluence's ControlSolidFillColorDefaultBrush / ControlElevationBorderBrush - fixed across
+        every state; only the inner dot's fill reacts, and WinUI applies no scale transform here).
+        WinUI's PointerOver fill is SystemControlHighlightChromeAltLowBrush, which has no direct
+        Fluence equivalent; ControlStrongFillColorDefaultBrush is used in its place.
+    -->
+    <Style x:Key="ColorPickerThumbStyle" TargetType="{x:Type Thumb}">
+        <Setter Property="Height" Value="20" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Grid>
+                        <Ellipse
+                            Width="20"
+                            Height="20"
+                            Fill="{DynamicResource ControlSolidFillColorDefaultBrush}"
+                            Stroke="{DynamicResource ControlElevationBorderBrush}"
+                            StrokeThickness="1" />
+                        <Ellipse
+                            x:Name="ColorPickerThumbInnerDot"
+                            Width="8"
+                            Height="8"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="{DynamicResource TextFillColorPrimaryBrush}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ColorPickerThumbInnerDot" Property="Fill" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ColorPickerThumbInnerDot" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="20" />
+    </Style>
 
     <Style x:Key="ColorPickerChannelSliderStyle" TargetType="{x:Type Slider}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
@@ -42,7 +89,7 @@
                                 <RepeatButton Command="Slider.DecreaseLarge" Style="{DynamicResource SliderTrackSegmentStyle}" />
                             </Track.DecreaseRepeatButton>
                             <Track.Thumb>
-                                <Thumb Style="{DynamicResource SliderThumbStyle}" />
+                                <Thumb Style="{DynamicResource ColorPickerThumbStyle}" />
                             </Track.Thumb>
                             <Track.IncreaseRepeatButton>
                                 <RepeatButton Command="Slider.IncreaseLarge" Style="{DynamicResource SliderTrackSegmentStyle}" />
@@ -134,13 +181,19 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <!--  Saturation (x) by value (y) spectrum at the selected hue  -->
+                            <!--
+                                Saturation (x) by value (y) spectrum at the selected hue.
+                                Stroke is 2px (WinUI ColorPickerBorderStyle, ColorPicker_themeresources.xaml:40-43,
+                                shared by the spectrum and swatch borders below); the hue and alpha bar
+                                strokes stay 1px and are flagged for the docs pass rather than changed here.
+                            -->
                             <Border
                                 x:Name="SpectrumSection"
                                 Grid.Row="0"
                                 HorizontalAlignment="Left"
                                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                BorderThickness="1">
+                                BorderThickness="2"
+                                CornerRadius="{DynamicResource ControlCornerRadius}">
                                 <Grid
                                     x:Name="PART_SpectrumArea"
                                     Width="256"
@@ -149,6 +202,13 @@
                                     Background="Transparent"
                                     Focusable="True"
                                     KeyboardNavigation.IsTabStop="True">
+                                    <!--
+                                        A Border only rounds its own stroke, not child content, so the code-behind-
+                                        painted spectrum image needs its own clip to actually round with the border.
+                                    -->
+                                    <Grid.Clip>
+                                        <RectangleGeometry RadiusX="4" RadiusY="4" Rect="0,0,256,256" />
+                                    </Grid.Clip>
                                     <Image x:Name="PART_SpectrumImage" Stretch="Fill" />
                                     <Ellipse
                                         x:Name="PART_SpectrumThumb"
@@ -234,7 +294,7 @@
                                 </Grid>
                                 <Border
                                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
+                                    BorderThickness="2"
                                     CornerRadius="4" />
                             </Grid>
 

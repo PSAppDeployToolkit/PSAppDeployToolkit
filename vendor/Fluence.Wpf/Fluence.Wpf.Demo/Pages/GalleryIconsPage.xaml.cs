@@ -43,13 +43,15 @@ using System.Windows.Resources;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryIconsPage : UserControl
+    public partial class GalleryIconsPage : Page
     {
         // Tile metrics mirroring the WinUI 3 Gallery Iconography grid: near-square
-        // 115x110 cards separated by 12px gutters.
-        private const double TileWidth = 115.0;
-        private const double TileGapWidth = 12.0;
+        // 93x92 dip cards on a 103 dip pitch (10 dip horizontal gutter), matching the
+        // Gallery's measured 140x138 px tile at a 103 dip pitch, 150% DPI.
+        private const double TileWidth = 93.0;
+        private const double TileGapWidth = 10.0;
         private const int DefaultColumns = 4;
+        private const double ScrollBarReservedWidth = 12.0;
 
         private static readonly Lock IconCatalogLock = new();
         private static readonly char[] SearchTermSeparators = [' '];
@@ -114,7 +116,9 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void IconCatalogList_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double usableWidth = e.NewSize.Width - SystemParameters.VerticalScrollBarWidth;
+            // The Fluent ScrollBar is 12 dp, not the classic SystemParameters metric of 17,
+            // and reserving the larger number cost the grid a whole column.
+            double usableWidth = e.NewSize.Width - ScrollBarReservedWidth;
             int columns = Math.Max(1, (int)((usableWidth + TileGapWidth) / (TileWidth + TileGapWidth)));
             if (columns != _columns)
             {

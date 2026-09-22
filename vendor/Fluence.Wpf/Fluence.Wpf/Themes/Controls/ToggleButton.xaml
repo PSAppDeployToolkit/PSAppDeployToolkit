@@ -58,13 +58,13 @@
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
@@ -72,13 +72,13 @@
                         <Storyboard x:Key="ReleasedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
-                                    KeySpline="0.8,0,0,1"
+                                    KeySpline="0,0,0,1"
                                     KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
@@ -90,12 +90,23 @@
                         pressed, with the disabled triggers after all interactive states.
                         Indeterminate (IsChecked = null) rest needs no trigger because the
                         style's base setters already match the WinUI Indeterminate palette.
+
+                        WinUI parity for the four checked states (ToggleButton_themeresources.xaml:122,
+                        :255-303): BackgroundSizing="OuterBorderEdge" paints the checked fill under the
+                        (semi-transparent) accent stroke instead of stopping at its inner edge. OuterBorder
+                        gets the same fill brush as RestFill so the color bleeds through the stroke ring;
+                        RestFill keeps its existing setter because AccentFillBackdrop sits behind it and is
+                        a neutral compositing plate (#FFFFFF / #202020), not an accent color, so clearing
+                        RestFill would replace the interior tint with that plate instead of the accent fill.
+                        This is the smaller of the two suggested fixes: it adds one setter per state rather
+                        than reworking RestFill's margin to bleed under the border.
                     -->
                     <ControlTemplate.Triggers>
                         <!--  Checked rest  -->
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="1" />
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                         </Trigger>
@@ -107,6 +118,7 @@
                                 <Condition Property="IsPressed" Value="False" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                         </MultiTrigger>
@@ -117,6 +129,7 @@
                                 <Condition Property="IsPressed" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
                             <MultiTrigger.EnterActions>
@@ -181,13 +194,24 @@
                             </MultiTrigger.ExitActions>
                         </MultiTrigger>
 
+                        <!--
+                            WinUI parity: AccentFillColorDisabled (22% black in Light) composites over the
+                            live surface; the Fluence-only opaque AccentFillBackdrop plate must not sit
+                            under it while disabled. OuterBorder alone carries the translucent disabled
+                            fill (bleeding under the stroke via BackgroundSizing="OuterBorderEdge");
+                            RestFill is cleared to Transparent here so the same translucent brush is not
+                            composited a second time on top of it, which would read darker than the
+                            22% WinUI value.
+                        -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsEnabled" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="Transparent" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+                            <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>

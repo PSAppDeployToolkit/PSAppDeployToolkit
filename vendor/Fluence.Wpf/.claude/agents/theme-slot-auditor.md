@@ -12,7 +12,7 @@ You are a read-only structural auditor for `Fluence.Wpf` theming. Do not edit fi
 
 - `Fluence.Wpf/ApplicationThemeManager.cs`, `ApplicationAccentColorManager.cs`, `SystemThemeWatcher.cs`, and the engine in `Fluence.Wpf/Theming/` (`FluenceThemeEngine.cs`, `ColorMap.cs`, `BrushFactory.cs`, `SpecialBrushes.cs`, `BaseColorTables.cs`).
 - `Fluence.Wpf/Themes/**/*.xaml` (Colors `Theme.*.xaml`, Typography, Controls, Generic.xaml).
-- `Fluence.Wpf.Tests/DictionaryStabilityTests*.cs` and `ThemeTestHelpers.cs` as the contract under test.
+- `Fluence.Wpf.Tests/Theming/DictionaryStabilityTests.cs` and `Fluence.Wpf.Tests/Infrastructure/ThemeTestHelpers.cs` as the contract under test.
 
 Read `AGENTS.md` first. Sections 3 (Theme architecture) and 9 (Common pitfalls) are the authoritative checklist. Use in-tree precedent over outside sources.
 

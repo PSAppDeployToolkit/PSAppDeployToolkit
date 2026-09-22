@@ -28,49 +28,101 @@
 
 using System.Globalization;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryButtonsPage : UserControl
+    public partial class GalleryButtonsPage : Page
     {
-        private static readonly string ButtonAppearancesXamlSource = DemoSampleXaml.UserControl(
-            "Fluence.Wpf.Demo.Pages.Buttons.ButtonAppearances",
-                                                           "    <StackPanel>\n" +
-                                                           "        <WrapPanel VerticalAlignment=\"Center\">\n" +
-                                                           "            <fluence:Button\n" +
-                                                           "                Margin=\"0,0,8,8\"\n" +
-                                                           "                Content=\"Standard\"\n" +
-                                                           "                IsEnabled=\"{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}\" />\n" +
-                                                           "            <fluence:Button\n" +
-                                                           "                Margin=\"0,0,8,8\"\n" +
-                                                           "                Appearance=\"Accent\"\n" +
-                                                           "                Content=\"Accent\"\n" +
-                                                           "                IsEnabled=\"{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}\" />\n" +
-                                                           "            <fluence:Button\n" +
-                                                           "                Margin=\"0,0,8,8\"\n" +
-                                                           "                Appearance=\"Subtle\"\n" +
-                                                           "                Content=\"Subtle\"\n" +
-                                                           "                IsEnabled=\"{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}\" />\n" +
-                                                           "        </WrapPanel>\n" +
-                                                           "        <fluence:CheckBox\n" +
-                                                           "            x:Name=\"ButtonEnableCheckBox\"\n" +
-                                                           "            Content=\"Enable buttons\"\n" +
-                                                           "            IsChecked=\"True\" />\n" +
-                                                           "    </StackPanel>\n");
+        private static readonly string ButtonStandardXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Buttons.ButtonStandard",
+                                                        "    <StackPanel>\n" +
+                                                        "        <fluence:Button\n" +
+                                                        "            Content=\"Standard XAML button\"\n" +
+                                                        "            IsEnabled=\"{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}\" />\n" +
+                                                        "        <fluence:CheckBox\n" +
+                                                        "            x:Name=\"ButtonEnableCheckBox\"\n" +
+                                                        "            Content=\"Enable button\"\n" +
+                                                        "            IsChecked=\"True\" />\n" +
+                                                        "    </StackPanel>\n");
 
-        private const string ButtonAppearancesCSharpSource = "using System.Windows.Controls;\n" +
-                                                             "\n" +
-                                                             "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
-                                                             "{\n" +
-                                                             "    public partial class ButtonAppearances : UserControl\n" +
-                                                             "    {\n" +
-                                                             "        public ButtonAppearances()\n" +
-                                                             "        {\n" +
-                                                             "            InitializeComponent();\n" +
-                                                             "        }\n" +
-                                                             "    }\n" +
-                                                             "}\n";
+        private const string ButtonStandardCSharpSource = "using System.Windows.Controls;\n" +
+                                                          "\n" +
+                                                          "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                          "{\n" +
+                                                          "    public partial class ButtonStandard : UserControl\n" +
+                                                          "    {\n" +
+                                                          "        public ButtonStandard()\n" +
+                                                          "        {\n" +
+                                                          "            InitializeComponent();\n" +
+                                                          "        }\n" +
+                                                          "    }\n" +
+                                                          "}\n";
+        private static readonly string ButtonGraphicalContentXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Buttons.ButtonGraphicalContent",
+                                                                "    <StackPanel>\n" +
+                                                                "        <fluence:Button\n" +
+                                                                "            x:Name=\"GraphicalButton\"\n" +
+                                                                "            Width=\"50\"\n" +
+                                                                "            Height=\"50\"\n" +
+                                                                "            MinWidth=\"50\"\n" +
+                                                                "            Padding=\"0\"\n" +
+                                                                "            AutomationProperties.Name=\"Pie\"\n" +
+                                                                "            Click=\"GraphicalButton_Click\">\n" +
+                                                                "            <Image\n" +
+                                                                "                Width=\"36\"\n" +
+                                                                "                Height=\"36\"\n" +
+                                                                "                AutomationProperties.Name=\"Slice\"\n" +
+                                                                "                Source=\"pack://application:,,,/Fluence.Wpf.Demo;component/Resources/SampleMedia/Slices.png\" />\n" +
+                                                                "        </fluence:Button>\n" +
+                                                                "        <TextBlock x:Name=\"GraphicalButtonOutputText\" />\n" +
+                                                                "    </StackPanel>\n");
+
+        private const string ButtonGraphicalContentCSharpSource = "using System.Windows;\n" +
+                                                                  "using System.Windows.Automation;\n" +
+                                                                  "using System.Windows.Controls;\n" +
+                                                                  "\n" +
+                                                                  "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                                  "{\n" +
+                                                                  "    public partial class ButtonGraphicalContent : UserControl\n" +
+                                                                  "    {\n" +
+                                                                  "        public ButtonGraphicalContent()\n" +
+                                                                  "        {\n" +
+                                                                  "            InitializeComponent();\n" +
+                                                                  "        }\n" +
+                                                                  "\n" +
+                                                                  "        private void GraphicalButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                                  "        {\n" +
+                                                                  "            GraphicalButtonOutputText.Text = \"You clicked: \" + AutomationProperties.GetName((DependencyObject)sender);\n" +
+                                                                  "        }\n" +
+                                                                  "    }\n" +
+                                                                  "}\n";
+        private static readonly string ButtonStylesXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Buttons.ButtonStyles",
+                                                      "    <WrapPanel VerticalAlignment=\"Center\">\n" +
+                                                      "        <fluence:Button\n" +
+                                                      "            Margin=\"0,0,8,8\"\n" +
+                                                      "            Appearance=\"Accent\"\n" +
+                                                      "            Content=\"Accent style button\" />\n" +
+                                                      "        <fluence:Button\n" +
+                                                      "            Margin=\"0,0,8,8\"\n" +
+                                                      "            Appearance=\"Subtle\"\n" +
+                                                      "            Content=\"Subtle style button\" />\n" +
+                                                      "    </WrapPanel>\n");
+
+        private const string ButtonStylesCSharpSource = "using System.Windows.Controls;\n" +
+                                                        "\n" +
+                                                        "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                        "{\n" +
+                                                        "    public partial class ButtonStyles : UserControl\n" +
+                                                        "    {\n" +
+                                                        "        public ButtonStyles()\n" +
+                                                        "        {\n" +
+                                                        "            InitializeComponent();\n" +
+                                                        "        }\n" +
+                                                        "    }\n" +
+                                                        "}\n";
         private static readonly string ButtonIconsXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Buttons.ButtonIcons",
                                                      "    <WrapPanel VerticalAlignment=\"Center\">\n" +
@@ -493,14 +545,16 @@ namespace Fluence.Wpf.Demo.Pages
             // DemoSamplePageWiring for the slot-naming contract.
             DemoSamplePageWiring.Apply(
                 (DependencyObject)Content,
-                new DemoSampleSource(1, ButtonAppearancesXamlSource, ButtonAppearancesCSharpSource),
-                new DemoSampleSource(2, ButtonIconsXamlSource, ButtonIconsCSharpSource),
-                new DemoSampleSource(3, HyperlinkButtonsXamlSource, HyperlinkButtonsCSharpSource),
-                new DemoSampleSource(4, DropDownButtonsXamlSource, DropDownButtonsCSharpSource),
-                new DemoSampleSource(5, SplitButtonsXamlSource, SplitButtonsCSharpSource),
-                new DemoSampleSource(6, RepeatButtonsXamlSource, RepeatButtonsCSharpSource),
-                new DemoSampleSource(7, ToggleButtonsXamlSource, ToggleButtonsCSharpSource),
-                new DemoSampleSource(8, ToggleSplitButtonsXamlSource, ToggleSplitButtonsCSharpSource));
+                new DemoSampleSource(1, ButtonStandardXamlSource, ButtonStandardCSharpSource),
+                new DemoSampleSource(2, ButtonGraphicalContentXamlSource, ButtonGraphicalContentCSharpSource),
+                new DemoSampleSource(3, ButtonStylesXamlSource, ButtonStylesCSharpSource),
+                new DemoSampleSource(4, ButtonIconsXamlSource, ButtonIconsCSharpSource),
+                new DemoSampleSource(5, HyperlinkButtonsXamlSource, HyperlinkButtonsCSharpSource),
+                new DemoSampleSource(6, DropDownButtonsXamlSource, DropDownButtonsCSharpSource),
+                new DemoSampleSource(7, SplitButtonsXamlSource, SplitButtonsCSharpSource),
+                new DemoSampleSource(8, RepeatButtonsXamlSource, RepeatButtonsCSharpSource),
+                new DemoSampleSource(9, ToggleButtonsXamlSource, ToggleButtonsCSharpSource),
+                new DemoSampleSource(10, ToggleSplitButtonsXamlSource, ToggleSplitButtonsCSharpSource));
         }
 
         // A flyout hosting arbitrary content never dismisses itself (WinUI parity: the app
@@ -508,6 +562,12 @@ namespace Fluence.Wpf.Demo.Pages
         private void NewItemButton_Click(object sender, RoutedEventArgs e)
         {
             NewDropDownButton.CloseFlyout();
+        }
+
+        // WinUI Gallery Button page: the graphical sample reports the clicked button's automation name.
+        private void GraphicalButton_Click(object sender, RoutedEventArgs e)
+        {
+            GraphicalButtonOutputText.Text = "You clicked: " + AutomationProperties.GetName((DependencyObject)sender);
         }
 
         private void SaveOptionButton_Click(object sender, RoutedEventArgs e)

@@ -4,17 +4,15 @@
     <!--  Brushes and accent ramp are built in C# by the FluenceThemeEngine pipeline.  -->
 
     <!--  Application Background  -->
-    <Color x:Key="ApplicationBackgroundColor">#FFFFFFFF</Color>
-
-    <!--  Keyboard Focus  -->
-    <Color x:Key="KeyboardFocusBorderColor">#BE000000</Color>
+    <!--  Matches WinUI ApplicationPageBackgroundThemeBrush, which resolves to
+         SolidBackgroundFillColorBase; see FluenceWindow.GetFallbackBackgroundColor.  -->
+    <Color x:Key="ApplicationBackgroundColor">#FFF3F3F3</Color>
 
     <!--  Text Fill Colors  -->
     <Color x:Key="TextFillColorPrimary">#E4000000</Color>
     <Color x:Key="TextFillColorSecondary">#9E000000</Color>
     <Color x:Key="TextFillColorTertiary">#72000000</Color>
     <Color x:Key="TextFillColorDisabled">#5C000000</Color>
-    <Color x:Key="TextPlaceholderColor">#9E000000</Color>
     <Color x:Key="TextFillColorInverse">#FFFFFFFF</Color>
 
     <!--  Control Fill Colors  -->
@@ -55,9 +53,6 @@
     <!--  Control Stroke Colors  -->
     <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
     <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
-    <!--  Seam between the NavigationView pane/header and the content presenter. Matches ControlStrokeColorSecondary in Light, but is intentionally fainter in Dark.  -->
-    <Color x:Key="NavigationViewContentSeparator">#29000000</Color>
-    <Color x:Key="ControlStrokeColorTertiary">#9E000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentDefault">#14FFFFFF</Color>
     <Color x:Key="ControlStrokeColorOnAccentSecondary">#66000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentTertiary">#37000000</Color>
@@ -115,12 +110,16 @@
     <Color x:Key="SolidBackgroundFillColorBaseAlt">#FFDADADA</Color>
 
     <!--  Acrylic Background Fill Colors  -->
-    <Color x:Key="AcrylicBackgroundFillColorDefault">#F0F9F9F9</Color>
+    <!--  AcrylicBackgroundFillColorDefault is the WinUI 3 AcrylicBrush FallbackColor for
+         AcrylicBackgroundFillColorDefaultBrush (AcrylicBrush_themeresources.xaml Light block),
+         used opaque as the plate color because WPF has no acrylic renderer. FluenceWindow's
+         GetLegacyAcrylicTintColor forces its own fixed 0xF0 alpha onto this token's RGB for the
+         Windows 10 legacy blur tint, which the opaque token itself does not carry.  -->
+    <Color x:Key="AcrylicBackgroundFillColorDefault">#FFF9F9F9</Color>
     <Color x:Key="AcrylicBackgroundFillColorBase">#FFEEEEEE</Color>
 
     <!--  System Fill Colors  -->
     <Color x:Key="SystemFillColorAttention">#FF0078D4</Color>
-    <Color x:Key="SystemFillColorInformational">#FF8A8A8A</Color>
     <Color x:Key="SystemFillColorSuccess">#FF0F7B0F</Color>
     <Color x:Key="SystemFillColorCaution">#FF9D5D00</Color>
     <Color x:Key="SystemFillColorCritical">#FFC42B1C</Color>
@@ -133,16 +132,6 @@
     <Color x:Key="SystemFillColorNeutralBackground">#06000000</Color>
     <Color x:Key="SystemFillColorSolidAttentionBackground">#FFF7F7F7</Color>
     <Color x:Key="SystemFillColorSolidNeutralBackground">#FFF3F3F3</Color>
-
-    <!--  Window Chrome - Close Button  -->
-    <!--  These are the canonical Fluent close-button reds (#C42B1C / #B4271C).  -->
-    <!--  Unlike SystemFillColorCritical they are identical in Light and Dark;  -->
-    <!--  using tokens here lets High Contrast override via the resource system.  -->
-    <Color x:Key="WindowCloseFillColorHover">#FFC42B1C</Color>
-    <Color x:Key="WindowCloseFillColorPressed">#FFB4271C</Color>
-    <Color x:Key="WindowCloseForegroundHover">#FFFFFFFF</Color>
-    <Color x:Key="WindowCloseForegroundPressed">#FFFFFFFF</Color>
-
 
     <!--  Accent Fill Colors  -->
     <Color x:Key="AccentFillColorDisabled">#37000000</Color>
@@ -175,5 +164,11 @@
         Windows accent palette regardless of how translucent the surrounding card is.
     -->
     <Color x:Key="AccentFillBackdrop">#FFFFFFFF</Color>
+
+    <!--
+        TeachingTipTopHighlight: the 1px highlight line along a TeachingTip's top edge.
+        Authority: WinUI 3 TeachingTip_themeresources.xaml, Light dictionary.
+    -->
+    <Color x:Key="TeachingTipTopHighlight">#99FFFFFF</Color>
 
 </ResourceDictionary>

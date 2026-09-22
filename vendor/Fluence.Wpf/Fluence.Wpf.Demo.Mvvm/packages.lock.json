@@ -10,9 +10,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.200, )",
-        "resolved": "3.0.200",
-        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+        "requested": "[3.0.264, )",
+        "resolved": "3.0.264",
+        "contentHash": "6/w8WEGjJuzdWvmYB5pbGvCx5jV5OP3UQ4ats15cUAbBWTRUkoHx7IRoAUi82Vj0WZd8KvBqE9/3ed3J8594nQ=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -22,9 +22,9 @@
       },
       "Microsoft.Extensions.StaticAnalysis": {
         "type": "Direct",
-        "requested": "[10.9.0, )",
-        "resolved": "10.9.0",
-        "contentHash": "nr/qlyyeJI+NTEQ9DbWBwK0bZcmztw9N6lIwhKlANaZLH/LGf5G1T2kgOcPyE/w9viYu/+54gq/J8p8zpbKyAg==",
+        "requested": "[10.10.0, )",
+        "resolved": "10.10.0",
+        "contentHash": "MnUBTyalxH+t/6n/Kt6nuYGVFfJY9eGtBZ5P2gQNx2yRtPCec/jeiN+PCm16zpl+q3mdf/xEqoO/J3KBioMRCQ==",
         "dependencies": {
           "Microsoft.VisualStudio.Threading.Analyzers": "17.14.15",
           "SonarAnalyzer.CSharp": "10.16.0.128591"

@@ -26,15 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
-using Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryHomePage : UserControl
+    public partial class GalleryHomePage : Page
     {
         public GalleryHomePage()
         {
@@ -45,16 +42,18 @@ namespace Fluence.Wpf.Demo.Pages
         // resources maps HomeHeroImageSource per theme (including the high-contrast
         // polarity tables), so no ApplicationThemeManager.Changed subscription exists here.
 
-        // Handles a click on any featured-control or action Card tile; reads the Card's
-        // Tag string and routes to the matching gallery page via host.NavigateTo(tag).
+        private void PageContent_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FeaturedControlsGrid.Columns = e.NewSize.Width >= 720 ? 3 : e.NewSize.Width >= 480 ? 2 : 1;
+            FoundationLinksGrid.Columns = e.NewSize.Width >= 720 ? 3 : 1;
+        }
+
+        // Cards and the primary button share the shell's existing tag navigation.
         private void Card_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Card card)
-            {
-                return;
-            }
-
-            if (card.Tag is not string tag || string.IsNullOrWhiteSpace(tag))
+            if (sender is not FrameworkElement element
+                || element.Tag is not string tag
+                || string.IsNullOrWhiteSpace(tag))
             {
                 return;
             }
@@ -63,12 +62,6 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 host.NavigateTo(tag);
             }
-        }
-
-        private void GitHubLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            _ = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
-            e.Handled = true;
         }
     }
 }

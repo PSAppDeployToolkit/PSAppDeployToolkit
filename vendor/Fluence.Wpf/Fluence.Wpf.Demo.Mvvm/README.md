@@ -2,7 +2,7 @@
 
 A small MVVM Task Manager demo for anyone who wants to see Fluence.Wpf controls used without page-level code-behind. It targets `net10.0-windows10.0.26100.0` and uses CommunityToolkit.Mvvm.
 
-## What Lives Here
+## What lives here
 
 - `App.xaml.cs` - applies Fluence resources at startup before showing the main window.
 - `MainWindow.xaml` - a `FluenceWindow` with task filtering, list content, task input, and progress/status controls.
@@ -17,7 +17,7 @@ From the repository root:
 dotnet run --project Fluence.Wpf.Demo.Mvvm/Fluence.Wpf.Demo.Mvvm.csproj -c Debug
 ```
 
-## Maintenance Notes
+## Maintenance notes
 
 Keep `App.xaml` free of manual merged dictionaries; `ApplicationThemeManager.Apply(...)` owns the Fluence resource slots. `MainViewModel.Refresh()` intentionally rebuilds `DisplayedTasks` before notifying derived status/progress properties, so avoid adding notification attributes that fire before the collection has been refreshed.
 

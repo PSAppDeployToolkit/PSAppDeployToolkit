@@ -31,15 +31,13 @@ using System.Windows.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
-    public partial class GalleryTreesPage : UserControl
+    public partial class GalleryTreesPage : Page
     {
         private static readonly string TreeViewHierarchyXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Trees.TreeViewHierarchy",
                                                            "    <fluence:TreeView\n" +
                                                            "        x:Name=\"HierarchyTreeView\"\n" +
-                                                           "        MaxHeight=\"260\"\n" +
-                                                           "        BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
-                                                           "        BorderThickness=\"1\">\n" +
+                                                           "        MaxHeight=\"260\">\n" +
                                                            "        <fluence:TreeViewItem\n" +
                                                            "            Header=\"Workspace\"\n" +
                                                            "            IsExpanded=\"True\">\n" +
@@ -76,9 +74,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                            "        <fluence:TreeView\n" +
                                                            "            x:Name=\"SelectionTreeView\"\n" +
                                                            "            MaxHeight=\"260\"\n" +
-                                                           "            Margin=\"0,0,0,12\"\n" +
-                                                           "            BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
-                                                           "            BorderThickness=\"1\">\n" +
+                                                           "            Margin=\"0,0,0,12\">\n" +
                                                            "            <fluence:TreeViewItem\n" +
                                                            "                Header=\"Inbox\"\n" +
                                                            "                IsExpanded=\"True\">\n" +
@@ -115,8 +111,6 @@ namespace Fluence.Wpf.Demo.Pages
                                                              "    <fluence:TreeView\n" +
                                                              "        x:Name=\"MultiSelectTreeView\"\n" +
                                                              "        MaxHeight=\"260\"\n" +
-                                                             "        BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
-                                                             "        BorderThickness=\"1\"\n" +
                                                              "        SelectionMode=\"{x:Static fluence:TreeViewSelectionMode.Multiple}\">\n" +
                                                              "        <fluence:TreeViewItem\n" +
                                                              "            Header=\"Documents\"\n" +
@@ -151,9 +145,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                            "        <fluence:TreeView\n" +
                                                            "            x:Name=\"ExpansionTreeView\"\n" +
                                                            "            MaxHeight=\"260\"\n" +
-                                                           "            Margin=\"0,0,0,12\"\n" +
-                                                           "            BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
-                                                           "            BorderThickness=\"1\">\n" +
+                                                           "            Margin=\"0,0,0,12\">\n" +
                                                            "            <fluence:TreeViewItem\n" +
                                                            "                Header=\"Project\"\n" +
                                                            "                IsExpanded=\"True\">\n" +

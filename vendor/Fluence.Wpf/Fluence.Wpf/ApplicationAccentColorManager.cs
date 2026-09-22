@@ -37,12 +37,12 @@ namespace Fluence.Wpf
     /// Manages system and custom accent colors and publishes them as <c language="xaml">DynamicResource</c> brush keys aligned with Windows 11.
     /// </summary>
     /// <remarks>
-    /// Call <see cref="ApplySystemAccent"/>, <see cref="ApplyApplicationAccent"/>, or <see cref="ApplyCustomAccent(Color)"/> after
+    /// Call <see cref="ApplySystemAccent"/> or <see cref="ApplyCustomAccent(Color)"/> after
     /// <see cref="ApplicationThemeManager.Apply"/> so theme-dependent primary/secondary/tertiary accents resolve correctly.
     /// </remarks>
     /// <example>
     /// <code language="csharp">
-    /// ApplicationThemeManager.Apply(ApplicationTheme.Auto, BackdropType.Mica, updateAccent: true);
+    /// ApplicationThemeManager.Apply(ApplicationTheme.Auto, WindowBackdropType.Mica);
     /// ApplicationAccentColorManager.ApplySystemAccent();
     /// </code>
     /// </example>
@@ -157,14 +157,6 @@ namespace Fluence.Wpf
         {
             FluenceThemeEngine.SetAccentIntent(AccentIntent.System);
             _ = FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
-        }
-
-        /// <summary>
-        /// Applies the default application accent (Windows blue) and regenerates the accent ramp.
-        /// </summary>
-        public static void ApplyApplicationAccent()
-        {
-            ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
         }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Controls
     /// item type.
     /// </remarks>
     [TemplatePart(Name = PART_ScrollViewer, Type = typeof(ScrollViewer))]
-    public sealed class LoopingSelectorList : ListBox
+    internal sealed class LoopingSelectorList : ListBox
     {
         /// <summary>
         /// The name of the scroll viewer template part that owns the column's item-unit

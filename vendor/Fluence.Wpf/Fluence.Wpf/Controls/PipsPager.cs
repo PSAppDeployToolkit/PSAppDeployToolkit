@@ -757,7 +757,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            // ControlFastAnimationDuration on ControlFastOutSlowInKeySpline (0.8,0,0,1), the
+            // ControlFastAnimationDuration on ControlFastOutSlowInKeySpline (0,0,0,1), the
             // motion tokens the pip size morph in PipsPager.xaml already rides.
             DoubleAnimationUsingKeyFrames animation = new()
             {
@@ -767,7 +767,7 @@ namespace Fluence.Wpf.Controls
                     new SplineDoubleKeyFrame(
                         offset,
                         KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(ScrollAnimationMilliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                        MotionHelper.FastOutSlowInKeySpline),
                 },
             };
             BeginAnimation(ScrollOffsetProperty, animation, HandoffBehavior.SnapshotAndReplace);

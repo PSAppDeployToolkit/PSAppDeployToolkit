@@ -55,6 +55,7 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_AlternateCloseButton, Type = typeof(ButtonBase))]
     [TemplatePart(Name = TipRootPart, Type = typeof(Grid))]
     [TemplatePart(Name = TipTranslatePart, Type = typeof(TranslateTransform))]
+    [TemplatePart(Name = TipScalePart, Type = typeof(ScaleTransform))]
     public class TeachingTip : ContentControl
     {
         // Template part names.
@@ -63,34 +64,37 @@ namespace Fluence.Wpf.Controls
         private const string PART_AlternateCloseButton = "PART_AlternateCloseButton";
 
         /// <summary>
-        /// The name of the layout-root Grid template part whose opacity the open reveal fades.
+        /// The name of the layout-root Grid template part the expand and contract animations scale.
         /// </summary>
         private const string TipRootPart = "TipRoot";
 
         /// <summary>
-        /// The name of the TranslateTransform template part the open reveal slides.
+        /// The name of the TranslateTransform template part. The tip rests at (0,0); the transform
+        /// stays in the template because a consumer's own storyboard may drive it.
         /// </summary>
         private const string TipTranslatePart = "TipTranslate";
 
         /// <summary>
-        /// The duration of the open reveal fade, mirroring the value of the
-        /// ControlFasterAnimationDuration motion token (Themes/Typography/Typography.xaml),
-        /// which code mirrors by value like the previous template storyboard did.
+        /// The name of the ScaleTransform template part the expand and contract animations drive.
         /// </summary>
-        private const double RevealFadeMilliseconds = 83;
+        private const string TipScalePart = "TipScale";
 
         /// <summary>
-        /// The duration of the open reveal slide, mirroring the value of the
-        /// ControlFastAnimationDuration motion token (Themes/Typography/Typography.xaml),
-        /// which code mirrors by value like the previous template storyboard did.
+        /// The duration of the expand, WinUI's own m_expandAnimationDuration (TeachingTip.h:234).
         /// </summary>
-        private const double RevealSlideMilliseconds = 167;
+        private const double ExpandMilliseconds = 300;
 
         /// <summary>
-        /// The distance in device-independent pixels the tip slides in from the
-        /// placement side during the open reveal.
+        /// The duration of the contract, WinUI's own m_contractAnimationDuration (TeachingTip.h:235).
         /// </summary>
-        private const double RevealOffsetPixels = 8;
+        private const double ContractMilliseconds = 200;
+
+        /// <summary>
+        /// The extent in device-independent pixels the tip grows from and contracts back to. WinUI
+        /// scales to 20.0 / Width and 20.0 / Height on each axis (TeachingTip.cpp:1673,1721), so the
+        /// collapsed tip is a 20 dip seed at the corner the tail points from.
+        /// </summary>
+        private const double CollapsedTipExtent = 20.0;
 
         /// <summary>
         /// Initializes static members of the TeachingTip class and overrides the default
@@ -374,7 +378,7 @@ namespace Fluence.Wpf.Controls
         /// Occurs after the tip has closed, whether through <see cref="IsOpen"/>, the close
         /// button, or a light dismiss.
         /// </summary>
-        public event EventHandler? Closed;
+        public event EventHandler<TeachingTipClosedEventArgs>? Closed;
 
         /// <summary>
         /// Gets the popup that hosts the tip. Created lazily the first time the tip opens.
@@ -406,33 +410,33 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         /// <remarks>
         /// Escape pressed inside the open tip dismisses it, mirroring the WinUI keyboard
-        /// contract. The close runs through the <see cref="IsOpen"/> pipeline so
-        /// <see cref="Closed"/> is raised as usual.
+        /// contract, which treats Escape as a light dismiss. The close runs through the
+        /// <see cref="IsOpen"/> pipeline so <see cref="Closed"/> is raised as usual, and the
+        /// reason is staged so it reports <see cref="TeachingTipCloseReason.LightDismiss"/>
+        /// rather than the default <see cref="TeachingTipCloseReason.Programmatic"/>.
         /// </remarks>
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
             if (!e.Handled && e.Key is Key.Escape && IsOpen)
             {
+                _pendingCloseReason = TeachingTipCloseReason.LightDismiss;
                 SetCurrentValue(IsOpenProperty, value: false);
                 e.Handled = true;
             }
         }
 
         /// <summary>
-        /// Plays the open reveal each time the tip loads inside the host popup, sliding in from
-        /// the side of the target the tip ACTUALLY opened on (read from
-        /// <see cref="ActualPlacement"/>, which <see cref="ApplyPlacement"/> stamps before the
-        /// popup opens): a tip below its target (Bottom) slides down from 8 px above the rest
-        /// position, Top slides up, Right slides right, Left slides left, and Center (untargeted
-        /// or explicitly centered, a dialog-like surface that implies no direction) fades only.
-        /// The motion mirrors the previous template storyboard: an 83 ms fade with a 167 ms
-        /// slide on the 0.8,0,0,1 spline (the Typography.xaml ControlFasterAnimationDuration,
-        /// ControlFastAnimationDuration, and ControlFastOutSlowInKeySpline motion tokens,
-        /// mirrored by value), following the <see cref="FlyoutPresenter"/> code-reveal
-        /// precedent. The animations use <see cref="FillBehavior.Stop"/>; the completed
-        /// handlers stamp the rest values and release the clocks so nothing stays animated once
-        /// the reveal settles.
+        /// Plays WinUI's expand each time the tip loads inside the host popup: the tip grows from a
+        /// 20 dip seed to full size over 300 ms on the cubic bezier through (0.1,0.9) and (0.2,1.0)
+        /// (TeachingTip.cpp CreateExpandAnimation, control points TeachingTip.h:304-305). WinUI sets
+        /// a composition CenterPoint near the tail (TeachingTip.cpp:353-381) so the tip grows out of
+        /// the target it points at; WPF has no CenterPoint, so the equivalent
+        /// <see cref="UIElement.RenderTransformOrigin"/> is taken from
+        /// <see cref="ActualPlacement"/>. WinUI animates elevation alongside the scale, which has no
+        /// WPF equivalent, and fades nothing, so the tip no longer fades either.
+        /// The animation uses <see cref="FillBehavior.Stop"/>; the completed handler stamps the rest
+        /// scale and releases the clocks so nothing stays animated once the tip settles.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data.</param>
@@ -440,90 +444,145 @@ namespace Fluence.Wpf.Controls
         {
             // A tip whose Loaded fires without an applied template (a collapsed declaration
             // still sitting in a panel) has no reveal parts to animate.
-            if (GetTemplateChild(TipTranslatePart) is not TranslateTransform translate ||
+            if (GetTemplateChild(TipScalePart) is not ScaleTransform scale ||
                 GetTemplateChild(TipRootPart) is not Grid tipRoot)
             {
                 return;
             }
 
-            // Motion disabled (OS "Show animations" off): skip the reveal and show the tip
-            // at rest immediately - translate (0,0), full opacity, no clocks.
+            tipRoot.SetCurrentValue(RenderTransformOriginProperty, GetExpandOrigin(ActualPlacement));
+
+            // Motion disabled (OS "Show animations" off): show the tip at rest immediately, with
+            // no clocks.
             if (!MotionHelper.IsMotionEnabled)
             {
-                translate.BeginAnimation(TranslateTransform.XProperty, animation: null);
-                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
-                translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
-                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
-                tipRoot.BeginAnimation(OpacityProperty, animation: null);
-                tipRoot.SetCurrentValue(OpacityProperty, 1.0);
+                RestScale(scale);
                 return;
             }
 
-            TeachingTipPlacementMode side = ActualPlacement;
-            if (side is TeachingTipPlacementMode.Center)
-            {
-                // Centered surfaces imply no direction: release any slide clock a previous
-                // directional open may have left running and rest the translate; fade only.
-                translate.BeginAnimation(TranslateTransform.XProperty, animation: null);
-                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
-                translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
-                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
-            }
-            else
-            {
-                bool slidesHorizontally = side is TeachingTipPlacementMode.Left or TeachingTipPlacementMode.Right;
-                double startOffset = side is TeachingTipPlacementMode.Top or TeachingTipPlacementMode.Left
-                    ? RevealOffsetPixels
-                    : -RevealOffsetPixels;
-                DependencyProperty slideProperty = slidesHorizontally ? TranslateTransform.XProperty : TranslateTransform.YProperty;
-                DependencyProperty restProperty = slidesHorizontally ? TranslateTransform.YProperty : TranslateTransform.XProperty;
+            (double startX, double startY) = GetCollapsedScale(tipRoot);
 
-                // Seed the discrete start so the first rendered frame never flashes the rest
-                // position: the offset on the chosen axis, 0 on the other, fully transparent.
-                translate.SetCurrentValue(slideProperty, startOffset);
-                translate.SetCurrentValue(restProperty, 0.0);
+            // WinUI's first expand keyframe is Min(0.01, 20.0 / Width) rather than the plain
+            // ratio the contract ends on, so a tip narrower than 2000 dip starts at 0.01 and only
+            // a very large one starts wider.
+            startX = Math.Min(0.01, startX);
+            startY = Math.Min(0.01, startY);
 
-                DoubleAnimationUsingKeyFrames slideAnimation = CreateRevealAnimation(startOffset, 0.0, RevealSlideMilliseconds);
-                slideAnimation.Completed += (_, _) =>
-                {
-                    translate.SetCurrentValue(slideProperty, 0.0);
-                    translate.BeginAnimation(slideProperty, animation: null);
-                };
-                translate.BeginAnimation(slideProperty, slideAnimation);
-            }
+            scale.SetCurrentValue(ScaleTransform.ScaleXProperty, startX);
+            scale.SetCurrentValue(ScaleTransform.ScaleYProperty, startY);
 
-            tipRoot.SetCurrentValue(OpacityProperty, 0.0);
-            DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0, RevealFadeMilliseconds);
-            fadeAnimation.Completed += (_, _) =>
-            {
-                tipRoot.SetCurrentValue(OpacityProperty, 1.0);
-                tipRoot.BeginAnimation(OpacityProperty, animation: null);
-            };
-            tipRoot.BeginAnimation(OpacityProperty, fadeAnimation);
+            DoubleAnimation expandX = CreateScaleAnimation(1.0, ExpandMilliseconds, contracting: false);
+            DoubleAnimation expandY = CreateScaleAnimation(1.0, ExpandMilliseconds, contracting: false);
+            expandY.Completed += (_, _) => RestScale(scale);
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, expandX);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, expandY);
         }
 
         /// <summary>
-        /// Builds one track of the open reveal: a discrete start at time zero settling at the
-        /// rest value over the given duration on the decelerating Fluent key spline
-        /// (see <see cref="OnLoaded"/> for the mirrored Typography.xaml motion tokens).
+        /// Plays WinUI's contract and closes the host popup when it finishes: the tip shrinks back
+        /// to its 20 dip seed over 200 ms on the cubic bezier through (0.7,0.0) and (1.0,0.5)
+        /// (TeachingTip.cpp CreateContractAnimation, control points TeachingTip.h:306-307). A tip
+        /// with no template parts, or one closing with motion disabled, closes at once.
         /// </summary>
-        /// <param name="from">The discrete start value.</param>
-        /// <param name="to">The rest value reached when the reveal settles.</param>
-        /// <param name="milliseconds">The duration of the track in milliseconds.</param>
-        /// <returns>The keyframe animation for the track.</returns>
-        private static DoubleAnimationUsingKeyFrames CreateRevealAnimation(double from, double to, double milliseconds)
+        private void ContractAndClosePopup()
         {
-            return new DoubleAnimationUsingKeyFrames
+            if (HostPopup is not { IsOpen: true })
             {
+                return;
+            }
+
+            if (GetTemplateChild(TipScalePart) is not ScaleTransform scale ||
+                GetTemplateChild(TipRootPart) is not Grid tipRoot ||
+                !MotionHelper.IsMotionEnabled)
+            {
+                ClosePopup();
+                return;
+            }
+
+            (double endX, double endY) = GetCollapsedScale(tipRoot);
+
+            DoubleAnimation contractX = CreateScaleAnimation(endX, ContractMilliseconds, contracting: true);
+            DoubleAnimation contractY = CreateScaleAnimation(endY, ContractMilliseconds, contracting: true);
+            contractY.Completed += (_, _) =>
+            {
+                RestScale(scale);
+                ClosePopup();
+            };
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, contractX);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, contractY);
+        }
+
+        /// <summary>
+        /// Stamps the rest scale on both axes and releases the clocks, so a settled tip carries no
+        /// animation and the next open starts from a clean base value.
+        /// </summary>
+        /// <param name="scale">The scale transform to rest.</param>
+        private static void RestScale(ScaleTransform scale)
+        {
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation: null);
+            scale.SetCurrentValue(ScaleTransform.ScaleXProperty, 1.0);
+            scale.SetCurrentValue(ScaleTransform.ScaleYProperty, 1.0);
+        }
+
+        /// <summary>
+        /// Returns the scale factors that leave the tip at WinUI's 20 dip seed on each axis. A tip
+        /// that has not been measured yet falls back to WinUI's own s_defaultTipHeightAndWidth of
+        /// 320 (TeachingTip.cpp CreateExpandAnimation).
+        /// </summary>
+        /// <param name="tipRoot">The measured layout root.</param>
+        /// <returns>The collapsed scale on the x and y axes.</returns>
+        private static (double X, double Y) GetCollapsedScale(FrameworkElement tipRoot)
+        {
+            const double defaultTipExtent = 320.0;
+            double width = tipRoot.ActualWidth > 0 ? tipRoot.ActualWidth : defaultTipExtent;
+            double height = tipRoot.ActualHeight > 0 ? tipRoot.ActualHeight : defaultTipExtent;
+            return (CollapsedTipExtent / width, CollapsedTipExtent / height);
+        }
+
+        /// <summary>
+        /// Returns the relative origin the tip grows out of and contracts back into, the WPF stand
+        /// in for the composition CenterPoint WinUI puts beside the tail
+        /// (TeachingTip.cpp:353-381). A tip below its target grows from its own top edge, one above
+        /// it from the bottom edge, and a centered tip from its middle.
+        /// </summary>
+        /// <param name="placement">The placement the tip actually opened on.</param>
+        /// <returns>The render transform origin.</returns>
+        private static Point GetExpandOrigin(TeachingTipPlacementMode placement)
+        {
+            return placement switch
+            {
+                TeachingTipPlacementMode.Top => new Point(0.5, 1.0),
+                TeachingTipPlacementMode.Bottom => new Point(0.5, 0.0),
+                TeachingTipPlacementMode.Left => new Point(1.0, 0.5),
+                TeachingTipPlacementMode.Right => new Point(0.0, 0.5),
+
+                // Auto never survives ApplyPlacement, which resolves it to a side before the tip
+                // opens, and Center grows from the middle as an untargeted surface does.
+                TeachingTipPlacementMode.Auto or TeachingTipPlacementMode.Center => new Point(0.5, 0.5),
+                _ => new Point(0.5, 0.5),
+            };
+        }
+
+        /// <summary>
+        /// Builds one axis of the expand or the contract: a to-only animation on WinUI's own cubic
+        /// bezier for that direction, left with <see cref="FillBehavior.Stop"/> so the completed
+        /// handler can stamp the rest value.
+        /// </summary>
+        /// <param name="to">The scale the axis reaches.</param>
+        /// <param name="milliseconds">The duration of the animation in milliseconds.</param>
+        /// <param name="contracting">Indicates whether this is the contract rather than the expand.</param>
+        /// <returns>The animation for the axis.</returns>
+        private static DoubleAnimation CreateScaleAnimation(double to, double milliseconds, bool contracting)
+        {
+            return new DoubleAnimation
+            {
+                To = to,
+                Duration = new Duration(TimeSpan.FromMilliseconds(milliseconds)),
+                EasingFunction = contracting
+                    ? new KeySplineEase(0.7, 0.0, 1.0, 0.5)
+                    : new KeySplineEase(0.1, 0.9, 0.2, 1.0),
                 FillBehavior = FillBehavior.Stop,
-                KeyFrames =
-                {
-                    new DiscreteDoubleKeyFrame(from, KeyTime.FromTimeSpan(TimeSpan.Zero)),
-                    new SplineDoubleKeyFrame(
-                        to,
-                        KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(milliseconds)),
-                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
-                },
             };
         }
 
@@ -542,7 +601,7 @@ namespace Fluence.Wpf.Controls
             }
             else
             {
-                tip.ClosePopup();
+                tip.ContractAndClosePopup();
             }
         }
 
@@ -741,9 +800,12 @@ namespace Fluence.Wpf.Controls
         /// <returns>An array of custom popup placements.</returns>
         private static CustomPopupPlacement[] GetBottomRightPlacements(Size popupSize, Size targetSize, Point offset)
         {
+            // popupSize includes the presenter's 16px shadow gutter on all four sides, so add it back
+            // on both axes to keep the plate's bottom-right corner docked where it was.
+            const double shadowGutter = 16.0;
             Point bottomRight = new(
-                targetSize.Width - popupSize.Width + offset.X,
-                targetSize.Height - popupSize.Height + offset.Y);
+                targetSize.Width - popupSize.Width + offset.X + shadowGutter,
+                targetSize.Height - popupSize.Height + offset.Y + shadowGutter);
             return [new CustomPopupPlacement(bottomRight, PopupPrimaryAxis.Horizontal)];
         }
 
@@ -820,11 +882,15 @@ namespace Fluence.Wpf.Controls
 
         private void OnPopupClosed(object? sender, EventArgs e)
         {
+            TeachingTipCloseReason reason = _pendingCloseReason;
+            _pendingCloseReason = TeachingTipCloseReason.Programmatic;
+
             if (IsOpen)
             {
                 // The popup closed outside the IsOpen pipeline (light dismiss); sync the
                 // property without clobbering a potential binding. The re-entrant changed
                 // callback finds the popup already closed and no-ops.
+                reason = TeachingTipCloseReason.LightDismiss;
                 SetCurrentValue(IsOpenProperty, value: false);
             }
 
@@ -832,7 +898,7 @@ namespace Fluence.Wpf.Controls
             // (or the fallback window content) for its own lifetime.
             _ = HostPopup?.PlacementTarget = null;
 
-            Closed?.Invoke(this, EventArgs.Empty);
+            Closed?.Invoke(this, new TeachingTipClosedEventArgs(reason));
         }
 
         private void OnActionButtonClick(object sender, RoutedEventArgs e)
@@ -848,8 +914,16 @@ namespace Fluence.Wpf.Controls
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             CloseButtonClick?.Invoke(this, EventArgs.Empty);
+            _pendingCloseReason = TeachingTipCloseReason.CloseButton;
             SetCurrentValue(IsOpenProperty, value: false);
         }
+
+        /// <summary>
+        /// The reason to report on the next Closed. The close button sets it before driving
+        /// IsOpen to false; every other IsOpen-driven close is programmatic, and a popup that
+        /// closes while IsOpen is still true is a light dismiss.
+        /// </summary>
+        private TeachingTipCloseReason _pendingCloseReason = TeachingTipCloseReason.Programmatic;
 
         /// <summary>
         /// The action button wired from the template, when present.

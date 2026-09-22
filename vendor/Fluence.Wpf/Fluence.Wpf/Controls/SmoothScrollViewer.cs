@@ -32,6 +32,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Controls
@@ -80,6 +81,8 @@ namespace Fluence.Wpf.Controls
             base.OnApplyTemplate();
             _targetVerticalOffset = VerticalOffset;
             _targetHorizontalOffset = HorizontalOffset;
+            SynchronizeOffset(CurrentVerticalOffsetProperty, VerticalOffset);
+            SynchronizeOffset(CurrentHorizontalOffsetProperty, HorizontalOffset);
         }
 
         /// <inheritdoc />
@@ -121,13 +124,46 @@ namespace Fluence.Wpf.Controls
         protected override void OnScrollChanged(ScrollChangedEventArgs e)
         {
             base.OnScrollChanged(e);
-            if (e.ExtentHeightChange is not 0 || e.ViewportHeightChange is not 0)
+            if (e.ExtentHeightChange is not 0 || e.ViewportHeightChange is not 0
+                || (e.VerticalChange is not 0 && IsExternalOffset(CurrentVerticalOffsetProperty, VerticalOffset)))
             {
                 _targetVerticalOffset = Clamp(VerticalOffset, 0, ScrollableHeight);
+                SynchronizeOffset(CurrentVerticalOffsetProperty, _targetVerticalOffset);
             }
-            if (e.ExtentWidthChange is not 0 || e.ViewportWidthChange is not 0)
+            if (e.ExtentWidthChange is not 0 || e.ViewportWidthChange is not 0
+                || (e.HorizontalChange is not 0 && IsExternalOffset(CurrentHorizontalOffsetProperty, HorizontalOffset)))
             {
                 _targetHorizontalOffset = Clamp(HorizontalOffset, 0, ScrollableWidth);
+                SynchronizeOffset(CurrentHorizontalOffsetProperty, _targetHorizontalOffset);
+            }
+        }
+
+        private bool IsExternalOffset(DependencyProperty property, double offset)
+        {
+            // A clock may already have advanced while its next send waits for layout. Compare
+            // against the last value actually sent, not the clock's newer effective value.
+            double requested = property == CurrentVerticalOffsetProperty ? _requestedVerticalOffset : _requestedHorizontalOffset;
+            return Math.Abs(offset - requested) > 1.0;
+        }
+
+        private void SynchronizeOffset(DependencyProperty property, double offset)
+        {
+            // These private properties have no consumer bindings. SetValue replaces their
+            // animation base; SetCurrentValue would only override the effective value, and
+            // removing the clock would expose the old base and queue a scroll back to it.
+            SetValue(property, offset);
+            BeginAnimation(property, animation: null);
+            if (property == CurrentVerticalOffsetProperty)
+            {
+                _ = _pendingVerticalScroll?.Abort();
+                _pendingVerticalScroll = null;
+                _requestedVerticalOffset = offset;
+            }
+            else
+            {
+                _ = _pendingHorizontalScroll?.Abort();
+                _pendingHorizontalScroll = null;
+                _requestedHorizontalOffset = offset;
             }
         }
 
@@ -140,7 +176,7 @@ namespace Fluence.Wpf.Controls
 
         private static void OnCurrentVerticalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((SmoothScrollViewer)d).ScrollToVerticalOffset((double)e.NewValue);
+            ((SmoothScrollViewer)d).QueueAnimatedOffset(CurrentVerticalOffsetProperty, (double)e.NewValue);
         }
 
         private static readonly DependencyProperty CurrentHorizontalOffsetProperty =
@@ -152,7 +188,44 @@ namespace Fluence.Wpf.Controls
 
         private static void OnCurrentHorizontalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((SmoothScrollViewer)d).ScrollToHorizontalOffset((double)e.NewValue);
+            ((SmoothScrollViewer)d).QueueAnimatedOffset(CurrentHorizontalOffsetProperty, (double)e.NewValue);
+        }
+
+        private void QueueAnimatedOffset(DependencyProperty property, double offset)
+        {
+            // The WPF scroll command queue replaces consecutive offset commands on the
+            // same axis. Sending from a clock callback can therefore erase a consumer's queued
+            // scroll request before layout publishes it. Let layout drain that queue first.
+            // Loaded follows Render/layout but precedes Input, so wheel input cannot starve
+            // animated offsets. An external offset change cancels the pending send.
+            if (property == CurrentVerticalOffsetProperty)
+            {
+                _ = _pendingVerticalScroll?.Abort();
+                _pendingVerticalScroll = Dispatcher.BeginInvoke(DispatcherPriority.Loaded,
+                    new Action(() => ApplyOffset(property, offset)));
+            }
+            else
+            {
+                _ = _pendingHorizontalScroll?.Abort();
+                _pendingHorizontalScroll = Dispatcher.BeginInvoke(DispatcherPriority.Loaded,
+                    new Action(() => ApplyOffset(property, offset)));
+            }
+        }
+
+        private void ApplyOffset(DependencyProperty property, double offset)
+        {
+            if (property == CurrentVerticalOffsetProperty)
+            {
+                _pendingVerticalScroll = null;
+                _requestedVerticalOffset = offset;
+                ScrollToVerticalOffset(offset);
+            }
+            else
+            {
+                _pendingHorizontalScroll = null;
+                _requestedHorizontalOffset = offset;
+                ScrollToHorizontalOffset(offset);
+            }
         }
 
         private void AnimateTo(DependencyProperty property, double to)
@@ -161,19 +234,20 @@ namespace Fluence.Wpf.Controls
             // straight to the target offset; the DP change callback performs the actual scroll.
             if (!MotionHelper.IsMotionEnabled)
             {
-                BeginAnimation(property, animation: null);
-                SetCurrentValue(property, to);
+                SynchronizeOffset(property, to);
+                ApplyOffset(property, to);
                 return;
             }
 
             DoubleAnimation animation = new()
             {
+                From = property == CurrentVerticalOffsetProperty ? VerticalOffset : HorizontalOffset,
                 To = to,
                 Duration = ScrollDuration,
                 EasingFunction = SharedEase,
             };
             animation.Freeze();
-            BeginAnimation(property, animation, HandoffBehavior.SnapshotAndReplace);
+            BeginAnimation(property, animation);
         }
 
         private static double Clamp(double value, double min, double max)
@@ -190,6 +264,11 @@ namespace Fluence.Wpf.Controls
         /// Represents the target horizontal offset value used for scrolling or positioning operations.
         /// </summary>
         private double _targetHorizontalOffset;
+
+        private double _requestedVerticalOffset;
+        private double _requestedHorizontalOffset;
+        private DispatcherOperation? _pendingVerticalScroll;
+        private DispatcherOperation? _pendingHorizontalScroll;
 
         /// <summary>
         /// Provides a shared instance of a cubic easing function configured for ease-out transitions.

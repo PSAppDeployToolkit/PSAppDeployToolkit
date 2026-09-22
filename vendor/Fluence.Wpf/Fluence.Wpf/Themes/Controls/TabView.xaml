@@ -11,28 +11,58 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultCollectionFocusVisualStyle}" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
-        <Setter Property="FontSize" Value="14" />
+        <!--  WinUI TabViewItemHeaderFontSize = 12 (TabView_themeresources.xaml line 245)  -->
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="Margin" Value="0,0,6,0" />
         <Setter Property="MaxWidth" Value="240" />
-        <Setter Property="MinHeight" Value="40" />
+        <!--  WinUI TabViewItemMinHeight = 32 (TabView_themeresources.xaml)  -->
+        <Setter Property="MinHeight" Value="32" />
         <Setter Property="MinWidth" Value="100" />
-        <Setter Property="Padding" Value="12,0,8,0" />
+        <!--  WinUI TabViewItemHeaderPaddingWithCloseButton = 8,3,4,3 (TabView_themeresources.xaml line 253)  -->
+        <Setter Property="Padding" Value="8,3,4,3" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:TabViewItem}">
                     <Grid x:Name="Root" ClipToBounds="False">
+                        <!--
+                            Inter-tab separator (WinUI TabViewItemSeparator /
+                            TabViewItemSeparatorMargin, TabView_themeresources.xaml). Each item
+                            draws only its own leading edge (the seam shared with its previous
+                            sibling); the internal TabViewItem.LeadingSeparatorVisibility DP is
+                            computed by the owning TabView (see TabView.cs.UpdateLeadingSeparators)
+                            from selection and position, matching WinUI's per-item adjacency
+                            booleans. Bound via RelativeSource TemplatedParent rather than
+                            TemplateBinding because the DP is internal (an implementation detail,
+                            not consumer-facing public API).
+                        -->
+                        <!--  The 3.5 dip left offset centres the 1 dip seam in the 6 dip gap the item's own Margin leaves between tabs: half the gap is 3, and half the line is another 0.5. WinUI draws its TabSeparator on the trailing edge (TabView.xaml:553, HorizontalAlignment Right) of tabs that sit flush against one another, so there is no gap to centre in there; drawn at this item's left edge with no offset the line would sit against this tab rather than between the two.  -->
+                        <Border
+                            x:Name="LeadingSeparator"
+                            Width="1"
+                            Margin="-3.5,8,0,8"
+                            HorizontalAlignment="Left"
+                            Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+                            IsHitTestVisible="False"
+                            Visibility="{Binding LeadingSeparatorVisibility, RelativeSource={RelativeSource TemplatedParent}}" />
+
                         <Border
                             x:Name="HoverBackground"
-                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            Background="{DynamicResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
                             CornerRadius="8,8,0,0"
                             Opacity="0" />
+                        <!--
+                            WinUI's own selected-tab stroke (TabViewSelectedItemBorderBrush,
+                            TabView_themeresources.xaml:72-80) is a LinearGradientBrush fading in
+                            over CardStrokeColorDefault; CardStrokeColorDefaultBrush (flat) is the
+                            WPF translation, matching the opaque plate's single-color border need.
+                        -->
                         <Border
                             x:Name="SelectedBackground"
                             Margin="0,0,0,-1"
                             Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultSolidBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1,1,1,0"
                             CornerRadius="8,8,0,0"
                             Opacity="0" />
@@ -44,10 +74,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
+                            <!--  WinUI TabViewItemHeaderIconMargin = 0,0,10,0  -->
                             <ContentPresenter
                                 x:Name="IconHost"
                                 Grid.Column="0"
-                                Margin="0,0,8,0"
+                                Margin="0,0,10,0"
                                 VerticalAlignment="Center"
                                 Content="{TemplateBinding Icon}"
                                 TextElement.Foreground="{TemplateBinding Foreground}"
@@ -68,21 +99,41 @@
                                 RecognizesAccessKey="True"
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                                <!--
+                                Styling scoped to this presenter, because the content arrives as a
+                                string and the TextBlock that draws it is generated here: the implicit
+                                TextBlock style in Typography.xaml:43-47 sizes every unstyled TextBlock
+                                at 14 and beats the inherited TextElement values above, so the declared
+                                size never reached the text. The style extends the implicit one rather
+                                than replacing it, so anything Typography.xaml adds later still reaches
+                                the text; FontWeight is bound so the tab's own weight wins over the
+                                Regular the implicit style stamps.
+                            -->
+                                <ContentPresenter.Resources>
+                                    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:TabViewItem}}}" />
+                                        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:TabViewItem}}}" />
+                                        <Setter Property="FontWeight" Value="{Binding FontWeight, RelativeSource={RelativeSource AncestorType={x:Type controls:TabViewItem}}}" />
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:TabViewItem}}}" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
 
+                            <!--  WinUI TabViewItemHeaderCloseMargin = 4,0,0,0  -->
                             <Button
                                 x:Name="PART_CloseButton"
                                 Grid.Column="2"
-                                Width="20"
-                                Height="20"
-                                Margin="6,0,0,0"
+                                Width="32"
+                                Height="24"
+                                Margin="4,0,0,0"
                                 Padding="0"
                                 VerticalAlignment="Center"
                                 AutomationProperties.Name="Close tab"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="False"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 ToolTip="Close tab">
                                 <Button.Template>
                                     <ControlTemplate TargetType="{x:Type Button}">
@@ -100,30 +151,19 @@
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="ButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="ButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
                             </Button>
                         </Grid>
-
-                        <Border
-                            x:Name="SelectionIndicator"
-                            Height="3"
-                            Margin="10,0,10,0"
-                            VerticalAlignment="Bottom"
-                            Background="{DynamicResource AccentFillColorDefaultBrush}"
-                            CornerRadius="2"
-                            Opacity="0"
-                            RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="IndicatorScale" ScaleX="0" ScaleY="1" />
-                            </Border.RenderTransform>
-                        </Border>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -135,44 +175,6 @@
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
                             <Setter TargetName="SelectedBackground" Property="Opacity" Value="1" />
                             <Setter Property="Panel.ZIndex" Value="1" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!--  Indicator reveal: fade ControlFasterAnimationDuration (83 ms), scale ControlFastAnimationDuration (167 ms)  -->
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="SelectionIndicator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.083" />
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IndicatorScale" Storyboard.TargetProperty="ScaleX">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!--  Indicator exit: ControlPressAnimationDuration (100 ms), fade delayed by ControlFasterAnimationDuration (83 ms)  -->
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IndicatorScale" Storyboard.TargetProperty="ScaleX">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.1"
-                                                Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimation
-                                            BeginTime="0:0:0.083"
-                                            Storyboard.TargetName="SelectionIndicator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.1" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
@@ -186,8 +188,10 @@
                             <Setter TargetName="IconHost" Property="Visibility" Value="Visible" />
                         </DataTrigger>
 
+                        <!--  WinUI TabViewItemHeaderPaddingWithoutCloseButton = 8,3,8,3 (TabView_themeresources.xaml line 254)  -->
                         <Trigger Property="IsClosable" Value="False">
                             <Setter TargetName="PART_CloseButton" Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Padding" Value="8,3,8,3" />
                         </Trigger>
 
                         <MultiDataTrigger>
@@ -251,6 +255,24 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
+                            <!--
+                                Bottom seam: WinUI splits this into LeftBottomBorderLine /
+                                RightBottomBorderLine (TabView.xaml:36-37 upstream), two Grid-column
+                                segments that leave a gap under the selected tab without covering it,
+                                with a corner-fillet visual-state swap for the single-tab case. Fluence
+                                lays tabs out in a scrollable StackPanel rather than fixed Grid columns,
+                                so the selected tab's own position cannot be expressed as a column span;
+                                this draws one continuous strip behind the whole row instead and skips
+                                the fillet states. It still reads as a gap in practice because the
+                                selected tab's opaque SelectedBackground plate (Panel.ZIndex 1, -1px
+                                bottom margin) paints over this line wherever it sits.
+                            -->
+                            <Border
+                                Grid.ColumnSpan="4"
+                                Height="1"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource CardStrokeColorDefaultBrush}" />
+
                             <!--  WI-3 B16: scroll-back button (WinUI TabView canonical)  -->
                             <RepeatButton
                                 x:Name="PART_ScrollBackButton"
@@ -275,11 +297,12 @@
                                             Background="{TemplateBinding Background}"
                                             CornerRadius="{DynamicResource ControlCornerRadius}">
                                             <TextBlock
+                                                x:Name="ScrollBackGlyph"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                                                 FontSize="12"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                 Text="&#xE76B;" />
                                         </Border>
                                         <ControlTemplate.Triggers>
@@ -288,6 +311,9 @@
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="ScrollBackRoot" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="ScrollBackGlyph" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -340,11 +366,12 @@
                                             Background="{TemplateBinding Background}"
                                             CornerRadius="{DynamicResource ControlCornerRadius}">
                                             <TextBlock
+                                                x:Name="ScrollForwardGlyph"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                                                 FontSize="12"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                 Text="&#xE76C;" />
                                         </Border>
                                         <ControlTemplate.Triggers>
@@ -353,6 +380,9 @@
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="ScrollForwardRoot" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="ScrollForwardGlyph" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -370,7 +400,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="False"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 ToolTip="Add new tab"
                                 Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TabViewBooleanToVisibilityConverter}}">
                                 <Button.Template>
@@ -392,6 +422,9 @@
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="AddButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

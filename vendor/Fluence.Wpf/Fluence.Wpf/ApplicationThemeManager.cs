@@ -50,14 +50,13 @@ namespace Fluence.Wpf
         /// <summary>
         /// Gets the currently requested backdrop type.
         /// </summary>
-        public static BackdropType CurrentBackdrop { get; private set; } = BackdropType.Auto;
+        public static WindowBackdropType CurrentBackdrop { get; private set; } = WindowBackdropType.Auto;
 
         /// <summary>
         /// Gets the concrete theme (Light, Dark, or HighContrast) that was resolved and applied during
         /// the most recent theme pipeline run (that is, the last call to <see cref="Apply"/> or to any
         /// <see cref="ApplicationAccentColorManager"/> apply method
-        /// (<see cref="ApplicationAccentColorManager.ApplySystemAccent"/>,
-        /// <see cref="ApplicationAccentColorManager.ApplyApplicationAccent"/>, or
+        /// (<see cref="ApplicationAccentColorManager.ApplySystemAccent"/> or
         /// <see cref="ApplicationAccentColorManager.ApplyCustomAccent(Color)"/>), whichever ran last. When
         /// <see cref="CurrentTheme"/> is <see cref="ApplicationTheme.Auto"/>, this reflects the OS theme
         /// at the time of that last pipeline run; it does not update automatically when the OS theme
@@ -88,7 +87,6 @@ namespace Fluence.Wpf
         /// </summary>
         /// <param name="theme">The requested application theme. Use <see cref="ApplicationTheme.Auto"/> to follow Windows app theme settings.</param>
         /// <param name="backdrop">The requested window backdrop policy retained for <see cref="CurrentBackdrop"/> consumers.</param>
-        /// <param name="updateAccent">Accepted for signature compatibility; the single pipeline always rebuilds the computed dictionary using the current accent intent.</param>
         /// <remarks>
         /// <para>
         /// The first call seeds the three resource slots ([0] computed colors and brushes, [1] Typography,
@@ -109,7 +107,7 @@ namespace Fluence.Wpf
         /// assignments still happen and the next call retries the publish.
         /// </para>
         /// </remarks>
-        public static void Apply(ApplicationTheme theme, BackdropType backdrop = BackdropType.Auto, bool updateAccent = true)
+        public static void Apply(ApplicationTheme theme, WindowBackdropType backdrop = WindowBackdropType.Auto)
         {
             if (_isApplying)
             {
@@ -123,7 +121,6 @@ namespace Fluence.Wpf
                 bool requestChanged = CurrentTheme != theme || CurrentBackdrop != backdrop;
                 CurrentTheme = theme;
                 CurrentBackdrop = backdrop;
-                _ = updateAccent; // retained for signature compatibility; the pipeline always rebuilds.
                 bool published = FluenceThemeEngine.Apply(theme);
                 if (published || requestChanged)
                 {
@@ -166,7 +163,7 @@ namespace Fluence.Wpf
         internal static void ResetForTesting()
         {
             CurrentTheme = ApplicationTheme.Auto;
-            CurrentBackdrop = BackdropType.Auto;
+            CurrentBackdrop = WindowBackdropType.Auto;
             _isApplying = false;
             FluenceThemeEngine.ResetForTesting();
         }

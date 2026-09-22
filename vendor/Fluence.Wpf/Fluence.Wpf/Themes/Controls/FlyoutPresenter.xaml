@@ -7,31 +7,57 @@
         Fluent Design FlyoutPresenter style.
         Authority: WinUI 3 Flyout_themeresources.xaml (FlyoutContentThemePadding 16,15,16,17;
         FlyoutThemeMinWidth 96 / MaxWidth 456 / MinHeight 40 / MaxHeight 758).
-        Surface treatment reuses the canonical in-tree flyout tokens from ContextMenu.xaml /
-        ToolTip.xaml: SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
-        OverlayCornerRadius.
+        Surface treatment: WinUI's FlyoutPresenterBackground is AcrylicInAppFillColorDefaultBrush
+        (FlyoutPresenter_themeresources.xaml:5), a translucent AcrylicBrush. A WPF Popup surface is
+        not DWM-composited the way the host window is, so the plate paints the brush's resolved
+        FallbackColor equivalent instead: AcrylicBackgroundFillColorDefaultBrush, opaque, matching
+        the WinUI acrylic FallbackColor. Border and radius stay SurfaceStrokeColorFlyoutBrush +
+        OverlayCornerRadius, shared with ContextMenu.xaml / ToolTip.xaml.
         Elevation is cast by an empty ShadowCaster sibling painted behind the surface, carrying
         FlyoutShadowEffect. WPF drops ClearType for every text run under an Effect, which is why the
-        effect is not on the surface itself, and no layout gutter is needed because PopupRoot already
-        sizes a popup window about 15 px larger per side than its child.
+        effect is not on the surface itself. The template root carries a 16px transparent gutter
+        because WPF sizes a popup HWND to exactly its child's layout size, with no reserved space at
+        all: without the gutter the effect is clipped away and survives only in the four rounded
+        corner notches, where it reads as a dark square plate behind a rounded card. 16px covers the
+        effect's painted bleed, measured by rendering the effect to a RenderTargetBitmap rather than
+        taken from the BlurRadius: the 18px BlurRadius paints 13px of visible falloff on every side
+        of the unshifted shape, and ShadowDepth 4 at Direction 270 (SpecialBrushes.cs) shifts the
+        shadow straight down, so the sideways bleed stays 13px, the upward bleed shrinks to 9px and
+        the downward bleed grows to 16px, the gutter exactly. Raising BlurRadius or ShadowDepth
+        means re-measuring and raising the gutter with them.
+        FlyoutBase.ShadowGutter subtracts the same 16px from every placement candidate so the plate
+        lands where it did before. Keep the two numbers in step.
+        The WinUI FlyoutThemeMinWidth / MaxWidth / MinHeight / MaxHeight size limits above sit on
+        PresenterSurface below, not on this control: the presenter itself is the gutter plus the
+        plate, so a limit set here would constrain the gutter too and shrink the plate by 32px on
+        every axis (the gutter is 16px per side). Setting them on the plate keeps the WinUI numbers
+        literal.
     -->
     <Style TargetType="{x:Type controls:FlyoutPresenter}">
-        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="MaxHeight" Value="758" />
-        <Setter Property="MaxWidth" Value="456" />
-        <Setter Property="MinHeight" Value="40" />
-        <Setter Property="MinWidth" Value="96" />
         <Setter Property="Padding" Value="16,15,16,17" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:FlyoutPresenter}">
-                    <Grid>
+                    <!--
+                        The reveal fades this root, not the presenter surface alone, so the opaque
+                        ShadowCaster behind the surface fades with it. The root rests visible: the
+                        reveal's own discrete keyframe at time zero starts it transparent, and its
+                        clock runs with FillBehavior.Stop, so whatever the template declares here is
+                        where the surface lands when that clock ends. Declaring it hidden left the
+                        flyout invisible on .NET Framework the moment the reveal finished, with the
+                        popup still open, which read as the flyout vanishing as it appeared.
+                    -->
+                    <Grid
+                        x:Name="PART_PresenterRoot"
+                        Margin="16"
+                        Opacity="1">
                         <Border
                             x:Name="ShadowCaster"
                             Background="{TemplateBinding Background}"
@@ -41,6 +67,10 @@
                             UseLayoutRounding="True" />
                         <Border
                             x:Name="PresenterSurface"
+                            MaxHeight="758"
+                            MaxWidth="456"
+                            MinHeight="40"
+                            MinWidth="96"
                             Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -66,7 +96,7 @@
                     </Grid>
                     <!--
                         The open reveal (slide 8px in from the placement side with a fade 0 to 1,
-                        167ms on the 0.8,0,0,1 spline) lives in FlyoutPresenter.OnLoaded and is
+                        167ms on the 0,0,0,1 spline) lives in FlyoutPresenter.OnLoaded and is
                         placement-aware: FlyoutBase.ShowAt stamps the resolved side onto the
                         presenter's RevealPlacement before the popup opens. PresenterSurface and
                         PresenterTranslate are the named parts the reveal animates. v2 limitation:

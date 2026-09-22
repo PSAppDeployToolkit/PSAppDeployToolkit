@@ -28,8 +28,10 @@
 
 using System;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Fluence.Wpf.Automation;
 
 namespace Fluence.Wpf.Controls
 {
@@ -365,6 +367,12 @@ namespace Fluence.Wpf.Controls
         #endregion CLR property wrappers
 
         #region Template application
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TitleBarAutomationPeer(this);
+        }
 
         /// <inheritdoc />
         public override void OnApplyTemplate()

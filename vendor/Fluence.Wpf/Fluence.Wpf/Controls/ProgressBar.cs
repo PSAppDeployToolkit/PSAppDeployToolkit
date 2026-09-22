@@ -210,10 +210,14 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowStepMarkers),
                 typeof(bool),
                 typeof(ProgressBar),
-                new FrameworkPropertyMetadata(defaultValue: true, OnLayoutPropertyChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnLayoutPropertyChanged));
 
         /// <summary>
-        /// Gets or sets whether step markers are shown in StepProgress mode.
+        /// Gets or sets whether the bar is notched at each step boundary while it is in step
+        /// progress mode. Off by default: a step bar reads as one travelling fill unless a consumer
+        /// asks for the segmented look. The notches cut through the track and the fill alike, so a step bar reads
+        /// as a row of segments rather than one continuous bar. Ignored outside step progress mode,
+        /// and by a bar with fewer than two steps, which has no interior boundary to mark.
         /// </summary>
         public bool ShowStepMarkers
         {
@@ -422,15 +426,51 @@ namespace Fluence.Wpf.Controls
             {
                 return;
             }
-            double width = _indicatorHost.ActualWidth;
-            double height = _indicatorHost.ActualHeight;
+            double radius = CornerRadius.TopLeft;
+            _indicatorHost.Clip = BuildBarClip(_indicatorHost.ActualWidth, _indicatorHost.ActualHeight, radius);
+
+            // The notches have to cut the track as well as the fill, or the gaps would show the
+            // unfilled track rather than what is behind the bar.
+            _ = _track?.Clip = BuildBarClip(_track.ActualWidth, _track.ActualHeight, TrackCornerRadius);
+        }
+
+        /// <summary>
+        /// Builds the clip for one layer of the bar: its rounded rectangle, less a notch at each
+        /// interior step boundary while <see cref="ShowStepMarkers"/> applies. Returns
+        /// <see langword="null"/> for a layer that has not been measured yet.
+        /// </summary>
+        /// <param name="width">The measured width of the layer.</param>
+        /// <param name="height">The measured height of the layer.</param>
+        /// <param name="radius">The corner radius the layer rounds to.</param>
+        /// <returns>The clip geometry, or <see langword="null"/> when the layer has no size.</returns>
+        private Geometry? BuildBarClip(double width, double height, double radius)
+        {
             if (width <= 0 || height <= 0 || double.IsNaN(width) || double.IsNaN(height))
             {
-                _indicatorHost.Clip = null;
-                return;
+                return null;
             }
-            double radius = CornerRadius.TopLeft;
-            _indicatorHost.Clip = new RectangleGeometry(new Rect(0, 0, width, height), radius, radius);
+
+            RectangleGeometry bar = new(new Rect(0, 0, width, height), radius, radius);
+            int steps = Steps;
+            if (!_stepMode || !ShowStepMarkers || steps < 2)
+            {
+                return bar;
+            }
+
+            // One notch per interior boundary, centred on it. A notch wider than the gap it sits in
+            // would swallow a whole segment, so a bar too narrow for its step count keeps its notches
+            // and simply renders them thinner rather than losing segments.
+            double gap = Math.Min(StepMarkerWidth, width / steps / 2);
+            Geometry notched = bar;
+            for (int boundary = 1; boundary < steps; boundary++)
+            {
+                double centre = width * boundary / steps;
+                RectangleGeometry notch = new(new Rect(centre - (gap / 2), 0, gap, height));
+                notched = new CombinedGeometry(GeometryCombineMode.Exclude, notched, notch);
+            }
+
+            notched.Freeze();
+            return notched;
         }
 
         /// <summary>
@@ -748,6 +788,18 @@ namespace Fluence.Wpf.Controls
         /// do not re-run the state resolver while the alias is writing the primitives.
         /// </summary>
         private bool _syncingMode;
+
+        /// <summary>
+        /// The width of the notch drawn at each step boundary. WinUI has no step progress bar to
+        /// take this from; 2 dip is the narrowest gap that still reads as a break at the track
+        /// heights the control rests at.
+        /// </summary>
+        private const double StepMarkerWidth = 2.0;
+
+        /// <summary>
+        /// The radius the track rounds to, matching ProgressBarTrackCornerRadius in the template.
+        /// </summary>
+        private const double TrackCornerRadius = 0.5;
 
         /// <summary>
         /// Tracks whether the legacy StepProgress mode drives the determinate fill ratio.

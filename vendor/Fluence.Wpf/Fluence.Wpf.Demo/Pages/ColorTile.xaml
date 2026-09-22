@@ -1,0 +1,105 @@
+﻿<!--
+    Copyright (C) 2026 Dan Cunningham. All rights reserved.
+
+    Colors page brush tile, modelled on the WinUI 3 Gallery's
+    Controls/DesignGuidance/ColorTile.xaml: the tile is painted in the brush it documents and
+    carries the tile name, a usage note, the brush key, a copy button, and an optional 1px right
+    separator. Foreground comes from the page per tile, as the Gallery does. See ColorTile.xaml.cs.
+-->
+<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.ColorTile"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Root"
+    d:DesignWidth="220"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+    <!--  The stock UserControl template paints Background as a square; the rounded border below paints it instead.  -->
+    <UserControl.Template>
+        <ControlTemplate TargetType="{x:Type UserControl}">
+            <ContentPresenter />
+        </ControlTemplate>
+    </UserControl.Template>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <fluence:Border
+            Padding="{DynamicResource DemoColorTilePadding}"
+            Background="{Binding Background, ElementName=Root}"
+            CornerRadius="{Binding TileCornerRadius, ElementName=Root}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="{DynamicResource DemoColorTileContentMinHeight}" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    Foreground="{Binding Foreground, ElementName=Root}"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{Binding ColorName, ElementName=Root}"
+                    TextWrapping="Wrap" />
+
+                <fluence:Button
+                    x:Name="CopyBrushNameButton"
+                    Grid.RowSpan="3"
+                    Grid.Column="1"
+                    MinWidth="{DynamicResource DemoCopyButtonMinWidth}"
+                    Padding="{DynamicResource DemoSourceCopyButtonPadding}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Appearance="Subtle"
+                    AutomationProperties.Name="Copy brush name"
+                    Click="CopyBrushNameButton_Click"
+                    Foreground="{Binding Foreground, ElementName=Root}"
+                    Tag="{Binding ColorBrushName, ElementName=Root}"
+                    ToolTip="Copy brush name">
+                    <fluence:FontIcon
+                        x:Name="CopyBrushNameGlyph"
+                        Foreground="{Binding Foreground, ElementName=Root}"
+                        Glyph="&#xE8C8;"
+                        IconFontSize="{DynamicResource DemoCopyGlyphFontSize}" />
+                </fluence:Button>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="{DynamicResource DemoColorTileExplanationMargin}"
+                    Foreground="{Binding Foreground, ElementName=Root}"
+                    Opacity="0.8"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{Binding ColorExplanation, ElementName=Root}"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    Margin="{DynamicResource DemoColorTileBrushNameMargin}"
+                    Foreground="{Binding Foreground, ElementName=Root}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{Binding ColorBrushName, ElementName=Root}"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </fluence:Border>
+
+        <fluence:Border
+            Grid.Column="1"
+            VerticalAlignment="Stretch"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="{DynamicResource DemoColorTileSeparatorThickness}"
+            Visibility="{Binding ShowSeparator, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}" />
+    </Grid>
+</UserControl>

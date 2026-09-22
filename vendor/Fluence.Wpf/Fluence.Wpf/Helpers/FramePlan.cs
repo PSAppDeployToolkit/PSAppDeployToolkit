@@ -33,32 +33,34 @@ namespace Fluence.Wpf.Helpers
     /// <summary>
     /// Carries the resolved window-border frame instructions computed by
     /// <see cref="Controls.WindowPolicy.BuildFramePlan"/>. The plan separates the
-    /// WPF-template border (driven by <see cref="TemplateBorderThickness"/> and
-    /// <see cref="TemplateBorderBrushResourceKey"/>) from the DWM border color
+    /// WPF-template border (driven by <see cref="TemplateBorderBrushResourceKey"/> and
+    /// <see cref="TemplateBorderThickness"/>) from the DWM border color
     /// (<see cref="DwmBorderColor"/>), because only some OS builds support the DWM side.
     /// </summary>
-    /// <param name="templateBorderThickness">The thickness of the WPF-template border element.</param>
     /// <param name="templateBorderBrushResourceKey">The <c language="xaml">DynamicResource</c> key for the border brush.</param>
+    /// <param name="templateBorderThickness">The WPF-template border thickness.</param>
     /// <param name="dwmBorderColor">The COLORREF (BGR, 24-bit) value for the DWM border color.</param>
     internal sealed class FramePlan(
-        Thickness templateBorderThickness,
         string templateBorderBrushResourceKey,
+        Thickness templateBorderThickness,
         uint dwmBorderColor)
     {
         /// <summary>
-        /// Gets the thickness of the WPF-template border element. <c language="csharp">Thickness(2)</c> when the
-        /// window is active and in normal state; <c language="csharp">Thickness(0)</c> when maximized (a border at
-        /// the monitor edge would clip against the taskbar or other monitors).
-        /// </summary>
-        internal Thickness TemplateBorderThickness { get; private set; } = templateBorderThickness;
-
-        /// <summary>
         /// Gets the <c language="xaml">DynamicResource</c> key for the border brush to apply to the template
         /// border element. <c language="xaml">"SystemAccentColorBrush"</c> when the window is active and accent
-        /// borders are enabled; <c language="xaml">"CardStrokeColorDefaultSolidBrush"</c> when the window is
+        /// borders are enabled; <c language="xaml">"SurfaceStrokeColorDefaultBrush"</c> when the window is
         /// inactive or accent borders are off.
         /// </summary>
         internal string TemplateBorderBrushResourceKey { get; } = templateBorderBrushResourceKey;
+
+        /// <summary>
+        /// Gets the WPF-template border thickness. Zero when
+        /// <see cref="WindowCapabilities.SupportsBorderColor"/> is <see langword="true"/> (Windows 11), because DWM
+        /// itself draws and colors the 1 px outer border there; a template-drawn border on top of it produced a
+        /// pale line at the boundary between the two. One device-independent pixel on Windows 10, where DWM draws
+        /// no colorable border and the template must supply the only edge the window shows.
+        /// </summary>
+        internal Thickness TemplateBorderThickness { get; } = templateBorderThickness;
 
         /// <summary>
         /// Gets the COLORREF (BGR, 24-bit) value to write to <c language="csharp">DWMWA_BORDER_COLOR</c>, or

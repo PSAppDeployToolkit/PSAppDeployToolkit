@@ -175,40 +175,49 @@
                             x:Name="PART_Popup"
                             Grid.Row="1"
                             AllowsTransparency="True"
+                            HorizontalOffset="-16"
+                            VerticalOffset="-16"
                             Focusable="False"
                             Placement="Bottom"
                             PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                             PopupAnimation="None">
-                            <Grid>
+                            <Grid Margin="16">
                                 <!--
                                     Elevation caster: an empty sibling behind the surface, because WPF
                                     drops ClearType for text under an Effect and this surface opts into
-                                    it. No layout gutter is needed, PopupRoot already reserves about
-                                    15 px per side for popup shadows.
+                                    it. This Grid's 16px margin is the popup's shadow gutter: WPF sizes
+                                    a popup HWND to exactly its child's layout size, so without it the
+                                    effect is clipped to the plate and only the corner notches survive.
+                                    PART_Popup's HorizontalOffset and VerticalOffset of -16 pull it back
+                                    so the plate keeps its position. The width follows the templated
+                                    parent (whose width OuterBorder fills) instead of an ElementName
+                                    reference: this is the first element created under the Popup and it
+                                    binds before the Popup child joins the template name scope, so an
+                                    ElementName binding here logged Data Error 4 on every load.
                                 -->
                                 <Border
                                     x:Name="ShadowCaster"
-                                    MinWidth="{Binding ActualWidth, ElementName=OuterBorder}"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                     Margin="0,4,0,0"
-                                    Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                                     CornerRadius="{TemplateBinding DropdownCornerRadius}"
                                     Effect="{DynamicResource FlyoutShadowEffect}" />
-                            <Border
-                                x:Name="FlyoutSurface"
-                                MinWidth="{Binding ActualWidth, ElementName=SplitButtonBody}"
-                                Margin="0,4,0,0"
-                                Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
-                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{TemplateBinding DropdownCornerRadius}"
-                                RenderOptions.ClearTypeHint="Enabled">
-                                <ContentPresenter
-                                    x:Name="FlyoutContentPresenter"
-                                    Margin="4"
-                                    HorizontalAlignment="Stretch"
-                                    Content="{TemplateBinding Flyout}"
-                                    ContentTemplate="{TemplateBinding FlyoutTemplate}" />
-                            </Border>
+                                <Border
+                                    x:Name="FlyoutSurface"
+                                    MinWidth="{Binding ActualWidth, ElementName=SplitButtonBody}"
+                                    Margin="0,4,0,0"
+                                    Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                    RenderOptions.ClearTypeHint="Enabled">
+                                    <ContentPresenter
+                                        x:Name="FlyoutContentPresenter"
+                                        Margin="4"
+                                        HorizontalAlignment="Stretch"
+                                        Content="{TemplateBinding Flyout}"
+                                        ContentTemplate="{TemplateBinding FlyoutTemplate}" />
+                                </Border>
                             </Grid>
                         </Popup>
                     </Grid>
@@ -295,7 +304,7 @@
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
                         </MultiTrigger>
 
-                        <!--  Accent + disabled.  -->
+                        <!--  Accent + disabled. WinUI parity: AccentFillColorDisabled composites over the live surface; the Fluence-only opaque *AccentFillBackdrop plates must not sit under it while disabled.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsEnabled" Value="False" />
@@ -305,6 +314,8 @@
                             <Setter TargetName="SecondaryFill" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
                             <Setter TargetName="PrimaryStroke" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
                             <Setter TargetName="SecondaryStroke" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+                            <Setter TargetName="PrimaryAccentFillBackdrop" Property="Opacity" Value="0" />
+                            <Setter TargetName="SecondaryAccentFillBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>

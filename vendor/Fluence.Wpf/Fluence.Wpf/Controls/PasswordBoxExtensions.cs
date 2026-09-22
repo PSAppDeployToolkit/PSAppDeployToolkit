@@ -63,7 +63,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// The scroll viewer in the Fluent template that hosts the native password text view.
         /// </summary>
-        private const string PartContentHost = "PART_ContentHost";
+        private const string PART_ContentHost = "PART_ContentHost";
 
         /// <summary>
         /// The chrome border that carries the background, stroke, and corner radius.
@@ -78,27 +78,27 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// The button that reveals (peeks at) the password.
         /// </summary>
-        private const string PartRevealButton = "PART_RevealButton";
+        private const string PART_RevealButton = "PART_RevealButton";
 
         /// <summary>
         /// The read-only, non-focusable field that shows the plaintext while peeking.
         /// </summary>
-        private const string PartRevealDisplay = "PART_RevealDisplay";
+        private const string PART_RevealDisplay = "PART_RevealDisplay";
 
         /// <summary>
         /// The Caps Lock warning shown below the field.
         /// </summary>
-        private const string PartCapsLockIndicator = "PART_CapsLockIndicator";
+        private const string PART_CapsLockIndicator = "PART_CapsLockIndicator";
 
         /// <summary>
         /// The container of the strength segments.
         /// </summary>
-        private const string PartStrengthMeter = "PART_StrengthMeter";
+        private const string PART_StrengthMeter = "PART_StrengthMeter";
 
         /// <summary>
         /// The prefix shared by the strength segment part names.
         /// </summary>
-        private const string PartStrengthSegmentPrefix = "PART_StrengthSegment";
+        private const string PART_StrengthSegment = "PART_StrengthSegment";
 
         /// <summary>
         /// The number of segments in the strength meter, matching the 0 to 4 score range.
@@ -708,15 +708,15 @@ namespace Fluence.Wpf.Controls
                 _resolvedTemplate = _owner.Template;
                 _mainBorder = _owner.Template.FindName(PartMainBorder, _owner) as System.Windows.Controls.Border;
                 _placeholder = _owner.Template.FindName(PartPlaceholder, _owner) as System.Windows.Controls.TextBlock;
-                _contentHost = _owner.Template.FindName(PartContentHost, _owner) as System.Windows.Controls.ScrollViewer;
-                _revealDisplay = _owner.Template.FindName(PartRevealDisplay, _owner) as System.Windows.Controls.TextBox;
-                _revealButton = _owner.Template.FindName(PartRevealButton, _owner) as System.Windows.Controls.Button;
-                _capsLockIndicator = _owner.Template.FindName(PartCapsLockIndicator, _owner) as UIElement;
-                _strengthMeter = _owner.Template.FindName(PartStrengthMeter, _owner) as UIElement;
+                _contentHost = _owner.Template.FindName(PART_ContentHost, _owner) as System.Windows.Controls.ScrollViewer;
+                _revealDisplay = _owner.Template.FindName(PART_RevealDisplay, _owner) as System.Windows.Controls.TextBox;
+                _revealButton = _owner.Template.FindName(PART_RevealButton, _owner) as System.Windows.Controls.Button;
+                _capsLockIndicator = _owner.Template.FindName(PART_CapsLockIndicator, _owner) as UIElement;
+                _strengthMeter = _owner.Template.FindName(PART_StrengthMeter, _owner) as UIElement;
                 for (int i = 0; i < StrengthSegmentCount; i++)
                 {
                     _strengthSegments[i] = _owner.Template.FindName(
-                        PartStrengthSegmentPrefix + i.ToString(CultureInfo.InvariantCulture),
+                        PART_StrengthSegment + i.ToString(CultureInfo.InvariantCulture),
                         _owner) as System.Windows.Controls.Border;
                 }
                 HookRevealButton();

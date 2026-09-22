@@ -88,9 +88,11 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
+                                <!--  A content-less checkbox in this Auto-width column must not inherit the WinUI DefaultCheckBoxStyle MinWidth of 120 (Fluence.Wpf/Themes/Controls/CheckBox.xaml), or every task row grows a wide dead-click gap before the title text.  -->
                                 <fluence:CheckBox
                                     Grid.Column="0"
                                     Margin="0,0,10,0"
+                                    MinWidth="0"
                                     VerticalAlignment="Center"
                                     IsChecked="{Binding IsCompleted, Mode=TwoWay}" />
 

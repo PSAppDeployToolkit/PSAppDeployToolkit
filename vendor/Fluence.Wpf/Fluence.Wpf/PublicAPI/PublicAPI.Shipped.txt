@@ -1,0 +1,1616 @@
+﻿#nullable enable
+abstract Fluence.Wpf.Controls.FlyoutBase.CreatePresenter() -> System.Windows.FrameworkElement!
+Fluence.Wpf.ApplicationAccentColorManager
+Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ApplicationTheme.Auto = 3 -> Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ApplicationTheme.Dark = 1 -> Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ApplicationTheme.HighContrast = 2 -> Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ApplicationTheme.Light = 0 -> Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ApplicationThemeManager
+Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer
+Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.AutoSuggestBoxAutomationPeer(Fluence.Wpf.Controls.AutoSuggestBox! owner) -> void
+Fluence.Wpf.Automation.BreadcrumbBarAutomationPeer
+Fluence.Wpf.Automation.BreadcrumbBarAutomationPeer.BreadcrumbBarAutomationPeer(Fluence.Wpf.Controls.BreadcrumbBar! owner) -> void
+Fluence.Wpf.Automation.CardAutomationPeer
+Fluence.Wpf.Automation.CardAutomationPeer.CardAutomationPeer(Fluence.Wpf.Controls.Card! owner) -> void
+Fluence.Wpf.Automation.CardAutomationPeer.Invoke() -> void
+Fluence.Wpf.Automation.ColorPickerAutomationPeer
+Fluence.Wpf.Automation.ColorPickerAutomationPeer.ColorPickerAutomationPeer(Fluence.Wpf.Controls.ColorPicker! owner) -> void
+Fluence.Wpf.Automation.ContentDialogAutomationPeer
+Fluence.Wpf.Automation.ContentDialogAutomationPeer.ContentDialogAutomationPeer(Fluence.Wpf.Controls.ContentDialog! owner) -> void
+Fluence.Wpf.Automation.DatePickerAutomationPeer
+Fluence.Wpf.Automation.DatePickerAutomationPeer.DatePickerAutomationPeer(Fluence.Wpf.Controls.DatePicker! owner) -> void
+Fluence.Wpf.Automation.DropDownButtonAutomationPeer
+Fluence.Wpf.Automation.DropDownButtonAutomationPeer.DropDownButtonAutomationPeer(Fluence.Wpf.Controls.DropDownButton! owner) -> void
+Fluence.Wpf.Automation.FontIconAutomationPeer
+Fluence.Wpf.Automation.FontIconAutomationPeer.FontIconAutomationPeer(Fluence.Wpf.Controls.FontIcon! owner) -> void
+Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer
+Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.HyperlinkButtonAutomationPeer(Fluence.Wpf.Controls.HyperlinkButton! owner) -> void
+Fluence.Wpf.Automation.ImageAutomationPeer
+Fluence.Wpf.Automation.ImageAutomationPeer.ImageAutomationPeer(Fluence.Wpf.Controls.Image! owner) -> void
+Fluence.Wpf.Automation.InfoBarAutomationPeer
+Fluence.Wpf.Automation.InfoBarAutomationPeer.InfoBarAutomationPeer(Fluence.Wpf.Controls.InfoBar! owner) -> void
+Fluence.Wpf.Automation.NavigationViewAutomationPeer
+Fluence.Wpf.Automation.NavigationViewAutomationPeer.NavigationViewAutomationPeer(Fluence.Wpf.Controls.NavigationView! owner) -> void
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.AddToSelection() -> void
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.Invoke() -> void
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.IsSelected.get -> bool
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.NavigationViewItemAutomationPeer(Fluence.Wpf.Controls.NavigationViewItem! owner) -> void
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.RemoveFromSelection() -> void
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.SelectionContainer.get -> System.Windows.Automation.Provider.IRawElementProviderSimple?
+Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.SelectItem() -> void
+Fluence.Wpf.Automation.NumberBoxAutomationPeer
+Fluence.Wpf.Automation.NumberBoxAutomationPeer.NumberBoxAutomationPeer(Fluence.Wpf.Controls.NumberBox! owner) -> void
+Fluence.Wpf.Automation.PersonPictureAutomationPeer
+Fluence.Wpf.Automation.PersonPictureAutomationPeer.PersonPictureAutomationPeer(Fluence.Wpf.Controls.PersonPicture! owner) -> void
+Fluence.Wpf.Automation.PipsPagerAutomationPeer
+Fluence.Wpf.Automation.PipsPagerAutomationPeer.PipsPagerAutomationPeer(Fluence.Wpf.Controls.PipsPager! owner) -> void
+Fluence.Wpf.Automation.ProgressRingAutomationPeer
+Fluence.Wpf.Automation.ProgressRingAutomationPeer.ProgressRingAutomationPeer(Fluence.Wpf.Controls.ProgressRing! owner) -> void
+Fluence.Wpf.Automation.RatingControlAutomationPeer
+Fluence.Wpf.Automation.RatingControlAutomationPeer.RatingControlAutomationPeer(Fluence.Wpf.Controls.RatingControl! owner) -> void
+Fluence.Wpf.Automation.SplitButtonAutomationPeer
+Fluence.Wpf.Automation.SplitButtonAutomationPeer.SplitButtonAutomationPeer(Fluence.Wpf.Controls.SplitButton! owner) -> void
+Fluence.Wpf.Automation.TeachingTipAutomationPeer
+Fluence.Wpf.Automation.TeachingTipAutomationPeer.TeachingTipAutomationPeer(Fluence.Wpf.Controls.TeachingTip! owner) -> void
+Fluence.Wpf.Automation.TextBlockAutomationPeer
+Fluence.Wpf.Automation.TextBlockAutomationPeer.TextBlockAutomationPeer(Fluence.Wpf.Controls.TextBlock! owner) -> void
+Fluence.Wpf.Automation.TimePickerAutomationPeer
+Fluence.Wpf.Automation.TimePickerAutomationPeer.TimePickerAutomationPeer(Fluence.Wpf.Controls.TimePicker! owner) -> void
+Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer
+Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.ToggleSplitButtonAutomationPeer(Fluence.Wpf.Controls.ToggleSplitButton! owner) -> void
+Fluence.Wpf.Automation.ToggleSwitchAutomationPeer
+Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.ToggleSwitchAutomationPeer(Fluence.Wpf.Controls.ToggleSwitch! owner) -> void
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.AutoSuggestBoxQuerySubmittedEventArgs() -> void
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.ChosenSuggestion.get -> object?
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.ChosenSuggestion.set -> void
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.QueryText.get -> string!
+Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.QueryText.set -> void
+Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs
+Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs.AutoSuggestBoxSuggestionChosenEventArgs() -> void
+Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs.SelectedItem.get -> object?
+Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs.SelectedItem.set -> void
+Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs
+Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs.AutoSuggestBoxTextChangedEventArgs() -> void
+Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs.CheckCurrent() -> bool
+Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs.Reason.get -> Fluence.Wpf.AutoSuggestionBoxTextChangeReason
+Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs.Reason.set -> void
+Fluence.Wpf.AutoSuggestionBoxTextChangeReason
+Fluence.Wpf.AutoSuggestionBoxTextChangeReason.ProgrammaticChange = 1 -> Fluence.Wpf.AutoSuggestionBoxTextChangeReason
+Fluence.Wpf.AutoSuggestionBoxTextChangeReason.SuggestionChosen = 2 -> Fluence.Wpf.AutoSuggestionBoxTextChangeReason
+Fluence.Wpf.AutoSuggestionBoxTextChangeReason.UserInput = 0 -> Fluence.Wpf.AutoSuggestionBoxTextChangeReason
+Fluence.Wpf.BorderVariant
+Fluence.Wpf.BorderVariant.Card = 1 -> Fluence.Wpf.BorderVariant
+Fluence.Wpf.BorderVariant.Divider = 3 -> Fluence.Wpf.BorderVariant
+Fluence.Wpf.BorderVariant.None = 0 -> Fluence.Wpf.BorderVariant
+Fluence.Wpf.BorderVariant.Subtle = 2 -> Fluence.Wpf.BorderVariant
+Fluence.Wpf.BreadcrumbBarItemClickedEventArgs
+Fluence.Wpf.BreadcrumbBarItemClickedEventArgs.BreadcrumbBarItemClickedEventArgs(object? item, int index) -> void
+Fluence.Wpf.BreadcrumbBarItemClickedEventArgs.Index.get -> int
+Fluence.Wpf.BreadcrumbBarItemClickedEventArgs.Item.get -> object?
+Fluence.Wpf.CardVariant
+Fluence.Wpf.CardVariant.Default = 0 -> Fluence.Wpf.CardVariant
+Fluence.Wpf.CardVariant.Filled = 2 -> Fluence.Wpf.CardVariant
+Fluence.Wpf.CardVariant.Outlined = 1 -> Fluence.Wpf.CardVariant
+Fluence.Wpf.CardVariant.Subtle = 3 -> Fluence.Wpf.CardVariant
+Fluence.Wpf.ColorPickerColorChangedEventArgs
+Fluence.Wpf.ColorPickerColorChangedEventArgs.ColorPickerColorChangedEventArgs(System.Windows.Media.Color oldColor, System.Windows.Media.Color newColor) -> void
+Fluence.Wpf.ColorPickerColorChangedEventArgs.NewColor.get -> System.Windows.Media.Color
+Fluence.Wpf.ColorPickerColorChangedEventArgs.OldColor.get -> System.Windows.Media.Color
+Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.ContentDialogButton.Close = 3 -> Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.ContentDialogButton.None = 0 -> Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.ContentDialogButton.Primary = 1 -> Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.ContentDialogButton.Secondary = 2 -> Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.ContentDialogButtonClickEventArgs
+Fluence.Wpf.ContentDialogButtonClickEventArgs.Cancel.get -> bool
+Fluence.Wpf.ContentDialogButtonClickEventArgs.Cancel.set -> void
+Fluence.Wpf.ContentDialogButtonClickEventArgs.ContentDialogButtonClickEventArgs() -> void
+Fluence.Wpf.ContentDialogClosedEventArgs
+Fluence.Wpf.ContentDialogClosedEventArgs.ContentDialogClosedEventArgs(Fluence.Wpf.ContentDialogResult result) -> void
+Fluence.Wpf.ContentDialogClosedEventArgs.Result.get -> Fluence.Wpf.ContentDialogResult
+Fluence.Wpf.ContentDialogOpenedEventArgs
+Fluence.Wpf.ContentDialogOpenedEventArgs.ContentDialogOpenedEventArgs() -> void
+Fluence.Wpf.ContentDialogResult
+Fluence.Wpf.ContentDialogResult.None = 0 -> Fluence.Wpf.ContentDialogResult
+Fluence.Wpf.ContentDialogResult.Primary = 1 -> Fluence.Wpf.ContentDialogResult
+Fluence.Wpf.ContentDialogResult.Secondary = 2 -> Fluence.Wpf.ContentDialogResult
+Fluence.Wpf.ControlAppearance
+Fluence.Wpf.ControlAppearance.Accent = 1 -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.ControlAppearance.Standard = 0 -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.ControlAppearance.Subtle = 2 -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.Controls.AppBarButton
+Fluence.Wpf.Controls.AppBarButton.AppBarButton() -> void
+Fluence.Wpf.Controls.AppBarButton.Icon.get -> object?
+Fluence.Wpf.Controls.AppBarButton.Icon.set -> void
+Fluence.Wpf.Controls.AppBarButton.Label.get -> string!
+Fluence.Wpf.Controls.AppBarButton.Label.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox
+Fluence.Wpf.Controls.AutoSuggestBox.AutoSuggestBox() -> void
+Fluence.Wpf.Controls.AutoSuggestBox.Header.get -> object?
+Fluence.Wpf.Controls.AutoSuggestBox.Header.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.IsSuggestionListOpen.get -> bool
+Fluence.Wpf.Controls.AutoSuggestBox.IsSuggestionListOpen.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.ItemsSource.get -> System.Collections.IEnumerable?
+Fluence.Wpf.Controls.AutoSuggestBox.ItemsSource.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.MaxSuggestionListHeight.get -> double
+Fluence.Wpf.Controls.AutoSuggestBox.MaxSuggestionListHeight.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.AutoSuggestBox.PlaceholderText.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.QueryIcon.get -> object?
+Fluence.Wpf.Controls.AutoSuggestBox.QueryIcon.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.QuerySubmitted -> System.EventHandler<Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs!>?
+Fluence.Wpf.Controls.AutoSuggestBox.SuggestionChosen -> System.EventHandler<Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs!>?
+Fluence.Wpf.Controls.AutoSuggestBox.Text.get -> string!
+Fluence.Wpf.Controls.AutoSuggestBox.Text.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.TextChanged -> System.EventHandler<Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs!>?
+Fluence.Wpf.Controls.AutoSuggestBox.TextMemberPath.get -> string!
+Fluence.Wpf.Controls.AutoSuggestBox.TextMemberPath.set -> void
+Fluence.Wpf.Controls.AutoSuggestBox.UpdateTextOnSelect.get -> bool
+Fluence.Wpf.Controls.AutoSuggestBox.UpdateTextOnSelect.set -> void
+Fluence.Wpf.Controls.Border
+Fluence.Wpf.Controls.Border.Border() -> void
+Fluence.Wpf.Controls.Border.Variant.get -> Fluence.Wpf.BorderVariant
+Fluence.Wpf.Controls.Border.Variant.set -> void
+Fluence.Wpf.Controls.BreadcrumbBar
+Fluence.Wpf.Controls.BreadcrumbBar.BreadcrumbBar() -> void
+Fluence.Wpf.Controls.BreadcrumbBar.ItemClicked -> System.EventHandler<Fluence.Wpf.BreadcrumbBarItemClickedEventArgs!>?
+Fluence.Wpf.Controls.BreadcrumbBarItem
+Fluence.Wpf.Controls.BreadcrumbBarItem.BreadcrumbBarItem() -> void
+Fluence.Wpf.Controls.BreadcrumbBarItem.Click -> System.Windows.RoutedEventHandler!
+Fluence.Wpf.Controls.BreadcrumbBarItem.IsLastItem.get -> bool
+Fluence.Wpf.Controls.BreadcrumbBarItem.IsPressed.get -> bool
+Fluence.Wpf.Controls.Button
+Fluence.Wpf.Controls.Button.Appearance.get -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.Controls.Button.Appearance.set -> void
+Fluence.Wpf.Controls.Button.Button() -> void
+Fluence.Wpf.Controls.Button.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.Button.CornerRadius.set -> void
+Fluence.Wpf.Controls.Button.Icon.get -> object!
+Fluence.Wpf.Controls.Button.Icon.set -> void
+Fluence.Wpf.Controls.Button.IconPlacement.get -> Fluence.Wpf.ElementPlacement
+Fluence.Wpf.Controls.Button.IconPlacement.set -> void
+Fluence.Wpf.Controls.Card
+Fluence.Wpf.Controls.Card.Card() -> void
+Fluence.Wpf.Controls.Card.Click -> System.Windows.RoutedEventHandler!
+Fluence.Wpf.Controls.Card.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.Card.CornerRadius.set -> void
+Fluence.Wpf.Controls.Card.Footer.get -> object!
+Fluence.Wpf.Controls.Card.Footer.set -> void
+Fluence.Wpf.Controls.Card.FooterTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.Card.FooterTemplate.set -> void
+Fluence.Wpf.Controls.Card.Header.get -> object!
+Fluence.Wpf.Controls.Card.Header.set -> void
+Fluence.Wpf.Controls.Card.HeaderTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.Card.HeaderTemplate.set -> void
+Fluence.Wpf.Controls.Card.Icon.get -> object!
+Fluence.Wpf.Controls.Card.Icon.set -> void
+Fluence.Wpf.Controls.Card.IsClickable.get -> bool
+Fluence.Wpf.Controls.Card.IsClickable.set -> void
+Fluence.Wpf.Controls.Card.IsPressed.get -> bool
+Fluence.Wpf.Controls.Card.Variant.get -> Fluence.Wpf.CardVariant
+Fluence.Wpf.Controls.Card.Variant.set -> void
+Fluence.Wpf.Controls.CheckBox
+Fluence.Wpf.Controls.CheckBox.CheckBox() -> void
+Fluence.Wpf.Controls.CheckBox.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.CheckBox.CornerRadius.set -> void
+Fluence.Wpf.Controls.CheckBox.Description.get -> string?
+Fluence.Wpf.Controls.CheckBox.Description.set -> void
+Fluence.Wpf.Controls.ColorPicker
+Fluence.Wpf.Controls.ColorPicker.Color.get -> System.Windows.Media.Color
+Fluence.Wpf.Controls.ColorPicker.Color.set -> void
+Fluence.Wpf.Controls.ColorPicker.ColorChanged -> System.EventHandler<Fluence.Wpf.ColorPickerColorChangedEventArgs!>?
+Fluence.Wpf.Controls.ColorPicker.ColorPicker() -> void
+Fluence.Wpf.Controls.ColorPicker.IsAlphaEnabled.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsAlphaEnabled.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsAlphaSliderVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsAlphaSliderVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsAlphaTextInputVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsAlphaTextInputVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsColorChannelTextInputVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsColorChannelTextInputVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsColorPreviewVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsColorPreviewVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsColorSliderVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsColorSliderVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsColorSpectrumVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsColorSpectrumVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsHexInputVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsHexInputVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.IsMoreButtonVisible.get -> bool
+Fluence.Wpf.Controls.ColorPicker.IsMoreButtonVisible.set -> void
+Fluence.Wpf.Controls.ColorPicker.PreviousColor.get -> System.Windows.Media.Color?
+Fluence.Wpf.Controls.ColorPicker.PreviousColor.set -> void
+Fluence.Wpf.Controls.ComboBox
+Fluence.Wpf.Controls.ComboBox.ComboBox() -> void
+Fluence.Wpf.Controls.ComboBox.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ComboBox.CornerRadius.set -> void
+Fluence.Wpf.Controls.ComboBox.DropdownCornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ComboBox.DropdownCornerRadius.set -> void
+Fluence.Wpf.Controls.ComboBox.Icon.get -> object!
+Fluence.Wpf.Controls.ComboBox.Icon.set -> void
+Fluence.Wpf.Controls.ComboBox.IsDropDownOpenedUpward.get -> bool
+Fluence.Wpf.Controls.ComboBox.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.ComboBox.PlaceholderText.set -> void
+Fluence.Wpf.Controls.ComboBox.SelectedContent.get -> object!
+Fluence.Wpf.Controls.ComboBox.SelectedText.get -> string!
+Fluence.Wpf.Controls.CommandBarFlyout
+Fluence.Wpf.Controls.CommandBarFlyout.CommandBarFlyout() -> void
+Fluence.Wpf.Controls.CommandBarFlyout.PrimaryCommands.get -> System.Collections.ObjectModel.ObservableCollection<System.Windows.UIElement!>!
+Fluence.Wpf.Controls.CommandBarFlyout.SecondaryCommands.get -> System.Collections.ObjectModel.ObservableCollection<System.Windows.UIElement!>!
+Fluence.Wpf.Controls.CommandBarFlyoutPresenter
+Fluence.Wpf.Controls.CommandBarFlyoutPresenter.CommandBarFlyoutPresenter() -> void
+Fluence.Wpf.Controls.CommandBarFlyoutPresenter.IsExpanded.get -> bool
+Fluence.Wpf.Controls.CommandBarFlyoutPresenter.IsExpanded.set -> void
+Fluence.Wpf.Controls.ContentDialog
+Fluence.Wpf.Controls.ContentDialog.CloseButtonClick -> System.EventHandler<Fluence.Wpf.ContentDialogButtonClickEventArgs!>?
+Fluence.Wpf.Controls.ContentDialog.CloseButtonCommand.get -> System.Windows.Input.ICommand?
+Fluence.Wpf.Controls.ContentDialog.CloseButtonCommand.set -> void
+Fluence.Wpf.Controls.ContentDialog.CloseButtonCommandParameter.get -> object?
+Fluence.Wpf.Controls.ContentDialog.CloseButtonCommandParameter.set -> void
+Fluence.Wpf.Controls.ContentDialog.CloseButtonText.get -> string!
+Fluence.Wpf.Controls.ContentDialog.CloseButtonText.set -> void
+Fluence.Wpf.Controls.ContentDialog.Closed -> System.EventHandler<Fluence.Wpf.ContentDialogClosedEventArgs!>?
+Fluence.Wpf.Controls.ContentDialog.ContentDialog() -> void
+Fluence.Wpf.Controls.ContentDialog.DefaultButton.get -> Fluence.Wpf.ContentDialogButton
+Fluence.Wpf.Controls.ContentDialog.DefaultButton.set -> void
+Fluence.Wpf.Controls.ContentDialog.Hide() -> void
+Fluence.Wpf.Controls.ContentDialog.IsPrimaryButtonEnabled.get -> bool
+Fluence.Wpf.Controls.ContentDialog.IsPrimaryButtonEnabled.set -> void
+Fluence.Wpf.Controls.ContentDialog.IsSecondaryButtonEnabled.get -> bool
+Fluence.Wpf.Controls.ContentDialog.IsSecondaryButtonEnabled.set -> void
+Fluence.Wpf.Controls.ContentDialog.Opened -> System.EventHandler<Fluence.Wpf.ContentDialogOpenedEventArgs!>?
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonClick -> System.EventHandler<Fluence.Wpf.ContentDialogButtonClickEventArgs!>?
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommand.get -> System.Windows.Input.ICommand?
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommand.set -> void
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommandParameter.get -> object?
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommandParameter.set -> void
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonText.get -> string!
+Fluence.Wpf.Controls.ContentDialog.PrimaryButtonText.set -> void
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonClick -> System.EventHandler<Fluence.Wpf.ContentDialogButtonClickEventArgs!>?
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommand.get -> System.Windows.Input.ICommand?
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommand.set -> void
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommandParameter.get -> object?
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommandParameter.set -> void
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonText.get -> string!
+Fluence.Wpf.Controls.ContentDialog.SecondaryButtonText.set -> void
+Fluence.Wpf.Controls.ContentDialog.ShowAsync() -> System.Threading.Tasks.Task<Fluence.Wpf.ContentDialogResult>!
+Fluence.Wpf.Controls.ContentDialog.Title.get -> object?
+Fluence.Wpf.Controls.ContentDialog.Title.set -> void
+Fluence.Wpf.Controls.ContentDialog.TitleTemplate.get -> System.Windows.DataTemplate?
+Fluence.Wpf.Controls.ContentDialog.TitleTemplate.set -> void
+Fluence.Wpf.Controls.ContextMenu
+Fluence.Wpf.Controls.ContextMenu.ContextMenu() -> void
+Fluence.Wpf.Controls.DatePicker
+Fluence.Wpf.Controls.DatePicker.DatePicker() -> void
+Fluence.Wpf.Controls.DatePicker.DayVisible.get -> bool
+Fluence.Wpf.Controls.DatePicker.DayVisible.set -> void
+Fluence.Wpf.Controls.DatePicker.Header.get -> object?
+Fluence.Wpf.Controls.DatePicker.Header.set -> void
+Fluence.Wpf.Controls.DatePicker.MaxYear.get -> int
+Fluence.Wpf.Controls.DatePicker.MaxYear.set -> void
+Fluence.Wpf.Controls.DatePicker.MinYear.get -> int
+Fluence.Wpf.Controls.DatePicker.MinYear.set -> void
+Fluence.Wpf.Controls.DatePicker.MonthVisible.get -> bool
+Fluence.Wpf.Controls.DatePicker.MonthVisible.set -> void
+Fluence.Wpf.Controls.DatePicker.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.DatePicker.PlaceholderText.set -> void
+Fluence.Wpf.Controls.DatePicker.SelectedDate.get -> System.DateTime?
+Fluence.Wpf.Controls.DatePicker.SelectedDate.set -> void
+Fluence.Wpf.Controls.DatePicker.SelectedDateChanged -> System.EventHandler<Fluence.Wpf.DatePickerSelectedValueChangedEventArgs!>?
+Fluence.Wpf.Controls.DatePicker.YearVisible.get -> bool
+Fluence.Wpf.Controls.DatePicker.YearVisible.set -> void
+Fluence.Wpf.Controls.DockPanel
+Fluence.Wpf.Controls.DockPanel.DockPanel() -> void
+Fluence.Wpf.Controls.DockPanel.LastChildFill.get -> bool
+Fluence.Wpf.Controls.DockPanel.LastChildFill.set -> void
+Fluence.Wpf.Controls.DockPanel.Spacing.get -> double
+Fluence.Wpf.Controls.DockPanel.Spacing.set -> void
+Fluence.Wpf.Controls.DropDownButton
+Fluence.Wpf.Controls.DropDownButton.CloseFlyout() -> void
+Fluence.Wpf.Controls.DropDownButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.DropDownButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.DropDownButton.DropDownButton() -> void
+Fluence.Wpf.Controls.DropDownButton.DropdownCornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.DropDownButton.DropdownCornerRadius.set -> void
+Fluence.Wpf.Controls.DropDownButton.Flyout.get -> object!
+Fluence.Wpf.Controls.DropDownButton.Flyout.set -> void
+Fluence.Wpf.Controls.DropDownButton.FlyoutTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.DropDownButton.FlyoutTemplate.set -> void
+Fluence.Wpf.Controls.Expander
+Fluence.Wpf.Controls.Expander.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.Expander.CornerRadius.set -> void
+Fluence.Wpf.Controls.Expander.Expander() -> void
+Fluence.Wpf.Controls.FluenceWindow
+Fluence.Wpf.Controls.FluenceWindow.CornerStyle.get -> Fluence.Wpf.WindowCornerPreference
+Fluence.Wpf.Controls.FluenceWindow.CornerStyle.set -> void
+Fluence.Wpf.Controls.FluenceWindow.ExtendsContentIntoTitleBar.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.ExtendsContentIntoTitleBar.set -> void
+Fluence.Wpf.Controls.FluenceWindow.FluenceWindow() -> void
+Fluence.Wpf.Controls.FluenceWindow.HasShadow.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.HasShadow.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsClosable.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.IsClosable.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsCloseButtonVisible.get -> System.Windows.Visibility
+Fluence.Wpf.Controls.FluenceWindow.IsCloseButtonVisible.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsMaximizable.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.IsMaximizable.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsMaximizeButtonVisible.get -> System.Windows.Visibility
+Fluence.Wpf.Controls.FluenceWindow.IsMaximizeButtonVisible.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsMinimizable.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.IsMinimizable.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsMinimizeButtonVisible.get -> System.Windows.Visibility
+Fluence.Wpf.Controls.FluenceWindow.IsMinimizeButtonVisible.set -> void
+Fluence.Wpf.Controls.FluenceWindow.IsMoveable.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.IsMoveable.set -> void
+Fluence.Wpf.Controls.FluenceWindow.MarginMaximized.get -> System.Windows.Thickness
+Fluence.Wpf.Controls.FluenceWindow.MarginMaximized.set -> void
+Fluence.Wpf.Controls.FluenceWindow.SetTitleBar(System.Windows.UIElement? titleBar) -> void
+Fluence.Wpf.Controls.FluenceWindow.ShowIcon.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.ShowIcon.set -> void
+Fluence.Wpf.Controls.FluenceWindow.ShowTitle.get -> bool
+Fluence.Wpf.Controls.FluenceWindow.ShowTitle.set -> void
+Fluence.Wpf.Controls.FluenceWindow.SystemBackdropType.get -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.Controls.FluenceWindow.SystemBackdropType.set -> void
+Fluence.Wpf.Controls.FluenceWindow.TitleBar.get -> System.Windows.UIElement?
+Fluence.Wpf.Controls.FluenceWindow.TitleBar.set -> void
+Fluence.Wpf.Controls.FluenceWindow.TitleBarHeight.get -> double
+Fluence.Wpf.Controls.FluenceWindow.TitleBarHeight.set -> void
+Fluence.Wpf.Controls.Flyout
+Fluence.Wpf.Controls.Flyout.Content.get -> object?
+Fluence.Wpf.Controls.Flyout.Content.set -> void
+Fluence.Wpf.Controls.Flyout.Flyout() -> void
+Fluence.Wpf.Controls.Flyout.FlyoutPresenterStyle.get -> System.Windows.Style?
+Fluence.Wpf.Controls.Flyout.FlyoutPresenterStyle.set -> void
+Fluence.Wpf.Controls.FlyoutBase
+Fluence.Wpf.Controls.FlyoutBase.Closed -> System.EventHandler?
+Fluence.Wpf.Controls.FlyoutBase.Closing -> System.EventHandler<Fluence.Wpf.FlyoutBaseClosingEventArgs!>?
+Fluence.Wpf.Controls.FlyoutBase.FlyoutBase() -> void
+Fluence.Wpf.Controls.FlyoutBase.Hide() -> void
+Fluence.Wpf.Controls.FlyoutBase.IsOpen.get -> bool
+Fluence.Wpf.Controls.FlyoutBase.Opened -> System.EventHandler?
+Fluence.Wpf.Controls.FlyoutBase.Opening -> System.EventHandler?
+Fluence.Wpf.Controls.FlyoutBase.Placement.get -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.Controls.FlyoutBase.Placement.set -> void
+Fluence.Wpf.Controls.FlyoutBase.ShouldConstrainToRootBounds.get -> bool
+Fluence.Wpf.Controls.FlyoutBase.ShouldConstrainToRootBounds.set -> void
+Fluence.Wpf.Controls.FlyoutBase.ShowAt(System.Windows.FrameworkElement! placementTarget) -> void
+Fluence.Wpf.Controls.FlyoutPresenter
+Fluence.Wpf.Controls.FlyoutPresenter.FlyoutPresenter() -> void
+Fluence.Wpf.Controls.FontIcon
+Fluence.Wpf.Controls.FontIcon.EnableTransitions.get -> bool
+Fluence.Wpf.Controls.FontIcon.EnableTransitions.set -> void
+Fluence.Wpf.Controls.FontIcon.FontIcon() -> void
+Fluence.Wpf.Controls.FontIcon.Glyph.get -> string!
+Fluence.Wpf.Controls.FontIcon.Glyph.set -> void
+Fluence.Wpf.Controls.FontIcon.IconFontFamily.get -> System.Windows.Media.FontFamily!
+Fluence.Wpf.Controls.FontIcon.IconFontFamily.set -> void
+Fluence.Wpf.Controls.FontIcon.IconFontSize.get -> double
+Fluence.Wpf.Controls.FontIcon.IconFontSize.set -> void
+Fluence.Wpf.Controls.FontIcon.IsSpinning.get -> bool
+Fluence.Wpf.Controls.FontIcon.IsSpinning.set -> void
+Fluence.Wpf.Controls.FontIcon.MirroredWhenRightToLeft.get -> bool
+Fluence.Wpf.Controls.FontIcon.MirroredWhenRightToLeft.set -> void
+Fluence.Wpf.Controls.FontIcon.Rotation.get -> double
+Fluence.Wpf.Controls.FontIcon.Rotation.set -> void
+Fluence.Wpf.Controls.HyperlinkButton
+Fluence.Wpf.Controls.HyperlinkButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.HyperlinkButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.HyperlinkButton.HyperlinkButton() -> void
+Fluence.Wpf.Controls.HyperlinkButton.Icon.get -> object!
+Fluence.Wpf.Controls.HyperlinkButton.Icon.set -> void
+Fluence.Wpf.Controls.HyperlinkButton.IconPlacement.get -> Fluence.Wpf.ElementPlacement
+Fluence.Wpf.Controls.HyperlinkButton.IconPlacement.set -> void
+Fluence.Wpf.Controls.HyperlinkButton.NavigateUri.get -> System.Uri!
+Fluence.Wpf.Controls.HyperlinkButton.NavigateUri.set -> void
+Fluence.Wpf.Controls.Image
+Fluence.Wpf.Controls.Image.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.Image.CornerRadius.set -> void
+Fluence.Wpf.Controls.Image.Image() -> void
+Fluence.Wpf.Controls.Image.Source.get -> System.Windows.Media.ImageSource?
+Fluence.Wpf.Controls.Image.Source.set -> void
+Fluence.Wpf.Controls.Image.Stretch.get -> System.Windows.Media.Stretch
+Fluence.Wpf.Controls.Image.Stretch.set -> void
+Fluence.Wpf.Controls.InfoBadge
+Fluence.Wpf.Controls.InfoBadge.BadgeStyle.get -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.Controls.InfoBadge.BadgeStyle.set -> void
+Fluence.Wpf.Controls.InfoBadge.IconSource.get -> object!
+Fluence.Wpf.Controls.InfoBadge.IconSource.set -> void
+Fluence.Wpf.Controls.InfoBadge.InfoBadge() -> void
+Fluence.Wpf.Controls.InfoBadge.Value.get -> int
+Fluence.Wpf.Controls.InfoBadge.Value.set -> void
+Fluence.Wpf.Controls.InfoBar
+Fluence.Wpf.Controls.InfoBar.ActionButton.get -> object!
+Fluence.Wpf.Controls.InfoBar.ActionButton.set -> void
+Fluence.Wpf.Controls.InfoBar.Closed -> System.EventHandler<Fluence.Wpf.InfoBarClosedEventArgs!>?
+Fluence.Wpf.Controls.InfoBar.Closing -> System.EventHandler<Fluence.Wpf.InfoBarClosingEventArgs!>?
+Fluence.Wpf.Controls.InfoBar.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.InfoBar.CornerRadius.set -> void
+Fluence.Wpf.Controls.InfoBar.Icon.get -> object!
+Fluence.Wpf.Controls.InfoBar.Icon.set -> void
+Fluence.Wpf.Controls.InfoBar.InfoBar() -> void
+Fluence.Wpf.Controls.InfoBar.IsClosable.get -> bool
+Fluence.Wpf.Controls.InfoBar.IsClosable.set -> void
+Fluence.Wpf.Controls.InfoBar.IsIconVisible.get -> bool
+Fluence.Wpf.Controls.InfoBar.IsIconVisible.set -> void
+Fluence.Wpf.Controls.InfoBar.IsOpen.get -> bool
+Fluence.Wpf.Controls.InfoBar.IsOpen.set -> void
+Fluence.Wpf.Controls.InfoBar.Message.get -> string!
+Fluence.Wpf.Controls.InfoBar.Message.set -> void
+Fluence.Wpf.Controls.InfoBar.Severity.get -> Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.Controls.InfoBar.Severity.set -> void
+Fluence.Wpf.Controls.InfoBar.Title.get -> string!
+Fluence.Wpf.Controls.InfoBar.Title.set -> void
+Fluence.Wpf.Controls.ListBox
+Fluence.Wpf.Controls.ListBox.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ListBox.CornerRadius.set -> void
+Fluence.Wpf.Controls.ListBox.ListBox() -> void
+Fluence.Wpf.Controls.ListBoxItem
+Fluence.Wpf.Controls.ListBoxItem.ListBoxItem() -> void
+Fluence.Wpf.Controls.ListView
+Fluence.Wpf.Controls.ListView.AnimateRemove(object! item, System.Action? onCompleted) -> void
+Fluence.Wpf.Controls.ListView.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ListView.CornerRadius.set -> void
+Fluence.Wpf.Controls.ListView.EmptyContent.get -> object!
+Fluence.Wpf.Controls.ListView.EmptyContent.set -> void
+Fluence.Wpf.Controls.ListView.HoverHighlightEnabled.get -> bool
+Fluence.Wpf.Controls.ListView.HoverHighlightEnabled.set -> void
+Fluence.Wpf.Controls.ListView.IsItemSelectable.get -> bool
+Fluence.Wpf.Controls.ListView.IsItemSelectable.set -> void
+Fluence.Wpf.Controls.ListView.ItemAnimationsEnabled.get -> bool
+Fluence.Wpf.Controls.ListView.ItemAnimationsEnabled.set -> void
+Fluence.Wpf.Controls.ListView.ListView() -> void
+Fluence.Wpf.Controls.ListView.ViewState.get -> Fluence.Wpf.ListViewState
+Fluence.Wpf.Controls.ListView.ViewState.set -> void
+Fluence.Wpf.Controls.Menu
+Fluence.Wpf.Controls.Menu.Menu() -> void
+Fluence.Wpf.Controls.MenuItem
+Fluence.Wpf.Controls.MenuItem.MenuItem() -> void
+Fluence.Wpf.Controls.NavigationView
+Fluence.Wpf.Controls.NavigationView.BackRequested -> System.EventHandler<Fluence.Wpf.NavigationViewBackRequestedEventArgs!>?
+Fluence.Wpf.Controls.NavigationView.Content.get -> object!
+Fluence.Wpf.Controls.NavigationView.Content.set -> void
+Fluence.Wpf.Controls.NavigationView.ContentBackground.get -> System.Windows.Media.Brush!
+Fluence.Wpf.Controls.NavigationView.ContentBackground.set -> void
+Fluence.Wpf.Controls.NavigationView.FooterMenuItems.get -> System.Collections.ObjectModel.ObservableCollection<object!>!
+Fluence.Wpf.Controls.NavigationView.Header.get -> object!
+Fluence.Wpf.Controls.NavigationView.Header.set -> void
+Fluence.Wpf.Controls.NavigationView.HeaderTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.NavigationView.HeaderTemplate.set -> void
+Fluence.Wpf.Controls.NavigationView.IsBackButtonVisible.get -> bool
+Fluence.Wpf.Controls.NavigationView.IsBackButtonVisible.set -> void
+Fluence.Wpf.Controls.NavigationView.IsBackEnabled.get -> bool
+Fluence.Wpf.Controls.NavigationView.IsBackEnabled.set -> void
+Fluence.Wpf.Controls.NavigationView.IsPaneOpen.get -> bool
+Fluence.Wpf.Controls.NavigationView.IsPaneOpen.set -> void
+Fluence.Wpf.Controls.NavigationView.IsPaneToggleButtonVisible.get -> bool
+Fluence.Wpf.Controls.NavigationView.IsPaneToggleButtonVisible.set -> void
+Fluence.Wpf.Controls.NavigationView.ItemInvoked -> System.EventHandler<Fluence.Wpf.NavigationViewItemInvokedEventArgs!>?
+Fluence.Wpf.Controls.NavigationView.NavigationView() -> void
+Fluence.Wpf.Controls.NavigationView.PaneClosed -> System.EventHandler?
+Fluence.Wpf.Controls.NavigationView.PaneDisplayMode.get -> Fluence.Wpf.NavigationViewPaneDisplayMode
+Fluence.Wpf.Controls.NavigationView.PaneDisplayMode.set -> void
+Fluence.Wpf.Controls.NavigationView.PaneFooter.get -> object!
+Fluence.Wpf.Controls.NavigationView.PaneFooter.set -> void
+Fluence.Wpf.Controls.NavigationView.PaneHeader.get -> object!
+Fluence.Wpf.Controls.NavigationView.PaneHeader.set -> void
+Fluence.Wpf.Controls.NavigationView.PaneOpening -> System.EventHandler?
+Fluence.Wpf.Controls.NavigationView.SelectFooterMenuItem(Fluence.Wpf.Controls.NavigationViewItem! item) -> void
+Fluence.Wpf.Controls.NavigationView.SelectionFollowsFocus.get -> bool
+Fluence.Wpf.Controls.NavigationView.SelectionFollowsFocus.set -> void
+Fluence.Wpf.Controls.NavigationViewItem
+Fluence.Wpf.Controls.NavigationViewItem.Icon.get -> object!
+Fluence.Wpf.Controls.NavigationViewItem.Icon.set -> void
+Fluence.Wpf.Controls.NavigationViewItem.InfoBadge.get -> object!
+Fluence.Wpf.Controls.NavigationViewItem.InfoBadge.set -> void
+Fluence.Wpf.Controls.NavigationViewItem.IsChildItem.get -> bool
+Fluence.Wpf.Controls.NavigationViewItem.IsChildItem.set -> void
+Fluence.Wpf.Controls.NavigationViewItem.IsPressed.get -> bool
+Fluence.Wpf.Controls.NavigationViewItem.NavigationViewItem() -> void
+Fluence.Wpf.Controls.NavigationViewItemHeader
+Fluence.Wpf.Controls.NavigationViewItemHeader.NavigationViewItemHeader() -> void
+Fluence.Wpf.Controls.NavigationViewItemSeparator
+Fluence.Wpf.Controls.NavigationViewItemSeparator.NavigationViewItemSeparator() -> void
+Fluence.Wpf.Controls.NumberBox
+Fluence.Wpf.Controls.NumberBox.AcceptsExpression.get -> bool
+Fluence.Wpf.Controls.NumberBox.AcceptsExpression.set -> void
+Fluence.Wpf.Controls.NumberBox.Description.get -> string!
+Fluence.Wpf.Controls.NumberBox.Description.set -> void
+Fluence.Wpf.Controls.NumberBox.Header.get -> object!
+Fluence.Wpf.Controls.NumberBox.Header.set -> void
+Fluence.Wpf.Controls.NumberBox.LargeChange.get -> double
+Fluence.Wpf.Controls.NumberBox.LargeChange.set -> void
+Fluence.Wpf.Controls.NumberBox.Maximum.get -> double
+Fluence.Wpf.Controls.NumberBox.Maximum.set -> void
+Fluence.Wpf.Controls.NumberBox.Minimum.get -> double
+Fluence.Wpf.Controls.NumberBox.Minimum.set -> void
+Fluence.Wpf.Controls.NumberBox.NumberBox() -> void
+Fluence.Wpf.Controls.NumberBox.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.NumberBox.PlaceholderText.set -> void
+Fluence.Wpf.Controls.NumberBox.SmallChange.get -> double
+Fluence.Wpf.Controls.NumberBox.SmallChange.set -> void
+Fluence.Wpf.Controls.NumberBox.SpinButtonPlacementMode.get -> Fluence.Wpf.NumberBoxSpinButtonPlacementMode
+Fluence.Wpf.Controls.NumberBox.SpinButtonPlacementMode.set -> void
+Fluence.Wpf.Controls.NumberBox.Text.get -> string!
+Fluence.Wpf.Controls.NumberBox.Text.set -> void
+Fluence.Wpf.Controls.NumberBox.TryParseText() -> bool
+Fluence.Wpf.Controls.NumberBox.Value.get -> double
+Fluence.Wpf.Controls.NumberBox.Value.set -> void
+Fluence.Wpf.Controls.NumberBox.ValueChanged -> System.EventHandler<Fluence.Wpf.NumberBoxValueChangedEventArgs!>?
+Fluence.Wpf.Controls.PasswordBoxExtensions
+Fluence.Wpf.Controls.PersonPicture
+Fluence.Wpf.Controls.PersonPicture.BadgeGlyph.get -> string!
+Fluence.Wpf.Controls.PersonPicture.BadgeGlyph.set -> void
+Fluence.Wpf.Controls.PersonPicture.BadgeNumber.get -> int
+Fluence.Wpf.Controls.PersonPicture.BadgeNumber.set -> void
+Fluence.Wpf.Controls.PersonPicture.DisplayName.get -> string!
+Fluence.Wpf.Controls.PersonPicture.DisplayName.set -> void
+Fluence.Wpf.Controls.PersonPicture.Initials.get -> string!
+Fluence.Wpf.Controls.PersonPicture.Initials.set -> void
+Fluence.Wpf.Controls.PersonPicture.IsGroup.get -> bool
+Fluence.Wpf.Controls.PersonPicture.IsGroup.set -> void
+Fluence.Wpf.Controls.PersonPicture.PersonPicture() -> void
+Fluence.Wpf.Controls.PersonPicture.ProfilePicture.get -> System.Windows.Media.ImageSource!
+Fluence.Wpf.Controls.PersonPicture.ProfilePicture.set -> void
+Fluence.Wpf.Controls.PipsPager
+Fluence.Wpf.Controls.PipsPager.MaxVisiblePips.get -> int
+Fluence.Wpf.Controls.PipsPager.MaxVisiblePips.set -> void
+Fluence.Wpf.Controls.PipsPager.NextButtonVisibility.get -> Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.Controls.PipsPager.NextButtonVisibility.set -> void
+Fluence.Wpf.Controls.PipsPager.NumberOfPages.get -> int
+Fluence.Wpf.Controls.PipsPager.NumberOfPages.set -> void
+Fluence.Wpf.Controls.PipsPager.Orientation.get -> System.Windows.Controls.Orientation
+Fluence.Wpf.Controls.PipsPager.Orientation.set -> void
+Fluence.Wpf.Controls.PipsPager.PipsPager() -> void
+Fluence.Wpf.Controls.PipsPager.PreviousButtonVisibility.get -> Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.Controls.PipsPager.PreviousButtonVisibility.set -> void
+Fluence.Wpf.Controls.PipsPager.SelectedIndexChanged -> System.EventHandler<Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs!>?
+Fluence.Wpf.Controls.PipsPager.SelectedPageIndex.get -> int
+Fluence.Wpf.Controls.PipsPager.SelectedPageIndex.set -> void
+Fluence.Wpf.Controls.ProgressBar
+Fluence.Wpf.Controls.ProgressBar.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ProgressBar.CornerRadius.set -> void
+Fluence.Wpf.Controls.ProgressBar.CurrentStep.get -> int
+Fluence.Wpf.Controls.ProgressBar.CurrentStep.set -> void
+Fluence.Wpf.Controls.ProgressBar.ProgressBar() -> void
+Fluence.Wpf.Controls.ProgressBar.ProgressMode.get -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.Controls.ProgressBar.ProgressMode.set -> void
+Fluence.Wpf.Controls.ProgressBar.ShowError.get -> bool
+Fluence.Wpf.Controls.ProgressBar.ShowError.set -> void
+Fluence.Wpf.Controls.ProgressBar.ShowPaused.get -> bool
+Fluence.Wpf.Controls.ProgressBar.ShowPaused.set -> void
+Fluence.Wpf.Controls.ProgressBar.ShowStepMarkers.get -> bool
+Fluence.Wpf.Controls.ProgressBar.ShowStepMarkers.set -> void
+Fluence.Wpf.Controls.ProgressBar.Steps.get -> int
+Fluence.Wpf.Controls.ProgressBar.Steps.set -> void
+Fluence.Wpf.Controls.ProgressBar.TrackHeight.get -> double
+Fluence.Wpf.Controls.ProgressBar.TrackHeight.set -> void
+Fluence.Wpf.Controls.ProgressRing
+Fluence.Wpf.Controls.ProgressRing.EllipseDiameter.get -> double
+Fluence.Wpf.Controls.ProgressRing.EllipseOffset.get -> System.Windows.Thickness
+Fluence.Wpf.Controls.ProgressRing.IsActive.get -> bool
+Fluence.Wpf.Controls.ProgressRing.IsActive.set -> void
+Fluence.Wpf.Controls.ProgressRing.IsIndeterminate.get -> bool
+Fluence.Wpf.Controls.ProgressRing.IsIndeterminate.set -> void
+Fluence.Wpf.Controls.ProgressRing.Maximum.get -> double
+Fluence.Wpf.Controls.ProgressRing.Maximum.set -> void
+Fluence.Wpf.Controls.ProgressRing.Minimum.get -> double
+Fluence.Wpf.Controls.ProgressRing.Minimum.set -> void
+Fluence.Wpf.Controls.ProgressRing.ProgressRing() -> void
+Fluence.Wpf.Controls.ProgressRing.ProgressState.get -> Fluence.Wpf.ProgressRingState
+Fluence.Wpf.Controls.ProgressRing.ProgressState.set -> void
+Fluence.Wpf.Controls.ProgressRing.ShowError.get -> bool
+Fluence.Wpf.Controls.ProgressRing.ShowError.set -> void
+Fluence.Wpf.Controls.ProgressRing.ShowPaused.get -> bool
+Fluence.Wpf.Controls.ProgressRing.ShowPaused.set -> void
+Fluence.Wpf.Controls.ProgressRing.StrokeThickness.get -> double
+Fluence.Wpf.Controls.ProgressRing.StrokeThickness.set -> void
+Fluence.Wpf.Controls.ProgressRing.Value.get -> double
+Fluence.Wpf.Controls.ProgressRing.Value.set -> void
+Fluence.Wpf.Controls.RadioButton
+Fluence.Wpf.Controls.RadioButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.RadioButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.RadioButton.Description.get -> string?
+Fluence.Wpf.Controls.RadioButton.Description.set -> void
+Fluence.Wpf.Controls.RadioButton.RadioButton() -> void
+Fluence.Wpf.Controls.RatingControl
+Fluence.Wpf.Controls.RatingControl.Caption.get -> string!
+Fluence.Wpf.Controls.RatingControl.Caption.set -> void
+Fluence.Wpf.Controls.RatingControl.IsReadOnly.get -> bool
+Fluence.Wpf.Controls.RatingControl.IsReadOnly.set -> void
+Fluence.Wpf.Controls.RatingControl.MaxRating.get -> int
+Fluence.Wpf.Controls.RatingControl.MaxRating.set -> void
+Fluence.Wpf.Controls.RatingControl.RatingControl() -> void
+Fluence.Wpf.Controls.RatingControl.Value.get -> double
+Fluence.Wpf.Controls.RatingControl.Value.set -> void
+Fluence.Wpf.Controls.RepeatButton
+Fluence.Wpf.Controls.RepeatButton.Appearance.get -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.Controls.RepeatButton.Appearance.set -> void
+Fluence.Wpf.Controls.RepeatButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.RepeatButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.RepeatButton.RepeatButton() -> void
+Fluence.Wpf.Controls.ScrollBarExtensions
+Fluence.Wpf.Controls.Separator
+Fluence.Wpf.Controls.Separator.Separator() -> void
+Fluence.Wpf.Controls.Slider
+Fluence.Wpf.Controls.Slider.Slider() -> void
+Fluence.Wpf.Controls.SmoothScrollViewer
+Fluence.Wpf.Controls.SmoothScrollViewer.ScrollDuration.get -> System.Windows.Duration
+Fluence.Wpf.Controls.SmoothScrollViewer.ScrollDuration.set -> void
+Fluence.Wpf.Controls.SmoothScrollViewer.SmoothScrollViewer() -> void
+Fluence.Wpf.Controls.SplitButton
+Fluence.Wpf.Controls.SplitButton.Appearance.get -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.Controls.SplitButton.Appearance.set -> void
+Fluence.Wpf.Controls.SplitButton.Click -> System.Windows.RoutedEventHandler!
+Fluence.Wpf.Controls.SplitButton.CloseFlyout() -> void
+Fluence.Wpf.Controls.SplitButton.Command.get -> System.Windows.Input.ICommand!
+Fluence.Wpf.Controls.SplitButton.Command.set -> void
+Fluence.Wpf.Controls.SplitButton.CommandParameter.get -> object!
+Fluence.Wpf.Controls.SplitButton.CommandParameter.set -> void
+Fluence.Wpf.Controls.SplitButton.CommandTarget.get -> System.Windows.IInputElement!
+Fluence.Wpf.Controls.SplitButton.CommandTarget.set -> void
+Fluence.Wpf.Controls.SplitButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.SplitButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.SplitButton.DropdownCornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.SplitButton.DropdownCornerRadius.set -> void
+Fluence.Wpf.Controls.SplitButton.Flyout.get -> object!
+Fluence.Wpf.Controls.SplitButton.Flyout.set -> void
+Fluence.Wpf.Controls.SplitButton.FlyoutTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.SplitButton.FlyoutTemplate.set -> void
+Fluence.Wpf.Controls.SplitButton.IsFlyoutOpen.get -> bool
+Fluence.Wpf.Controls.SplitButton.SplitButton() -> void
+Fluence.Wpf.Controls.StackPanel
+Fluence.Wpf.Controls.StackPanel.Spacing.get -> double
+Fluence.Wpf.Controls.StackPanel.Spacing.set -> void
+Fluence.Wpf.Controls.StackPanel.StackPanel() -> void
+Fluence.Wpf.Controls.TabView
+Fluence.Wpf.Controls.TabView.AddTabButtonClick -> System.Windows.RoutedEventHandler!
+Fluence.Wpf.Controls.TabView.CloseButtonOverlayMode.get -> Fluence.Wpf.TabViewCloseButtonOverlayMode
+Fluence.Wpf.Controls.TabView.CloseButtonOverlayMode.set -> void
+Fluence.Wpf.Controls.TabView.IsAddTabButtonVisible.get -> bool
+Fluence.Wpf.Controls.TabView.IsAddTabButtonVisible.set -> void
+Fluence.Wpf.Controls.TabView.TabCloseRequested -> System.EventHandler<Fluence.Wpf.TabViewTabCloseRequestedEventArgs!>!
+Fluence.Wpf.Controls.TabView.TabView() -> void
+Fluence.Wpf.Controls.TabView.TabWidthMode.get -> Fluence.Wpf.TabViewWidthMode
+Fluence.Wpf.Controls.TabView.TabWidthMode.set -> void
+Fluence.Wpf.Controls.TabViewItem
+Fluence.Wpf.Controls.TabViewItem.CloseRequested -> System.EventHandler<Fluence.Wpf.TabViewTabCloseRequestedEventArgs!>!
+Fluence.Wpf.Controls.TabViewItem.Icon.get -> object!
+Fluence.Wpf.Controls.TabViewItem.Icon.set -> void
+Fluence.Wpf.Controls.TabViewItem.IsClosable.get -> bool
+Fluence.Wpf.Controls.TabViewItem.IsClosable.set -> void
+Fluence.Wpf.Controls.TabViewItem.TabViewItem() -> void
+Fluence.Wpf.Controls.TeachingTip
+Fluence.Wpf.Controls.TeachingTip.ActionButtonClick -> System.EventHandler?
+Fluence.Wpf.Controls.TeachingTip.ActionButtonCommand.get -> System.Windows.Input.ICommand?
+Fluence.Wpf.Controls.TeachingTip.ActionButtonCommand.set -> void
+Fluence.Wpf.Controls.TeachingTip.ActionButtonCommandParameter.get -> object?
+Fluence.Wpf.Controls.TeachingTip.ActionButtonCommandParameter.set -> void
+Fluence.Wpf.Controls.TeachingTip.ActionButtonContent.get -> object?
+Fluence.Wpf.Controls.TeachingTip.ActionButtonContent.set -> void
+Fluence.Wpf.Controls.TeachingTip.ActualPlacement.get -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.Controls.TeachingTip.CloseButtonClick -> System.EventHandler?
+Fluence.Wpf.Controls.TeachingTip.CloseButtonContent.get -> object?
+Fluence.Wpf.Controls.TeachingTip.CloseButtonContent.set -> void
+Fluence.Wpf.Controls.TeachingTip.Closed -> System.EventHandler<Fluence.Wpf.TeachingTipClosedEventArgs!>?
+Fluence.Wpf.Controls.TeachingTip.IsLightDismissEnabled.get -> bool
+Fluence.Wpf.Controls.TeachingTip.IsLightDismissEnabled.set -> void
+Fluence.Wpf.Controls.TeachingTip.IsOpen.get -> bool
+Fluence.Wpf.Controls.TeachingTip.IsOpen.set -> void
+Fluence.Wpf.Controls.TeachingTip.PreferredPlacement.get -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.Controls.TeachingTip.PreferredPlacement.set -> void
+Fluence.Wpf.Controls.TeachingTip.Subtitle.get -> string!
+Fluence.Wpf.Controls.TeachingTip.Subtitle.set -> void
+Fluence.Wpf.Controls.TeachingTip.Target.get -> System.Windows.FrameworkElement?
+Fluence.Wpf.Controls.TeachingTip.Target.set -> void
+Fluence.Wpf.Controls.TeachingTip.TeachingTip() -> void
+Fluence.Wpf.Controls.TeachingTip.Title.get -> string!
+Fluence.Wpf.Controls.TeachingTip.Title.set -> void
+Fluence.Wpf.Controls.TextBlock
+Fluence.Wpf.Controls.TextBlock.Text.get -> string!
+Fluence.Wpf.Controls.TextBlock.Text.set -> void
+Fluence.Wpf.Controls.TextBlock.TextBlock() -> void
+Fluence.Wpf.Controls.TextBlock.TextTrimming.get -> System.Windows.TextTrimming
+Fluence.Wpf.Controls.TextBlock.TextTrimming.set -> void
+Fluence.Wpf.Controls.TextBlock.TextWrapping.get -> System.Windows.TextWrapping
+Fluence.Wpf.Controls.TextBlock.TextWrapping.set -> void
+Fluence.Wpf.Controls.TextBlock.Typography.get -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.Controls.TextBlock.Typography.set -> void
+Fluence.Wpf.Controls.TextBlockExtensions
+Fluence.Wpf.Controls.TextBox
+Fluence.Wpf.Controls.TextBox.ClearButtonEnabled.get -> bool
+Fluence.Wpf.Controls.TextBox.ClearButtonEnabled.set -> void
+Fluence.Wpf.Controls.TextBox.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.TextBox.CornerRadius.set -> void
+Fluence.Wpf.Controls.TextBox.HelperText.get -> string!
+Fluence.Wpf.Controls.TextBox.HelperText.set -> void
+Fluence.Wpf.Controls.TextBox.Icon.get -> object!
+Fluence.Wpf.Controls.TextBox.Icon.set -> void
+Fluence.Wpf.Controls.TextBox.IconPlacement.get -> Fluence.Wpf.ElementPlacement
+Fluence.Wpf.Controls.TextBox.IconPlacement.set -> void
+Fluence.Wpf.Controls.TextBox.PlaceholderEnabled.get -> bool
+Fluence.Wpf.Controls.TextBox.PlaceholderEnabled.set -> void
+Fluence.Wpf.Controls.TextBox.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.TextBox.PlaceholderText.set -> void
+Fluence.Wpf.Controls.TextBox.TextBox() -> void
+Fluence.Wpf.Controls.TextBox.ValidationMessage.get -> string!
+Fluence.Wpf.Controls.TextBox.ValidationMessage.set -> void
+Fluence.Wpf.Controls.TextBox.ValidationState.get -> Fluence.Wpf.ValidationState
+Fluence.Wpf.Controls.TextBox.ValidationState.set -> void
+Fluence.Wpf.Controls.TimePicker
+Fluence.Wpf.Controls.TimePicker.ClockIdentifier.get -> string!
+Fluence.Wpf.Controls.TimePicker.ClockIdentifier.set -> void
+Fluence.Wpf.Controls.TimePicker.Header.get -> object?
+Fluence.Wpf.Controls.TimePicker.Header.set -> void
+Fluence.Wpf.Controls.TimePicker.MinuteIncrement.get -> int
+Fluence.Wpf.Controls.TimePicker.MinuteIncrement.set -> void
+Fluence.Wpf.Controls.TimePicker.PlaceholderText.get -> string!
+Fluence.Wpf.Controls.TimePicker.PlaceholderText.set -> void
+Fluence.Wpf.Controls.TimePicker.SelectedTime.get -> System.TimeSpan?
+Fluence.Wpf.Controls.TimePicker.SelectedTime.set -> void
+Fluence.Wpf.Controls.TimePicker.SelectedTimeChanged -> System.EventHandler<Fluence.Wpf.TimePickerSelectedValueChangedEventArgs!>?
+Fluence.Wpf.Controls.TimePicker.TimePicker() -> void
+Fluence.Wpf.Controls.TitleBar
+Fluence.Wpf.Controls.TitleBar.BackCommand.get -> System.Windows.Input.ICommand!
+Fluence.Wpf.Controls.TitleBar.BackCommand.set -> void
+Fluence.Wpf.Controls.TitleBar.BackCommandParameter.get -> object!
+Fluence.Wpf.Controls.TitleBar.BackCommandParameter.set -> void
+Fluence.Wpf.Controls.TitleBar.BackRequested -> System.EventHandler?
+Fluence.Wpf.Controls.TitleBar.CustomContent.get -> object!
+Fluence.Wpf.Controls.TitleBar.CustomContent.set -> void
+Fluence.Wpf.Controls.TitleBar.Icon.get -> object!
+Fluence.Wpf.Controls.TitleBar.Icon.set -> void
+Fluence.Wpf.Controls.TitleBar.IsBackButtonVisible.get -> bool
+Fluence.Wpf.Controls.TitleBar.IsBackButtonVisible.set -> void
+Fluence.Wpf.Controls.TitleBar.IsCompact.get -> bool
+Fluence.Wpf.Controls.TitleBar.IsCompact.set -> void
+Fluence.Wpf.Controls.TitleBar.IsPaneToggleButtonVisible.get -> bool
+Fluence.Wpf.Controls.TitleBar.IsPaneToggleButtonVisible.set -> void
+Fluence.Wpf.Controls.TitleBar.LeftHeader.get -> object!
+Fluence.Wpf.Controls.TitleBar.LeftHeader.set -> void
+Fluence.Wpf.Controls.TitleBar.PaneToggleCommand.get -> System.Windows.Input.ICommand!
+Fluence.Wpf.Controls.TitleBar.PaneToggleCommand.set -> void
+Fluence.Wpf.Controls.TitleBar.PaneToggleCommandParameter.get -> object!
+Fluence.Wpf.Controls.TitleBar.PaneToggleCommandParameter.set -> void
+Fluence.Wpf.Controls.TitleBar.PaneToggleRequested -> System.EventHandler?
+Fluence.Wpf.Controls.TitleBar.RightHeader.get -> object!
+Fluence.Wpf.Controls.TitleBar.RightHeader.set -> void
+Fluence.Wpf.Controls.TitleBar.Subtitle.get -> string!
+Fluence.Wpf.Controls.TitleBar.Subtitle.set -> void
+Fluence.Wpf.Controls.TitleBar.Title.get -> string!
+Fluence.Wpf.Controls.TitleBar.Title.set -> void
+Fluence.Wpf.Controls.TitleBar.TitleBar() -> void
+Fluence.Wpf.Controls.ToggleButton
+Fluence.Wpf.Controls.ToggleButton.Appearance.get -> Fluence.Wpf.ControlAppearance
+Fluence.Wpf.Controls.ToggleButton.Appearance.set -> void
+Fluence.Wpf.Controls.ToggleButton.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.ToggleButton.CornerRadius.set -> void
+Fluence.Wpf.Controls.ToggleButton.ToggleButton() -> void
+Fluence.Wpf.Controls.ToggleSplitButton
+Fluence.Wpf.Controls.ToggleSplitButton.IsChecked.get -> bool
+Fluence.Wpf.Controls.ToggleSplitButton.IsChecked.set -> void
+Fluence.Wpf.Controls.ToggleSplitButton.IsCheckedChanged -> System.EventHandler<Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs!>?
+Fluence.Wpf.Controls.ToggleSplitButton.ToggleSplitButton() -> void
+Fluence.Wpf.Controls.ToggleSwitch
+Fluence.Wpf.Controls.ToggleSwitch.HeaderContent.get -> object!
+Fluence.Wpf.Controls.ToggleSwitch.HeaderContent.set -> void
+Fluence.Wpf.Controls.ToggleSwitch.OffContent.get -> object!
+Fluence.Wpf.Controls.ToggleSwitch.OffContent.set -> void
+Fluence.Wpf.Controls.ToggleSwitch.OffContentTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.ToggleSwitch.OffContentTemplate.set -> void
+Fluence.Wpf.Controls.ToggleSwitch.OnContent.get -> object!
+Fluence.Wpf.Controls.ToggleSwitch.OnContent.set -> void
+Fluence.Wpf.Controls.ToggleSwitch.OnContentTemplate.get -> System.Windows.DataTemplate!
+Fluence.Wpf.Controls.ToggleSwitch.OnContentTemplate.set -> void
+Fluence.Wpf.Controls.ToggleSwitch.ToggleSwitch() -> void
+Fluence.Wpf.Controls.ToolTip
+Fluence.Wpf.Controls.ToolTip.ToolTip() -> void
+Fluence.Wpf.Controls.TreeView
+Fluence.Wpf.Controls.TreeView.SelectedItems.get -> System.Collections.IList!
+Fluence.Wpf.Controls.TreeView.SelectionMode.get -> Fluence.Wpf.TreeViewSelectionMode
+Fluence.Wpf.Controls.TreeView.SelectionMode.set -> void
+Fluence.Wpf.Controls.TreeView.TreeView() -> void
+Fluence.Wpf.Controls.TreeViewItem
+Fluence.Wpf.Controls.TreeViewItem.IsSelectionChecked.get -> bool?
+Fluence.Wpf.Controls.TreeViewItem.IsSelectionChecked.set -> void
+Fluence.Wpf.Controls.TreeViewItem.TreeViewItem() -> void
+Fluence.Wpf.DatePickerSelectedValueChangedEventArgs
+Fluence.Wpf.DatePickerSelectedValueChangedEventArgs.DatePickerSelectedValueChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
+Fluence.Wpf.DatePickerSelectedValueChangedEventArgs.NewDate.get -> System.DateTime?
+Fluence.Wpf.DatePickerSelectedValueChangedEventArgs.OldDate.get -> System.DateTime?
+Fluence.Wpf.ElementPlacement
+Fluence.Wpf.ElementPlacement.Left = 0 -> Fluence.Wpf.ElementPlacement
+Fluence.Wpf.ElementPlacement.Right = 1 -> Fluence.Wpf.ElementPlacement
+Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.Body = 2 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.BodyLarge = 4 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.BodyStrong = 3 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.Caption = 1 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.Display = 8 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.None = 0 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.Subtitle = 5 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.Title = 6 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FluentTypography.TitleLarge = 7 -> Fluence.Wpf.FluentTypography
+Fluence.Wpf.FlyoutBaseClosingEventArgs
+Fluence.Wpf.FlyoutBaseClosingEventArgs.Cancel.get -> bool
+Fluence.Wpf.FlyoutBaseClosingEventArgs.Cancel.set -> void
+Fluence.Wpf.FlyoutBaseClosingEventArgs.FlyoutBaseClosingEventArgs() -> void
+Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Auto = 5 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Bottom = 1 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Full = 4 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Left = 2 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Right = 3 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.FlyoutPlacementMode.Top = 0 -> Fluence.Wpf.FlyoutPlacementMode
+Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBadgeStyle.Attention = 0 -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBadgeStyle.Caution = 4 -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBadgeStyle.Critical = 3 -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBadgeStyle.Informational = 1 -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBadgeStyle.Success = 2 -> Fluence.Wpf.InfoBadgeStyle
+Fluence.Wpf.InfoBarClosedEventArgs
+Fluence.Wpf.InfoBarClosedEventArgs.InfoBarClosedEventArgs(Fluence.Wpf.InfoBarCloseReason reason) -> void
+Fluence.Wpf.InfoBarClosedEventArgs.Reason.get -> Fluence.Wpf.InfoBarCloseReason
+Fluence.Wpf.InfoBarCloseReason
+Fluence.Wpf.InfoBarCloseReason.CloseButton = 0 -> Fluence.Wpf.InfoBarCloseReason
+Fluence.Wpf.InfoBarCloseReason.Programmatic = 1 -> Fluence.Wpf.InfoBarCloseReason
+Fluence.Wpf.InfoBarClosingEventArgs
+Fluence.Wpf.InfoBarClosingEventArgs.Cancel.get -> bool
+Fluence.Wpf.InfoBarClosingEventArgs.Cancel.set -> void
+Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.InfoBarSeverity.Error = 3 -> Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.InfoBarSeverity.Informational = 0 -> Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.InfoBarSeverity.Success = 1 -> Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.InfoBarSeverity.Warning = 2 -> Fluence.Wpf.InfoBarSeverity
+Fluence.Wpf.ListViewState
+Fluence.Wpf.ListViewState.Default = 0 -> Fluence.Wpf.ListViewState
+Fluence.Wpf.ListViewState.GridView = 1 -> Fluence.Wpf.ListViewState
+Fluence.Wpf.Markup.ThemeDictionary
+Fluence.Wpf.Markup.ThemeDictionary.ThemeDictionaries.get -> Fluence.Wpf.Markup.ThemeResourceDictionaryCollection!
+Fluence.Wpf.Markup.ThemeDictionary.ThemeDictionary() -> void
+Fluence.Wpf.Markup.ThemeResourceDictionary
+Fluence.Wpf.Markup.ThemeResourceDictionary.ThemeKey.get -> string!
+Fluence.Wpf.Markup.ThemeResourceDictionary.ThemeKey.set -> void
+Fluence.Wpf.Markup.ThemeResourceDictionary.ThemeResourceDictionary() -> void
+Fluence.Wpf.Markup.ThemeResourceDictionaryCollection
+Fluence.Wpf.Markup.ThemeResourceExtension
+Fluence.Wpf.Markup.ThemeResourceExtension.ThemeResourceExtension() -> void
+Fluence.Wpf.Markup.ThemeResourceExtension.ThemeResourceExtension(object! resourceKey) -> void
+Fluence.Wpf.NavigationViewBackRequestedEventArgs
+Fluence.Wpf.NavigationViewBackRequestedEventArgs.NavigationViewBackRequestedEventArgs() -> void
+Fluence.Wpf.NavigationViewItemInvokedEventArgs
+Fluence.Wpf.NavigationViewItemInvokedEventArgs.InvokedItem.get -> object!
+Fluence.Wpf.NavigationViewItemInvokedEventArgs.InvokedItemContainer.get -> Fluence.Wpf.Controls.NavigationViewItem!
+Fluence.Wpf.NavigationViewItemInvokedEventArgs.IsSettingsInvoked.get -> bool
+Fluence.Wpf.NavigationViewItemInvokedEventArgs.NavigationViewItemInvokedEventArgs(object! invokedItem, Fluence.Wpf.Controls.NavigationViewItem! invokedItemContainer, bool isSettingsInvoked) -> void
+Fluence.Wpf.NavigationViewPaneDisplayMode
+Fluence.Wpf.NavigationViewPaneDisplayMode.Left = 0 -> Fluence.Wpf.NavigationViewPaneDisplayMode
+Fluence.Wpf.NavigationViewPaneDisplayMode.LeftCompact = 2 -> Fluence.Wpf.NavigationViewPaneDisplayMode
+Fluence.Wpf.NavigationViewPaneDisplayMode.Top = 1 -> Fluence.Wpf.NavigationViewPaneDisplayMode
+Fluence.Wpf.NumberBoxSpinButtonPlacementMode
+Fluence.Wpf.NumberBoxSpinButtonPlacementMode.Compact = 1 -> Fluence.Wpf.NumberBoxSpinButtonPlacementMode
+Fluence.Wpf.NumberBoxSpinButtonPlacementMode.Hidden = 0 -> Fluence.Wpf.NumberBoxSpinButtonPlacementMode
+Fluence.Wpf.NumberBoxSpinButtonPlacementMode.Inline = 2 -> Fluence.Wpf.NumberBoxSpinButtonPlacementMode
+Fluence.Wpf.NumberBoxValueChangedEventArgs
+Fluence.Wpf.NumberBoxValueChangedEventArgs.NewValue.get -> double
+Fluence.Wpf.NumberBoxValueChangedEventArgs.NumberBoxValueChangedEventArgs(double oldValue, double newValue) -> void
+Fluence.Wpf.NumberBoxValueChangedEventArgs.OldValue.get -> double
+Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.PipsPagerButtonVisibility.Collapsed = 2 -> Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.PipsPagerButtonVisibility.Visible = 0 -> Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.PipsPagerButtonVisibility.VisibleOnPointerOver = 1 -> Fluence.Wpf.PipsPagerButtonVisibility
+Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs
+Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs.NewIndex.get -> int
+Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs.OldIndex.get -> int
+Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs.PipsPagerSelectedIndexChangedEventArgs(int oldIndex, int newIndex) -> void
+Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressBarMode.Error = 3 -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressBarMode.Indeterminate = 1 -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressBarMode.Paused = 4 -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressBarMode.Standard = 0 -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressBarMode.StepProgress = 2 -> Fluence.Wpf.ProgressBarMode
+Fluence.Wpf.ProgressRingState
+Fluence.Wpf.ProgressRingState.Error = 2 -> Fluence.Wpf.ProgressRingState
+Fluence.Wpf.ProgressRingState.Normal = 0 -> Fluence.Wpf.ProgressRingState
+Fluence.Wpf.ProgressRingState.Paused = 1 -> Fluence.Wpf.ProgressRingState
+Fluence.Wpf.ScrollingIndicatorMode
+Fluence.Wpf.ScrollingIndicatorMode.MouseIndicator = 2 -> Fluence.Wpf.ScrollingIndicatorMode
+Fluence.Wpf.ScrollingIndicatorMode.None = 0 -> Fluence.Wpf.ScrollingIndicatorMode
+Fluence.Wpf.ScrollingIndicatorMode.TouchIndicator = 1 -> Fluence.Wpf.ScrollingIndicatorMode
+Fluence.Wpf.SystemThemeWatcher
+Fluence.Wpf.TabViewCloseButtonOverlayMode
+Fluence.Wpf.TabViewCloseButtonOverlayMode.Always = 2 -> Fluence.Wpf.TabViewCloseButtonOverlayMode
+Fluence.Wpf.TabViewCloseButtonOverlayMode.Auto = 0 -> Fluence.Wpf.TabViewCloseButtonOverlayMode
+Fluence.Wpf.TabViewCloseButtonOverlayMode.OnPointerOver = 1 -> Fluence.Wpf.TabViewCloseButtonOverlayMode
+Fluence.Wpf.TabViewTabCloseRequestedEventArgs
+Fluence.Wpf.TabViewTabCloseRequestedEventArgs.Item.get -> object!
+Fluence.Wpf.TabViewTabCloseRequestedEventArgs.Tab.get -> Fluence.Wpf.Controls.TabViewItem!
+Fluence.Wpf.TabViewTabCloseRequestedEventArgs.TabViewTabCloseRequestedEventArgs(System.Windows.RoutedEvent! routedEvent, object! source, Fluence.Wpf.Controls.TabViewItem! tab, object! item) -> void
+Fluence.Wpf.TabViewWidthMode
+Fluence.Wpf.TabViewWidthMode.Compact = 2 -> Fluence.Wpf.TabViewWidthMode
+Fluence.Wpf.TabViewWidthMode.Equal = 1 -> Fluence.Wpf.TabViewWidthMode
+Fluence.Wpf.TabViewWidthMode.SizeToContent = 0 -> Fluence.Wpf.TabViewWidthMode
+Fluence.Wpf.TeachingTipClosedEventArgs
+Fluence.Wpf.TeachingTipClosedEventArgs.Reason.get -> Fluence.Wpf.TeachingTipCloseReason
+Fluence.Wpf.TeachingTipClosedEventArgs.TeachingTipClosedEventArgs(Fluence.Wpf.TeachingTipCloseReason reason) -> void
+Fluence.Wpf.TeachingTipCloseReason
+Fluence.Wpf.TeachingTipCloseReason.CloseButton = 0 -> Fluence.Wpf.TeachingTipCloseReason
+Fluence.Wpf.TeachingTipCloseReason.LightDismiss = 1 -> Fluence.Wpf.TeachingTipCloseReason
+Fluence.Wpf.TeachingTipCloseReason.Programmatic = 2 -> Fluence.Wpf.TeachingTipCloseReason
+Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Auto = 0 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Bottom = 2 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Center = 5 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Left = 3 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Right = 4 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.TeachingTipPlacementMode.Top = 1 -> Fluence.Wpf.TeachingTipPlacementMode
+Fluence.Wpf.ThemeChangedEventArgs
+Fluence.Wpf.ThemeChangedEventArgs.AccentColor.get -> System.Windows.Media.Color
+Fluence.Wpf.ThemeChangedEventArgs.Theme.get -> Fluence.Wpf.ApplicationTheme
+Fluence.Wpf.ThemeChangedEventArgs.ThemeChangedEventArgs(Fluence.Wpf.ApplicationTheme theme, System.Windows.Media.Color accentColor) -> void
+Fluence.Wpf.TimePickerSelectedValueChangedEventArgs
+Fluence.Wpf.TimePickerSelectedValueChangedEventArgs.NewTime.get -> System.TimeSpan?
+Fluence.Wpf.TimePickerSelectedValueChangedEventArgs.OldTime.get -> System.TimeSpan?
+Fluence.Wpf.TimePickerSelectedValueChangedEventArgs.TimePickerSelectedValueChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
+Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs
+Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs.IsChecked.get -> bool
+Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs.ToggleSplitButtonIsCheckedChangedEventArgs(bool isChecked) -> void
+Fluence.Wpf.TreeViewSelectionMode
+Fluence.Wpf.TreeViewSelectionMode.Multiple = 2 -> Fluence.Wpf.TreeViewSelectionMode
+Fluence.Wpf.TreeViewSelectionMode.None = 0 -> Fluence.Wpf.TreeViewSelectionMode
+Fluence.Wpf.TreeViewSelectionMode.Single = 1 -> Fluence.Wpf.TreeViewSelectionMode
+Fluence.Wpf.ValidationState
+Fluence.Wpf.ValidationState.Error = 3 -> Fluence.Wpf.ValidationState
+Fluence.Wpf.ValidationState.None = 0 -> Fluence.Wpf.ValidationState
+Fluence.Wpf.ValidationState.Success = 1 -> Fluence.Wpf.ValidationState
+Fluence.Wpf.ValidationState.Warning = 2 -> Fluence.Wpf.ValidationState
+Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowBackdropType.Acrylic = 3 -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowBackdropType.Auto = 1 -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowBackdropType.Mica = 2 -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowBackdropType.None = 0 -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowBackdropType.Tabbed = 4 -> Fluence.Wpf.WindowBackdropType
+Fluence.Wpf.WindowCornerPreference
+Fluence.Wpf.WindowCornerPreference.Default = 0 -> Fluence.Wpf.WindowCornerPreference
+Fluence.Wpf.WindowCornerPreference.DoNotRound = 1 -> Fluence.Wpf.WindowCornerPreference
+Fluence.Wpf.WindowCornerPreference.Round = 2 -> Fluence.Wpf.WindowCornerPreference
+Fluence.Wpf.WindowCornerPreference.RoundSmall = 3 -> Fluence.Wpf.WindowCornerPreference
+override Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.BreadcrumbBarAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.BreadcrumbBarAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.CardAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.CardAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.CardAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.ColorPickerAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ColorPickerAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ColorPickerAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.ContentDialogAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ContentDialogAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ContentDialogAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.DatePickerAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.DatePickerAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.DatePickerAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.FontIconAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.FontIconAutomationPeer.IsContentElementCore() -> bool
+override Fluence.Wpf.Automation.FontIconAutomationPeer.IsControlElementCore() -> bool
+override Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ImageAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ImageAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ImageAutomationPeer.IsContentElementCore() -> bool
+override Fluence.Wpf.Automation.ImageAutomationPeer.IsControlElementCore() -> bool
+override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.NavigationViewAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.NavigationViewAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.NavigationViewAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.NavigationViewItemAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.NumberBoxAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.NumberBoxAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.NumberBoxAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.NumberBoxAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.PersonPictureAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.PersonPictureAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.PersonPictureAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.PipsPagerAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.PipsPagerAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ProgressRingAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ProgressRingAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ProgressRingAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.TeachingTipAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.TeachingTipAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.TeachingTipAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.TextBlockAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.TextBlockAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.TextBlockAutomationPeer.IsControlElementCore() -> bool
+override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Controls.AutoSuggestBox.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.AutoSuggestBox.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.AutoSuggestBox.OnGotKeyboardFocus(System.Windows.Input.KeyboardFocusChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.AutoSuggestBox.OnIsKeyboardFocusWithinChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.AutoSuggestBox.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBar.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.BreadcrumbBar.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.BreadcrumbBar.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.BreadcrumbBar.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBar.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnKeyUp(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnLostMouseCapture(System.Windows.Input.MouseEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnMouseLeave(System.Windows.Input.MouseEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.BreadcrumbBarItem.OnMouseLeftButtonUp(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.Button.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.Button.OnContentChanged(object! oldContent, object! newContent) -> void
+override Fluence.Wpf.Controls.Card.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.Card.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.Card.OnKeyUp(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.Card.OnLostMouseCapture(System.Windows.Input.MouseEventArgs! e) -> void
+override Fluence.Wpf.Controls.Card.OnMouseLeave(System.Windows.Input.MouseEventArgs! e) -> void
+override Fluence.Wpf.Controls.Card.OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.Card.OnMouseLeftButtonUp(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.ColorPicker.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ColorPicker.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ColorPicker.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ComboBox.OnDropDownClosed(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnDropDownOpened(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnGotFocus(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnLostFocus(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ComboBox.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.CommandBarFlyout.CreatePresenter() -> System.Windows.FrameworkElement!
+override Fluence.Wpf.Controls.CommandBarFlyoutPresenter.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ContentDialog.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ContentDialog.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ContentDialog.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.ContentDialog.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.DatePicker.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.DatePicker.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.DockPanel.ArrangeOverride(System.Windows.Size finalSize) -> System.Windows.Size
+override Fluence.Wpf.Controls.DockPanel.MeasureOverride(System.Windows.Size availableSize) -> System.Windows.Size
+override Fluence.Wpf.Controls.DropDownButton.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.DropDownButton.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.DropDownButton.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.Expander.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.Expander.OnCollapsed() -> void
+override Fluence.Wpf.Controls.Expander.OnExpanded() -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnActivated(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnClosed(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnDeactivated(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnDpiChanged(System.Windows.DpiScale oldDpi, System.Windows.DpiScale newDpi) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnSourceInitialized(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.FluenceWindow.OnStateChanged(System.EventArgs! e) -> void
+override Fluence.Wpf.Controls.Flyout.CreatePresenter() -> System.Windows.FrameworkElement!
+override Fluence.Wpf.Controls.FontIcon.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.FontIcon.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.FontIcon.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.HyperlinkButton.OnClick() -> void
+override Fluence.Wpf.Controls.HyperlinkButton.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.Image.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.Image.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.Image.OnRenderSizeChanged(System.Windows.SizeChangedInfo! sizeInfo) -> void
+override Fluence.Wpf.Controls.InfoBadge.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.InfoBar.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.InfoBar.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ListBox.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.ListBox.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.ListView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.ListView.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.ListView.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ListView.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.Menu.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.Menu.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.NavigationView.ClearContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.NavigationView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.NavigationView.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.NavigationView.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.NavigationView.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.NavigationView.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationView.OnPreviewGotKeyboardFocus(System.Windows.Input.KeyboardFocusChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationView.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationView.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.NavigationViewItem.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnMouseLeave(System.Windows.Input.MouseEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnMouseLeftButtonUp(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnPreviewMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.NavigationViewItem.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.NumberBox.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.NumberBox.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.NumberBox.OnGotKeyboardFocus(System.Windows.Input.KeyboardFocusChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.NumberBox.OnPreviewMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.PersonPicture.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.PersonPicture.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.PipsPager.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.PipsPager.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.PipsPager.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.ProgressBar.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ProgressBar.OnMaximumChanged(double oldMaximum, double newMaximum) -> void
+override Fluence.Wpf.Controls.ProgressBar.OnMinimumChanged(double oldMinimum, double newMinimum) -> void
+override Fluence.Wpf.Controls.ProgressBar.OnValueChanged(double oldValue, double newValue) -> void
+override Fluence.Wpf.Controls.ProgressRing.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ProgressRing.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ProgressRing.OnRenderSizeChanged(System.Windows.SizeChangedInfo! sizeInfo) -> void
+override Fluence.Wpf.Controls.RatingControl.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.RatingControl.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.RatingControl.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.SmoothScrollViewer.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.SmoothScrollViewer.OnMouseWheel(System.Windows.Input.MouseWheelEventArgs! e) -> void
+override Fluence.Wpf.Controls.SmoothScrollViewer.OnScrollChanged(System.Windows.Controls.ScrollChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.SplitButton.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.SplitButton.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.StackPanel.ArrangeOverride(System.Windows.Size arrangeSize) -> System.Windows.Size
+override Fluence.Wpf.Controls.StackPanel.MeasureOverride(System.Windows.Size constraint) -> System.Windows.Size
+override Fluence.Wpf.Controls.TabView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.TabView.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.TabView.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TabViewItem.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TeachingTip.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TeachingTip.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.TeachingTip.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.TextBlock.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TextBlock.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.TextBox.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TextBox.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.TimePicker.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TimePicker.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.TitleBar.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TitleBar.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+override Fluence.Wpf.Controls.ToggleSplitButton.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ToggleSplitButton.OnPrimaryButtonClick(object! sender, System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ToggleSwitch.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.ToggleSwitch.OnChecked(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ToggleSwitch.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.ToggleSwitch.OnIndeterminate(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.ToggleSwitch.OnUnchecked(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.TreeView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.TreeView.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.TreeView.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.TreeView.OnSelectedItemChanged(System.Windows.RoutedPropertyChangedEventArgs<object!>! e) -> void
+override Fluence.Wpf.Controls.TreeView.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.TreeViewItem.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.TreeViewItem.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.TreeViewItem.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.TreeViewItem.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.TreeViewItem.OnSelected(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.TabViewTabCloseRequestedEventArgs.InvokeEventHandler(System.Delegate! genericHandler, object! genericTarget) -> void
+static Fluence.Wpf.ApplicationAccentColorManager.AccentColorChanged -> System.EventHandler<System.EventArgs!>?
+static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccent(System.Windows.Media.Color color) -> void
+static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccent(System.Windows.Media.Color lightThemeAccent, System.Windows.Media.Color darkThemeAccent) -> void
+static Fluence.Wpf.ApplicationAccentColorManager.ApplySystemAccent() -> void
+static Fluence.Wpf.ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled.get -> bool
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColor.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorDark1.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorDark2.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorDark3.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorLight1.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorLight2.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorLight3.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorPrimary.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorSecondary.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColorTertiary.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.TitleBarActiveColor.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.TitleBarInactiveColor.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationAccentColorManager.WindowBorderColor.get -> System.Windows.Media.Color
+static Fluence.Wpf.ApplicationThemeManager.Apply(Fluence.Wpf.ApplicationTheme theme, Fluence.Wpf.WindowBackdropType backdrop = Fluence.Wpf.WindowBackdropType.Auto) -> void
+static Fluence.Wpf.ApplicationThemeManager.ApplySystemTheme() -> void
+static Fluence.Wpf.ApplicationThemeManager.Changed -> System.EventHandler<Fluence.Wpf.ThemeChangedEventArgs!>?
+static Fluence.Wpf.ApplicationThemeManager.CurrentBackdrop.get -> Fluence.Wpf.WindowBackdropType
+static Fluence.Wpf.ApplicationThemeManager.CurrentTheme.get -> Fluence.Wpf.ApplicationTheme
+static Fluence.Wpf.ApplicationThemeManager.IsAppInDarkMode.get -> bool
+static Fluence.Wpf.ApplicationThemeManager.IsSystemInDarkMode.get -> bool
+static Fluence.Wpf.ApplicationThemeManager.ResolvedTheme.get -> Fluence.Wpf.ApplicationTheme
+static Fluence.Wpf.Controls.FluenceWindow.DefaultIcon.get -> System.Windows.Media.ImageSource?
+static Fluence.Wpf.Controls.FlyoutBase.GetAttachedFlyout(System.Windows.FrameworkElement! element) -> Fluence.Wpf.Controls.FlyoutBase?
+static Fluence.Wpf.Controls.FlyoutBase.SetAttachedFlyout(System.Windows.FrameworkElement! element, Fluence.Wpf.Controls.FlyoutBase? value) -> void
+static Fluence.Wpf.Controls.FlyoutBase.ShowAttachedFlyout(System.Windows.FrameworkElement! flyoutOwner) -> void
+static Fluence.Wpf.Controls.InfoBar.GetSeverityBrushKey(Fluence.Wpf.InfoBarSeverity severity) -> string!
+static Fluence.Wpf.Controls.InfoBar.GetSeverityGlyph(Fluence.Wpf.InfoBarSeverity severity) -> string!
+static Fluence.Wpf.Controls.ListView.GetParentIsItemSelectable(System.Windows.DependencyObject! element) -> bool
+static Fluence.Wpf.Controls.ListView.SetParentIsItemSelectable(System.Windows.DependencyObject! element, bool value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetCornerRadius(this System.Windows.Controls.PasswordBox! obj) -> System.Windows.CornerRadius
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetHasPassword(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetIsFluentDecorated(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetIsPasswordRevealed(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetPasswordStrength(this System.Windows.Controls.PasswordBox! obj) -> int
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetPlaceholderText(this System.Windows.Controls.PasswordBox! obj) -> string!
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetRevealButtonEnabled(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetShowCapsLockIndicator(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.GetShowPasswordStrength(this System.Windows.Controls.PasswordBox! obj) -> bool
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetCornerRadius(this System.Windows.Controls.PasswordBox! obj, System.Windows.CornerRadius value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetIsFluentDecorated(this System.Windows.Controls.PasswordBox! obj, bool value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetPasswordStrength(this System.Windows.Controls.PasswordBox! obj, int value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetPlaceholderText(this System.Windows.Controls.PasswordBox! obj, string! value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetRevealButtonEnabled(this System.Windows.Controls.PasswordBox! obj, bool value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetShowCapsLockIndicator(this System.Windows.Controls.PasswordBox! obj, bool value) -> void
+static Fluence.Wpf.Controls.PasswordBoxExtensions.SetShowPasswordStrength(this System.Windows.Controls.PasswordBox! obj, bool value) -> void
+static Fluence.Wpf.Controls.ScrollBarExtensions.GetIndicatorMode(this System.Windows.Controls.Primitives.ScrollBar! obj) -> Fluence.Wpf.ScrollingIndicatorMode
+static Fluence.Wpf.Controls.ScrollBarExtensions.GetIsIndicatorEnabled(this System.Windows.Controls.Primitives.ScrollBar! obj) -> bool
+static Fluence.Wpf.Controls.ScrollBarExtensions.SetIndicatorMode(this System.Windows.Controls.Primitives.ScrollBar! obj, Fluence.Wpf.ScrollingIndicatorMode value) -> void
+static Fluence.Wpf.Controls.ScrollBarExtensions.SetIsIndicatorEnabled(this System.Windows.Controls.Primitives.ScrollBar! obj, bool value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.GetIcon(this System.Windows.DependencyObject! obj) -> object!
+static Fluence.Wpf.Controls.TextBlockExtensions.GetIconPlacement(this System.Windows.DependencyObject! obj) -> Fluence.Wpf.ElementPlacement
+static Fluence.Wpf.Controls.TextBlockExtensions.GetIsTextSelectionEnabled(this System.Windows.DependencyObject! obj) -> bool
+static Fluence.Wpf.Controls.TextBlockExtensions.GetPlaceholderText(this System.Windows.DependencyObject! obj) -> string!
+static Fluence.Wpf.Controls.TextBlockExtensions.GetShowPlaceholder(this System.Windows.DependencyObject! obj) -> bool
+static Fluence.Wpf.Controls.TextBlockExtensions.GetTextTrimming(this System.Windows.DependencyObject! obj) -> System.Windows.TextTrimming
+static Fluence.Wpf.Controls.TextBlockExtensions.GetTypography(this System.Windows.DependencyObject! obj) -> Fluence.Wpf.FluentTypography
+static Fluence.Wpf.Controls.TextBlockExtensions.SetIcon(this System.Windows.DependencyObject! obj, object! value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetIconPlacement(this System.Windows.DependencyObject! obj, Fluence.Wpf.ElementPlacement value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetIsTextSelectionEnabled(this System.Windows.DependencyObject! obj, bool value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetPlaceholderText(this System.Windows.DependencyObject! obj, string! value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetShowPlaceholder(this System.Windows.DependencyObject! obj, bool value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetTextTrimming(this System.Windows.DependencyObject! obj, System.Windows.TextTrimming value) -> void
+static Fluence.Wpf.Controls.TextBlockExtensions.SetTypography(this System.Windows.DependencyObject! obj, Fluence.Wpf.FluentTypography value) -> void
+static Fluence.Wpf.SystemThemeWatcher.UnWatch(System.Windows.Window! window) -> void
+static Fluence.Wpf.SystemThemeWatcher.Watch(System.Windows.Window! window) -> void
+static readonly Fluence.Wpf.Controls.AppBarButton.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AppBarButton.LabelProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.IsSuggestionListOpenProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.ItemsSourceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.MaxSuggestionListHeightProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.QueryIconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.TextMemberPathProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.TextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.AutoSuggestBox.UpdateTextOnSelectProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Border.VariantProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.BreadcrumbBarItem.ClickEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.BreadcrumbBarItem.IsLastItemProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.BreadcrumbBarItem.IsPressedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Button.AppearanceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Button.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Button.IconPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Button.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.ClickEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.Card.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.FooterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.FooterTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.HeaderTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.IsClickableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.IsPressedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Card.VariantProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.CheckBox.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.CheckBox.DescriptionProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.ColorProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsAlphaEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsAlphaSliderVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsAlphaTextInputVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsColorChannelTextInputVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsColorPreviewVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsColorSliderVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsColorSpectrumVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsHexInputVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.IsMoreButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ColorPicker.PreviousColorProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.DropdownCornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.IsDropDownOpenedUpwardProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.SelectedContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ComboBox.SelectedTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.CommandBarFlyoutPresenter.IsExpandedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.CloseButtonCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.CloseButtonCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.CloseButtonTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.DefaultButtonProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.IsPrimaryButtonEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.IsSecondaryButtonEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.PrimaryButtonCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.PrimaryButtonTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.SecondaryButtonCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.SecondaryButtonTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.TitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ContentDialog.TitleTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.DayVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.MaxYearProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.MinYearProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.MonthVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.SelectedDateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DatePicker.YearVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DockPanel.LastChildFillProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DockPanel.SpacingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DropDownButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DropDownButton.DropdownCornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DropDownButton.FlyoutProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DropDownButton.FlyoutTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Expander.BottomCornerRadiusFilter -> System.Windows.Data.IValueConverter!
+static readonly Fluence.Wpf.Controls.Expander.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Expander.TopCornerRadiusFilter -> System.Windows.Data.IValueConverter!
+static readonly Fluence.Wpf.Controls.FluenceWindow.CornerStyleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.ExtendsContentIntoTitleBarProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.HasShadowProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsClosableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsCloseButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsMaximizableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsMaximizeButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsMinimizableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsMinimizeButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsMoveableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.IsNotNullConverter -> System.Windows.Data.IValueConverter!
+static readonly Fluence.Wpf.Controls.FluenceWindow.MarginMaximizedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.ShowIconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.ShowTitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.SystemBackdropTypeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.TitleBarHeightProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FluenceWindow.TitleBarProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Flyout.ContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Flyout.FlyoutPresenterStyleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FlyoutBase.AttachedFlyoutProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FlyoutBase.PlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FlyoutBase.ShouldConstrainToRootBoundsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.EnableTransitionsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.GlyphProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.IconFontFamilyProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.IconFontSizeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.IsSpinningProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.MirroredWhenRightToLeftProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.FontIcon.RotationProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.HyperlinkButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.HyperlinkButton.IconPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.HyperlinkButton.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.HyperlinkButton.NavigateUriProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Image.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Image.SourceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Image.StretchProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBadge.BadgeStyleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBadge.IconSourceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBadge.ValueProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.ActionButtonProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.IsClosableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.IsIconVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.IsOpenProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.MessageProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.SeverityProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.TitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListBox.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.EmptyContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.HoverHighlightEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.IsItemSelectableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.ItemAnimationsEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.ParentIsItemSelectableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.ViewStateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.ContentBackgroundProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.ContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.FooterMenuItemsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.HeaderTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.IsBackButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.IsBackEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.IsPaneOpenProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.IsPaneToggleButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.PaneDisplayModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.PaneFooterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.PaneHeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationView.SelectionFollowsFocusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationViewItem.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationViewItem.InfoBadgeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationViewItem.IsChildItemProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NavigationViewItem.IsPressedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.AcceptsExpressionProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.DescriptionProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.LargeChangeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.MaximumProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.MinimumProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.SmallChangeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.SpinButtonPlacementModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.TextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.NumberBox.ValueProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.HasPasswordProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.IsFluentDecoratedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.IsPasswordRevealedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.PasswordStrengthProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.RevealButtonEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.ShowCapsLockIndicatorProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PasswordBoxExtensions.ShowPasswordStrengthProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.BadgeGlyphProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.BadgeNumberProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.DisplayNameProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.InitialsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.IsGroupProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PersonPicture.ProfilePictureProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.MaxVisiblePipsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.NextButtonVisibilityProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.NumberOfPagesProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.OrientationProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.PreviousButtonVisibilityProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.PipsPager.SelectedPageIndexProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.CurrentStepProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.ProgressModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.ShowErrorProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.ShowPausedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.ShowStepMarkersProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.StepsProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressBar.TrackHeightProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.EllipseDiameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.EllipseOffsetProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.IsActiveProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.IsIndeterminateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.MaximumProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.MinimumProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.ProgressStateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.ShowErrorProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.ShowPausedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.StrokeThicknessProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ProgressRing.ValueProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RadioButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RadioButton.DescriptionProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RatingControl.CaptionProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RatingControl.IsReadOnlyProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RatingControl.MaxRatingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RatingControl.ValueProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RepeatButton.AppearanceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.RepeatButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ScrollBarExtensions.IndicatorModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ScrollBarExtensions.IsIndicatorEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SmoothScrollViewer.ScrollDurationProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.AppearanceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.ClickEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.SplitButton.CommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.CommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.CommandTargetProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.DropdownCornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.FlyoutProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.FlyoutTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SplitButton.IsFlyoutOpenProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.StackPanel.SpacingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TabView.AddTabButtonClickEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.TabView.CloseButtonOverlayModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TabView.IsAddTabButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TabView.TabCloseRequestedEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.TabView.TabWidthModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TabViewItem.CloseRequestedEvent -> System.Windows.RoutedEvent!
+static readonly Fluence.Wpf.Controls.TabViewItem.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TabViewItem.IsClosableProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.ActionButtonCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.ActionButtonCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.ActionButtonContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.ActualPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.CloseButtonContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.IsLightDismissEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.IsOpenProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.PreferredPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.SubtitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.TargetProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TeachingTip.TitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlock.TextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlock.TextTrimmingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlock.TextWrappingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlock.TypographyProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.IconPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.IsTextSelectionEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.ShowPlaceholderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.TextTrimmingProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBlockExtensions.TypographyProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.ClearButtonEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.HelperTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.IconPlacementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.PlaceholderEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.ValidationMessageProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TextBox.ValidationStateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TimePicker.ClockIdentifierProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TimePicker.HeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TimePicker.MinuteIncrementProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TimePicker.PlaceholderTextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TimePicker.SelectedTimeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.BackCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.BackCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.CustomContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.IsBackButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.IsCompactProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.IsPaneToggleButtonVisibleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.LeftHeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.PaneToggleCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.PaneToggleCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.RightHeaderProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.SubtitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TitleBar.TitleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleButton.AppearanceProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSplitButton.IsCheckedProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSwitch.HeaderContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSwitch.OffContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSwitch.OffContentTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSwitch.OnContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ToggleSwitch.OnContentTemplateProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TreeView.SelectionModeProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.TreeViewItem.IsSelectionCheckedProperty -> System.Windows.DependencyProperty!
+virtual Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.IsReadOnly.get -> bool
+virtual Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.SetValue(string! value) -> void
+virtual Fluence.Wpf.Automation.AutoSuggestBoxAutomationPeer.Value.get -> string!
+virtual Fluence.Wpf.Automation.DropDownButtonAutomationPeer.Collapse() -> void
+virtual Fluence.Wpf.Automation.DropDownButtonAutomationPeer.Expand() -> void
+virtual Fluence.Wpf.Automation.DropDownButtonAutomationPeer.ExpandCollapseState.get -> System.Windows.Automation.ExpandCollapseState
+virtual Fluence.Wpf.Automation.NavigationViewAutomationPeer.CanSelectMultiple.get -> bool
+virtual Fluence.Wpf.Automation.NavigationViewAutomationPeer.GetSelection() -> System.Windows.Automation.Provider.IRawElementProviderSimple![]!
+virtual Fluence.Wpf.Automation.NavigationViewAutomationPeer.IsSelectionRequired.get -> bool
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.IsReadOnly.get -> bool
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.LargeChange.get -> double
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.Maximum.get -> double
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.Minimum.get -> double
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.SetValue(double value) -> void
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.SmallChange.get -> double
+virtual Fluence.Wpf.Automation.NumberBoxAutomationPeer.Value.get -> double
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.IsReadOnly.get -> bool
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.LargeChange.get -> double
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.Maximum.get -> double
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.Minimum.get -> double
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.SetValue(double value) -> void
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.SmallChange.get -> double
+virtual Fluence.Wpf.Automation.ProgressRingAutomationPeer.Value.get -> double
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.IsReadOnly.get -> bool
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.LargeChange.get -> double
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.Maximum.get -> double
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.Minimum.get -> double
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.SetValue(double value) -> void
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.SmallChange.get -> double
+virtual Fluence.Wpf.Automation.RatingControlAutomationPeer.Value.get -> double
+virtual Fluence.Wpf.Automation.SplitButtonAutomationPeer.Collapse() -> void
+virtual Fluence.Wpf.Automation.SplitButtonAutomationPeer.Expand() -> void
+virtual Fluence.Wpf.Automation.SplitButtonAutomationPeer.ExpandCollapseState.get -> System.Windows.Automation.ExpandCollapseState
+virtual Fluence.Wpf.Automation.SplitButtonAutomationPeer.Invoke() -> void
+virtual Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.Collapse() -> void
+virtual Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.Expand() -> void
+virtual Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.ExpandCollapseState.get -> System.Windows.Automation.ExpandCollapseState
+virtual Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.Toggle() -> void
+virtual Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.ToggleState.get -> System.Windows.Automation.ToggleState
+virtual Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.Toggle() -> void
+virtual Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.ToggleState.get -> System.Windows.Automation.ToggleState
+virtual Fluence.Wpf.Controls.InfoBar.OnCloseButtonClick() -> void
+virtual Fluence.Wpf.Controls.NumberBox.OnDownClick() -> void
+virtual Fluence.Wpf.Controls.NumberBox.OnUpClick() -> void
+virtual Fluence.Wpf.Controls.NumberBox.OnValueChanged(double oldValue, double newValue) -> void
+virtual Fluence.Wpf.Controls.SplitButton.OnPrimaryButtonClick(object! sender, System.Windows.RoutedEventArgs! e) -> void
+virtual Fluence.Wpf.Controls.TitleBar.OnBackRequested(System.EventArgs! e) -> void
+virtual Fluence.Wpf.Controls.TitleBar.OnPaneToggleRequested(System.EventArgs! e) -> void
