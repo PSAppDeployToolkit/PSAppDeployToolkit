@@ -49,7 +49,7 @@ Describe 'Invoke-ADTCommandWithRetries' {
         It 'Resolves a command given by name, with arguments' {
             # The name path goes through the module's own command table rather than the CommandInfo branch
             # the rest of these use.
-            Invoke-ADTCommandWithRetries -Command Get-ADTFreeDiskSpace -Drive $env:SystemDrive | Should -BeOfType ([System.Double])
+            Invoke-ADTCommandWithRetries -Command Get-ADTFreeDiskSpace -Drive $env:SystemDrive | Should -BeOfType ([System.UInt64])
         }
 
         It 'Retries until the command succeeds' {
