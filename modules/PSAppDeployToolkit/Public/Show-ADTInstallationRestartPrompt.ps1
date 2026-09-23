@@ -20,10 +20,10 @@ function Show-ADTInstallationRestartPrompt
         Specifies how long to display the restart prompt without allowing the window to be hidden. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER SilentCountdown
-        Specifies how long to countdown for the restart when the toolkit is running in silent mode and `-AllowSilentRestart` is specified. Accepts TimeSpan objects, but also interprets numerical values as seconds.
+        Specifies how long to countdown before triggering a silent restart. Note that if a session is open, restart is triggered when the session closes. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER AllowSilentRestart
-        Specifies whether an automatic silent restart should be triggered when DeployMode is silent. Note that if a user is logged on and `-Force` is specified, a silent restart will not take place.
+        Specifies whether an automatic silent restart should be triggered when DeployMode is silent or non-interactive. Note that if a user is logged on and `-Force` is specified, a silent restart will not take place.
 
     .PARAMETER NoInteractiveCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
@@ -347,8 +347,8 @@ function Show-ADTInstallationRestartPrompt
             return
         }
 
-        # If in non-interactive mode.
-        if ($adtSession -and $adtSession.IsSilent() -and !$Force)
+        # If in non-interactive mode and -Force not specified, trigger a silent restart if allowed.
+        if ($adtSession -and $adtSession.IsNonInteractive() -and !$Force)
         {
             if ($AllowSilentRestart)
             {
