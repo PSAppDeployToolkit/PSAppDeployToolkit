@@ -183,7 +183,7 @@ try
                                                 # Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt or they cancel the application's save prompt.
                                                 PromptToSaveTimeout = 120
 
-                                                # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoCountdown parameter is specified. Default is 600 seconds.
+                                                # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoInteractiveCountdown parameter is specified. Default is 600 seconds.
                                                 RestartPromptPersistInterval = 600
                                             }
                                         }
