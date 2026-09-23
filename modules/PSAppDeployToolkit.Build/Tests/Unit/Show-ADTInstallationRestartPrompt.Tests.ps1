@@ -13,9 +13,8 @@ AfterAll {
     Import-ADTModuleUnderTest -Force
 }
 Describe 'Show-ADTInstallationRestartPrompt' {
-    # Only the silent path without -AllowSilentRestart is exercised. -AllowSilentRestart arms a restart for
-    # when the invocation exits, which is not something a test run gets to do to the machine it is running
-    # on, so that branch is left uncovered deliberately.
+    # -AllowSilentRestart arms a restart for when the invocation exits, which is not something a test run
+    # gets to do to the machine it is running on, so that branch is left uncovered deliberately.
     Context 'In a silent deployment' {
         BeforeAll {
             $null = Open-ADTSession -SessionState $ExecutionContext.SessionState -AppName 'RestartPromptSilent' -DeployMode Silent -PassThru -InformationAction SilentlyContinue
@@ -23,6 +22,14 @@ Describe 'Show-ADTInstallationRestartPrompt' {
 
         AfterAll {
             Close-ADTSession -ExitCode 0 -NoShellExit -InformationAction SilentlyContinue
+        }
+
+        AfterEach {
+            # One test below arms a restart deliberately, and the module state holding it outlives the
+            # session that set it, so every other test here would inherit it.
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $Module.State.RestartOnExitOptions = $null
+            }
         }
 
         It 'Shows nothing and restarts nothing' {
@@ -45,6 +52,47 @@ Describe 'Show-ADTInstallationRestartPrompt' {
 
         It 'Returns nothing' {
             Show-ADTInstallationRestartPrompt | Should -BeNullOrEmpty
+        }
+
+        # -Force is the way past the silence, and the dialog it reaches is mocked out because showing a
+        # real one would leave a window open on the machine running the tests.
+        It 'Shows the prompt anyway when forced' {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser }
+            Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { }
+            Show-ADTInstallationRestartPrompt -Force
+            Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter { $ShowModalDialog -and ($DialogType -eq 'RestartDialog') }
+        }
+
+        # Asking for both is not a contradiction the binder can catch, so the function has to decide, and
+        # a caller who asked to see the dialog gets to see it rather than having a restart armed behind it.
+        It 'Prefers the forced prompt over arming a silent restart' {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser }
+            Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { }
+            Show-ADTInstallationRestartPrompt -AllowSilentRestart -Force
+            Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter { $ShowModalDialog -and ($DialogType -eq 'RestartDialog') }
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $Module.State.RestartOnExitOptions | Should -BeNullOrEmpty
+            }
+        }
+
+        # Forcing the prompt cannot conjure someone to answer it, and a restart nobody asked to happen
+        # silently is not the consolation prize. -AllowSilentRestart is the only thing that permits one.
+        It 'Restarts nothing when forced with no user logged on' {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { }
+            Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { }
+            Show-ADTInstallationRestartPrompt -Force
+            Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -Times 0 -Exactly
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $Module.State.RestartOnExitOptions | Should -BeNullOrEmpty
+            }
+        }
+
+        It 'Arms the restart when allowed with no user logged on' {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { }
+            Show-ADTInstallationRestartPrompt -AllowSilentRestart -Force
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                $Module.State.RestartOnExitOptions | Should -Not -BeNullOrEmpty
+            }
         }
     }
 
@@ -93,6 +141,7 @@ Describe 'Show-ADTInstallationRestartPrompt' {
             @{ Parameter2 = 'CustomMessage' }
             @{ Parameter2 = 'CustomMessageText' }
             @{ Parameter2 = 'AllowCancel' }
+            @{ Parameter2 = 'Force' }
         ) {
             Test-ADTParameterSetSatisfied -Command (Get-Command Show-ADTInstallationRestartPrompt) -Parameter AllowSilentRestart, $Parameter2, Title, Subtitle | Should -BeTrue
         }

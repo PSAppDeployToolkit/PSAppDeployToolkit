@@ -11,7 +11,7 @@ function Show-ADTInstallationRestartPrompt
         Displays a restart prompt with a countdown to a forced restart.
 
     .DESCRIPTION
-        The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
+        The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. Restarting without showing the prompt at all only ever happens when `-AllowSilentRestart` is specified.
 
     .PARAMETER InteractiveCountdown
         Specifies how long to display the restart prompt. Accepts TimeSpan objects, but also interprets numerical values as seconds.
@@ -23,7 +23,7 @@ function Show-ADTInstallationRestartPrompt
         Specifies how long to countdown for the restart when the toolkit is running in silent mode and `-AllowSilentRestart` is specified. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER AllowSilentRestart
-        Specifies whether an automatic silent restart should be triggered when DeployMode is silent.
+        Specifies whether an automatic silent restart should be triggered when DeployMode is silent. Note that if a user is logged on and `-Force` is specified, a silent restart will not take place.
 
     .PARAMETER NoInteractiveCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
@@ -54,6 +54,9 @@ function Show-ADTInstallationRestartPrompt
 
     .PARAMETER AllowCancel
         Specifies that a Cancel button is displayed alongside the restart options, allowing the user to dismiss the prompt without restarting.
+
+    .PARAMETER Force
+        Specifies whether the restart prompt should appear irrespective of an ongoing DeploymentSession's DeployMode.
 
     .INPUTS
         None
@@ -189,7 +192,10 @@ function Show-ADTInstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$AllowMove,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$AllowCancel
+        [System.Management.Automation.SwitchParameter]$AllowCancel,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     dynamicparam
@@ -309,25 +315,15 @@ function Show-ADTInstallationRestartPrompt
             $ShutdownReasonText
         }
 
-        # If in non-interactive mode.
-        if ($adtSession -and $adtSession.IsSilent())
-        {
-            if ($AllowSilentRestart)
-            {
-                Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
-                (Get-ADTModuleState).RestartOnExitOptions = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] was not specified."
-            }
-            return
-        }
-
-        # Just restart the computer if no one's logged on to answer the dialog.
+        # Just restart the computer if no one's logged on to answer the dialog, where allowed.
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
+            if (!$AllowSilentRestart)
+            {
+                Write-ADTLogEntry -Message "Skipping restart because there is no active user logged onto the system and [-AllowSilentRestart] was not specified."
+                return
+            }
+            Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system and [-AllowSilentRestart] was  specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
             $restartOnExitData = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
             if ($adtSession)
             {
@@ -342,6 +338,21 @@ function Show-ADTInstallationRestartPrompt
                     NoWait = $true
                 }
                 Invoke-ADTClientServerOperation @icsoParams
+            }
+            return
+        }
+
+        # If in non-interactive mode.
+        if ($adtSession -and $adtSession.IsSilent() -and !$Force)
+        {
+            if ($AllowSilentRestart)
+            {
+                Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
+                (Get-ADTModuleState).RestartOnExitOptions = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
+            }
+            else
+            {
+                Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] was not specified."
             }
             return
         }
