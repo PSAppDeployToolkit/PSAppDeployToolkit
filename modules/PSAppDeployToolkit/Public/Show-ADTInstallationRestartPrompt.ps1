@@ -83,6 +83,11 @@ function Show-ADTInstallationRestartPrompt
 
         Displays a restart prompt with a 600-second countdown, removing the ability to hide/minimise the dialog for the last 60 seconds.
 
+    .EXAMPLE
+        Show-ADTInstallationRestartPrompt -AllowSilentRestart -Force
+
+        Displays a restart prompt that allows silent restart if nobody is logged on, otherwise will force the prompt to appear regardless of the deployment session's deploy mode.
+
     .NOTES
         Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 
