@@ -6,6 +6,7 @@
     <AssemblyTitle>PSAppDeployToolkit Windows Runtime (WinRT) Executable Library</AssemblyTitle>
     <AssemblyDescription>This assembly provides access to Windows Runtime (WinRT) interfaces for PSAppDeployToolkit.</AssemblyDescription>
     <PublishTrimmed>true</PublishTrimmed>
+    <PublishRuntimeIdentifier>win-x64</PublishRuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
