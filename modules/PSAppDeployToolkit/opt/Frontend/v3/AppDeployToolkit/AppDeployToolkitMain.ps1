@@ -1490,13 +1490,18 @@ function Show-InstallationRestartPrompt
     }
     if ($PSBoundParameters.ContainsKey('CountdownSeconds'))
     {
-        $PSBoundParameters.Add('Countdown', $PSBoundParameters.CountdownSeconds)
+        $PSBoundParameters.Add('InteractiveCountdown', $PSBoundParameters.CountdownSeconds)
         $null = $PSBoundParameters.Remove('CountdownSeconds')
     }
     if ($PSBoundParameters.ContainsKey('CountdownNoHideSeconds'))
     {
-        $PSBoundParameters.Add('CountdownNoHide', $PSBoundParameters.CountdownNoHideSeconds)
+        $PSBoundParameters.Add('InteractiveCountdownNoHide', $PSBoundParameters.CountdownNoHideSeconds)
         $null = $PSBoundParameters.Remove('CountdownNoHideSeconds')
+    }
+    if ($PSBoundParameters.ContainsKey('NoCountdown'))
+    {
+        $PSBoundParameters.Add('NoInteractiveCountdown', $PSBoundParameters.NoCountdown)
+        $null = $PSBoundParameters.Remove('NoCountdown')
     }
     if ($PSBoundParameters.ContainsKey('SilentCountdownSeconds'))
     {

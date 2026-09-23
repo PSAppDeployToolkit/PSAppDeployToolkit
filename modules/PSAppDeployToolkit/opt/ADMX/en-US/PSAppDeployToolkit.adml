@@ -97,7 +97,7 @@
 			<string id="PromptToSaveTimeout_Display">PromptToSaveTimeout</string>
 			<string id="PromptToSaveTimeout_Explain">Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt or they cancel the application's save prompt.</string>
 			<string id="RestartPromptPersistInterval_Display">RestartPromptPersistInterval</string>
-			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoCountdown parameter is specified.</string>
+			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoInteractiveCountdown parameter is specified.</string>
 			<string id="FileCopyModeNative">Native</string>
 			<string id="FileCopyModeRobocopy">Robocopy</string>
 			<string id="LogStyleCMTrace">CMTrace</string>
