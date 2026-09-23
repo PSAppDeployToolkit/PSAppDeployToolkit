@@ -13,23 +13,20 @@ function Show-ADTInstallationRestartPrompt
     .DESCRIPTION
         The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. Restarting without showing the prompt at all only ever happens when `-AllowSilentRestart` is specified.
 
+    .PARAMETER NoInteractiveCountdown
+        Specifies whether the user should receive a prompt to immediately restart their workstation.
+
     .PARAMETER InteractiveCountdown
         Specifies how long to display the restart prompt. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER InteractiveCountdownNoHide
         Specifies how long to display the restart prompt without allowing the window to be hidden. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
-    .PARAMETER SilentCountdown
-        Specifies how long to countdown before triggering a silent restart. Note that if a session is open, restart is triggered when the session closes. Accepts TimeSpan objects, but also interprets numerical values as seconds.
-
     .PARAMETER AllowSilentRestart
         Specifies whether an automatic silent restart should be triggered when DeployMode is silent or non-interactive. Note that if a user is logged on and `-Force` is specified, a silent restart will not take place.
 
-    .PARAMETER NoInteractiveCountdown
-        Specifies whether the user should receive a prompt to immediately restart their workstation.
-
-    .PARAMETER WindowLocation
-        The location of the dialog on the screen.
+    .PARAMETER SilentCountdown
+        Specifies how long to countdown before triggering a silent restart. Note that if a session is open, restart is triggered when the session closes. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ShutdownReasonText
         Specifies the shutdown comment to provide to the underlying `shutdown.exe` call when triggering the restart.
@@ -37,8 +34,11 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER NoForceCloseApps
         Specifies that the underlying `shutdown.exe` call should omit its `/f` switch, which is otherwise passed to force running applications closed without forewarning users. Note that an application with unsaved work can then block the restart entirely.
 
-    .PARAMETER PersistPrompt
-        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+    .PARAMETER AllowMove
+        Specifies that the user can move the dialog on the screen.
+
+    .PARAMETER AllowCancel
+        Specifies that a Cancel button is displayed alongside the restart options, allowing the user to dismiss the prompt without restarting.
 
     .PARAMETER CustomMessage
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
@@ -49,11 +49,11 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER NotTopMost
         Specifies whether the prompt shouldn't be topmost, above all other windows.
 
-    .PARAMETER AllowMove
-        Specifies that the user can move the dialog on the screen.
+    .PARAMETER PersistPrompt
+        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
-    .PARAMETER AllowCancel
-        Specifies that a Cancel button is displayed alongside the restart options, allowing the user to dismiss the prompt without restarting.
+    .PARAMETER WindowLocation
+        The location of the dialog on the screen.
 
     .PARAMETER Force
         Specifies whether the restart prompt should appear irrespective of an ongoing DeploymentSession's DeployMode.
@@ -176,11 +176,10 @@ function Show-ADTInstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$NoForceCloseApps,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.DialogPosition]$WindowLocation,
+        [System.Management.Automation.SwitchParameter]$AllowMove,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PersistPrompt,
+        [System.Management.Automation.SwitchParameter]$AllowCancel,
 
         [Parameter(Mandatory = $false)]
         [Alias('CustomText')]
@@ -194,10 +193,11 @@ function Show-ADTInstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$AllowMove,
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$AllowCancel,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
