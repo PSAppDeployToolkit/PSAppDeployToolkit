@@ -1480,7 +1480,7 @@ function Show-InstallationRestartPrompt
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
-        $PSBoundParameters.Add('SilentRestart', !$PSBoundParameters.NoSilentRestart)
+        $PSBoundParameters.Add('AllowSilentRestart', !$PSBoundParameters.NoSilentRestart)
         $null = $PSBoundParameters.Remove('NoSilentRestart')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
