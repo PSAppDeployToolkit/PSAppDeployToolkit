@@ -6,9 +6,9 @@
 
 function Confirm-ADTScriptIntegrity
 {
-    # Initialise the module build function.
-    Initialize-ADTModuleBuildFunction
-    try
+    # Internal function for re-calling in catch block due to upstream race conditions.
+    # See https://github.com/PowerShell/PSScriptAnalyzer/issues/1867 for more info.
+    function Confirm-ADTScriptIntegrityImpl
     {
         # Verify the formatting of all PowerShell script files within the repository.
         Write-ADTBuildLogEntry -Message "Confirming all PowerShell files have no code violations."
@@ -18,15 +18,31 @@ function Confirm-ADTScriptIntegrity
             Write-ADTScriptAnalyzerOutput -DiagnosticRecord $result
             throw "The call to Invoke-ScriptAnalyzer returned formatting violations that must be addressed."
         }
+    }
+
+    # Initialise the module build function and get started.
+    Initialize-ADTModuleBuildFunction
+    try
+    {
+        Confirm-ADTScriptIntegrityImpl
         Complete-ADTModuleBuildFunction
     }
     catch [System.NullReferenceException]
     {
-        Write-ADTBuildLogEntry -Message "The call to [Invoke-ScriptAnalyzer] threw a NullReferenceException type." -ForegroundColor DarkRed
-        Write-ADTBuildLogEntry -Message $_.Exception.ToString() -ForegroundColor DarkRed
-        Write-ADTBuildLogEntry -Message $_.ScriptStackTrace -ForegroundColor DarkRed
-        Complete-ADTModuleBuildFunction -ErrorRecord $_
-        throw
+        # Try again due to https://github.com/PowerShell/PSScriptAnalyzer/issues/1867.
+        try
+        {
+            Confirm-ADTScriptIntegrityImpl
+            Complete-ADTModuleBuildFunction
+        }
+        catch [System.NullReferenceException]
+        {
+            Write-ADTBuildLogEntry -Message "The call to [Invoke-ScriptAnalyzer] threw a NullReferenceException type." -ForegroundColor DarkRed
+            Write-ADTBuildLogEntry -Message $_.Exception.ToString() -ForegroundColor DarkRed
+            Write-ADTBuildLogEntry -Message $_.ScriptStackTrace -ForegroundColor DarkRed
+            Complete-ADTModuleBuildFunction -ErrorRecord $_
+            throw
+        }
     }
     catch
     {
