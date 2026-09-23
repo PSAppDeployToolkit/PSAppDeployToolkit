@@ -20,10 +20,10 @@ function Show-ADTInstallationRestartPrompt
         Specifies how long to display the restart prompt without allowing the window to be hidden. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER SilentCountdown
-        Specifies how long to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` is specified. Accepts TimeSpan objects, but also interprets numerical values as seconds.
+        Specifies how long to countdown for the restart when the toolkit is running in silent mode and `-AllowSilentRestart` is specified. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
-    .PARAMETER SilentRestart
-        Specifies whether the restart should be triggered when DeployMode is silent or very silent.
+    .PARAMETER AllowSilentRestart
+        Specifies whether an automatic silent restart should be triggered when DeployMode is silent.
 
     .PARAMETER NoCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
@@ -99,11 +99,11 @@ function Show-ADTInstallationRestartPrompt
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdown')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownSilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownAllowSilentRestart')]
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownAllowSilentRestart')]
         [Alias('CountdownSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -117,7 +117,7 @@ function Show-ADTInstallationRestartPrompt
         [System.TimeSpan]$Countdown = [System.TimeSpan]::FromSeconds(60),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownAllowSilentRestart')]
         [Alias('CountdownNoHideSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -130,12 +130,13 @@ function Show-ADTInstallationRestartPrompt
             })]
         [System.TimeSpan]$CountdownNoHide = [System.TimeSpan]::FromSeconds(30),
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'CountdownSilentRestart')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownSilentRestart')]
-        [System.Management.Automation.SwitchParameter]$SilentRestart,
+        [Parameter(Mandatory = $true, ParameterSetName = 'CountdownAllowSilentRestart')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdownAllowSilentRestart')]
+        [Alias('SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$AllowSilentRestart,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownSilentRestart')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdownSilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CountdownAllowSilentRestart')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdownAllowSilentRestart')]
         [Alias('SilentCountdownSeconds')]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
@@ -310,14 +311,14 @@ function Show-ADTInstallationRestartPrompt
         # If in non-interactive mode.
         if ($adtSession -and $adtSession.IsSilent())
         {
-            if ($SilentRestart)
+            if ($AllowSilentRestart)
             {
-                Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
+                Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
                 (Get-ADTModuleState).RestartOnExitOptions = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
             }
             else
             {
-                Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
+                Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-AllowSilentRestart] was not specified."
             }
             return
         }
