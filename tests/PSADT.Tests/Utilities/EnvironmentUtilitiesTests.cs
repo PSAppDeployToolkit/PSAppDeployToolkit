@@ -492,11 +492,15 @@ namespace PSADT.Tests.Utilities
         /// <summary>
         /// Confirms that a refused write left nothing behind in the persisted scope.
         /// </summary>
+        /// <remarks>
+        /// Reads the one value rather than enumerating the key, which .NET Framework cannot do while another
+        /// process - such as this class running under the other target framework - is changing it.
+        /// </remarks>
         /// <param name="name">The variable that was refused.</param>
         private static void AssertNothingWasPersisted(string name)
         {
-            Assert.False(
-                Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User).Contains(name),
+            Assert.True(
+                Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User) is null,
                 $"A refused write left '{name}' behind in the user environment.");
         }
 
@@ -572,8 +576,8 @@ namespace PSADT.Tests.Utilities
                 EnvironmentUtilities.RemoveEnvironmentVariable(name, EnvironmentVariableTarget.User);
 
                 // Assert
-                Assert.False(
-                    Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User).Contains(name),
+                Assert.True(
+                    Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User) is null,
                     $"The removal left '{name}' behind in the user environment.");
             }
             finally
