@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Interfaces.Classic;
 using PSADT.UserInterface.Interfaces.Tests.TestHelpers;
 using PSAppDeployToolkit.Foundation;
@@ -16,8 +17,9 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
     /// The one dialog whose primary button does something irreversible: it restarts the machine, with no
     /// further confirmation, from a handler wired up by the designer. Nothing here clicks it, and
     /// nothing here lets a countdown reach zero, because both routes end in the same call. What is
-    /// covered is everything up to that point - how the dialog is assembled, and the branch of the
-    /// countdown that disables the minimize button rather than the one that restarts.
+    /// covered is everything up to that point - how the dialog is assembled, its other two buttons,
+    /// and the branch of the countdown that disables the minimize button rather than the one that
+    /// restarts.
     /// </remarks>
     public sealed class RestartDialogTests
     {
@@ -187,10 +189,9 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         /// Verifies that refusing cancellation removes the button and closes the gap it leaves.
         /// </summary>
         /// <remarks>
-        /// The three buttons sit in fixed columns, so removing the middle one without moving its
-        /// neighbour would leave the dialog with a hole where Cancel used to be and the Later button
-        /// stranded in the centre. Moving it to the right-hand column is what keeps the row looking
-        /// deliberate, which is why the removal and the move are asserted together.
+        /// Later takes Cancel's place as the right-hand button. Moving its column alone leaves it centred
+        /// in that cell rather than against the edge, so the removal, the move and the alignment are
+        /// asserted together.
         /// </remarks>
         [Fact]
         public void Constructor_ClosesTheGapWhenCancellingIsRefused()
@@ -205,7 +206,9 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
             // Assert
             Assert.False(FormControls.Holds(dialog, "buttonCancel"));
             TableLayoutPanel buttons = FormControls.Find<TableLayoutPanel>(dialog, "tableLayoutPanelButton");
-            Assert.Equal(2, buttons.GetColumn(FormControls.Find<Button>(dialog, "buttonMinimize")));
+            Button minimize = FormControls.Find<Button>(dialog, "buttonMinimize");
+            Assert.Equal(2, buttons.GetColumn(minimize));
+            Assert.Equal(buttons.ClientSize.Width, minimize.Right);
         }
 
         /// <summary>
@@ -239,22 +242,62 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         }
 
         /// <summary>
-        /// Records that this dialog reports no result.
+        /// Verifies that the dialog starts out reporting that it has not been answered.
         /// </summary>
-        /// <remarks>
-        /// Deliberate, and confirmed as such. The dialog either restarts the machine or is put aside;
-        /// neither outcome is an answer a caller reads, so the result it is constructed with is null and
-        /// the manager hands that null back. Pinned so that the null is understood as a decision rather
-        /// than mistaken for something that was never wired up.
-        /// </remarks>
         [Fact]
-        public void Constructor_ReportsNoResult()
+        public void Constructor_StartsOutReportingUnknown()
         {
             // Act
             using RestartDialog dialog = Build(SampleOptions.RestartDialog());
 
             // Assert
-            Assert.Null(dialog.DialogResult);
+            Assert.Equal(RestartDialogResult.Unknown, dialog.DialogResult);
+        }
+
+        /// <summary>
+        /// Verifies that the minimize button puts the dialog aside without answering it.
+        /// </summary>
+        /// <remarks>
+        /// It is the middle button when Cancel is shown and the right-hand one when it is not, and each
+        /// position has its own handler, so both layouts are clicked.
+        /// </remarks>
+        /// <param name="allowCancel">Whether the dialog shows a Cancel button.</param>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ButtonClick_MinimizePutsTheDialogAsideWithoutAnsweringIt(bool allowCancel)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.RestartDialog();
+            table["DialogAllowCancel"] = allowCancel;
+            using RestartDialog dialog = Build(table);
+
+            // Act
+            DialogHost.Run(() => FormControls.Click(FormControls.Find<Button>(dialog, "buttonMinimize")));
+
+            // Assert
+            Assert.Equal(FormWindowState.Minimized, dialog.WindowState);
+            Assert.Equal(RestartDialogResult.Unknown, dialog.DialogResult);
+            Assert.False(NonPublic.Field<bool>(dialog, "canClose"));
+        }
+
+        /// <summary>
+        /// Verifies that the Cancel button closes the dialog and reports that it was cancelled.
+        /// </summary>
+        [Fact]
+        public void ButtonClick_CancelClosesTheDialogAsCancelled()
+        {
+            // Arrange
+            Hashtable table = SampleOptions.RestartDialog();
+            table["DialogAllowCancel"] = true;
+            using RestartDialog dialog = Build(table);
+
+            // Act
+            DialogHost.Run(() => FormControls.Click(FormControls.Find<Button>(dialog, "buttonCancel")));
+
+            // Assert
+            Assert.Equal(RestartDialogResult.Cancel, dialog.DialogResult);
+            Assert.True(NonPublic.Field<bool>(dialog, "canClose"));
         }
 
         /// <summary>

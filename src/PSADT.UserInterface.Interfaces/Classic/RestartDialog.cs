@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -34,7 +35,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior, including title, custom messages, and
         /// countdown settings. Cannot be null.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
-        internal RestartDialog(RestartDialogOptions options) : base(options, null!)
+        internal RestartDialog(RestartDialogOptions options) : base(options, RestartDialogResult.Unknown)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -87,17 +88,21 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 buttonMinimize.Text = StripFormattingTags(options.Strings.ButtonRestartLater);
                 shutdownReasonText = options.ShutdownReasonText;
                 noForceCloseApps = options.NoForceCloseApps;
+                allowCancel = options.DialogAllowCancel;
 
                 // Set up the Cancel button if cancellation is allowed, otherwise remove it.
-                if (options.DialogAllowCancel)
+                if (!allowCancel)
                 {
-                    buttonCancel.Text = StripFormattingTags(options.Strings.ButtonCancel);
+                    // Minimize becomes the right-hand button, so give it that button's anchor and click handler.
+                    tableLayoutPanelButton.Controls.Remove(buttonCancel);
+                    tableLayoutPanelButton.SetColumn(buttonMinimize, 2);
+                    buttonMinimize.Anchor = AnchorStyles.Right;
+                    buttonMinimize.Click -= ButtonMiddle_Click;
+                    buttonMinimize.Click += ButtonRight_Click;
                 }
                 else
                 {
-                    // Drop the Cancel button and move the minimize button into the right-hand column.
-                    tableLayoutPanelButton.Controls.Remove(buttonCancel);
-                    tableLayoutPanelButton.SetColumn(buttonMinimize, 2);
+                    buttonCancel.Text = StripFormattingTags(options.Strings.ButtonCancel);
                 }
             }
 
@@ -160,21 +165,41 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
+            DialogResult = RestartDialogResult.Restart;
             await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
             base.ButtonLeft_Click(sender, e);
         }
 
         /// <summary>
-        /// Handles the right button click event by minimizing the window and restarting the persistence timer.
+        /// Handles the middle button click event by minimizing the window and restarting the persistence timer.
         /// </summary>
         /// <remarks>This override does not call the base implementation, ensuring that only the custom
-        /// minimize and timer reset logic is executed when the right button is clicked.</remarks>
+        /// minimize and timer reset logic is executed when the middle button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the middle button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
+        private protected override void ButtonMiddle_Click(object? sender, EventArgs e)
+        {
+            // Minimize the window and restart the persistence timer.
+            // Note that we deliberately do not call the base handler!
+            WindowState = FormWindowState.Minimized;
+            ResetPersistTimer();
+        }
+
+        /// <summary>
+        /// Handles the right button click event by closing the dialog without restarting when cancellation is allowed.
+        /// </summary>
+        /// <remarks>Without cancellation, the right button is the minimize button, so it minimizes the window and
+        /// restarts the persistence timer instead.</remarks>
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonRight_Click(object? sender, EventArgs e)
         {
-            // Minimize the window and restart the persistence timer.
-            // Note that we deliberately do not call the base handler!
+            if (allowCancel)
+            {
+                DialogResult = RestartDialogResult.Cancel;
+                base.ButtonRight_Click(sender, e);
+                return;
+            }
             WindowState = FormWindowState.Minimized;
             ResetPersistTimer();
         }
@@ -240,5 +265,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Indicates whether shutdown.exe's '/f' switch is omitted when the restart is triggered, leaving running applications able to block it.
         /// </summary>
         private readonly bool noForceCloseApps;
+
+        /// <summary>
+        /// Indicates whether a Cancel button is shown to close the dialog without restarting.
+        /// </summary>
+        private readonly bool allowCancel;
     }
 }

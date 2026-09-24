@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Interfaces.Fluent;
 using PSADT.UserInterface.Interfaces.Tests.TestHelpers;
 using PSAppDeployToolkit.Foundation;
@@ -231,19 +232,13 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Records that this dialog reports no result.
+        /// Verifies that the dialog starts out reporting that it has not been answered.
         /// </summary>
-        /// <remarks>
-        /// Deliberate, and confirmed as such. The dialog either restarts the machine or is put aside;
-        /// neither outcome is an answer a caller reads, so the result it is constructed with is null and
-        /// the manager hands that null back. Pinned so the null is understood as a decision rather than
-        /// mistaken for something that was never wired up.
-        /// </remarks>
         [Fact]
-        public void Constructor_ReportsNoResult()
+        public void Constructor_StartsOutReportingUnknown()
         {
             // Act & Assert
-            WithDialog(SampleOptions.RestartDialog(), static dialog => Assert.Null(dialog.DialogResult));
+            WithDialog(SampleOptions.RestartDialog(), static dialog => Assert.Equal(RestartDialogResult.Unknown, dialog.DialogResult));
         }
 
         /// <summary>
