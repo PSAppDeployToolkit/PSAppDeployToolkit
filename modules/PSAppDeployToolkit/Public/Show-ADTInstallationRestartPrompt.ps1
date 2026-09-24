@@ -446,7 +446,7 @@ function Show-ADTInstallationRestartPrompt
 
                 # Call the underlying function to open the restart prompt.
                 Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoInteractiveCountdown) { 'no' } else { "a [$($InteractiveCountdown.TotalSeconds)] second" }) countdown."
-                $null = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType RestartDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType RestartDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
             }
             catch
             {

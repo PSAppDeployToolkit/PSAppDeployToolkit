@@ -203,7 +203,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.buttonMinimize.TabIndex = 1;
             this.buttonMinimize.Text = "Minimize";
             this.buttonMinimize.UseVisualStyleBackColor = true;
-            this.buttonMinimize.Click += new System.EventHandler(this.ButtonRight_Click);
+            this.buttonMinimize.Click += new System.EventHandler(this.ButtonMiddle_Click);
             // 
             // buttonRestartNow
             // 
@@ -231,7 +231,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.buttonCancel.TabIndex = 2;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
-            this.buttonCancel.Click += new System.EventHandler(this.ButtonMiddle_Click);
+            this.buttonCancel.Click += new System.EventHandler(this.ButtonRight_Click);
             // 
             // pictureBanner
             // 

@@ -424,7 +424,7 @@ function Private:Invoke-ADTClientServerOperation
                     }
                     RestartDialog
                     {
-                        [System.String]
+                        [PSADT.UserInterface.DialogResults.RestartDialogResult]
                         break
                     }
                     default

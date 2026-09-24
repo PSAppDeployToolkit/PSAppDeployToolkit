@@ -425,6 +425,7 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogResults.DialogBoxResult),
                 typeof(UserInterface.DialogResults.InputDialogResult),
                 typeof(UserInterface.DialogResults.ListSelectionDialogResult),
+                typeof(UserInterface.DialogResults.RestartDialogResult),
                 typeof(UserInterface.DialogResults.SecureInputDialogResult),
 
                 // Process and window types

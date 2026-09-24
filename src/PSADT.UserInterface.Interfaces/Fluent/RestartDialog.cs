@@ -2,6 +2,7 @@
 using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -15,7 +16,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
-        internal RestartDialog(RestartDialogOptions options) : base(options, null!, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
+        internal RestartDialog(RestartDialogOptions options) : base(options, RestartDialogResult.Unknown, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
             // Reset the dialog's title. It must be that of the string table in the options.
             shutdownReasonText = options.ShutdownReasonText;
@@ -80,8 +81,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
+            DialogResult = RestartDialogResult.Restart;
             await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
             base.ButtonLeft_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the middle button click event by minimizing the window when cancellation is allowed.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
+        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
         }
 
         /// <summary>
@@ -96,19 +108,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         {
             if (allowCancel)
             {
+                DialogResult = RestartDialogResult.Cancel;
                 base.ButtonRight_Click(sender, e);
                 return;
             }
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Handles the middle button click event by minimizing the window when cancellation is allowed.
-        /// </summary>
-        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
-        /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
-        {
             WindowState = WindowState.Minimized;
         }
 
