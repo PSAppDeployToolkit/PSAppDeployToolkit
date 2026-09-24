@@ -13,14 +13,14 @@ function Show-ADTInstallationRestartPrompt
     .DESCRIPTION
         The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. Restarting without showing the prompt at all only ever happens when `-AllowSilentRestart` is specified.
 
-    .PARAMETER NoInteractiveCountdown
-        Specifies whether the user should receive a prompt to immediately restart their workstation.
-
     .PARAMETER InteractiveCountdown
         Specifies how long to display the restart prompt. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER InteractiveCountdownNoHide
         Specifies how long to display the restart prompt without allowing the window to be hidden. Accepts TimeSpan objects, but also interprets numerical values as seconds.
+
+    .PARAMETER NoInteractiveCountdown
+        Specifies whether the user should receive a prompt to immediately restart their workstation.
 
     .PARAMETER AllowSilentRestart
         Specifies whether an automatic silent restart should be triggered when DeployMode is silent or non-interactive. Note that if a user is logged on and `-Force` is specified, a silent restart will not take place.
@@ -106,11 +106,6 @@ function Show-ADTInstallationRestartPrompt
     [CmdletBinding(DefaultParameterSetName = 'InteractiveCountdown')]
     param
     (
-        [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdown')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdownAllowSilentRestart')]
-        [Alias('NoCountdown')]
-        [System.Management.Automation.SwitchParameter]$NoInteractiveCountdown,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCountdownAllowSilentRestart')]
         [Alias('Countdown', 'CountdownSeconds')]
@@ -138,6 +133,11 @@ function Show-ADTInstallationRestartPrompt
                 return !!$_
             })]
         [System.TimeSpan]$InteractiveCountdownNoHide = [System.TimeSpan]::FromSeconds(30),
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdown')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdownAllowSilentRestart')]
+        [Alias('NoCountdown')]
+        [System.Management.Automation.SwitchParameter]$NoInteractiveCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCountdownAllowSilentRestart')]
         [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdownAllowSilentRestart')]
@@ -328,7 +328,7 @@ function Show-ADTInstallationRestartPrompt
                 Write-ADTLogEntry -Message "Skipping restart because there is no active user logged onto the system and [-AllowSilentRestart] was not specified."
                 return
             }
-            Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system and [-AllowSilentRestart] was  specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
+            Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system and [-AllowSilentRestart] was specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
             $restartOnExitData = [PSAppDeployToolkit.Foundation.RestartOnExitOptions]::new($SilentCountdown, $restartReason, !!$NoForceCloseApps)
             if ($adtSession)
             {
