@@ -522,11 +522,32 @@
 				<decimal id="PromptToSaveTimeout" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="PromptToSaveTimeout" required="true" />
 			</elements>
 		</policy>
+		<policy name="RestartPromptInteractiveCountdown" class="Machine" displayName="$(string.RestartPromptInteractiveCountdown_Display)" explainText="$(string.RestartPromptInteractiveCountdown_Explain)" presentation="$(presentation.RestartPromptInteractiveCountdown)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="RestartPromptInteractiveCountdown" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="RestartPromptInteractiveCountdown" required="true" />
+			</elements>
+		</policy>
+		<policy name="RestartPromptInteractiveCountdownNoHide" class="Machine" displayName="$(string.RestartPromptInteractiveCountdownNoHide_Display)" explainText="$(string.RestartPromptInteractiveCountdownNoHide_Explain)" presentation="$(presentation.RestartPromptInteractiveCountdownNoHide)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="RestartPromptInteractiveCountdownNoHide" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="RestartPromptInteractiveCountdownNoHide" required="true" />
+			</elements>
+		</policy>
 		<policy name="RestartPromptPersistInterval" class="Machine" displayName="$(string.RestartPromptPersistInterval_Display)" explainText="$(string.RestartPromptPersistInterval_Explain)" presentation="$(presentation.RestartPromptPersistInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
 			<elements>
 				<decimal id="RestartPromptPersistInterval" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="RestartPromptPersistInterval" required="true" />
+			</elements>
+		</policy>
+		<policy name="RestartPromptSilentCountdown" class="Machine" displayName="$(string.RestartPromptSilentCountdown_Display)" explainText="$(string.RestartPromptSilentCountdown_Explain)" presentation="$(presentation.RestartPromptSilentCountdown)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="RestartPromptSilentCountdown" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="RestartPromptSilentCountdown" required="true" />
 			</elements>
 		</policy>
 	</policies>

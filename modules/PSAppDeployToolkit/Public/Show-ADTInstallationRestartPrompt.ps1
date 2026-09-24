@@ -118,7 +118,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 return !!$_
             })]
-        [System.TimeSpan]$InteractiveCountdown = [System.TimeSpan]::FromSeconds(60),
+        [System.TimeSpan]$InteractiveCountdown = [System.TimeSpan]::FromSeconds($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.RestartPromptInteractiveCountdown),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCountdownAllowSilentRestart')]
@@ -132,7 +132,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 return !!$_
             })]
-        [System.TimeSpan]$InteractiveCountdownNoHide = [System.TimeSpan]::FromSeconds(30),
+        [System.TimeSpan]$InteractiveCountdownNoHide = [System.TimeSpan]::FromSeconds($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.RestartPromptInteractiveCountdownNoHide),
 
         [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdown')]
         [Parameter(Mandatory = $true, ParameterSetName = 'NoInteractiveCountdownAllowSilentRestart')]
@@ -156,7 +156,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 return !!$_
             })]
-        [System.TimeSpan]$SilentCountdown = [System.TimeSpan]::FromSeconds(5),
+        [System.TimeSpan]$SilentCountdown = [System.TimeSpan]::FromSeconds($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.RestartPromptSilentCountdown),
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({

@@ -96,8 +96,14 @@
 			<string id="LanguageOverride_Explain">Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.</string>
 			<string id="PromptToSaveTimeout_Display">PromptToSaveTimeout</string>
 			<string id="PromptToSaveTimeout_Explain">Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt or they cancel the application's save prompt.</string>
+			<string id="RestartPromptInteractiveCountdown_Display">RestartPromptInteractiveCountdown</string>
+			<string id="RestartPromptInteractiveCountdown_Explain">Time in seconds to display the restart prompt before a restart is triggered.</string>
+			<string id="RestartPromptInteractiveCountdownNoHide_Display">RestartPromptInteractiveCountdownNoHide</string>
+			<string id="RestartPromptInteractiveCountdownNoHide_Explain">Time in seconds at the end of the restart prompt's countdown where the window can no longer be hidden.</string>
 			<string id="RestartPromptPersistInterval_Display">RestartPromptPersistInterval</string>
 			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoInteractiveCountdown parameter is specified.</string>
+			<string id="RestartPromptSilentCountdown_Display">RestartPromptSilentCountdown</string>
+			<string id="RestartPromptSilentCountdown_Explain">Time in seconds to countdown before triggering a silent restart.</string>
 			<string id="FileCopyModeNative">Native</string>
 			<string id="FileCopyModeRobocopy">Robocopy</string>
 			<string id="LogStyleCMTrace">CMTrace</string>
@@ -277,8 +283,17 @@
 			<presentation id="PromptToSaveTimeout">
 				<decimalTextBox refId="PromptToSaveTimeout">PromptToSaveTimeout</decimalTextBox>
 			</presentation>
+			<presentation id="RestartPromptInteractiveCountdown">
+				<decimalTextBox refId="RestartPromptInteractiveCountdown">RestartPromptInteractiveCountdown</decimalTextBox>
+			</presentation>
+			<presentation id="RestartPromptInteractiveCountdownNoHide">
+				<decimalTextBox refId="RestartPromptInteractiveCountdownNoHide">RestartPromptInteractiveCountdownNoHide</decimalTextBox>
+			</presentation>
 			<presentation id="RestartPromptPersistInterval">
 				<decimalTextBox refId="RestartPromptPersistInterval">RestartPromptPersistInterval</decimalTextBox>
+			</presentation>
+			<presentation id="RestartPromptSilentCountdown">
+				<decimalTextBox refId="RestartPromptSilentCountdown">RestartPromptSilentCountdown</decimalTextBox>
 			</presentation>
 		</presentationTable>
 	</resources>
