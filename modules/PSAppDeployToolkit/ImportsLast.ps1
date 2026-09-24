@@ -189,7 +189,7 @@ try
                                                 # Time in seconds at the end of the restart prompt's countdown where the window can no longer be hidden. Default is 30 seconds.
                                                 RestartPromptInteractiveCountdownNoHide = 30
 
-                                                # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoInteractiveCountdown parameter is specified. Default is 600 seconds.
+                                                # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -PersistPrompt parameter is used. Default is 600 seconds.
                                                 RestartPromptPersistInterval = 600
 
                                                 # Time in seconds to countdown before triggering a silent restart. Default is 5 seconds.

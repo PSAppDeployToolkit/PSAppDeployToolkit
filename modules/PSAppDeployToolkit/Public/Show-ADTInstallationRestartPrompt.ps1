@@ -50,7 +50,7 @@ function Show-ADTInstallationRestartPrompt
         Specifies whether the prompt shouldn't be topmost, above all other windows.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the `RestartPromptPersistInterval` specified in the `config.psd1` file.
 
     .PARAMETER WindowLocation
         The location of the dialog on the screen.
@@ -406,7 +406,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 if ($PersistPrompt)
                 {
-                    $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultPromptPersistInterval))
+                    $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.RestartPromptPersistInterval))
                 }
                 if ($CustomMessage)
                 {

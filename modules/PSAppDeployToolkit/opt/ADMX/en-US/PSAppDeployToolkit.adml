@@ -101,7 +101,7 @@
 			<string id="RestartPromptInteractiveCountdownNoHide_Display">RestartPromptInteractiveCountdownNoHide</string>
 			<string id="RestartPromptInteractiveCountdownNoHide_Explain">Time in seconds at the end of the restart prompt's countdown where the window can no longer be hidden.</string>
 			<string id="RestartPromptPersistInterval_Display">RestartPromptPersistInterval</string>
-			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoInteractiveCountdown parameter is specified.</string>
+			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -PersistPrompt parameter is used.</string>
 			<string id="RestartPromptSilentCountdown_Display">RestartPromptSilentCountdown</string>
 			<string id="RestartPromptSilentCountdown_Explain">Time in seconds to countdown before triggering a silent restart.</string>
 			<string id="FileCopyModeNative">Native</string>
