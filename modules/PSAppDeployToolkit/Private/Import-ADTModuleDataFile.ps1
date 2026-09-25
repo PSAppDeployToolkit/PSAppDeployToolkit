@@ -119,22 +119,22 @@ function Private:Import-ADTModuleDataFile
     {
         $policyRootKey
     }
+
+    # Walk each key from its un-cultured values up through the culture chain, so the most culture-specific value wins.
+    $cultureNames = [System.Collections.Generic.List[System.String]]::new()
+    for ($culture = $UICulture; ![System.String]::IsNullOrWhiteSpace($culture.Name); $culture = $culture.Parent)
+    {
+        $cultureNames.Insert(0, $culture.Name)
+    }
+    $cultureNames.Insert(0, [System.String]::Empty)
     foreach ($policyKey in $policyKeys)
     {
-        # Take the first culture-specific subkey holding values, falling back to the key itself.
-        $culture = $UICulture
-        while ($true)
+        foreach ($cultureName in $cultureNames)
         {
-            $policyKeyPath = "$policyKey\$section$(if (![System.String]::IsNullOrWhiteSpace($culture.Name)) { "\$($culture.Name)" })"
-            if (($policySettings = Get-ChildItem -LiteralPath $policyKeyPath -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable) -or [System.String]::IsNullOrWhiteSpace($culture.Name))
+            if ($policySettings = Get-ChildItem -LiteralPath "$policyKey\$section$(if ($cultureName.Length) { "\$cultureName" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
             {
-                break
+                Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
             }
-            $culture = $culture.Parent
-        }
-        if ($policySettings)
-        {
-            Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
         }
     }
 

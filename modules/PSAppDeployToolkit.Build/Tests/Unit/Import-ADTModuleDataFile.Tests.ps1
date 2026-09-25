@@ -179,6 +179,21 @@ Describe 'Import-ADTModuleDataFile' {
             (Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }).Toolkit.CompanyName | Should -BeExactly 'English'
         }
 
+        It 'Overlays culture-specific values on the un-cultured ones rather than replacing them' {
+            Set-PolicyValue -Key 'Config\Toolkit' -Name CompanyName -Value 'Anywhere'
+            Set-PolicyValue -Key 'Config\Toolkit' -Name LogPath -Value 'C:\AnywhereLogs'
+            Set-PolicyValue -Key 'Config\en-AU\Toolkit' -Name CompanyName -Value 'Australia'
+            $data = Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }
+            $data.Toolkit.CompanyName | Should -BeExactly 'Australia'
+            $data.Toolkit.LogPath | Should -BeExactly 'C:\AnywhereLogs'
+        }
+
+        It 'Lets the more specific culture win over its parent' {
+            Set-PolicyValue -Key 'Config\en\Toolkit' -Name CompanyName -Value 'English'
+            Set-PolicyValue -Key 'Config\en-AU\Toolkit' -Name CompanyName -Value 'Australia'
+            (Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }).Toolkit.CompanyName | Should -BeExactly 'Australia'
+        }
+
         It 'Keeps a value the defaults do not have' {
             Set-PolicyValue -Key 'Config\UI' -Name DialogStyleCompatMode -Value 'Classic'
             (Import-PolicyProbe).UI.DialogStyleCompatMode | Should -BeExactly 'Classic'
