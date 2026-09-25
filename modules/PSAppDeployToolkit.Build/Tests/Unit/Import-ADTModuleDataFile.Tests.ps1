@@ -84,4 +84,123 @@ Describe 'Import-ADTModuleDataFile' {
             { Import-Probe -Splat @{ BaseDirectory = @($script:OverrideDir, $script:OverrideDir); FileName = 'config.psd1'; IgnorePolicy = $true } } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException])
         }
     }
+
+    Context 'Machine policy' {
+        BeforeAll {
+            # Read from a key under the current user's hive so nothing needs elevation. The versioned keys are
+            # named from the module's own version, so the tests hold for whichever version is under test.
+            $script:PolicyRoot = (New-Item -Path 'TestRegistry:\PolicyRoot' -ItemType Directory).PSPath
+            $script:ModuleVersion = (Get-Module -Name PSAppDeployToolkit).Version
+            $script:ThisLayer = "$($script:ModuleVersion.Major).$($script:ModuleVersion.Minor)"
+            $script:NextLayer = "$($script:ModuleVersion.Major).$($script:ModuleVersion.Minor + 1)"
+            $script:PriorMajor = $script:ModuleVersion.Major - 1
+
+            # The reader's policy root is fixed to HKLM, so calls for it are redirected to the key above and every other
+            # call, such as the converter walking subkeys, goes to the real cmdlet. The body runs in the module's scope,
+            # so the key's path is baked into it rather than read from a variable of this file.
+            Mock -ModuleName PSAppDeployToolkit Get-ChildItem ([System.Management.Automation.ScriptBlock]::Create(@"
+                `$arguments = @{} + `$PesterBoundParameters
+                if (`$arguments.ContainsKey('LiteralPath'))
+                {
+                    `$arguments.LiteralPath = @(`$arguments.LiteralPath | ForEach-Object { `$_.Replace('Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit', '$($script:PolicyRoot)') })
+                }
+                Microsoft.PowerShell.Management\Get-ChildItem @arguments
+"@))
+
+            function Set-PolicyValue
+            {
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [System.String]$Key,
+
+                    [Parameter(Mandatory = $true)]
+                    [System.String]$Name,
+
+                    [Parameter(Mandatory = $true)]
+                    [System.Object]$Value
+                )
+
+                # New-Item -Force on a registry key that already exists empties it, so only create what is missing.
+                if (!(Test-Path -LiteralPath "$script:PolicyRoot\$Key"))
+                {
+                    $null = New-Item -Path "$script:PolicyRoot\$Key" -ItemType Directory -Force
+                }
+                $null = New-ItemProperty -LiteralPath "$script:PolicyRoot\$Key" -Name $Name -Value $Value -PropertyType String -Force
+            }
+
+            function Import-PolicyProbe
+            {
+                param
+                (
+                    [Parameter(Mandatory = $false)]
+                    [System.Collections.Hashtable]$Splat = @{}
+                )
+
+                Import-Probe -Splat (@{ BaseDirectory = $null; FileName = 'config.psd1' } + $Splat)
+            }
+        }
+
+        AfterEach {
+            Get-ChildItem -LiteralPath $script:PolicyRoot | Remove-Item -Recurse -Force
+        }
+
+        It 'Reads a value from the shared key' {
+            Set-PolicyValue -Key 'Config\Toolkit' -Name CompanyName -Value 'Shared'
+            (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'Shared'
+        }
+
+        It 'Lets a key versioned for this module override the shared key' {
+            Set-PolicyValue -Key 'Config\Toolkit' -Name CompanyName -Value 'Shared'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\Toolkit" -Name CompanyName -Value 'Versioned'
+            (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'Versioned'
+        }
+
+        It 'Ignores a key versioned beyond this module' {
+            Set-PolicyValue -Key 'Config\Toolkit' -Name CompanyName -Value 'Shared'
+            Set-PolicyValue -Key "$script:NextLayer\Config\Toolkit" -Name CompanyName -Value 'Future'
+            (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'Shared'
+        }
+
+        It 'Ignores a subkey not named for a version' {
+            Set-PolicyValue -Key 'Extras\Config\Toolkit' -Name CompanyName -Value 'Extras'
+            (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'PSAppDeployToolkit'
+        }
+
+        It 'Applies versioned keys in version order rather than name order' {
+            # 3.10 sorts before 3.9 as text, so the later version can only win if the order is by version.
+            Set-PolicyValue -Key "$($script:PriorMajor).9\Config\Toolkit" -Name CompanyName -Value 'Older'
+            Set-PolicyValue -Key "$($script:PriorMajor).10\Config\Toolkit" -Name CompanyName -Value 'Newer'
+            (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'Newer'
+        }
+
+        It 'Falls back to a parent culture under a versioned key' {
+            Set-PolicyValue -Key "$script:ThisLayer\Config\en\Toolkit" -Name CompanyName -Value 'English'
+            (Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }).Toolkit.CompanyName | Should -BeExactly 'English'
+        }
+
+        It 'Keeps a value the defaults do not have' {
+            Set-PolicyValue -Key 'Config\UI' -Name DialogStyleCompatMode -Value 'Classic'
+            (Import-PolicyProbe).UI.DialogStyleCompatMode | Should -BeExactly 'Classic'
+        }
+
+        It 'Takes a Base64 asset from the shared key' {
+            Set-PolicyValue -Key 'Config\Assets' -Name Logo -Value 'AAAA'
+            (Import-PolicyProbe).Assets.Logo | Should -BeExactly 'AAAA'
+        }
+
+        It 'Takes an asset the defaults leave unset' {
+            # TaskbarIcon ships as null, so there is no type to hold the policy value to.
+            Set-PolicyValue -Key 'Config\Assets' -Name TaskbarIcon -Value 'C:\Brand\Tray.ico'
+            (Import-PolicyProbe).Assets.TaskbarIcon | Should -BeExactly 'C:\Brand\Tray.ico'
+        }
+
+        It 'Takes a Base64 asset from a versioned key' {
+            Set-PolicyValue -Key "$script:ThisLayer\Config\Assets" -Name Logo -Value 'AAAA'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\Assets" -Name TaskbarIcon -Value 'AAAA'
+            $data = Import-PolicyProbe
+            $data.Assets.Logo | Should -BeExactly 'AAAA'
+            $data.Assets.TaskbarIcon | Should -BeExactly 'AAAA'
+        }
+    }
 }

@@ -83,24 +83,58 @@ function Private:Import-ADTModuleDataFile
         Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
     }
 
-    # Super-impose registry values if they exist.
-    if (!$IgnorePolicy)
+    # Return the data we've got if we're not reading values out of the registry.
+    if ($IgnorePolicy)
     {
-        $initialUICulture = $UICulture
+        return $importedData
+    }
+
+    # Super-impose registry values if they exist: the shared key first, then each versioned key this module is new enough to read, oldest first.
+    $policyRootKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit'
+    $policyKeys = if ($versionedKeys = Get-ChildItem -LiteralPath $policyRootKey -ErrorAction Ignore)
+    {
+        try
+        {
+            $layers = [System.Collections.Generic.SortedDictionary[System.Version, System.String]]::new()
+            foreach ($versionedKey in $versionedKeys)
+            {
+                $version = $null; if ([System.Version]::TryParse($versionedKey.PSChildName, [ref]$version) -and ($version -le $Script:Module.ModuleInfo.Version))
+                {
+                    $layers[$version] = $versionedKey.PSPath
+                }
+            }
+            $policyRootKey
+            $layers.Values
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+        finally
+        {
+            $versionedKeys.Dispose()
+        }
+    }
+    else
+    {
+        $policyRootKey
+    }
+    foreach ($policyKey in $policyKeys)
+    {
+        # Take the first culture-specific subkey holding values, falling back to the key itself.
+        $culture = $UICulture
         while ($true)
         {
-            if ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$section$(if (![System.String]::IsNullOrWhiteSpace($UICulture.Name)) { "\$($UICulture.Name)" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
+            $policyKeyPath = "$policyKey\$section$(if (![System.String]::IsNullOrWhiteSpace($culture.Name)) { "\$($culture.Name)" })"
+            if (($policySettings = Get-ChildItem -LiteralPath $policyKeyPath -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable) -or [System.String]::IsNullOrWhiteSpace($culture.Name))
             {
-                Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
-                $UICulture = $initialUICulture
                 break
             }
-            if ([System.String]::IsNullOrWhiteSpace($UICulture.Name))
-            {
-                $UICulture = $initialUICulture
-                break
-            }
-            $UICulture = $UICulture.Parent
+            $culture = $culture.Parent
+        }
+        if ($policySettings)
+        {
+            Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
         }
     }
 

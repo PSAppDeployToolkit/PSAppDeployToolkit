@@ -81,6 +81,12 @@ Describe 'Get-ADTDefaultConfig' {
     }
 
     Context 'Machine policy' {
+        BeforeEach {
+            # A fallback for every policy key, as the versioned keys are found by listing the root and Pester
+            # refuses a call no filter covers once the command is mocked at all. The per-test mocks win over it.
+            Mock -ModuleName PSAppDeployToolkit Get-ChildItem { } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit*' }
+        }
+
         It 'Reads the policy key the ADMX template writes to' {
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock Get-ChildItem { } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }

@@ -49,25 +49,35 @@ function Private:Convert-ADTRegistryKeyToHashtable
                 $_.PSObject.Properties | & {
                     process
                     {
-                        if (($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$') -and (Out-ADTString -InputObject $_.Value))
+                        # Return early for values we don't care about or that are null/empty.
+                        if (($_.Name -match '^PS((Parent)?Path|ChildName|Provider)$') -or !(Out-ADTString -InputObject $_.Value))
                         {
-                            # Handle bools as string values.
-                            if ($_.Value -match '^(True|False)$')
-                            {
-                                $subdata.Add($_.Name, [System.Boolean]::Parse($_.Value))
-                            }
-                            elseif ($_.Value -match '^-?\d+$')
-                            {
-                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value))
-                            }
-                            elseif ($_.Value -match '^0[xX][0-9a-fA-F]+$')
-                            {
-                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value.Replace('0x', [System.Management.Automation.Language.NullString]::Value), [System.Globalization.NumberStyles]::HexNumber))
-                            }
-                            else
-                            {
-                                $subdata.Add($_.Name, $_.Value)
-                            }
+                            return
+                        }
+
+                        # Anything that isn't a string is stored as the provider gave it, for the caller to accept or refuse.
+                        if ($_.Value -isnot [System.String])
+                        {
+                            $subdata.Add($_.Name, $_.Value)
+                            return
+                        }
+
+                        # Type a string from its text, leaving it as-is when it won't fit.
+                        $boolean = $false; $number = 0; if ([System.Boolean]::TryParse($_.Value, [ref]$boolean))
+                        {
+                            $subdata.Add($_.Name, $boolean)
+                        }
+                        elseif ([System.Int32]::TryParse($_.Value, [System.Globalization.NumberStyles]::Integer, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$number))
+                        {
+                            $subdata.Add($_.Name, $number)
+                        }
+                        elseif ($_.Value.StartsWith('0x', [System.StringComparison]::OrdinalIgnoreCase) -and [System.Int32]::TryParse($_.Value.Substring(2), [System.Globalization.NumberStyles]::HexNumber, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$number))
+                        {
+                            $subdata.Add($_.Name, $number)
+                        }
+                        else
+                        {
+                            $subdata.Add($_.Name, $_.Value)
                         }
                     }
                 }
