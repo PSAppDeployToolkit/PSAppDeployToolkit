@@ -152,7 +152,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="FileCopyMode" class="Machine" displayName="$(string.FileCopyMode_Display)" explainText="$(string.FileCopyMode_Explain)" presentation="$(presentation.FileCopyMode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -180,7 +180,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="LogDebugMessage" class="Machine" displayName="$(string.LogDebugMessage_Display)" explainText="$(string.LogDebugMessage_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogDebugMessage">
@@ -190,7 +190,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="LogMaxHierarchy" class="Machine" displayName="$(string.LogMaxHierarchy_Display)" explainText="$(string.LogMaxHierarchy_Explain)" presentation="$(presentation.LogMaxHierarchy)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Toolkit">
@@ -235,7 +235,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="LogToSubfolder" class="Machine" displayName="$(string.LogToSubfolder_Display)" explainText="$(string.LogToSubfolder_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogToSubfolder">
@@ -245,7 +245,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="LogStyle" class="Machine" displayName="$(string.LogStyle_Display)" explainText="$(string.LogStyle_Explain)" presentation="$(presentation.LogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -273,7 +273,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="LogHostOutputToStdStreams" class="Machine" displayName="$(string.LogHostOutputToStdStreams_Display)" explainText="$(string.LogHostOutputToStdStreams_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogHostOutputToStdStreams">
@@ -283,7 +283,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="PathsBasedOnSystemContext" class="Machine" displayName="$(string.PathsBasedOnSystemContext_Display)" explainText="$(string.PathsBasedOnSystemContext_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Toolkit" valueName="PathsBasedOnSystemContext">
@@ -293,7 +293,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -331,7 +331,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<delete />
+				<string>False</string>
 			</disabledValue>
 		</policy>
 		<policy name="FluentAccentColor" class="Machine" displayName="$(string.FluentAccentColor_Display)" explainText="$(string.FluentAccentColor_Explain)" presentation="$(presentation.FluentAccentColor)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
