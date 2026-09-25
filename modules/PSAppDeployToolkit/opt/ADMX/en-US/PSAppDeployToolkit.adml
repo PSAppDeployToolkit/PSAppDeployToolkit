@@ -5,8 +5,8 @@
 	<resources>
 		<stringTable>
 			<string id="PSAppDeployToolkit_Category">PSAppDeployToolkit</string>
-			<string id="SUPPORTED_Windows_10_0_RS1_Definition">At least Windows Server 2016, Windows 10 Version 1607</string>
-			<string id="SUPPORTED_PSAppDeployToolkit_4_2_Definition">At least PSAppDeployToolkit 4.2 on Windows Server 2016, Windows 10 Version 1607</string>
+			<string id="SUPPORTED_PSAppDeployToolkit_4_0_Definition">PSAppDeployToolkit 4.0.0 or higher</string>
+			<string id="SUPPORTED_PSAppDeployToolkit_4_2_Definition">PSAppDeployToolkit 4.2.0 or higher</string>
 			<string id="Assets_Category">Assets</string>
 			<string id="Logo_Display">Logo</string>
 			<string id="Logo_Explain">Specify filename of the logo. This policy is read by every version of PSAppDeployToolkit, including 4.0.x and 4.1.x, so it must be a filename. A Base64 string belongs in the 'Logo (4.2.0 or higher)' policy, which takes precedence over this one on 4.2.0 or higher.</string>
