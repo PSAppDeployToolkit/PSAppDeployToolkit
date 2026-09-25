@@ -44,14 +44,14 @@
 			<parentCategory ref="Assets" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
 			<elements>
-				<text id="LogoDark" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="LogoDark" required="true" expandable="true" />
+				<text id="LogoDark" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="LogoDark" required="false" expandable="true" />
 			</elements>
 		</policy>
 		<policy name="LogoDark_4_2" class="Machine" displayName="$(string.LogoDark_4_2_Display)" explainText="$(string.LogoDark_4_2_Explain)" presentation="$(presentation.LogoDark_4_2)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Assets">
 			<parentCategory ref="Assets" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
 			<elements>
-				<text id="LogoDark" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Assets" valueName="LogoDark" required="true" expandable="true" maxLength="1000000" />
+				<text id="LogoDark" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Assets" valueName="LogoDark" required="false" expandable="true" maxLength="1000000" />
 			</elements>
 		</policy>
 		<policy name="Banner" class="Machine" displayName="$(string.Banner_Display)" explainText="$(string.Banner_Explain)" presentation="$(presentation.Banner)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
@@ -72,7 +72,7 @@
 			<parentCategory ref="Assets" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
 			<elements>
-				<text id="TaskbarIcon" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Assets" valueName="TaskbarIcon" required="true" expandable="true" maxLength="1000000" />
+				<text id="TaskbarIcon" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\Assets" valueName="TaskbarIcon" required="false" expandable="true" maxLength="1000000" />
 			</elements>
 		</policy>
 		<policy name="InstallParams" class="Machine" displayName="$(string.InstallParams_Display)" explainText="$(string.InstallParams_Explain)" presentation="$(presentation.InstallParams)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
@@ -93,14 +93,14 @@
 			<parentCategory ref="MSI" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
 			<elements>
-				<text id="LogPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPath" required="true" expandable="true" />
+				<text id="LogPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPath" required="false" expandable="true" />
 			</elements>
 		</policy>
 		<policy name="LogPathNoAdminRights_MSI" class="Machine" displayName="$(string.LogPathNoAdminRights_MSI_Display)" explainText="$(string.LogPathNoAdminRights_MSI_Explain)" presentation="$(presentation.LogPathNoAdminRights_MSI)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
 			<parentCategory ref="MSI" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
 			<elements>
-				<text id="LogPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPathNoAdminRights" required="true" expandable="true" />
+				<text id="LogPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPathNoAdminRights" required="false" expandable="true" />
 			</elements>
 		</policy>
 		<policy name="MutexWaitTime" class="Machine" displayName="$(string.MutexWaitTime_Display)" explainText="$(string.MutexWaitTime_Explain)" presentation="$(presentation.MutexWaitTime)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
@@ -338,14 +338,14 @@
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
 			<elements>
-				<text id="FluentAccentColor" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="FluentAccentColor" required="true" />
+				<text id="FluentAccentColor" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="FluentAccentColor" required="false" />
 			</elements>
 		</policy>
 		<policy name="FluentAccentColorDark" class="Machine" displayName="$(string.FluentAccentColorDark_Display)" explainText="$(string.FluentAccentColorDark_Explain)" presentation="$(presentation.FluentAccentColorDark)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
 			<elements>
-				<text id="FluentAccentColorDark" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="FluentAccentColorDark" required="true" />
+				<text id="FluentAccentColorDark" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="FluentAccentColorDark" required="false" />
 			</elements>
 		</policy>
 		<policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
@@ -399,6 +399,11 @@
 			<supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
 			<elements>
 				<enum id="LanguageOverride" valueName="LanguageOverride" required="true">
+					<item displayName="$(string.LanguageOverrideAutomatic)">
+						<value>
+							<string />
+						</value>
+					</item>
 					<item displayName="$(string.LanguageOverrideArabic)">
 						<value>
 							<string>ar</string>

@@ -39,7 +39,11 @@ function Private:Import-ADTModuleDataFile
 
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
-            [System.Collections.Hashtable]$NewData
+            [System.Collections.Hashtable]$NewData,
+
+            [Parameter(Mandatory = $true)]
+            [AllowEmptyCollection()]
+            [System.Collections.Hashtable]$Defaults
         )
 
         # Process the provided default data so we can add missing data to the data file.
@@ -52,35 +56,45 @@ function Private:Import-ADTModuleDataFile
                 {
                     $DataFile.($section.Key) = @{}
                 }
-                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
+                $sectionDefaults = @{}; if ($Defaults.ContainsKey($section.Key) -and ($Defaults.($section.Key) -is [System.Collections.Hashtable]))
+                {
+                    $sectionDefaults = $Defaults.($section.Key)
+                }
+                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value -Defaults $sectionDefaults
             }
             elseif (!$DataFile.ContainsKey($section.Key) -or (Out-ADTString -InputObject $section.Value))
             {
                 $DataFile.($section.Key) = $section.Value
             }
+            elseif ($Defaults.ContainsKey($section.Key) -and ($null -eq $Defaults.($section.Key)))
+            {
+                $DataFile.($section.Key) = $null
+            }
         }
     }
 
-    # Import the default data first and foremost.
+    # Import the default data first and foremost, keeping a pristine copy to tell which settings ship as null.
     $section = [System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName))
     $initialUICulture = $UICulture
-    $importedData = while ($true)
+    $defaultData = while ($true)
     {
         if (($defaultSection = (Get-ADTModuleDefaults).$section).ContainsKey($UICulture.Name))
         {
-            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression
             $UICulture = $initialUICulture
             break
         }
         $UICulture = $UICulture.Parent
     }
+    $importedData = $defaultData.SafeGetValue()
+    $defaults = $defaultData.SafeGetValue()
 
     # Super-impose the caller's data if it's different from default.
     $null = $PSBoundParameters.Remove('IgnorePolicy')
     foreach ($directory in $BaseDirectory)
     {
         $PSBoundParameters.BaseDirectory = [System.Management.Automation.WildcardPattern]::Escape($directory)
-        Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
+        Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters) -Defaults $defaults
     }
 
     # Return the data we've got if we're not reading values out of the registry.
@@ -133,7 +147,7 @@ function Private:Import-ADTModuleDataFile
         {
             if ($policySettings = Get-ChildItem -LiteralPath "$policyKey\$section$(if ($cultureName.Length) { "\$cultureName" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
             {
-                Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
+                Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings -Defaults $defaults
             }
         }
     }

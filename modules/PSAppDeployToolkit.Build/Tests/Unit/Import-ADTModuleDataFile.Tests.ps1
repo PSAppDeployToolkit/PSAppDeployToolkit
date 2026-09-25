@@ -118,6 +118,7 @@ Describe 'Import-ADTModuleDataFile' {
                     [System.String]$Name,
 
                     [Parameter(Mandatory = $true)]
+                    [AllowEmptyString()]
                     [System.Object]$Value
                 )
 
@@ -137,7 +138,12 @@ Describe 'Import-ADTModuleDataFile' {
                     [System.Collections.Hashtable]$Splat = @{}
                 )
 
-                Import-Probe -Splat (@{ BaseDirectory = $null; FileName = 'config.psd1' } + $Splat)
+                $arguments = @{ BaseDirectory = $null; FileName = 'config.psd1' }
+                foreach ($entry in $Splat.GetEnumerator())
+                {
+                    $arguments[$entry.Key] = $entry.Value
+                }
+                Import-Probe -Splat $arguments
             }
         }
 
@@ -216,6 +222,28 @@ Describe 'Import-ADTModuleDataFile' {
             $data = Import-PolicyProbe
             $data.Assets.Logo | Should -BeExactly 'AAAA'
             $data.Assets.TaskbarIcon | Should -BeExactly 'AAAA'
+        }
+
+        It 'Clears a setting that ships as null when the policy leaves it blank' {
+            # The deployment sets a dark logo. A blank policy value takes it away rather than being passed over.
+            $deployment = "$TestDrive\blank"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Encoding UTF8 -Value "@{ Assets = @{ LogoDark = 'C:\Brand\Dark.png' } }"
+            Set-PolicyValue -Key 'Config\Assets' -Name LogoDark -Value ''
+            $data = Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }
+            $data.Assets.ContainsKey('LogoDark') | Should -BeTrue
+            ($null -eq $data.Assets.LogoDark) | Should -BeTrue
+        }
+
+        It 'Clears a shared-key value when the versioned key leaves it blank' {
+            Set-PolicyValue -Key 'Config\Assets' -Name LogoDark -Value 'C:\Brand\Dark.png'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\Assets" -Name LogoDark -Value ''
+            ($null -eq (Import-PolicyProbe).Assets.LogoDark) | Should -BeTrue
+        }
+
+        It 'Ignores a blank policy value for a setting that cannot be blank' {
+            Set-PolicyValue -Key 'Config\Toolkit' -Name LogPath -Value ''
+            (Import-PolicyProbe).Toolkit.LogPath | Should -Not -BeNullOrEmpty
         }
     }
 }

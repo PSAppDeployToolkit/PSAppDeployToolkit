@@ -49,9 +49,16 @@ function Private:Convert-ADTRegistryKeyToHashtable
                 $_.PSObject.Properties | & {
                     process
                     {
-                        # Return early for values we don't care about or that are null/empty.
-                        if (($_.Name -match '^PS((Parent)?Path|ChildName|Provider)$') -or !(Out-ADTString -InputObject $_.Value))
+                        # Return early for the provider's bookkeeping properties.
+                        if ($_.Name -match '^PS((Parent)?Path|ChildName|Provider)$')
                         {
+                            return
+                        }
+
+                        # A value that renders as nothing is stored as null, the form the module uses for an unset value, and the reader decides what that means for the setting it lands on.
+                        if (!(Out-ADTString -InputObject $_.Value))
+                        {
+                            $subdata.Add($_.Name, $null)
                             return
                         }
 

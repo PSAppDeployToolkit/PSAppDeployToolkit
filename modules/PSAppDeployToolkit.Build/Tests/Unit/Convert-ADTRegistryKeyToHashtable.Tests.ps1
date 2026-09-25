@@ -28,6 +28,8 @@ Describe 'Convert-ADTRegistryKeyToHashtable' {
             $null = New-ItemProperty -LiteralPath $script:Root -Name 'ATrue' -Value 'True' -PropertyType String
             $null = New-ItemProperty -LiteralPath $script:Root -Name 'AFalse' -Value 'False' -PropertyType String
             $null = New-ItemProperty -LiteralPath $script:Root -Name 'AnEmpty' -Value '' -PropertyType String
+            $null = New-ItemProperty -LiteralPath $script:Root -Name 'AWhitespace' -Value '   ' -PropertyType String
+            $null = New-ItemProperty -LiteralPath $script:Root -Name 'AnEmptyMultiString' -Value ([System.String[]]@()) -PropertyType MultiString
 
             # Kept under a separate root, because a subkey anywhere below the key being converted sends it
             # down the recursion path that currently fails outright. See the skipped test below.
@@ -54,8 +56,15 @@ Describe 'Convert-ADTRegistryKeyToHashtable' {
             $section[$Name] | Should -BeOfType ([System.Type]"System.$TypeName")
         }
 
-        It 'Drops a value that renders as nothing' {
-            (Convert-Probe -LiteralPath $script:Root)['ConvertProbe'].ContainsKey('AnEmpty') | Should -BeFalse
+        It 'Keeps a blank <Name> value as null' -ForEach @(
+            @{ Name = 'AnEmpty' }
+            @{ Name = 'AWhitespace' }
+            @{ Name = 'AnEmptyMultiString' }
+        ) {
+            # Null is the form the module uses for an unset value, and the reader decides what that means for the setting it lands on.
+            $section = (Convert-Probe -LiteralPath $script:Root)['ConvertProbe']
+            $section.ContainsKey($Name) | Should -BeTrue
+            ($null -eq $section[$Name]) | Should -BeTrue
         }
 
         It 'Leaves out the provider bookkeeping properties' {
