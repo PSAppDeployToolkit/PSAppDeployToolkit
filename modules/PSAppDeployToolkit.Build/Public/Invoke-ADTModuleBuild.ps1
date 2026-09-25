@@ -40,6 +40,7 @@ function Invoke-ADTModuleBuild
                 $imported = $true
             }
             Confirm-ADTAdmxTemplateValid
+            Confirm-ADTAdmlTemplateValid
             Confirm-ADTStringTablesValid
         }
         if ($Steps -contains 'UnitTests')
