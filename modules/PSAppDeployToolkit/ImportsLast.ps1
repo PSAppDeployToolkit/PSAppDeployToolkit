@@ -88,7 +88,7 @@ try
                                                 # Same as LogPath but used when the caller is not an admin.
                                                 LogPathNoAdminRights = '$env:ProgramData\Logs\Software'
 
-                                                # Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.
+                                                # Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precedence over "LogToSubfolder" if both are set.
                                                 LogToHierarchy = $false
 
                                                 # Specifies that a subfolder based on InstallName should be used for all log capturing.
@@ -113,7 +113,7 @@ try
                                                 # Same as RegPath but used when the caller is not an admin. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
                                                 RegPathNoAdminRights = 'HKCU:\SOFTWARE'
 
-                                                # Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp.
+                                                # Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\SystemTemp.
                                                 TempPath = '$env:Temp'
 
                                                 # Same as TempPath but used when the caller is not an admin.
@@ -147,7 +147,7 @@ try
                                                 # Exit code used when a user opts to defer.
                                                 DeferExitCode = 1602
 
-                                                <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
+                                                <# Specify a static UI language using one of the Language Codes listed below to override the language culture detected on the system.
                                                     Language Code    Language
                                                     =============    ========
                                                     ar               Arabic
