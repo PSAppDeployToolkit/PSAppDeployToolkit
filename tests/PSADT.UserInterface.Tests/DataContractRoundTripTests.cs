@@ -12,7 +12,7 @@ using Xunit;
 namespace PSADT.UserInterface.Tests
 {
     /// <summary>
-    /// Holds every serializable type in this assembly to surviving the journey it is built for.
+    /// Holds every serializable type in this assembly to survive the journey it is built for.
     /// </summary>
     /// <remarks>
     /// Nothing in this project displays a dialog. The types here are built in the deployment process and
