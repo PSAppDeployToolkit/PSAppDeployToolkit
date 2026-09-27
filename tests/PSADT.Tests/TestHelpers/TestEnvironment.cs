@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Principal;
 
 namespace PSADT.Tests.TestHelpers
@@ -291,14 +292,7 @@ namespace PSADT.Tests.TestHelpers
             {
                 return null;
             }
-            foreach (FileInfo package in packages)
-            {
-                if (CanOpenForReading(package))
-                {
-                    return package;
-                }
-            }
-            return null;
+            return packages.FirstOrDefault(static package => CanOpenForReading(package));
         }
 
         /// <summary>
