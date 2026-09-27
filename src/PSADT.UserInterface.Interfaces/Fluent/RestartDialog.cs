@@ -124,15 +124,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// restored to alert the user. This method overrides the base timer tick behavior to provide custom countdown
         /// handling.</remarks>
         /// <param name="state">An optional state object that can be used to pass additional information to the timer event handler.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
-        private protected override async void CountdownTimer_Tick(object? state)
+        private protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
+                ButtonLeft_Click(this, new());
             }
             else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
