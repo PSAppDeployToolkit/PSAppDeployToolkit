@@ -8,10 +8,6 @@ function Private:Convert-ADTRegistryKeyToHashtable
 {
     begin
     {
-        # Captured here because $MyInvocation.MyCommand inside the anonymous scriptblock below resolves to
-        # that block rather than to this function, and invoking it is refused where code integrity is enforced.
-        $thisCommand = $MyInvocation.MyCommand
-
         # Open collector to store all converted keys.
         $data = @{}
     }
@@ -22,16 +18,17 @@ function Private:Convert-ADTRegistryKeyToHashtable
         $subdata = $_ | Get-ChildItem | & {
             end
             {
-                if ($registryKeys = $($input) | & { process { if ($null -ne $_) { return $_ } } })
+                if (!($registryKeys = $($input) | & { process { if ($null -ne $_) { return $_ } } }))
                 {
-                    try
-                    {
-                        $registryKeys | & $thisCommand
-                    }
-                    finally
-                    {
-                        $registryKeys.Dispose()
-                    }
+                    return
+                }
+                try
+                {
+                    $registryKeys | Convert-ADTRegistryKeyToHashtable
+                }
+                finally
+                {
+                    $registryKeys.Dispose()
                 }
             }
         }
