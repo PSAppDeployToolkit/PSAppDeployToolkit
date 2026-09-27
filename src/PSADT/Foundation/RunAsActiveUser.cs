@@ -26,14 +26,15 @@ namespace PSADT.Foundation
         /// for the most recent active user session based on logon time.</remarks>
         /// <param name="sessionInfo">An optional list of session information to filter through. If not provided, the method retrieves the current
         /// session information.</param>
+        /// <param name="allowAnyValidSession">Consider any valid user session, even if the session is in a disconnected state.</param>
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
-        public static async ValueTask<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
+        public static async ValueTask<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null, bool allowAnyValidSession = false)
         {
-            // Determine the account that will be used to execute client/server commands in the user's context.
-            // Favour the caller's session if it's found and is currently an active user session on the device.
-            return (sessionInfo ??= await SessionInfo.GetAsync().ConfigureAwait(false)).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession)?.ToRunAsActiveUser()
-                ?? sessionInfo.Where(static s => s.IsActiveUserSession).OrderBy(static s => (s.IdleTime ?? TimeSpan.MaxValue).Ticks / TimeSpan.TicksPerSecond).ThenByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser();
+            // Determine the account that will be used to execute client/server commands in the user's context. Favour the caller's session if it's found and is currently an active user session on the device.
+            sessionInfo ??= await SessionInfo.GetAsync().ConfigureAwait(false); IEnumerable<SessionInfo> activeSessions = [.. !allowAnyValidSession ? sessionInfo.Where(static s => s.IsActiveUserSession) : sessionInfo.Where(static s => s.IsValidUserSession)];
+            return activeSessions.FirstOrDefault(static s => s.SID == AccountUtilities.CallerSid)?.ToRunAsActiveUser() ?? activeSessions.FirstOrDefault(static s => s.SessionId == AccountUtilities.CallerSessionId)?.ToRunAsActiveUser()
+                ?? activeSessions.OrderBy(static s => (s.IdleTime ?? TimeSpan.MaxValue).Ticks / TimeSpan.TicksPerSecond).ThenByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser();
         }
 
         /// <summary>

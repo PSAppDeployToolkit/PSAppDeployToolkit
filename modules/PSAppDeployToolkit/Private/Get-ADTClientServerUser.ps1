@@ -22,38 +22,62 @@ function Private:Get-ADTClientServerUser
     )
 
     # Get the active user from the environment if available.
-    $runAsActiveUser = if ($Username)
+    [System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]]$activeSessions = $null; $runAsActiveUser = if ($Username)
     {
         if (!$Username.Value.Contains('\'))
         {
-            if ($Username.Value -eq [PSADT.AccountManagement.AccountUtilities]::CallerUsername.Value.Split('\')[-1])
+            if ($Username.Value -ne [PSADT.AccountManagement.AccountUtilities]::CallerUsername.Value.Split('\')[-1])
             {
-                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                $activeSessions = if (!$AllowAnyValidSession)
+                {
+                    Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
+                }
+                else
+                {
+                    Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
+                }
+                $activeSessions | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
             }
             else
             {
-                Get-ADTLoggedOnUser | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
+                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
             }
         }
         else
         {
-            if ($Username -eq [PSADT.AccountManagement.AccountUtilities]::CallerUsername)
+            if ($Username -ne [PSADT.AccountManagement.AccountUtilities]::CallerUsername)
             {
-                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                $activeSessions = if (!$AllowAnyValidSession)
+                {
+                    Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
+                }
+                else
+                {
+                    Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
+                }
+                $activeSessions | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
             }
             else
             {
-                Get-ADTLoggedOnUser | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
+                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
             }
         }
     }
-    elseif ((Test-ADTSessionActive) -or (Test-ADTModuleInitialized))
+    elseif (!(Test-ADTModuleInitialized))
     {
-        (Get-ADTEnvironmentTable).RunAsActiveUser
+        $activeSessions = if (!$AllowAnyValidSession)
+        {
+            Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
+        }
+        else
+        {
+            Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
+        }
+        [PSADT.Foundation.RunAsActiveUser]::GetAsync($activeSessions).ConfigureAwait($false).GetAwaiter().GetResult()
     }
     else
     {
-        [PSADT.Foundation.RunAsActiveUser]::GetAsync().ConfigureAwait($false).GetAwaiter().GetResult()
+        (Get-ADTEnvironmentTable).RunAsActiveUser
     }
 
     # Return the calculated RunAsActiveUser if we have one.
@@ -66,13 +90,13 @@ function Private:Get-ADTClientServerUser
             return [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
         }
 
-        # Only return the calculated RunAsActiveUser if the user is still logged on and active as of right now.
-        if (($runAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -or (($runAsUserSession = Get-ADTLoggedOnUser -InformationAction SilentlyContinue | & { process { if ($runAsActiveUser.SID.Equals($_.SID)) { return $_ } } } | Select-Object -First 1) -and ($runAsUserSession.IsActiveUserSession -or ($AllowAnyValidSession -and $runAsUserSession.IsValidUserSession))))
+        # Only return the calculated RunAsActiveUser if the user is still logged on and active as of right now. Use the stored off `$activeSessions` data to know whether we should re-enumerate or not (i.e. if we stored off active sessions, we know this `RunAsActiveUser` object is good).
+        if ($runAsActiveUser.Equals([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -or $activeSessions -or (Get-ADTLoggedOnUser -InformationAction SilentlyContinue | & { process { if ($runAsActiveUser.SID.Equals($_.SID) -and ($_.IsActiveUserSession -or ($AllowAnyValidSession -and $_.IsValidUserSession))) { return $_ } } } | Select-Object -First 1))
         {
             return $runAsActiveUser
         }
     }
-    elseif (!$Username -and [System.Environment]::UserInteractive -and (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -or $AllowSystemFallback))
+    elseif (!$Username -and [System.Environment]::UserInteractive -and ($AllowSystemFallback -or ![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem))
     {
         # If there's no RunAsActiveUser but the current process is interactive, just run it as the current user.
         return [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
