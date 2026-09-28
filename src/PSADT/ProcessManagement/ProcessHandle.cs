@@ -7,8 +7,6 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Foundation;
 using PSADT.Interop;
 using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.System.JobObjects;
 
 namespace PSADT.ProcessManagement
 {
@@ -32,13 +30,22 @@ namespace PSADT.ProcessManagement
         /// <param name="stdErrHandle">The handle responsible for asynchronously reading the standard error stream of the process.</param>
         /// <param name="interleavedBuffer">A read-only collection containing the combined output from both standard output and standard error streams.</param>
         /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
+        /// <param name="job">The job object the process has been assigned to and the IO completion port it reports to, required when child processes are to be waited for or killed.</param>
         /// <exception cref="InvalidProgramException">Thrown if the IO completion port or job object is not initialized when required.</exception>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null)
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null, (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null)
         {
             // Internal worker to satisfy S4457 so that the error handling works properly.
             async System.Threading.Tasks.Task<ProcessResult> GetTaskAsync()
             {
-                // Ensure that the process is disposed of when the task completes, regardless of success or failure.
+                // Wait for the process to exit or for a cancellation request, and handle the exit code accordingly.
+                CancellationToken cancellationToken = launchInfo.CancellationToken ?? CancellationToken.None;
+                const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
+                int exitCode = ProcessManager.TimeoutExitCode; bool processFinished = false;
+
+                // Close the process and job handles once the wait is over, regardless of success or failure. The job closes before
+                // the streams are waited on, as with KillChildProcessesWithParent that is what kills any children still holding them.
+                using (job?.ioCompletionPort)
+                using (job?.jobObject)
                 using (processHandle)
                 {
                     // Set the client/server success flag if the client started a ShellExecuteEx process invocation.
@@ -46,35 +53,8 @@ namespace PSADT.ProcessManagement
                     {
                         ClientServerUtilities.SetOperationSuccessFlag();
                     }
-
-                    // Wait for the process to exit or for a cancellation request, and handle the exit code accordingly.
-                    CancellationToken cancellationToken = launchInfo.CancellationToken ?? CancellationToken.None;
-                    const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
-                    int exitCode = ProcessManager.TimeoutExitCode; bool processFinished = false;
-                    if (launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent)
+                    if (job is (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort))
                     {
-                        // Set up a job object and an IO completion port to monitor the process and its child processes.
-                        using SafeFileHandle ioCompletionPort = NativeMethods.CreateIoCompletionPort(0);
-                        using SafeFileHandle jobObject = NativeMethods.CreateJobObject();
-                        JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new()
-                        {
-                            CompletionPort = (HANDLE)ioCompletionPort.DangerousGetHandle(),
-                            CompletionKey = null,
-                        };
-                        _ = NativeMethods.SetInformationJobObject(jobObject, in completionPort);
-                        if (launchInfo.KillChildProcessesWithParent)
-                        {
-                            JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedLimitInformation = new()
-                            {
-                                BasicLimitInformation = new()
-                                {
-                                    LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-                                },
-                            };
-                            _ = NativeMethods.SetInformationJobObject(jobObject, in extendedLimitInformation);
-                        }
-                        _ = NativeMethods.AssignProcessToJobObject(jobObject, processHandle);
-
                         // Start a task to monitor the IO completion port for process exit or timeout events.
                         await System.Threading.Tasks.Task.Run(() =>
                         {
@@ -142,12 +122,12 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                    if (processFinished)
-                    {
-                        await System.Threading.Tasks.Task.WhenAll(stdOutHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdErrHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdInHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
-                    }
-                    return new(process, launchInfo, commandLine, exitCode, stdOutHandle?.Buffer, stdErrHandle?.Buffer, interleavedBuffer);
                 }
+                if (processFinished)
+                {
+                    await System.Threading.Tasks.Task.WhenAll(stdOutHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdErrHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdInHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                }
+                return new(process, launchInfo, commandLine, exitCode, stdOutHandle?.Buffer, stdErrHandle?.Buffer, interleavedBuffer);
             }
 
             // Confirm all inputs are valid.
@@ -155,6 +135,10 @@ namespace PSADT.ProcessManagement
             ArgumentNullException.ThrowIfNull(processHandle);
             ArgumentNullException.ThrowIfNull(launchInfo);
             ArgumentNullException.ThrowIfNull(process);
+            if (job is null && launchInfo.RequiresJobObject)
+            {
+                throw new InvalidProgramException("A job object is required to wait for or kill child processes.");
+            }
 
             // Store off the incoming parameters.
             Process = process;
@@ -168,7 +152,8 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="launchInfo">The launch information that describes how the process was started.</param>
         /// <param name="process">The Process object representing the running process.</param>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process) : this(launchInfo, process, (uint)process.Id, new(process.Handle, ownsHandle: false), launchInfo.MakeCommandLine())
+        /// <param name="job">The job object the process has been assigned to and the IO completion port it reports to, required when child processes are to be waited for or killed.</param>
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job) : this(launchInfo, process, (uint)process.Id, new(process.Handle, ownsHandle: false), launchInfo.MakeCommandLine(), job: job)
         {
         }
 

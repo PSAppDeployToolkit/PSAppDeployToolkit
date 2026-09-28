@@ -153,6 +153,11 @@ namespace PSADT.ProcessManagement
         private readonly string? WorkingDirectoryPath;
 
         /// <summary>
+        /// Gets a value indicating whether a job object is required for the process launch. A job object is needed if either <see cref="WaitForChildProcesses"/> or <see cref="KillChildProcessesWithParent"/>
+        /// </summary>
+        internal bool RequiresJobObject => WaitForChildProcesses || KillChildProcessesWithParent;
+
+        /// <summary>
         /// Generates the command-line string representation for the current configuration.
         /// </summary>
         /// <remarks>This method uses default options when generating the command-line. To customize the

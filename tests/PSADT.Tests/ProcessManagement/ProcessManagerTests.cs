@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -203,14 +204,14 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Verifies that cancelling a launch ends it with the timeout code and terminates the process,
-        /// rather than leaving it running with nothing waiting on it.
+        /// Verifies that cancelling a launch ends it promptly with the timeout code and terminates the process,
+        /// rather than leaving it or anything it started running with nothing waiting on it.
         /// </summary>
         /// <remarks>
         /// Cancellation is watched for through the job object, which is only set up when the launch was
-        /// asked to account for child processes - so that is asked for here. The process launched sleeps
-        /// far longer than the test will wait, so the only way the test finishes is by the cancellation
-        /// being acted on.
+        /// asked to account for child processes - so that is asked for here. The process launched starts a
+        /// ping that runs for two minutes, so a launch that ends well inside that is one whose cancellation
+        /// reached the ping as well.
         /// </remarks>
         /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
@@ -229,12 +230,15 @@ namespace PSADT.Tests.ProcessManagement
             ProcessHandle? handle = ProcessManager.LaunchAsync(launchInfo);
             Assert.NotNull(handle);
             int processId = handle.Process.Id;
+            Stopwatch stopwatch = Stopwatch.StartNew();
             await cancellation.CancelAsync().ConfigureAwait(true);
             using ProcessResult result = await handle.Task.ConfigureAwait(true);
+            TimeSpan elapsed = stopwatch.Elapsed;
 
             // Assert
             Assert.Equal(ProcessManager.TimeoutExitCode, result.ExitCode);
             Assert.True(handle.Process.HasExited, $"Process {processId.ToString(CultureInfo.InvariantCulture)} was left running after being cancelled.");
+            Assert.True(elapsed < TimeSpan.FromSeconds(30), $"The launch took {elapsed.TotalSeconds.ToString("N0", CultureInfo.InvariantCulture)}s to end after being cancelled, so something it started outlived the cancellation.");
         }
 
         /// <summary>

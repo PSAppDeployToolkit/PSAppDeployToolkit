@@ -405,6 +405,23 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a launch needs a job object exactly when it asks for its child processes to be waited for or
+        /// killed, since accounting for them is what the job is for.
+        /// </summary>
+        /// <param name="waitForChildProcesses">Whether the launch asks for its child processes to be waited for.</param>
+        /// <param name="killChildProcessesWithParent">Whether the launch asks for its child processes to be killed with it.</param>
+        /// <param name="expected">Whether the launch should need a job object.</param>
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(true, true, true)]
+        public void RequiresJobObject_IsSetByEitherChildProcessOption(bool waitForChildProcesses, bool killChildProcessesWithParent, bool expected)
+        {
+            Assert.Equal(expected, new ProcessLaunchInfo(@"C:\app.exe", waitForChildProcesses: waitForChildProcesses, killChildProcessesWithParent: killChildProcessesWithParent).RequiresJobObject);
+        }
+
+        /// <summary>
         /// Verifies that the kind of executable being launched is read from the file itself, since it
         /// decides whether a console is created and whether the streams can be captured at all.
         /// </summary>

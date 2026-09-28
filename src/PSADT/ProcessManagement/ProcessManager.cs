@@ -212,6 +212,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Finalise the process creation.
+            (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null;
             try
             {
                 Process process = Process.GetProcessById((int)processId);
@@ -226,11 +227,15 @@ namespace PSADT.ProcessManagement
                     {
                         DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
                     }
+                    if (launchInfo.RequiresJobObject)
+                    {
+                        job = CreateProcessJob(launchInfo, hProcess);
+                    }
                     using (hThread)
                     {
                         _ = NativeMethods.ResumeThread(hThread);
                     }
-                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle);
+                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle, job);
                 }
                 catch (Exception ex)
                 {
@@ -243,6 +248,8 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex)
             {
+                using (job?.ioCompletionPort)
+                using (job?.jobObject)
                 using (stdOutStream)
                 using (stdErrStream)
                 using (stdInStream)
@@ -338,8 +345,13 @@ namespace PSADT.ProcessManagement
             }
 
             // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
+            (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null;
             try
             {
+                if (launchInfo.RequiresJobObject)
+                {
+                    job = CreateProcessJob(launchInfo, hProcess);
+                }
                 if (launchInfo.DenyUserTermination)
                 {
                     DenyProcessTermination(launchInfo, hProcess);
@@ -348,10 +360,12 @@ namespace PSADT.ProcessManagement
                 {
                     process.PriorityClass = launchInfo.PriorityClass.Value;
                 }
-                return new(launchInfo, process);
+                return new(launchInfo, process, job);
             }
             catch (Exception ex)
             {
+                using (job?.ioCompletionPort)
+                using (job?.jobObject)
                 using (hProcess)
                 using (process)
                 {
@@ -540,6 +554,51 @@ namespace PSADT.ProcessManagement
             catch (Exception ex)
             {
                 using (stream)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a job object that reports to a new IO completion port, and assigns the process to it.
+        /// </summary>
+        /// <param name="launchInfo">The launch the job is for, which decides whether closing the job kills its processes.</param>
+        /// <param name="hProcess">The process to assign to the job.</param>
+        /// <returns>The job object and the IO completion port it reports to.</returns>
+        private static (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort) CreateProcessJob(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess)
+        {
+            SafeFileHandle? ioCompletionPort = null;
+            SafeFileHandle? jobObject = null;
+            try
+            {
+                jobObject = NativeMethods.CreateJobObject();
+                ioCompletionPort = NativeMethods.CreateIoCompletionPort(0);
+                JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new()
+                {
+                    CompletionPort = (HANDLE)ioCompletionPort.DangerousGetHandle(),
+                    CompletionKey = null,
+                };
+                _ = NativeMethods.SetInformationJobObject(jobObject, in completionPort);
+                if (launchInfo.KillChildProcessesWithParent)
+                {
+                    JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedLimitInformation = new()
+                    {
+                        BasicLimitInformation = new()
+                        {
+                            LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+                        },
+                    };
+                    _ = NativeMethods.SetInformationJobObject(jobObject, in extendedLimitInformation);
+                }
+                _ = NativeMethods.AssignProcessToJobObject(jobObject, hProcess);
+                return (jobObject, ioCompletionPort);
+            }
+            catch (Exception ex)
+            {
+                using (ioCompletionPort)
+                using (jobObject)
                 {
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;

@@ -59,7 +59,7 @@ namespace PSADT.ClientServer.Server.Tests
         {
             // Arrange
             using Process current = Process.GetCurrentProcess();
-            ProcessHandle client = new(new ProcessLaunchInfo(Path.Join(Environment.SystemDirectory, "cmd.exe"), createNoWindow: true), current);
+            ProcessHandle client = new(new ProcessLaunchInfo(Path.Join(Environment.SystemDirectory, "cmd.exe"), createNoWindow: true), current, job: null);
             IOException cause = new("the cause");
 
             // Act

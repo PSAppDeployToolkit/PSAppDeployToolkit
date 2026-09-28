@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using PSADT.ProcessManagement;
@@ -46,6 +47,25 @@ namespace PSADT.Tests.ProcessManagement
             {
                 (await handle.Task.ConfigureAwait(true)).Dispose();
             }
+        }
+
+        /// <summary>
+        /// Verifies that a handle is refused a launch that asks for its child processes to be waited for or killed
+        /// without a job to account for them, rather than quietly watching the process alone.
+        /// </summary>
+        /// <param name="waitForChildProcesses">Whether the launch asks for its child processes to be waited for.</param>
+        /// <param name="killChildProcessesWithParent">Whether the launch asks for its child processes to be killed with it.</param>
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public void ProcessHandle_RefusesChildProcessHandlingWithoutAJob(bool waitForChildProcesses, bool killChildProcessesWithParent)
+        {
+            // Arrange: refused before the process is touched, so the test host's own will do
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "exit 0"], createNoWindow: true, waitForChildProcesses: waitForChildProcesses, killChildProcessesWithParent: killChildProcessesWithParent);
+            using Process current = Process.GetCurrentProcess();
+
+            // Act & Assert
+            _ = Assert.Throws<InvalidProgramException>(() => new ProcessHandle(launchInfo, current, (uint)current.Id, current.SafeHandle, launchInfo.MakeCommandLine()));
         }
 
         /// <summary>
