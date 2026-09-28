@@ -2,10 +2,13 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.Tests.TestHelpers;
+using Windows.Win32.Foundation;
 using Xunit;
 
 namespace PSADT.Tests.ProcessManagement
@@ -266,6 +269,176 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a launch through the shell runs to completion and reports its exit code, which is
+        /// what proves the process the shell was asked to hold suspended is released once it has been set up.
+        /// </summary>
+        /// <remarks>
+        /// The shell is used for a console application only when a window is not asked to be suppressed, so
+        /// the window is hidden through the style instead. The launch is given a timeout rather than an
+        /// open-ended wait, so a process left suspended fails the test rather than hanging it.
+        /// </remarks>
+        /// <param name="exitCode">The code for the process to exit with.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(7)]
+        public async Task LaunchAsync_ShellExecute_ReportsTheExitCodeAsync(int exitCode)
+        {
+            // Arrange
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", $"exit {exitCode.ToString(CultureInfo.InvariantCulture)}"], useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden, cancellationToken: timeout.Token);
+
+            // Act
+            using ProcessResult result = await LaunchAsync(launchInfo).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(exitCode, result.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that the working directory, arguments and verb all reach the shell, from a caller already
+        /// on a single-threaded apartment, which is where the module calls from.
+        /// </summary>
+        /// <remarks>
+        /// Output cannot be captured through the shell, so the process creates a file instead, by a relative
+        /// name, so that the file turning up in the directory is itself the proof.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The launch is started by this test, on the apartment it hops onto to do so.")]
+        [Fact]
+        public async Task LaunchAsync_ShellExecute_StartsInTheWorkingDirectoryItWasGivenAsync()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "cd > cwd.txt"], temp.FullName, useShellExecute: true, verb: "open", windowStyle: ProcessWindowStyle.Hidden, cancellationToken: timeout.Token);
+
+            // Act
+            ProcessHandle? handle = null;
+            StaThread.Run(() => handle = ProcessManager.LaunchAsync(launchInfo));
+            Assert.NotNull(handle);
+            using ProcessResult result = await handle.Task.ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.True(File.Exists(Path.Join(temp.FullName, "cwd.txt")), "The process did not run in the directory it was given.");
+        }
+
+        /// <summary>
+        /// Verifies that a process launched through the shell is in its job before it can start anything, so
+        /// a child it starts straight away is killed with it rather than escaping.
+        /// </summary>
+        /// <remarks>
+        /// The interpreter starts a ping that would run for two minutes, and cancelling the launch has to end
+        /// the ping as well. The job is private to the handle, so membership is checked against any job at
+        /// all; that says something only when this host is outside every job, which is the usual case.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task LaunchAsync_ShellExecute_KillsChildProcessesWithTheParentAsync()
+        {
+            // Arrange
+            using CancellationTokenSource cancellation = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "ping -n 120 127.0.0.1"], useShellExecute: true, killChildProcessesWithParent: true, windowStyle: ProcessWindowStyle.Hidden, cancellationToken: cancellation.Token);
+
+            // Act
+            ProcessHandle? handle = ProcessManager.LaunchAsync(launchInfo);
+            Assert.NotNull(handle);
+            using Process ping = await FindChildAsync(handle.Process.Id, "PING").ConfigureAwait(true);
+            try
+            {
+                using Process host = Process.GetCurrentProcess();
+                _ = NativeMethods.IsProcessInJob(host.SafeHandle, out BOOL hostInJob);
+                _ = NativeMethods.IsProcessInJob(ping.SafeHandle, out BOOL pingInJob);
+                await cancellation.CancelAsync().ConfigureAwait(true);
+                using ProcessResult result = await handle.Task.ConfigureAwait(true);
+
+                // Assert
+                Assert.Equal(ProcessManager.TimeoutExitCode, result.ExitCode);
+                Assert.True(hostInJob || pingInJob, "The ping was outside every job, so the launch's job did not contain it.");
+                Assert.True(ping.WaitForExit(10000), "The ping outlived the launch it belonged to, so the launch's job did not contain it.");
+            }
+            finally
+            {
+                if (!ping.HasExited)
+                {
+                    ping.Kill();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the priority class reaches a process launched through the shell, which is applied
+        /// after the launch rather than through the shell itself.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task LaunchAsync_ShellExecute_AppliesThePriorityClassAsync()
+        {
+            // Arrange: the interpreter runs long enough to be looked at, and its ping goes with it
+            using CancellationTokenSource cancellation = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "ping -n 120 127.0.0.1"], useShellExecute: true, killChildProcessesWithParent: true, windowStyle: ProcessWindowStyle.Hidden, priorityClass: ProcessPriorityClass.BelowNormal, cancellationToken: cancellation.Token);
+
+            // Act
+            ProcessHandle? handle = ProcessManager.LaunchAsync(launchInfo);
+            Assert.NotNull(handle);
+            try
+            {
+                // Assert
+                Assert.Equal(ProcessPriorityClass.BelowNormal, handle.Process.PriorityClass);
+            }
+            finally
+            {
+                await cancellation.CancelAsync().ConfigureAwait(true);
+                (await handle.Task.ConfigureAwait(true)).Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a path to something that is not there fails at the launch through the shell as
+        /// well, rather than producing a handle to a process that does not exist.
+        /// </summary>
+        [Fact]
+        public void LaunchAsync_ShellExecute_FailsForAFileThatIsNotThere()
+        {
+            // Arrange
+            ProcessLaunchInfo launchInfo = new(Path.Join(Environment.SystemDirectory, "PSADTNoSuchExecutable.exe"), useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden);
+
+            // Act & Assert
+            Assert.NotNull(Record.Exception(() => ProcessManager.LaunchAsync(launchInfo)));
+        }
+
+        /// <summary>
+        /// Waits for a process to start a child of the given name, which one held suspended by its launch can
+        /// only do once it has been released.
+        /// </summary>
+        /// <param name="parentId">The identifier of the process expected to start the child.</param>
+        /// <param name="name">The child's process name.</param>
+        /// <returns>The child, which the caller disposes.</returns>
+        private static async Task<Process> FindChildAsync(int parentId, string name)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (true)
+            {
+                Process[] candidates = Process.GetProcessesByName(name);
+                Process? child = Array.Find(candidates, candidate => ProcessUtilities.GetParentProcessId(candidate.Id) == parentId);
+                foreach (Process candidate in candidates.Where(candidate => candidate != child))
+                {
+                    using (candidate)
+                    {
+                        // CodeQL prefers using statements.
+                    }
+                }
+                if (child is not null)
+                {
+                    return child;
+                }
+                Assert.True(stopwatch.Elapsed < LaunchTimeout, $"Process {parentId.ToString(CultureInfo.InvariantCulture)} did not start a {name} process.");
+                await Task.Delay(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken).ConfigureAwait(true);
+            }
+        }
+
+        /// <summary>
         /// Runs a single command through the interpreter with its output captured.
         /// </summary>
         /// <param name="command">The command for the interpreter to run.</param>
@@ -293,5 +466,11 @@ namespace PSADT.Tests.ProcessManagement
         /// a known exit code and known output without anything being installed to do it.
         /// </summary>
         private static readonly string CommandInterpreter = Path.Join(Environment.SystemDirectory, "cmd.exe");
+
+        /// <summary>
+        /// How long a launch through the shell is given before it is cancelled, which ends a process that was
+        /// never released as a failure rather than a hang.
+        /// </summary>
+        private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(60);
     }
 }
