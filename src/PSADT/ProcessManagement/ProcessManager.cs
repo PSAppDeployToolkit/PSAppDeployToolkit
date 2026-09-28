@@ -213,6 +213,7 @@ namespace PSADT.ProcessManagement
 
             // Finalise the process creation.
             (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null;
+            bool resumed = false;
             try
             {
                 Process process = Process.GetProcessById((int)processId);
@@ -234,6 +235,7 @@ namespace PSADT.ProcessManagement
                     using (hThread)
                     {
                         _ = NativeMethods.ResumeThread(hThread);
+                        resumed = true;
                     }
                     return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle, job);
                 }
@@ -256,6 +258,10 @@ namespace PSADT.ProcessManagement
                 using (hProcess)
                 using (hThread)
                 {
+                    if (!resumed)
+                    {
+                        TerminateSuspendedProcess(hProcess);
+                    }
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
@@ -372,6 +378,23 @@ namespace PSADT.ProcessManagement
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Ends a process that was never resumed, so a failed launch does not leave it suspended forever.
+        /// </summary>
+        /// <param name="hProcess">The suspended process.</param>
+        private static void TerminateSuspendedProcess(SafeProcessHandle hProcess)
+        {
+            try
+            {
+                _ = NativeMethods.TerminateProcess(hProcess, uint.MaxValue);
+            }
+            catch
+            {
+                return;
+                throw;
             }
         }
 

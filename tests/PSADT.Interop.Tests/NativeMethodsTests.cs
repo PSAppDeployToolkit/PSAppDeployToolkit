@@ -540,6 +540,20 @@ namespace PSADT.Interop.Tests
         }
 
         /// <summary>
+        /// Verifies that a process handle without the right to end the process is refused with the access
+        /// denial the wrapper has to translate, tried on the one process it is safe to try it on.
+        /// </summary>
+        [Fact]
+        public void TerminateProcess_RaisesAFailureForAHandleWithoutTheRight()
+        {
+            // Arrange
+            using SafeFileHandle limited = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, PInvoke.GetCurrentProcessId());
+
+            // Act & Assert
+            _ = Assert.Throws<UnauthorizedAccessException>(() => NativeMethods.TerminateProcess(limited, 1));
+        }
+
+        /// <summary>
         /// Determines whether the caller is running with administrative rights.
         /// </summary>
         /// <returns><see langword="true"/> if the caller is elevated; otherwise, <see langword="false"/>.</returns>

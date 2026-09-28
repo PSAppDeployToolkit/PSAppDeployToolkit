@@ -1940,6 +1940,20 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Terminates the specified process and all of its threads.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process to terminate. This handle must have the PROCESS_TERMINATE access right and
+        /// must not be closed.</param>
+        /// <param name="uExitCode">The exit code to be used by the process and threads terminated as a result of this call.</param>
+        /// <returns>true if the process was terminated successfully; otherwise, false.</returns>
+        internal static BOOL TerminateProcess(SafeHandle hProcess, uint uExitCode)
+        {
+            ArgumentException.ThrowIfNullOrClosed(hProcess);
+            BOOL res = PInvoke.TerminateProcess(hProcess, uExitCode);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Retrieves the process identifier (PID) for the specified process handle.
         /// </summary>
         /// <param name="Process">A safe handle to the process whose identifier is to be retrieved. The handle must have the
