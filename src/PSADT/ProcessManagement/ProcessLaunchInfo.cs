@@ -126,10 +126,6 @@ namespace PSADT.ProcessManagement
                 {
                     throw new NotSupportedException("Cannot specify UseShellExecute while specifying RunAsInvoker.");
                 }
-                if (bypassIfeo)
-                {
-                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying BypassIfeo.");
-                }
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.

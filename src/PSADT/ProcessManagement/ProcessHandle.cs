@@ -148,16 +148,6 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information and process.
-        /// </summary>
-        /// <param name="launchInfo">The launch information that describes how the process was started.</param>
-        /// <param name="process">The Process object representing the running process.</param>
-        /// <param name="job">The job object the process has been assigned to and the IO completion port it reports to, required when child processes are to be waited for or killed.</param>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job) : this(launchInfo, process, (uint)process.Id, new(process.Handle, ownsHandle: false), launchInfo.MakeCommandLine(), job: job)
-        {
-        }
-
-        /// <summary>
         /// Represents the process associated with the current operation.
         /// </summary>
         /// <remarks>This field provides access to the underlying <see cref="System.Diagnostics.Process"/>

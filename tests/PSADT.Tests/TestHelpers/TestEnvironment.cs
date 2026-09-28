@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using Microsoft.Win32;
 
 namespace PSADT.Tests.TestHelpers
 {
@@ -202,6 +203,65 @@ namespace PSADT.Tests.TestHelpers
         /// unreadable store simply produces no fixture, and the tests that need one skip.
         /// </remarks>
         public static FileInfo? CachedMspPackage { get; } = FindFirstReadableCachedPackage("*.msp");
+
+        /// <summary>
+        /// Something the shell would open through a DDE conversation, or <see langword="null"/> when the
+        /// machine registers no such association.
+        /// </summary>
+        /// <remarks>
+        /// A protocol is preferred to a file type. A file type's effective handler can be overridden by a
+        /// per-user choice, which the probe has to respect, whereas a protocol an application registers for
+        /// itself rarely is. The value is only ever inspected, never launched.
+        /// </remarks>
+        public static string? DdeLaunchTarget { get; } = FindDdeLaunchTarget();
+
+        /// <summary>
+        /// Whether a DDE association was found, which gates the tests needing one.
+        /// </summary>
+        public static bool HasDdeAssociation => DdeLaunchTarget is not null;
+
+        /// <summary>
+        /// Finds a protocol or file extension whose open verb is registered with a DDE command.
+        /// </summary>
+        /// <returns>A value that launch information resolves to that association, or <see langword="null"/> if there is none.</returns>
+        private static string? FindDdeLaunchTarget()
+        {
+            using RegistryKey classes = Registry.ClassesRoot;
+            using RegistryKey? userChoices = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts");
+            string? extension = null;
+            foreach (string name in classes.GetSubKeyNames())
+            {
+                using RegistryKey? key = classes.OpenSubKey(name);
+                if (key is null)
+                {
+                    continue;
+                }
+                if (!name.StartsWith('.'))
+                {
+                    if (key.GetValue("URL Protocol") is not null && HasDdeOpenCommand(classes, name))
+                    {
+                        return $"{name}:psadt";
+                    }
+                }
+                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenCommand(classes, progId) && userChoices?.OpenSubKey($@"{name}\UserChoice") is null)
+                {
+                    extension = name;
+                }
+            }
+            return extension is null ? null : $"psadt{extension}";
+        }
+
+        /// <summary>
+        /// Determines whether a class registers a DDE command under its open verb.
+        /// </summary>
+        /// <param name="classes">The classes root.</param>
+        /// <param name="name">The protocol or programmatic identifier to look under.</param>
+        /// <returns><see langword="true"/> if a DDE command is registered; otherwise, <see langword="false"/>.</returns>
+        private static bool HasDdeOpenCommand(RegistryKey classes, string name)
+        {
+            using RegistryKey? ddeexec = classes.OpenSubKey($@"{name}\shell\open\ddeexec");
+            return ddeexec is not null;
+        }
 
         /// <summary>
         /// Determines whether the caller is running with administrative rights.

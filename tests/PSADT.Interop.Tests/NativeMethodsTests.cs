@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Win32;
@@ -17,6 +18,7 @@ using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
+using Windows.Win32.UI.Shell;
 using Xunit;
 
 namespace PSADT.Interop.Tests
@@ -551,6 +553,74 @@ namespace PSADT.Interop.Tests
 
             // Act & Assert
             _ = Assert.Throws<UnauthorizedAccessException>(() => NativeMethods.TerminateProcess(limited, 1));
+        }
+
+        /// <summary>
+        /// Verifies that stopping the debugging of a process this thread is not debugging is raised as a failure,
+        /// tried on this process, which nothing here debugs.
+        /// </summary>
+        [Fact]
+        public void DebugActiveProcessStop_RaisesAFailureForAProcessNotBeingDebugged()
+        {
+            // Act & Assert
+            _ = Assert.ThrowsAny<Exception>(static () => NativeMethods.DebugActiveProcessStop(PInvoke.GetCurrentProcessId()));
+        }
+
+        /// <summary>
+        /// Verifies that a process handle without the right to resume the process is refused with the access
+        /// denial the wrapper has to translate, which is also what keeps the call from touching this process.
+        /// </summary>
+        [Fact]
+        public void NtResumeProcess_RaisesAFailureForAHandleWithoutTheRight()
+        {
+            // Arrange
+            using SafeFileHandle limited = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, PInvoke.GetCurrentProcessId());
+
+            // Act & Assert
+            _ = Assert.Throws<UnauthorizedAccessException>(() => NativeMethods.NtResumeProcess(limited));
+        }
+
+        /// <summary>
+        /// Verifies that the shell's refusal to find a file is raised as the matching error, and that the
+        /// wrapper stamps the structure size, which the shell rejects the call without.
+        /// </summary>
+        [Fact]
+        public void ShellExecuteEx_RaisesAFailureForAMissingFileAndStampsTheSize()
+        {
+            // Arrange
+            SHELLEXECUTEINFOW info = new() { fMask = SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI };
+            unsafe
+            {
+                fixed (char* file = Path.Join(AppContext.BaseDirectory, "a-file-that-does-not-exist.exe"))
+                {
+                    info.lpFile = file;
+
+                    // Act & Assert
+                    _ = Assert.Throws<FileNotFoundException>(() => NativeMethods.ShellExecuteEx(ref info));
+                }
+            }
+            Assert.Equal((uint)Unsafe.SizeOf<SHELLEXECUTEINFOW>(), info.cbSize);
+        }
+
+        /// <summary>
+        /// Verifies that an association string is sized with the two-call pattern and then copied, and that
+        /// a string that does not exist is reported through the result rather than raised, since a launch
+        /// asks that question routinely.
+        /// </summary>
+        [Fact]
+        public void AssocQueryString_SizesAndCopiesAStringAndReportsAMissingAssociation()
+        {
+            // Act: an executable's open command is the same on every installation, and it has no DDE command
+            HRESULT sized = NativeMethods.AssocQueryString(ASSOCF.ASSOCF_NONE, ASSOCSTR.ASSOCSTR_COMMAND, ".exe", "open", default, out uint length);
+            char[] buffer = new char[length];
+            HRESULT copied = NativeMethods.AssocQueryString(ASSOCF.ASSOCF_NONE, ASSOCSTR.ASSOCSTR_COMMAND, ".exe", "open", buffer, out _);
+            HRESULT missing = NativeMethods.AssocQueryString(ASSOCF.ASSOCF_NONE, ASSOCSTR.ASSOCSTR_DDECOMMAND, ".exe", "open", default, out _);
+
+            // Assert
+            Assert.Equal(HRESULT.S_FALSE, sized);
+            Assert.Equal(HRESULT.S_OK, copied);
+            Assert.Equal("\"%1\" %*", new string(buffer).TrimEnd('\0'));
+            Assert.Equal(PInvoke.HRESULT_FROM_WIN32(WIN32_ERROR.ERROR_NO_ASSOCIATION), missing);
         }
 
         /// <summary>

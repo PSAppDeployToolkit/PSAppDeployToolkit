@@ -12,6 +12,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -26,6 +27,7 @@ using Windows.Win32.Security;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
+using Windows.Win32.UI.Shell;
 
 namespace PSADT.ProcessManagement
 {
@@ -100,7 +102,7 @@ namespace PSADT.ProcessManagement
                 // Set up the window style if the caller's provided a value.
                 if (launchInfo.WindowStyle is not null)
                 {
-                    startupInfo.wShowWindow = WindowStyleMap[launchInfo.WindowStyle.Value];
+                    startupInfo.wShowWindow = (ushort)WindowStyleMap[launchInfo.WindowStyle.Value];
                     startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                 }
 
@@ -219,8 +221,8 @@ namespace PSADT.ProcessManagement
                 Process process = Process.GetProcessById((int)processId);
                 try
                 {
-                    // The process was not spawned by .NET, so fetching the handle makes `Process` call
-                    // `SetProcessHandle`; without it, `ExitCode` throws. The result is deliberately discarded.
+                    // The process was not spawned by .NET, so fetching the handle makes `Process` call `SetProcessHandle`.
+                    // Without it, `ExitCode` throws. The result is deliberately discarded as we've got hProcess available.
                     _ = process.Handle;
 
                     // Return the process handle and associated information to the caller.
@@ -260,7 +262,7 @@ namespace PSADT.ProcessManagement
                 {
                     if (!resumed)
                     {
-                        TerminateSuspendedProcess(hProcess);
+                        TerminateFailedLaunch(hProcess);
                     }
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
@@ -272,16 +274,15 @@ namespace PSADT.ProcessManagement
         /// Starts a new process using ShellExecuteEx with the specified launch parameters and returns a handle to the
         /// created process, or null if the operation is a pure shell action.
         /// </summary>
-        /// <remarks>If the process cannot be started or an error occurs during initialization, an
-        /// exception is thrown. The caller is responsible for disposing of the returned ProcessHandle when it is no
-        /// longer needed.</remarks>
+        /// <remarks>Where the shell creates the process itself, it is held suspended until the job object and access
+        /// control are in place, so nothing it starts can escape them. The caller is responsible for disposing of the
+        /// returned ProcessHandle when it is no longer needed.</remarks>
         /// <param name="launchInfo">An object containing the parameters required to launch the process, including file path, arguments, working
         /// directory, window style, and other process options.</param>
         /// <returns>A handle to the started process if the process was successfully created; otherwise, null if the operation
         /// was a pure shell action and no process was started.</returns>
         /// <exception cref="NotSupportedException">Thrown if the RunAsActiveUser property of launchInfo is set, as running as a different user is not supported
         /// with ShellExecuteEx.</exception>
-        /// <exception cref="InvalidProgramException">Thrown if the process cannot be started and the specified file exists.</exception>
         private static ProcessHandle? LaunchWithShellExecuteExAsync(ProcessLaunchInfo launchInfo)
         {
             // Throw if RunAsActiveUser is populated as it's not supported.
@@ -290,91 +291,61 @@ namespace PSADT.ProcessManagement
                 throw new NotSupportedException("Running as a different user is not supported with ShellExecuteEx.");
             }
 
-            // Set up the process object and start it.
-            Process process = new();
-            try
+            // Launch through the shell. A pure shell action, such as a document handed to a running application, yields no process.
+            (SafeProcessHandle? hProcess, bool suspended) = ShellExecuteExOnStaThread(launchInfo);
+            if (hProcess is null)
             {
-                process.StartInfo = new()
-                {
-                    FileName = launchInfo.FilePath,
-                    UseShellExecute = launchInfo.UseShellExecute,
-                };
-                if (!string.IsNullOrWhiteSpace(launchInfo.Arguments))
-                {
-                    process.StartInfo.Arguments = launchInfo.Arguments;
-                }
-                if (launchInfo.WorkingDirectory is not null)
-                {
-                    process.StartInfo.WorkingDirectory = launchInfo.WorkingDirectory.FullName;
-                }
-                if (!string.IsNullOrWhiteSpace(launchInfo.Verb))
-                {
-                    process.StartInfo.Verb = launchInfo.Verb;
-                }
-                if (launchInfo.WindowStyle is not null)
-                {
-                    process.StartInfo.WindowStyle = launchInfo.WindowStyle.Value;
-                }
-                if (launchInfo.CreateNoWindow)
-                {
-                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                }
-                if (!process.Start() && File.Exists(launchInfo.FilePath))
-                {
-                    throw new InvalidProgramException("Failed to start the process.");
-                }
-            }
-            catch (Exception ex)
-            {
-                using (process)
-                {
-                    ExceptionDispatchInfo.Capture(ex).Throw();
-                    throw;
-                }
+                ClientServerUtilities.SetOperationSuccessFlag();
+                return null;
             }
 
-            // Try to get the process's handle and process Id. For a pure
-            // shell action, the calls will throw so just return null here.
-            SafeProcessHandle hProcess;
-            try
-            {
-                hProcess = process.SafeHandle;
-            }
-            catch
-            {
-                using (process)
-                {
-                    ClientServerUtilities.SetOperationSuccessFlag();
-                    return null;
-                    throw;
-                }
-            }
-
-            // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
+            // Finalise the process creation, ending the process if it can't be handed back.
             (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null;
             try
             {
-                if (launchInfo.RequiresJobObject)
+                uint processId = NativeMethods.GetProcessId(hProcess);
+                Process process = Process.GetProcessById((int)processId);
+                try
                 {
-                    job = CreateProcessJob(launchInfo, hProcess);
+                    // The process was not spawned by .NET, so fetching the handle makes `Process` call `SetProcessHandle`.
+                    // Without it, `ExitCode` throws. The result is deliberately discarded as we've got hProcess available.
+                    _ = process.Handle;
+
+                    // Return the process handle and associated information to the caller.
+                    if (launchInfo.DenyUserTermination)
+                    {
+                        DenyProcessTermination(launchInfo, hProcess);
+                    }
+                    if (launchInfo.RequiresJobObject)
+                    {
+                        job = CreateProcessJob(launchInfo, hProcess);
+                    }
+                    if (suspended)
+                    {
+                        _ = NativeMethods.NtResumeProcess(hProcess);
+                        suspended = false;
+                    }
+                    return new(launchInfo, process, processId, hProcess, launchInfo.MakeCommandLine(), job: job);
                 }
-                if (launchInfo.DenyUserTermination)
+                catch (Exception ex)
                 {
-                    DenyProcessTermination(launchInfo, hProcess);
+                    using (process)
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
                 }
-                if (launchInfo.PriorityClass is not null)
-                {
-                    process.PriorityClass = launchInfo.PriorityClass.Value;
-                }
-                return new(launchInfo, process, job);
             }
             catch (Exception ex)
             {
                 using (job?.ioCompletionPort)
                 using (job?.jobObject)
                 using (hProcess)
-                using (process)
                 {
+                    if (suspended)
+                    {
+                        TerminateFailedLaunch(hProcess);
+                    }
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
@@ -382,10 +353,161 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Ends a process that was never resumed, so a failed launch does not leave it suspended forever.
+        /// Calls ShellExecuteEx on a single-threaded apartment, which the shell requires, hopping onto a new one when the
+        /// caller is not already on one.
         /// </summary>
-        /// <param name="hProcess">The suspended process.</param>
-        private static void TerminateSuspendedProcess(SafeProcessHandle hProcess)
+        /// <param name="launchInfo">The launch to perform.</param>
+        /// <returns>The process handle the shell returned, or null for a pure shell action, and whether the process was held suspended.</returns>
+        private static (SafeProcessHandle? hProcess, bool suspended) ShellExecuteExOnStaThread(ProcessLaunchInfo launchInfo)
+        {
+            if (Thread.CurrentThread.GetApartmentState() is ApartmentState.STA)
+            {
+                return ShellExecuteEx(launchInfo);
+            }
+            (SafeProcessHandle? hProcess, bool suspended) result = default;
+            ExceptionDispatchInfo? failure = null;
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    result = ShellExecuteEx(launchInfo);
+                }
+                catch (Exception ex)
+                {
+                    failure = ExceptionDispatchInfo.Capture(ex);
+                    return;
+                    throw;
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            failure?.Throw();
+            return result;
+        }
+
+        /// <summary>
+        /// Launches through the shell with the flags Process.Start uses, and a site that gives the new process the
+        /// creation flags the CreateProcess path would, holding it suspended wherever the shell creates it itself.
+        /// </summary>
+        /// <param name="launchInfo">The launch to perform.</param>
+        /// <returns>The process handle the shell returned, or null for a pure shell action, and whether the process was held suspended.</returns>
+        /// <exception cref="NotSupportedException">Thrown if image file execution options are to be bypassed for a launch the shell performs through DDE, which cannot be held for the debugger to be detached.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the shell created its process without the flags it was asked to add, or held it suspended but returned no handle to resume it with.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
+        private static (SafeProcessHandle? hProcess, bool suspended) ShellExecuteEx(ProcessLaunchInfo launchInfo)
+        {
+            // The shell waits inside the call for a DDE conversation, which a process that is suspended or debugged can never answer.
+            bool dde = HasDdeCommand(launchInfo);
+            if (dde && launchInfo.BypassIfeo)
+            {
+                throw new NotSupportedException("Cannot bypass image file execution options for a launch the shell performs through DDE.");
+            }
+
+            // Set up the specific process creation flags and create the underlying process.
+            PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
+                (launchInfo.BypassIfeo ? PROCESS_CREATION_FLAGS.DEBUG_ONLY_THIS_PROCESS : 0) |
+                (!dde ? PROCESS_CREATION_FLAGS.CREATE_SUSPENDED : 0) |
+                PROCESS_CREATION_FLAGS.CREATE_SEPARATE_WOW_VDM;
+            CreatingProcessSite site = new(creationFlags);
+            nint siteUnknown = Marshal.GetIUnknownForObject(site);
+            SHELLEXECUTEINFOW execInfo = new()
+            {
+                fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_FLAG_DDEWAIT | SEE_MASK_FLAGS.SEE_MASK_FLAG_HINST_IS_SITE,
+                nShow = !launchInfo.CreateNoWindow ? WindowStyleMap[launchInfo.WindowStyle ?? ProcessWindowStyle.Normal] : SHOW_WINDOW_CMD.SW_HIDE,
+                hInstApp = (HINSTANCE)siteUnknown,
+            };
+            try
+            {
+                unsafe
+                {
+                    fixed (char* pVerb = launchInfo.Verb)
+                    {
+                        fixed (char* pFile = launchInfo.FilePath)
+                        {
+                            fixed (char* pParameters = !string.IsNullOrWhiteSpace(launchInfo.Arguments) ? launchInfo.Arguments : null)
+                            {
+                                fixed (char* pDirectory = launchInfo.WorkingDirectory?.FullName)
+                                {
+                                    execInfo.lpVerb = pVerb;
+                                    execInfo.lpFile = pFile;
+                                    execInfo.lpParameters = pParameters;
+                                    execInfo.lpDirectory = pDirectory;
+                                    _ = NativeMethods.ShellExecuteEx(ref execInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _ = Marshal.Release(siteUnknown);
+            }
+
+            // Verify the state of the handle we received back and ensure it's valid.
+            SafeProcessHandle? hProcess = !execInfo.hProcess.IsNull ? new(execInfo.hProcess, ownsHandle: true) : null;
+            if (!site.Invoked)
+            {
+                return (hProcess, false);
+            }
+            if (!site.Applied)
+            {
+                using (hProcess)
+                {
+                    if (hProcess is not null)
+                    {
+                        TerminateFailedLaunch(hProcess);
+                    }
+                    throw new InvalidOperationException("The shell created the process without the flags it was asked to add.", site.Failure);
+                }
+            }
+            if (site.Suspended && hProcess is null)
+            {
+                throw new InvalidOperationException("The shell created a suspended process but returned no handle to it.");
+            }
+
+            // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
+            if (launchInfo.BypassIfeo && hProcess is not null)
+            {
+                try
+                {
+                    _ = NativeMethods.DebugActiveProcessStop(NativeMethods.GetProcessId(hProcess));
+                }
+                catch (Exception ex)
+                {
+                    using (hProcess)
+                    {
+                        TerminateFailedLaunch(hProcess);
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
+                }
+            }
+            return (hProcess, site.Suspended);
+        }
+
+        /// <summary>
+        /// Determines whether the shell would perform the launch through a DDE conversation, which it waits on inside
+        /// ShellExecuteEx and so cannot be held suspended.
+        /// </summary>
+        /// <param name="launchInfo">The launch to inspect.</param>
+        /// <returns><see langword="true"/> if a DDE command is registered for the launch; otherwise, <see langword="false"/>.</returns>
+        internal static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
+        {
+            // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run.
+            ArgumentNullException.ThrowIfNull(launchInfo);
+            (ASSOCF flags, string association) = !Uri.TryCreate(launchInfo.FilePath, UriKind.Absolute, out Uri? uri) || uri.IsFile
+                ? (ASSOCF.ASSOCF_NONE, Path.GetExtension(launchInfo.FilePath))
+                : (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme);
+            return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb ?? "open", default, out _) == HRESULT.S_FALSE;
+        }
+
+        /// <summary>
+        /// Ends the process of a launch that failed after creating it, so the failure never leaves it running or suspended.
+        /// </summary>
+        /// <param name="hProcess">The process to end.</param>
+        private static void TerminateFailedLaunch(SafeProcessHandle hProcess)
         {
             try
             {
@@ -947,12 +1069,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly FrozenDictionary<ProcessWindowStyle, ushort> WindowStyleMap = FrozenDictionary.ToFrozenDictionary(new Dictionary<ProcessWindowStyle, ushort>
+        private static readonly FrozenDictionary<ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = FrozenDictionary.ToFrozenDictionary(new Dictionary<ProcessWindowStyle, SHOW_WINDOW_CMD>
         {
-            { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
-            { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
-            { ProcessWindowStyle.Minimized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
-            { ProcessWindowStyle.Maximized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED },
+            { ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
+            { ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
+            { ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
+            { ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED },
         });
 
         /// <summary>

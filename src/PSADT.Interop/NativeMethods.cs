@@ -1954,6 +1954,18 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Stops the calling thread from debugging the specified process, which then runs freely.
+        /// </summary>
+        /// <param name="dwProcessId">The identifier of the process to stop debugging.</param>
+        /// <returns>true if the process is no longer being debugged; otherwise, false.</returns>
+        internal static BOOL DebugActiveProcessStop(uint dwProcessId)
+        {
+            ArgumentOutOfRangeException.ThrowIfZero(dwProcessId);
+            BOOL res = PInvoke.DebugActiveProcessStop(dwProcessId);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Retrieves the process identifier (PID) for the specified process handle.
         /// </summary>
         /// <param name="Process">A safe handle to the process whose identifier is to be retrieved. The handle must have the
@@ -2771,6 +2783,37 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Resumes every thread of the specified process, undoing one suspension of each.
+        /// </summary>
+        /// <remarks>This method wraps the native NtResumeProcess function from ntdll.dll. It is what releases a process
+        /// created with CREATE_SUSPENDED by someone else, since only a process handle comes back from them.</remarks>
+        /// <param name="ProcessHandle">A handle to the process to resume. The handle must have the PROCESS_SUSPEND_RESUME access right and
+        /// must not be closed.</param>
+        /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the process was
+        /// resumed; otherwise, returns an error code.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or has already been closed.</exception>
+        internal static NTSTATUS NtResumeProcess(SafeHandle ProcessHandle)
+        {
+            [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern NTSTATUS NtResumeProcess(nint ProcessHandle);
+            ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
+            bool ProcessHandleAddRef = false;
+            try
+            {
+                ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
+                NTSTATUS res = NtResumeProcess(ProcessHandle.DangerousGetHandle());
+                return res != NTSTATUS.STATUS_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
+            }
+            finally
+            {
+                if (ProcessHandleAddRef)
+                {
+                    ProcessHandle.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
         /// Retrieves information about the specified process by querying the native Windows NT API.
         /// </summary>
         /// <remarks>This method is a low-level interop call to the Windows NT kernel and is intended for
@@ -3052,6 +3095,28 @@ namespace PSADT.Interop
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Performs an operation on a specified file through the shell.
+        /// </summary>
+        /// <param name="pExecInfo">The information that specifies the operation. On return, holds any process handle the shell created.</param>
+        /// <returns>true if the operation succeeded; otherwise, an exception is thrown.</returns>
+        internal static BOOL ShellExecuteEx(ref SHELLEXECUTEINFOW pExecInfo)
+        {
+            [DllImport("shell32.dll", SetLastError = true, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern BOOL ShellExecuteExW(ref SHELLEXECUTEINFOW pExecInfo);
+            pExecInfo.cbSize = (uint)Unsafe.SizeOf<SHELLEXECUTEINFOW>();
+            BOOL res = ShellExecuteExW(ref pExecInfo);
+            if (!res)
+            {
+                // Some failures are reported through hInstApp alone, using codes that predate Win32 errors.
+                WIN32_ERROR error = ExceptionUtilities.GetLastWin32Error();
+                throw ExceptionUtilities.GetException(error is WIN32_ERROR.NO_ERROR
+                    ? GetShellExecuteError(pExecInfo.hInstApp)
+                    : error);
             }
             return res;
         }
@@ -4260,6 +4325,26 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Searches for and retrieves a file or protocol association-related string from the registry.
+        /// </summary>
+        /// <param name="flags">Flags that control the search.</param>
+        /// <param name="str">The type of string to retrieve.</param>
+        /// <param name="pszAssoc">A file extension, ProgID, CLSID or protocol scheme, as <paramref name="flags"/> allows.</param>
+        /// <param name="pszExtra">The shell verb to look under, or null to look under none.</param>
+        /// <param name="pszOut">A buffer that receives the string, or an empty span to ask for its length alone.</param>
+        /// <param name="pcchOut">When this method returns, contains the number of characters written or required.</param>
+        /// <returns>S_OK when the string was copied, S_FALSE when only its length was returned, or the association error
+        /// when there is no such string.</returns>
+        internal static HRESULT AssocQueryString(ASSOCF flags, ASSOCSTR str, string pszAssoc, string? pszExtra, Span<char> pszOut, out uint pcchOut)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(pszAssoc); pcchOut = (uint)pszOut.Length;
+            HRESULT res = PInvoke.AssocQueryString(flags, str, pszAssoc, pszExtra, pszOut, ref pcchOut);
+            return res != HRESULT.S_OK && res != HRESULT.S_FALSE && res != PInvoke.HRESULT_FROM_WIN32(WIN32_ERROR.ERROR_NO_ASSOCIATION)
+                ? throw ExceptionUtilities.GetException(res)
+                : res;
+        }
+
+        /// <summary>
         /// Expands environment variables in the specified source string using the provided environment block and stores
         /// the expanded result in the destination string.
         /// </summary>
@@ -4388,6 +4473,28 @@ namespace PSADT.Interop
             }
             InvalidOperationException.ThrowIfNull(ppstm, "The stream interface pointer returned from 'SHCreateStreamOnFileEx()' is null, which indicates an unexpected condition.");
             return res;
+        }
+
+        /// <summary>
+        /// Translates the SE_ERR value ShellExecuteEx leaves in hInstApp into the Win32 error it stands for.
+        /// </summary>
+        /// <param name="hInstApp">The hInstApp value after a failed call.</param>
+        /// <returns>The equivalent Win32 error.</returns>
+        private static WIN32_ERROR GetShellExecuteError(HINSTANCE hInstApp)
+        {
+            return (long)(nint)hInstApp switch
+            {
+                PInvoke.SE_ERR_FNF => WIN32_ERROR.ERROR_FILE_NOT_FOUND,
+                PInvoke.SE_ERR_PNF => WIN32_ERROR.ERROR_PATH_NOT_FOUND,
+                PInvoke.SE_ERR_ACCESSDENIED => WIN32_ERROR.ERROR_ACCESS_DENIED,
+                PInvoke.SE_ERR_OOM or 0 => WIN32_ERROR.ERROR_NOT_ENOUGH_MEMORY,
+                PInvoke.SE_ERR_SHARE => WIN32_ERROR.ERROR_SHARING_VIOLATION,
+                PInvoke.SE_ERR_ASSOCINCOMPLETE or PInvoke.SE_ERR_NOASSOC => WIN32_ERROR.ERROR_NO_ASSOCIATION,
+                PInvoke.SE_ERR_DDETIMEOUT or PInvoke.SE_ERR_DDEFAIL or PInvoke.SE_ERR_DDEBUSY => WIN32_ERROR.ERROR_DDE_FAIL,
+                PInvoke.SE_ERR_DLLNOTFOUND => WIN32_ERROR.ERROR_DLL_NOT_FOUND,
+                > 0 and <= 32 and var error => (WIN32_ERROR)error,
+                _ => WIN32_ERROR.ERROR_GEN_FAILURE,
+            };
         }
 
         /// <summary>

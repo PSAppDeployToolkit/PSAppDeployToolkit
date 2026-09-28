@@ -113,19 +113,18 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Verifies that shell execute refuses to bypass image file execution options, and names that
-        /// option.
+        /// Verifies that shell execute accepts bypassing image file execution options, which the launch carries
+        /// into the process the shell creates.
         /// </summary>
         [Fact]
-        public void Constructor_RefusesShellExecuteWithBypassIfeo()
+        public void Constructor_AllowsShellExecuteWithBypassIfeo()
         {
             // Act
-            NotSupportedException exception = Assert.Throws<NotSupportedException>(
-                static () => new ProcessLaunchInfo(@"C:\app.exe", bypassIfeo: true, useShellExecute: true));
+            ProcessLaunchInfo launchInfo = new(@"C:\app.exe", bypassIfeo: true, useShellExecute: true);
 
             // Assert
-            Assert.Contains("UseShellExecute", exception.Message, StringComparison.Ordinal);
-            Assert.Contains("BypassIfeo", exception.Message, StringComparison.Ordinal);
+            Assert.True(launchInfo.BypassIfeo);
+            Assert.True(launchInfo.UseShellExecute);
         }
 
         /// <summary>

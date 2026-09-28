@@ -409,6 +409,74 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a process the shell creates to bypass image file execution options runs to completion,
+        /// which needs the debugger the flag attaches to be detached on the thread that made the call.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task LaunchAsync_ShellExecute_RunsAProcessCreatedToBypassImageFileExecutionOptionsAsync()
+        {
+            // Arrange
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "exit 7"], bypassIfeo: true, useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden, cancellationToken: timeout.Token);
+
+            // Act
+            using ProcessResult result = await LaunchAsync(launchInfo).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(7, result.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that bypassing image file execution options is refused for a launch the shell would perform
+        /// through DDE, since the shell waits on that inside the call and a debugged process could never answer.
+        /// </summary>
+        [Fact(Skip = "Requires a DDE association to be registered.", SkipUnless = nameof(TestEnvironment.HasDdeAssociation), SkipType = typeof(TestEnvironment))]
+        public void LaunchAsync_ShellExecute_RefusesToBypassImageFileExecutionOptionsForADdeLaunch()
+        {
+            // Arrange
+            string? target = TestEnvironment.DdeLaunchTarget;
+            Assert.NotNull(target);
+            ProcessLaunchInfo launchInfo = new(target, bypassIfeo: true, useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden);
+
+            // Act & Assert
+            _ = Assert.Throws<NotSupportedException>(() => ProcessManager.LaunchAsync(launchInfo));
+        }
+
+        /// <summary>
+        /// Verifies that a launch is not taken for a DDE conversation where nothing is registered for it:
+        /// an executable, under the default verb and another; something with no extension at all; and an
+        /// extension and a protocol that exist nowhere.
+        /// </summary>
+        /// <param name="filePath">The file or protocol to launch.</param>
+        /// <param name="verb">The verb to launch it with, or null for the default.</param>
+        [Theory]
+        [InlineData("cmd.exe", null)]
+        [InlineData("cmd.exe", "runas")]
+        [InlineData("cmd", null)]
+        [InlineData("file.psadt-nosuch", "open")]
+        [InlineData("psadt-nosuch:launch", null)]
+        public void HasDdeCommand_IsFalseWhereNothingIsRegistered(string filePath, string? verb)
+        {
+            Assert.False(ProcessManager.HasDdeCommand(new(filePath, useShellExecute: true, verb: verb)));
+        }
+
+        /// <summary>
+        /// Verifies that a launch the shell would carry out through a DDE conversation is recognised as one,
+        /// since that is the launch that must not be held suspended.
+        /// </summary>
+        [Fact(Skip = "Requires a DDE association to be registered.", SkipUnless = nameof(TestEnvironment.HasDdeAssociation), SkipType = typeof(TestEnvironment))]
+        public void HasDdeCommand_IsTrueForARegisteredAssociation()
+        {
+            // Arrange
+            string? target = TestEnvironment.DdeLaunchTarget;
+            Assert.NotNull(target);
+
+            // Act & Assert
+            Assert.True(ProcessManager.HasDdeCommand(new(target, useShellExecute: true)));
+        }
+
+        /// <summary>
         /// Waits for a process to start a child of the given name, which one held suspended by its launch can
         /// only do once it has been released.
         /// </summary>
