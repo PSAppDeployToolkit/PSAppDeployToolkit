@@ -455,6 +455,10 @@ namespace PSADT.Tests.ProcessManagement
         /// Verifies that bypassing image file execution options is refused for a launch the shell would perform
         /// through DDE, since the shell waits on that inside the call and a debugged process could never answer.
         /// </summary>
+        /// <remarks>
+        /// The launch is only attempted once the detector has agreed the target is a DDE launch, since a launch
+        /// it did not refuse would go through to whatever handles the association on this machine.
+        /// </remarks>
         [Fact(Skip = "Requires a DDE association to be registered.", SkipUnless = nameof(TestEnvironment.HasDdeAssociation), SkipType = typeof(TestEnvironment))]
         public void LaunchAsync_ShellExecute_RefusesToBypassImageFileExecutionOptionsForADdeLaunch()
         {
@@ -462,6 +466,7 @@ namespace PSADT.Tests.ProcessManagement
             string? target = TestEnvironment.DdeLaunchTarget;
             Assert.NotNull(target);
             ProcessLaunchInfo launchInfo = new(target, bypassIfeo: true, useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden);
+            Assert.True(ProcessManager.HasDdeCommand(launchInfo), "The target is not taken for a DDE launch, so launching it would not be refused.");
 
             // Act & Assert
             _ = Assert.Throws<NotSupportedException>(() => ProcessManager.LaunchAsync(launchInfo));

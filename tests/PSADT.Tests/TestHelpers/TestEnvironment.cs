@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using Microsoft.Win32;
+using PSADT.Interop;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
 
 namespace PSADT.Tests.TestHelpers
 {
@@ -115,13 +118,13 @@ namespace PSADT.Tests.TestHelpers
         /// privilege, so a gate that tested for elevation instead would be asserting a different thing
         /// and would be wrong on a machine whose policy has been changed.
         /// </remarks>
-        public static bool HasDebugPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(Interop.SE_PRIVILEGE.SeDebugPrivilege);
+        public static bool HasDebugPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege);
 
         /// <summary>
         /// Whether the caller holds the privilege needed to reassign ownership of a file or directory,
         /// which is what changing an owner actually requires.
         /// </summary>
-        public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(Interop.SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+        public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
 
         /// <summary>
         /// Whether the client/server executables are present where <c language="csharp">ClientServerUtilities</c> looks
@@ -209,9 +212,10 @@ namespace PSADT.Tests.TestHelpers
         /// machine registers no such association.
         /// </summary>
         /// <remarks>
-        /// A protocol is preferred to a file type. A file type's effective handler can be overridden by a
-        /// per-user choice, which the probe has to respect, whereas a protocol an application registers for
-        /// itself rarely is. The value is only ever inspected, never launched.
+        /// Candidates come from the registry and the association API confirms them, since a class can register
+        /// an empty DDE key to turn DDE off, which the shell honours and a key check alone does not: browsers do
+        /// it, and so do the built-in HTML and XML classes. The API also applies any per-user choice of handler.
+        /// A protocol is preferred to a file type, and the value is only ever inspected, never launched.
         /// </remarks>
         public static string? DdeLaunchTarget { get; } = FindDdeLaunchTarget();
 
@@ -227,7 +231,6 @@ namespace PSADT.Tests.TestHelpers
         private static string? FindDdeLaunchTarget()
         {
             using RegistryKey classes = Registry.ClassesRoot;
-            using RegistryKey? userChoices = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts");
             string? extension = null;
             foreach (string name in classes.GetSubKeyNames())
             {
@@ -238,12 +241,12 @@ namespace PSADT.Tests.TestHelpers
                 }
                 if (!name.StartsWith('.'))
                 {
-                    if (key.GetValue("URL Protocol") is not null && HasDdeOpenCommand(classes, name))
+                    if (key.GetValue("URL Protocol") is not null && HasDdeOpenKey(classes, name) && HasDdeOpenCommand(ASSOCF.ASSOCF_IS_PROTOCOL, name))
                     {
                         return $"{name}:psadt";
                     }
                 }
-                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenCommand(classes, progId) && userChoices?.OpenSubKey($@"{name}\UserChoice") is null)
+                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenKey(classes, progId) && HasDdeOpenCommand(ASSOCF.ASSOCF_NONE, name))
                 {
                     extension = name;
                 }
@@ -252,15 +255,27 @@ namespace PSADT.Tests.TestHelpers
         }
 
         /// <summary>
-        /// Determines whether a class registers a DDE command under its open verb.
+        /// Determines whether a class registers a DDE key under its open verb, which is the cheap check that
+        /// narrows the candidates before the shell is asked.
         /// </summary>
         /// <param name="classes">The classes root.</param>
         /// <param name="name">The protocol or programmatic identifier to look under.</param>
-        /// <returns><see langword="true"/> if a DDE command is registered; otherwise, <see langword="false"/>.</returns>
-        private static bool HasDdeOpenCommand(RegistryKey classes, string name)
+        /// <returns><see langword="true"/> if a DDE key is registered; otherwise, <see langword="false"/>.</returns>
+        private static bool HasDdeOpenKey(RegistryKey classes, string name)
         {
             using RegistryKey? ddeexec = classes.OpenSubKey($@"{name}\shell\open\ddeexec");
             return ddeexec is not null;
+        }
+
+        /// <summary>
+        /// Determines whether the shell would open the association through a DDE conversation.
+        /// </summary>
+        /// <param name="flags">Whether the association is a protocol or a file extension.</param>
+        /// <param name="association">The protocol or file extension.</param>
+        /// <returns><see langword="true"/> if a DDE command is registered for its open verb; otherwise, <see langword="false"/>.</returns>
+        private static bool HasDdeOpenCommand(ASSOCF flags, string association)
+        {
+            return NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, "open", default, out _) == HRESULT.S_FALSE;
         }
 
         /// <summary>
