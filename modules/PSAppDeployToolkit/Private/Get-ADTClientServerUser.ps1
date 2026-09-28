@@ -28,15 +28,14 @@ function Private:Get-ADTClientServerUser
         {
             if ($Username.Value -ne [PSADT.AccountManagement.AccountUtilities]::CallerUsername.Value.Split('\')[-1])
             {
-                $activeSessions = if (!$AllowAnyValidSession)
+                if (!($runAsActiveUser = ($activeSessions = Get-ADTLoggedOnUser) | & { process { if (($_.Username -eq $Username) -and $_.IsActiveUserSession) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1) -and $AllowAnyValidSession)
                 {
-                    Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
+                    $activeSessions | & { process { if (($_.Username -eq $Username) -and $_.IsValidUserSession) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
                 }
                 else
                 {
-                    Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
+                    $runAsActiveUser
                 }
-                $activeSessions | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
             }
             else
             {
@@ -47,15 +46,14 @@ function Private:Get-ADTClientServerUser
         {
             if ($Username -ne [PSADT.AccountManagement.AccountUtilities]::CallerUsername)
             {
-                $activeSessions = if (!$AllowAnyValidSession)
+                if (!($runAsActiveUser = ($activeSessions = Get-ADTLoggedOnUser) | & { process { if (($_.NTAccount -eq $Username) -and $_.IsActiveUserSession) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1) -and $AllowAnyValidSession)
                 {
-                    Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
+                    $activeSessions | & { process { if (($_.NTAccount -eq $Username) -and $_.IsValidUserSession) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
                 }
                 else
                 {
-                    Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
+                    $runAsActiveUser
                 }
-                $activeSessions | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
             }
             else
             {
@@ -65,15 +63,7 @@ function Private:Get-ADTClientServerUser
     }
     elseif (!(Test-ADTModuleInitialized))
     {
-        $activeSessions = if (!$AllowAnyValidSession)
-        {
-            Get-ADTLoggedOnUser | & { process { if ($_.IsActiveUserSession) { return $_ } } }
-        }
-        else
-        {
-            Get-ADTLoggedOnUser | & { process { if ($_.IsValidUserSession) { return $_ } } }
-        }
-        [PSADT.Foundation.RunAsActiveUser]::GetAsync($activeSessions).ConfigureAwait($false).GetAwaiter().GetResult()
+        $activeSessions = Get-ADTLoggedOnUser; [PSADT.Foundation.RunAsActiveUser]::GetAsync($activeSessions).ConfigureAwait($false).GetAwaiter().GetResult()
     }
     else
     {
