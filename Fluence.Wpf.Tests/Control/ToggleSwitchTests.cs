@@ -217,7 +217,7 @@ namespace Fluence.Wpf.Tests.Control
                     input.RaiseEvent(delta);
                     Assert.Equal(20.0, tx.X, 0.5);
 
-                    DragCompletedEventArgs completed = new(20, 0, false)
+                    DragCompletedEventArgs completed = new(20, 0, canceled: false)
                     {
                         RoutedEvent = Thumb.DragCompletedEvent,
                     };

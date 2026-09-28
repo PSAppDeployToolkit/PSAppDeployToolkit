@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Internal inheritable attached flag marking the footer items region. The Top pane template
-        /// sets it on <c>PART_FooterItemsHost</c>, so it inherits onto the footer
+        /// sets it on <c language="xaml">PART_FooterItemsHost</c>, so it inherits onto the footer
         /// <see cref="NavigationViewItem"/>s; the item template reads it to render those items
         /// icon-only in Top mode. The Left/LeftCompact templates do not set it, scoping the gear-only
         /// rule to Top mode. Inheritance (rather than a code marker) keeps the rule confined to Top

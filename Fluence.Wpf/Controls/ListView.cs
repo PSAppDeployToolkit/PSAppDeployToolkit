@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Attached property mirrored from the parent <see cref="ListView"/> so item templates can use
-        /// <c>MultiDataTrigger</c> (each condition must use a <c>Binding</c>, not <c>Property</c>, in WPF).
+        /// <c language="xaml">MultiDataTrigger</c> (each condition must use a <c language="xaml">Binding</c>, not <c language="xaml">Property</c>, in WPF).
         /// </summary>
         public static readonly DependencyProperty ParentIsItemSelectableProperty =
             DependencyProperty.RegisterAttached(

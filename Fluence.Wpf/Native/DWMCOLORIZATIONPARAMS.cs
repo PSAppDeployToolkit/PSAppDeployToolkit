@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Native
     internal struct DWMCOLORIZATIONPARAMS
     {
         /// <summary>
-        /// The primary colorization color as a packed <c>ARGB</c> value.
+        /// The primary colorization color as a packed <c language="csharp">ARGB</c> value.
         /// </summary>
         public uint clrColor;
 

@@ -47,13 +47,13 @@ namespace Fluence.Wpf.Tests.Theming
     public class ThemeParityTests
     {
         /// <summary>
-        /// HighContrast brush keys that <c>SpecialBrushes.AddHighContrastBrushes</c> binds to the
-        /// live <c>SystemColors.HighlightColor</c>. That color tracks the host machine's OS accent
+        /// HighContrast brush keys that <c language="csharp">SpecialBrushes.AddHighContrastBrushes</c> binds to the
+        /// live <c language="csharp">SystemColors.HighlightColor</c>. That color tracks the host machine's OS accent
         /// and personalization, so it varies by machine (for example #FF0078D7 vs #FF0078D4). These
         /// keys carry semantic WinUI names rather than a "SystemColor" prefix, so the prefix filter
-        /// in <c>CaptureResolved</c> does not exclude them. They are kept out of the
+        /// in <c language="csharp">CaptureResolved</c> does not exclude them. They are kept out of the
         /// machine-independent golden snapshot and verified hermetically against the live highlight
-        /// by <c>HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlightAsync</c>.
+        /// by <c language="csharp">HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlightAsync</c>.
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightDerivedBrushKeys = new(StringComparer.Ordinal)
         {
@@ -70,12 +70,12 @@ namespace Fluence.Wpf.Tests.Theming
         };
 
         /// <summary>
-        /// HighContrast brush keys that <c>SpecialBrushes.AddHighContrastBrushes</c> binds to the
-        /// live <c>SystemColors.HighlightTextColor</c>, which is machine-dependent for the same
+        /// HighContrast brush keys that <c language="csharp">SpecialBrushes.AddHighContrastBrushes</c> binds to the
+        /// live <c language="csharp">SystemColors.HighlightTextColor</c>, which is machine-dependent for the same
         /// reason as <see cref="HighContrastHighlightDerivedBrushKeys"/>. Kept in a separate set
-        /// because <c>HighlightTextColor</c> is not the same ambient color as
-        /// <c>HighlightColor</c>, so it needs its own hermetic comparison in
-        /// <c>HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightTextAsync</c>.
+        /// because <c language="csharp">HighlightTextColor</c> is not the same ambient color as
+        /// <c language="csharp">HighlightColor</c>, so it needs its own hermetic comparison in
+        /// <c language="csharp">HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightTextAsync</c>.
         /// </summary>
         private static readonly HashSet<string> HighContrastHighlightTextDerivedBrushKeys = new(StringComparer.Ordinal)
         {
