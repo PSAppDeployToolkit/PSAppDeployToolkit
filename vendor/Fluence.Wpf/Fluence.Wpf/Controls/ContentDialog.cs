@@ -1248,7 +1248,7 @@ namespace Fluence.Wpf.Controls
         private Grid? _overlayRoot;
 
         /// <summary>
-        /// The full-window overlay host panel (a window template's <c>PART_DialogOverlayHost</c>)
+        /// The full-window overlay host panel (a window template's <c language="xaml">PART_DialogOverlayHost</c>)
         /// when the dialog is hosted above the whole window rather than in the content adorner layer.
         /// </summary>
         private Panel? _overlayHostPanel;

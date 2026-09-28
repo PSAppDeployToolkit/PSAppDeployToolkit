@@ -43,7 +43,7 @@ namespace Fluence.Wpf.Native
     internal struct WINDOWCOMPOSITIONATTRIBDATA
     {
         /// <summary>
-        /// The composition attribute id, one of the <c>WCA_*</c> constants on
+        /// The composition attribute id, one of the <c language="csharp">WCA_*</c> constants on
         /// <see cref="NativeMethods"/>.
         /// </summary>
         public int Attrib;
@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Native
         /// The size in bytes of the payload <see cref="Data"/> points at.
         /// </summary>
         /// <remarks>
-        /// Native declares this field as <c>SIZE_T</c>, which is eight bytes on x64, so the managed
+        /// Native declares this field as <c language="csharp">SIZE_T</c>, which is eight bytes on x64, so the managed
         /// <see cref="int"/> covers only its low dword. That is safe solely because the struct is
         /// zero-initialized and the four bytes of trailing padding the layout adds after this field
         /// are therefore zero, which is exactly the high dword the callee reads. Never write to the

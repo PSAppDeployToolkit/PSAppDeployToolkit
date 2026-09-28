@@ -42,7 +42,7 @@ namespace Fluence.Wpf.Native
     internal struct ACCENT_POLICY
     {
         /// <summary>
-        /// The accent state, one of the <c>ACCENT_*</c> constants on
+        /// The accent state, one of the <c language="csharp">ACCENT_*</c> constants on
         /// <see cref="NativeMethods"/>.
         /// </summary>
         public int AccentState;
@@ -55,8 +55,8 @@ namespace Fluence.Wpf.Native
         public uint AccentFlags;
 
         /// <summary>
-        /// The tint color as a packed <c>0xAABBGGRR</c> value. Ignored by the accent states that
-        /// do not tint, notably <c>ACCENT_ENABLE_BLURBEHIND</c>.
+        /// The tint color as a packed <c language="csharp">0xAABBGGRR</c> value. Ignored by the accent states that
+        /// do not tint, notably <c language="csharp">ACCENT_ENABLE_BLURBEHIND</c>.
         /// </summary>
         public uint GradientColor;
 

@@ -933,7 +933,7 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Represents the template rotate transform that spins the indeterminate arc, or null when
-        /// the current template does not provide <c>PART_IndeterminateRotate</c>.
+        /// the current template does not provide <c language="xaml">PART_IndeterminateRotate</c>.
         /// </summary>
         private RotateTransform? _indeterminateRotateTransform;
 

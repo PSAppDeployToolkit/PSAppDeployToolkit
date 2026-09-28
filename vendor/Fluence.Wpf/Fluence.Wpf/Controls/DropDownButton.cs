@@ -97,8 +97,8 @@ namespace Fluence.Wpf.Controls
         /// Identifies the <see cref="CornerRadius"/> dependency property.
         /// </summary>
         /// <remarks>
-        /// Shadows the <c>Control.CornerRadiusProperty</c> introduced in net6+ so the property
-        /// is also available on net472 where <c>Control</c> does not declare it.
+        /// Shadows the <c language="csharp">Control.CornerRadiusProperty</c> introduced in net6+ so the property
+        /// is also available on net472 where <c language="csharp">Control</c> does not declare it.
         /// </remarks>
         public static new readonly DependencyProperty CornerRadiusProperty =
             DependencyProperty.Register(

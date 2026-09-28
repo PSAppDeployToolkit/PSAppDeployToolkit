@@ -55,7 +55,7 @@ namespace Fluence.Wpf.Native
         public uint uCallbackMessage;
 
         /// <summary>
-        /// The screen edge the taskbar is docked to (one of the <c>ABE_*</c> values).
+        /// The screen edge the taskbar is docked to (one of the <c language="csharp">ABE_*</c> values).
         /// </summary>
         public uint uEdge;
 

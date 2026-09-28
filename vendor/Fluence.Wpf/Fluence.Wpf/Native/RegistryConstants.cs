@@ -69,58 +69,58 @@ namespace Fluence.Wpf.Native
         // ---------------------------------------------------------------------
 
         /// <summary>
-        /// <c>AppsUseLightTheme</c>.
+        /// <c language="csharp">AppsUseLightTheme</c>.
         /// </summary>
         public const string AppsUseLightTheme = "AppsUseLightTheme";
 
         /// <summary>
-        /// <c>SystemUsesLightTheme</c>.
+        /// <c language="csharp">SystemUsesLightTheme</c>.
         /// </summary>
         public const string SystemUsesLightTheme = "SystemUsesLightTheme";
 
         /// <summary>
-        /// <c>ColorPrevalence</c>.
+        /// <c language="csharp">ColorPrevalence</c>.
         /// </summary>
         public const string ColorPrevalence = "ColorPrevalence";
 
         /// <summary>
-        /// <c>EnableTransparency</c>, the Settings "Transparency effects" toggle. Lives under
+        /// <c language="csharp">EnableTransparency</c>, the Settings "Transparency effects" toggle. Lives under
         /// <see cref="PersonalizeRegistryPath"/> alongside the light-theme flags.
         /// </summary>
         public const string EnableTransparency = "EnableTransparency";
 
         /// <summary>
-        /// <c>AccentPalette</c>.
+        /// <c language="csharp">AccentPalette</c>.
         /// </summary>
         public const string AccentPalette = "AccentPalette";
 
         /// <summary>
-        /// <c>AccentColor</c>.
+        /// <c language="csharp">AccentColor</c>.
         /// </summary>
         public const string AccentColor = "AccentColor";
 
         /// <summary>
-        /// <c>AccentColorInactive</c>.
+        /// <c language="csharp">AccentColorInactive</c>.
         /// </summary>
         public const string AccentColorInactive = "AccentColorInactive";
 
         /// <summary>
-        /// <c>ColorizationColor</c>.
+        /// <c language="csharp">ColorizationColor</c>.
         /// </summary>
         public const string ColorizationColor = "ColorizationColor";
 
         /// <summary>
-        /// <c>ColorizationColorBalance</c>.
+        /// <c language="csharp">ColorizationColorBalance</c>.
         /// </summary>
         public const string ColorizationColorBalance = "ColorizationColorBalance";
 
         /// <summary>
-        /// <c>CurrentTheme</c>.
+        /// <c language="csharp">CurrentTheme</c>.
         /// </summary>
         public const string CurrentTheme = "CurrentTheme";
 
         /// <summary>
-        /// <c>EnableSnapAssistFlyout</c>.
+        /// <c language="csharp">EnableSnapAssistFlyout</c>.
         /// </summary>
         public const string EnableSnapAssistFlyout = "EnableSnapAssistFlyout";
     }

@@ -116,34 +116,34 @@ namespace Fluence.Wpf.Native
         #region Legacy Windows 10 accent policy
 
         /// <summary>
-        /// The <c>ACCENT_POLICY</c> state that turns every accent effect off, restoring the plain
+        /// The <c language="csharp">ACCENT_POLICY</c> state that turns every accent effect off, restoring the plain
         /// opaque window. Used to explicitly clear a previously applied acrylic, the analogue of
-        /// writing <c>DWMSBT_NONE</c> on Windows 11.
+        /// writing <c language="csharp">DWMSBT_NONE</c> on Windows 11.
         /// </summary>
         public const int ACCENT_DISABLED = 0;
 
         /// <summary>
-        /// The <c>ACCENT_POLICY</c> state that fills the window with a flat gradient color and no
+        /// The <c language="csharp">ACCENT_POLICY</c> state that fills the window with a flat gradient color and no
         /// blur. Retained as the documented cheap fallback for the drag-lag mitigation: compositing
         /// an opaque color costs nothing while the window moves, at the price of a visible pop.
         /// </summary>
         public const int ACCENT_ENABLE_GRADIENT = 1;
 
         /// <summary>
-        /// The <c>ACCENT_POLICY</c> state for the classic Aero blur-behind. Cheaper to composite
+        /// The <c language="csharp">ACCENT_POLICY</c> state for the classic Aero blur-behind. Cheaper to composite
         /// than acrylic and available on every build that has the accent policy at all, which makes
         /// it the drag-lag downgrade target.
         /// </summary>
         public const int ACCENT_ENABLE_BLURBEHIND = 3;
 
         /// <summary>
-        /// The <c>ACCENT_POLICY</c> state for Windows 10 acrylic (blur plus tint plus noise).
+        /// The <c language="csharp">ACCENT_POLICY</c> state for Windows 10 acrylic (blur plus tint plus noise).
         /// Honoured from build 17063; earlier builds silently render the plain blur instead.
         /// </summary>
         public const int ACCENT_ENABLE_ACRYLICBLURBEHIND = 4;
 
         /// <summary>
-        /// The <c>WINDOWCOMPOSITIONATTRIB</c> id selecting an <see cref="ACCENT_POLICY"/> payload.
+        /// The <c language="csharp">WINDOWCOMPOSITIONATTRIB</c> id selecting an <see cref="ACCENT_POLICY"/> payload.
         /// </summary>
         public const int WCA_ACCENT_POLICY = 19;
 
@@ -476,7 +476,7 @@ namespace Fluence.Wpf.Native
         /// <summary>
         /// The unscaled Windows DPI. One DIP is one device pixel at this DPI, so it is both the
         /// divisor that turns a raw DPI into a scale factor and the safe substitute when
-        /// <c>GetDpiForWindow</c> cannot answer.
+        /// <c language="csharp">GetDpiForWindow</c> cannot answer.
         /// </summary>
         private const uint DefaultDpi = 96;
 

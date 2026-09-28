@@ -50,8 +50,8 @@ namespace Fluence.Wpf.Helpers
         /// Identifies the <see cref="From"/> dependency property. A sentinel
         /// <see cref="GridLength"/> with <see cref="GridUnitType"/> = <see cref="GridUnitType.Auto"/>
         /// means "use the animated property's current value" (the standard WPF
-        /// <c>Storyboard.To</c>-only pattern). Consumers who want an explicit
-        /// starting width set <c>From</c> to a pixel value.
+        /// <c language="xaml">Storyboard.To</c>-only pattern). Consumers who want an explicit
+        /// starting width set <c language="csharp">From</c> to a pixel value.
         /// </summary>
         public static readonly DependencyProperty FromProperty =
             DependencyProperty.Register(

@@ -111,8 +111,8 @@ namespace Fluence.Wpf.Controls
         #region Value converters
 
         /// <summary>
-        /// Converts a value to <c>true</c> when it is not null; used by caption-button visibility
-        /// bindings in the control template (referenced via <c>{x:Static}</c>).
+        /// Converts a value to <c language="csharp">true</c> when it is not null; used by caption-button visibility
+        /// bindings in the control template (referenced via <c language="xaml">{x:Static}</c>).
         /// </summary>
         public static readonly IValueConverter IsNotNullConverter = new IsNotNullValueConverter();
 
@@ -2030,8 +2030,8 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// The monitor <see cref="_handle"/> was on as of the last <see cref="ApplyBackdrop"/>, used
-        /// by <c>WM_WINDOWPOSCHANGED</c> to detect a move to a different monitor at the same DPI
-        /// (which raises no <c>WM_DPICHANGED</c>) without re-reading the display color depth on
+        /// by <c language="csharp">WM_WINDOWPOSCHANGED</c> to detect a move to a different monitor at the same DPI
+        /// (which raises no <c language="csharp">WM_DPICHANGED</c>) without re-reading the display color depth on
         /// every window-position message.
         /// </summary>
         private HMONITOR _lastMonitor;
@@ -2045,20 +2045,20 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// The tint last written to the legacy acrylic accent policy, packed as
-        /// <c>0xAABBGGRR</c>. Cached so the drag-lag mitigation can restore the exact tint without
-        /// re-resolving the theme resource on <c>WM_EXITSIZEMOVE</c>.
+        /// <c language="csharp">0xAABBGGRR</c>. Cached so the drag-lag mitigation can restore the exact tint without
+        /// re-resolving the theme resource on <c language="csharp">WM_EXITSIZEMOVE</c>.
         /// </summary>
         private uint _legacyAcrylicTintAbgr;
 
         /// <summary>
         /// <see langword="true"/> while the legacy acrylic is temporarily downgraded to the cheaper
-        /// Aero blur for a move or resize, so the restore on <c>WM_EXITSIZEMOVE</c> only fires for a
+        /// Aero blur for a move or resize, so the restore on <c language="csharp">WM_EXITSIZEMOVE</c> only fires for a
         /// downgrade this window actually performed.
         /// </summary>
         private bool _legacyAcrylicDragDowngraded;
 
         /// <summary>
-        /// <see langword="true"/> between <c>WM_ENTERSIZEMOVE</c> and <c>WM_EXITSIZEMOVE</c>, so a
+        /// <see langword="true"/> between <c language="csharp">WM_ENTERSIZEMOVE</c> and <c language="csharp">WM_EXITSIZEMOVE</c>, so a
         /// backdrop re-apply landing mid-drag (theme, accent, or transparency broadcast) keeps the
         /// drag-time Aero-blur downgrade instead of re-applying full per-frame acrylic.
         /// </summary>
