@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows;
 using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -15,7 +16,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Instantiates a new RestartDialog dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
+        [SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
         internal RestartDialog(RestartDialogOptions options) : base(options, RestartDialogResult.Unknown, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
             // Reset the dialog's title. It must be that of the string table in the options.
@@ -76,8 +77,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// unsaved work.</remarks>
         /// <param name="sender">The source of the event, typically the control that raised the event.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
+        [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
+        [DoesNotReturn]
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
