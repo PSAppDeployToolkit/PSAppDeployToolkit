@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using PSADT.ProcessManagement;
 using Windows.Win32.Foundation;
@@ -232,12 +233,9 @@ namespace PSADT.Tests.ProcessManagement
         /// <param name="pointers">The pointers to release, of which zero stands for one never obtained.</param>
         private static void Release(params nint[] pointers)
         {
-            foreach (nint pointer in pointers)
+            foreach (nint pointer in pointers.Where(static pointer => pointer != 0))
             {
-                if (pointer != 0)
-                {
-                    _ = Marshal.Release(pointer);
-                }
+                _ = Marshal.Release(pointer);
             }
         }
 
