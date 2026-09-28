@@ -303,6 +303,41 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that each switch reaches the launch information as itself and leaves the others alone.
+        /// </summary>
+        /// <remarks>
+        /// The tests above set every switch at once, so a transposition would pass them. Waiting for child processes
+        /// and killing them is the pair where that matters: both need a job, so nothing else would notice a swap.
+        /// </remarks>
+        /// <param name="expandEnvironmentVariables">Whether to expand environment variables.</param>
+        /// <param name="createNoWindow">Whether to start the process without a window.</param>
+        /// <param name="waitForChildProcesses">Whether to wait for child processes to exit.</param>
+        /// <param name="killChildProcessesWithParent">Whether to kill child processes with the parent.</param>
+        [Theory]
+        [InlineData(true, false, false, false)]
+        [InlineData(false, true, false, false)]
+        [InlineData(false, false, true, false)]
+        [InlineData(false, false, false, true)]
+        public void ToLaunchInfo_KeepsEverySwitchSeparately(bool expandEnvironmentVariables, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent)
+        {
+            // Arrange
+            UserShellExecuteOptions options = new(
+                @"C:\app.exe",
+                expandEnvironmentVariables: expandEnvironmentVariables,
+                createNoWindow: createNoWindow,
+                waitForChildProcesses: waitForChildProcesses,
+                killChildProcessesWithParent: killChildProcessesWithParent);
+
+            // Act
+            ProcessLaunchInfo launchInfo = options.ToLaunchInfo();
+
+            // Assert
+            Assert.Equal(
+                (expandEnvironmentVariables, createNoWindow, waitForChildProcesses, killChildProcessesWithParent),
+                (launchInfo.ExpandEnvironmentVariables, launchInfo.CreateNoWindow, launchInfo.WaitForChildProcesses, launchInfo.KillChildProcessesWithParent));
+        }
+
+        /// <summary>
         /// Verifies that a relative path is accepted, because shell execute resolves it and the launch
         /// information only insists on a rooted path when it is not going through the shell.
         /// </summary>
