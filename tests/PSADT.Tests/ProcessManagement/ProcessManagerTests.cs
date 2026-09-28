@@ -269,6 +269,30 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a process created to bypass image file execution options runs to completion. The flag
+        /// that bypasses them also makes this process its debugger, and a debuggee nobody releases never runs.
+        /// </summary>
+        /// <remarks>
+        /// The launch is given a timeout rather than an open-ended wait, so a process left debugged fails the
+        /// test rather than hanging it.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task LaunchAsync_RunsAProcessCreatedToBypassImageFileExecutionOptionsAsync()
+        {
+            // Arrange
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "echo ran& exit 7"], bypassIfeo: true, createNoWindow: true, cancellationToken: timeout.Token);
+
+            // Act
+            using ProcessResult result = await LaunchAsync(launchInfo).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(7, result.ExitCode);
+            Assert.Equal(["ran"], result.StdOut);
+        }
+
+        /// <summary>
         /// Verifies that a launch through the shell runs to completion and reports its exit code, which is
         /// what proves the process the shell was asked to hold suspended is released once it has been set up.
         /// </summary>

@@ -225,6 +225,12 @@ namespace PSADT.ProcessManagement
                     // Without it, `ExitCode` throws. The result is deliberately discarded as we've got hProcess available.
                     _ = process.Handle;
 
+                    // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
+                    if (launchInfo.BypassIfeo)
+                    {
+                        _ = NativeMethods.DebugActiveProcessStop(processId);
+                    }
+
                     // Return the process handle and associated information to the caller.
                     if (launchInfo.DenyUserTermination)
                     {
