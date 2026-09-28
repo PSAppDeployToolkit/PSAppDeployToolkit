@@ -53,6 +53,11 @@ Describe 'Start-ADTProcess' {
             (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', 'echo captured-err 1>&2' -CreateNoWindow -PassThru).StdErr | Should -Contain 'captured-err'
         }
 
+        It 'Captures a last line that has no line break' {
+            # Output ends this way whenever a process is stopped part-way through a line, as a timeout does.
+            (Start-ADTProcess -FilePath cmd.exe -ArgumentList '/c', '<nul set /p =no-line-break& exit 0' -CreateNoWindow -PassThru).StdOut | Should -Contain 'no-line-break'
+        }
+
         It 'Keeps the two streams apart' {
             # An installer writing progress to stderr is common enough that conflating the two would have
             # every second deployment looking like it failed.

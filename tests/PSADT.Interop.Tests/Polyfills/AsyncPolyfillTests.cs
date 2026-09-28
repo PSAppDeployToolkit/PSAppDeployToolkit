@@ -10,7 +10,7 @@ namespace PSADT.Interop.Tests.Polyfills
 {
     /// <summary>
     /// Tests the asynchronous polyfills: Task.WaitAsync, CancellationTokenSource.CancelAsync,
-    /// StreamReader.ReadLineAsync and Process.WaitForExitAsync.
+    /// Stream.ReadAsync, StreamReader.ReadLineAsync and Process.WaitForExitAsync.
     /// </summary>
     /// <remarks>
     /// Two of these cannot fully reproduce the framework, because .NET Framework offers no underlying
@@ -154,6 +154,43 @@ namespace PSADT.Interop.Tests.Polyfills
 
             // Assert
             Assert.True(source.IsCancellationRequested);
+        }
+
+        /// <summary>
+        /// Verifies that a read into part of an array lands in that part and nowhere else, since the polyfill
+        /// hands the array under the memory to the framework's own read.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadAsync_ReadsIntoTheMemoryGiven()
+        {
+            // Arrange
+            using MemoryStream stream = new([1, 2, 3]);
+            byte[] buffer = new byte[5];
+
+            // Act
+            int read = await stream.ReadAsync(buffer.AsMemory(1, 3), CancellationToken.None).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(3, read);
+            Assert.Equal([0, 1, 2, 3, 0], buffer);
+        }
+
+        /// <summary>
+        /// Verifies that a token already cancelled prevents the read from starting.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadAsync_AlreadyCancelledToken_DoesNotRead()
+        {
+            // Arrange
+            using MemoryStream stream = new([1, 2, 3]);
+            using CancellationTokenSource source = new();
+            await source.CancelAsync().ConfigureAwait(true);
+
+            // Act & Assert
+            _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await stream.ReadAsync(new byte[3], source.Token).ConfigureAwait(true)).ConfigureAwait(true);
+            Assert.Equal(0, stream.Position);
         }
 
         /// <summary>

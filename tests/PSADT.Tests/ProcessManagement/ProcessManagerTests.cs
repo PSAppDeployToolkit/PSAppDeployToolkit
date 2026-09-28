@@ -82,6 +82,22 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that output whose last line has no line break is captured, which is how output ends when a
+        /// process is terminated part-way through writing a line.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task LaunchAsync_CapturesALastLineWithNoLineBreakAsync()
+        {
+            // Act
+            using ProcessResult result = await RunAsync("<nul set /p =no-line-break& exit 0").ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Equal(["no-line-break"], result.StdOut);
+        }
+
+        /// <summary>
         /// Verifies that both streams are also collected together, which is what a log wants: the two in
         /// the order they were actually written rather than one after the other.
         /// </summary>

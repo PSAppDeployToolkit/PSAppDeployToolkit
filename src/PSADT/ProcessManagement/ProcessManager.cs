@@ -461,7 +461,7 @@ namespace PSADT.ProcessManagement
             {
                 using (stream)
                 {
-                    using StreamReader reader = new(stream, encoding);
+                    using StreamReader reader = new(new EndOfStreamLatchingStream(stream), encoding);
                     while ((await reader.ReadLineAsync(default).ConfigureAwait(false))?.TrimEnd() is string line)
                     {
                         interleaved.Enqueue(line);
