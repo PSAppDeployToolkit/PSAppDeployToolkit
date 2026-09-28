@@ -129,7 +129,7 @@ namespace PSAppDeployToolkit.Tests
         /// </summary>
         /// <remarks>
         /// Empty, and worth keeping that way. Every reference-comparing member found in this assembly was either
-        /// fixed - <c>LogEntry</c> now records its caller as a path and rebuilds the file on each
+        /// fixed - <c language="csharp">LogEntry</c> now records its caller as a path and rebuilds the file on each
         /// read - or belonged to a type that turned out not to be a value at all, which is why
         /// <see cref="EnvironmentTable"/> is no longer a record. An entry here should be argued for in review
         /// rather than added to make this pass.

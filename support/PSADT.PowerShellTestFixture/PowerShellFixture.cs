@@ -87,7 +87,7 @@ namespace PSADT.PowerShellTestFixture
 
         /// <summary>
         /// The name the fixture's module is imported under, which becomes an environment table's
-        /// <c>AppDeployToolkitName</c>.
+        /// <c language="csharp">AppDeployToolkitName</c>.
         /// </summary>
         public const string ModuleName = "PSADT.PowerShellTestFixture";
 

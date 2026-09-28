@@ -30,7 +30,7 @@ namespace PSADT.ClientServer.Client.Tests
     public sealed class ClientExecutableTests
     {
         /// <summary>
-        /// The type under test. <c>InternalsVisibleTo</c> makes it nameable; reflection reaches its
+        /// The type under test. <c language="csharp">InternalsVisibleTo</c> makes it nameable; reflection reaches its
         /// members from there.
         /// </summary>
         private static readonly Type Subject = typeof(ClientExecutable);

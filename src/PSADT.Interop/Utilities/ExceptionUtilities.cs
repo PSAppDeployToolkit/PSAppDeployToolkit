@@ -109,12 +109,14 @@ namespace PSADT.Interop.Utilities
             {
                 // Build out the Win32Exception, then see if there's a managed exception for it, otherwise return the Win32Exception.
                 Win32Exception win32Exception = new(GetMessageForWin32Error(win32Error), ntStatusException);
-                return TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException ? hrException : win32Exception;
+                return TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrExceptionFromWin32
+                    ? hrExceptionFromWin32
+                    : win32Exception;
             }
-            else if (TryGetManagedException(HRESULT_FROM_NT(ntStatus), ntStatusException) is Exception hrException)
+            if (TryGetManagedException(HRESULT_FROM_NT(ntStatus), ntStatusException) is Exception hrExceptionFromNt)
             {
                 // There was no suitable Win32Exception, however there was a managed exception for the HRESULT corresponding to the NTSTATUS code.
-                return hrException;
+                return hrExceptionFromNt;
             }
 
             // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.

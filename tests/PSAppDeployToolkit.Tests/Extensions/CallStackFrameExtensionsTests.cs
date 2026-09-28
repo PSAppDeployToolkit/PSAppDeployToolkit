@@ -231,7 +231,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// toolkit and the engine are meant to disagree.
         /// <para>
         /// A script file frame is left out on purpose. It reaches the same branch as a function by the same route,
-        /// differing only in which <c>CommandInfo</c> subclass carries the name, so it would restate the named
+        /// differing only in which <c language="csharp">CommandInfo</c> subclass carries the name, so it would restate the named
         /// function case rather than add to it.
         /// </para>
         /// </remarks>
@@ -267,7 +267,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         /// Builds a call stack from a function whose name is a single space, and removes it again.
         /// </summary>
         /// <remarks>
-        /// Created with <c>Set-Item</c> rather than <c>New-Item</c>, which rejects the name outright on PowerShell
+        /// Created with <c language="powershell">Set-Item</c> rather than <c language="powershell">New-Item</c>, which rejects the name outright on PowerShell
         /// 7, and removed within the one script so the shared runspace is left as it was found.
         /// </remarks>
         [SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source, which parses either line ending, so the source file's choice cannot change what this does.")]
@@ -290,7 +290,7 @@ namespace PSAppDeployToolkit.Tests.Extensions
         private const string ScriptBlockShape = "script block";
 
         /// <summary>
-        /// The shape whose innermost frame is a script block invoked through <c>Invoke()</c>.
+        /// The shape whose innermost frame is a script block invoked through <c language="csharp">Invoke()</c>.
         /// </summary>
         private const string ScriptBlockInvokeShape = "scriptblock.Invoke";
 

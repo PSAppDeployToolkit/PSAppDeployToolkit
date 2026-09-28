@@ -413,7 +413,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
 
         /// <summary>
         /// The magic number CNG puts at the front of a P-256 elliptic curve public key blob, being the
-        /// characters <c>ECK1</c> read as a little-endian integer.
+        /// characters <c language="csharp">ECK1</c> read as a little-endian integer.
         /// </summary>
         private const int EcdhPublicP256Magic = 0x314B4345;
 

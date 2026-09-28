@@ -20,7 +20,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
     public static class TestEnvironment
     {
         /// <summary>
-        /// The executables <c>ClientServerUtilities</c> expects to find beside the assembly.
+        /// The executables <c language="csharp">ClientServerUtilities</c> expects to find beside the assembly.
         /// </summary>
         private static readonly string[] ClientServerExecutableNames =
         [

@@ -28,8 +28,8 @@ namespace PSADT.WindowsRuntime.Tests.TestHelpers
         /// The build both wrapped APIs shipped in: Windows 10, version 1903.
         /// </summary>
         /// <remarks>
-        /// <c>Windows.UI.Shell.FocusSessionManager</c> and
-        /// <c>ToastNotificationManagerForUser.NotificationMode</c> arrived together, in v8.0 of the
+        /// <c language="csharp">Windows.UI.Shell.FocusSessionManager</c> and
+        /// <c language="csharp">ToastNotificationManagerForUser.NotificationMode</c> arrived together, in v8.0 of the
         /// universal API contract, so one threshold covers both.
         /// </remarks>
         private const int FirstBuildWithFocusSessionsAndNotificationMode = 18362;

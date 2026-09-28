@@ -1106,7 +1106,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// arrangement. The window is parked here from construction until the first
         /// <see cref="OnContentRendered"/> reveal so that <see cref="SizeToContent"/> growth,
         /// <see cref="PositionWindow"/> calls from <see cref="FluentDialog_SizeChanged"/>, and
-        /// the <c>Loaded</c> event all occur while the window is invisible and off-screen.
+        /// the <c language="csharp">Loaded</c> event all occur while the window is invisible and off-screen.
         /// </summary>
         private const double OffscreenCoordinate = -32000;
 

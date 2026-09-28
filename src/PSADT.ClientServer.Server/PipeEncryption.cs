@@ -494,7 +494,7 @@ namespace PSADT.ClientServer
         /// Specifies the magic that opens a CNG EccPublicBlob carrying a P-256 public key.
         /// </summary>
         /// <remarks>
-        /// BCRYPT_ECDH_PUBLIC_P256_MAGIC, being the characters <c>ECK1</c> read as a little-endian integer.
+        /// BCRYPT_ECDH_PUBLIC_P256_MAGIC, being the characters <c language="csharp">ECK1</c> read as a little-endian integer.
         /// </remarks>
         private const int EcdhPublicP256Magic = 0x314B4345;
     }

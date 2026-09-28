@@ -2383,7 +2383,7 @@ namespace PSAppDeployToolkit.Tests.Foundation
         /// Every switch the constructor reads, against the flag it is meant to set.
         /// </summary>
         /// <remarks>
-        /// <c>RequireAdmin</c> is absent because setting it decides whether the constructor throws, which is its
+        /// <c language="csharp">RequireAdmin</c> is absent because setting it decides whether the constructor throws, which is its
         /// own test rather than part of the mapping.
         /// </remarks>
         private static readonly IReadOnlyDictionary<string, DeploymentSettings> SwitchedSettings = new Dictionary<string, DeploymentSettings>(StringComparer.Ordinal)

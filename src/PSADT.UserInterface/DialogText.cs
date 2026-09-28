@@ -19,9 +19,9 @@ namespace PSADT.UserInterface
         /// [url], [accent], [bold], and [italic].
         /// </summary>
         /// <remarks>This regular expression matches the following custom formatting tags: <list
-        /// type="bullet"> <item> <description><c>[url]</c>: Matches URL links in two formats: <c>[url]URL[/url]</c> for
-        /// simple links, and <c>[url=URL]Description[/url]</c> for descriptive links.</description> </item> <item>
-        /// <description><c>[accent]</c>, <c>[bold]</c>, <c>[italic]</c>: Matches opening and closing tags for accent,
+        /// type="bullet"> <item> <description><c language="text">[url]</c>: Matches URL links in two formats: <c language="text">[url]URL[/url]</c> for
+        /// simple links, and <c language="text">[url=URL]Description[/url]</c> for descriptive links.</description> </item> <item>
+        /// <description><c language="text">[accent]</c>, <c language="text">[bold]</c>, <c language="text">[italic]</c>: Matches opening and closing tags for accent,
         /// bold, and italic formatting. These tags can be nested and combined for cumulative formatting effects.</description>
         /// </item> </list> The regular expression is compiled for improved performance during repeated use and supports
         /// nested tag combinations.</remarks>

@@ -416,9 +416,9 @@ namespace PSADT.Security
                                                                     using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
                                                                     await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
                                                                 }
-                                                                catch (OperationCanceledException)
+                                                                catch (OperationCanceledException ex)
                                                                 {
-                                                                    throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                                    throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.", ex);
                                                                 }
                                                             }
                                                             finally
