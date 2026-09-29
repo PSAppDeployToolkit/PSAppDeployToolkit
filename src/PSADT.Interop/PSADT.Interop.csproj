@@ -87,6 +87,7 @@
       M:System.StringComparer.FromComparison|
       M:System.Threading.CancellationTokenSource.CancelAsync|
       M:System.Threading.Tasks.Task.WaitAsync(System.Threading.CancellationToken)|
+      M:System.Threading.Tasks.Task.WaitAsync(System.TimeSpan)|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute|
       T:System.Diagnostics.CodeAnalysis.NotNullAttribute|

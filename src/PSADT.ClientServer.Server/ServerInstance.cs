@@ -135,9 +135,9 @@ namespace PSADT.ClientServer
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
-            // Perform key exchange for encrypted communication, on a thread of its own as the wait lasts until the client is up.
-            await _ioEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer).ConfigureAwait(false);
-            await _logEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer).ConfigureAwait(false);
+            // Perform key exchange for encrypted communication, each on a thread of its own and bounded so a client that comes up but never answers cannot leave this waiting forever.
+            await AwaitBoundedByClientTimeoutAsync(_ioEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
+            await AwaitBoundedByClientTimeoutAsync(_logEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
 
             // Confirm the client starts and is ready to receive commands.
             bool opened = false;
@@ -653,7 +653,7 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                if (!await InvokeAsync<bool>(PipeCommand.Close).ConfigureAwait(false))
+                                if (!await AwaitBoundedByClientTimeoutAsync(InvokeAsync<bool>(PipeCommand.Close).AsTask(), "The client process did not acknowledge the close command within the allotted time.").ConfigureAwait(false))
                                 {
                                     throw new InvalidProgramException("The client process failed to close gracefully.");
                                 }
@@ -839,6 +839,70 @@ namespace PSADT.ClientServer
             finally
             {
                 CryptographicUtilities.SecureZeroMemory(response);
+            }
+        }
+
+        /// <summary>
+        /// Awaits an operation that talks to the client, bounded so a client that is up but not answering cannot hang the wait forever.
+        /// </summary>
+        /// <remarks>The operation runs on a thread of its own, and the anonymous pipes it crosses have no overlapped mode, so a
+        /// timed-out wait cannot cancel it. The client is cancelled instead, which closes the pipes and ends the blocked read or write;
+        /// the abandoned task is observed out of band so its eventual fault does not surface as an unobserved task exception.</remarks>
+        /// <param name="operation">The operation to await.</param>
+        /// <param name="timeoutMessage">The message for the exception thrown if the wait times out.</param>
+        /// <returns>A task that completes when the operation does.</returns>
+        /// <exception cref="ServerException">Thrown if the client does not answer within the allotted time.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The operation is created by the caller and awaited here with ConfigureAwait(false), so there is no captured context to deadlock on.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0040:Forward the CancellationToken parameter to methods that take one", Justification = "The wait is bounded by the timeout; the operation runs on its own thread and cannot observe a token, so cancelling the client is what ends it.")]
+        private async Task AwaitBoundedByClientTimeoutAsync(Task operation, string timeoutMessage)
+        {
+            try
+            {
+                await operation.WaitAsync(ClientServerUtilities.ClientOperationTimeout).ConfigureAwait(false);
+            }
+            catch (TimeoutException ex)
+            {
+                if (!_clientProcessCts.IsCancellationRequested)
+                {
+                    await _clientProcessCts.CancelAsync().ConfigureAwait(false);
+                }
+                _ = ObserveAbandonedAsync(operation);
+                throw new ServerException(timeoutMessage, ex, _clientProcess!);
+            }
+        }
+
+        /// <summary>
+        /// Awaits an operation that talks to the client and returns its result, bounded in the same way as its non-generic counterpart.
+        /// </summary>
+        /// <typeparam name="T">The type of the operation's result.</typeparam>
+        /// <param name="operation">The operation to await.</param>
+        /// <param name="timeoutMessage">The message for the exception thrown if the wait times out.</param>
+        /// <returns>The operation's result.</returns>
+        /// <exception cref="ServerException">Thrown if the client does not answer within the allotted time.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The operation is created by the caller and awaited here with ConfigureAwait(false), so there is no captured context to deadlock on.")]
+        private async Task<T> AwaitBoundedByClientTimeoutAsync<T>(Task<T> operation, string timeoutMessage)
+        {
+            // The non-generic overload does the bounded wait; once it returns, the operation has completed and its result is ready.
+            await AwaitBoundedByClientTimeoutAsync((Task)operation, timeoutMessage).ConfigureAwait(false);
+            return await operation.ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Observes a task that was abandoned after a timeout, so its eventual fault does not surface as an unobserved task exception.
+        /// </summary>
+        /// <param name="task">The abandoned task.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The task was created by the caller and is awaited here with ConfigureAwait(false) only to observe its fault; there is no captured context to deadlock on.")]
+        private static async Task ObserveAbandonedAsync(Task task)
+        {
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            catch
+            {
+                // Deliberately swallowed; see the justification above.
+                return;
+                throw;
             }
         }
 

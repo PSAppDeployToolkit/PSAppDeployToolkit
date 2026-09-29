@@ -841,9 +841,9 @@ namespace PSADT.ClientServer
                         throw new ClientException("Brokering of the Local System session token is not permitted.", ClientExitCode.InvalidArguments);
                     }
 
-                    // Connect to the named pipe server.
+                    // Connect to the named pipe server, bound the connect with the same timeout the server waits for us.
                     using NamedPipeClientStream pipe = new(".", pipeName, PipeDirection.InOut, PipeOptions.None);
-                    await pipe.ConnectAsync(CancellationToken.None).ConfigureAwait(false);
+                    await pipe.ConnectAsync((int)ClientServerUtilities.ClientOperationTimeout.TotalMilliseconds, CancellationToken.None).ConfigureAwait(false);
 
                     // Duplicate the token to the specified process ID.
                     SafeFileHandle hDupToken;
