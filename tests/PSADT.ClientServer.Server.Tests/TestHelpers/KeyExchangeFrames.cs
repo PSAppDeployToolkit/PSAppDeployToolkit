@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
 
 namespace PSADT.ClientServer.Server.Tests.TestHelpers
 {
@@ -23,14 +22,14 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// Runs a server far enough to write its public key.
         /// </summary>
         /// <returns>The length-prefixed public key frame the server sent.</returns>
-        internal static async Task<byte[]> ServerPublicKeyAsync()
+        internal static byte[] ServerPublicKey()
         {
             using ServerPipeEncryption server = new();
             using MemoryStream output = new();
             using MemoryStream input = new();
             try
             {
-                await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true);
+                server.PerformKeyExchangeBlocking(output, input);
             }
             catch (EndOfStreamException)
             {
@@ -43,14 +42,14 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// Runs a client far enough to write its public key, which means first handing it one to read.
         /// </summary>
         /// <returns>The length-prefixed public key frame the client sent.</returns>
-        internal static async Task<byte[]> ClientPublicKeyAsync()
+        internal static byte[] ClientPublicKey()
         {
             using ClientPipeEncryption client = new();
             using MemoryStream output = new();
-            using MemoryStream input = new(await ServerPublicKeyAsync().ConfigureAwait(true));
+            using MemoryStream input = new(ServerPublicKey());
             try
             {
-                await client.PerformKeyExchangeAsync(output, input).ConfigureAwait(true);
+                client.PerformKeyExchangeBlocking(output, input);
             }
             catch (EndOfStreamException)
             {

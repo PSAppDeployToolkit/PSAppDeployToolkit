@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace PSADT.ClientServer
 {
@@ -30,30 +29,25 @@ namespace PSADT.ClientServer
         /// <item><description>Client receives and verifies encrypted client_challenge from server</description></item>
         /// </list>
         /// </remarks>
-        internal override ValueTask PerformKeyExchangeAsync(Stream outputStream, Stream inputStream)
+        internal override void PerformKeyExchangeBlocking(Stream outputStream, Stream inputStream)
         {
-            // Internal implementation
-            async ValueTask PerformKeyExchangeImplAsync()
-            {
-                // Client receives server's public key first.
-                byte[] serverPublicKey = await ReadLengthPrefixedBytesAsync(inputStream).ConfigureAwait(false);
-
-                // Client sends its public key.
-                byte[] publicKey = GetPublicKey();
-                await WriteLengthPrefixedBytesAsync(outputStream, publicKey).ConfigureAwait(false);
-
-                // Derive the shared key.
-                DeriveSharedKey(serverPublicKey);
-
-                // Mutual authentication.
-                await PerformMutualAuthenticationAsync(outputStream, inputStream).ConfigureAwait(false);
-            }
-
             // Verify state and parameters.
             ThrowIfDisposed();
             ArgumentNullException.ThrowIfNull(outputStream);
             ArgumentNullException.ThrowIfNull(inputStream);
-            return PerformKeyExchangeImplAsync();
+
+            // Client receives server's public key first.
+            byte[] serverPublicKey = ReadLengthPrefixedBytesBlocking(inputStream);
+
+            // Client sends its public key.
+            byte[] publicKey = GetPublicKey();
+            WriteLengthPrefixedBytesBlocking(outputStream, publicKey);
+
+            // Derive the shared key.
+            DeriveSharedKey(serverPublicKey);
+
+            // Mutual authentication.
+            PerformMutualAuthentication(outputStream, inputStream);
         }
 
         /// <summary>
@@ -70,10 +64,10 @@ namespace PSADT.ClientServer
         /// handshake.</param>
         /// <exception cref="CryptographicException">Thrown if the server fails to prove possession of the correct cryptographic key, indicating that mutual
         /// authentication has failed.</exception>
-        private async ValueTask PerformMutualAuthenticationAsync(Stream outputStream, Stream inputStream)
+        private void PerformMutualAuthentication(Stream outputStream, Stream inputStream)
         {
             // Receive server's challenge
-            byte[] serverChallenge = await ReadLengthPrefixedBytesAsync(inputStream).ConfigureAwait(false);
+            byte[] serverChallenge = ReadLengthPrefixedBytesBlocking(inputStream);
 
             // Generate client's own challenge
             byte[] clientChallenge = new byte[ChallengeSize];
@@ -89,10 +83,10 @@ namespace PSADT.ClientServer
 
             // Encrypt and send the combined challenges
             byte[] encryptedResponse = Encrypt(combinedChallenges);
-            await WriteLengthPrefixedBytesAsync(outputStream, encryptedResponse).ConfigureAwait(false);
+            WriteLengthPrefixedBytesBlocking(outputStream, encryptedResponse);
 
             // Receive server's proof
-            byte[] encryptedServerProof = await ReadLengthPrefixedBytesAsync(inputStream).ConfigureAwait(false);
+            byte[] encryptedServerProof = ReadLengthPrefixedBytesBlocking(inputStream);
             byte[] decryptedServerProof = Decrypt(encryptedServerProof);
 
             // Verify server returned our challenge correctly

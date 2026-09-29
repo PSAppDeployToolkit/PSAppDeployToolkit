@@ -335,9 +335,8 @@ namespace PSADT.ClientServer.Server.Tests
         /// to there being nothing in it.
         /// </para>
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_ReadsTheFrameEvenWithNoSessionToWriteItTo()
+        public void ReadLogFrame_ReadsTheFrameEvenWithNoSessionToWriteItTo()
         {
             // Arrange: the module imported and not initialized, which is the state a log frame can genuinely arrive
             // in. A database has to be seated for that, as every reader refuses an assembly loaded another way.
@@ -345,14 +344,14 @@ namespace PSADT.ClientServer.Server.Tests
             Assert.False(ModuleDatabase.IsDeploymentSessionActive());
             int reads = 0;
             byte[] frame = DataSerialization.SerializeToBytes(new LogMessagePayload("a message", LogSeverity.Info, "a source"));
-            ValueTask<byte[]> ReadFrameAsync()
+            byte[] ReadFrame()
             {
                 reads++;
-                return new ValueTask<byte[]>(frame);
+                return frame;
             }
 
             // Act
-            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
+            ServerInstance.ReadLogFrame(ReadFrame);
 
             // Assert
             Assert.Equal(1, reads);
@@ -366,21 +365,20 @@ namespace PSADT.ClientServer.Server.Tests
         /// than one frame per call would take that decision away from it and read past the point it was told to
         /// give up.
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_ReadsExactlyOneFramePerCall()
+        public void ReadLogFrame_ReadsExactlyOneFramePerCall()
         {
             // Arrange
             int reads = 0;
-            ValueTask<byte[]> ReadFrameAsync()
+            byte[] ReadFrame()
             {
                 reads++;
-                return new ValueTask<byte[]>([]);
+                return [];
             }
 
             // Act
-            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
-            await ServerInstance.ReadLogFrameAsync(ReadFrameAsync).ConfigureAwait(true);
+            ServerInstance.ReadLogFrame(ReadFrame);
+            ServerInstance.ReadLogFrame(ReadFrame);
 
             // Assert
             Assert.Equal(2, reads);
@@ -395,19 +393,15 @@ namespace PSADT.ClientServer.Server.Tests
         /// It can only do that if the exception reaches it as itself, so wrapping one here would turn an
         /// ordinary shutdown into a reported failure.
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_PassesOnAFailureToReadAsItWas()
+        public void ReadLogFrame_PassesOnAFailureToReadAsItWas()
         {
             // Assert: the two that mean the client has finished.
-            _ = await Assert.ThrowsAsync<EndOfStreamException>(
-                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new EndOfStreamException()).ConfigureAwait(true)).ConfigureAwait(true);
-            _ = await Assert.ThrowsAsync<OperationCanceledException>(
-                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new OperationCanceledException()).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<EndOfStreamException>(static () => ServerInstance.ReadLogFrame(static () => throw new EndOfStreamException()));
+            _ = Assert.Throws<OperationCanceledException>(static () => ServerInstance.ReadLogFrame(static () => throw new OperationCanceledException()));
 
             // Assert: and one that does not.
-            _ = await Assert.ThrowsAsync<InvalidDataException>(
-                static async () => await ServerInstance.ReadLogFrameAsync(static () => throw new InvalidDataException()).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<InvalidDataException>(static () => ServerInstance.ReadLogFrame(static () => throw new InvalidDataException()));
         }
 
         /// <summary>
@@ -423,9 +417,8 @@ namespace PSADT.ClientServer.Server.Tests
         /// line already ended by the log writer would otherwise leave the spacing in the middle of the file.
         /// </para>
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_WritesTheFrameToTheActiveSession()
+        public void ReadLogFrame_WritesTheFrameToTheActiveSession()
         {
             // Arrange
             using IDisposable scope = powerShell.Enter();
@@ -439,7 +432,7 @@ namespace PSADT.ClientServer.Server.Tests
                 byte[] frame = DataSerialization.SerializeToBytes(new LogMessagePayload("   a client said this   ", LogSeverity.Warning, "Invoke-SomethingOnTheClient"));
 
                 // Act
-                await ServerInstance.ReadLogFrameAsync(() => new ValueTask<byte[]>(frame)).ConfigureAwait(true);
+                ServerInstance.ReadLogFrame(() => frame);
 
                 // Assert
                 LogEntry entry = Assert.Single(session.GetLogBuffer().Skip(written));
@@ -461,9 +454,8 @@ namespace PSADT.ClientServer.Server.Tests
         /// attempting it would fail rather than do nothing. Asserted with a session present, since without one
         /// nothing would be written whatever the frame held.
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_WritesNothingForAnEmptyFrame()
+        public void ReadLogFrame_WritesNothingForAnEmptyFrame()
         {
             // Arrange
             using IDisposable scope = powerShell.Enter();
@@ -476,7 +468,7 @@ namespace PSADT.ClientServer.Server.Tests
                 int written = session.GetLogBuffer().Count;
 
                 // Act
-                await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>([])).ConfigureAwait(true);
+                ServerInstance.ReadLogFrame(static () => []);
 
                 // Assert
                 Assert.Equal(written, session.GetLogBuffer().Count);
@@ -503,9 +495,8 @@ namespace PSADT.ClientServer.Server.Tests
         /// knowing when a client's logging turns out to have gone missing.
         /// </para>
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task ReadLogFrameAsync_FaultsOnAFrameThatIsNotALogMessage()
+        public void ReadLogFrame_FaultsOnAFrameThatIsNotALogMessage()
         {
             // Arrange: a frame that reads back perfectly well as something else entirely. Built afresh for each
             // read, because reading one overwrites it, and a zeroed buffer would fail for the wrong reason.
@@ -519,7 +510,7 @@ namespace PSADT.ClientServer.Server.Tests
             using (powerShell.SeatModuleDatabaseWithoutState())
             {
                 Assert.False(ModuleDatabase.IsDeploymentSessionActive());
-                Assert.Null(await Record.ExceptionAsync(static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true));
+                Assert.Null(Record.Exception(static () => ServerInstance.ReadLogFrame(Frame)));
             }
 
             // Arrange: and again with a session seated.
@@ -533,8 +524,7 @@ namespace PSADT.ClientServer.Server.Tests
                 int written = session.GetLogBuffer().Count;
 
                 // Assert: now it is deserialised, and says so rather than writing something meaningless.
-                _ = await Assert.ThrowsAsync<SerializationException>(
-                    static async () => await ServerInstance.ReadLogFrameAsync(static () => new ValueTask<byte[]>(Frame())).ConfigureAwait(true)).ConfigureAwait(true);
+                _ = Assert.Throws<SerializationException>(static () => ServerInstance.ReadLogFrame(Frame));
                 Assert.Equal(written, session.GetLogBuffer().Count);
             }
             finally

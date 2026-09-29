@@ -43,7 +43,7 @@ namespace PSADT.ClientServer.Server.Tests
             wire.Position = 0;
 
             // Assert
-            Assert.Equal(plaintext, await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true));
+            Assert.Equal(plaintext, pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new(frame);
 
             // Assert
-            _ = await Assert.ThrowsAnyAsync<CryptographicException>(async () => await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.ThrowsAny<CryptographicException>(() => pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new(frame);
 
             // Assert
-            _ = await Assert.ThrowsAnyAsync<CryptographicException>(async () => await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.ThrowsAny<CryptographicException>(() => pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new(await EncryptToBytesAsync(stranger, [1, 2, 3, 4]).ConfigureAwait(true));
 
             // Assert
-            _ = await Assert.ThrowsAnyAsync<CryptographicException>(async () => await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.ThrowsAny<CryptographicException>(() => pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new(BitConverter.GetBytes(length));
 
             // Assert
-            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await pair.Server.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<InvalidDataException>(() => pair.Server.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new([0x01, 0x00]);
 
             // Assert
-            _ = await Assert.ThrowsAsync<EndOfStreamException>(async () => await pair.Server.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<EndOfStreamException>(() => pair.Server.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new([.. BitConverter.GetBytes(64), 1, 2, 3]);
 
             // Assert
-            _ = await Assert.ThrowsAsync<EndOfStreamException>(async () => await pair.Server.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<EndOfStreamException>(() => pair.Server.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -192,7 +192,46 @@ namespace PSADT.ClientServer.Server.Tests
             using TrickleStream wire = new(await EncryptToBytesAsync(pair, plaintext).ConfigureAwait(true), bytesPerRead: 7);
 
             // Assert
-            Assert.Equal(plaintext, await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true));
+            Assert.Equal(plaintext, pair.Client.ReadEncryptedBlocking(wire));
+        }
+
+        /// <summary>
+        /// Verifies that a read on its own thread arrives intact and is made away from the thread pool, which
+        /// is the reason it exists: an anonymous pipe has no overlapped mode, so the wait would otherwise hold
+        /// a pool thread for as long as the far end took to answer.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadEncryptedOnOwnThread_ReadsOffTheThreadPool()
+        {
+            // Arrange
+            using EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
+            byte[] plaintext = DefaultEncoding.Value.GetBytes("the quick brown fox");
+            using ThreadNotingStream wire = new(await EncryptToBytesAsync(pair, plaintext).ConfigureAwait(true));
+            int callingThreadId = Environment.CurrentManagedThreadId;
+
+            // Act
+            byte[] read = await pair.Client.ReadEncryptedOnOwnThreadAsync(wire).ConfigureAwait(true);
+
+            // Assert
+            Assert.Equal(plaintext, read);
+            Assert.False(wire.ReadOnThreadPoolThread);
+            Assert.NotEqual(callingThreadId, wire.ReadThreadId);
+        }
+
+        /// <summary>
+        /// Verifies that a failure on the reading thread comes back through the task as the exception it was.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ReadEncryptedOnOwnThread_PassesOnAFailureToReadAsItWas()
+        {
+            // Arrange: a prefix promising sixty-four bytes, followed by three
+            using EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
+            using MemoryStream wire = new([.. BitConverter.GetBytes(64), 1, 2, 3]);
+
+            // Assert
+            _ = await Assert.ThrowsAsync<EndOfStreamException>(async () => await pair.Server.ReadEncryptedOnOwnThreadAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
         }
 
         /// <summary>
@@ -221,7 +260,7 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             Assert.Equal(4 + 12 + 16, wire.Length);
-            _ = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await pair.Client.ReadEncryptedAsync(wire).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<ArgumentOutOfRangeException>(() => pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>
@@ -256,8 +295,11 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.Server.WriteEncryptedAsync(wire, [1, 2, 3]).ConfigureAwait(true)).ConfigureAwait(true);
-            _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.Client.ReadEncryptedAsync(readable).ConfigureAwait(true)).ConfigureAwait(true);
-            _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.Server.PerformKeyExchangeAsync(wire, readable).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<ObjectDisposedException>(() => pair.Client.ReadEncryptedBlocking(readable));
+            readable.Position = 0;
+            _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.Client.ReadEncryptedOnOwnThreadAsync(readable).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<ObjectDisposedException>(() => pair.Server.PerformKeyExchangeBlocking(wire, readable));
+            _ = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.Server.PerformKeyExchangeOnOwnThreadAsync(wire, readable).ConfigureAwait(true)).ConfigureAwait(true);
         }
 
         /// <summary>
@@ -291,7 +333,8 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream wire = new();
 
             // Assert
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await pair.Server.ReadEncryptedAsync(null!).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<ArgumentNullException>(() => pair.Server.ReadEncryptedBlocking(null!));
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await pair.Server.ReadEncryptedOnOwnThreadAsync(null!).ConfigureAwait(true)).ConfigureAwait(true);
             _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await pair.Server.WriteEncryptedAsync(null!, [1]).ConfigureAwait(true)).ConfigureAwait(true);
             _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await pair.Server.WriteEncryptedAsync(wire, null!).ConfigureAwait(true)).ConfigureAwait(true);
         }
@@ -322,7 +365,6 @@ namespace PSADT.ClientServer.Server.Tests
         /// </remarks>
         /// <param name="blobLength">The length to give the blob.</param>
         /// <param name="declaredKeySize">The coordinate size to write into the blob's header.</param>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Theory]
         [InlineData(72, int.MaxValue)] // Right length, a size that asks for 4GB across two allocations.
         [InlineData(72, -1)] // Right length, a negative size.
@@ -330,7 +372,7 @@ namespace PSADT.ClientServer.Server.Tests
         [InlineData(72, 0)] // Right length, no coordinates at all.
         [InlineData(40, 16)] // Short blob, self-consistent but not P-256.
         [InlineData(136, 64)] // Long blob, self-consistent but not P-256.
-        public async Task KeyExchange_RefusesAPublicKeyThatIsNotP256(int blobLength, int declaredKeySize)
+        public void KeyExchange_RefusesAPublicKeyThatIsNotP256(int blobLength, int declaredKeySize)
         {
             // Arrange: a length-prefixed frame carrying the malformed blob, as the far half would send it
             byte[] blob = new byte[blobLength];
@@ -345,7 +387,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream input = new(frame);
 
             // Assert
-            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<InvalidDataException>(() => server.PerformKeyExchangeBlocking(output, input));
         }
 
         /// <summary>
@@ -364,16 +406,15 @@ namespace PSADT.ClientServer.Server.Tests
         /// </para>
         /// </remarks>
         /// <param name="magic">The magic to write into the blob's header.</param>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Theory]
         [InlineData(0)] // No magic at all.
         [InlineData(EcdhPublicP256Magic + 1)] // A near miss on the P-256 magic.
         [InlineData(0x334B4345)] // BCRYPT_ECDH_PUBLIC_P384_MAGIC, a real blob type but the wrong curve.
         [InlineData(unchecked((int)0xFFFFFFFF))] // Nothing CNG defines.
-        public async Task KeyExchange_RefusesAPublicKeyThatDoesNotOpenWithTheP256Magic(int magic)
+        public void KeyExchange_RefusesAPublicKeyThatDoesNotOpenWithTheP256Magic(int magic)
         {
             // Arrange: a real public key frame, with only the blob's magic overwritten
-            byte[] frame = await KeyExchangeFrames.ClientPublicKeyAsync().ConfigureAwait(true);
+            byte[] frame = KeyExchangeFrames.ClientPublicKey();
             BitConverter.GetBytes(magic).CopyTo(frame, 4);
 
             using ServerPipeEncryption server = new();
@@ -381,7 +422,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream input = new(frame);
 
             // Assert
-            _ = await Assert.ThrowsAsync<InvalidDataException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<InvalidDataException>(() => server.PerformKeyExchangeBlocking(output, input));
         }
 
         /// <summary>
@@ -401,7 +442,32 @@ namespace PSADT.ClientServer.Server.Tests
                 using MemoryStream readable = new(frame);
 
                 // Assert
-                Assert.Equal([1, 2, 3], await pair.Client.ReadEncryptedAsync(readable).ConfigureAwait(true));
+                Assert.Equal([1, 2, 3], pair.Client.ReadEncryptedBlocking(readable));
+            }
+        }
+
+        /// <summary>
+        /// A stream that notes the thread each read is made on.
+        /// </summary>
+        /// <param name="content">The bytes to hand out.</param>
+        private sealed class ThreadNotingStream(byte[] content) : MemoryStream(content)
+        {
+            /// <summary>
+            /// Gets the managed id of the thread the last read was made on.
+            /// </summary>
+            public int ReadThreadId { get; private set; }
+
+            /// <summary>
+            /// Gets a value indicating whether the last read was made on a thread-pool thread.
+            /// </summary>
+            public bool ReadOnThreadPoolThread { get; private set; }
+
+            /// <inheritdoc/>
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                ReadThreadId = Environment.CurrentManagedThreadId;
+                ReadOnThreadPoolThread = Thread.CurrentThread.IsThreadPoolThread;
+                return base.Read(buffer, offset, count);
             }
         }
 

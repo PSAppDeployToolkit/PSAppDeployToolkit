@@ -58,8 +58,8 @@ namespace PSADT.ClientServer.Server.Tests
             inbound.Position = 0;
 
             // Assert
-            Assert.Equal(fromServer, await pair.Client.ReadEncryptedAsync(outbound).ConfigureAwait(true));
-            Assert.Equal(fromClient, await pair.Server.ReadEncryptedAsync(inbound).ConfigureAwait(true));
+            Assert.Equal(fromServer, pair.Client.ReadEncryptedBlocking(outbound));
+            Assert.Equal(fromClient, pair.Server.ReadEncryptedBlocking(inbound));
         }
 
         /// <summary>
@@ -69,9 +69,8 @@ namespace PSADT.ClientServer.Server.Tests
         /// Run against a stream with nothing in it, so the only way the frame can be there is if it was
         /// written before the read that then failed.
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task PerformKeyExchange_SendsItsPublicKeyBeforeReadingOne()
+        public void PerformKeyExchange_SendsItsPublicKeyBeforeReadingOne()
         {
             // Arrange
             using ServerPipeEncryption server = new();
@@ -79,7 +78,7 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream input = new();
 
             // Assert
-            _ = await Assert.ThrowsAsync<EndOfStreamException>(async () => await server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<EndOfStreamException>(() => server.PerformKeyExchangeBlocking(output, input));
             Assert.NotEmpty(output.ToArray());
         }
 
@@ -92,12 +91,11 @@ namespace PSADT.ClientServer.Server.Tests
         /// other. For P-256 each coordinate is 32 bytes, so the whole thing is 72 and the frame carrying it
         /// is four longer.
         /// </remarks>
-        /// <returns>A task that represents the asynchronous test.</returns>
         [Fact]
-        public async Task PerformKeyExchange_SendsAPublicKeyInTheAgreedLayout()
+        public void PerformKeyExchange_SendsAPublicKeyInTheAgreedLayout()
         {
             // Arrange
-            byte[] frame = await KeyExchangeFrames.ServerPublicKeyAsync().ConfigureAwait(true);
+            byte[] frame = KeyExchangeFrames.ServerPublicKey();
 
             // Assert
             Assert.Equal(4 + 8 + 32 + 32, frame.Length);
@@ -117,10 +115,10 @@ namespace PSADT.ClientServer.Server.Tests
             // Arrange
             using EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
             using MemoryStream output = new();
-            using MemoryStream input = new(await KeyExchangeFrames.ClientPublicKeyAsync().ConfigureAwait(true));
+            using MemoryStream input = new(KeyExchangeFrames.ClientPublicKey());
 
             // Assert
-            _ = await Assert.ThrowsAsync<InvalidOperationException>(async () => await pair.Server.PerformKeyExchangeAsync(output, input).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<InvalidOperationException>(() => pair.Server.PerformKeyExchangeBlocking(output, input));
         }
 
         /// <summary>
@@ -145,7 +143,7 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             Assert.Null(await Record.ExceptionAsync(async () => await PipePair.RunBothAsync(
-                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                () => server.PerformKeyExchangeOnOwnThreadAsync(pipes.ServerOutput, pipes.ServerInput),
                 async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.Faithful).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true));
         }
 
@@ -168,7 +166,7 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Act
             CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
-                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                () => server.PerformKeyExchangeOnOwnThreadAsync(pipes.ServerOutput, pipes.ServerInput),
                 async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.ResponseOfTheWrongLength).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
 
             // Assert
@@ -195,7 +193,7 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Act
             CryptographicException failure = await Assert.ThrowsAsync<CryptographicException>(async () => await PipePair.RunBothAsync(
-                async () => await server.PerformKeyExchangeAsync(pipes.ServerOutput, pipes.ServerInput).ConfigureAwait(false),
+                () => server.PerformKeyExchangeOnOwnThreadAsync(pipes.ServerOutput, pipes.ServerInput),
                 async () => await client.RunAsClientAsync(pipes.ClientOutput, pipes.ClientInput, ProtocolReplica.ClientBehaviour.ChallengeThatDoesNotMatch).ConfigureAwait(false)).ConfigureAwait(true)).ConfigureAwait(true);
 
             // Assert
@@ -215,8 +213,10 @@ namespace PSADT.ClientServer.Server.Tests
             using MemoryStream stream = new();
 
             // Assert
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await server.PerformKeyExchangeAsync(null!, stream).ConfigureAwait(true)).ConfigureAwait(true);
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await server.PerformKeyExchangeAsync(stream, null!).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = Assert.Throws<ArgumentNullException>(() => server.PerformKeyExchangeBlocking(null!, stream));
+            _ = Assert.Throws<ArgumentNullException>(() => server.PerformKeyExchangeBlocking(stream, null!));
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await server.PerformKeyExchangeOnOwnThreadAsync(null!, stream).ConfigureAwait(true)).ConfigureAwait(true);
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await server.PerformKeyExchangeOnOwnThreadAsync(stream, null!).ConfigureAwait(true)).ConfigureAwait(true);
         }
 
         /// <summary>

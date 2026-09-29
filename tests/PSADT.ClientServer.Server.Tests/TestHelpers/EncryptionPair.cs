@@ -38,8 +38,8 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
             try
             {
                 await PipePair.RunBothAsync(
-                    async () => await pair.Server.PerformKeyExchangeAsync(pair.Pipes.ServerOutput, pair.Pipes.ServerInput).ConfigureAwait(false),
-                    async () => await pair.Client.PerformKeyExchangeAsync(pair.Pipes.ClientOutput, pair.Pipes.ClientInput).ConfigureAwait(false)).ConfigureAwait(true);
+                    () => pair.Server.PerformKeyExchangeOnOwnThreadAsync(pair.Pipes.ServerOutput, pair.Pipes.ServerInput),
+                    () => pair.Client.PerformKeyExchangeOnOwnThreadAsync(pair.Pipes.ClientOutput, pair.Pipes.ClientInput)).ConfigureAwait(true);
                 return pair;
             }
             catch

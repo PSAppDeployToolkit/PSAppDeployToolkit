@@ -250,11 +250,11 @@ namespace PSADT.ClientServer
                 using (ClientPipeEncryption ioEncryption = new())
                 using (ClientPipeEncryption logEncryption = new())
                 {
-                    // Perform ECDH key exchange for encrypted communication.
+                    // Perform ECDH key exchange for encrypted communication, on a thread of its own as each step waits on the server.
                     try
                     {
-                        await ioEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
-                        await logEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
+                        await ioEncryption.PerformKeyExchangeOnOwnThreadAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
+                        await logEncryption.PerformKeyExchangeOnOwnThreadAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -315,8 +315,9 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                // Read and decrypt the request: [1-byte command][serialized payload]
-                                byte[] requestBytes = await ioEncryption.ReadEncryptedAsync(inputPipeClient).ConfigureAwait(false);
+                                // Read and decrypt the request: [1-byte command][serialized payload]. The wait lasts until the server's
+                                // next command, so it is made on a thread of its own rather than parking one of the default pool's.
+                                byte[] requestBytes = await ioEncryption.ReadEncryptedOnOwnThreadAsync(inputPipeClient).ConfigureAwait(false);
                                 if (requestBytes.Length is 0)
                                 {
                                     throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);

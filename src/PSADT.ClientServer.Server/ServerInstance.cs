@@ -55,25 +55,26 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
         public async ValueTask OpenAsync()
         {
-            // Internal task method to handle log messages from the client process asynchronously.
-            async Task ReadLogAsync()
+            // Internal method to handle log messages from the client process on a thread of its own, as an anonymous pipe has no
+            // overlapped mode and the reads would otherwise park a thread-pool thread in ReadFile for the life of the client.
+            void ReadLog()
             {
                 // Read the log stream until cancellation is requested or the end of the stream is reached.
                 ObjectDisposedException.ThrowIf(_disposed, this);
 
-                // Set up the required delegate for ReadLogFrameAsync, materialised to minimise per-loop allocations.
-                ValueTask<byte[]> ReadFrameAsync()
+                // Set up the required delegate for ReadLogFrame, materialised to minimise per-loop allocations.
+                byte[] ReadFrame()
                 {
-                    return _logEncryption.ReadEncryptedAsync(_logServer);
+                    return _logEncryption.ReadEncryptedBlocking(_logServer);
                 }
-                Func<ValueTask<byte[]>> readFrameAsync = ReadFrameAsync;
+                Func<byte[]> readFrame = ReadFrame;
 
                 // Spin until cancellation is requested or we've reached the end of stream.
                 while (!_logWriterTaskCts.IsCancellationRequested)
                 {
                     try
                     {
-                        await ReadLogFrameAsync(readFrameAsync).ConfigureAwait(false);
+                        ReadLogFrame(readFrame);
                     }
                     catch (OperationCanceledException)
                     {
@@ -120,9 +121,9 @@ namespace PSADT.ClientServer
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
-            // Perform key exchange for encrypted communication.
-            await _ioEncryption.PerformKeyExchangeAsync(_outputServer, _inputServer).ConfigureAwait(false);
-            await _logEncryption.PerformKeyExchangeAsync(_outputServer, _inputServer).ConfigureAwait(false);
+            // Perform key exchange for encrypted communication, on a thread of its own as the wait lasts until the client is up.
+            await _ioEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer).ConfigureAwait(false);
+            await _logEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer).ConfigureAwait(false);
 
             // Confirm the client starts and is ready to receive commands.
             bool opened = false;
@@ -151,8 +152,8 @@ namespace PSADT.ClientServer
             // Ensure this instance is disposed on process exit.
             AppDomain.CurrentDomain.ProcessExit += ProcessExit_Handler;
 
-            // Set up the log writer task to run in the background.
-            _logWriterTask = ReadLogAsync();
+            // Set up the log writer to run in the background, on a thread of its own.
+            _logWriterTask = Task.Factory.StartNew(ReadLog, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -796,12 +797,12 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private async ValueTask<T> ReadResponseAsync<T>()
         {
-            // Read and decrypt the client's response.
+            // Read and decrypt the client's response, on a thread of its own as the wait lasts as long as the client takes to answer.
             ObjectDisposedException.ThrowIf(_disposed, this);
             byte[] response;
             try
             {
-                response = await _ioEncryption.ReadEncryptedAsync(_inputServer).ConfigureAwait(false);
+                response = await _ioEncryption.ReadEncryptedOnOwnThreadAsync(_inputServer).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -856,14 +857,12 @@ namespace PSADT.ClientServer
         /// the stream either way; gating the read on there being a session would leave the stream undrained and
         /// eventually block the client on it. Separated from the loop that calls it so that ordering can be
         /// asserted, which it cannot be from outside.</remarks>
-        /// <param name="readFrameAsync">Reads and decrypts the next frame from the log stream. The frame it returns
-        /// is overwritten once read, so it must hand back a buffer it owns and no caller may reuse one.</param>
-        /// <returns>A task that completes once the frame has been read and, where there was somewhere to put it,
-        /// written.</returns>
-        internal static async Task ReadLogFrameAsync(Func<ValueTask<byte[]>> readFrameAsync)
+        /// <param name="readFrame">Reads and decrypts the next frame from the log stream, blocking until it has. The frame it
+        /// returns is overwritten once read, so it must hand back a buffer it owns and no caller may reuse one.</param>
+        internal static void ReadLogFrame(Func<byte[]> readFrame)
         {
             // The read stays first and unconditional, for the reason given above.
-            byte[] decrypted = await readFrameAsync().ConfigureAwait(false);
+            byte[] decrypted = readFrame();
             try
             {
                 if (decrypted is { Length: > 0 } && ModuleDatabase.IsDeploymentSessionActive())

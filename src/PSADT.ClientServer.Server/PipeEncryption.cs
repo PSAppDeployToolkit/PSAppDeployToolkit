@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using PSADT.Utilities;
 
@@ -24,7 +25,7 @@ namespace PSADT.ClientServer
     /// ensuring both confidentiality and integrity in a single cryptographic operation.
     /// </para>
     /// <para>
-    /// Instances must complete the key exchange via <see cref="PerformKeyExchangeAsync"/>
+    /// Instances must complete the key exchange via <see cref="PerformKeyExchangeBlocking"/>
     /// before encryption or decryption operations can be performed.
     /// </para>
     /// <para>
@@ -35,29 +36,54 @@ namespace PSADT.ClientServer
     internal abstract class PipeEncryption<TSelf> : IDisposable where TSelf : PipeEncryption<TSelf>
     {
         /// <summary>
-        /// Performs the key exchange with the remote party using the role-specific protocol.
+        /// Performs the key exchange with the remote party using the role-specific protocol, on the calling thread,
+        /// blocking at each step until the remote party has answered.
         /// </summary>
         /// <param name="outputStream">The stream to send data to the remote party.</param>
         /// <param name="inputStream">The stream to receive data from the remote party.</param>
-        internal abstract ValueTask PerformKeyExchangeAsync(Stream outputStream, Stream inputStream);
+        internal abstract void PerformKeyExchangeBlocking(Stream outputStream, Stream inputStream);
 
         /// <summary>
-        /// Reads and decrypts data from the stream.
+        /// Performs the key exchange on a thread of its own, for a wait that lasts until the remote party is up and answering.
         /// </summary>
-        /// <param name="stream">The input stream.</param>
-        /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
-        internal ValueTask<byte[]> ReadEncryptedAsync(Stream stream)
+        /// <remarks>An anonymous pipe has no overlapped mode, so an asynchronous exchange would only park a thread-pool thread in
+        /// ReadFile at each step until the answer arrived. A dedicated thread costs the same and starves nothing.</remarks>
+        /// <param name="outputStream">The stream to send data to the remote party.</param>
+        /// <param name="inputStream">The stream to receive data from the remote party.</param>
+        /// <returns>A task that completes once the exchange has.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
+        internal Task PerformKeyExchangeOnOwnThreadAsync(Stream outputStream, Stream inputStream)
         {
-            // Internal implementation method.
-            async ValueTask<byte[]> ReadEncryptedImplAsync(Stream stream)
-            {
-                return Decrypt(await ReadLengthPrefixedBytesAsync(stream).ConfigureAwait(false));
-            }
+            ArgumentNullException.ThrowIfNull(outputStream);
+            ArgumentNullException.ThrowIfNull(inputStream);
+            return Task.Factory.StartNew(() => PerformKeyExchangeBlocking(outputStream, inputStream), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
 
+        /// <summary>
+        /// Reads and decrypts a message on the calling thread, blocking until all of it has arrived.
+        /// </summary>
+        /// <param name="stream">The stream to read the framed, encrypted message from.</param>
+        /// <returns>The decrypted message.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
+        internal byte[] ReadEncryptedBlocking(Stream stream)
+        {
             // Read and decrypt.
             ArgumentNullException.ThrowIfNull(stream);
-            return ReadEncryptedImplAsync(stream);
+            return Decrypt(ReadLengthPrefixedBytesBlocking(stream));
+        }
+
+        /// <summary>
+        /// Reads and decrypts a message on a thread of its own, for a wait that may last as long as the far end takes to answer.
+        /// </summary>
+        /// <remarks>An anonymous pipe has no overlapped mode, so an asynchronous read would only park a thread-pool thread in
+        /// ReadFile until the message arrives. A dedicated thread costs the same and starves nothing.</remarks>
+        /// <param name="stream">The stream to read the framed, encrypted message from.</param>
+        /// <returns>A task that completes with the decrypted message.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
+        internal Task<byte[]> ReadEncryptedOnOwnThreadAsync(Stream stream)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+            return Task.Factory.StartNew(() => ReadEncryptedBlocking(stream), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -76,20 +102,20 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Reads a length-prefixed byte array from the stream.
+        /// Reads a length-prefixed message on the calling thread, blocking until all of it has arrived.
         /// </summary>
-        /// <param name="stream">The input stream.</param>
-        /// <returns>The data read from the stream.</returns>
-        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
-        /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
+        /// <param name="stream">The stream to read from.</param>
+        /// <returns>The message, without its length prefix.</returns>
+        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the prefix or the message has been read in full.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
-        private protected static async ValueTask<byte[]> ReadLengthPrefixedBytesAsync(Stream stream)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "The read is meant to block: the anonymous pipes this carries have no overlapped mode, so the caller gives it a thread of its own rather than park one of the pool's.")]
+        private protected static byte[] ReadLengthPrefixedBytesBlocking(Stream stream)
         {
             // Read the 4-byte length prefix
             byte[] lengthBytes = new byte[4]; int bytesRead = 0;
             while (bytesRead < 4)
             {
-                int read = await stream.ReadAsync(lengthBytes, bytesRead, 4 - bytesRead, default).ConfigureAwait(false);
+                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
                 if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
@@ -97,23 +123,12 @@ namespace PSADT.ClientServer
                 bytesRead += read;
             }
 
-            // Verify we've received a correct value.
-            int length = BitConverter.ToInt32(lengthBytes, 0);
-            if (length <= 0)
-            {
-                throw new InvalidDataException("Invalid length prefix: negative or zero value.");
-            }
-            if (length > MaxMessageSize)
-            {
-                throw new InvalidDataException($"Message size {length.ToString(CultureInfo.InvariantCulture)} exceeds maximum allowed size of {MaxMessageSize} bytes.");
-            }
-
             // Read the data
-            byte[] data = new byte[length];
+            byte[] data = new byte[ValidateLengthPrefix(lengthBytes)];
             bytesRead = 0;
-            while (bytesRead < length)
+            while (bytesRead < data.Length)
             {
-                int read = await stream.ReadAsync(data, bytesRead, length - bytesRead, default).ConfigureAwait(false);
+                int read = stream.Read(data, bytesRead, data.Length - bytesRead);
                 if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading data.");
@@ -121,6 +136,22 @@ namespace PSADT.ClientServer
                 bytesRead += read;
             }
             return data;
+        }
+
+        /// <summary>
+        /// Checks a length prefix before anything is allocated for it, since it arrives from a stream this end does not control.
+        /// </summary>
+        /// <param name="lengthBytes">The four bytes of the prefix.</param>
+        /// <returns>The length the prefix declares.</returns>
+        /// <exception cref="InvalidDataException">Thrown if the prefix is not a positive length within the size allowed.</exception>
+        private static int ValidateLengthPrefix(byte[] lengthBytes)
+        {
+            int length = BitConverter.ToInt32(lengthBytes, 0);
+            return length <= 0
+                ? throw new InvalidDataException("Invalid length prefix: negative or zero value.")
+                : length > MaxMessageSize
+                ? throw new InvalidDataException($"Message size {length.ToString(CultureInfo.InvariantCulture)} exceeds maximum allowed size of {MaxMessageSize} bytes.")
+                : length;
         }
 
         /// <summary>
@@ -134,6 +165,20 @@ namespace PSADT.ClientServer
             await stream.WriteAsync(lengthBytes, 0, 4, default).ConfigureAwait(false);
             await stream.WriteAsync(data, 0, data.Length, default).ConfigureAwait(false);
             await stream.FlushAsync(default).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Writes a length-prefixed byte array to the stream on the calling thread, blocking until it has been written.
+        /// </summary>
+        /// <param name="stream">The output stream.</param>
+        /// <param name="data">The data to write.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "The write is meant to block: it is one step of a key exchange run on a thread of its own, as the anonymous pipes it crosses have no overlapped mode.")]
+        private protected static void WriteLengthPrefixedBytesBlocking(Stream stream, byte[] data)
+        {
+            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
+            stream.Write(lengthBytes, 0, 4);
+            stream.Write(data, 0, data.Length);
+            stream.Flush();
         }
 
         /// <summary>
