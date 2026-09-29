@@ -1384,19 +1384,34 @@ function Show-InstallationWelcome
                 $PSBoundParameters.Remove($oldParam)
             }
         })
-    if ($PSBoundParameters.ContainsKey('TopMost'))
+
+    # MinimizeWindows, NotTopMost and CustomMessage only exist in v4's interactive parameter sets.
+    if ($Silent)
     {
-        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
+        $null = $PSBoundParameters.Remove('MinimizeWindows')
         $null = $PSBoundParameters.Remove('TopMost')
-    }
-    if ($PSBoundParameters.ContainsKey('CustomText'))
-    {
-        $PSBoundParameters.Add('CustomMessage', $PSBoundParameters.CustomText)
         $null = $PSBoundParameters.Remove('CustomText')
     }
-    if ($MinimizeWindows)
+    else
     {
-        $PSBoundParameters.Add('MinimizeWindows', $MinimizeWindows)
+        if ($PSBoundParameters.ContainsKey('TopMost'))
+        {
+            $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
+            $null = $PSBoundParameters.Remove('TopMost')
+        }
+        if ($MinimizeWindows)
+        {
+            $PSBoundParameters.MinimizeWindows = $true
+        }
+        else
+        {
+            $null = $PSBoundParameters.Remove('MinimizeWindows')
+        }
+        if ($PSBoundParameters.ContainsKey('CustomText'))
+        {
+            $PSBoundParameters.Add('CustomMessage', $PSBoundParameters.CustomText)
+            $null = $PSBoundParameters.Remove('CustomText')
+        }
     }
 
     # Invoke function with amended parameters.
