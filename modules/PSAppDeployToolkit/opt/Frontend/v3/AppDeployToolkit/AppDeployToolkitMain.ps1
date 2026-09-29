@@ -1442,6 +1442,14 @@ function Get-WindowTitle
         $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
         $null = $PSBoundParameters.Remove('DisableFunctionLogging')
     }
+    if ($PSBoundParameters.ContainsKey('GetAllWindowTitles'))
+    {
+        $null = $PSBoundParameters.Remove('GetAllWindowTitles')
+    }
+    if ($PSBoundParameters.ContainsKey('WindowTitle') -and [System.String]::IsNullOrWhiteSpace($WindowTitle))
+    {
+        $null = $PSBoundParameters.Remove('WindowTitle')
+    }
     try
     {
         Get-ADTWindowTitle @PSBoundParameters
