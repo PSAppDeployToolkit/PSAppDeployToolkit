@@ -2685,6 +2685,11 @@ function Execute-MSP
     Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    if ($PSBoundParameters.ContainsKey('AddParameters'))
+    {
+        $PSBoundParameters.Add('AdditionalArgumentList', $PSBoundParameters.AddParameters)
+        $null = $PSBoundParameters.Remove('AddParameters')
+    }
     try
     {
         Start-ADTMspProcess @PSBoundParameters
