@@ -124,10 +124,10 @@ function Show-ADTBalloonTip
         $adtConfig = if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }
         $forced = $false
 
-        # Log the deprecation of -WaitSeconds to the log.
+        # Log the deprecation of -Timeout to the log.
         if ($Timeout -gt 0)
         {
-            Write-ADTLogEntry -Message "The parameter [BalloonTipTime] has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0." -Severity 2
+            Write-ADTLogEntry -Message "The parameter [Timeout] has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0." -Severity 2
         }
         if ($NoWait)
         {
