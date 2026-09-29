@@ -874,9 +874,9 @@ namespace PSADT.ProcessManagement
             /// <returns><see langword="true"/> if a DDE command is registered for the launch; otherwise, <see langword="false"/>.</returns>
             private static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
             {
-                // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run.
+                // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run. With no verb given it picks the type's default verb, as the shell itself would.
                 (ASSOCF flags, string association) = !Uri.TryCreate(launchInfo.FilePath, UriKind.Absolute, out Uri? uri) || uri.IsFile ? (ASSOCF.ASSOCF_NONE, Path.GetExtension(launchInfo.FilePath)) : (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme);
-                return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb ?? "open", default, out _) == HRESULT.S_FALSE;
+                return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb, default, out _) == HRESULT.S_FALSE;
             }
         }
     }

@@ -225,7 +225,7 @@ namespace PSADT.Tests.TestHelpers
         public static bool HasDdeAssociation => DdeLaunchTarget is not null;
 
         /// <summary>
-        /// Finds a protocol or file extension whose open verb is registered with a DDE command.
+        /// Finds a protocol or file extension whose default verb is registered with a DDE command.
         /// </summary>
         /// <returns>A value that launch information resolves to that association, or <see langword="null"/> if there is none.</returns>
         private static string? FindDdeLaunchTarget()
@@ -241,12 +241,12 @@ namespace PSADT.Tests.TestHelpers
                 }
                 if (!name.StartsWith('.'))
                 {
-                    if (key.GetValue("URL Protocol") is not null && HasDdeOpenKey(classes, name) && HasDdeOpenCommand(ASSOCF.ASSOCF_IS_PROTOCOL, name))
+                    if (key.GetValue("URL Protocol") is not null && HasDdeOpenKey(classes, name) && HasDdeDefaultCommand(ASSOCF.ASSOCF_IS_PROTOCOL, name))
                     {
                         return $"{name}:psadt";
                     }
                 }
-                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenKey(classes, progId) && HasDdeOpenCommand(ASSOCF.ASSOCF_NONE, name))
+                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenKey(classes, progId) && HasDdeDefaultCommand(ASSOCF.ASSOCF_NONE, name))
                 {
                     extension = name;
                 }
@@ -268,14 +268,15 @@ namespace PSADT.Tests.TestHelpers
         }
 
         /// <summary>
-        /// Determines whether the shell would open the association through a DDE conversation.
+        /// Determines whether the shell would open the association through a DDE conversation under the verb it
+        /// picks when none is given, which is the question the launcher's own detector asks.
         /// </summary>
         /// <param name="flags">Whether the association is a protocol or a file extension.</param>
         /// <param name="association">The protocol or file extension.</param>
-        /// <returns><see langword="true"/> if a DDE command is registered for its open verb; otherwise, <see langword="false"/>.</returns>
-        private static bool HasDdeOpenCommand(ASSOCF flags, string association)
+        /// <returns><see langword="true"/> if a DDE command is registered for its default verb; otherwise, <see langword="false"/>.</returns>
+        private static bool HasDdeDefaultCommand(ASSOCF flags, string association)
         {
-            return NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, "open", default, out _) == HRESULT.S_FALSE;
+            return NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, pszExtra: null, default, out _) == HRESULT.S_FALSE;
         }
 
         /// <summary>
