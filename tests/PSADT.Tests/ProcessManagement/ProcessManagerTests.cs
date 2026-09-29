@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.Interop;
@@ -466,7 +467,7 @@ namespace PSADT.Tests.ProcessManagement
             string? target = TestEnvironment.DdeLaunchTarget;
             Assert.NotNull(target);
             ProcessLaunchInfo launchInfo = new(target, bypassIfeo: true, useShellExecute: true, windowStyle: ProcessWindowStyle.Hidden);
-            Assert.True(ProcessManager.HasDdeCommand(launchInfo), "The target is not taken for a DDE launch, so launching it would not be refused.");
+            Assert.True(HasDdeCommand(launchInfo), "The target is not taken for a DDE launch, so launching it would not be refused.");
 
             // Act & Assert
             _ = Assert.Throws<NotSupportedException>(() => ProcessManager.LaunchAsync(launchInfo));
@@ -487,7 +488,7 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("psadt-nosuch:launch", null)]
         public void HasDdeCommand_IsFalseWhereNothingIsRegistered(string filePath, string? verb)
         {
-            Assert.False(ProcessManager.HasDdeCommand(new(filePath, useShellExecute: true, verb: verb)));
+            Assert.False(HasDdeCommand(new(filePath, useShellExecute: true, verb: verb)));
         }
 
         /// <summary>
@@ -502,7 +503,21 @@ namespace PSADT.Tests.ProcessManagement
             Assert.NotNull(target);
 
             // Act & Assert
-            Assert.True(ProcessManager.HasDdeCommand(new(target, useShellExecute: true)));
+            Assert.True(HasDdeCommand(new(target, useShellExecute: true)));
+        }
+
+        /// <summary>
+        /// Asks the launcher's own DDE detector, which stays private rather than being widened for the tests.
+        /// </summary>
+        /// <param name="launchInfo">The launch to inspect.</param>
+        /// <returns><see langword="true"/> if the shell would perform the launch through DDE; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the detector cannot be found or does not return a boolean.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The detector is deliberately private, so the tests reach it by reflection rather than widening it.")]
+        private static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
+        {
+            Type api = typeof(ProcessManager).GetNestedType("ShellExecuteExApi", BindingFlags.NonPublic) ?? throw new InvalidOperationException("The ShellExecuteExApi type was not found.");
+            MethodInfo detector = api.GetMethod("HasDdeCommand", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new InvalidOperationException("The HasDdeCommand method was not found.");
+            return detector.Invoke(null, [launchInfo]) is bool result ? result : throw new InvalidOperationException("The HasDdeCommand method did not return a boolean.");
         }
 
         /// <summary>
