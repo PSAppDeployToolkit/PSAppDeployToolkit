@@ -3722,6 +3722,8 @@ function Remove-Folder
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Add('LiteralPath', $PSBoundParameters.Path)
+    $null = $PSBoundParameters.Remove('Path')
     try
     {
         Remove-ADTFolder @PSBoundParameters
