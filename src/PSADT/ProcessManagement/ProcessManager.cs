@@ -79,13 +79,24 @@ namespace PSADT.ProcessManagement
         {
             // Launch the process using the CreateProcess API and return a handle to the caller.
             ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges = PrivilegeManager.GetPrivileges();
-            (SafeProcessHandle hProcess, SafeThreadHandle hThread, uint dwProcessId, string commandLine) = CreateProcessApi.CreateProcess(launchInfo, callerPrivileges, out (ProcessReadStream StdOutHandle, ProcessReadStream StdErrHandle, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle);
+            (SafeProcessHandle hProcess, SafeThreadHandle hThread, uint dwProcessId, string commandLine, bool ownsDebugObject) = CreateProcessApi.CreateProcess(launchInfo, callerPrivileges, out (ProcessReadStream StdOutHandle, ProcessReadStream StdErrHandle, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle);
             bool resumed = false;
             try
             {
+                // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
                 if (launchInfo.BypassIfeo)
                 {
-                    _ = NativeMethods.DebugActiveProcessStop(dwProcessId);
+                    try
+                    {
+                        _ = NativeMethods.DebugActiveProcessStop(dwProcessId);
+                    }
+                    finally
+                    {
+                        if (ownsDebugObject)
+                        {
+                            ReleaseDebugObject();
+                        }
+                    }
                 }
                 return new(launchInfo, hProcess, dwProcessId, commandLine, callerPrivileges, stdOutErrHandles, stdInHandle, () =>
                 {
@@ -187,6 +198,23 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Releases the calling thread's debug object once a launch that bypassed image file execution options is over,
+        /// which also ends a process still attached to it, as the object was created to kill what it holds when closed.
+        /// </summary>
+        /// <remarks>CreateProcess leaves the object in the creating thread's environment block, where it would otherwise stay for the life of the
+        /// thread. It is only for an object the launch created: CreateProcess attaches to one the thread already has, and closing that would end
+        /// everything else attached to it.</remarks>
+        private static void ReleaseDebugObject()
+        {
+            HANDLE debugObject = NativeMethods.DbgUiGetThreadDebugObject();
+            if (!debugObject.IsNull)
+            {
+                NativeMethods.DbgUiSetThreadDebugObject(HANDLE.Null);
+                using SafeFileHandle handle = new(debugObject, ownsHandle: true);
+            }
+        }
+
+        /// <summary>
         /// Contains helper methods for creating processes using the Windows CreateProcess API.
         /// </summary>
         private static class CreateProcessApi
@@ -194,9 +222,11 @@ namespace PSADT.ProcessManagement
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We cannot refactor this method to be async at this stage.")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "VSTHRD002")]
-            internal static (SafeProcessHandle, SafeThreadHandle, uint, string) CreateProcess(ProcessLaunchInfo launchInfo, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, out (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle)
+            internal static (SafeProcessHandle, SafeThreadHandle, uint, string, bool) CreateProcess(ProcessLaunchInfo launchInfo, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, out (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle)
             {
-                // Perform initial setup and get started with the process creation.
+                // Perform initial setup and get started with the process creation. Only a debug object this launch creates is released
+                // afterwards, by the caller or here on failure, as CreateProcess attaches the process to one the thread already has.
+                bool ownsDebugObject = launchInfo.BypassIfeo && NativeMethods.DbgUiGetThreadDebugObject().IsNull;
                 stdOutErrHandles = null; stdInHandle = null;
                 try
                 {
@@ -307,7 +337,7 @@ namespace PSADT.ProcessManagement
                             _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, lpProcessAttributes: null, lpThreadAttributes: null, bInheritHandles: false, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                         }
                     }
-                    return (new(pi.hProcess, ownsHandle: true), new(pi.hThread, ownsHandle: true), pi.dwProcessId, commandSpan.ToString());
+                    return (new(pi.hProcess, ownsHandle: true), new(pi.hThread, ownsHandle: true), pi.dwProcessId, commandSpan.ToString(), ownsDebugObject);
                 }
                 catch (Exception ex)
                 {
@@ -315,6 +345,10 @@ namespace PSADT.ProcessManagement
                     using (stdOutErrHandles?.StdErr)
                     using (stdInHandle)
                     {
+                        if (ownsDebugObject)
+                        {
+                            ReleaseDebugObject();
+                        }
                         ExceptionDispatchInfo.Capture(ex).Throw();
                         throw;
                     }
@@ -789,8 +823,8 @@ namespace PSADT.ProcessManagement
                     (!dde && (launchInfo.RequiresJobObject || launchInfo.DenyUserTermination) ? PROCESS_CREATION_FLAGS.CREATE_SUSPENDED : 0) |
                     (launchInfo.BypassIfeo ? PROCESS_CREATION_FLAGS.DEBUG_ONLY_THIS_PROCESS : 0) |
                     PROCESS_CREATION_FLAGS.CREATE_SEPARATE_WOW_VDM;
-                CreatingProcessSite site = new(creationFlags);
-                nint siteUnknown = Marshal.GetIUnknownForObject(site);
+                CreatingProcessSite site = new(creationFlags); nint siteUnknown = Marshal.GetIUnknownForObject(site);
+                bool ownsDebugObject = launchInfo.BypassIfeo && NativeMethods.DbgUiGetThreadDebugObject().IsNull;
                 SHELLEXECUTEINFOW execInfo = new()
                 {
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_FLAG_DDEWAIT | SEE_MASK_FLAGS.SEE_MASK_FLAG_HINST_IS_SITE,
@@ -820,48 +854,68 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    // A call that failed can still have created the thread's debug object, as the shell tries CreateProcess itself first.
+                    if (ownsDebugObject)
+                    {
+                        ReleaseDebugObject();
+                    }
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
                 finally
                 {
                     _ = Marshal.Release(siteUnknown);
                 }
 
-                // Verify the state of the handle we received back and ensure it's valid.
+                // Verify the state of the handle we received back and ensure it's valid. A debug object the launch created is released
+                // however the launch ends from here, as the shell's own attempt leaves one behind even when AppInfo took over.
                 SafeProcessHandle? hProcess = !execInfo.hProcess.IsNull ? new(execInfo.hProcess, ownsHandle: true) : null;
-                if (!site.Invoked)
+                try
                 {
-                    return (hProcess, false);
-                }
-                if (!site.Applied)
-                {
-                    using (hProcess)
+                    if (site.Invoked)
                     {
-                        if (hProcess is not null)
+                        if (!site.Applied)
                         {
-                            TerminateFailedLaunch(hProcess);
+                            using (hProcess)
+                            {
+                                if (hProcess is not null)
+                                {
+                                    TerminateFailedLaunch(hProcess);
+                                }
+                                throw new InvalidOperationException("The shell created the process without the flags it was asked to add.", site.Failure);
+                            }
                         }
-                        throw new InvalidOperationException("The shell created the process without the flags it was asked to add.", site.Failure);
-                    }
-                }
-                if (site.Suspended && hProcess is null)
-                {
-                    throw new InvalidOperationException("The shell created a suspended process but returned no handle to it.");
-                }
+                        if (site.Suspended && hProcess is null)
+                        {
+                            throw new InvalidOperationException("The shell created a suspended process but returned no handle to it.");
+                        }
 
-                // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
-                if (launchInfo.BypassIfeo && hProcess is not null)
-                {
-                    try
-                    {
-                        _ = NativeMethods.DebugActiveProcessStop(NativeMethods.GetProcessId(hProcess));
-                    }
-                    catch (Exception ex)
-                    {
-                        using (hProcess)
+                        // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
+                        if (launchInfo.BypassIfeo && hProcess is not null)
                         {
-                            TerminateFailedLaunch(hProcess);
-                            ExceptionDispatchInfo.Capture(ex).Throw();
-                            throw;
+                            try
+                            {
+                                _ = NativeMethods.DebugActiveProcessStop(NativeMethods.GetProcessId(hProcess));
+                            }
+                            catch (Exception ex)
+                            {
+                                using (hProcess)
+                                {
+                                    TerminateFailedLaunch(hProcess);
+                                    ExceptionDispatchInfo.Capture(ex).Throw();
+                                    throw;
+                                }
+                            }
                         }
+                    }
+                }
+                finally
+                {
+                    if (ownsDebugObject)
+                    {
+                        ReleaseDebugObject();
                     }
                 }
                 return (hProcess, site.Suspended);

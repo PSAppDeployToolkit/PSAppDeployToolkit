@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.SafeHandles;
@@ -578,6 +579,34 @@ namespace PSADT.Interop.Tests
 
             // Act & Assert
             _ = Assert.Throws<UnauthorizedAccessException>(() => NativeMethods.NtResumeProcess(limited));
+        }
+
+        /// <summary>
+        /// Verifies that a thread which has never debugged anything records no debug object, that one set on it is
+        /// what is read back, and that clearing it leaves nothing, since only the thread's own record changes.
+        /// </summary>
+        [Fact]
+        public void DbgUiSetThreadDebugObject_IsReadBackByDbgUiGetThreadDebugObjectUntilCleared()
+        {
+            // Arrange: a fresh thread, so nothing else can have touched its record, and a value nothing will ever use
+            HANDLE before = default, set = default, cleared = default;
+            Thread thread = new(() =>
+            {
+                before = NativeMethods.DbgUiGetThreadDebugObject();
+                NativeMethods.DbgUiSetThreadDebugObject((HANDLE)(nint)0x1234);
+                set = NativeMethods.DbgUiGetThreadDebugObject();
+                NativeMethods.DbgUiSetThreadDebugObject(HANDLE.Null);
+                cleared = NativeMethods.DbgUiGetThreadDebugObject();
+            });
+
+            // Act
+            thread.Start();
+            thread.Join();
+
+            // Assert
+            Assert.True(before.IsNull);
+            Assert.Equal(0x1234, (nint)set);
+            Assert.True(cleared.IsNull);
         }
 
         /// <summary>

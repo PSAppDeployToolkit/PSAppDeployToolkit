@@ -2814,6 +2814,33 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Gets the debug object the calling thread debugs its debuggees through, if it has one.
+        /// </summary>
+        /// <remarks>This method wraps the native DbgUiGetThreadDebugObject function from ntdll.dll. CreateProcess stores the
+        /// object it creates for DEBUG_PROCESS or DEBUG_ONLY_THIS_PROCESS in the creating thread's environment block, where it
+        /// stays for the life of the thread unless cleared with <see cref="DbgUiSetThreadDebugObject"/>.</remarks>
+        /// <returns>The debug object's handle, or a null handle if the thread has none.</returns>
+        internal static HANDLE DbgUiGetThreadDebugObject()
+        {
+            [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern HANDLE DbgUiGetThreadDebugObject();
+            return DbgUiGetThreadDebugObject();
+        }
+
+        /// <summary>
+        /// Sets or clears the debug object the calling thread debugs its debuggees through.
+        /// </summary>
+        /// <remarks>This method wraps the native DbgUiSetThreadDebugObject function from ntdll.dll. Only the thread's
+        /// environment block changes; the object itself is neither opened nor closed.</remarks>
+        /// <param name="DebugObject">The debug object's handle, or a null handle to clear it.</param>
+        internal static void DbgUiSetThreadDebugObject(HANDLE DebugObject)
+        {
+            [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern void DbgUiSetThreadDebugObject(HANDLE DebugObject);
+            DbgUiSetThreadDebugObject(DebugObject);
+        }
+
+        /// <summary>
         /// Retrieves information about the specified process by querying the native Windows NT API.
         /// </summary>
         /// <remarks>This method is a low-level interop call to the Windows NT kernel and is intended for

@@ -4,8 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.ShortcutManagement;
@@ -450,6 +452,86 @@ namespace PSADT.Tests.ProcessManagement
             using ProcessResult result = await LaunchAsync(launchInfo).ConfigureAwait(true);
 
             // Assert
+            Assert.Equal(7, result.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that a launch which bypassed image file execution options leaves no debug object behind on the
+        /// thread that created the process, since CreateProcess parks one there that would otherwise outlive the
+        /// launch and hold on to anything that could not be detached from it.
+        /// </summary>
+        /// <param name="useShellExecute">Whether to launch through the shell.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The launch is started by this test, on the apartment it hops onto to do so.")]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task LaunchAsync_LeavesNoDebugObjectBehindAfterBypassingImageFileExecutionOptionsAsync(bool useShellExecute)
+        {
+            // Arrange: the object is per thread, so the launch and the check share one
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "exit 7"], bypassIfeo: true, useShellExecute: useShellExecute, createNoWindow: !useShellExecute, windowStyle: ProcessWindowStyle.Hidden, cancellationToken: timeout.Token);
+            ProcessHandle? handle = null;
+            HANDLE debugObject = default;
+
+            // Act
+            StaThread.Run(() =>
+            {
+                handle = ProcessManager.LaunchAsync(launchInfo);
+                debugObject = NativeMethods.DbgUiGetThreadDebugObject();
+            });
+            Assert.NotNull(handle);
+            using ProcessResult result = await handle.Task.ConfigureAwait(true);
+
+            // Assert
+            Assert.True(debugObject.IsNull, "The launch left its debug object on the creating thread.");
+            Assert.Equal(7, result.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that a bypass launch on a thread that was already debugging leaves that thread's debug object in
+        /// place, since CreateProcess attaches the process to the object the thread already has, and closing it
+        /// would end everything else attached to it.
+        /// </summary>
+        /// <param name="useShellExecute">Whether to launch through the shell.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "The launch is started by this test, on the apartment it hops onto to do so.")]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task LaunchAsync_LeavesAnExistingDebugObjectAloneAfterBypassingImageFileExecutionOptionsAsync(bool useShellExecute)
+        {
+            // Arrange: the object is per thread, so the thread gets one of its own before the launch and the check share it
+            [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern int DbgUiConnectToDbg();
+            using CancellationTokenSource timeout = new(LaunchTimeout);
+            ProcessLaunchInfo launchInfo = new(CommandInterpreter, ["/c", "exit 7"], bypassIfeo: true, useShellExecute: useShellExecute, createNoWindow: !useShellExecute, windowStyle: ProcessWindowStyle.Hidden, cancellationToken: timeout.Token);
+            ProcessHandle? handle = null;
+            HANDLE before = default, after = default;
+
+            // Act
+            StaThread.Run(() =>
+            {
+                _ = DbgUiConnectToDbg();
+                before = NativeMethods.DbgUiGetThreadDebugObject();
+                try
+                {
+                    handle = ProcessManager.LaunchAsync(launchInfo);
+                    after = NativeMethods.DbgUiGetThreadDebugObject();
+                }
+                finally
+                {
+                    // The process was detached by the launch, so closing the object ends nothing that should still run.
+                    NativeMethods.DbgUiSetThreadDebugObject(HANDLE.Null);
+                    using SafeFileHandle debugObject = new(before, ownsHandle: true);
+                }
+            });
+            Assert.NotNull(handle);
+            using ProcessResult result = await handle.Task.ConfigureAwait(true);
+
+            // Assert
+            Assert.False(before.IsNull, "The thread was not given a debug object to begin with.");
+            Assert.Equal((nint)before, (nint)after);
             Assert.Equal(7, result.ExitCode);
         }
 
