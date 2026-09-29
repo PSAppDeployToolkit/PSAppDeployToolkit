@@ -1261,6 +1261,10 @@ function Show-DialogBox
     {
         $null = $PSBoundParameters.Remove('Icon')
     }
+    if ($PSBoundParameters.ContainsKey('Buttons') -and ($PSBoundParameters.Buttons -eq 'CancelTryAgainContinue'))
+    {
+        $PSBoundParameters.Buttons = 'CancelTryContinue'
+    }
     try
     {
         Show-ADTDialogBox @PSBoundParameters
