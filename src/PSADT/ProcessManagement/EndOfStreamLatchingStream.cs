@@ -6,7 +6,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// A read-only view of a stream that stops reading the stream once it has reported its end.
     /// </summary>
-    /// <remarks>An anonymous pipe on .NET Framework throws on an asynchronous read made after its end, which
+    /// <remarks>An anonymous pipe on .NET Framework throws on a read made after its end, which
     /// <see cref="StreamReader"/> makes whenever the last line has no line break.</remarks>
     /// <param name="stream">The stream to read, which is disposed along with this one.</param>
     internal sealed class EndOfStreamLatchingStream(Stream stream) : Stream

@@ -362,11 +362,14 @@ namespace PSADT.ProcessManagement
             }
 
             /// <summary>
-            /// Creates a read pipe server stream and a corresponding task that consumes output from the child process.
+            /// Creates a read pipe server stream and a task, run on a thread of its own, that consumes output from the child process.
             /// </summary>
+            /// <remarks>An anonymous pipe has no overlapped mode, so an asynchronous read would only park a thread-pool thread
+            /// in ReadFile for the life of the process. A dedicated thread costs the same and starves nothing.</remarks>
             /// <param name="interleaved">The shared interleaved output buffer.</param>
             /// <param name="encoding">The text encoding for the stream.</param>
-            /// <returns>The server stream, client handle, and read task.</returns>
+            /// <returns>The client handle for the process to write to, and the stream reading what it writes.</returns>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "The read is meant to block: an anonymous pipe has no overlapped mode, so the asynchronous read would only block a thread-pool thread, and this thread is the pipe's own.")]
             private static (HANDLE, ProcessReadStream) CreateReadPipe(ConcurrentQueue<string> interleaved, Encoding encoding)
             {
                 AnonymousPipeServerStream stream = new(PipeDirection.In, HandleInheritability.Inheritable);
@@ -375,12 +378,15 @@ namespace PSADT.ProcessManagement
                 {
                     using (stream)
                     {
-                        using StreamReader reader = new(new EndOfStreamLatchingStream(stream), encoding);
-                        while ((await reader.ReadLineAsync(default).ConfigureAwait(false))?.TrimEnd() is string line)
+                        await Task.Factory.StartNew(() =>
                         {
-                            interleaved.Enqueue(line);
-                            output.Add(line);
-                        }
+                            using StreamReader reader = new(new EndOfStreamLatchingStream(stream), encoding);
+                            while (reader.ReadLine()?.TrimEnd() is string line)
+                            {
+                                interleaved.Enqueue(line);
+                                output.Add(line);
+                            }
+                        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);
                     }
                 }
                 try
@@ -398,11 +404,13 @@ namespace PSADT.ProcessManagement
             }
 
             /// <summary>
-            /// Creates a write pipe server stream and a corresponding task that writes stdin data to the child process.
+            /// Creates a write pipe server stream and a task, run on a thread of its own, that writes stdin data to the child process.
             /// </summary>
+            /// <remarks>A write blocks whenever the pipe is full and the process is slow to read, so it is kept off the thread pool for the same reason as a read.</remarks>
             /// <param name="input">The input lines to write.</param>
             /// <param name="encoding">The text encoding for the stream.</param>
-            /// <returns>The server stream, client handle, and write task.</returns>
+            /// <returns>The client handle for the process to read from, and the stream writing to it.</returns>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "The write is meant to block: it waits on the process reading a full pipe, and this thread is the pipe's own rather than one of the pool's.")]
             private static (HANDLE, ProcessWriteStream) CreateWritePipe(IReadOnlyList<string> input, Encoding encoding)
             {
                 AnonymousPipeServerStream stream = new(PipeDirection.Out, HandleInheritability.Inheritable);
@@ -410,25 +418,27 @@ namespace PSADT.ProcessManagement
                 {
                     using (stream)
                     {
-                        try
+                        await Task.Factory.StartNew(() =>
                         {
-                            using StreamWriter writer = new(stream, encoding.GetPreamble().Length is 0 ? encoding : encoding switch
+                            try
                             {
-                                UTF8Encoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                                UnicodeEncoding => new UnicodeEncoding(bigEndian: encoding.CodePage is 1201, byteOrderMark: false),
-                                UTF32Encoding => new UTF32Encoding(bigEndian: encoding.CodePage is 12001, byteOrderMark: false),
-                                _ => encoding,
-                            });
-                            foreach (string line in input)
-                            {
-                                await writer.WriteLineAsync(line).ConfigureAwait(false);
+                                using StreamWriter writer = new(stream, encoding.GetPreamble().Length is 0 ? encoding : encoding switch
+                                {
+                                    UTF8Encoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                                    UnicodeEncoding => new UnicodeEncoding(bigEndian: encoding.CodePage is 1201, byteOrderMark: false),
+                                    UTF32Encoding => new UTF32Encoding(bigEndian: encoding.CodePage is 12001, byteOrderMark: false),
+                                    _ => encoding,
+                                });
+                                foreach (string line in input)
+                                {
+                                    writer.WriteLine(line);
+                                }
                             }
-                        }
-                        catch (IOException)
-                        {
-                            // The child process didn't read all input before exiting.
-                            return;
-                        }
+                            catch (IOException)
+                            {
+                                // The child process didn't read all input before exiting.
+                            }
+                        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);
                     }
                 }
                 try
