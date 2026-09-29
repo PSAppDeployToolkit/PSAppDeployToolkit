@@ -4557,32 +4557,13 @@ function ConvertTo-NTAccountOrSID
 
         # Announce overall deprecation and any dead parameters before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
-
-        # Set up collector for pipelined input.
-        $pipedInput = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
     {
-        # Only add non-null strings to our collector.
-        if (![System.String]::IsNullOrWhiteSpace(($thisInput = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)))
-        {
-            $pipedInput.Add($thisInput)
-        }
-    }
-
-    end
-    {
-        # Only proceed if we have collected input.
-        if (!$pipedInput.Count)
-        {
-            return
-        }
-
         try
         {
-            $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
-            $pipedInput | ConvertTo-ADTNTAccountOrSID @PSBoundParameters
+            ConvertTo-ADTNTAccountOrSID @PSBoundParameters
         }
         catch
         {
