@@ -1257,6 +1257,10 @@ function Show-DialogBox
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
+    if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
+    {
+        $null = $PSBoundParameters.Remove('Icon')
+    }
     try
     {
         Show-ADTDialogBox @PSBoundParameters
