@@ -1178,10 +1178,7 @@ function Show-InstallationProgress
         [System.Nullable[System.Boolean]]$TopMost = $true,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Quiet,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoRelocation
+        [System.Management.Automation.SwitchParameter]$Quiet
     )
 
     # Set strict mode to the highest within this function's scope.
