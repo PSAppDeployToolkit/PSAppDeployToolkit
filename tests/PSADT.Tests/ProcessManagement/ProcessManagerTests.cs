@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
+using PSADT.ShortcutManagement;
 using PSADT.Tests.TestHelpers;
 using Windows.Win32.Foundation;
 using Xunit;
@@ -504,6 +505,54 @@ namespace PSADT.Tests.ProcessManagement
 
             // Act & Assert
             Assert.True(HasDdeCommand(new(target, useShellExecute: true)));
+        }
+
+        /// <summary>
+        /// Verifies that a launch with no verb is judged under the type's default verb, as the shell picks it, and
+        /// not under open: a type whose default verb is the one with DDE is a DDE launch, and the same type under
+        /// its open verb is not.
+        /// </summary>
+        [Fact]
+        public void HasDdeCommand_UsesTheDefaultVerbWhenNoneIsGiven()
+        {
+            // Arrange
+            using DdeFileType type = new(verb: "edit");
+            string document = $"document{type.Extension}";
+
+            // Act & Assert
+            Assert.True(HasDdeCommand(new(document, useShellExecute: true)));
+            Assert.False(HasDdeCommand(new(document, useShellExecute: true, verb: "open")));
+        }
+
+        /// <summary>
+        /// Verifies that a shortcut is judged by what it points at, since the shell launches its target, so a
+        /// shortcut to a DDE document is a DDE launch and one to an executable is not.
+        /// </summary>
+        [Fact]
+        public void HasDdeCommand_FollowsAShortcutToItsTarget()
+        {
+            // Arrange
+            using DdeFileType type = new();
+            using TempDirectory temp = new();
+            string documentShortcut = SaveShortcut(temp.GetPath("document.lnk"), temp.WriteFile($"document{type.Extension}", string.Empty));
+            string executableShortcut = SaveShortcut(temp.GetPath("executable.lnk"), CommandInterpreter);
+
+            // Act & Assert
+            Assert.True(HasDdeCommand(new(documentShortcut, useShellExecute: true)));
+            Assert.False(HasDdeCommand(new(executableShortcut, useShellExecute: true)));
+        }
+
+        /// <summary>
+        /// Saves a shortcut to a target.
+        /// </summary>
+        /// <param name="path">Where to save the shortcut.</param>
+        /// <param name="target">What it points at.</param>
+        /// <returns>The shortcut's path.</returns>
+        private static string SaveShortcut(string path, string target)
+        {
+            using ShellLinkFile shortcut = ShellLinkFile.Create(target);
+            shortcut.Save(path);
+            return path;
         }
 
         /// <summary>

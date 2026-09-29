@@ -19,6 +19,7 @@ using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
+using PSADT.ShortcutManagement;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
@@ -875,8 +876,24 @@ namespace PSADT.ProcessManagement
             private static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
             {
                 // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run. With no verb given it picks the type's default verb, as the shell itself would.
-                (ASSOCF flags, string association) = !Uri.TryCreate(launchInfo.FilePath, UriKind.Absolute, out Uri? uri) || uri.IsFile ? (ASSOCF.ASSOCF_NONE, Path.GetExtension(launchInfo.FilePath)) : (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme);
+                (ASSOCF flags, string association) = GetAssociation(launchInfo.FilePath);
                 return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb, default, out _) == HRESULT.S_FALSE;
+            }
+
+            /// <summary>
+            /// Gets the association the shell would launch a target under, following a shortcut to what it points at.
+            /// </summary>
+            /// <param name="target">The file, URL or shortcut to be launched.</param>
+            /// <returns>Whether the association is a protocol, and its scheme or extension.</returns>
+            private static (ASSOCF flags, string association) GetAssociation(string target)
+            {
+                // The shell launches a shortcut as its target, and collapses a shortcut to a shortcut when it saves one, so one level is all there is.
+                if (".lnk".Equals(Path.GetExtension(target), StringComparison.OrdinalIgnoreCase) && File.Exists(target))
+                {
+                    using ShellLinkFile shortcut = ShellLinkFile.Load(target);
+                    target = shortcut.TargetPath;
+                }
+                return Uri.TryCreate(target, UriKind.Absolute, out Uri? uri) && !uri.IsFile ? (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme) : (ASSOCF.ASSOCF_NONE, Path.GetExtension(target) ?? string.Empty);
             }
         }
     }

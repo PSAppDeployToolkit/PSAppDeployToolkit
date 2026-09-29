@@ -246,7 +246,7 @@ namespace PSADT.Tests.TestHelpers
                         return $"{name}:psadt";
                     }
                 }
-                else if (extension is null && key.GetValue(name: null) is string progId && HasDdeOpenKey(classes, progId) && HasDdeDefaultCommand(ASSOCF.ASSOCF_NONE, name))
+                else if (extension is null && !name.StartsWith(".psadt-dde", StringComparison.OrdinalIgnoreCase) && key.GetValue(name: null) is string progId && HasDdeOpenKey(classes, progId) && HasDdeDefaultCommand(ASSOCF.ASSOCF_NONE, name))
                 {
                     extension = name;
                 }
