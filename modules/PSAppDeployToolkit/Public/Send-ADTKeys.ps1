@@ -16,9 +16,6 @@ function Send-ADTKeys
     .PARAMETER WindowTitle
         The title of the application window to search for using regex matching.
 
-    .PARAMETER GetAllWindowTitles
-        Get titles for all open windows on the system.
-
     .PARAMETER WindowHandle
         Send keys to a specific window where the Window Handle is already known.
 
