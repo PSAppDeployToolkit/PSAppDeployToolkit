@@ -4081,6 +4081,11 @@ function Send-Keys
         $PSBoundParameters.Add('WaitDuration', $WaitSeconds)
         $null = $PSBoundParameters.Remove('WaitSeconds')
     }
+    if ($PSBoundParameters.ContainsKey('GetAllWindowTitles'))
+    {
+        Write-ADTLogEntry -Message "The parameter '-GetAllWindowTitles' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
+        $null = $PSBoundParameters.Remove('GetAllWindowTitles')
+    }
     try
     {
         Send-ADTKeys @PSBoundParameters
