@@ -361,7 +361,19 @@ namespace PSADT.ClientServer
                                                     // Start gracefully closing each open window.
                                                     foreach (WindowInfo window in windows)
                                                     {
-                                                        Process process = Process.GetProcessById((int)window.ParentProcessId);
+                                                        // If we can't get the process, the window has closed.
+                                                        Process process;
+                                                        try
+                                                        {
+                                                            process = Process.GetProcessById((int)window.ParentProcessId);
+                                                        }
+                                                        catch (Exception)
+                                                        {
+                                                            continue;
+                                                            throw;
+                                                        }
+
+                                                        // Bring the window to the front and attempt to close out it.
                                                         await closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info).ConfigureAwait(false);
                                                         try
                                                         {
@@ -374,8 +386,6 @@ namespace PSADT.ClientServer
                                                             continue;
                                                             throw;
                                                         }
-
-                                                        // Attempt to close out the process's main window.
                                                         try
                                                         {
                                                             if (!process.CloseMainWindow())
