@@ -4478,7 +4478,7 @@ function Execute-ProcessAsUser
     {
         if (($res = Start-ADTProcessAsUser @PSBoundParameters) -and $PassThru)
         {
-            return $res.Result
+            return $res
         }
     }
     catch
