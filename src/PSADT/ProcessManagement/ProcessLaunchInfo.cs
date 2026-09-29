@@ -127,6 +127,18 @@ namespace PSADT.ProcessManagement
                 {
                     throw new NotSupportedException("Cannot specify UseShellExecute while specifying RunAsInvoker.");
                 }
+                if (uiAccess)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying UIAccess.");
+                }
+                if (standardInput?.Count > 0)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying StandardInput.");
+                }
+                if (handlesToInherit?.Count > 0)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying HandlesToInherit.");
+                }
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.

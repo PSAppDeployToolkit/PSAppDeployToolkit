@@ -113,6 +113,54 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that shell execute refuses UI access, which only a token the launch creates itself can carry, and
+        /// names that option.
+        /// </summary>
+        [Fact]
+        public void Constructor_RefusesShellExecuteWithUIAccess()
+        {
+            // Act
+            NotSupportedException exception = Assert.Throws<NotSupportedException>(
+                static () => new ProcessLaunchInfo(@"C:\app.exe", uiAccess: true, useShellExecute: true));
+
+            // Assert
+            Assert.Contains("UseShellExecute", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("UIAccess", exception.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that shell execute refuses standard input, since the shell offers no pipe to write it to, and names
+        /// that option.
+        /// </summary>
+        [Fact]
+        public void Constructor_RefusesShellExecuteWithStandardInput()
+        {
+            // Act
+            NotSupportedException exception = Assert.Throws<NotSupportedException>(
+                static () => new ProcessLaunchInfo(@"C:\app.exe", standardInput: ["line"], useShellExecute: true));
+
+            // Assert
+            Assert.Contains("UseShellExecute", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("StandardInput", exception.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that shell execute refuses handles to inherit, which only a process the launch creates itself can
+        /// be given, and names that option.
+        /// </summary>
+        [Fact]
+        public void Constructor_RefusesShellExecuteWithHandlesToInherit()
+        {
+            // Act
+            NotSupportedException exception = Assert.Throws<NotSupportedException>(
+                static () => new ProcessLaunchInfo(@"C:\app.exe", handlesToInherit: [1], useShellExecute: true));
+
+            // Assert
+            Assert.Contains("UseShellExecute", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("HandlesToInherit", exception.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that shell execute accepts bypassing image file execution options, which the launch carries
         /// into the process the shell creates.
         /// </summary>
@@ -154,12 +202,18 @@ namespace PSADT.Tests.ProcessManagement
                 @"C:\app.exe",
                 elevatedTokenType: ElevatedTokenType.HighestAvailable,
                 runAsInvoker: true,
-                bypassIfeo: true);
+                uiAccess: true,
+                bypassIfeo: true,
+                standardInput: ["line"],
+                handlesToInherit: [1]);
 
             // Assert
             Assert.Equal(ElevatedTokenType.HighestAvailable, launchInfo.ElevatedTokenType);
             Assert.True(launchInfo.RunAsInvoker);
+            Assert.True(launchInfo.UIAccess);
             Assert.True(launchInfo.BypassIfeo);
+            _ = Assert.Single(launchInfo.StandardInput);
+            _ = Assert.Single(launchInfo.HandlesToInherit);
         }
 
         /// <summary>
