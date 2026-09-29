@@ -373,7 +373,7 @@ namespace PSADT.ProcessManagement
             private static (HANDLE, ProcessReadStream) CreateReadPipe(ConcurrentQueue<string> interleaved, Encoding encoding)
             {
                 AnonymousPipeServerStream stream = new(PipeDirection.In, HandleInheritability.Inheritable);
-                List<string> output = [];
+                ConcurrentQueue<string> output = [];
                 async Task ReadToEndAsync()
                 {
                     using (stream)
@@ -384,7 +384,7 @@ namespace PSADT.ProcessManagement
                             while (reader.ReadLine()?.TrimEnd() is string line)
                             {
                                 interleaved.Enqueue(line);
-                                output.Add(line);
+                                output.Enqueue(line);
                             }
                         }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);
                     }

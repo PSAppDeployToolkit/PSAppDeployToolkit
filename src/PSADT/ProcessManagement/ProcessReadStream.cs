@@ -10,12 +10,12 @@ namespace PSADT.ProcessManagement
     /// </summary>
     /// <param name="Stream">The anonymous pipe server stream used for reading from the process. Cannot be null.</param>
     /// <param name="Task">The task that performs the asynchronous read operation from the process stream. Cannot be null.</param>
-    /// <param name="Buffer">A read-only list containing the lines of text that have been read from the process stream.</param>
-    internal sealed class ProcessReadStream(AnonymousPipeServerStream Stream, Task Task, IReadOnlyList<string> Buffer) : ProcessStream(Stream, Task)
+    /// <param name="Buffer">A read-only collection containing the lines of text that have been read from the process stream, which may still be growing while it is read.</param>
+    internal sealed class ProcessReadStream(AnonymousPipeServerStream Stream, Task Task, IReadOnlyCollection<string> Buffer) : ProcessStream(Stream, Task)
     {
         /// <summary>
-        /// Gets a read-only list containing the lines of text that have been read from the process stream.
+        /// Gets a read-only collection containing the lines of text that have been read from the process stream, which may still be growing while it is read.
         /// </summary>
-        internal readonly IReadOnlyList<string> Buffer = Buffer;
+        internal readonly IReadOnlyCollection<string> Buffer = Buffer;
     }
 }
