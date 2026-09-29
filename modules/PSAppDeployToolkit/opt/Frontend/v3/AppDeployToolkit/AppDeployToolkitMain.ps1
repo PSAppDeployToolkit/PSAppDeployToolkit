@@ -4351,7 +4351,7 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
