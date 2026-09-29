@@ -4244,42 +4244,48 @@ function Set-Shortcut
             $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         }
 
-        # Set up collector for piped in path objects.
-        $paths = [System.Collections.Generic.List[System.String]]::new()
+        # v3 treated these values as "leave unchanged", which v4 expresses by not binding the parameter.
+        if ($PSBoundParameters.ContainsKey('WindowStyle') -and ($WindowStyle -eq 'DontChange'))
+        {
+            $null = $PSBoundParameters.Remove('WindowStyle')
+        }
+        if ($PSBoundParameters.ContainsKey('RunAsAdmin') -and ($null -eq $RunAsAdmin))
+        {
+            $null = $PSBoundParameters.Remove('RunAsAdmin')
+        }
     }
 
     process
     {
-        # Add all paths to the collector.
-        if ($PSCmdlet.ParameterSetName.Equals('Default'))
+        # Get the path for this pipeline item.
+        $shortcutPath = if ($PSCmdlet.ParameterSetName.Equals('Pipeline'))
         {
-            $paths.Add($Path)
-        }
-        elseif ($PSCmdlet.ParameterSetName.Equals('Pipeline') -and $PathHash.ContainsKey('Path') -and ![System.String]::IsNullOrWhiteSpace($PathHash.Path))
-        {
-            $paths.Add($PathHash.Path)
-        }
-    }
-
-    end
-    {
-        # Process provided paths if we have any.
-        if ($paths.Count)
-        {
-            try
+            if ($PathHash.ContainsKey('Path'))
             {
-                if ($PSBoundParameters.ContainsKey('Path'))
-                {
-                    $null = $PSBoundParameters.Remove('Path')
-                }
-                $paths | Set-ADTShortcut @PSBoundParameters
+                $PathHash.Path
             }
-            catch
+        }
+        else
+        {
+            $Path
+        }
+        if ([System.String]::IsNullOrWhiteSpace($shortcutPath))
+        {
+            return
+        }
+
+        # Set the shortcut.
+        try
+        {
+            $null = $PSBoundParameters.Remove('Path')
+            $null = $PSBoundParameters.Remove('PathHash')
+            Set-ADTShortcut -LiteralPath $shortcutPath @PSBoundParameters
+        }
+        catch
+        {
+            if (!$ContinueOnError)
             {
-                if (!$ContinueOnError)
-                {
-                    $PSCmdlet.ThrowTerminatingError($_)
-                }
+                $PSCmdlet.ThrowTerminatingError($_)
             }
         }
     }
