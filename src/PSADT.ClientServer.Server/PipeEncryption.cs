@@ -393,10 +393,10 @@ namespace PSADT.ClientServer
             byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
 
             // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
-            byte[] prk;
+            byte[] pseudoRandomKey;
             using (HMACSHA256 hmac = new(salt))
             {
-                prk = hmac.ComputeHash(sharedSecret);
+                pseudoRandomKey = hmac.ComputeHash(sharedSecret);
             }
 
             // HKDF-Expand
@@ -406,7 +406,7 @@ namespace PSADT.ClientServer
             byte counter = 1;
             try
             {
-                using HMACSHA256 hmac = new(prk);
+                using HMACSHA256 hmac = new(pseudoRandomKey);
                 while (offset < outputLength)
                 {
                     // T(i) = HMAC-Hash(PRK, T(i-1) | info | counter)
@@ -415,15 +415,21 @@ namespace PSADT.ClientServer
                     Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
                     input[^1] = counter++;
 
-                    previousBlock = hmac.ComputeHash(input);
-                    int copyLength = Math.Min(previousBlock.Length, outputLength - offset);
-                    Buffer.BlockCopy(previousBlock, 0, output, offset, copyLength);
+                    byte[] block = hmac.ComputeHash(input);
+                    CryptographicUtilities.SecureZeroMemory(input);
+                    int copyLength = Math.Min(block.Length, outputLength - offset);
+                    Buffer.BlockCopy(block, 0, output, offset, copyLength);
                     offset += copyLength;
+
+                    // Each block is derived from the shared secret, so scrub the previous one before replacing it.
+                    CryptographicUtilities.SecureZeroMemory(previousBlock);
+                    previousBlock = block;
                 }
             }
             finally
             {
-                CryptographicUtilities.SecureZeroMemory(prk);
+                CryptographicUtilities.SecureZeroMemory(pseudoRandomKey);
+                CryptographicUtilities.SecureZeroMemory(previousBlock);
             }
             return output;
         }
