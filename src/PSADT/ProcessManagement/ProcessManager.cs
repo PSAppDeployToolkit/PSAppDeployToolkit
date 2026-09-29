@@ -384,10 +384,11 @@ namespace PSADT.ProcessManagement
                 throw new NotSupportedException("Cannot bypass image file execution options for a launch the shell performs through DDE.");
             }
 
-            // Set up the specific process creation flags and create the underlying process.
+            // Set up the specific process creation flags and create the underlying process. The process is only held when
+            // something must be applied before it runs, as a launch the shell hands to AppInfo can be ended but never resumed.
             PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
+                (!dde && (launchInfo.RequiresJobObject || launchInfo.DenyUserTermination) ? PROCESS_CREATION_FLAGS.CREATE_SUSPENDED : 0) |
                 (launchInfo.BypassIfeo ? PROCESS_CREATION_FLAGS.DEBUG_ONLY_THIS_PROCESS : 0) |
-                (!dde ? PROCESS_CREATION_FLAGS.CREATE_SUSPENDED : 0) |
                 PROCESS_CREATION_FLAGS.CREATE_SEPARATE_WOW_VDM;
             CreatingProcessSite site = new(creationFlags);
             nint siteUnknown = Marshal.GetIUnknownForObject(site);
