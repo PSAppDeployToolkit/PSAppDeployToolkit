@@ -65,7 +65,7 @@ namespace PSADT.Tests.ProcessManagement
             using Process current = Process.GetCurrentProcess();
 
             // Act & Assert
-            _ = Assert.Throws<InvalidProgramException>(() => new ProcessHandle(launchInfo, current, (uint)current.Id, current.SafeHandle, launchInfo.MakeCommandLine()));
+            _ = Assert.Throws<InvalidProgramException>(() => new ProcessHandle(launchInfo, current, launchInfo.MakeCommandLine()));
         }
 
         /// <summary>

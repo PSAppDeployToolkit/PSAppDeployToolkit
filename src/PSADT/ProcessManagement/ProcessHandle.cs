@@ -19,12 +19,10 @@ namespace PSADT.ProcessManagement
     public sealed class ProcessHandle
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process, process ID, process handle, command line, caller privileges, and optional standard output/error handles and interleaved buffer.
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process, command line, and optional standard output/error/input handles, interleaved buffer and job.
         /// </summary>
         /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
         /// <param name="process">The Process object representing the running process.</param>
-        /// <param name="processId">The unique identifier of the started process.</param>
-        /// <param name="processHandle">A safe handle to the process, used for resource management and native operations.</param>
         /// <param name="commandLine">The full command line used to launch the process.</param>
         /// <param name="stdOutHandle">The handle responsible for asynchronously reading the standard output stream of the process.</param>
         /// <param name="stdErrHandle">The handle responsible for asynchronously reading the standard error stream of the process.</param>
@@ -32,7 +30,7 @@ namespace PSADT.ProcessManagement
         /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
         /// <param name="job">The job object the process has been assigned to and the IO completion port it reports to, required when child processes are to be waited for or killed.</param>
         /// <exception cref="InvalidProgramException">Thrown if the IO completion port or job object is not initialized when required.</exception>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null, (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null)
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null, (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null)
         {
             // Internal worker to satisfy S4457 so that the error handling works properly.
             async System.Threading.Tasks.Task<ProcessResult> GetTaskAsync()
@@ -42,11 +40,10 @@ namespace PSADT.ProcessManagement
                 const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
                 int exitCode = ProcessManager.TimeoutExitCode; bool processFinished = false;
 
-                // Close the process and job handles once the wait is over, regardless of success or failure. The job closes before
-                // the streams are waited on, as with KillChildProcessesWithParent that is what kills any children still holding them.
+                // Close the job handles once the wait is over, regardless of success or failure. The job closes before the streams
+                // are waited on, as with KillChildProcessesWithParent that is what kills any children still holding them.
                 using (job?.ioCompletionPort)
                 using (job?.jobObject)
-                using (processHandle)
                 {
                     // Set the client/server success flag if the client started a ShellExecuteEx process invocation.
                     if (ClientServerUtilities.CallerIsClientServerExecutable && launchInfo.UseShellExecute)
@@ -77,9 +74,9 @@ namespace PSADT.ProcessManagement
                                     }
                                     _ = NativeMethods.TerminateJobObject(jobObject, timeoutExitCode);
                                 }
-                                else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == processId && !launchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                                else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == Process.Id && !launchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                                 {
-                                    _ = NativeMethods.GetExitCodeProcess(processHandle, out uint lpExitCode);
+                                    _ = NativeMethods.GetExitCodeProcess(Process.SafeHandle, out uint lpExitCode);
                                     exitCode = unchecked((int)lpExitCode);
                                     processFinished = true;
                                     break;
@@ -132,7 +129,6 @@ namespace PSADT.ProcessManagement
 
             // Confirm all inputs are valid.
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
-            ArgumentNullException.ThrowIfNull(processHandle);
             ArgumentNullException.ThrowIfNull(launchInfo);
             ArgumentNullException.ThrowIfNull(process);
             if (job is null && launchInfo.RequiresJobObject)

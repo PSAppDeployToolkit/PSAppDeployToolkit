@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
@@ -77,6 +78,7 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We cannot refactor this method to be async at this stage.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "VSTHRD002")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The process handle is owned by the Process object once GetProcessByIdAndHandle has attached it by reflection, which the analyser cannot follow.")]
         private static ProcessHandle LaunchWithCreateProcessAsync(ProcessLaunchInfo launchInfo)
         {
             // Perform initial setup and get started with the process creation.
@@ -219,46 +221,32 @@ namespace PSADT.ProcessManagement
             bool resumed = false;
             try
             {
-                Process process = Process.GetProcessById((int)processId);
-                try
+                // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
+                Process process = GetProcessByIdAndHandle(processId, hProcess);
+                if (launchInfo.BypassIfeo)
                 {
-                    // The process was not spawned by .NET, so fetching the handle makes `Process` call `SetProcessHandle`.
-                    // Without it, `ExitCode` throws. The result is deliberately discarded as we've got hProcess available.
-                    _ = process.Handle;
-
-                    // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
-                    if (launchInfo.BypassIfeo)
-                    {
-                        _ = NativeMethods.DebugActiveProcessStop(processId);
-                    }
-
-                    // Return the process handle and associated information to the caller.
-                    if (launchInfo.DenyUserTermination)
-                    {
-                        DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
-                    }
-                    if (launchInfo.RequiresJobObject)
-                    {
-                        job = CreateProcessJob(launchInfo, hProcess);
-                    }
-                    using (hThread)
-                    {
-                        _ = NativeMethods.ResumeThread(hThread);
-                        resumed = true;
-                    }
-                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle, job);
+                    _ = NativeMethods.DebugActiveProcessStop(processId);
                 }
-                catch (Exception ex)
+
+                // Return the process handle and associated information to the caller.
+                if (launchInfo.DenyUserTermination)
                 {
-                    using (process)
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
                 }
+                if (launchInfo.RequiresJobObject)
+                {
+                    job = CreateProcessJob(launchInfo, hProcess);
+                }
+                using (hThread)
+                {
+                    _ = NativeMethods.ResumeThread(hThread);
+                    resumed = true;
+                }
+                return new(launchInfo, process, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle, job);
             }
             catch (Exception ex)
             {
+                // The Process object shares hProcess and isn't disposed here, as the process must be ended before the handle closes.
                 using (job?.ioCompletionPort)
                 using (job?.jobObject)
                 using (stdOutStream)
@@ -281,9 +269,9 @@ namespace PSADT.ProcessManagement
         /// Starts a new process using ShellExecuteEx with the specified launch parameters and returns a handle to the
         /// created process, or null if the operation is a pure shell action.
         /// </summary>
-        /// <remarks>Where the shell creates the process itself, it is held suspended until the job object and access
-        /// control are in place, so nothing it starts can escape them. The caller is responsible for disposing of the
-        /// returned ProcessHandle when it is no longer needed.</remarks>
+        /// <remarks>Where a job object or access control is wanted and the shell creates the process itself, it is held
+        /// suspended until they are in place, so nothing it starts can escape them. The caller is responsible for disposing
+        /// of the returned ProcessHandle when it is no longer needed.</remarks>
         /// <param name="launchInfo">An object containing the parameters required to launch the process, including file path, arguments, working
         /// directory, window style, and other process options.</param>
         /// <returns>A handle to the started process if the process was successfully created; otherwise, null if the operation
@@ -310,41 +298,26 @@ namespace PSADT.ProcessManagement
             (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort)? job = null;
             try
             {
-                uint processId = NativeMethods.GetProcessId(hProcess);
-                Process process = Process.GetProcessById((int)processId);
-                try
+                // Return the process handle and associated information to the caller.
+                Process process = GetProcessByIdAndHandle(NativeMethods.GetProcessId(hProcess), hProcess);
+                if (launchInfo.DenyUserTermination)
                 {
-                    // The process was not spawned by .NET, so fetching the handle makes `Process` call `SetProcessHandle`.
-                    // Without it, `ExitCode` throws. The result is deliberately discarded as we've got hProcess available.
-                    _ = process.Handle;
-
-                    // Return the process handle and associated information to the caller.
-                    if (launchInfo.DenyUserTermination)
-                    {
-                        DenyProcessTermination(launchInfo, hProcess);
-                    }
-                    if (launchInfo.RequiresJobObject)
-                    {
-                        job = CreateProcessJob(launchInfo, hProcess);
-                    }
-                    if (suspended)
-                    {
-                        _ = NativeMethods.NtResumeProcess(hProcess);
-                        suspended = false;
-                    }
-                    return new(launchInfo, process, processId, hProcess, launchInfo.MakeCommandLine(), job: job);
+                    DenyProcessTermination(launchInfo, hProcess);
                 }
-                catch (Exception ex)
+                if (launchInfo.RequiresJobObject)
                 {
-                    using (process)
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    job = CreateProcessJob(launchInfo, hProcess);
                 }
+                if (suspended)
+                {
+                    _ = NativeMethods.NtResumeProcess(hProcess);
+                    suspended = false;
+                }
+                return new(launchInfo, process, launchInfo.MakeCommandLine(), job: job);
             }
             catch (Exception ex)
             {
+                // The Process object shares hProcess and isn't disposed here, as the process must be ended before the handle closes.
                 using (job?.ioCompletionPort)
                 using (job?.jobObject)
                 using (hProcess)
@@ -503,10 +476,7 @@ namespace PSADT.ProcessManagement
         internal static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
         {
             // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run.
-            ArgumentNullException.ThrowIfNull(launchInfo);
-            (ASSOCF flags, string association) = !Uri.TryCreate(launchInfo.FilePath, UriKind.Absolute, out Uri? uri) || uri.IsFile
-                ? (ASSOCF.ASSOCF_NONE, Path.GetExtension(launchInfo.FilePath))
-                : (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme);
+            (ASSOCF flags, string association) = !Uri.TryCreate(launchInfo.FilePath, UriKind.Absolute, out Uri? uri) || uri.IsFile ? (ASSOCF.ASSOCF_NONE, Path.GetExtension(launchInfo.FilePath)) : (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme);
             return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb ?? "open", default, out _) == HRESULT.S_FALSE;
         }
 
@@ -1030,6 +1000,33 @@ namespace PSADT.ProcessManagement
             catch (Exception ex)
             {
                 using (hAttributeList)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a Process object from an existing process ID and handle.
+        /// </summary>
+        /// <param name="processId">The ID of the existing process.</param>
+        /// <param name="processHandle">The handle of the existing process.</param>
+        /// <returns>A Process object representing the existing process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the Process object cannot be created or the handle cannot be set.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "This is unfortuantely deliberate as the CLR does not provide a way to instantiate a Process object using an existing handle.")]
+        private static Process GetProcessByIdAndHandle(uint processId, SafeProcessHandle processHandle)
+        {
+            // Use reflection to create a Process instance using its private constructor, then set the handle via its private `SetProcessHandle` method.
+            Process process = (Process?)Activator.CreateInstance(typeof(Process), BindingFlags.Instance | BindingFlags.NonPublic, binder: null, [".", false, (int)processId, null], culture: null, activationAttributes: null) ?? throw new InvalidOperationException($"Failed to create process with ID {processId}.");
+            try
+            {
+                _ = (typeof(Process).GetMethod("SetProcessHandle", BindingFlags.Instance | BindingFlags.NonPublic) ?? throw new InvalidOperationException("Failed to get SetProcessHandle method.")).Invoke(process, [processHandle]);
+                return process;
+            }
+            catch (Exception ex)
+            {
+                using (process)
                 {
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
