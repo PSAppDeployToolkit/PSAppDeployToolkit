@@ -810,8 +810,9 @@ namespace PSADT.ProcessManagement
             /// <exception cref="InvalidOperationException">Thrown if the shell created its process without the flags it was asked to add, or held it suspended but returned no handle to resume it with.</exception>
             private static (SafeProcessHandle? hProcess, bool suspended) ShellExecuteExImpl(ProcessLaunchInfo launchInfo)
             {
-                // The shell waits inside the call for a DDE conversation, which a process that is suspended or debugged can never answer.
-                bool dde = HasDdeCommand(launchInfo);
+                // The shell waits inside the call for a DDE conversation, which a process that is suspended or debugged
+                // can never answer, so the question is only asked when the launch would hold or debug the process.
+                bool dde = (launchInfo.BypassIfeo || launchInfo.RequiresJobObject || launchInfo.DenyUserTermination) && HasDdeCommand(launchInfo);
                 if (dde && launchInfo.BypassIfeo)
                 {
                     throw new NotSupportedException("Cannot bypass image file execution options for a launch the shell performs through DDE.");
@@ -930,7 +931,7 @@ namespace PSADT.ProcessManagement
             private static bool HasDdeCommand(ProcessLaunchInfo launchInfo)
             {
                 // The shell resolves a URL by its scheme and anything else by its extension, under the verb it will run. With no verb given it picks the type's default verb, as the shell itself would.
-                (ASSOCF flags, string association) = GetAssociation(launchInfo.FilePath);
+                (ASSOCF flags, string association) = GetAssociation(launchInfo.FilePath, launchInfo.WorkingDirectory);
                 return !string.IsNullOrWhiteSpace(association) && NativeMethods.AssocQueryString(flags, ASSOCSTR.ASSOCSTR_DDECOMMAND, association, launchInfo.Verb, default, out _) == HRESULT.S_FALSE;
             }
 
@@ -938,14 +939,19 @@ namespace PSADT.ProcessManagement
             /// Gets the association the shell would launch a target under, following a shortcut to what it points at.
             /// </summary>
             /// <param name="target">The file, URL or shortcut to be launched.</param>
+            /// <param name="workingDirectory">The launch's working directory, where the shell looks for a relative target.</param>
             /// <returns>Whether the association is a protocol, and its scheme or extension.</returns>
-            private static (ASSOCF flags, string association) GetAssociation(string target)
+            private static (ASSOCF flags, string association) GetAssociation(string target, DirectoryInfo? workingDirectory)
             {
                 // The shell launches a shortcut as its target, and collapses a shortcut to a shortcut when it saves one, so one level is all there is.
-                if (".lnk".Equals(Path.GetExtension(target), StringComparison.OrdinalIgnoreCase) && File.Exists(target))
+                if (".lnk".Equals(Path.GetExtension(target), StringComparison.OrdinalIgnoreCase))
                 {
-                    using ShellLinkFile shortcut = ShellLinkFile.Load(target);
-                    target = shortcut.TargetPath;
+                    string shortcutPath = Path.IsPathRooted(target) || workingDirectory is null ? target : Path.Join(workingDirectory.FullName, target);
+                    if (File.Exists(shortcutPath))
+                    {
+                        using ShellLinkFile shortcut = ShellLinkFile.Load(shortcutPath);
+                        target = shortcut.TargetPath;
+                    }
                 }
                 return Uri.TryCreate(target, UriKind.Absolute, out Uri? uri) && !uri.IsFile ? (ASSOCF.ASSOCF_IS_PROTOCOL, uri.Scheme) : (ASSOCF.ASSOCF_NONE, Path.GetExtension(target) ?? string.Empty);
             }

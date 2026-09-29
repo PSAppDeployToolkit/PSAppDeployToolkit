@@ -625,6 +625,23 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a shortcut given by a relative name is looked for in the launch's working directory, as the
+        /// shell does, and not in this process's current directory.
+        /// </summary>
+        [Fact]
+        public void HasDdeCommand_FindsARelativeShortcutInTheWorkingDirectory()
+        {
+            // Arrange
+            using DdeFileType type = new();
+            using TempDirectory temp = new();
+            _ = SaveShortcut(temp.GetPath("document.lnk"), temp.WriteFile($"document{type.Extension}", string.Empty));
+
+            // Act & Assert
+            Assert.True(HasDdeCommand(new("document.lnk", workingDirectory: temp.FullName, useShellExecute: true)));
+            Assert.False(HasDdeCommand(new("document.lnk", useShellExecute: true)));
+        }
+
+        /// <summary>
         /// Saves a shortcut to a target.
         /// </summary>
         /// <param name="path">Where to save the shortcut.</param>
