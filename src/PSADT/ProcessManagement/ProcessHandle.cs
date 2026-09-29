@@ -92,11 +92,11 @@ namespace PSADT.ProcessManagement
                 // If a job object and IO completion port were created, monitor the IO completion port for process exit or timeout events.
                 if (job is (SafeFileHandle jobObject, SafeFileHandle ioCompletionPort))
                 {
-                    // Start a task to monitor the IO completion port for process exit or timeout events.
+                    // Monitor the IO completion port for process exit or timeout events on a thread of its own, as the wait blocks for the life of the process.
                     using (ioCompletionPort)
                     using (jobObject)
                     {
-                        await System.Threading.Tasks.Task.Run(() =>
+                        await System.Threading.Tasks.Task.Factory.StartNew(() =>
                         {
                             using CancellationTokenRegistration? ctr = cancellationToken.CanBeCanceled ? cancellationToken.Register(() => NativeMethods.PostQueuedCompletionStatus(ioCompletionPort, timeoutExitCode, default)) : null;
                             while (true)
@@ -125,7 +125,7 @@ namespace PSADT.ProcessManagement
                                     break;
                                 }
                             }
-                        }, default).ConfigureAwait(false);
+                        }, CancellationToken.None, System.Threading.Tasks.TaskCreationOptions.LongRunning, System.Threading.Tasks.TaskScheduler.Default).ConfigureAwait(false);
                     }
                 }
                 else
