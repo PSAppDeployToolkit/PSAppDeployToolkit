@@ -2245,10 +2245,12 @@ function Resolve-Error
 
         # Announce overall deprecation and translate bad switches before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
-        $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
+        $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException').Where({ $PSBoundParameters.ContainsKey("Get$_") }).ForEach({
                 $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters."Get$_")
                 $PSBoundParameters.Remove("Get$_")
             })
+        $PSBoundParameters.IncludeErrorInnerException = $GetErrorInnerException
+        $null = $PSBoundParameters.Remove('GetErrorInnerException')
 
         # Set up collector for piped in ErrorRecord objects.
         $errRecords = [System.Collections.Generic.List[System.Management.Automation.ErrorRecord]]::new()
