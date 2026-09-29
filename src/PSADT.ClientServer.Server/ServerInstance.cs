@@ -115,52 +115,55 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("The server instance already has an associated client process.");
             }
 
-            // Start the client process using the pipe handles.
+            // Everything from launching the client to confirming it is ready either succeeds together or leaves the
+            // instance unusable, since the client's local handle copies are disposed on the way and cannot be recreated.
             try
             {
-                nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
-                nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
-                nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
-                _clientProcess = ClientServerUtilities.StartClientOperationAsync(
-                    ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
-                    RunAsActiveUser,
-                    [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
-                    _clientProcessCts.Token
-                );
-            }
-            finally
-            {
-                _outputServer.DisposeLocalCopyOfClientHandle();
-                _inputServer.DisposeLocalCopyOfClientHandle();
-                _logServer.DisposeLocalCopyOfClientHandle();
-            }
-
-            // Perform key exchange for encrypted communication, each on a thread of its own and bounded so a client that comes up but never answers cannot leave this waiting forever.
-            await AwaitBoundedByClientTimeoutAsync(_ioEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
-            await AwaitBoundedByClientTimeoutAsync(_logEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
-
-            // Confirm the client starts and is ready to receive commands.
-            bool opened = false;
-            try
-            {
-                if (!(opened = await InvokeAsync<bool>(PipeCommand.Open).ConfigureAwait(false)))
+                // Start the client process using the pipe handles.
+                try
                 {
-                    throw new InvalidProgramException("The opened client process returned an invalid response.");
+                    nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
+                    nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
+                    nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
+                    _clientProcess = ClientServerUtilities.StartClientOperationAsync(
+                        ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
+                        RunAsActiveUser,
+                        [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
+                        _clientProcessCts.Token
+                    );
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess);
-            }
-            finally
-            {
-                if (!opened)
+                finally
                 {
-                    await using (this.ConfigureAwait(false))
+                    _outputServer.DisposeLocalCopyOfClientHandle();
+                    _inputServer.DisposeLocalCopyOfClientHandle();
+                    _logServer.DisposeLocalCopyOfClientHandle();
+                }
+
+                // Perform key exchange for encrypted communication, each on a thread of its own and bounded so a client that comes up but never answers cannot leave this waiting forever.
+                await AwaitBoundedByClientTimeoutAsync(_ioEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
+                await AwaitBoundedByClientTimeoutAsync(_logEncryption.PerformKeyExchangeOnOwnThreadAsync(_outputServer, _inputServer), "The client process did not complete the key exchange within the allotted time.").ConfigureAwait(false);
+
+                // Confirm the client starts and is ready to receive commands.
+                try
+                {
+                    if (!await InvokeAsync<bool>(PipeCommand.Open).ConfigureAwait(false))
                     {
-                        _clientProcess = null;
+                        throw new InvalidProgramException("The opened client process returned an invalid response.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess);
+                }
+            }
+            catch
+            {
+                // Dispose the now-unusable instance rather than leave it half-open, then let the failure propagate.
+                await using (this.ConfigureAwait(false))
+                {
+                    _clientProcess = null;
+                }
+                throw;
             }
 
             // Ensure this instance is disposed on process exit.
