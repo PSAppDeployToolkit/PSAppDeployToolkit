@@ -1057,9 +1057,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected readonly bool _dialogMinimizeVisible;
 
         /// <summary>
-        /// The countdown duration for the dialog.
+        /// The timer that drives the countdown, if the dialog has one.
         /// </summary>
-        private readonly DispatcherTimer? _countdownTimer;
+        private protected readonly DispatcherTimer? _countdownTimer;
 
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.

@@ -164,7 +164,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
-            // Restart the computer immediately.
+            // Restart the computer immediately, stopping the countdown so it can't ask again while the restart is in flight.
+            countdownTimer.Stop();
             DialogResult = RestartDialogResult.Restart;
             await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
             base.ButtonLeft_Click(sender, e);

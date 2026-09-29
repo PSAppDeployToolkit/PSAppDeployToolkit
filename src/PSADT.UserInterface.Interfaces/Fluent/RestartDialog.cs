@@ -79,10 +79,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e">The event data associated with the click event.</param>
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
         [SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
-        [DoesNotReturn]
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
-            // Immediately restart the computer.
+            // Immediately restart the computer, stopping the countdown so it can't ask again while the restart is in flight.
+            _countdownTimer?.Stop();
             DialogResult = RestartDialogResult.Restart;
             await DeviceUtilities.RestartComputerAsync(shutdownReasonText, noForceCloseApps);
             base.ButtonLeft_Click(sender, e);
