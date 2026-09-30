@@ -79,7 +79,7 @@ namespace PSADT.ProcessManagement
         {
             // Launch the process using the CreateProcess API and return a handle to the caller.
             ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges = PrivilegeManager.GetPrivileges();
-            (SafeProcessHandle hProcess, SafeThreadHandle hThread, uint dwProcessId, string commandLine, bool ownsDebugObject) = CreateProcessApi.CreateProcess(launchInfo, callerPrivileges, out (ProcessReadStream StdOutHandle, ProcessReadStream StdErrHandle, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle);
+            (SafeProcessHandle hProcess, SafeThreadHandle hThread, uint dwProcessId, string commandLine, bool ownsDebugObject) = CreateProcessApi.CreateProcess(launchInfo, callerPrivileges, out (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle);
             bool resumed = false;
             try
             {
@@ -109,8 +109,8 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex)
             {
-                using (stdOutErrHandles?.StdOutHandle)
-                using (stdOutErrHandles?.StdErrHandle)
+                using (stdOutErrHandles?.StdOut)
+                using (stdOutErrHandles?.StdErr)
                 using (stdInHandle)
                 using (hProcess)
                 using (hThread)
@@ -782,7 +782,7 @@ namespace PSADT.ProcessManagement
             /// </summary>
             /// <param name="launchInfo">The launch to perform.</param>
             /// <returns>The process handle the shell returned, or null for a pure shell action, and whether the process was held suspended.</returns>
-            internal static (SafeProcessHandle? hProcess, bool suspended) ShellExecuteEx(ProcessLaunchInfo launchInfo)
+            internal static (SafeProcessHandle?, bool) ShellExecuteEx(ProcessLaunchInfo launchInfo)
             {
                 if (Thread.CurrentThread.GetApartmentState() is ApartmentState.STA)
                 {
@@ -818,7 +818,7 @@ namespace PSADT.ProcessManagement
             /// <returns>The process handle the shell returned, or null for a pure shell action, and whether the process was held suspended.</returns>
             /// <exception cref="NotSupportedException">Thrown if image file execution options are to be bypassed for a launch the shell performs through DDE, which cannot be held for the debugger to be detached.</exception>
             /// <exception cref="InvalidOperationException">Thrown if the shell created its process without the flags it was asked to add, or held it suspended but returned no handle to resume it with.</exception>
-            private static (SafeProcessHandle? hProcess, bool suspended) ShellExecuteExImpl(ProcessLaunchInfo launchInfo)
+            private static (SafeProcessHandle?, bool) ShellExecuteExImpl(ProcessLaunchInfo launchInfo)
             {
                 // The shell waits inside the call for a DDE conversation, which a process that is suspended or debugged
                 // can never answer, so the question is only asked when the launch would hold or debug the process.
@@ -951,7 +951,7 @@ namespace PSADT.ProcessManagement
             /// <param name="target">The file, URL or shortcut to be launched.</param>
             /// <param name="workingDirectory">The launch's working directory, where the shell looks for a relative target.</param>
             /// <returns>Whether the association is a protocol, and its scheme or extension.</returns>
-            private static (ASSOCF flags, string association) GetAssociation(string target, DirectoryInfo? workingDirectory)
+            private static (ASSOCF, string) GetAssociation(string target, DirectoryInfo? workingDirectory)
             {
                 // The shell launches a shortcut as its target, and collapses a shortcut to a shortcut when it saves one, so one level is all there is.
                 if (".lnk".Equals(Path.GetExtension(target), StringComparison.OrdinalIgnoreCase))
