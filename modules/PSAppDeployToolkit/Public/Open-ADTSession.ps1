@@ -480,6 +480,13 @@ function Open-ADTSession
                     $PSBoundParameters.Add('AllowWowProcess', ($AllowWowProcess = $true))
                 }
             }
+            catch [System.Management.Automation.MethodInvocationException]
+            {
+                if ($_.Exception.InnerException -isnot [System.UnauthorizedAccessException])
+                {
+                    throw
+                }
+            }
             finally
             {
                 $parentProcess.Dispose()
