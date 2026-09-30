@@ -929,6 +929,10 @@ namespace PSADT.ClientServer
                 {
                     // .NET Framework throws this if the client exited between the check and the kill, which is the outcome wanted anyway.
                 }
+                catch (Win32Exception)
+                {
+                    // This can be thrown if the process is mid-way through terminating, which is the outcome wanted anyway.
+                }
             }
         }
 
