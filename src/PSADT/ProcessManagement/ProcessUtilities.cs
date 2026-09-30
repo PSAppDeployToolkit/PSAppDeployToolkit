@@ -166,8 +166,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Determines whether the specified process has exited using minimal privileges.
         /// </summary>
-        /// <remarks>This method opens the process with <c language="csharp">PROCESS_QUERY_LIMITED_INFORMATION</c> access
-        /// and checks the exit code to determine if the process is still running. This is more reliable than
+        /// <remarks>This method opens the process with <c language="csharp">SYNCHRONIZE</c> access and checks whether
+        /// it has been signaled, falling back to its exit code when that access is refused. This is more reliable than
         /// using <see cref="Process.HasExited"/> which relies on a cached handle that may have been opened
         /// with broader access rights that could fail on protected processes.</remarks>
         /// <param name="process">The process to check. Must not be null.</param>
@@ -185,12 +185,28 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>This method checks the exit status of the process identified by the given process ID.
         /// It is important to ensure that the process ID is valid before calling this method to avoid unexpected
-        /// results.</remarks>
+        /// results. A process that refuses <c language="csharp">SYNCHRONIZE</c> access can only be judged by its exit
+        /// code, so one of those that exited with 259 (<c language="csharp">STILL_ACTIVE</c>) is reported as running.</remarks>
         /// <param name="processId">The identifier of the process to check. Must be a valid process ID.</param>
         /// <returns>true if the process has exited; otherwise, false.</returns>
         public static bool HasProcessExited(int processId)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            try
+            {
+                // Only a wait can tell an exit code of 259 from STILL_ACTIVE.
+                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, bInheritHandle: false, (uint)processId);
+                return NativeMethods.WaitForSingleObject(hProcess, 0) is WAIT_EVENT.WAIT_OBJECT_0;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Some processes refuse SYNCHRONIZE but still allow a limited query.
+            }
+            catch
+            {
+                return true;
+                throw;
+            }
             try
             {
                 using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);

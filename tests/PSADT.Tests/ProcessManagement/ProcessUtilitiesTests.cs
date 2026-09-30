@@ -5,7 +5,12 @@ using System.Linq;
 using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
+using PSADT.SafeHandles;
+using Windows.Win32;
+using Windows.Win32.Security;
+using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.Threading;
 using Xunit;
 
@@ -108,19 +113,69 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Verifies that a process that has run and finished is reported as exited.
+        /// Verifies that a running process is still reported as running when it grants only one of the two
+        /// rights the check can use, since some processes allow a limited query but refuse a wait, or the
+        /// other way round.
         /// </summary>
-        [Fact]
-        public void HasProcessExited_ReportsAFinishedProcessAsExited()
+        /// <param name="grantedAccess">The one right the process grants this account.</param>
+        /// <param name="refusedAccess">The right it then refuses, which the check has to do without.</param>
+        [Theory]
+        [InlineData((uint)PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, (uint)PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE)]
+        [InlineData((uint)PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, (uint)PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION)]
+        public void HasProcessExited_ReportsARunningProcessGrantingOneRightAsRunning(uint grantedAccess, uint refusedAccess)
+        {
+            // Arrange: a ping that outlives the test, whose DACL gives this account the granted right alone
+            using Process? child = Process.Start(new ProcessStartInfo("ping.exe", "-n 120 127.0.0.1") { UseShellExecute = false, CreateNoWindow = true });
+            Assert.NotNull(child);
+            try
+            {
+                GrantOnly(child, (PROCESS_ACCESS_RIGHTS)grantedAccess);
+                Assert.SkipWhen(CanOpen(child.Id, (PROCESS_ACCESS_RIGHTS)refusedAccess), "This account opens processes regardless of their DACL, such as with SeDebugPrivilege enabled.");
+
+                // Act & Assert
+                Assert.False(ProcessUtilities.HasProcessExited(child.Id));
+            }
+            finally
+            {
+                child.Kill();
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a process that has run and finished is reported as exited, including one that
+        /// finished with 259, which is also the exit code Windows reports for a process still running.
+        /// </summary>
+        /// <param name="exitCode">The code the process exits with.</param>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(259)]
+        public void HasProcessExited_ReportsAFinishedProcessAsExited(int exitCode)
         {
             // Arrange: a command interpreter that does nothing and returns, which changes nothing
-            using Process? child = Process.Start(new ProcessStartInfo("cmd.exe", "/c exit 0") { UseShellExecute = false, CreateNoWindow = true });
+            using Process? child = Process.Start(new ProcessStartInfo("cmd.exe", $"/c exit {exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)}") { UseShellExecute = false, CreateNoWindow = true });
             Assert.NotNull(child);
             int childId = child.Id;
             Assert.True(child.WaitForExit(30_000), "The child process did not finish in time.");
+            Assert.Equal(exitCode, child.ExitCode);
+
+            // Act & Assert: the undisposed object keeps the exited process openable, so its state is read
+            Assert.True(ProcessUtilities.HasProcessExited(childId));
+            Assert.True(ProcessUtilities.HasProcessExited(child));
+        }
+
+        /// <summary>
+        /// Verifies that a disposed process object is refused rather than answered, since once nothing
+        /// holds a handle its identifier can be given to another process, so no answer could be trusted.
+        /// </summary>
+        [Fact]
+        public void HasProcessExited_RejectsADisposedProcess()
+        {
+            // Arrange: disposing the object leaves this process itself running
+            Process current = Process.GetCurrentProcess();
+            current.Dispose();
 
             // Act & Assert
-            Assert.True(ProcessUtilities.HasProcessExited(childId));
+            _ = Assert.Throws<InvalidOperationException>(() => ProcessUtilities.HasProcessExited(current));
         }
 
         /// <summary>
@@ -284,6 +339,54 @@ namespace PSADT.Tests.ProcessManagement
             Assert.True(processId > 0, "The event log service reported no process.");
             using Process host = Process.GetProcessById((int)processId);
             Assert.False(string.IsNullOrWhiteSpace(host.ProcessName));
+        }
+
+        /// <summary>
+        /// Replaces a process's DACL with one that grants this account the given right and nothing else.
+        /// </summary>
+        /// <param name="process">The process to restrict, whose own handle keeps the access it was opened with.</param>
+        /// <param name="access">The only right to grant.</param>
+        private static void GrantOnly(Process process, PROCESS_ACCESS_RIGHTS access)
+        {
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            Assert.NotNull(identity.User);
+            using SafePinnedGCHandle pinnedSid = SafePinnedGCHandle.Alloc(identity.User.GetBinaryForm());
+            TRUSTEE_W trustee = new()
+            {
+                TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
+                ptstrName = new(pinnedSid.DangerousGetHandle()),
+            };
+            EXPLICIT_ACCESS_W grant = new()
+            {
+                grfAccessPermissions = (uint)access,
+                grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
+                grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                Trustee = trustee,
+            };
+            _ = NativeMethods.SetEntriesInAcl([grant], out LocalFreeSafeHandle pAcl);
+            using (pAcl)
+            {
+                _ = NativeMethods.SetSecurityInfo(process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, psidOwner: null, psidGroup: null, pAcl, pSacl: null);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether this account can open a process with the given right.
+        /// </summary>
+        /// <param name="processId">The identifier of the process to open.</param>
+        /// <param name="access">The right to open it with.</param>
+        /// <returns><see langword="true"/> if the process opened; <see langword="false"/> if access was denied.</returns>
+        private static bool CanOpen(int processId, PROCESS_ACCESS_RIGHTS access)
+        {
+            try
+            {
+                NativeMethods.OpenProcess(access, bInheritHandle: false, (uint)processId).Dispose();
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
     }
 }
