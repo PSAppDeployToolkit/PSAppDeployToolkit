@@ -5287,6 +5287,12 @@ if ($sessionParams.ContainsKey('AppScriptDate'))
     }
 }
 
+# Disable process detection otherwise all v3 deployments would revert to silent since they do not define processes to close at the session level.
+if (!$sessionParams.ContainsKey('NoProcessDetection'))
+{
+    $sessionParams.Add('NoProcessDetection', $true)
+}
+
 # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
 if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
 {
