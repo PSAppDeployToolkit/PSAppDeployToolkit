@@ -104,7 +104,7 @@ namespace PSADT.Interop.Utilities
             // Generate the base NtStatusException for use throughout the method.
             NtStatusException ntStatusException = new(ntStatus);
 
-            // Try for an ManagedException > Win32Exception > NtStatusException based on the NTSTATUS code, falling back as appripriate.
+            // Try for a ManagedException > Win32Exception > NtStatusException based on the NTSTATUS code, falling back as appropriate.
             if (WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
             {
                 // Build out the Win32Exception, then see if there's a managed exception for it, otherwise return the Win32Exception.
@@ -139,7 +139,7 @@ namespace PSADT.Interop.Utilities
                 ? throw new NotSupportedException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].")
                 : HRESULT_FACILITY(hResult) is FACILITY_CODE.FACILITY_WIN32
                 ? GetException((WIN32_ERROR)HRESULT_CODE(hResult))
-                : Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
+                : Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrieve an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
         }
 
         /// <summary>

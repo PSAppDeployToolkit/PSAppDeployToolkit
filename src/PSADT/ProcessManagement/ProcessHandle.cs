@@ -25,12 +25,12 @@ namespace PSADT.ProcessManagement
     /// Represents a handle to a process, encapsulating the process, its module information, launch details, command
     /// line, and associated asynchronous task.
     /// </summary>
-    /// <remarks>This record provides a structured way to manage and interact with a process, offering access
+    /// <remarks>This class provides a structured way to manage and interact with a process, offering access
     /// to its core components and the ability to handle its asynchronous operations.</remarks>
     public sealed class ProcessHandle
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process handle and ID, command line, caller privileges, and optional standard stream handles and resume delegate.
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> class with the specified process launch information, process handle and ID, command line, caller privileges, and optional standard stream handles and resume delegate.
         /// </summary>
         /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
         /// <param name="hProcess">The handle to the running process.</param>
@@ -172,7 +172,7 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process handle and ID, command line, and resume delegate.
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> class with the specified process launch information, process handle and ID, command line, and resume delegate.
         /// </summary>
         /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
         /// <param name="hProcess">The handle to the running process.</param>
@@ -260,7 +260,7 @@ namespace PSADT.ProcessManagement
         /// <param name="hProcess">The handle of the existing process.</param>
         /// <returns>A Process object representing the existing process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the Process object cannot be created or the handle cannot be set.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "This is unfortuantely deliberate as the CLR does not provide a way to instantiate a Process object using an existing handle.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "This is unfortunately deliberate as the CLR does not provide a way to instantiate a Process object using an existing handle.")]
         private static Process GetProcessByIdAndHandle(uint dwProcessId, SafeProcessHandle hProcess)
         {
             // Use reflection to create a Process instance using its private constructor, then set the handle via its private `SetProcessHandle` method.

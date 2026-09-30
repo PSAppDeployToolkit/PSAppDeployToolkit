@@ -50,7 +50,8 @@ namespace PSADT.ProcessManagement
         /// style, user context, input/output redirection, process priority, and other process control options. Cannot
         /// be null.</param>
         /// <returns>A ProcessHandle object that provides access to the launched process and its associated asynchronous task, or
-        /// null if the process could not be started.</returns>
+        /// null if the launch was a pure shell action that created no process, such as a document handed to a running
+        /// application. A launch that fails throws rather than returning null.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="launchInfo"/> is null.</exception>
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
