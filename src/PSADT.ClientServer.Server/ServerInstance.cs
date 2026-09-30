@@ -918,17 +918,15 @@ namespace PSADT.ClientServer
         /// directly.</remarks>
         /// <param name="sender">The source of the event, typically the current application domain.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "This method is not awaitable.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is necessary here.")]
-        private async void ProcessExit_Handler(object? sender, EventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "A ProcessExit handler must run to completion synchronously; an async handler would return at its first await and let the runtime terminate the process mid-teardown.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "As above: the handler has to block until disposal completes, within the runtime's process-exit budget.")]
+        private void ProcessExit_Handler(object? sender, EventArgs e)
         {
             if (!_disposed)
             {
-                await using (this.ConfigureAwait(false))
-                {
-                    return;
-                }
+                // Block until disposal completes: the runtime tears the process down once this returns, so an async
+                // handler that yielded at its first await would leave the client and its pipes half-closed.
+                DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
         }
 
