@@ -125,7 +125,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="state">Optional state values for the dialog.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls", Justification = "Synchronous wait is necessary for constructor initialization.")]
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout, options.CustomMessageText, options.CountdownDuration, countdownStopwatch: state.CountdownStopwatch)
@@ -169,7 +168,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), force: true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
-            UpdateRunningProcessesAsync().GetAwaiter().GetResult();
+            UpdateRunningProcessesAsync().AsTask().GetAwaiter().GetResult();
             UpdateDeferralValues();
             _logAction = state.LogAction;
         }

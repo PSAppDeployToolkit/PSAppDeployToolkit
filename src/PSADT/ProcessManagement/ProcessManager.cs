@@ -219,8 +219,8 @@ namespace PSADT.ProcessManagement
         /// </summary>
         private static class CreateProcessApi
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We cannot refactor this method to be async at this stage.")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "https://github.com/SonarSource/sonar-dotnet/issues/6779")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "VSTHRD002")]
             internal static (SafeProcessHandle, SafeThreadHandle, uint, string, bool) CreateProcess(ProcessLaunchInfo launchInfo, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, out (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, out ProcessWriteStream? stdInHandle)
             {
@@ -292,7 +292,7 @@ namespace PSADT.ProcessManagement
                         {
                             throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                         }
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                         _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
@@ -317,7 +317,7 @@ namespace PSADT.ProcessManagement
                         {
                             throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                         }
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerRunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerRunAsActiveUser, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                         _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, launchInfo.RunAsInvoker, in startupInfo, out pi);
                     }
                     else

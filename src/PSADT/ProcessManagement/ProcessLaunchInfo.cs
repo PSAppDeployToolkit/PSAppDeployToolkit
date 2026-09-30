@@ -99,7 +99,6 @@ namespace PSADT.ProcessManagement
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "This is necessary here.")]
         internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, ElevatedTokenType? elevatedTokenType = null, bool runAsInvoker = false, bool uiAccess = false, bool bypassIfeo = false, IReadOnlyList<string>? standardInput = null, IReadOnlyList<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
@@ -164,7 +163,7 @@ namespace PSADT.ProcessManagement
                     {
                         throw new NotSupportedException("Cannot retrieve the necessary user token as no acquisition route is available in this execution context.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser).ConfigureAwait(false).GetAwaiter().GetResult();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
                     using (lpEnvironment)
                     {
