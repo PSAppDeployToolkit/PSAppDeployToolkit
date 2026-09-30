@@ -904,8 +904,12 @@ namespace PSADT.ProcessManagement
                         }
 
                         // The debug flag has bypassed IFEO by now, and the process can't run while it remains a debuggee of this thread.
-                        if (launchInfo.BypassIfeo && hProcess is not null)
+                        if (launchInfo.BypassIfeo)
                         {
+                            if (hProcess is null)
+                            {
+                                throw new InvalidOperationException("The shell created a process to bypass IFEO for but returned no handle to detach from it.");
+                            }
                             try
                             {
                                 _ = NativeMethods.DebugActiveProcessStop(NativeMethods.GetProcessId(hProcess));
