@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
@@ -910,23 +911,24 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Handles the application's process exit event to perform necessary cleanup operations before the process
-        /// terminates.
+        /// Handles the application's process exit event by making sure the client does not outlive this process.
         /// </summary>
-        /// <remarks>This handler is intended to be registered with the application's process exit event
-        /// to ensure that resources are properly released when the process is shutting down. It should not be called
-        /// directly.</remarks>
+        /// <remarks>Only reached when nothing else closed the instance. The client is killed rather than disposed, since disposal
+        /// can block or throw here, and either would stall the host's exit or replace its exit code.</remarks>
         /// <param name="sender">The source of the event, typically the current application domain.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "A ProcessExit handler must run to completion synchronously; an async handler would return at its first await and let the runtime terminate the process mid-teardown.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "As above: the handler has to block until disposal completes, within the runtime's process-exit budget.")]
         private void ProcessExit_Handler(object? sender, EventArgs e)
         {
-            if (!_disposed)
+            if (_clientProcess?.Process is Process clientProcess && !clientProcess.HasExited)
             {
-                // Block until disposal completes: the runtime tears the process down once this returns, so an async
-                // handler that yielded at its first await would leave the client and its pipes half-closed.
-                DisposeAsync().AsTask().GetAwaiter().GetResult();
+                try
+                {
+                    clientProcess.Kill();
+                }
+                catch (InvalidOperationException)
+                {
+                    // .NET Framework throws this if the client exited between the check and the kill, which is the outcome wanted anyway.
+                }
             }
         }
 
