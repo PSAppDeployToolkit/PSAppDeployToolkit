@@ -16,6 +16,7 @@ using PSADT.ClientServer.Server.Tests.TestHelpers;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.PowerShellTestFixture;
+using PSADT.ProcessManagement;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Foundation;
@@ -760,6 +761,71 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that an instance whose dead client's result has been disposed still reports the client
+        /// as gone, and can still be disposed.
+        /// </summary>
+        /// <remarks>
+        /// This is the path a failed command takes: the caller takes the dead client's result off the failure
+        /// and disposes it, and with it the process object the instance still holds. Nothing the instance does
+        /// afterwards may touch that object, or it would throw rather than answer.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task DisposeAsync_SucceedsOnceTheDeadClientsResultHasBeenDisposed()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+            KillClientOf(instance);
+            await DisposeClientResultOfAsync(instance).ConfigureAwait(true);
+            Assert.False(instance.IsRunning);
+
+            // Assert
+            Assert.Null(await Record.ExceptionAsync(async () => await instance.DisposeAsync().ConfigureAwait(true)).ConfigureAwait(true));
+        }
+
+        /// <summary>
+        /// Verifies that the host's exit handler kills a client that is still running, so the client cannot
+        /// outlive the host.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ProcessExitHandler_KillsAClientThatIsStillRunning()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+
+            // Act
+            RaiseProcessExit(instance);
+
+            // Assert
+            Assert.True(ClientOfAsync(instance).Process.WaitForExit(30000), "The client outlived the host's exit.");
+        }
+
+        /// <summary>
+        /// Verifies that the host's exit handler leaves alone a dead client whose result has been disposed,
+        /// rather than throwing from inside the host's exit.
+        /// </summary>
+        /// <remarks>
+        /// A throw there would replace the host's exit code, and by then the caller may well have disposed the
+        /// client's result, taking the process object with it.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ProcessExitHandler_IgnoresADeadClientWhoseResultHasBeenDisposed()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+            KillClientOf(instance);
+            await DisposeClientResultOfAsync(instance).ConfigureAwait(true);
+
+            // Assert
+            Assert.Null(Record.Exception(() => RaiseProcessExit(instance)));
+        }
+
+        /// <summary>
         /// Asks the shutdown rule about an exception.
         /// </summary>
         /// <remarks>
@@ -789,16 +855,58 @@ namespace PSADT.ClientServer.Server.Tests
         /// <param name="instance">The instance whose client should be ended.</param>
         /// <exception cref="InvalidOperationException">Thrown when the instance has no client to end, or no longer
         /// holds it where this expects to find it.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "An instance does not expose its client process, and a client dying unexpectedly is a case worth covering.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The process belongs to the instance under test, which disposes it.")]
         private static void KillClientOf(ServerInstance instance)
         {
-            object handle = typeof(ServerInstance).GetField("_clientProcess", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(instance)
-                ?? throw new InvalidOperationException("The instance has no client process to end.");
-            Process client = (Process?)handle.GetType().GetProperty("Process")?.GetValue(handle)
-                ?? throw new InvalidOperationException("The client process handle no longer carries a process.");
+            Process client = ClientOfAsync(instance).Process;
             client.Kill();
             Assert.True(client.WaitForExit(30000), "The client process did not end when it was killed.");
+        }
+
+        /// <summary>
+        /// Gets the handle to the client an instance started.
+        /// </summary>
+        /// <remarks>
+        /// An instance does not expose its client, and the tests need it to end the client or to take its
+        /// result the way a caller would.
+        /// </remarks>
+        /// <param name="instance">The instance whose client is wanted.</param>
+        /// <returns>The handle to the instance's client.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the instance has no client, or no longer holds
+        /// it where this expects to find it.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "An instance does not expose its client process, and a client dying unexpectedly is a case worth covering.")]
+        private static ProcessHandle ClientOfAsync(ServerInstance instance)
+        {
+            return typeof(ServerInstance).GetField("_clientProcess", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(instance) as ProcessHandle
+                ?? throw new InvalidOperationException("The instance has no client process.");
+        }
+
+        /// <summary>
+        /// Disposes the result of an instance's ended client, as the caller of a failed command does.
+        /// </summary>
+        /// <remarks>
+        /// The result carries the same process object the instance holds, so this leaves the instance holding
+        /// a disposed one.
+        /// </remarks>
+        /// <param name="instance">The instance whose client has ended.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        private static async Task DisposeClientResultOfAsync(ServerInstance instance)
+        {
+            ProcessResult result = await ClientOfAsync(instance).Task.ConfigureAwait(true);
+            result.Dispose();
+        }
+
+        /// <summary>
+        /// Raises an instance's handler for the host's exit, as the runtime would.
+        /// </summary>
+        /// <param name="instance">The instance whose handler to raise.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the instance no longer carries the handler.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The handler is private and only the runtime raises it, at the host's exit.")]
+        private static void RaiseProcessExit(ServerInstance instance)
+        {
+            MethodInfo handler = typeof(ServerInstance).GetMethod("ProcessExit_Handler", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException("ServerInstance no longer carries a handler for the host's exit.");
+            _ = handler.Invoke(instance, [null, EventArgs.Empty]);
         }
 
         /// <summary>

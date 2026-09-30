@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
@@ -919,11 +918,11 @@ namespace PSADT.ClientServer
         /// <param name="e">An object that contains the event data.</param>
         private void ProcessExit_Handler(object? sender, EventArgs e)
         {
-            if (_clientProcess?.Process is Process clientProcess && !ProcessUtilities.HasProcessExited(clientProcess))
+            if (_clientProcess is { Task.IsCompleted: false } clientProcess)
             {
                 try
                 {
-                    clientProcess.Kill();
+                    clientProcess.Process.Kill();
                 }
                 catch (InvalidOperationException)
                 {
@@ -986,7 +985,8 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => _clientProcess?.Process is Process clientProcess && !ProcessUtilities.HasProcessExited(clientProcess);
+        /// <remarks>The task is checked first, as the process may be disposed along with the client's result once it completes.</remarks>
+        public bool IsRunning => _clientProcess is { Task.IsCompleted: false } clientProcess && !ProcessUtilities.HasProcessExited(clientProcess.Process);
 
         /// <summary>
         /// Represents the sentinel character used to indicate a successful operation or status.
