@@ -109,6 +109,42 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a failure the log reader recorded is reported while the reader is still running, rather than
+        /// only once it has finished.
+        /// </summary>
+        /// <remarks>
+        /// The reader keeps draining after a bad frame, so it can run for the rest of the session with a failure behind
+        /// it. Reading the failure from the reader's task reported nothing until the client had gone. The running reader
+        /// and its failure are both planted, for the reason given on <see cref="DisposeAsync_FinishesDisposingWhenTheLogReaderFailed"/>.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if a field this plants state in has been renamed.</exception>
+        [Fact]
+        public async Task GetLogWriterException_ReportsAFailureWhileTheReaderIsStillRunning()
+        {
+            // Arrange: a reader still running, with a failure it has already recorded.
+            await using ServerInstance instance = new(SomeUser());
+            FieldInfo logWriterTask = typeof(ServerInstance).GetField("_logWriterTask", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("ServerInstance no longer has a _logWriterTask field for this test to plant a running reader in.");
+            FieldInfo logWriterException = typeof(ServerInstance).GetField("_logWriterException", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("ServerInstance no longer has a _logWriterException field for this test to plant a failure in.");
+            TaskCompletionSource<bool> reader = new();
+            InvalidDataException recorded = new("a log frame failed");
+            logWriterTask.SetValue(instance, reader.Task);
+            logWriterException.SetValue(instance, recorded);
+
+            // Assert, completing the planted reader either way, as disposal waits on it and would otherwise hang a failing run.
+            try
+            {
+                Assert.Same(recorded, instance.GetLogWriterException());
+            }
+            finally
+            {
+                reader.SetResult(true);
+            }
+        }
+
+        /// <summary>
         /// Verifies that the sentinel a client writes to mark success is the unit separator.
         /// </summary>
         /// <remarks>
@@ -388,19 +424,18 @@ namespace PSADT.ClientServer.Server.Tests
         /// Verifies that a failure to read is passed on as it was, rather than dressed up.
         /// </summary>
         /// <remarks>
-        /// The loop around this tells three kinds of failure apart: cancellation and the end of the stream mean
-        /// the client has finished and the loop stops quietly, while anything else is a fault worth reporting.
-        /// It can only do that if the exception reaches it as itself, so wrapping one here would turn an
-        /// ordinary shutdown into a reported failure.
+        /// The loop around this tells failures apart: the end of the stream means the client has finished and the loop
+        /// stops quietly, while anything else is recorded as a fault worth reporting. It can only do that if the exception
+        /// reaches it as itself, so wrapping one here would turn an ordinary shutdown into a reported failure.
         /// </remarks>
         [Fact]
         public void ReadLogFrame_PassesOnAFailureToReadAsItWas()
         {
-            // Assert: the two that mean the client has finished.
+            // Assert: the one that means the client has finished.
             _ = Assert.Throws<EndOfStreamException>(static () => ServerInstance.ReadLogFrame(static () => throw new EndOfStreamException()));
-            _ = Assert.Throws<OperationCanceledException>(static () => ServerInstance.ReadLogFrame(static () => throw new OperationCanceledException()));
 
-            // Assert: and one that does not.
+            // Assert: and two that do not, a stray cancellation among them.
+            _ = Assert.Throws<OperationCanceledException>(static () => ServerInstance.ReadLogFrame(static () => throw new OperationCanceledException()));
             _ = Assert.Throws<InvalidDataException>(static () => ServerInstance.ReadLogFrame(static () => throw new InvalidDataException()));
         }
 
@@ -544,9 +579,9 @@ namespace PSADT.ClientServer.Server.Tests
         /// but which still reported itself as not disposed - so later calls failed on closed pipes rather than
         /// saying they were too late, and the exit handler stayed registered to try disposing it all over again.
         /// <para>
-        /// The failure is planted rather than provoked. A log reader only faults on a frame that is neither the
-        /// end of the stream nor cancellation, which takes a corrupt log stream, and that takes a client that is
-        /// not the real one. Reaching for the field by name is the price of covering the consequence at all; it
+        /// The failure is planted rather than provoked. A bad frame no longer faults the reader, which records it for
+        /// GetLogWriterException and keeps draining, so a fault here would take something unexpected; disposal has to
+        /// survive it all the same. Reaching for the field by name is the price of covering the consequence at all; it
         /// fails loudly rather than silently if the field is ever renamed.
         /// </para>
         /// </remarks>

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
@@ -59,37 +60,53 @@ namespace PSADT.ClientServer
             // overlapped mode and the reads would otherwise park a thread-pool thread in ReadFile for the life of the client.
             void ReadLog()
             {
-                // Read the log stream until cancellation is requested or the end of the stream is reached.
+                // Read the log stream until cancellation is requested, the end of the stream is reached, or the stream fails.
                 ObjectDisposedException.ThrowIf(_disposed, this);
 
-                // Set up the required delegate for ReadLogFrame, materialised to minimise per-loop allocations.
+                // Set up the required delegate for ReadLogFrame, materialised to minimise per-loop allocations. Only the
+                // read can tell a failure of the stream itself from a failure to process a frame, so it flags the former.
+                bool streamFailed = false;
                 byte[] ReadFrame()
                 {
-                    return _logEncryption.ReadEncryptedBlocking(_logServer);
+                    try
+                    {
+                        return _logEncryption.ReadEncryptedBlocking(_logServer);
+                    }
+                    catch (Exception ex) when (ex is ObjectDisposedException or (IOException and not EndOfStreamException))
+                    {
+                        streamFailed = true;
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
                 }
                 Func<byte[]> readFrame = ReadFrame;
 
-                // Spin until cancellation is requested or we've reached the end of stream.
+                // Keep draining the log stream for the life of the client. A frame that cannot be read or written is
+                // recorded and skipped rather than ending the loop: stopping would leave the stream undrained, and the
+                // client would eventually block writing to it and take the command channel down with it.
                 while (!_logWriterTaskCts.IsCancellationRequested)
                 {
                     try
                     {
                         ReadLogFrame(readFrame);
                     }
-                    catch (OperationCanceledException)
-                    {
-                        // The log writer task was cancelled, exit the loop.
-                        break;
-                    }
                     catch (EndOfStreamException)
                     {
-                        // The log writer task reached the end of the stream, exit the loop.
+                        // The client has gone and there is nothing more to read, exit the loop.
                         break;
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.Message is not null)
                     {
-                        // Some kind of read issue occurred that was unexpected.
-                        throw new ServerException("An error occurred while reading from the log stream.", ex);
+                        // Record the first failure for GetLogWriterException, then keep draining so the client never blocks.
+                        // A stream that has itself failed can no longer be drained, so the loop stops instead of spinning.
+                        if (_logWriterException is null)
+                        {
+                            Volatile.Write(ref _logWriterException, ex);
+                        }
+                        if (streamFailed)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -587,15 +604,16 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
+        /// Retrieves the first failure the log writer met while reading or writing a log frame, if any.
         /// </summary>
-        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see
-        /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
+        /// <remarks>The writer keeps draining after a failure, so the failure is recorded as it happens rather than left for the
+        /// writer's task to report once it ends, by which point nothing is left to act on it.</remarks>
+        /// <returns>The first failure, or <see langword="null"/> if there has been none.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public AggregateException? GetLogWriterException()
+        public Exception? GetLogWriterException()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            return _logWriterTask?.Exception;
+            return Volatile.Read(ref _logWriterException);
         }
 
         /// <summary>
@@ -923,6 +941,11 @@ namespace PSADT.ClientServer
         /// <remarks>This field holds a reference to the current logging task, if one is active. It may
         /// be null if <see cref="OpenAsync"/> has not been called yet.</remarks>
         private Task? _logWriterTask;
+
+        /// <summary>
+        /// The first failure the log writer met, recorded as it happens so it can be reported while the writer keeps draining.
+        /// </summary>
+        private Exception? _logWriterException;
 
         /// <summary>
         /// Indicates whether the object has been disposed.
