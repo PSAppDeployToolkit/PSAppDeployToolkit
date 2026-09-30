@@ -173,6 +173,7 @@ namespace PSADT.ProcessManagement
         /// <param name="process">The process to check. Must not be null.</param>
         /// <returns><see langword="true"/> if the process has exited; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "We need this to be able to refer to it in the document comments.")]
         public static bool HasProcessExited(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);

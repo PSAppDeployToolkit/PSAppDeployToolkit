@@ -427,7 +427,7 @@ namespace PSADT.ClientServer
                                                     foreach (Process process in runningProcesses)
                                                     {
                                                         await closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info).ConfigureAwait(false);
-                                                        if (!process.HasExited)
+                                                        if (!ProcessUtilities.HasProcessExited(process))
                                                         {
                                                             process.Kill(); await process.WaitForExitAsync(default).ConfigureAwait(false);
                                                         }

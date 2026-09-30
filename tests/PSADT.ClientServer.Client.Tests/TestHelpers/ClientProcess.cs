@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using PSADT.ProcessManagement;
 using Xunit;
 
 namespace PSADT.ClientServer.Client.Tests.TestHelpers
@@ -86,7 +87,7 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
         {
             try
             {
-                if (!process.HasExited)
+                if (!ProcessUtilities.HasProcessExited(process))
                 {
                     process.Kill();
                 }

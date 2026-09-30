@@ -919,7 +919,7 @@ namespace PSADT.ClientServer
         /// <param name="e">An object that contains the event data.</param>
         private void ProcessExit_Handler(object? sender, EventArgs e)
         {
-            if (_clientProcess?.Process is Process clientProcess && !clientProcess.HasExited)
+            if (_clientProcess?.Process is Process clientProcess && !ProcessUtilities.HasProcessExited(clientProcess))
             {
                 try
                 {
@@ -982,7 +982,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => (_clientProcess?.Process.HasExited) is false;
+        public bool IsRunning => _clientProcess?.Process is Process clientProcess && !ProcessUtilities.HasProcessExited(clientProcess);
 
         /// <summary>
         /// Represents the sentinel character used to indicate a successful operation or status.

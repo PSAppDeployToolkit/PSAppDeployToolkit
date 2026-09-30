@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PSADT.Interop\PSADT.Interop.csproj" />
+    <ProjectReference Include="..\..\src\PSADT\PSADT.csproj" />
   </ItemGroup>
 
 </Project>

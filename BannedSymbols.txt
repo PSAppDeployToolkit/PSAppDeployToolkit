@@ -10,4 +10,5 @@ M:System.IO.Path.Combine(System.String,System.String,System.String);Use Path.Joi
 M:System.Runtime.InteropServices.Marshal.GetLastWin32Error();Use ExceptionUtilities.GetLastWin32Error() instead.
 M:System.String.IsNullOrEmpty(System.String);Use string.IsNullOrWhiteSpace() instead.
 M:Windows.Win32.Foundation.HRESULT.ThrowOnFailure(System.IntPtr);Use ExceptionUtilities.GetException() instead.
+P:System.Diagnostics.Process.HasExited;Use ProcessUtilities.HasExited() instead.
 P:System.Windows.Application.Current;Use InvokeDialogActionAsync() methods instead.

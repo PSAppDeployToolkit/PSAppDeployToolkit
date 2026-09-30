@@ -244,7 +244,7 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(ProcessManager.TimeoutExitCode, result.ExitCode);
-            Assert.True(handle.Process.HasExited, $"Process {processId.ToString(CultureInfo.InvariantCulture)} was left running after being cancelled.");
+            Assert.True(ProcessUtilities.HasProcessExited(handle.Process), $"Process {processId.ToString(CultureInfo.InvariantCulture)} was left running after being cancelled.");
             Assert.True(elapsed < TimeSpan.FromSeconds(30), $"The launch took {elapsed.TotalSeconds.ToString("N0", CultureInfo.InvariantCulture)}s to end after being cancelled, so something it started outlived the cancellation.");
         }
 
@@ -388,7 +388,7 @@ namespace PSADT.Tests.ProcessManagement
             }
             finally
             {
-                if (!ping.HasExited)
+                if (!ProcessUtilities.HasProcessExited(ping))
                 {
                     ping.Kill();
                 }
