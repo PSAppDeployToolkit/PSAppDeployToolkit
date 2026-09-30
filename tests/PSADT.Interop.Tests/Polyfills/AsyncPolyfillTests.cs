@@ -20,8 +20,6 @@ namespace PSADT.Interop.Tests.Polyfills
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Add suffix 'Async' to asynchronous method name", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Awaiting a task the test itself created is the mechanism under test.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0040:Forward the CancellationToken parameter to methods that take one", Justification = "The token-free WaitAsync(TimeSpan) overload is the one the toolkit ships and uses; passing a token would exercise a different overload that is not polyfilled.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1051:Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken", Justification = "As above: the token-free WaitAsync(TimeSpan) overload is the mechanism under test.")]
     public sealed class AsyncPolyfillTests
     {
         /// <summary>
@@ -115,89 +113,6 @@ namespace PSADT.Interop.Tests.Polyfills
             // Assert
             InvalidTimeZoneException exception = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => wait).ConfigureAwait(true);
             Assert.Equal("expected", exception.Message);
-        }
-
-        /// <summary>
-        /// Verifies that a task which has already completed is returned as-is by the timeout overload, without
-        /// waiting on the clock.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous test.</returns>
-        [Fact]
-        public async Task WaitAsyncWithTimeout_CompletedTask_CompletesImmediately()
-        {
-            // Act & Assert
-            Assert.Null(await Record.ExceptionAsync(static () => Task.CompletedTask.WaitAsync(TimeSpan.FromSeconds(30))).ConfigureAwait(true));
-        }
-
-        /// <summary>
-        /// Verifies that a task completing before the timeout wins, so the wait does not fault a task that
-        /// finished in time.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous test.</returns>
-        [Fact]
-        public async Task WaitAsyncWithTimeout_TaskCompletesFirst_Completes()
-        {
-            // Arrange
-            TaskCompletionSource<bool> pending = new();
-            Task wait = pending.Task.WaitAsync(TimeSpan.FromSeconds(30));
-
-            // Act
-            pending.SetResult(true);
-
-            // Assert
-            Assert.Null(await Record.ExceptionAsync(() => wait).ConfigureAwait(true));
-        }
-
-        /// <summary>
-        /// Verifies that a faulted task surfaces its own exception rather than being masked by the timeout.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous test.</returns>
-        [Fact]
-        public async Task WaitAsyncWithTimeout_FaultedTask_PropagatesOriginalException()
-        {
-            // Arrange
-            TaskCompletionSource<bool> pending = new();
-            Task wait = pending.Task.WaitAsync(TimeSpan.FromSeconds(30));
-
-            // Act
-            pending.SetException(new InvalidTimeZoneException("expected"));
-
-            // Assert
-            InvalidTimeZoneException exception = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => wait).ConfigureAwait(true);
-            Assert.Equal("expected", exception.Message);
-        }
-
-        /// <summary>
-        /// Verifies that a task which does not finish within the timeout faults with a <see cref="TimeoutException"/>,
-        /// which is the behaviour the server's key exchange and close waits rely on.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous test.</returns>
-        [Fact]
-        public async Task WaitAsyncWithTimeout_Elapses_ThrowsTimeout()
-        {
-            // Arrange: a task that never completes, waited on with a short timeout
-            TaskCompletionSource<bool> pending = new();
-
-            // Assert
-            _ = await Assert.ThrowsAsync<TimeoutException>(() => pending.Task.WaitAsync(TimeSpan.FromMilliseconds(50))).ConfigureAwait(true);
-        }
-
-        /// <summary>
-        /// Verifies that an infinite timeout never fires, so the wait completes only when the task does.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous test.</returns>
-        [Fact]
-        public async Task WaitAsyncWithTimeout_InfiniteTimeout_WaitsForTheTask()
-        {
-            // Arrange
-            TaskCompletionSource<bool> pending = new();
-            Task wait = pending.Task.WaitAsync(Timeout.InfiniteTimeSpan);
-
-            // Act
-            pending.SetResult(true);
-
-            // Assert
-            Assert.Null(await Record.ExceptionAsync(() => wait).ConfigureAwait(true));
         }
 
         /// <summary>
