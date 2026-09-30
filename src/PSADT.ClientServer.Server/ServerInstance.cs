@@ -97,12 +97,9 @@ namespace PSADT.ClientServer
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
-                        // Record the first failure for GetLogWriterException, then keep draining so the client never blocks.
-                        // A stream that has itself failed can no longer be drained, so the loop stops instead of spinning.
-                        if (_logWriterException is null)
-                        {
-                            Volatile.Write(ref _logWriterException, ex);
-                        }
+                        // Record the failure for GetLogWriterException unless an earlier one is unreported, then keep draining so the client
+                        // never blocks. A stream that has itself failed can no longer be drained, so the loop stops instead of spinning.
+                        _ = LazyInitializer.EnsureInitialized(ref _logWriterException, () => ex);
                         if (streamFailed)
                         {
                             break;
@@ -604,16 +601,17 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Retrieves the first failure the log writer met while reading or writing a log frame, if any.
+        /// Retrieves and clears the earliest failure the log writer met since the last call, if any.
         /// </summary>
         /// <remarks>The writer keeps draining after a failure, so the failure is recorded as it happens rather than left for the
-        /// writer's task to report once it ends, by which point nothing is left to act on it.</remarks>
-        /// <returns>The first failure, or <see langword="null"/> if there has been none.</returns>
+        /// writer's task to report once it ends, by which point nothing is left to act on it. Clearing it on the way out means each
+        /// failure is reported once, rather than again after every later command.</remarks>
+        /// <returns>The unreported failure, or <see langword="null"/> if there is none.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public Exception? GetLogWriterException()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            return Volatile.Read(ref _logWriterException);
+            return Interlocked.Exchange(ref _logWriterException, value: null);
         }
 
         /// <summary>
@@ -943,7 +941,7 @@ namespace PSADT.ClientServer
         private Task? _logWriterTask;
 
         /// <summary>
-        /// The first failure the log writer met, recorded as it happens so it can be reported while the writer keeps draining.
+        /// The earliest failure the log writer met since it was last reported, recorded as it happens so it can be reported while the writer keeps draining.
         /// </summary>
         private Exception? _logWriterException;
 

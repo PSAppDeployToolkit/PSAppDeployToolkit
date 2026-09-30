@@ -110,7 +110,7 @@ namespace PSADT.ClientServer.Server.Tests
 
         /// <summary>
         /// Verifies that a failure the log reader recorded is reported while the reader is still running, rather than
-        /// only once it has finished.
+        /// only once it has finished, and that it is reported once rather than after every later command.
         /// </summary>
         /// <remarks>
         /// The reader keeps draining after a bad frame, so it can run for the rest of the session with a failure behind
@@ -137,6 +137,7 @@ namespace PSADT.ClientServer.Server.Tests
             try
             {
                 Assert.Same(recorded, instance.GetLogWriterException());
+                Assert.Null(instance.GetLogWriterException());
             }
             finally
             {

@@ -330,16 +330,10 @@ function Private:Invoke-ADTClientServerOperation
                 $result = $clientServerInstance."$($PSCmdlet.ParameterSetName)Async"().ConfigureAwait($false).GetAwaiter().GetResult()
             }
 
-            # If the log writer gave up the ghost, throw its exception.
+            # If the log writer dropped a message from the client, report it once without failing a command that succeeded.
             if ($loggingException = $clientServerInstance.GetLogWriterException())
             {
-                $naerParams = @{
-                    Exception = [System.ApplicationException]::new("The log writer failed and was unable to continue execution.", $loggingException)
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'ClientServerInstanceLoggingFailure'
-                    TargetObject = $loggingException
-                }
-                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                Write-ADTLogEntry -Message "A log message from the client/server process could not be written: $loggingException" -Severity Warning
             }
         }
         catch
