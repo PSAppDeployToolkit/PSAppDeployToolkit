@@ -191,7 +191,6 @@ namespace PSADT.Foundation
                 uiAccess: UseUiAccess,
                 handlesToInherit: handlesToInherit,
                 createNoWindow: !filePath.Name.Contains("Launcher", StringComparison.Ordinal),
-                waitForChildProcesses: true,
                 cancellationToken: cancellationToken
             )) ?? throw new InvalidOperationException("Failed to launch client operation.");
         }
