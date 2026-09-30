@@ -630,8 +630,10 @@ namespace PSADT.ClientServer
                     return (int)ClientExitCode.Success;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not ClientException)
             {
+                // A ClientException already carries the exit code that names the failure (e.g. the key exchange), so let
+                // it pass through rather than rewrapping it and reporting every failure here as a generic pipe error.
                 throw new ClientException("Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
         }
