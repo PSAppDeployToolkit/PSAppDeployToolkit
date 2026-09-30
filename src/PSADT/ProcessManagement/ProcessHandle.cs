@@ -40,7 +40,7 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOutErrHandles">A tuple containing the handles responsible for asynchronously reading the standard output and standard error streams of the process, along with a read-only collection containing the combined output from both streams.</param>
         /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
         /// <param name="resumeProcessDelegate">A delegate that can be invoked to resume the process if it was started in a suspended state.</param>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, uint dwProcessId, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, ProcessWriteStream? stdInHandle, Action resumeProcessDelegate)
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, uint dwProcessId, string commandLine, ReadOnlyCollection<SE_PRIVILEGE>? callerPrivileges, (ProcessReadStream StdOut, ProcessReadStream StdErr, IReadOnlyCollection<string> InterleavedBuffer)? stdOutErrHandles, ProcessWriteStream? stdInHandle, Action resumeProcessDelegate)
         {
             // Confirm all inputs are valid and set up fields.
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
@@ -179,7 +179,7 @@ namespace PSADT.ProcessManagement
         /// <param name="dwProcessId">The process ID of the running process.</param>
         /// <param name="commandLine">The full command line used to launch the process.</param>
         /// <param name="resumeProcessDelegate">A delegate that can be invoked to resume the process if it was started in a suspended state.</param>
-        internal ProcessHandle(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, uint dwProcessId, string commandLine, Action resumeProcessDelegate) : this(launchInfo, hProcess, dwProcessId, commandLine, PrivilegeManager.GetPrivileges(), stdOutErrHandles: null, stdInHandle: null, resumeProcessDelegate)
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, uint dwProcessId, string commandLine, Action resumeProcessDelegate) : this(launchInfo, hProcess, dwProcessId, commandLine, callerPrivileges: null, stdOutErrHandles: null, stdInHandle: null, resumeProcessDelegate)
         {
         }
 
@@ -286,11 +286,11 @@ namespace PSADT.ProcessManagement
         /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
         /// <param name="hProcess">A safe handle to the process, used for resource management and native operations.</param>
         /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
-        private static void DenyProcessTermination(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges)
+        private static void DenyProcessTermination(ProcessLaunchInfo launchInfo, SafeProcessHandle hProcess, ReadOnlyCollection<SE_PRIVILEGE>? callerPrivileges)
         {
             // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
             RunAsActiveUser runAsActiveUser = launchInfo.RunAsActiveUser ?? AccountUtilities.CallerRunAsActiveUser; bool changeOwner = false;
-            if (runAsActiveUser.SID != AccountUtilities.CallerSid && callerPrivileges.Contains(SE_PRIVILEGE.SeSecurityPrivilege) && callerPrivileges.Contains(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
+            if (runAsActiveUser.SID != AccountUtilities.CallerSid && (callerPrivileges ??= PrivilegeManager.GetPrivileges()).Contains(SE_PRIVILEGE.SeSecurityPrivilege) && callerPrivileges.Contains(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
