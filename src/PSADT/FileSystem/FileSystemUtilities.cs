@@ -569,6 +569,23 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// Renames the file open on the given handle.
+        /// </summary>
+        /// <remarks>No new open is made, so a handle opened elsewhere since without sharing deletion cannot refuse the rename.</remarks>
+        /// <param name="fileHandle">A handle to the file, opened with the DELETE access right.</param>
+        /// <param name="destinationPath">The full path to give the file.</param>
+        /// <param name="replaceIfExists">Whether a file already at the new path is replaced rather than the rename failing.</param>
+        internal static void RenameFile(SafeHandle fileHandle, string destinationPath, bool replaceIfExists = false)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
+            Span<byte> fileInformation = new byte[FILE_RENAME_INFO.SizeOf(destinationPath.Length + 1)];
+            ref FILE_RENAME_INFO renameInfo = ref Unsafe.As<byte, FILE_RENAME_INFO>(ref MemoryMarshal.GetReference(fileInformation));
+            renameInfo.ReplaceIfExists = replaceIfExists; renameInfo.FileNameLength = (uint)(destinationPath.Length * sizeof(char));
+            destinationPath.AsSpan().CopyTo(renameInfo.FileName.AsSpan(destinationPath.Length));
+            _ = NativeMethods.SetFileInformationByHandle(fileHandle, FILE_INFO_BY_HANDLE_CLASS.FileRenameInfo, fileInformation);
+        }
+
+        /// <summary>
         /// Determines the effective access rights for a specified security identifier (SID) on a file or directory.
         /// </summary>
         /// <remarks>This method evaluates the effective access rights for the specified SID by performing

@@ -2342,6 +2342,21 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Sets information for the file open on the specified handle using the provided information class and data.
+        /// </summary>
+        /// <param name="hFile">A handle to the file, opened with the access the information class requires.</param>
+        /// <param name="FileInformationClass">The type of information to set. Specify a value from the FILE_INFO_BY_HANDLE_CLASS enumeration.</param>
+        /// <param name="lpFileInformation">A read-only span of bytes containing the information to set, laid out as the specified
+        /// FileInformationClass requires.</param>
+        /// <returns>A value indicating whether the operation succeeded. If the operation fails, an exception is thrown.</returns>
+        internal static BOOL SetFileInformationByHandle(SafeHandle hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, ReadOnlySpan<byte> lpFileInformation)
+        {
+            ArgumentException.ThrowIfNullOrInvalid(hFile);
+            BOOL res = PInvoke.SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Retrieves the product type of the operating system based on the specified version and service pack
         /// information.
         /// </summary>

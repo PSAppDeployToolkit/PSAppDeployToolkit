@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
 using PSADT.FileSystem;
+using PSADT.Interop;
 using PSADT.Tests.TestHelpers;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using Xunit;
 
 namespace PSADT.Tests.FileSystem
@@ -288,6 +293,91 @@ namespace PSADT.Tests.FileSystem
             // Assert
             Assert.True(table.ContainsKey(@"\device\mup"));
             Assert.True(table.ContainsKey(@"\DEVICE\MUP"));
+        }
+
+        /// <summary>
+        /// Verifies that the file open on a handle is moved to the new path, contents and all.
+        /// </summary>
+        [Fact]
+        public void RenameFile_MovesTheFileOpenOnTheHandle()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string source = temp.WriteFile("source.txt", "contents");
+            string target = temp.GetPath("target.txt");
+
+            // Act
+            using (SafeFileHandle file = OpenForRename(source))
+            {
+                FileSystemUtilities.RenameFile(file, target);
+            }
+
+            // Assert
+            Assert.False(File.Exists(source));
+            Assert.Equal("contents", File.ReadAllText(target));
+        }
+
+        /// <summary>
+        /// Verifies that a file already at the new path is left alone when replacing it was not asked for.
+        /// </summary>
+        [Fact]
+        public void RenameFile_RefusesAnExistingTarget()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string source = temp.WriteFile("source.txt", "source");
+            string target = temp.WriteFile("target.txt", "target");
+
+            // Act
+            Win32Exception exception;
+            using (SafeFileHandle file = OpenForRename(source))
+            {
+                exception = Assert.Throws<Win32Exception>(() => FileSystemUtilities.RenameFile(file, target));
+            }
+
+            // Assert
+            Assert.Equal((int)WIN32_ERROR.ERROR_ALREADY_EXISTS, exception.NativeErrorCode);
+            Assert.Equal("source", File.ReadAllText(source));
+            Assert.Equal("target", File.ReadAllText(target));
+        }
+
+        /// <summary>
+        /// Verifies that a file already at the new path is replaced when that was asked for.
+        /// </summary>
+        [Fact]
+        public void RenameFile_ReplacesAnExistingTargetWhenToldTo()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            string source = temp.WriteFile("source.txt", "source");
+            string target = temp.WriteFile("target.txt", "target");
+
+            // Act
+            using (SafeFileHandle file = OpenForRename(source))
+            {
+                FileSystemUtilities.RenameFile(file, target, replaceIfExists: true);
+            }
+
+            // Assert
+            Assert.False(File.Exists(source));
+            Assert.Equal("source", File.ReadAllText(target));
+        }
+
+        /// <summary>
+        /// Verifies that a blank new path is refused before the call is made.
+        /// </summary>
+        /// <param name="destinationPath">The blank path to refuse.</param>
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void RenameFile_RefusesABlankDestination(string destinationPath)
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            using SafeFileHandle file = OpenForRename(temp.WriteFile("source.txt", "contents"));
+
+            // Act & Assert
+            _ = Assert.Throws<ArgumentException>(() => FileSystemUtilities.RenameFile(file, destinationPath));
         }
 
         /// <summary>
@@ -761,6 +851,16 @@ namespace PSADT.Tests.FileSystem
         private static void WriteFileOfSize(string path, int length)
         {
             File.WriteAllBytes(path, new byte[length]);
+        }
+
+        /// <summary>
+        /// Opens a file with the access a rename through its handle needs, sharing everything.
+        /// </summary>
+        /// <param name="path">The file to open.</param>
+        /// <returns>The open handle.</returns>
+        private static SafeFileHandle OpenForRename(string path)
+        {
+            return NativeMethods.CreateFile(path, FileSystemRights.Delete, FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE | FILE_SHARE_MODE.FILE_SHARE_DELETE, lpSecurityAttributes: null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
         }
     }
 }

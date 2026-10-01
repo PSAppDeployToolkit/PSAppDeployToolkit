@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Principal;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
+using PSADT.FileSystem;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.SafeHandles;
+using PSADT.Tests.TestHelpers;
 using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authorization;
@@ -25,7 +30,9 @@ namespace PSADT.Tests.ProcessManagement
     /// answer the same question by another route - the current process identifier, the module file name,
     /// the current identity - that answer is the oracle rather than a value written into the test.
     /// <para>
-    /// Queries against processes belonging to other accounts need elevation and are covered separately.
+    /// Queries against processes belonging to other accounts need elevation and are covered separately. The
+    /// exception is the kernel query that names a process by its identifier, which needs no handle: it is
+    /// tested against csrss, and from 32-bit Windows PowerShell for its WOW64 branch.
     /// </para>
     /// </remarks>
     public sealed class ProcessUtilitiesTests
@@ -274,6 +281,109 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that the kernel query names the test host by itself, in a buffer sized to exactly the length the
+        /// kernel reports.
+        /// </summary>
+        [Fact]
+        public void QuerySystemProcessIdInformationImageName_NamesTheTestHost()
+        {
+            // Arrange
+            using Process current = Process.GetCurrentProcess();
+            string? moduleFileName = current.MainModule?.FileName;
+            Assert.NotNull(moduleFileName);
+
+            // Act
+            System.IO.FileInfo imageName = QuerySystemProcessIdInformationImageName((uint)current.Id);
+
+            // Assert
+            Assert.Equal(moduleFileName, imageName.FullName, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that the kernel query refuses the system process, which has no image file, rather than inventing a
+        /// path for it.
+        /// </summary>
+        [Fact]
+        public void QuerySystemProcessIdInformationImageName_RefusesTheSystemProcess()
+        {
+            _ = Assert.ThrowsAny<Exception>(static () => QuerySystemProcessIdInformationImageName(SystemProcessId));
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller names a native 64-bit process through the kernel query, which under WOW64
+        /// never reports how long the name is.
+        /// </summary>
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanRunUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task QuerySystemProcessIdInformationImageName_NamesANative64BitProcessFromA32BitCallerAsync()
+        {
+            // Arrange
+            using Process current = Process.GetCurrentProcess();
+            string? moduleFileName = current.MainModule?.FileName;
+            Assert.NotNull(moduleFileName);
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync(QuerySystemProcessIdInformationImageNameScript(current.Id)).ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal(moduleFileName, result.Value, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller names another 32-bit process through the kernel query.
+        /// </summary>
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanRunUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task QuerySystemProcessIdInformationImageName_NamesA32BitProcessFromA32BitCallerAsync()
+        {
+            // Arrange
+            using RunningPing ping = await RunningPing.StartAsync(TestEnvironment.Wow64PingExecutable.FullName).ConfigureAwait(true);
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync(QuerySystemProcessIdInformationImageNameScript(ping.Process.Id)).ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal(TestEnvironment.Wow64PingExecutable.FullName, result.Value, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that a process the caller cannot open is still named, since the kernel query needs no handle and
+        /// every route after it does.
+        /// </summary>
+        [Fact(Skip = WithoutDebugPrivilegeSkipReason, SkipWhen = nameof(TestEnvironment.HasDebugPrivilege), SkipType = typeof(TestEnvironment))]
+        public void GetProcessImageName_NamesAProcessTheCallerCannotOpen()
+        {
+            // Arrange: csrss runs as the system account, so only the kernel query can name it
+            int processId = GetCsrssProcessId();
+            Assert.False(CanOpen(processId, PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION), "This account can open csrss, so the routes after the kernel query could answer instead.");
+
+            // Act
+            System.IO.FileInfo imageName = ProcessUtilities.GetProcessImageName(processId);
+
+            // Assert
+            Assert.Equal(CsrssImage, imageName.FullName, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller names a process it cannot open, which only the WOW64 branch of the kernel
+        /// query makes possible.
+        /// </summary>
+        [Fact(Skip = Wow64WithoutDebugPrivilegeSkipReason, SkipUnless = nameof(TestEnvironment.CanRunUnderWow64WithoutDebugPrivilege), SkipType = typeof(TestEnvironment))]
+        public async Task GetProcessImageName_NamesAProcessA32BitCallerCannotOpenAsync()
+        {
+            // Arrange: csrss runs as the system account, so only the kernel query can name it
+            int processId = GetCsrssProcessId();
+            Assert.False(CanOpen(processId, PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION), "This account can open csrss, so the routes after the kernel query could answer instead.");
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync($"[PSADT.ProcessManagement.ProcessUtilities]::GetProcessImageName([int]{processId.ToString(System.Globalization.CultureInfo.InvariantCulture)}).FullName").ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal(CsrssImage, result.Value, ignoreCase: true);
+        }
+
+        /// <summary>
         /// Verifies that a null process is rejected rather than dereferenced.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
@@ -388,5 +498,95 @@ namespace PSADT.Tests.ProcessManagement
                 return false;
             }
         }
+
+        /// <summary>
+        /// Calls the kernel query directly, since the routes after it in <see cref="ProcessUtilities.GetProcessImageName(int)"/>
+        /// would hide it failing.
+        /// </summary>
+        /// <param name="processId">The identifier of the process to name.</param>
+        /// <returns>The image the query names.</returns>
+        private static System.IO.FileInfo QuerySystemProcessIdInformationImageName(uint processId)
+        {
+            MethodInfo? method = typeof(ProcessUtilities).GetMethod(QuerySystemProcessIdInformationImageNameMethod, BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.NotNull(method);
+            try
+            {
+                return Assert.IsType<System.IO.FileInfo>(method.Invoke(null, [processId, FileSystemUtilities.MakeNtPathLookupTable()]));
+            }
+            catch (TargetInvocationException ex) when (ex.InnerException is not null)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Builds the PowerShell that calls the kernel query directly for the given process.
+        /// </summary>
+        /// <param name="processId">The identifier of the process to name.</param>
+        /// <returns>A script whose output is the image the query names.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source, which parses either line ending, so the source file's choice cannot change what this does.")]
+        private static string QuerySystemProcessIdInformationImageNameScript(int processId)
+        {
+            return $$"""
+                $flags = [System.Reflection.BindingFlags]'NonPublic, Static'
+                $table = [PSADT.FileSystem.FileSystemUtilities].GetMethod('{{nameof(FileSystemUtilities.MakeNtPathLookupTable)}}', $flags).Invoke($null, $null)
+                $arguments = [object[]]::new(2)
+                $arguments[0] = [uint32]{{processId.ToString(System.Globalization.CultureInfo.InvariantCulture)}}
+                $arguments[1] = $table.psobject.BaseObject
+                [PSADT.ProcessManagement.ProcessUtilities].GetMethod('{{QuerySystemProcessIdInformationImageNameMethod}}', $flags).Invoke($null, $arguments).FullName
+                """;
+        }
+
+        /// <summary>
+        /// Finds a csrss process, which every session has and no unprivileged account can open.
+        /// </summary>
+        /// <returns>The identifier of the first one found.</returns>
+        private static int GetCsrssProcessId()
+        {
+            Process[] processes = Process.GetProcessesByName("csrss");
+            try
+            {
+                Assert.NotEmpty(processes);
+                return processes[0].Id;
+            }
+            finally
+            {
+                foreach (Process process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The kernel query, which is private and so is reached by name.
+        /// </summary>
+        private const string QuerySystemProcessIdInformationImageNameMethod = "QuerySystemProcessIdInformationImageName";
+
+        /// <summary>
+        /// The identifier the system process always has.
+        /// </summary>
+        private const uint SystemProcessId = 4;
+
+        /// <summary>
+        /// The reason the WOW64 tests are gated, spelled once.
+        /// </summary>
+        private const string Wow64SkipReason = "Requires the net472 test host on 64-bit Windows, which runs the code under test in 32-bit Windows PowerShell.";
+
+        /// <summary>
+        /// The reason the WOW64 test needing an unprivileged caller is gated, spelled once.
+        /// </summary>
+        private const string Wow64WithoutDebugPrivilegeSkipReason = "Requires the net472 test host on 64-bit Windows, and a caller without the privilege to open every process.";
+
+        /// <summary>
+        /// The reason the test needing an unprivileged caller is gated, spelled once.
+        /// </summary>
+        private const string WithoutDebugPrivilegeSkipReason = "Requires a caller without the privilege to open every process.";
+
+        /// <summary>
+        /// The image every csrss process runs.
+        /// </summary>
+        private static readonly string CsrssImage = System.IO.Path.Join(Environment.SystemDirectory, "csrss.exe");
     }
 }

@@ -127,6 +127,48 @@ namespace PSADT.Tests.TestHelpers
         public static bool HasTakeOwnershipPrivilege { get; } = PSADT.Security.PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
 
         /// <summary>
+        /// The 32-bit Windows PowerShell, which the tests needing a WOW64 caller run the code under test in.
+        /// </summary>
+        public static FileInfo Wow64PowerShellExecutable { get; } = new(Path.Join(
+            Environment.GetFolderPath(Environment.SpecialFolder.SystemX86),
+            "WindowsPowerShell",
+            "v1.0",
+            "powershell.exe"));
+
+        /// <summary>
+        /// The 32-bit PING, for the tests needing a 32-bit process to look at.
+        /// </summary>
+        public static FileInfo Wow64PingExecutable { get; } = new(Path.Join(
+            Environment.GetFolderPath(Environment.SpecialFolder.SystemX86),
+            "PING.EXE"));
+
+        /// <summary>
+        /// Whether the code under test can be run in a 32-bit process, which is the only way to reach its WOW64 branches.
+        /// </summary>
+        /// <remarks>
+        /// Windows PowerShell can only load the net472 build, so only that test host can hand it the assemblies beside
+        /// it. The host has to be 64-bit itself, so that it is a native process the 32-bit side can be pointed at.
+        /// </remarks>
+        public static bool CanRunUnderWow64 { get; } = Environment.Is64BitProcess
+            && System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal)
+            && Wow64PowerShellExecutable.Exists;
+
+        /// <summary>
+        /// Whether the code under test can be run in a 32-bit process holding the privilege to read another process's memory.
+        /// </summary>
+        public static bool CanReadProcessMemoryUnderWow64 => CanRunUnderWow64 && HasDebugPrivilege;
+
+        /// <summary>
+        /// Whether the code under test can be run in a 32-bit process without the privilege to open every process.
+        /// </summary>
+        public static bool CanRunUnderWow64WithoutDebugPrivilege => CanRunUnderWow64 && !HasDebugPrivilege;
+
+        /// <summary>
+        /// Whether this 64-bit host can start a 32-bit process and read its memory.
+        /// </summary>
+        public static bool CanRead32BitProcessMemory => HasDebugPrivilege && Environment.Is64BitProcess && Wow64PingExecutable.Exists;
+
+        /// <summary>
         /// Whether the client/server executables are present where <c language="csharp">ClientServerUtilities</c> looks
         /// for them, which decides whether that type can be touched at all.
         /// </summary>
