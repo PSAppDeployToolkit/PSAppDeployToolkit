@@ -1,24 +1,33 @@
 // PSAppDeployToolkit default settings to ensure consistent code formatting and file encoding
 {
-    //-------- Indentation configuration --------
-    "editor.detectIndentation": true,
-    "editor.formatOnPaste": true,
-    "editor.insertSpaces": false,
-    "editor.tabSize": 4,
+  //-------- Indentation configuration --------
+  "editor.detectIndentation": true,
+  "editor.formatOnPaste": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
 
-    //-------- Files configuration --------
-    "files.autoGuessEncoding": true,
-    "files.encoding": "utf8bom",
-    "files.insertFinalNewline": true,
+  //-------- Files configuration --------
+  "files.autoGuessEncoding": true,
+  "files.encoding": "utf8bom",
 
-    // When enabled, will trim trailing whitespace when you save a file.
-    "files.trimTrailingWhitespace": true,
-    // specifies the location of the explicitly ScriptAnalyzer settings file
-    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
-    // specifies the PowerShell coding style used in this project (https://github.com/PoshCode/PowerShellPracticeAndStyle/issues/81)
-    "powershell.codeFormatting.preset": "Allman",
-    "powershell.codeFormatting.alignPropertyValuePairs": false,
-    "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
-    "dotnet.preferCSharpExtension": true,
-    "dotnet.defaultSolution": "PSADT.slnx"
+  // Off by default so the EditorConfig extension can honour .editorconfig's per-file exemptions; languages without any turn them back on below.
+  "files.insertFinalNewline": false,
+  "files.trimTrailingWhitespace": false,
+
+  //-------- Per-language settings from .editorconfig, for when the EditorConfig extension is absent --------
+  // C#, JSON, XML and plain text can hold designer, NuGet and SDK output that .editorconfig exempts, so the extension handles those.
+  "[bat]": { "files.encoding": "utf8", "files.insertFinalNewline": true, "files.trimTrailingWhitespace": true },
+  "[csharp]": { "files.insertFinalNewline": true },
+  "[json]": { "editor.tabSize": 2, "files.encoding": "utf8" },
+  "[jsonc][yaml]": { "editor.tabSize": 2, "files.encoding": "utf8", "files.insertFinalNewline": true, "files.trimTrailingWhitespace": true },
+  "[markdown][powershell]": { "files.insertFinalNewline": true, "files.trimTrailingWhitespace": true },
+
+  // specifies the location of the explicitly ScriptAnalyzer settings file
+  "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+  // specifies the PowerShell coding style used in this project (https://github.com/PoshCode/PowerShellPracticeAndStyle/issues/81)
+  "powershell.codeFormatting.preset": "Allman",
+  "powershell.codeFormatting.alignPropertyValuePairs": false,
+  "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
+  "dotnet.preferCSharpExtension": true,
+  "dotnet.defaultSolution": "PSADT.slnx"
 }

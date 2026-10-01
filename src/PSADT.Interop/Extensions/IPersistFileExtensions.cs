@@ -42,7 +42,7 @@ internal static class IPersistFileExtensions
         }
 
         // A return value of S_FALSE means the object has no current file,
-        // and what it handed back is a prompt for a Save As dialog.    
+        // and what it handed back is a prompt for a Save As dialog.
         if (hResult == HRESULT.S_FALSE)
         {
             using (handle)

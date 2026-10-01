@@ -1,4 +1,4 @@
-# EditorConfig is awesome: https://EditorConfig.org
+﻿# EditorConfig is awesome: https://EditorConfig.org
 
 # Top-most EditorConfig file
 root = true
@@ -6,10 +6,53 @@ root = true
 [*]
 # Sane defaults for all files.
 charset = utf-8-bom
-indent_size = 4
 indent_style = space
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+[*.{cs,ps1,psm1,psd1,xaml}]
+indent_size = 4
+
+[*.{adml,admx,config,csproj,json,props,resx,runsettings,slnx,targets,XamlStyler,yaml,yml}]
+indent_size = 2
+
+# RFC 8259 forbids a BOM in JSON, and none of the YAML here has ever carried one.
+[*.{json,yaml,yml}]
+charset = utf-8
+
+# cmd.exe reads a BOM as part of the first command.
+[*.{bat,cmd}]
+charset = utf-8
+
+# Front matter has to open the file, so its opening --- cannot follow a BOM.
+[SKILL.md]
+charset = utf-8
+
+[.github/instructions/*.md]
+charset = utf-8
+
+# PEM certificates and license texts stay exactly as they were issued.
+[{*.cer,COPYING*}]
+charset = utf-8
+
+# NuGet writes these without a final newline.
+[packages.lock.json]
+insert_final_newline = unset
+
+# The WinForms designer writes trailing whitespace into these every time it saves.
+[*.Designer.cs]
+trim_trailing_whitespace = unset
+
+# The resource designer rewrites these wholesale, without a final newline.
+[*.resx]
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+
+# Build output that the SDK rewrites on every build.
+[modules/PSAppDeployToolkit/lib/**]
+charset = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
 
 [*.cs]
 # System first, then everything else, alphabetical within each and no blank line between them.

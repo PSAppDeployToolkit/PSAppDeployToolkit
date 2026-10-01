@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/src/">
     <Project Path="src/PSADT.Invoke/PSADT.Invoke.csproj" />
   </Folder>

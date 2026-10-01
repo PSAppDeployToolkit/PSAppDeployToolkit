@@ -1,4 +1,4 @@
-﻿---
+---
 applyTo: "**/*.ps1,**/*.psm1,**/*.psd1"
 excludeFrom: "**/*.Tests.ps1"
 ---
