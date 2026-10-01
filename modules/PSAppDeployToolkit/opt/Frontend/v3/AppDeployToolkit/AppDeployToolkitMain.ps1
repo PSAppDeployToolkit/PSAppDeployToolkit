@@ -4943,10 +4943,7 @@ function Get-PEFileArchitecture
     process
     {
         # Collect all input for processing at the end.
-        if ($null -ne $FilePath)
-        {
-            $filePaths.Add($FilePath)
-        }
+        $FilePath | & { process { if ($null -ne $_) { $filePaths.Add($_) } } }
     }
 
     end
