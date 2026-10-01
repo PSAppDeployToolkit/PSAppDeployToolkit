@@ -3315,7 +3315,6 @@ function Remove-FileFromUserProfiles
         })
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
