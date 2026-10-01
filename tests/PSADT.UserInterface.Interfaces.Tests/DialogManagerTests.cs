@@ -22,20 +22,25 @@ namespace PSADT.UserInterface.Interfaces.Tests
     /// which these tests are not permitted to do.
     /// </para>
     /// <para>
-    /// The manager starts itself the moment any member is named, which is why every test here goes
-    /// through <see cref="DialogHost"/>. See that class for the ordering this depends on.
+    /// The manager starts itself the moment any member is named, so the constructor starts it through
+    /// <see cref="DialogHost"/> before every test, and most tests then call it from the test thread as a
+    /// caller would. See that class for the ordering this depends on.
     /// </para>
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "Test names describe the scenario under test; the async suffix would obscure them.")]
     public sealed class DialogManagerTests
     {
         /// <summary>
+        /// Starts the dialog manager through <see cref="DialogHost"/>, whichever test the runner picks first.
+        /// </summary>
+        public DialogManagerTests()
+        {
+            _ = DialogHost.Dispatcher;
+        }
+
+        /// <summary>
         /// Verifies that no progress dialog is reported open when none has been shown.
         /// </summary>
-        /// <remarks>
-        /// This is also what starts the manager for the whole assembly, since it is the cheapest member
-        /// that neither throws nor shows anything.
-        /// </remarks>
         [Fact]
         public void ProgressDialogOpen_IsFalseWhenNothingIsShowing()
         {
