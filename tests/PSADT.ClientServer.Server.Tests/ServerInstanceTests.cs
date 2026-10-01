@@ -571,6 +571,85 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a successful response gives back the result the client serialized.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_ReturnsTheResultOfASuccessfulResponse()
+        {
+            Assert.Equal("a value", ServerInstance.DeserializeResponse<string>([(byte)ResponseMarker.Success, .. DataSerialization.SerializeToBytes("a value")]));
+        }
+
+        /// <summary>
+        /// Verifies that an error response is raised with the client's own exception inside it.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_RaisesTheExceptionTheClientReported()
+        {
+            // Arrange
+            byte[] response = [(byte)ResponseMarker.Error, .. DataSerialization.SerializeToBytes<Exception>(new ClientException("the client gave up", ClientExitCode.InvalidRequest))];
+
+            // Act
+            ServerException failure = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(response));
+
+            // Assert
+            Assert.Equal("the client gave up", Assert.IsType<ClientException>(failure.InnerException).Message);
+        }
+
+        /// <summary>
+        /// Verifies that a response with no marker, or nothing after its marker, is refused.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_RefusesAResponseWithNothingToDeserialize()
+        {
+            // Act
+            ServerException empty = Assert.Throws<ServerException>(static () => ServerInstance.DeserializeResponse<string>([]));
+            ServerException markerOnly = Assert.Throws<ServerException>(static () => ServerInstance.DeserializeResponse<string>([(byte)ResponseMarker.Success]));
+
+            // Assert
+            Assert.Contains("invalid or empty response", empty.Message, StringComparison.Ordinal);
+            Assert.Contains("invalid or empty response", markerOnly.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that a marker other than the two defined is refused, even ahead of an exception that would deserialize.
+        /// </summary>
+        /// <param name="marker">The marker to send.</param>
+        [Theory]
+        [InlineData((byte)0x02)] // The first value past the two defined.
+        [InlineData(byte.MaxValue)] // Nothing like either.
+        public void DeserializeResponse_RefusesAnUnknownMarker(byte marker)
+        {
+            // Arrange
+            byte[] response = [marker, .. DataSerialization.SerializeToBytes<Exception>(new ClientException("the client gave up", ClientExitCode.InvalidRequest))];
+
+            // Act
+            ServerException failure = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(response));
+
+            // Assert
+            Assert.Contains("unknown marker", failure.Message, StringComparison.Ordinal);
+            Assert.Null(failure.InnerException);
+        }
+
+        /// <summary>
+        /// Verifies that a response is overwritten once read, whether it was accepted or refused.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_OverwritesTheResponseOnceRead()
+        {
+            // Arrange
+            byte[] accepted = [(byte)ResponseMarker.Success, .. DataSerialization.SerializeToBytes("a value")];
+            byte[] refused = [(byte)ResponseMarker.Success];
+
+            // Act
+            _ = ServerInstance.DeserializeResponse<string>(accepted);
+            _ = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(refused));
+
+            // Assert
+            Assert.Equal(new byte[accepted.Length], accepted);
+            Assert.Equal(new byte[refused.Length], refused);
+        }
+
+        /// <summary>
         /// Verifies that a log reader which failed is reported, and leaves the instance disposed rather than
         /// half-way through it.
         /// </summary>

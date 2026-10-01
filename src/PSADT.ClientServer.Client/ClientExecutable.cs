@@ -1028,9 +1028,15 @@ namespace PSADT.ClientServer
         /// <param name="input">The UTF-8 encoded byte span representation of the object to deserialize. Cannot be empty.</param>
         /// <param name="offset">The zero-based byte offset in the input span where deserialization should begin.</param>
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the input bytes.</returns>
-        /// <exception cref="ClientException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
+        /// <exception cref="ClientException">Thrown if nothing follows <paramref name="offset"/>, or if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
         private static T DeserializeBytes<T>(byte[] input, int offset)
         {
+            // A request that ends at its command byte has no payload to read.
+            if (input.Length <= offset)
+            {
+                throw new ClientException($"The request carries no payload to read as {typeof(T).Name}.", ClientExitCode.InvalidRequest);
+            }
+
             try
             {
                 return DataSerialization.DeserializeFromBytes<T>(input, offset);

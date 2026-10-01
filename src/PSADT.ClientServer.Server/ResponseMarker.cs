@@ -9,7 +9,7 @@
     /// <item><description><see cref="Success"/>: Data contains the serialized result of type T.</description></item>
     /// <item><description><see cref="Error"/>: Data contains a serialized <see cref="System.Exception"/>.</description></item>
     /// </list>
-    /// This convention follows Win32 BOOL semantics where non-zero indicates success.
+    /// The values follow Win32 BOOL, FALSE for an error and TRUE for success; any other marker is refused.
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This value must be sized as a byte as it's used over a byte stream.")]
     internal enum ResponseMarker : byte
