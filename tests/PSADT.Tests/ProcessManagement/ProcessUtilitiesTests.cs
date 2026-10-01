@@ -281,8 +281,8 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Verifies that the kernel query names the test host by itself, in a buffer sized to exactly the length the
-        /// kernel reports.
+        /// Verifies that the kernel query names the test host by itself, in one call with a buffer large enough for
+        /// any name.
         /// </summary>
         [Fact]
         public void QuerySystemProcessIdInformationImageName_NamesTheTestHost()

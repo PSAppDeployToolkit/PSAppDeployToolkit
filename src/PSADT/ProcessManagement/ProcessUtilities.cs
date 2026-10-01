@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -476,29 +477,27 @@ namespace PSADT.ProcessManagement
         /// <exception cref="FormatException">Thrown if the retrieved image name does not start with "\Device\", indicating an invalid NT path.</exception>
         private static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            // Set up initial buffer that we need to query the process information. A stackalloc buffer starts out undefined, so the whole structure is assigned rather than just the one field it carries.
-            Span<byte> processIdInfoPtr = stackalloc byte[NativeMethods.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]];
-            ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
-            processIdInfo = new() { ProcessId = (nint)processId };
-
-            // Perform initial query so we can get the required ImageName buffer length, or under WOW64, allocate the most a UNICODE_STRING can hold.
-            bool callerIsWow64 = CallerProcessInfo.IsWow64;
-            if (!callerIsWow64)
-            {
-                _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _, retrievingLength: true);
-            }
-            Span<char> imageNamePtr = !callerIsWow64 ? stackalloc char[processIdInfo.ImageName.MaximumLength / sizeof(char)] : new char[ushort.MaxValue / sizeof(char)];
-
-            // Assign the ImageName buffer and perform the query again.
+            // Query into the most a UNICODE_STRING can hold, so any name fits without the sizing call WOW64 can't answer.
+            const int imageNameLength = ushort.MaxValue / sizeof(char);
+            char[] imageNameBuffer = ArrayPool<char>.Shared.Rent(imageNameLength);
             string imageName;
-            unsafe
+            try
             {
-                fixed (char* pImageName = imageNamePtr)
+                unsafe
                 {
-                    processIdInfo.ImageName = new() { Length = 0, MaximumLength = checked((ushort)(imageNamePtr.Length * 2)), Buffer = pImageName };
-                    _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageName = processIdInfo.ImageName.ToManagedString();
+                    fixed (char* pImageName = imageNameBuffer)
+                    {
+                        Span<byte> processIdInfoPtr = stackalloc byte[NativeMethods.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]];
+                        ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
+                        processIdInfo = new() { ProcessId = (nint)processId, ImageName = new() { Length = 0, MaximumLength = imageNameLength * sizeof(char), Buffer = pImageName }, };
+                        _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                        imageName = processIdInfo.ImageName.ToManagedString();
+                    }
                 }
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(imageNameBuffer);
             }
 
             // Throw if the value doesn't start with \Device\ (indicating an NT path).
