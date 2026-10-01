@@ -37,7 +37,7 @@
 - Apply Try-pattern corrections across all analogous methods in the current implementation and callers/tests: return bool with [NotNullWhen(true)] nullable out results, not nullable return values.
 - Prefer calculating an invariant loop bound before the loop rather than putting a conditional expression in the loop condition.
 - Prefer proper domain types over primitive representations. Represent security SIDs as `SecurityIdentifier` and use its value equality, rather than storing SIDs as strings.
-- Write every file the way `.editorconfig` describes it, even when the tool creating it ignores the file: UTF-8 with a BOM (JSON, YAML, batch files, certificates, license texts and front-matter Markdown without), no trailing whitespace, a final newline, and four-space indentation for C#, PowerShell and XAML or two for XML, JSON and YAML. The build's `dotnet format` check rejects a `.cs` file that lacks the BOM or the final newline, and `Confirm-ADTScriptEncoding` rejects a module PowerShell file without the BOM.
+- Write every file the way `.editorconfig` describes it, even when the tool creating it ignores the file: UTF-8 with a BOM (JSON, YAML, batch files, certificates, license texts and front-matter Markdown without), no trailing whitespace, a final newline, and four-space indentation, or two for JSON, YAML and the project, solution, policy, resource and config XML files `.editorconfig` lists. The build's `dotnet format` check rejects a `.cs` file that lacks the BOM or the final newline, and `Confirm-ADTScriptEncoding` rejects a module PowerShell file without the BOM.
 
 ## Language-Specific Coding Conventions
 
