@@ -1,4 +1,4 @@
-# Responsible Security Disclosure
+﻿# Responsible Security Disclosure
 
 ## Introduction
 

@@ -113,7 +113,7 @@ namespace PSADT.SMBIOS
                 SmbiosType.PortConnectorInformation => MajorVersion >= 2,
                 SmbiosType.SystemSlots => MajorVersion >= 2,
 
-                // SMBIOS 2.1 structures  
+                // SMBIOS 2.1 structures
                 SmbiosType.OnBoardDevicesInformation => MajorVersion >= 2 && (MajorVersion > 2 || MinorVersion >= 1),
                 SmbiosType.OemStrings => MajorVersion >= 2 && (MajorVersion > 2 || MinorVersion >= 1),
                 SmbiosType.SystemConfigurationOptions => MajorVersion >= 2 && (MajorVersion > 2 || MinorVersion >= 1),
@@ -203,7 +203,7 @@ namespace PSADT.SMBIOS
                 // Replaced by Physical Memory Array (Type 16) and Memory Device (Type 17)
                 SmbiosType.MemoryControllerInformation => MajorVersion >= 2 && (MajorVersion > 2 || MinorVersion >= 1),
 
-                // Memory Module Information (Type 6) - Obsolete in SMBIOS 2.1+  
+                // Memory Module Information (Type 6) - Obsolete in SMBIOS 2.1+
                 // Replaced by Memory Device (Type 17)
                 SmbiosType.MemoryModuleInformation => MajorVersion >= 2 && (MajorVersion > 2 || MinorVersion >= 1),
 

@@ -1,4 +1,4 @@
-# Example - VLC Media Player
+﻿# Example - VLC Media Player
 
 ## Description
 

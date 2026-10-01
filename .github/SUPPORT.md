@@ -1,4 +1,4 @@
-# PSAppDeployToolkit Support
+﻿# PSAppDeployToolkit Support
 
 If you have any problems, please consult the [PSAppDeployToolkit GitHub Issues](https://github.com/psappdeploytoolkit/psappdeploytoolkit/issues) page.
 
