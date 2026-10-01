@@ -481,16 +481,8 @@ namespace PSADT.ProcessManagement
             ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo = new() { ProcessId = (nint)processId };
 
-            // Determine whether we're running under WOW64, which never reports the required ImageName buffer length.
-            bool callerIsWow64 = false;
-            if (!Environment.Is64BitProcess)
-            {
-                using SafeProcessHandle currentProcess = NativeMethods.GetCurrentProcess();
-                _ = NativeMethods.IsWow64Process2(currentProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE callerMachine, out _);
-                callerIsWow64 = callerMachine is not Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN;
-            }
-
             // Perform initial query so we can get the required ImageName buffer length, or under WOW64, allocate the most a UNICODE_STRING can hold.
+            bool callerIsWow64 = CallerProcessInfo.IsWow64;
             if (!callerIsWow64)
             {
                 _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _, retrievingLength: true);

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
-using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.TerminalServices;
 using Windows.Win32;
@@ -60,34 +58,6 @@ namespace PSADT.AccountManagement
             CallerIsLocalService = CallerSid.IsWellKnown(WellKnownSidType.LocalServiceSid);
             CallerIsNetworkService = CallerSid.IsWellKnown(WellKnownSidType.NetworkServiceSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && CallerIsInteractive;
-            CallerUsingServiceUI = CallerIsLocalSystem && ProcessUtilities.GetParentProcesses().Any(static p =>
-            {
-                if (ProcessUtilities.HasProcessExited(p))
-                {
-                    return false;
-                }
-                try
-                {
-                    return ProcessVersionInfo.GetVersionInfo(p).InternalName?.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase) is true;
-                }
-                catch (NotSupportedException)
-                {
-                    try
-                    {
-                        return FileVersionInfo.GetVersionInfo(p.GetFilePath().FullName).InternalName?.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase) is true;
-                    }
-                    catch
-                    {
-                        return false;
-                        throw;
-                    }
-                }
-                catch
-                {
-                    return false;
-                    throw;
-                }
-            });
         }
 
         /// <summary>
@@ -165,11 +135,6 @@ namespace PSADT.AccountManagement
         /// Indicates whether the current caller is running in an interactive system environment.
         /// </summary>
         public static readonly bool CallerIsSystemInteractive;
-
-        /// <summary>
-        /// Gets a value indicating whether the current process is running with ServiceUI anywhere as a parent process.
-        /// </summary>
-        public static readonly bool CallerUsingServiceUI;
 
         /// <summary>
         /// Indicates whether the current caller is the user currently logged on to the system.

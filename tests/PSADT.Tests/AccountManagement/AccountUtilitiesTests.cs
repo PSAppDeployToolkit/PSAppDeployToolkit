@@ -83,7 +83,6 @@ namespace PSADT.Tests.AccountManagement
             if (!AccountUtilities.CallerIsLocalSystem)
             {
                 Assert.False(AccountUtilities.CallerIsSystemInteractive);
-                Assert.False(AccountUtilities.CallerUsingServiceUI);
             }
         }
 
