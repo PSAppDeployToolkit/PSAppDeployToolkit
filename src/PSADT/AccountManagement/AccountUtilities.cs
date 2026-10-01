@@ -82,9 +82,10 @@ namespace PSADT.AccountManagement
                         throw;
                     }
                 }
-                catch (UnauthorizedAccessException)
+                catch
                 {
                     return false;
+                    throw;
                 }
             });
         }
