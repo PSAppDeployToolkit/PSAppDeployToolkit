@@ -24,7 +24,7 @@
   <PropertyGroup>
     <ClientVariant Condition="'$(ClientVariant)' == ''">Client</ClientVariant>
     <AssemblyName>PSADT.ClientServer.$(ClientVariant)</AssemblyName>
-    <IntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\$(ClientVariant)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(ClientVariant)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <!-- The launcher variants are windowed; the clients are console. -->
