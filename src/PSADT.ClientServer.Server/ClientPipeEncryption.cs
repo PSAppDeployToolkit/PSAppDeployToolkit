@@ -32,7 +32,7 @@ namespace PSADT.ClientServer
         internal override void PerformKeyExchangeBlocking(Stream outputStream, Stream inputStream)
         {
             // Verify state and parameters.
-            ThrowIfDisposed();
+            ThrowIfDisposed(); ThrowIfKeyExchangeCompleted();
             ArgumentNullException.ThrowIfNull(outputStream);
             ArgumentNullException.ThrowIfNull(inputStream);
 
