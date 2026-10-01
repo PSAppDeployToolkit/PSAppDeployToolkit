@@ -7,11 +7,9 @@ root = true
 # Sane defaults for all files.
 charset = utf-8-bom
 indent_style = space
+indent_size = 4
 trim_trailing_whitespace = true
 insert_final_newline = true
-
-[*.{cs,ps1,psm1,psd1,xaml}]
-indent_size = 4
 
 [*.{adml,admx,config,csproj,json,props,resx,runsettings,slnx,targets,XamlStyler,yaml,yml}]
 indent_size = 2
