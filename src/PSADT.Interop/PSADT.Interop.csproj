@@ -71,6 +71,7 @@
       M:System.IO.Stream.Read(System.Span{System.Byte})|
       M:System.IO.Stream.ReadAsync(System.Memory{System.Byte},System.Threading.CancellationToken)|
       M:System.IO.StreamReader.ReadLineAsync|
+      M:System.IO.TextReader.ReadToEndAsync|
       M:System.Nullable.GetValueRefOrDefaultRef|
       M:System.ObjectDisposedException.ThrowIf(System.Boolean,System.Object)|
       M:System.String.Contains(System.Char,System.StringComparison)|

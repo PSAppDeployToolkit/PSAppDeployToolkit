@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
 using PSADT.ProcessManagement;
 using PSADT.Tests.TestHelpers;
 using Xunit;
@@ -21,7 +24,8 @@ namespace PSADT.Tests.ProcessManagement
     /// other runs on any machine.
     /// </para>
     /// <para>
-    /// The subject throughout is the test host, which is certain to be running and whose image is known.
+    /// The subject is the test host, which is certain to be running and whose image is known, except where a
+    /// 32-bit process is needed: a copy of the 32-bit PING to read, or 32-bit Windows PowerShell to read from.
     /// </para>
     /// </remarks>
     public sealed class ProcessVersionInfoTests
@@ -189,6 +193,68 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a 64-bit caller reads a 32-bit process, whose image is laid out differently from its own.
+        /// </summary>
+        [Fact(Skip = Wow64ProcessSkipReason, SkipUnless = nameof(TestEnvironment.CanRead32BitProcessMemory), SkipType = typeof(TestEnvironment))]
+        public async Task GetVersionInfo_ReadsA32BitProcessFromA64BitCallerAsync()
+        {
+            // Arrange: a copy, so the framework reads the very image the process runs
+            using TempDirectory directory = new();
+            FileVersionInfo expected = CopyWow64Ping(directory);
+            using RunningPing ping = await RunningPing.StartAsync(expected.FileName).ConfigureAwait(true);
+
+            // Act
+            ProcessVersionInfo actual = ProcessVersionInfo.GetVersionInfo(ping.Process);
+
+            // Assert
+            Assert.Equal(expected.FileDescription, actual.FileDescription);
+            Assert.Equal(expected.FileVersion, actual.FileVersion);
+            Assert.Equal(new Version(expected.FileMajorPart, expected.FileMinorPart, expected.FileBuildPart, expected.FilePrivatePart), actual.FileVersionRaw);
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller is refused a native 64-bit process before it tries to enumerate the
+        /// process's modules, which WOW64 cannot do.
+        /// </summary>
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanReadProcessMemoryUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task GetVersionInfo_RefusesANative64BitProcessFromA32BitCallerAsync()
+        {
+            // Arrange
+            using Process current = Process.GetCurrentProcess();
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync($"[PSADT.ProcessManagement.ProcessVersionInfo]::GetVersionInfo([int]{current.Id.ToString(CultureInfo.InvariantCulture)}).FileDescription").ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.ExceptionType is not null, result.Describe());
+            Assert.Equal(typeof(NotSupportedException).FullName, result.ExceptionType);
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller still reads a 32-bit process, so the refusal is confined to the
+        /// architecture WOW64 cannot read.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source, which parses either line ending, so the source file's choice cannot change what this does.")]
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanReadProcessMemoryUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task GetVersionInfo_ReadsA32BitProcessFromA32BitCallerAsync()
+        {
+            // Arrange: a copy, so the framework reads the very image the process runs
+            using TempDirectory directory = new();
+            FileVersionInfo expected = CopyWow64Ping(directory);
+            using RunningPing ping = await RunningPing.StartAsync(expected.FileName).ConfigureAwait(true);
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync($$"""
+                $info = [PSADT.ProcessManagement.ProcessVersionInfo]::GetVersionInfo([int]{{ping.Process.Id.ToString(CultureInfo.InvariantCulture)}})
+                "$($info.FileDescription)|$($info.FileVersionRaw)"
+                """).ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal($"{expected.FileDescription}|{new Version(expected.FileMajorPart, expected.FileMinorPart, expected.FileBuildPart, expected.FilePrivatePart)}", result.Value);
+        }
+
+        /// <summary>
         /// Verifies that the description put in a log names the image and its version, since that is what
         /// it is read for.
         /// </summary>
@@ -226,8 +292,32 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Copies the 32-bit PING into the given directory, reading its version before the native MUI file it needs is put beside it.
+        /// </summary>
+        /// <param name="directory">The directory to copy it into.</param>
+        /// <returns>The copy's own version information, which names its path.</returns>
+        private static FileVersionInfo CopyWow64Ping(TempDirectory directory)
+        {
+            string image = directory.GetPath(TestEnvironment.Wow64PingExecutable.Name);
+            File.Copy(TestEnvironment.Wow64PingExecutable.FullName, image);
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(image);
+            RunningPing.CopyMessageResources(TestEnvironment.Wow64PingExecutable.FullName, image);
+            return versionInfo;
+        }
+
+        /// <summary>
         /// The reason the reading tests are gated, spelled once.
         /// </summary>
         private const string SkipReason = "Requires the privilege to read another process's memory.";
+
+        /// <summary>
+        /// The reason the tests reading from 32-bit Windows PowerShell are gated, spelled once.
+        /// </summary>
+        private const string Wow64SkipReason = "Requires the net472 test host on 64-bit Windows, and the privilege to read another process's memory.";
+
+        /// <summary>
+        /// The reason the test reading a 32-bit process is gated, spelled once.
+        /// </summary>
+        private const string Wow64ProcessSkipReason = "Requires a 64-bit test host with WOW64, and the privilege to read another process's memory.";
     }
 }

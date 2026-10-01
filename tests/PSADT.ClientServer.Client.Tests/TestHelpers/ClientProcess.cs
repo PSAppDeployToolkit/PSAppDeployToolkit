@@ -53,8 +53,8 @@ namespace PSADT.ClientServer.Client.Tests.TestHelpers
 
             // Both streams are drained before the wait so a client writing more than a pipe buffer
             // holds cannot block on a write nobody is reading.
-            Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
-            Task<string> standardError = process.StandardError.ReadToEndAsync();
+            Task<string> standardOutput = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+            Task<string> standardError = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
             if (!await Task.Run(() => process.WaitForExit((int)Timeout.TotalMilliseconds), TestContext.Current.CancellationToken).ConfigureAwait(false))
             {
                 TryKill(process);

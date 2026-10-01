@@ -1,9 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
+using PSADT.FileSystem;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
+using PSADT.Tests.TestHelpers;
+using Windows.Win32.Storage.FileSystem;
 using Xunit;
 
 namespace PSADT.Tests.ProcessManagement
@@ -12,9 +21,10 @@ namespace PSADT.Tests.ProcessManagement
     /// Tests matching the machine's running processes against a set of definitions.
     /// </summary>
     /// <remarks>
-    /// The test host is the subject rather than a process started for the purpose, so nothing here starts
-    /// or stops anything: the host is certain to be running, its name and image path are known, and it is
-    /// owned by the caller - which is what the matching needs in order to report an owner at all.
+    /// The test host is the subject wherever it will do: it is certain to be running, its name and image path
+    /// are known, and it is owned by the caller - which is what the matching needs in order to report an owner
+    /// at all. The exceptions start a copy of PING and rename its image, since only a process whose file has
+    /// gone shows where its description was read from.
     /// </remarks>
     public sealed class RunningProcessInfoTests
     {
@@ -155,6 +165,52 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a process whose image has been renamed since it started is described from its memory,
+        /// the one place its version resource is left.
+        /// </summary>
+        [Fact(Skip = DebugPrivilegeSkipReason, SkipUnless = nameof(TestEnvironment.HasDebugPrivilege), SkipType = typeof(TestEnvironment))]
+        public async Task Get_DescribesAProcessWhoseImageWasRenamedFromItsMemoryAsync()
+        {
+            // Arrange
+            using TempDirectory directory = new();
+            string name = NewProcessName();
+            using RunningPing ping = await StartRenamedPingAsync(directory, name).ConfigureAwait(true);
+            string? expected = FileVersionInfo.GetVersionInfo(directory.GetPath($"{name}.renamed")).FileDescription;
+            Assert.False(string.IsNullOrWhiteSpace(expected), "PING carries no description to read back.");
+
+            // Act
+            RunningProcessInfo info = Assert.Single(RunningProcessInfo.Get([new(name)]));
+
+            // Assert: nothing is left at the reported path, so the description came out of the process
+            Assert.False(info.FileName.Exists, $"The reported image {info.FileName.FullName} still exists.");
+            Assert.Equal(expected, info.Description);
+        }
+
+        /// <summary>
+        /// Verifies that a 32-bit caller describes a native process whose image has been renamed by its name,
+        /// since neither the file nor the process's memory can be read, rather than failing to describe it.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source, which parses either line ending, so the source file's choice cannot change what this does.")]
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanReadProcessMemoryUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task Get_DescribesARenamedNativeProcessByItsNameFromA32BitCallerAsync()
+        {
+            // Arrange
+            using TempDirectory directory = new();
+            string name = NewProcessName();
+            using RunningPing ping = await StartRenamedPingAsync(directory, name).ConfigureAwait(true);
+
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync($$"""
+                $running = [PSADT.ProcessManagement.RunningProcessInfo]::Get([PSADT.ProcessManagement.ProcessDefinition[]]@([PSADT.ProcessManagement.ProcessDefinition]::new('{{name}}')))
+                "$($running.Count)|$($running[0].Description)"
+                """).ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal($"1|{name}", result.Value);
+        }
+
+        /// <summary>
         /// Verifies that results are ordered by description, so a list shown to a user is stable rather
         /// than following whatever order the machine enumerated processes in.
         /// </summary>
@@ -250,5 +306,52 @@ namespace PSADT.Tests.ProcessManagement
             Assert.NotNull(host);
             Assert.NotEqual(host, other);
         }
+
+        /// <summary>
+        /// Starts a copy of the native PING under the given name, then renames its image so nothing is left at the
+        /// path it was started from.
+        /// </summary>
+        /// <param name="directory">The directory to put the copy in.</param>
+        /// <param name="name">The name to start it under, which becomes its process name.</param>
+        /// <returns>The running copy.</returns>
+        private static async Task<RunningPing> StartRenamedPingAsync(TempDirectory directory, string name)
+        {
+            string image = directory.GetPath($"{name}.exe");
+            string source = Path.Join(Environment.SystemDirectory, "PING.EXE");
+            File.Copy(source, image); RunningPing.CopyMessageResources(source, image);
+
+            // Opened before the launch: a new image's first run can be held briefly without sharing deletion.
+            using SafeFileHandle imageHandle = NativeMethods.CreateFile(image, FileSystemRights.Delete, FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE | FILE_SHARE_MODE.FILE_SHARE_DELETE, lpSecurityAttributes: null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
+            RunningPing ping = await RunningPing.StartAsync(image).ConfigureAwait(true);
+            try
+            {
+                FileSystemUtilities.RenameFile(imageHandle, directory.GetPath($"{name}.renamed"));
+                return ping;
+            }
+            catch
+            {
+                ping.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Makes a process name no other process on the machine has.
+        /// </summary>
+        /// <returns>The name.</returns>
+        private static string NewProcessName()
+        {
+            return $"PSADT{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
+        }
+
+        /// <summary>
+        /// The reason the test reading process memory is gated, spelled once.
+        /// </summary>
+        private const string DebugPrivilegeSkipReason = "Requires the privilege to read another process's memory.";
+
+        /// <summary>
+        /// The reason the test describing from 32-bit Windows PowerShell is gated, spelled once.
+        /// </summary>
+        private const string Wow64SkipReason = "Requires the net472 test host on 64-bit Windows, and the privilege to read another process's memory.";
     }
 }
