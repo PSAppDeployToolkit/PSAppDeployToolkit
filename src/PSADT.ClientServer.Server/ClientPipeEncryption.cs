@@ -62,12 +62,18 @@ namespace PSADT.ClientServer
         /// handshake.</param>
         /// <param name="inputStream">The stream from which authentication data is read. Must be readable and remain open for the duration of the
         /// handshake.</param>
-        /// <exception cref="CryptographicException">Thrown if the server fails to prove possession of the correct cryptographic key, indicating that mutual
-        /// authentication has failed.</exception>
+        /// <exception cref="CryptographicException">Thrown if the server's challenge is not the agreed size, or if the server fails to prove possession of
+        /// the correct cryptographic key, indicating that mutual authentication has failed.</exception>
         private void PerformMutualAuthentication(Stream outputStream, Stream inputStream)
         {
             // Receive server's challenge
             byte[] serverChallenge = ReadLengthPrefixedBytesBlocking(inputStream);
+
+            // Verify challenge length
+            if (serverChallenge.Length != ChallengeSize)
+            {
+                throw new CryptographicException("Key exchange verification failed: invalid server challenge length.");
+            }
 
             // Generate client's own challenge
             byte[] clientChallenge = new byte[ChallengeSize];

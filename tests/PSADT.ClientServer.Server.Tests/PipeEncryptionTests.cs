@@ -122,6 +122,27 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a frame too short to hold a nonce, a tag and any ciphertext is refused as undecryptable.
+        /// </summary>
+        /// <param name="length">The length of the frame's content.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(1)] // The shortest frame there is.
+        [InlineData(12 + 16)] // A nonce and a tag, with no ciphertext between them.
+        public async Task ReadEncrypted_RefusesAFrameTooShortToBeAMessage(int length)
+        {
+            // Arrange
+            using EncryptionPair pair = await EncryptionPair.CreateAsync().ConfigureAwait(true);
+            using MemoryStream wire = new([.. BitConverter.GetBytes(length), .. new byte[length]]);
+
+            // Act
+            CryptographicException failure = Assert.Throws<CryptographicException>(() => pair.Client.ReadEncryptedBlocking(wire));
+
+            // Assert
+            Assert.Contains("Encrypted data is too short", failure.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that a length prefix which is not a length is refused.
         /// </summary>
         /// <remarks>
@@ -260,7 +281,7 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             Assert.Equal(4 + 12 + 16, wire.Length);
-            _ = Assert.Throws<ArgumentOutOfRangeException>(() => pair.Client.ReadEncryptedBlocking(wire));
+            _ = Assert.Throws<CryptographicException>(() => pair.Client.ReadEncryptedBlocking(wire));
         }
 
         /// <summary>

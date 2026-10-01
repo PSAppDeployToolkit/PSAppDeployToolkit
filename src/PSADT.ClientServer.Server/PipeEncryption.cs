@@ -223,7 +223,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if the encrypted data is too short.</exception>
+        /// <exception cref="CryptographicException">Thrown if the encrypted data is too short to hold a nonce, a tag and one byte of ciphertext.</exception>
         private protected byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.
@@ -233,7 +233,7 @@ namespace PSADT.ClientServer
             // Validate minimum input length: Nonce (12) + Tag (16) + at least 1 byte of ciphertext
             if (encryptedData.Length < NonceSize + TagSize + 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(encryptedData), encryptedData.Length, "Encrypted data is too short.");
+                throw new CryptographicException($"Encrypted data is too short: {encryptedData.Length.ToString(CultureInfo.InvariantCulture)} bytes, but a nonce, a tag and one byte of ciphertext need {(NonceSize + TagSize + 1).ToString(CultureInfo.InvariantCulture)}.");
             }
 
             // Extract nonce, ciphertext, and tag
