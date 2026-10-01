@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Threading;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Interop.Exceptions;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -673,6 +674,109 @@ namespace PSADT.Interop.Tests
 
             // Act & Assert
             _ = Assert.Throws<UnauthorizedAccessException>(() => NativeMethods.NtResumeProcess(limited));
+        }
+
+        /// <summary>
+        /// Verifies that the image of the running process is sized and then read with the two-call pattern, the sizing
+        /// call's length mismatch coming back as a result because it says it is sizing, and that the name read is the
+        /// native path the process reports through another API.
+        /// </summary>
+        [Fact]
+        public void NtQuerySystemInformation_SizesAndReadsTheImageNameOfThisProcess()
+        {
+            // Arrange
+            using SafeProcessHandle process = NativeMethods.GetCurrentProcess();
+            char[] expected = new char[1024];
+            _ = NativeMethods.QueryFullProcessImageName(process, PROCESS_NAME_FORMAT.PROCESS_NAME_NATIVE, expected, out uint expectedLength);
+            byte[] buffer = new byte[Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>()];
+            ref SYSTEM_PROCESS_ID_INFORMATION info = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref buffer[0]);
+            info.ProcessId = (nint)PInvoke.GetCurrentProcessId();
+
+            // Act: size, then read into exactly the size that came back
+            NTSTATUS sized = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, buffer, out _, retrievingLength: true);
+            ushort size = info.ImageName.MaximumLength;
+            char[] name = new char[size / sizeof(char)];
+            NTSTATUS read;
+            string imageName;
+            unsafe
+            {
+                fixed (char* pName = name)
+                {
+                    info.ImageName = new() { Length = 0, MaximumLength = size, Buffer = pName };
+                    read = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, buffer, out _);
+                    imageName = new string(pName, 0, info.ImageName.Length / sizeof(char));
+                }
+            }
+
+            // Assert
+            Assert.Equal(NTSTATUS.STATUS_INFO_LENGTH_MISMATCH, sized);
+            Assert.Equal(NTSTATUS.STATUS_SUCCESS, read);
+            Assert.Equal(new string(expected, 0, (int)expectedLength), imageName, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Verifies that a name buffer too small for the image is raised as the length mismatch when the caller did not
+        /// say it was sizing, rather than handed back for the caller to read an empty name from.
+        /// </summary>
+        [Fact]
+        public void NtQuerySystemInformation_RaisesALengthMismatchOutsideASizingCall()
+        {
+            // Arrange: room for the structure, but not for the name it points at
+            byte[] buffer = new byte[Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>()];
+            ref SYSTEM_PROCESS_ID_INFORMATION info = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref buffer[0]);
+            info.ProcessId = (nint)PInvoke.GetCurrentProcessId();
+            char[] name = new char[1];
+            Win32Exception thrown;
+            unsafe
+            {
+                fixed (char* pName = name)
+                {
+                    info.ImageName = new() { Length = 0, MaximumLength = sizeof(char), Buffer = pName };
+
+                    // Act
+                    thrown = Assert.Throws<Win32Exception>(() => NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, buffer, out _));
+                }
+            }
+
+            // Assert
+            Assert.Equal(NTSTATUS.STATUS_INFO_LENGTH_MISMATCH, Assert.IsType<NtStatusException>(thrown.InnerException).NtStatus);
+        }
+
+        /// <summary>
+        /// Verifies that the object types are sized and then read with the two-call pattern, the sizing call's length
+        /// mismatch coming back as a result because it says it is sizing.
+        /// </summary>
+        [Fact]
+        public void NtQueryObject_SizesAndReadsTheObjectTypes()
+        {
+            // Act: size with room for the header alone, then read into the size that came back
+            byte[] header = new byte[Unsafe.SizeOf<OBJECT_TYPES_INFORMATION>()];
+            NTSTATUS sized = NativeMethods.NtQueryObject(Handle: null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, header, out uint length, retrievingLength: true);
+            byte[] types = new byte[length];
+            NTSTATUS read = NativeMethods.NtQueryObject(Handle: null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, types, out _);
+
+            // Assert
+            Assert.Equal(NTSTATUS.STATUS_INFO_LENGTH_MISMATCH, sized);
+            Assert.Equal(NTSTATUS.STATUS_SUCCESS, read);
+            Assert.True(length > header.Length);
+            Assert.True(Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref types[0]).NumberOfTypes > 0);
+        }
+
+        /// <summary>
+        /// Verifies that a buffer with room for the header alone is raised as the length mismatch when the caller did not
+        /// say it was sizing, rather than handed back for the caller to read a header with nothing after it.
+        /// </summary>
+        [Fact]
+        public void NtQueryObject_RaisesALengthMismatchOutsideASizingCall()
+        {
+            // Arrange
+            byte[] header = new byte[Unsafe.SizeOf<OBJECT_TYPES_INFORMATION>()];
+
+            // Act
+            Win32Exception thrown = Assert.Throws<Win32Exception>(() => NativeMethods.NtQueryObject(Handle: null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, header, out _));
+
+            // Assert
+            Assert.Equal(NTSTATUS.STATUS_INFO_LENGTH_MISMATCH, Assert.IsType<NtStatusException>(thrown.InnerException).NtStatus);
         }
 
         /// <summary>

@@ -12,7 +12,6 @@ using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.SafeHandles;
 using PSADT.Interop.Utilities;
-using Windows.Wdk.Foundation;
 using Windows.Wdk.System.Threading;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -2639,10 +2638,10 @@ namespace PSADT.Interop
         /// Retrieves system information for the specified information class by calling the native
         /// NtQuerySystemInformation function.
         /// </summary>
-        /// <remarks>If the buffer specified by SystemInformation is too small to hold the requested data,
-        /// the method returns STATUS_INFO_LENGTH_MISMATCH and sets ReturnLength to the required buffer size. The caller
-        /// can then allocate a larger buffer and retry the operation. This method throws an exception for NTSTATUS
-        /// values other than STATUS_SUCCESS and STATUS_INFO_LENGTH_MISMATCH.</remarks>
+        /// <remarks>A caller sizing a buffer passes <paramref name="retrievingLength"/> as <see langword="true"/>, which makes
+        /// STATUS_INFO_LENGTH_MISMATCH a result rather than a failure: ReturnLength, or the structure the class fills in, then
+        /// gives the size to allocate before querying again. Every other status besides STATUS_SUCCESS is thrown, including a
+        /// length mismatch from a call that was not sizing a buffer.</remarks>
         /// <param name="SystemInformationClass">The type of system information to be queried. This value determines the structure and content of the data
         /// returned in the SystemInformation buffer.</param>
         /// <param name="SystemInformation">A buffer that receives the requested system information. The buffer must be large enough to hold the data
@@ -2652,8 +2651,9 @@ namespace PSADT.Interop
         /// <param name="retrievingLength">When true, indicates the caller is performing an initial query to determine required buffer size.
         /// STATUS_INFO_LENGTH_MISMATCH will be allowed without throwing. Default is false.</param>
         /// <returns>An NTSTATUS code indicating the result of the operation. Returns STATUS_SUCCESS if successful, or
-        /// STATUS_INFO_LENGTH_MISMATCH if the buffer is too small.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if SystemInformation is empty.</exception>
+        /// STATUS_INFO_LENGTH_MISMATCH if <paramref name="retrievingLength"/> is <see langword="true"/> and the buffer is too small.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if SystemInformation is empty.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the call reports a return length of zero.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength, bool retrievingLength = false)
         {
@@ -2665,7 +2665,7 @@ namespace PSADT.Interop
                 fixed (byte* SystemInformationLocal = SystemInformation)
                 {
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && SystemInformation.Length is not 0)))
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || !retrievingLength))
                     {
                         throw ExceptionUtilities.GetException(res);
                     }
@@ -2678,19 +2678,23 @@ namespace PSADT.Interop
         /// <summary>
         /// Queries information about the specified object handle by invoking the native NtQueryObject function.
         /// </summary>
-        /// <remarks>This method is a managed wrapper for the native NtQueryObject function in ntdll.dll.
-        /// The caller is responsible for providing a buffer of sufficient size in ObjectInformation. If the buffer is
-        /// too small, the required size is returned in ReturnLength.</remarks>
-        /// <param name="Handle">A SafeHandle representing the object to query. The handle must be valid and not closed.</param>
+        /// <remarks>This method is a managed wrapper for the native NtQueryObject function in ntdll.dll. A caller sizing a
+        /// buffer passes <paramref name="retrievingLength"/> as <see langword="true"/>, which makes STATUS_INFO_LENGTH_MISMATCH a
+        /// result rather than a failure, with the size to allocate in ReturnLength. Every other status besides STATUS_SUCCESS is
+        /// thrown, including a length mismatch from a call that was not sizing a buffer.</remarks>
+        /// <param name="Handle">A SafeHandle representing the object to query, or <see langword="null"/> for a class that describes the
+        /// system rather than one object, such as ObjectTypesInformation. A handle must be valid and not closed.</param>
         /// <param name="ObjectInformationClass">The type of information to retrieve about the object, specified as an OBJECT_INFORMATION_CLASS value.</param>
         /// <param name="ObjectInformation">A span of bytes that receives the requested information. Must not be empty.</param>
         /// <param name="ReturnLength">When this method returns, contains the number of bytes written to ObjectInformation or required to store the
         /// information, depending on the operation.</param>
         /// <param name="retrievingLength">When true, indicates the caller is performing an initial query to determine required buffer size.
         /// STATUS_INFO_LENGTH_MISMATCH will be allowed without throwing. Default is false.</param>
-        /// <returns>An NTSTATUS value indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, an
-        /// error code is returned.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
+        /// <returns>An NTSTATUS value indicating the result of the operation: STATUS_SUCCESS, or STATUS_INFO_LENGTH_MISMATCH if
+        /// <paramref name="retrievingLength"/> is <see langword="true"/> and the buffer is too small.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown if Handle has already been closed.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if Handle is invalid, or if ObjectInformation is empty.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the call reports a return length of zero.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out uint ReturnLength, bool retrievingLength = false)
         {
@@ -2705,7 +2709,7 @@ namespace PSADT.Interop
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
                 res = Windows.Wdk.PInvoke.NtQueryObject((HANDLE?)Handle?.DangerousGetHandle() ?? default, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && ObjectInformation.Length is not 0)))
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || !retrievingLength))
                 {
                     throw ExceptionUtilities.GetException(res);
                 }
@@ -4560,7 +4564,6 @@ namespace PSADT.Interop
         /// </summary>
         internal static readonly FrozenDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
         {
-            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Unsafe.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Unsafe.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
             { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
         });
 
@@ -4570,7 +4573,6 @@ namespace PSADT.Interop
         internal static readonly FrozenDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<OBJECT_INFORMATION_CLASS, int>
         {
             { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Unsafe.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
-            { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Unsafe.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Unsafe.SizeOf<OBJECT_TYPE_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Unsafe.SizeOf<OBJECT_TYPES_INFORMATION>() },
         });
