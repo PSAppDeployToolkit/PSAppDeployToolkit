@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using PSADT.ProcessManagement;
 
@@ -15,15 +16,15 @@ internal static class ProcessExtensions
     /// <summary>
     /// Retrieves the full file system path of the executable associated with the specified process.
     /// </summary>
-    /// <remarks>This method attempts to retrieve the file path using the process's main module. If
-    /// that fails, it falls back to an alternative mechanism that may use the provided NT path lookup table. The
-    /// returned path may be empty if the process is inaccessible or the path cannot be resolved.</remarks>
+    /// <remarks>This method asks <see cref="ProcessUtilities.GetProcessImageName(int, ReadOnlyDictionary{string, string})"/>
+    /// first, which translates the native image path through the provided NT path lookup table, and falls back to the
+    /// process's main module only if every method that tries fails.</remarks>
     /// <param name="process">The process for which to obtain the executable file path. Must not be null.</param>
     /// <param name="ntPathLookupTable">An optional lookup table used to resolve NT device paths to file system paths. If null, a default lookup
     /// table is used.</param>
-    /// <returns>A string containing the full file system path of the process's executable. Returns an empty string if the
-    /// path cannot be determined.</returns>
+    /// <returns>The executable file the process is running.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
+    /// <exception cref="AggregateException">Thrown if the path cannot be determined. It carries the failure of each method tried.</exception>
     internal static FileInfo GetFilePath(this Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
     {
         ArgumentNullException.ThrowIfNull(process);
@@ -31,13 +32,20 @@ internal static class ProcessExtensions
         {
             return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
         }
-        catch (Exception ex)
+        catch (AggregateException ex1)
         {
-            if (process.MainModule is not null)
+            try
             {
-                return new(process.MainModule.FileName);
+                if (process.MainModule is ProcessModule mainModule)
+                {
+                    return new(mainModule.FileName);
+                }
             }
-            ExceptionDispatchInfo.Capture(ex).Throw();
+            catch (Exception ex2)
+            {
+                throw new AggregateException(ex1.Message, ex1.InnerExceptions.Append(ex2));
+            }
+            ExceptionDispatchInfo.Capture(ex1).Throw();
             throw;
         }
     }
