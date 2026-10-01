@@ -261,6 +261,15 @@ namespace PSADT.ClientServer.Client.Tests
         }
 
         /// <summary>
+        /// Confirms a request with nothing after its command byte is reported as an invalid request.
+        /// </summary>
+        [Fact]
+        public void DeserializeBytes_ReportsInvalidRequestWhenThereIsNoPayload()
+        {
+            AssertRefused(ClientExitCode.InvalidRequest, static () => DeserializeBytes<string>([0xFF], 1));
+        }
+
+        /// <summary>
         /// Confirms an unreadable string is reported as invalid options.
         /// </summary>
         [Fact]
