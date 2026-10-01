@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
@@ -71,7 +72,15 @@ namespace PSADT.AccountManagement
                 }
                 catch (NotSupportedException)
                 {
-                    return false;
+                    try
+                    {
+                        return FileVersionInfo.GetVersionInfo(p.GetFilePath().FullName).InternalName?.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase) is true;
+                    }
+                    catch
+                    {
+                        return false;
+                        throw;
+                    }
                 }
                 catch (UnauthorizedAccessException)
                 {
