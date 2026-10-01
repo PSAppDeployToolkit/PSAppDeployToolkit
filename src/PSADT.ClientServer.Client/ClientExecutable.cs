@@ -605,7 +605,7 @@ namespace PSADT.ClientServer
                                             }
 
                                         default:
-                                            throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
+                                            throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidCommand);
                                     }
                                 }
                                 catch (Exception ex)
