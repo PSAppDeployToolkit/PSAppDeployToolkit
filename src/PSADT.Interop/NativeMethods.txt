@@ -149,6 +149,7 @@ IsTokenRestricted
 IsWindow
 IsWindowEnabled
 IsWindowVisible
+IsWow64Process2
 ITaskService
 IUniformResourceLocatorW
 IURL_INVOKECOMMAND_FLAGS

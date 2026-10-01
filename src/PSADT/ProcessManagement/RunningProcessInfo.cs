@@ -124,6 +124,20 @@ namespace PSADT.ProcessManagement
                 return argv;
             }
 
+            // Inline lambda to get the description from the given process's version resource.
+            static string? GetProcessDescription(Process process, string filePath)
+            {
+                // A 32-bit caller cannot read the version resource of a process with a different architecture.
+                try
+                {
+                    return ProcessVersionInfo.GetVersionInfo(process, filePath).FileDescription;
+                }
+                catch (NotSupportedException)
+                {
+                    return null;
+                }
+            }
+
             // Pre-cache running processes and start looping through to find matches.
             Process[] allProcesses = [.. Process.GetProcesses().Where(p => p.Id > 0 && processDefinitions.Any(pd => pd.ProcessNameIsMatch(p.ProcessName)))]; List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
@@ -179,7 +193,7 @@ namespace PSADT.ProcessManagement
                             ? defDescription
                             : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
                             ? fileDescription
-                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]).FileDescription is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
+                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && GetProcessDescription(process, argv[0]) is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
                             ? procDescription
                             : process.ProcessName;
 

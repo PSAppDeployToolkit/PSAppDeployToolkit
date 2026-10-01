@@ -2175,6 +2175,22 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Determines whether the specified process is running under WOW64, and the native architecture of the system.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process to be checked. This handle must have the PROCESS_QUERY_INFORMATION or
+        /// PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="pProcessMachine">When this method returns, contains the architecture the process runs as under WOW64, or
+        /// <c language="csharp">IMAGE_FILE_MACHINE_UNKNOWN</c> if it is not running under WOW64.</param>
+        /// <param name="pNativeMachine">When this method returns, contains the native architecture of the system.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL IsWow64Process2(SafeHandle hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine)
+        {
+            ArgumentException.ThrowIfNullOrClosed(hProcess);
+            BOOL res = PInvoke.IsWow64Process2(hProcess, out pProcessMachine, out pNativeMachine);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Queries information about the specified job object.
         /// </summary>
         /// <remarks>This method is a wrapper around the native Windows API function

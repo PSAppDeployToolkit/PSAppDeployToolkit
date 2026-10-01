@@ -69,6 +69,10 @@ namespace PSADT.AccountManagement
                 {
                     return ProcessVersionInfo.GetVersionInfo(p).InternalName?.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase) is true;
                 }
+                catch (NotSupportedException)
+                {
+                    return false;
+                }
                 catch (UnauthorizedAccessException)
                 {
                     return false;
