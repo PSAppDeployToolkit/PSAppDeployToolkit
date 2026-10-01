@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using PSADT.ProcessManagement;
 
 /// <summary>
@@ -30,12 +31,13 @@ internal static class ProcessExtensions
         {
             return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
         }
-        catch
+        catch (Exception ex)
         {
             if (process.MainModule is not null)
             {
                 return new(process.MainModule.FileName);
             }
+            ExceptionDispatchInfo.Capture(ex).Throw();
             throw;
         }
     }
