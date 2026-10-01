@@ -93,6 +93,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary for resolving NT paths to user-friendly paths. If <see langword="null"/>, a default lookup table will be used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the target process has a different architecture.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
@@ -180,8 +181,21 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processHandle">A handle to the process.</param>
         /// <returns>A <see cref="MODULEINFO"/> structure containing information about the main module.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the specified process has a different architecture.</exception>
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
+            // A 32-bit caller can only enumerate the modules of a process with the same architecture.
+            if (!Environment.Is64BitProcess)
+            {
+                using SafeProcessHandle currentProcess = NativeMethods.GetCurrentProcess();
+                _ = NativeMethods.IsWow64Process2(currentProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE callerMachine, out _);
+                _ = NativeMethods.IsWow64Process2(processHandle, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE processMachine, out _);
+                if (processMachine != callerMachine)
+                {
+                    throw new NotSupportedException("A 32-bit process cannot enumerate the modules of a process with a different architecture.");
+                }
+            }
+
             // Get all process modules, then return the first one (main module).
             _ = NativeMethods.EnumProcessModules(processHandle, lphModule: null, out uint bytesNeeded);
             Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];

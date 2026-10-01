@@ -219,6 +219,24 @@ namespace PSADT.Interop.Tests
         }
 
         /// <summary>
+        /// Verifies that the running process reports a WOW64 architecture exactly when the framework reports a
+        /// 32-bit process on a 64-bit system, and that the system's own architecture is always reported.
+        /// </summary>
+        [Fact]
+        public void IsWow64Process2_MatchesWhatTheFrameworkReports()
+        {
+            // Arrange
+            using SafeProcessHandle process = NativeMethods.GetCurrentProcess();
+
+            // Act
+            _ = NativeMethods.IsWow64Process2(process, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE processMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE nativeMachine);
+
+            // Assert
+            Assert.Equal(Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess, processMachine is not Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN);
+            Assert.NotEqual(Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN, nativeMachine);
+        }
+
+        /// <summary>
         /// Verifies that opening a process that cannot exist is raised as a failure rather than handed back
         /// as an invalid handle. Zero is the idle process, which no caller may open.
         /// </summary>
