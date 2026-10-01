@@ -288,12 +288,8 @@ namespace PSADT.ClientServer
         private protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
-            ThrowIfDisposed();
+            ThrowIfDisposed(); ThrowIfKeyExchangeCompleted();
             ArgumentNullException.ThrowIfNull(remotePublicKey);
-            if (_encryptionKey is not null)
-            {
-                throw new InvalidOperationException("Key exchange has already been completed.");
-            }
 
             // Remote key is a CNG EccPublicBlob: an 8-byte header of a magic and a declared size, then X and Y.
             // Nothing has authenticated the far party, so all three are checked before any is used to bound a
@@ -367,6 +363,18 @@ namespace PSADT.ClientServer
         private protected void ThrowIfDisposed()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+        }
+
+        /// <summary>
+        /// Throws an exception if the key exchange process has already been completed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the key exchange process has already been completed.</exception>
+        private protected void ThrowIfKeyExchangeCompleted()
+        {
+            if (_encryptionKey is not null)
+            {
+                throw new InvalidOperationException("Key exchange has already been completed. The shared key has already been derived.");
+            }
         }
 
         /// <summary>
