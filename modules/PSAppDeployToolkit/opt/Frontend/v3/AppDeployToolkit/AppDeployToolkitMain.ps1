@@ -1937,6 +1937,11 @@ function New-Folder
 
 function Test-PowerPoint
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
@@ -2742,6 +2747,11 @@ function Execute-MSP
 
 function Unblock-AppExecution
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
@@ -3533,6 +3543,11 @@ function Get-SchedulerTask
 
 function Get-PendingReboot
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
