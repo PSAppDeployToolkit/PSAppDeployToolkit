@@ -28,30 +28,23 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 |---------------------|-----------------|
 | ![CustomLightMode](https://github.com/user-attachments/assets/c092999f-46a2-43f6-bd28-bc2bdcd03b76) | ![CustomDarkMode](https://github.com/user-attachments/assets/26be16d2-f13e-491d-af86-72a169200f27) |
 
-## 🖥️ Whats New in v4.2 RC1 - 2026-08-20
+## 🖥️ What's New in v4.2 RC2 - 2026-10-01
 
 ### Highlights
 
-- Major code refactoring to clean up and optimise the code base. Everything now runs faster and the module is significantly smaller in size.
-- iNKORE WPF library replaced by [Fluence](https://github.com/sintaxasn/Fluence.Wpf) (created and maintained by PSAppDeployToolkit founder [Dan Cunningham](https://github.com/sintaxasn)).
-- A more streamlined default `Invoke-AppDeployToolkit.ps1` template. ZeroConfig code has been removed from the default template and is now a separate download, or can be generated via `New-ADTTemplate -ZeroConfig`.
-- [New-ADTTemplate](https://psappdeploytoolkit.com/docs/reference/functions/New-ADTTemplate) now allows you to generate an entire deployment package in a single command by specifying session properties, config, assets, files, and script blocks.
-- [Show-ADTInstallationPrompt](https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationPrompt) now supports secured text inputs and dropdown selection boxes.
-- [Show-ADTInstallationRestartPrompt](https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationRestartPrompt) now supports a cancel button.
-- You can now configure a different accent color for dark mode.
-- Dialogs now fallback to default image if the specified asset is not found, also images can be encoded as Base64 strings instead of supplying file paths.
-- Tray notification icon shown whenever balloon tips / toasts are invoked.
-- UIAccess to allow the UI to overlay the Autopilot setup screen.
-- Ability to test if user is in focus mode.
-- Functions added to add/remove fonts.
-- Copy-ADTContentToCache now applies administrator permissions to the shared cache and has a separate cache location for non-admins.
-- Descriptions for all known MSI error codes now included in logging output.
-- All WMI dependencies removed, so the toolkit can run on devices with WMI corruption.
-- Ability to run custom functions whenever writing to the log or when a deployment is deferred via [Add-ADTModuleCallback](https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback).
-- All time-based parameters now accept TimeSpan objects as well as interpreting integers as seconds.
-- `-WhatIf` support added throughout to test changes non-destructively.
-- AI and static analysis tools used to ensure code quality (CodeQL, Meziantou.Analyzer, Microsoft.CodeAnalysis.BannedApiAnalyzers, Microsoft.Extensions.StaticAnalysis, Roslynator.Analyzers).
-- Pester tests updated for Pester v6 (thanks [@nohwnd!](https://github.com/nohwnd))
+- `Show-ADTInstallationRestartPrompt` improvements:
+  - Some parameters have been renamed to make their behaviour clearer (with previous names retained as aliases)
+  - `-Force` switch support to show the prompt in Silent/NonInteractive mode
+  - `-NoForceCloseApps` switch to omit the `/f` switch when calling `shutdown.exe` for more graceful restarts
+  - Parameter sets fixed so that all UI options are still available when suppling `-AllowSilentRestart` (previously named `-SilentRestart`)
+  - Default countdown durations can now be set in `config.psd1`.
+- `New-ADTTemplate` can now rename the `Invoke-AppDeployToolkit` launcher files via `-LauncherName`, and omit content (Assets, Config, Extensions, Files, Module, Strings, SupportFiles) via `-ExcludeContent`.
+- `Show-ADTInstallationPrompt` `-SecureInput` now returns the entered text as a `SecureString`.
+- `Show-ADTInstallationWelcome` `-CheckDiskSpace` / `-RequiredDiskSpace` now work without an active deployment session.
+- Group Policy now supports version-specific policy keys (`HKLM\SOFTWARE\Policies\PSAppDeployToolkit\4.2`), so 4.2-only settings such as Base64 assets don't break 4.0/4.1 deployments on the same device. The ADMX/ADML templates have been updated to match, and empty policy values can now clear values set in a deployment's config.
+- New `PathsBasedOnSystemContext` config option to use the `NoAdminRights` paths whenever the caller isn't the LocalSystem account, rather than whenever the caller isn't an admin.
+- Numerous fixes to the v3 compatibility layer (`AppDeployToolkitMain.ps1`) to better match v3 behaviour.
+- Extensive new C# and Pester unit test coverage.
 
 Check the [releases](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases) for further information.
 
