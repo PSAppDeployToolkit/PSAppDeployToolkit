@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -25,12 +26,14 @@ internal static class ProcessExtensions
     /// <returns>The executable file the process is running.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
     /// <exception cref="AggregateException">Thrown if the path cannot be determined. It carries the failure of each method tried.</exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
     internal static FileInfo GetFilePath(this Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
     {
         ArgumentNullException.ThrowIfNull(process);
+        int processId = process.Id;
         try
         {
-            return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
+            return ProcessUtilities.GetProcessImageName(processId, ntPathLookupTable);
         }
         catch (AggregateException ex1)
         {
@@ -43,7 +46,7 @@ internal static class ProcessExtensions
             }
             catch (Exception ex2)
             {
-                throw new AggregateException(ex1.Message, ex1.InnerExceptions.Append(ex2));
+                throw new AggregateException($"Failed to retrieve the process image name for process ID [{processId.ToString(CultureInfo.InvariantCulture)}] via all available methods.", ex1.InnerExceptions.Append(ex2));
             }
             ExceptionDispatchInfo.Capture(ex1).Throw();
             throw;
