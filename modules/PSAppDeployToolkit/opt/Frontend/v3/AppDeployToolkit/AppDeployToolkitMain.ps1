@@ -2133,7 +2133,7 @@ function Disable-TerminalServerInstallMode
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Disable-ADTTerminalServerInstallMode
+# MARK: Wrapper around Enable-ADTTerminalServerInstallMode
 #
 #---------------------------------------------------------------------------
 
