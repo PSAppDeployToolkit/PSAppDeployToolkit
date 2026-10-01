@@ -38,6 +38,9 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="process">The process for which to obtain version information. Cannot be null.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the target process has a different architecture.</exception>
         public static ProcessVersionInfo GetVersionInfo(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
@@ -50,6 +53,9 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The unique identifier of the process for which to retrieve version information. Must correspond to a running
         /// process.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing version information for the specified process.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="processId"/> does not correspond to a running process.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the target process has a different architecture.</exception>
         public static ProcessVersionInfo GetVersionInfo(int processId)
         {
             using Process process = Process.GetProcessById(processId);
@@ -65,6 +71,9 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
         /// resolve paths within the process's version information.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the target process has a different architecture.</exception>
         internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             return new(process, filePath: null, ntPathLookupTable);
@@ -77,8 +86,13 @@ namespace PSADT.ProcessManagement
         /// <param name="filePath">The file path associated with the process, used to locate version details.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version information of the specified process and
         /// file path.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="filePath"/> is empty or consists only of white-space characters.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the current process is 32-bit and the target process has a different architecture.</exception>
         internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath)
         {
+            ArgumentNullException.ThrowIfNull(process);
             return new(process, filePath, ntPathLookupTable: null);
         }
 
