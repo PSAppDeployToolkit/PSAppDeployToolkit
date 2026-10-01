@@ -599,7 +599,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
-                if (AccountUtilities.CallerUsingServiceUI)
+                if (CallerProcessInfo.UsingServiceUI)
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] was started with ServiceUI as a parent process. This is no longer required with PSAppDeployToolkit 4.1.x or higher and will be forbidden in a later release.", LogSeverity.Warning);
                 }

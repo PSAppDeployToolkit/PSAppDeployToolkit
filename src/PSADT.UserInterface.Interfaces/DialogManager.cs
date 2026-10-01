@@ -287,7 +287,7 @@ namespace PSADT.UserInterface.Interfaces
             // Refuse a mismatch before anything reaches the screen, and before the task exists.
             ArgumentNullException.ThrowIfNull(options); return options.SecureInput
                 ? throw new ArgumentException("Masked input must be shown with ShowSecureInputDialogAsync, which reports a SecureInputDialogResult.", nameof(options))
-                : AccountUtilities.CallerUsingServiceUI
+                : CallerProcessInfo.UsingServiceUI
                 ? throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.")
                 : ShowInputDialogImplAsync(dialogStyle, options);
         }
@@ -328,7 +328,7 @@ namespace PSADT.UserInterface.Interfaces
             // As above, in the other direction.
             ArgumentNullException.ThrowIfNull(options); return !options.SecureInput
                 ? throw new ArgumentException("Options for a masked dialog must set SecureInput; plain input is shown with ShowInputDialogAsync.", nameof(options))
-                : AccountUtilities.CallerUsingServiceUI
+                : CallerProcessInfo.UsingServiceUI
                 ? throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.")
                 : ShowSecureInputDialogImplAsync(dialogStyle, options);
         }

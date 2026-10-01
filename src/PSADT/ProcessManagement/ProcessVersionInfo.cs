@@ -201,10 +201,8 @@ namespace PSADT.ProcessManagement
             // A 32-bit caller can only enumerate the modules of a process with the same architecture.
             if (!Environment.Is64BitProcess)
             {
-                using SafeProcessHandle currentProcess = NativeMethods.GetCurrentProcess();
-                _ = NativeMethods.IsWow64Process2(currentProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE callerMachine, out _);
                 _ = NativeMethods.IsWow64Process2(processHandle, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE processMachine, out _);
-                if (processMachine != callerMachine)
+                if (processMachine != CallerProcessInfo.Wow64Machine)
                 {
                     throw new NotSupportedException("A 32-bit process cannot enumerate the modules of a process with a different architecture.");
                 }
