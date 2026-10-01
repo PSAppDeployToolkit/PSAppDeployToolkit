@@ -359,6 +359,25 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a command the client does not recognise comes back as an invalid command, and the client keeps answering.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ServerInstance_ReportsACommandTheClientDoesNotRecognise()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+
+            // Act
+            ServerException failure = await Assert.ThrowsAsync<ServerException>(async () => await InvokeAsync<bool>(instance, (PipeCommand)byte.MaxValue).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert: the client named the problem, and is still answering
+            Assert.Equal((int)ClientExitCode.InvalidCommand, Assert.IsType<ClientException>(failure.InnerException).HResult);
+            Assert.False(await instance.ProgressDialogOpenAsync().ConfigureAwait(true));
+        }
+
+        /// <summary>
         /// Verifies that a log frame is taken off the stream even when there is no session to write it to.
         /// </summary>
         /// <remarks>
@@ -986,6 +1005,22 @@ namespace PSADT.ClientServer.Server.Tests
             MethodInfo handler = typeof(ServerInstance).GetMethod("ProcessExit_Handler", BindingFlags.NonPublic | BindingFlags.Instance)
                 ?? throw new InvalidOperationException("ServerInstance no longer carries a handler for the host's exit.");
             _ = handler.Invoke(instance, [null, EventArgs.Empty]);
+        }
+
+        /// <summary>
+        /// Sends a bare command through an instance's private sender, the only way to send one the client does not define.
+        /// </summary>
+        /// <typeparam name="TResult">The type to read the answer as.</typeparam>
+        /// <param name="instance">The instance whose client to ask.</param>
+        /// <param name="command">The command to send.</param>
+        /// <returns>The client's answer.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the instance no longer carries the sender this calls.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "An instance only sends the commands it defines, and a client's answer to any other is a case worth covering.")]
+        private static async Task<TResult> InvokeAsync<TResult>(ServerInstance instance, PipeCommand command)
+        {
+            MethodInfo invoke = Array.Find(typeof(ServerInstance).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance), static method => method.Name.Equals("InvokeAsync", StringComparison.Ordinal) && method.GetParameters().Length is 1)
+                ?? throw new InvalidOperationException("ServerInstance no longer carries a bare-command InvokeAsync for the tests to call.");
+            return await ((ValueTask<TResult>)(invoke.MakeGenericMethod(typeof(TResult)).Invoke(instance, [command]) ?? throw new InvalidOperationException("InvokeAsync answered with nothing."))).ConfigureAwait(true);
         }
 
         /// <summary>
