@@ -15,14 +15,13 @@ namespace PSADT.Tests.ProcessManagement
     public sealed class CallerProcessInfoTests
     {
         /// <summary>
-        /// Verifies that the test host reports running under WOW64 exactly when the framework reports a 32-bit process
-        /// on a 64-bit system, and that the architecture it reports agrees.
+        /// Verifies that the test host reports an architecture under WOW64 exactly when the framework reports a 32-bit
+        /// process on a 64-bit system.
         /// </summary>
         [Fact]
-        public void IsWow64_MatchesWhatTheFrameworkReports()
+        public void Wow64Machine_MatchesWhatTheFrameworkReports()
         {
-            Assert.Equal(Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess, CallerProcessInfo.IsWow64);
-            Assert.Equal(CallerProcessInfo.IsWow64, CallerProcessInfo.Wow64Machine is not Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN);
+            Assert.Equal(Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess, CallerProcessInfo.Wow64Machine is not Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN);
         }
 
         /// <summary>
@@ -36,12 +35,12 @@ namespace PSADT.Tests.ProcessManagement
             Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync($$"""
                 $flags = [System.Reflection.BindingFlags]'NonPublic, Static'
                 $type = [PSADT.ProcessManagement.ProcessUtilities].Assembly.GetType('{{typeof(CallerProcessInfo).FullName}}', $true)
-                "$($type.GetProperty('{{nameof(CallerProcessInfo.Wow64Machine)}}', $flags).GetValue($null))|$($type.GetProperty('{{nameof(CallerProcessInfo.IsWow64)}}', $flags).GetValue($null))"
+                "$($type.GetProperty('{{nameof(CallerProcessInfo.Wow64Machine)}}', $flags).GetValue($null))"
                 """).ConfigureAwait(true);
 
             // Assert
             Assert.True(result.Value is not null, result.Describe());
-            Assert.Equal($"{nameof(Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_I386)}|True", result.Value);
+            Assert.Equal(nameof(Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_I386), result.Value);
         }
 
         /// <summary>

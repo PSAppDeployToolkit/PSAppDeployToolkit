@@ -25,11 +25,6 @@ namespace PSADT.ProcessManagement
         internal static Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE Wow64Machine => Wow64MachineValue.Value;
 
         /// <summary>
-        /// Gets a value indicating whether the current process is running under WOW64.
-        /// </summary>
-        internal static bool IsWow64 => Wow64Machine is not Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN;
-
-        /// <summary>
         /// The value behind <see cref="UsingServiceUI"/>.
         /// </summary>
         private static readonly Lazy<bool> UsingServiceUIValue = new(static () =>
