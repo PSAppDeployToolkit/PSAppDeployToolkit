@@ -283,6 +283,18 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Verifies that a null process is refused when an image path is given with it, before the path or the
+        /// caller's privileges are looked at.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
+        [Fact]
+        public void GetVersionInfo_RefusesANullProcessGivenAnImagePath()
+        {
+            ArgumentNullException thrown = Assert.Throws<ArgumentNullException>(static () => ProcessVersionInfo.GetVersionInfo(null!, "ping.exe"));
+            Assert.Equal("process", thrown.ParamName, StringComparer.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that an identifier no process is using is reported rather than described.
         /// </summary>
         [Fact]
