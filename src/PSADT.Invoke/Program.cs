@@ -197,11 +197,16 @@ namespace PSADT.Invoke
         /// <summary>
         /// Closes the debug console window and waits for a key press before exiting the application.
         /// </summary>
-        /// <remarks>This method is intended for use in debugging scenarios where a console window is
-        /// attached to the application. It prompts the user to press any key before releasing the console, allowing
-        /// time to review output before the window closes.</remarks>
+        /// <remarks>This method has no effect if debug mode is not enabled. It is intended for use in debugging scenarios
+        /// where a console window is attached to the application. It prompts the user to press any key before releasing
+        /// the console, allowing time to review output before the window closes.</remarks>
         private static void CloseDebugMode()
         {
+            // Prompt only when we're in debug mode.
+            if (!inDebugMode)
+            {
+                return;
+            }
             Console.WriteLine("\nPress any key to exit...");
             try
             {
