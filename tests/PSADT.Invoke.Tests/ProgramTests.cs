@@ -269,6 +269,22 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that with /Debug, /? still writes the help under the launcher's title and version when its version has
+        /// no "+" and source revision, as a build made outside git has.
+        /// </summary>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_WritesHelpInDebugModeForAVersionWithoutASourceRevision()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            RemoveSourceRevision(invokerPath);
+
+            Assert.Equal(1, RunDebugInvokerWithArguments(invokerPath, "/?"));
+            string[] lines = File.ReadAllLines(Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName));
+            Assert.Equal(GetHelpTitle(), lines[0]);
+        }
+
+        /// <summary>
         /// Verifies that with /Debug, a failure while preparing to run the script is written to the console and returns
         /// 60010, rather than ending the launcher through FailFast.
         /// </summary>
@@ -336,6 +352,26 @@ namespace PSADT.Invoke.Tests
             Assembly invokerAssembly = typeof(Program).Assembly;
             string informationalVersion = invokerAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? string.Empty;
             return $"{invokerAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title} {new Version(informationalVersion.Split('+')[0])}";
+        }
+
+        /// <summary>
+        /// Rewrites the informational version inside a copy of the launcher so that it has no "+" and source revision.
+        /// </summary>
+        /// <remarks>The version is padded with leading zeros so the file keeps its length, so 4.2.0+abc becomes 00004.2.0,
+        /// which parses as the same version.</remarks>
+        /// <param name="invokerPath">The copy of the launcher to rewrite.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the launcher has no informational version.</exception>
+        private static void RemoveSourceRevision(string invokerPath)
+        {
+            string informationalVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new InvalidOperationException("The launcher has no informational version.");
+            byte[] original = Encoding.UTF8.GetBytes(informationalVersion);
+            byte[] replacement = Encoding.UTF8.GetBytes(informationalVersion.Split('+')[0].PadLeft(informationalVersion.Length, '0'));
+            byte[] image = File.ReadAllBytes(invokerPath);
+            int offset = image.AsSpan().IndexOf(original);
+            Assert.True(offset != -1, $"The launcher's informational version [{informationalVersion}] was not found in [{invokerPath}].");
+            Assert.True(image.AsSpan(offset + original.Length).IndexOf(original) == -1, $"The launcher's informational version [{informationalVersion}] appears more than once in [{invokerPath}].");
+            replacement.CopyTo(image, offset);
+            File.WriteAllBytes(invokerPath, image);
         }
 
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
