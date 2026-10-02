@@ -43,6 +43,8 @@ namespace PSADT.Invoke.Tests
         private const string MessageBoxSkipReason = "The help is only shown in a message box in an interactive session.";
         private const string HiddenDesktopHelperFileName = "hiddendesktop.ps1";
         private const string HiddenDesktopResultFileName = "hiddendesktop.txt";
+        private const string ReusedParentHelperFileName = "reusedparent.ps1";
+        private const string ReusedParentResultFileName = "reusedparent.txt";
         private const string UsageLine = "  Invoke-AppDeployToolkit.exe [/Debug] [/32] [-File <FileName>] [-DeploymentScriptParameter]";
         private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
 
@@ -203,6 +205,23 @@ namespace PSADT.Invoke.Tests
             WaitForInvokerExit(process, DefaultMode);
 
             Assert.Equal(0, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that without /32 or /Core, the launcher doesn't follow a PowerShell 7 that Windows gave its exited
+        /// parent's ID to, as that process started after the launcher.
+        /// </summary>
+        [Fact(Skip = PowerShellCoreSkipReason, SkipUnless = nameof(IsPowerShellCoreAvailable))]
+        public static void Main_IgnoresAPowerShellCoreGivenItsExitedParentsId()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetWindowsPowerShellScript(), Encoding.UTF8);
+
+            int? exitCode = RunInvokerUnderReusedParentId(invokerPath);
+
+            Assert.SkipWhen(exitCode is null, "Windows did not give the launcher's exited parent's ID to a PowerShell 7 in time.");
+            Assert.Equal(0, exitCode);
         }
 
         /// <summary>
@@ -666,6 +685,70 @@ namespace PSADT.Invoke.Tests
             return (int.Parse(outcome[0], CultureInfo.InvariantCulture), result[1], [.. result.Skip(2)]);
         }
 
+        /// <summary>
+        /// Runs a launcher whose parent has exited, once Windows has given that parent's ID to a PowerShell 7 that started
+        /// after the launcher.
+        /// </summary>
+        /// <remarks>A Windows PowerShell helper starts the launcher, as giving it another process for its parent takes
+        /// native calls the launcher doesn't wrap.</remarks>
+        /// <param name="invokerPath">The path to the launcher.</param>
+        /// <returns>The exit code of the launcher, or null if Windows didn't give the ID out again in time.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the launcher's directory cannot be resolved, or Windows PowerShell cannot be started.</exception>
+        private static int? RunInvokerUnderReusedParentId(string invokerPath)
+        {
+            string directoryPath = Path.GetDirectoryName(invokerPath) ?? throw new InvalidOperationException("Failed to resolve the launcher directory.");
+            string helperPath = Path.Join(directoryPath, ReusedParentHelperFileName);
+            string resultPath = Path.Join(directoryPath, ReusedParentResultFileName);
+            File.WriteAllText(helperPath, GetReusedParentHelperScript(), Encoding.UTF8);
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = Path.Join(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"),
+                Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{helperPath}\" -InvokerPath \"{invokerPath}\" -ResultPath \"{resultPath}\" -TimeoutMilliseconds {ProcessTimeoutMilliseconds}",
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = directoryPath,
+            };
+            StringBuilder output = new();
+            void AppendLine(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _ = output.AppendLine(e.Data);
+                }
+            }
+
+            // The helper waits for the ID to come round again, then for the launcher, each for up to the timeout.
+            using Process helper = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start Windows PowerShell.");
+            helper.ErrorDataReceived += AppendLine;
+            helper.OutputDataReceived += AppendLine;
+            helper.BeginErrorReadLine();
+            helper.BeginOutputReadLine();
+            if (!helper.WaitForExit(ProcessTimeoutMilliseconds * 3))
+            {
+                string survivors = KillProcessTree(helper.Id);
+                Assert.Fail($"The helper did not exit within {ProcessTimeoutMilliseconds * 3}ms. Killed:{Environment.NewLine}{survivors}");
+            }
+
+            // The overload taking a timeout returns before the redirected streams have finished.
+            helper.WaitForExit();
+            if (!File.Exists(resultPath))
+            {
+                Assert.Fail($"The helper did not run the launcher:{Environment.NewLine}{output}");
+            }
+
+            // The result is the exit code, "NotReused", or "TimedOut" and the process ID.
+            string[] outcome = File.ReadAllText(resultPath).Trim().Split(' ');
+            if (outcome[0].Equals("TimedOut", StringComparison.Ordinal))
+            {
+                string survivors = KillProcessTree(int.Parse(outcome[1], CultureInfo.InvariantCulture));
+                Assert.Fail($"The launcher did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
+            }
+            return outcome[0].Equals("NotReused", StringComparison.Ordinal) ? null : int.Parse(outcome[0], CultureInfo.InvariantCulture);
+        }
+
         private static string BuildProcessArguments(string invocationMode, string scriptPath)
         {
             string[] arguments = invocationMode switch
@@ -801,6 +884,22 @@ namespace PSADT.Invoke.Tests
             return string.Join(
                 Environment.NewLine,
                 "if ($PSVersionTable.PSEdition -ne 'Core')",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
+        /// Gets a script that exits with 2 unless it runs in Windows PowerShell, as an error alone exits with 1.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetWindowsPowerShellScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "if ($PSVersionTable.PSEdition -ne 'Desktop')",
                 "{",
                 "    exit 2",
                 "}",
@@ -1094,6 +1193,239 @@ namespace PSADT.Invoke.Tests
                     $env:PATH = $SearchPath
                 }
                 [System.IO.File]::WriteAllLines($ResultPath, [System.String[]][PSADT.Invoke.Tests.HiddenDesktop]::Run($InvokerPath, ('"{0}" {1}' -f $InvokerPath, $Arguments), $TimeoutMilliseconds, $Interactive.IsPresent, $OutputPath))
+                """;
+        }
+
+        /// <summary>
+        /// Gets a Windows PowerShell script that starts a launcher suspended under a parent of its own, ends that parent,
+        /// then starts suspended PowerShell 7 processes until Windows gives one the parent's ID, and only then lets the
+        /// launcher run. It writes the launcher's exit code to a file, or "TimedOut" and its process ID if it is still
+        /// running when the time is up, or "NotReused" if the ID didn't come round again in that time.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source with C# inside it, both of which parse either line ending, so the source file's choice cannot change what this does.")]
+        private static string GetReusedParentHelperScript()
+        {
+            return """
+                param ([System.String]$InvokerPath, [System.String]$ResultPath, [System.UInt32]$TimeoutMilliseconds)
+                $ErrorActionPreference = 'Stop'
+                Add-Type -TypeDefinition @'
+                using System;
+                using System.ComponentModel;
+                using System.Diagnostics;
+                using System.Globalization;
+                using System.IO;
+                using System.Runtime.InteropServices;
+                using System.Text;
+
+                namespace PSADT.Invoke.Tests
+                {
+                    public static class ReusedParent
+                    {
+                        private const uint CreateSuspended = 0x4;
+                        private const uint DetachedProcess = 0x8;
+                        private const uint ExtendedStartupInfoPresent = 0x80000;
+                        private const uint WaitTimeout = 0x102;
+                        private static readonly IntPtr ProcThreadAttributeParentProcess = new IntPtr(0x20000);
+
+                        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+                        private struct STARTUPINFOEX
+                        {
+                            public int cb;
+                            public string lpReserved;
+                            public string lpDesktop;
+                            public string lpTitle;
+                            public int dwX;
+                            public int dwY;
+                            public int dwXSize;
+                            public int dwYSize;
+                            public int dwXCountChars;
+                            public int dwYCountChars;
+                            public int dwFillAttribute;
+                            public int dwFlags;
+                            public short wShowWindow;
+                            public short cbReserved2;
+                            public IntPtr lpReserved2;
+                            public IntPtr hStdInput;
+                            public IntPtr hStdOutput;
+                            public IntPtr hStdError;
+                            public IntPtr lpAttributeList;
+                        }
+
+                        [StructLayout(LayoutKind.Sequential)]
+                        private struct PROCESS_INFORMATION
+                        {
+                            public IntPtr hProcess;
+                            public IntPtr hThread;
+                            public int dwProcessId;
+                            public int dwThreadId;
+                        }
+
+                        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                        private static extern bool CreateProcess(string lpApplicationName, StringBuilder lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes, bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, ref STARTUPINFOEX lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool InitializeProcThreadAttributeList(IntPtr lpAttributeList, int dwAttributeCount, int dwFlags, ref IntPtr lpSize);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool UpdateProcThreadAttribute(IntPtr lpAttributeList, uint dwFlags, IntPtr attribute, IntPtr lpValue, IntPtr cbSize, IntPtr lpPreviousValue, IntPtr lpReturnSize);
+
+                        [DllImport("kernel32.dll")]
+                        private static extern void DeleteProcThreadAttributeList(IntPtr lpAttributeList);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern uint ResumeThread(IntPtr hThread);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool TerminateProcess(IntPtr hProcess, uint uExitCode);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool CloseHandle(IntPtr hObject);
+
+                        public static string Run(string invokerPath, string powerShellCorePath, uint timeoutMilliseconds)
+                        {
+                            // The parent only has to exist while the launcher is created, so it never runs either.
+                            PROCESS_INFORMATION parent = Start(Path.Combine(Environment.SystemDirectory, "rundll32.exe"), null, IntPtr.Zero);
+                            PROCESS_INFORMATION invoker;
+                            try
+                            {
+                                invoker = Start(invokerPath, Path.GetDirectoryName(invokerPath), parent.hProcess);
+                            }
+                            finally
+                            {
+                                End(parent);
+                            }
+                            bool resumed = false;
+                            try
+                            {
+                                PROCESS_INFORMATION reuser;
+                                if (!TryStartWithId(powerShellCorePath, parent.dwProcessId, timeoutMilliseconds, out reuser))
+                                {
+                                    return "NotReused";
+                                }
+                                try
+                                {
+                                    if (ResumeThread(invoker.hThread) == uint.MaxValue)
+                                    {
+                                        throw new Win32Exception();
+                                    }
+                                    resumed = true;
+                                    uint waitResult = WaitForSingleObject(invoker.hProcess, timeoutMilliseconds);
+                                    if (waitResult == WaitTimeout)
+                                    {
+                                        return "TimedOut " + invoker.dwProcessId.ToString(CultureInfo.InvariantCulture);
+                                    }
+                                    uint exitCode;
+                                    if (waitResult != 0 || !GetExitCodeProcess(invoker.hProcess, out exitCode))
+                                    {
+                                        throw new Win32Exception();
+                                    }
+                                    return unchecked((int)exitCode).ToString(CultureInfo.InvariantCulture);
+                                }
+                                finally
+                                {
+                                    End(reuser);
+                                }
+                            }
+                            finally
+                            {
+                                if (!resumed)
+                                {
+                                    TerminateProcess(invoker.hProcess, 1);
+                                }
+                                CloseHandle(invoker.hThread);
+                                CloseHandle(invoker.hProcess);
+                            }
+                        }
+
+                        // Windows gives an ID out again only after many others, so start processes until one has it.
+                        private static bool TryStartWithId(string path, int processId, uint timeoutMilliseconds, out PROCESS_INFORMATION process)
+                        {
+                            Stopwatch stopwatch = Stopwatch.StartNew();
+                            while (stopwatch.ElapsedMilliseconds < timeoutMilliseconds)
+                            {
+                                process = Start(path, null, IntPtr.Zero);
+                                if (process.dwProcessId == processId)
+                                {
+                                    return true;
+                                }
+                                End(process);
+                            }
+                            process = new PROCESS_INFORMATION();
+                            return false;
+                        }
+
+                        // Starts a process suspended and without a console, under the given parent if there is one.
+                        private static PROCESS_INFORMATION Start(string path, string directory, IntPtr parent)
+                        {
+                            STARTUPINFOEX startupInfo = new STARTUPINFOEX();
+                            startupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFOEX));
+                            uint flags = CreateSuspended | DetachedProcess;
+                            IntPtr parentValue = IntPtr.Zero;
+                            try
+                            {
+                                if (parent != IntPtr.Zero)
+                                {
+                                    IntPtr size = IntPtr.Zero;
+                                    InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref size);
+                                    IntPtr attributeList = Marshal.AllocHGlobal(size);
+                                    if (!InitializeProcThreadAttributeList(attributeList, 1, 0, ref size))
+                                    {
+                                        int error = Marshal.GetLastWin32Error();
+                                        Marshal.FreeHGlobal(attributeList);
+                                        throw new Win32Exception(error);
+                                    }
+                                    startupInfo.lpAttributeList = attributeList;
+
+                                    // The list points at the parent's handle rather than copying it, so the handle gets memory of its own.
+                                    parentValue = Marshal.AllocHGlobal(IntPtr.Size);
+                                    Marshal.WriteIntPtr(parentValue, parent);
+                                    if (!UpdateProcThreadAttribute(attributeList, 0, ProcThreadAttributeParentProcess, parentValue, new IntPtr(IntPtr.Size), IntPtr.Zero, IntPtr.Zero))
+                                    {
+                                        throw new Win32Exception();
+                                    }
+                                    flags |= ExtendedStartupInfoPresent;
+                                }
+                                PROCESS_INFORMATION processInformation;
+                                if (!CreateProcess(path, new StringBuilder("\"" + path + "\""), IntPtr.Zero, IntPtr.Zero, false, flags, IntPtr.Zero, directory, ref startupInfo, out processInformation))
+                                {
+                                    throw new Win32Exception();
+                                }
+                                return processInformation;
+                            }
+                            finally
+                            {
+                                if (startupInfo.lpAttributeList != IntPtr.Zero)
+                                {
+                                    DeleteProcThreadAttributeList(startupInfo.lpAttributeList);
+                                    Marshal.FreeHGlobal(startupInfo.lpAttributeList);
+                                }
+                                if (parentValue != IntPtr.Zero)
+                                {
+                                    Marshal.FreeHGlobal(parentValue);
+                                }
+                            }
+                        }
+
+                        // Ends a process that was never resumed, and closes its handles.
+                        private static void End(PROCESS_INFORMATION process)
+                        {
+                            TerminateProcess(process.hProcess, 1);
+                            WaitForSingleObject(process.hProcess, 30000);
+                            CloseHandle(process.hThread);
+                            CloseHandle(process.hProcess);
+                        }
+                    }
+                }
+                '@
+                $powerShellCorePath = (Get-Command -Name 'pwsh.exe' -CommandType Application | Select-Object -First 1).Path
+                [System.IO.File]::WriteAllText($ResultPath, [PSADT.Invoke.Tests.ReusedParent]::Run($InvokerPath, $powerShellCorePath, $TimeoutMilliseconds))
                 """;
         }
 
