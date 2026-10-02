@@ -261,8 +261,8 @@ namespace PSADT.Invoke
         /// Builds the full argument string to invoke PowerShell with the specified script and command-line arguments,
         /// ensuring correct handling of script file resolution and exit codes.
         /// </summary>
-        /// <remarks>The script path is taken from a "-File" argument, a ".ps1" argument, or a default beside the
-        /// executable. It is run through -Command rather than -File to work under WDAC and Constrained Language Mode,
+        /// <remarks>The script path is taken from a "-File" argument, a first argument ending in ".ps1", or a default beside
+        /// the executable. It is run through -Command rather than -File to work under WDAC and Constrained Language Mode,
         /// wrapped in a try/catch that propagates the script's exit code. Each remaining argument that contains
         /// whitespace is single-quoted so its value is not split into separate tokens.</remarks>
         /// <param name="argv">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
@@ -298,14 +298,14 @@ namespace PSADT.Invoke
                 argv.RemoveAt(fileIndex);
                 WriteDebugMessage("The [-File] parameter was specified on command line. Passing command line untouched...");
             }
-            else if (argv.Exists(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
+            else if (argv.Count > 0 && (argv[0].EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || argv[0].EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
-                adtFrontendPath = argv.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", newValue: null);
+                adtFrontendPath = argv[0].Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = Path.Join(currentPath, adtFrontendPath);
                 }
-                argv.RemoveAt(argv.FindIndex(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
+                argv.RemoveAt(0);
                 WriteDebugMessage("Using script (.ps1) file directly specified on the command line...");
             }
             else
