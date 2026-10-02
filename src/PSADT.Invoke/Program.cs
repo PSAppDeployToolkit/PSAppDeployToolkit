@@ -262,10 +262,10 @@ namespace PSADT.Invoke
         /// Builds the full argument string to invoke PowerShell with the specified script and command-line arguments,
         /// ensuring correct handling of script file resolution and exit codes.
         /// </summary>
-        /// <remarks>This method enforces the use of the -File parameter (or direct script file reference)
-        /// instead of -Command to ensure compatibility with PowerShell 3.0 and higher, particularly for correct exit
-        /// code propagation. The returned argument string wraps script invocation in a try/catch block to preserve
-        /// error handling semantics.</remarks>
+        /// <remarks>The script path is taken from a "-File" argument, a ".ps1" argument, or a default beside the
+        /// executable. It is run through -Command rather than -File to work under WDAC and Constrained Language Mode,
+        /// wrapped in a try/catch that propagates the script's exit code. Each remaining argument that contains
+        /// whitespace is single-quoted so its value is not split into separate tokens.</remarks>
         /// <param name="argv">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
         /// parameter. The list might be modified by this method.</param>
         /// <returns>A string containing the complete set of arguments to be supplied to PowerShell.exe, including the script
@@ -286,6 +286,10 @@ namespace PSADT.Invoke
             int fileIndex = argv.FindIndex(static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
+                if (fileIndex + 1 >= argv.Count)
+                {
+                    throw new ArgumentException("The [-File] parameter was specified without a file path.", nameof(argv));
+                }
                 adtFrontendPath = argv[fileIndex + 1].Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
@@ -403,11 +407,14 @@ namespace PSADT.Invoke
                 "",
                 "  Invoke-AppDeployToolkit.exe [-DeploymentScriptParameter]",
                 "",
-                "  Invoke-AppDeployToolkit.exe [/32] [/File <FileName>] [/Debug] [-DeploymentScriptParameter]",
+                "  Invoke-AppDeployToolkit.exe [/Debug] [/32] [-File <FileName>] [-DeploymentScriptParameter]",
                 "",
-                "  Invoke-AppDeployToolkit.exe [/Core] [/File <FileName>] [/Debug] [-DeploymentScriptParameter]",
+                "  Invoke-AppDeployToolkit.exe [/Debug] [/Core] [-File <FileName>] [-DeploymentScriptParameter]",
                 "",
                 "Available Options:",
+                "",
+                "  /Debug",
+                "  Allocates a console for debugging purposes. Do not use this switch on production deployments.",
                 "",
                 "  /32",
                 "  Forces the deployment to use a 32-bit Windows PowerShell instance on 64-bit systems.",
@@ -415,11 +422,8 @@ namespace PSADT.Invoke
                 "  /Core",
                 "  Forces the deployment to use PowerShell 7, throwing if PowerShell 7 is not installed.",
                 "",
-                "  /File",
+                "  -File",
                 "  Specifies a PowerShell script file to run. By default, a script named after the executable is used.",
-                "",
-                "  /Debug",
-                "  Allocates a console for debugging purposes. Do not use this switch on production deployments.",
                 "",
                 "  -DeploymentScriptParameter",
                 "  Zero or more parameters to pass to the deployment script.",
