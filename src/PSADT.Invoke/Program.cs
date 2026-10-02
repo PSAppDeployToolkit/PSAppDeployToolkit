@@ -394,7 +394,7 @@ namespace PSADT.Invoke
         {
             // Set up the help information then display a modal message box if not in debug mode, otherwise write to the console.
             string helpVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new InvalidOperationException("Failed to retrieve assembly version information.");
-            string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new InvalidOperationException("Failed to retrieve assembly title information.")} {new Version(helpVersion.Substring(0, helpVersion.IndexOf('+')))}";
+            string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new InvalidOperationException("Failed to retrieve assembly title information.")} {new Version(helpVersion.Split('+')[0])}";
             string helpMessage = string.Join(
                 Environment.NewLine,
                 helpTitle,
