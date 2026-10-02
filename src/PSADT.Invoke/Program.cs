@@ -127,7 +127,15 @@ namespace PSADT.Invoke
             }
             if (!inDebugMode && Environment.UserInteractive)
             {
-                inDebugMode = NativeMethods.AllocConsole();
+                try
+                {
+                    inDebugMode = NativeMethods.AllocConsole();
+                }
+                catch (Exception ex)
+                {
+                    Environment.FailFast("Failed to allocate a console for debug mode.", ex);
+                    throw;
+                }
             }
             _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
         }
