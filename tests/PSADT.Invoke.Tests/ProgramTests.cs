@@ -34,6 +34,7 @@ namespace PSADT.Invoke.Tests
         private const string FileX86Mode = "FileX86";
         private const string InvokerFileName = "Invoke-AppDeployToolkit.exe";
         private const string PingIdFileName = "ping.pid";
+        private const string ArgumentDumpFileName = "args.txt";
         private const string DebugInputFileName = "input.txt";
         private const string DebugOutputFileName = "output.txt";
         private const string DebugOutputMarker = "PowerShell wrote this.";
@@ -414,6 +415,26 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that only the first argument can name the script, so a later one ending in .ps1 reaches the default
+        /// script as a value rather than running in its place.
+        /// </summary>
+        [Fact]
+        public static void Main_PassesALaterPs1ArgumentToTheDefaultScript()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetArgumentDumpScript(0), Encoding.UTF8);
+            File.WriteAllText(Path.Join(temporaryDirectory.DirectoryPath, "Settings.ps1"), GetExitScript(99), Encoding.UTF8);
+
+            using Process process = StartInvokerWithArguments(invokerPath, "-ConfigScript Settings.ps1");
+            WaitForInvokerExit(process, "LaterPs1");
+
+            Assert.Equal(0, process.ExitCode);
+            string[] expectedArguments = ["-ConfigScript", "Settings.ps1"];
+            Assert.Equal(expectedArguments, ReadArgumentDump(temporaryDirectory.DirectoryPath));
+        }
+
+        /// <summary>
         /// Gets the title the launcher shows its help under: its own title, and its version without the source revision.
         /// </summary>
         /// <returns>The title.</returns>
@@ -447,6 +468,25 @@ namespace PSADT.Invoke.Tests
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
         {
             return Process.Start(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath)) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+        }
+
+        private static Process StartInvokerWithArguments(string invokerPath, string arguments)
+        {
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = invokerPath,
+                Arguments = arguments,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = Path.GetDirectoryName(invokerPath),
+            };
+            return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+        }
+
+        private static string[] ReadArgumentDump(string directoryPath)
+        {
+            return File.ReadAllLines(Path.Join(directoryPath, ArgumentDumpFileName));
         }
 
         private static ProcessStartInfo CreateInvokerStartInfo(string invokerPath, string invocationMode, string scriptPath)
@@ -677,6 +717,19 @@ namespace PSADT.Invoke.Tests
         private static string GetExitScript(int exitCode)
         {
             return "exit " + exitCode.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+        }
+
+        /// <summary>
+        /// Gets a script that writes each argument it was passed to a file beside it, one per line, then exits.
+        /// </summary>
+        /// <param name="exitCode">The exit code for the script to exit with.</param>
+        /// <returns>The script source.</returns>
+        private static string GetArgumentDumpScript(int exitCode)
+        {
+            return string.Join(
+                Environment.NewLine,
+                $"[System.IO.File]::WriteAllLines((Join-Path -Path $PSScriptRoot -ChildPath '{ArgumentDumpFileName}'), [System.String[]]$args)",
+                GetExitScript(exitCode));
         }
 
         /// <summary>
