@@ -65,9 +65,10 @@ namespace PSADT.Tests.ProcessManagement
         public void GetParentProcess_ResolvesToALiveProcess()
         {
             // Act
-            using Process parent = ProcessUtilities.GetParentProcess();
+            using Process? parent = ProcessUtilities.GetParentProcess();
 
             // Assert
+            Assert.NotNull(parent);
             Assert.Equal(ProcessUtilities.GetParentProcessId(), parent.Id);
             Assert.False(string.IsNullOrWhiteSpace(parent.ProcessName));
         }

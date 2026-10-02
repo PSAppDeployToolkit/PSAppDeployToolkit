@@ -36,9 +36,10 @@ namespace PSADT.ProcessManagement
         /// must ensure that the provided process is valid and accessible.</remarks>
         /// <param name="process">The process for which to retrieve the parent process. Must not be null.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        public static Process GetParentProcess(Process process)
+        public static Process? GetParentProcess(Process process)
         {
-            return Process.GetProcessById(GetParentProcessId(process));
+            ArgumentNullException.ThrowIfNull(process);
+            return GetParentProcesses(process.SafeHandle).FirstOrDefault();
         }
 
         /// <summary>
@@ -47,32 +48,55 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The identifier of the process whose parent process is to be retrieved. Must correspond to a running process.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <see langword="null"/>
         /// if the parent process cannot be determined.</returns>
-        public static Process GetParentProcess(int processId)
+        public static Process? GetParentProcess(int processId)
         {
-            return Process.GetProcessById(GetParentProcessId(processId));
+            using Process process = Process.GetProcessById(processId);
+            return GetParentProcesses(process.SafeHandle).FirstOrDefault();
         }
 
         /// <summary>
         /// Retrieves the parent process of the current process.
         /// </summary>
-        /// <remarks>The returned <see cref="Process"/> object should be disposed of by the caller when it
-        /// is no longer needed.</remarks>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
-        public static Process GetParentProcess()
+        /// <remarks>The parent is validated the same way GetParentProcesses validates the chain, so a
+        /// process given the identifier of a parent that has since exited is not mistaken for it. The returned
+        /// <see cref="Process"/> object should be disposed of by the caller when it is no longer needed.</remarks>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the current process, or
+        /// <see langword="null"/> if no parent can be determined.</returns>
+        public static Process? GetParentProcess()
         {
-            return Process.GetProcessById(GetParentProcessId());
+            return GetParentProcesses().FirstOrDefault();
         }
 
         /// <summary>
-        /// Retrieves a list of parent processes for the current process, starting from the immediate parent and
+        /// Retrieves an enumerable of parent processes for the current process, starting from the immediate parent and
         /// continuing up the hierarchy until no further parent processes are found.
         /// </summary>
         /// <remarks>The walk ends at the first parent that cannot be opened, was already seen, or started after its child, as a
         /// process given the identifier of a parent that has since exited does.</remarks>
-        /// <returns>A list of <see cref="Process"/> objects representing the parent processes of the current process. The list
-        /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the list
+        /// <returns>An enumerable of <see cref="Process"/> objects representing the parent processes of the current process. The enumerable
+        /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the enumerable
         /// will be empty.</returns>
-        public static IReadOnlyList<Process> GetParentProcesses()
+        public static IEnumerable<Process> GetParentProcesses()
+        {
+            // Yield through so the handle is held open for the duration of the walk, not disposed before it starts.
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            foreach (Process parentProcess in GetParentProcesses(hProcess))
+            {
+                yield return parentProcess;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves an enumerable of parent processes for the current process, starting from the immediate parent and
+        /// continuing up the hierarchy until no further parent processes are found.
+        /// </summary>
+        /// <param name="hProcess">A SafeProcessHandle for the process to walk up from. The handle must have the necessary access rights to query process information.</param>
+        /// <remarks>The walk ends at the first parent that cannot be opened, was already seen, or started after its child, as a
+        /// process given the identifier of a parent that has since exited does.</remarks>
+        /// <returns>An enumerable of <see cref="Process"/> objects representing the parent processes of the current process. The enumerable
+        /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the enumerable
+        /// will be empty.</returns>
+        internal static IEnumerable<Process> GetParentProcesses(SafeProcessHandle hProcess)
         {
             // Internal method to get when a process started.
             static long GetCreationTime(SafeHandle hProcess)
@@ -82,32 +106,33 @@ namespace PSADT.ProcessManagement
             }
 
             // Walk up from this process, stopping at a parent that can't be opened, was seen already, or started after its child.
-            List<Process> processes = [];
-            try
+            uint parentProcessId = GetParentProcessId(hProcess); long childCreationTime = GetCreationTime(hProcess);
+            HashSet<uint> processIds = [NativeMethods.GetProcessId(hProcess)];
+            while (processIds.Add(parentProcessId))
             {
-                using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-                long childCreationTime = GetCreationTime(hProcess);
-                uint parentProcessId = GetParentProcessId(hProcess);
-                HashSet<uint> processIds = [PInvoke.GetCurrentProcessId()];
-                while (processIds.Add(parentProcessId))
+                Process parentProcess; long creationTime;
+                uint nextParentProcessId;
+                try
                 {
                     // Hold the parent open while its Process is created, so its identifier can't be reused in between.
                     using SafeFileHandle hParent = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, parentProcessId);
-                    long creationTime = GetCreationTime(hParent);
+                    creationTime = GetCreationTime(hParent);
                     if (creationTime > childCreationTime)
                     {
                         break;
                     }
-                    processes.Add(Process.GetProcessById((int)parentProcessId));
-                    (childCreationTime, parentProcessId) = (creationTime, GetParentProcessId(hParent));
+                    parentProcess = Process.GetProcessById((int)parentProcessId);
+                    nextParentProcessId = GetParentProcessId(hParent);
                 }
+                catch
+                {
+                    break;
+                    throw;
+                }
+                yield return parentProcess;
+                parentProcessId = nextParentProcessId;
+                childCreationTime = creationTime;
             }
-            catch
-            {
-                return processes.AsReadOnly();
-                throw;
-            }
-            return processes.AsReadOnly();
         }
 
         /// <summary>
