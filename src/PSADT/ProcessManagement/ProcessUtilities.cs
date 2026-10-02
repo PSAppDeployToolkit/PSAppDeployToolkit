@@ -67,46 +67,45 @@ namespace PSADT.ProcessManagement
         /// Retrieves a list of parent processes for the current process, starting from the immediate parent and
         /// continuing up the hierarchy until no further parent processes are found.
         /// </summary>
-        /// <remarks>This method iteratively determines the parent process of the current process and
-        /// continues up the hierarchy until no further parent processes can be identified or a circular reference is
-        /// detected.</remarks>
+        /// <remarks>The walk ends at the first parent that cannot be opened, was already seen, or started after its child, as a
+        /// process given the identifier of a parent that has since exited does.</remarks>
         /// <returns>A list of <see cref="Process"/> objects representing the parent processes of the current process. The list
         /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the list
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
-            int processId = (int)PInvoke.GetCurrentProcessId();
-            List<Process> processes = [];
-            List<int> processesIds = [];
-            while (true)
+            // Internal method to get when a process started.
+            static long GetCreationTime(SafeHandle hProcess)
             {
-                // Attempt to get the parent process ID. If this fails (e.g., process has exited or can't access parent), break the loop.
-                try
-                {
-                    processId = GetParentProcessId(processId);
-                }
-                catch
-                {
-                    break;
-                    throw;
-                }
+                _ = NativeMethods.GetProcessTimes(hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME creationTime, out _, out _, out _);
+                return creationTime.ToLong();
+            }
 
-                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
-                if (processesIds.Contains(processId))
+            // Walk up from this process, stopping at a parent that can't be opened, was seen already, or started after its child.
+            List<Process> processes = [];
+            try
+            {
+                using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+                long childCreationTime = GetCreationTime(hProcess);
+                uint parentProcessId = GetParentProcessId(hProcess);
+                HashSet<uint> processIds = [PInvoke.GetCurrentProcessId()];
+                while (processIds.Add(parentProcessId))
                 {
-                    break;
+                    // Hold the parent open while its Process is created, so its identifier can't be reused in between.
+                    using SafeFileHandle hParent = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, parentProcessId);
+                    long creationTime = GetCreationTime(hParent);
+                    if (creationTime > childCreationTime)
+                    {
+                        break;
+                    }
+                    processes.Add(Process.GetProcessById((int)parentProcessId));
+                    (childCreationTime, parentProcessId) = (creationTime, GetParentProcessId(hParent));
                 }
-                processesIds.Add(processId);
-
-                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
-                try
-                {
-                    processes.Add(Process.GetProcessById(processId));
-                }
-                catch (ArgumentException)
-                {
-                    break;
-                }
+            }
+            catch
+            {
+                return processes.AsReadOnly();
+                throw;
             }
             return processes.AsReadOnly();
         }
