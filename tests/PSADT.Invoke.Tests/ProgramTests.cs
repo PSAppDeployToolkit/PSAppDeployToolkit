@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,10 @@ namespace PSADT.Invoke.Tests
         private const string DebugOutputMarker = "PowerShell wrote this.";
         private const string DebugSkipReason = "/Debug only allocates a console in an interactive session.";
         private const string PowerShellCoreSkipReason = "PowerShell 7 is not installed.";
+        private const string MessageBoxSkipReason = "The help is only shown in a message box in an interactive session.";
+        private const string HiddenDesktopHelperFileName = "hiddendesktop.ps1";
+        private const string HiddenDesktopResultFileName = "hiddendesktop.txt";
+        private const string UsageLine = "  Invoke-AppDeployToolkit.exe [/Debug] [/32] [-File <FileName>] [-DeploymentScriptParameter]";
         private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
 
         /// <summary>
@@ -244,6 +249,26 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that with /Debug, /? or /Help writes the help to the console under the launcher's title and version,
+        /// then returns 1.
+        /// </summary>
+        /// <param name="helpArgument">The argument asking for help.</param>
+        [Theory(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        [InlineData("/?")]
+        [InlineData("/Help")]
+        [InlineData("/help")]
+        public static void Main_WritesHelpInDebugMode(string helpArgument)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+
+            Assert.Equal(1, RunDebugInvokerWithArguments(invokerPath, helpArgument));
+            string[] lines = File.ReadAllLines(Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName));
+            Assert.Equal(GetHelpTitle(), lines[0]);
+            Assert.Contains(UsageLine, lines, StringComparer.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that with /Debug, a failure while preparing to run the script is written to the console and returns
         /// 60010, rather than ending the launcher through FailFast.
         /// </summary>
@@ -261,6 +286,56 @@ namespace PSADT.Invoke.Tests
 
             Assert.Equal(60010, RunDebugInvokerWithArguments(invokerPath, arguments));
             Assert.Contains(expectedMessage, ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that outside an interactive session, /? shows no message box and /Debug allocates no console, as
+        /// nobody could answer either: the launcher returns without waiting, and /Debug runs the script as normal.
+        /// </summary>
+        /// <param name="arguments">The launcher's arguments.</param>
+        /// <param name="expectedExitCode">The exit code expected from the launcher.</param>
+        [Theory]
+        [InlineData("/?", 1)]
+        [InlineData("/? /Debug", 1)]
+        [InlineData("/Debug", 0)]
+        public static void Main_NeverWaitsOnTheUserOutsideAnInteractiveSession(string arguments, int expectedExitCode)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetConsoleWindowScript(), Encoding.UTF8);
+
+            Assert.Equal(expectedExitCode, RunHiddenDesktopInvoker(invokerPath, arguments, interactive: false).ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that in an interactive session, /? shows the help in a message box under the launcher's title and
+        /// version, then returns 1 once the box is closed.
+        /// </summary>
+        /// <remarks>The box is shown on a desktop of WinSta0 that is never switched to, so the session stays interactive
+        /// but nothing appears on screen.</remarks>
+        [Fact(Skip = MessageBoxSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_ShowsTheHelpInAMessageBoxInAnInteractiveSession()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+
+            (int exitCode, string messageBoxCaption, string[] messageBoxLines) = RunHiddenDesktopInvoker(invokerPath, "/?", interactive: true);
+
+            Assert.Equal(1, exitCode);
+            Assert.Equal(GetHelpTitle(), messageBoxCaption);
+            Assert.Equal(GetHelpTitle(), messageBoxLines[0]);
+            Assert.Contains(UsageLine, messageBoxLines, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets the title the launcher shows its help under: its own title, and its version without the source revision.
+        /// </summary>
+        /// <returns>The title.</returns>
+        private static string GetHelpTitle()
+        {
+            Assembly invokerAssembly = typeof(Program).Assembly;
+            string informationalVersion = invokerAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? string.Empty;
+            return $"{invokerAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title} {new Version(informationalVersion.Split('+')[0])}";
         }
 
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
@@ -344,6 +419,74 @@ namespace PSADT.Invoke.Tests
             }
             _ = NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode);
             return unchecked((int)exitCode);
+        }
+
+        /// <summary>
+        /// Runs a launcher on a desktop nobody can see. On a window station of its own, as a deployment run as a service
+        /// is, <c language="csharp">Environment.UserInteractive</c> is false for it. On WinSta0 it stays true, and a message
+        /// box the launcher shows is read and closed for it.
+        /// </summary>
+        /// <remarks>A Windows PowerShell helper makes the desktop, as making one on another window station means switching
+        /// a whole process to it for a moment. A launcher still running when the time is up is waiting for input nobody can
+        /// give, and is killed.</remarks>
+        /// <param name="invokerPath">The path to the launcher.</param>
+        /// <param name="arguments">The launcher's arguments.</param>
+        /// <param name="interactive">Whether to use a desktop of WinSta0, closing the launcher's message box.</param>
+        /// <returns>The exit code of the launcher, and the caption and lines of the message box it showed, which are empty
+        /// if it showed none.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the launcher's directory cannot be resolved, or Windows PowerShell cannot be started.</exception>
+        private static (int ExitCode, string MessageBoxCaption, string[] MessageBoxLines) RunHiddenDesktopInvoker(string invokerPath, string arguments, bool interactive)
+        {
+            string directoryPath = Path.GetDirectoryName(invokerPath) ?? throw new InvalidOperationException("Failed to resolve the launcher directory.");
+            string helperPath = Path.Join(directoryPath, HiddenDesktopHelperFileName);
+            string resultPath = Path.Join(directoryPath, HiddenDesktopResultFileName);
+            File.WriteAllText(helperPath, GetHiddenDesktopHelperScript(), Encoding.UTF8);
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = Path.Join(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"),
+                Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{helperPath}\" -InvokerPath \"{invokerPath}\" -Arguments \"{arguments}\" -ResultPath \"{resultPath}\" -TimeoutMilliseconds {ProcessTimeoutMilliseconds}{(interactive ? " -Interactive" : string.Empty)}",
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = directoryPath,
+            };
+            StringBuilder output = new();
+            void AppendLine(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _ = output.AppendLine(e.Data);
+                }
+            }
+
+            using Process helper = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start Windows PowerShell.");
+            helper.ErrorDataReceived += AppendLine;
+            helper.OutputDataReceived += AppendLine;
+            helper.BeginErrorReadLine();
+            helper.BeginOutputReadLine();
+            if (!helper.WaitForExit(ProcessTimeoutMilliseconds * 2))
+            {
+                string survivors = KillProcessTree(helper.Id);
+                Assert.Fail($"[{arguments}] The helper did not exit within {ProcessTimeoutMilliseconds * 2}ms. Killed:{Environment.NewLine}{survivors}");
+            }
+
+            // The overload taking a timeout returns before the redirected streams have finished.
+            helper.WaitForExit();
+            if (!File.Exists(resultPath))
+            {
+                Assert.Fail($"[{arguments}] The helper did not run the launcher:{Environment.NewLine}{output}");
+            }
+            // The first line is the exit code, or "TimedOut" and the process ID; the message box's caption and text follow.
+            string[] result = File.ReadAllLines(resultPath);
+            string[] outcome = result[0].Split(' ');
+            if (outcome[0].Equals("TimedOut", StringComparison.Ordinal))
+            {
+                string survivors = KillProcessTree(int.Parse(outcome[1], CultureInfo.InvariantCulture));
+                Assert.Fail($"[{arguments}] did not exit within {ProcessTimeoutMilliseconds}ms. {result[1]}{Environment.NewLine}Killed:{Environment.NewLine}{survivors}");
+            }
+            return (int.Parse(outcome[0], CultureInfo.InvariantCulture), result[1], [.. result.Skip(2)]);
         }
 
         private static string BuildProcessArguments(string invocationMode, string scriptPath)
@@ -473,6 +616,240 @@ namespace PSADT.Invoke.Tests
                 "}",
                 "exit 0",
                 "");
+        }
+
+        /// <summary>
+        /// Gets a Windows PowerShell script that runs a launcher on a new desktop nobody can see, then writes its exit code,
+        /// or "TimedOut" and its process ID if it is still running when the time is up, to a file. With -Interactive, the
+        /// desktop is on WinSta0, and the caption and text of a message box the launcher shows follow, the box closed for it.
+        /// </summary>
+        /// <remarks>Only WinSta0 is ever visible, and only its active desktop is on screen. Without -Interactive,
+        /// CreateWindowStation gets no name, which only an administrator may give, so it makes or opens the window station
+        /// of the caller's logon session.</remarks>
+        /// <returns>The script source.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "MA0136:Raw String contains an implicit end of line character", Justification = "The literal is PowerShell source with C# inside it, both of which parse either line ending, so the source file's choice cannot change what this does.")]
+        private static string GetHiddenDesktopHelperScript()
+        {
+            return """
+                param ([System.String]$InvokerPath, [System.String]$Arguments, [System.String]$ResultPath, [System.UInt32]$TimeoutMilliseconds, [System.Management.Automation.SwitchParameter]$Interactive)
+                $ErrorActionPreference = 'Stop'
+                Add-Type -TypeDefinition @'
+                using System;
+                using System.ComponentModel;
+                using System.Globalization;
+                using System.Runtime.InteropServices;
+                using System.Text;
+                using System.Threading;
+
+                namespace PSADT.Invoke.Tests
+                {
+                    public static class HiddenDesktop
+                    {
+                        private const uint WinStaAllAccess = 0x37F;
+                        private const uint GenericAll = 0x10000000;
+                        private const int UoiName = 2;
+                        private const uint WaitTimeout = 0x102;
+                        private const uint WmClose = 0x10;
+                        private const int MessageBoxTextId = 0xFFFF;
+
+                        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+                        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+                        private struct STARTUPINFO
+                        {
+                            public int cb;
+                            public string lpReserved;
+                            public string lpDesktop;
+                            public string lpTitle;
+                            public int dwX;
+                            public int dwY;
+                            public int dwXSize;
+                            public int dwYSize;
+                            public int dwXCountChars;
+                            public int dwYCountChars;
+                            public int dwFillAttribute;
+                            public int dwFlags;
+                            public short wShowWindow;
+                            public short cbReserved2;
+                            public IntPtr lpReserved2;
+                            public IntPtr hStdInput;
+                            public IntPtr hStdOutput;
+                            public IntPtr hStdError;
+                        }
+
+                        [StructLayout(LayoutKind.Sequential)]
+                        private struct PROCESS_INFORMATION
+                        {
+                            public IntPtr hProcess;
+                            public IntPtr hThread;
+                            public int dwProcessId;
+                            public int dwThreadId;
+                        }
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                        private static extern IntPtr CreateWindowStation(string lpwinsta, uint dwFlags, uint dwDesiredAccess, IntPtr lpsa);
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                        private static extern bool GetUserObjectInformation(IntPtr hObj, int nIndex, StringBuilder pvInfo, int nLength, out int lpnLengthNeeded);
+
+                        [DllImport("user32.dll", SetLastError = true)]
+                        private static extern IntPtr GetProcessWindowStation();
+
+                        [DllImport("user32.dll", SetLastError = true)]
+                        private static extern bool SetProcessWindowStation(IntPtr hWinSta);
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                        private static extern IntPtr CreateDesktop(string lpszDesktop, IntPtr lpszDevice, IntPtr pDevmode, uint dwFlags, uint dwDesiredAccess, IntPtr lpsa);
+
+                        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                        private static extern bool CreateProcess(string lpApplicationName, StringBuilder lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes, bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
+
+                        [DllImport("user32.dll", SetLastError = true)]
+                        private static extern bool SetThreadDesktop(IntPtr hDesktop);
+
+                        [DllImport("user32.dll")]
+                        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+                        [DllImport("user32.dll")]
+                        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+                        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+                        [DllImport("user32.dll")]
+                        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+                        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+                        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+                        private static extern uint GetDlgItemText(IntPtr hDlg, int nIDDlgItem, StringBuilder lpString, int nMaxCount);
+
+                        [DllImport("user32.dll", SetLastError = true)]
+                        private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+                        public static string[] Run(string applicationName, string commandLine, uint timeoutMilliseconds, bool interactive)
+                        {
+                            IntPtr windowStation = interactive ? GetProcessWindowStation() : CreateWindowStation(null, 0, WinStaAllAccess, IntPtr.Zero);
+                            StringBuilder windowStationName = new StringBuilder(256);
+                            int lengthNeeded;
+                            if (windowStation == IntPtr.Zero || !GetUserObjectInformation(windowStation, UoiName, windowStationName, windowStationName.Capacity * 2, out lengthNeeded))
+                            {
+                                throw new Win32Exception();
+                            }
+
+                            // A desktop is made on the window station of the calling process, so switch to it just for that.
+                            string desktopName = "PSADT.Invoke.Tests." + Guid.NewGuid().ToString("N");
+                            IntPtr processWindowStation = GetProcessWindowStation();
+                            if (!SetProcessWindowStation(windowStation))
+                            {
+                                throw new Win32Exception();
+                            }
+                            IntPtr desktop = CreateDesktop(desktopName, IntPtr.Zero, IntPtr.Zero, 0, GenericAll, IntPtr.Zero);
+                            int desktopError = Marshal.GetLastWin32Error();
+                            if (!SetProcessWindowStation(processWindowStation))
+                            {
+                                throw new Win32Exception();
+                            }
+                            if (desktop == IntPtr.Zero)
+                            {
+                                throw new Win32Exception(desktopError);
+                            }
+
+                            // The handles close when this helper exits, after the launcher is done with them.
+                            STARTUPINFO startupInfo = new STARTUPINFO();
+                            startupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFO));
+                            startupInfo.lpDesktop = windowStationName + "\\" + desktopName;
+                            PROCESS_INFORMATION processInformation;
+                            if (!CreateProcess(applicationName, new StringBuilder(commandLine), IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, null, ref startupInfo, out processInformation))
+                            {
+                                throw new Win32Exception();
+                            }
+
+                            // Messages only reach a window from a thread on its desktop, so the message box is closed from one.
+                            string[] messageBox = new string[] { string.Empty, string.Empty };
+                            Thread closer = new Thread(delegate () { CloseMessageBox(desktop, processInformation.hProcess, (uint)processInformation.dwProcessId, messageBox); });
+                            closer.IsBackground = true;
+                            if (interactive)
+                            {
+                                closer.Start();
+                            }
+                            uint waitResult = WaitForSingleObject(processInformation.hProcess, timeoutMilliseconds);
+                            if (waitResult == WaitTimeout)
+                            {
+                                return new string[] { "TimedOut " + processInformation.dwProcessId.ToString(CultureInfo.InvariantCulture), messageBox[0], messageBox[1] };
+                            }
+                            uint exitCode;
+                            if (waitResult != 0 || !GetExitCodeProcess(processInformation.hProcess, out exitCode))
+                            {
+                                throw new Win32Exception();
+                            }
+                            if (interactive)
+                            {
+                                closer.Join();
+                            }
+                            return new string[] { unchecked((int)exitCode).ToString(CultureInfo.InvariantCulture), messageBox[0], messageBox[1] };
+                        }
+
+                        private static void CloseMessageBox(IntPtr desktop, IntPtr process, uint processId, string[] messageBox)
+                        {
+                            // An exception here would end the helper without a result, so it is reported in the caption instead.
+                            try
+                            {
+                                if (!SetThreadDesktop(desktop))
+                                {
+                                    throw new Win32Exception();
+                                }
+                                while (WaitForSingleObject(process, 50) == WaitTimeout)
+                                {
+                                    IntPtr found = IntPtr.Zero;
+                                    EnumWindows(delegate (IntPtr window, IntPtr parameter)
+                                    {
+                                        uint windowProcessId;
+                                        GetWindowThreadProcessId(window, out windowProcessId);
+                                        StringBuilder className = new StringBuilder(16);
+                                        GetClassName(window, className, className.Capacity);
+                                        if (windowProcessId == processId && IsWindowVisible(window) && className.ToString() == "#32770")
+                                        {
+                                            found = window;
+                                            return false;
+                                        }
+                                        return true;
+                                    }, IntPtr.Zero);
+                                    if (found != IntPtr.Zero)
+                                    {
+                                        StringBuilder text = new StringBuilder(8192);
+                                        GetWindowText(found, text, text.Capacity);
+                                        messageBox[0] = text.ToString();
+                                        text.Length = 0;
+                                        GetDlgItemText(found, MessageBoxTextId, text, text.Capacity);
+                                        messageBox[1] = text.ToString();
+
+                                        // The only button of an MB_OK box has the ID IDCANCEL, not IDOK, so close the box instead.
+                                        if (!PostMessage(found, WmClose, IntPtr.Zero, IntPtr.Zero))
+                                        {
+                                            throw new Win32Exception();
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                messageBox[0] = "Closing the message box failed: " + ex.Message;
+                            }
+                        }
+                    }
+                }
+                '@
+                [System.IO.File]::WriteAllLines($ResultPath, [System.String[]][PSADT.Invoke.Tests.HiddenDesktop]::Run($InvokerPath, ('"{0}" {1}' -f $InvokerPath, $Arguments), $TimeoutMilliseconds, $Interactive.IsPresent))
+                """;
         }
 
         /// <summary>

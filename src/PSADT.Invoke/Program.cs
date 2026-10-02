@@ -429,7 +429,7 @@ namespace PSADT.Invoke
                 "",
                 "  /?, /Help",
                 "  Displays this help message.");
-            if (!inDebugMode)
+            if (!inDebugMode && Environment.UserInteractive)
             {
                 _ = PInvoke.SetProcessDPIAware(); _ = NativeMethods.MessageBox(hWnd: null, helpMessage, helpTitle, MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | MESSAGEBOX_STYLE.MB_ICONINFORMATION);
             }
