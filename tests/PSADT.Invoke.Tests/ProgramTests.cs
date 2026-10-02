@@ -16,9 +16,9 @@ using Xunit;
 namespace PSADT.Invoke.Tests
 {
     /// <summary>
-    /// Tests launcher process exit-code propagation.
+    /// Tests <see cref="Program"/> by running the built launcher against scripts.
     /// </summary>
-    public sealed class ProgramExitCodeTests
+    public sealed class ProgramTests
     {
         /// <summary>
         /// How long a launcher is given to exit. A guard against a hang, not an assertion about speed: a case
