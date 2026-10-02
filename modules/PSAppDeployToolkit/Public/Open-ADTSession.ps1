@@ -472,10 +472,10 @@ function Open-ADTSession
         # Forcibly enable AllowWowProcess if it's not specified and the caller is our executable with /32 specified.
         if (!$PSBoundParameters.ContainsKey('AllowWowProcess'))
         {
-            $parentProcess = [PSADT.ProcessManagement.ProcessUtilities]::GetParentProcess()
+            $parentProcess = $null
             try
             {
-                if ([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList([PSADT.ProcessManagement.ProcessUtilities]::GetProcessCommandLine($parentProcess)).Contains("/32"))
+                if (($parentProcess = [PSADT.ProcessManagement.ProcessUtilities]::GetParentProcess()) -and [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList([PSADT.ProcessManagement.ProcessUtilities]::GetProcessCommandLine($parentProcess)).Contains("/32"))
                 {
                     $PSBoundParameters.Add('AllowWowProcess', ($AllowWowProcess = $true))
                 }
@@ -489,8 +489,10 @@ function Open-ADTSession
             }
             finally
             {
-                $parentProcess.Dispose()
-                $parentProcess = $null
+                if ($parentProcess)
+                {
+                    $parentProcess.Dispose()
+                }
             }
         }
 
