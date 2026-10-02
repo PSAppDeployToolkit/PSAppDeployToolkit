@@ -200,7 +200,7 @@ namespace PSADT.Invoke.Tests
             File.WriteAllText(scriptPath, GetDebugConsoleScript(), Encoding.UTF8);
 
             Assert.Equal(0, RunDebugInvoker(invokerPath, scriptPath));
-            Assert.Contains(DebugOutputMarker, File.ReadAllText(Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName)), StringComparison.Ordinal);
+            Assert.Contains(DebugOutputMarker, ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -243,6 +243,26 @@ namespace PSADT.Invoke.Tests
             Assert.Equal(0, RunDebugInvoker(invokerPath, scriptPath));
         }
 
+        /// <summary>
+        /// Verifies that with /Debug, a failure while preparing to run the script is written to the console and returns
+        /// 60010, rather than ending the launcher through FailFast.
+        /// </summary>
+        /// <param name="arguments">The launcher's arguments.</param>
+        /// <param name="expectedMessage">Part of the message expected for the failure.</param>
+        [Theory(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        [InlineData("-Command Get-Date", "The [-Command] parameter was specified on the command line.")]
+        [InlineData("-File", "The [-File] parameter was specified without a file path.")]
+        [InlineData("", "Unable to find the deployment script file at")]
+        [InlineData("/32 /Core", "The use of both [/32] and [/Core] on the command line is not supported.")]
+        public static void Main_ReturnsPreparationFailuresInDebugMode(string arguments, string expectedMessage)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+
+            Assert.Equal(60010, RunDebugInvokerWithArguments(invokerPath, arguments));
+            Assert.Contains(expectedMessage, ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
         {
             return Process.Start(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath)) ?? throw new InvalidOperationException("Failed to start the launcher process.");
@@ -277,6 +297,16 @@ namespace PSADT.Invoke.Tests
             return await Task.WhenAny(closed, Task.Delay(ProcessTimeoutMilliseconds, TestContext.Current.CancellationToken)).ConfigureAwait(false) == closed;
         }
 
+        private static int RunDebugInvoker(string invokerPath, string scriptPath)
+        {
+            return RunDebugInvokerWithArguments(invokerPath, BuildProcessArguments(DefaultMode, scriptPath));
+        }
+
+        private static string ReadDebugOutput(string directoryPath)
+        {
+            return File.ReadAllText(Path.Join(directoryPath, DebugOutputFileName));
+        }
+
         /// <summary>
         /// Runs a launcher with /Debug, its console hidden and its input read from an empty file so that the closing key
         /// prompt returns at once, and writes its output to a file beside it.
@@ -285,10 +315,10 @@ namespace PSADT.Invoke.Tests
         /// through its own CreateProcess wrapper for SW_HIDE to reach the console it allocates. It starts in a new process
         /// group, which ignores Ctrl+C, so it always begins the way a parent ignoring Ctrl+C would leave it.</remarks>
         /// <param name="invokerPath">The path to the launcher.</param>
-        /// <param name="scriptPath">The path to the script to run.</param>
+        /// <param name="arguments">The launcher's arguments after /Debug.</param>
         /// <returns>The exit code of the launcher.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the launcher's directory cannot be resolved.</exception>
-        private static int RunDebugInvoker(string invokerPath, string scriptPath)
+        private static int RunDebugInvokerWithArguments(string invokerPath, string arguments)
         {
             string directoryPath = Path.GetDirectoryName(invokerPath) ?? throw new InvalidOperationException("Failed to resolve the launcher directory.");
             File.WriteAllText(Path.Join(directoryPath, DebugInputFileName), string.Empty);
@@ -304,7 +334,7 @@ namespace PSADT.Invoke.Tests
                 hStdOutput = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
                 hStdError = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
             };
-            _ = NativeMethods.CreateProcess(invokerPath, $"\"{invokerPath}\" /Debug {BuildProcessArguments(DefaultMode, scriptPath)}\0".ToCharArray(), bInheritHandles: true, PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP, directoryPath, in startupInfo, out PROCESS_INFORMATION pi);
+            _ = NativeMethods.CreateProcess(invokerPath, $"\"{invokerPath}\" /Debug {arguments}\0".ToCharArray(), bInheritHandles: true, PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP, directoryPath, in startupInfo, out PROCESS_INFORMATION pi);
             using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
             using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
             if (NativeMethods.WaitForSingleObject(hProcess, ProcessTimeoutMilliseconds) is not WAIT_EVENT.WAIT_OBJECT_0)
