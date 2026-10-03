@@ -5,8 +5,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 using Xunit;
 
 namespace PSADT.Invoke.Tests
@@ -29,7 +33,16 @@ namespace PSADT.Invoke.Tests
         private const string FileX86Mode = "FileX86";
         private const string InvokerFileName = "Invoke-AppDeployToolkit.exe";
         private const string PingIdFileName = "ping.pid";
+        private const string DebugInputFileName = "input.txt";
+        private const string DebugOutputFileName = "output.txt";
+        private const string DebugOutputMarker = "PowerShell wrote this.";
+        private const string DebugSkipReason = "/Debug only allocates a console in an interactive session.";
         private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
+
+        /// <summary>
+        /// Gets a value indicating whether this session is interactive, which /Debug needs before it allocates a console.
+        /// </summary>
+        public static bool IsUserInteractive => Environment.UserInteractive;
 
         /// <summary>
         /// Gets launcher invocation modes and expected script exit codes.
@@ -104,7 +117,7 @@ namespace PSADT.Invoke.Tests
             using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
             string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
             string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
-            File.WriteAllText(scriptPath, GetStartPingScript(), Encoding.UTF8);
+            File.WriteAllText(scriptPath, GetStartPingScript(0), Encoding.UTF8);
 
             using RedirectedInvoker invoker = RedirectedInvoker.Start(invokerPath, scriptPath);
             try
@@ -119,7 +132,7 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
-        /// Verifies that PowerShell runs without a console window, hidden or otherwise.
+        /// Verifies that PowerShell runs without a console window, hidden or otherwise, outside debug mode.
         /// </summary>
         [Fact]
         public static void Main_StartsPowerShellWithoutAConsoleWindow()
@@ -133,6 +146,43 @@ namespace PSADT.Invoke.Tests
             WaitForInvokerExit(process, DefaultMode);
 
             Assert.Equal(0, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that with /Debug, PowerShell runs in the console the launcher allocated and writes where it does.
+        /// </summary>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_RunsPowerShellInItsDebugConsole()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetDebugConsoleScript(), Encoding.UTF8);
+
+            Assert.Equal(0, RunDebugInvoker(invokerPath, scriptPath));
+            Assert.Contains(DebugOutputMarker, File.ReadAllText(Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName)), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that with /Debug, the launcher returns PowerShell's exit code once PowerShell exits, even while a
+        /// process that PowerShell started is still running.
+        /// </summary>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_ReturnsOnPowerShellExitInDebugMode()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetStartPingScript(42), Encoding.UTF8);
+
+            try
+            {
+                Assert.Equal(42, RunDebugInvoker(invokerPath, scriptPath));
+            }
+            finally
+            {
+                StopPing(temporaryDirectory.DirectoryPath);
+            }
         }
 
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
@@ -167,6 +217,44 @@ namespace PSADT.Invoke.Tests
             // The overload without a timeout also waits for the redirected streams to close.
             Task closed = Task.Run(process.WaitForExit, TestContext.Current.CancellationToken);
             return await Task.WhenAny(closed, Task.Delay(ProcessTimeoutMilliseconds, TestContext.Current.CancellationToken)).ConfigureAwait(false) == closed;
+        }
+
+        /// <summary>
+        /// Runs a launcher with /Debug, its console hidden and its input read from an empty file so that the closing key
+        /// prompt returns at once, and writes its output to a file beside it.
+        /// </summary>
+        /// <remarks>The framework drops <c language="csharp">WindowStyle</c> outside ShellExecute, so the launcher is started
+        /// through its own CreateProcess wrapper for SW_HIDE to reach the console it allocates.</remarks>
+        /// <param name="invokerPath">The path to the launcher.</param>
+        /// <param name="scriptPath">The path to the script to run.</param>
+        /// <returns>The exit code of the launcher.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the launcher's directory cannot be resolved.</exception>
+        private static int RunDebugInvoker(string invokerPath, string scriptPath)
+        {
+            string directoryPath = Path.GetDirectoryName(invokerPath) ?? throw new InvalidOperationException("Failed to resolve the launcher directory.");
+            File.WriteAllText(Path.Join(directoryPath, DebugInputFileName), string.Empty);
+            using FileStream input = new(Path.Join(directoryPath, DebugInputFileName), System.IO.FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Inheritable);
+            using FileStream output = new(Path.Join(directoryPath, DebugOutputFileName), System.IO.FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Inheritable);
+
+            // A wShowWindow of zero is SW_HIDE.
+            STARTUPINFOW startupInfo = new()
+            {
+                cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW | STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES,
+                hStdInput = (HANDLE)input.SafeFileHandle.DangerousGetHandle(),
+                hStdOutput = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
+                hStdError = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
+            };
+            _ = NativeMethods.CreateProcess(invokerPath, $"\"{invokerPath}\" /Debug {BuildProcessArguments(DefaultMode, scriptPath)}\0".ToCharArray(), bInheritHandles: true, 0, directoryPath, in startupInfo, out PROCESS_INFORMATION pi);
+            using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
+            using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
+            if (NativeMethods.WaitForSingleObject(hProcess, ProcessTimeoutMilliseconds) is not WAIT_EVENT.WAIT_OBJECT_0)
+            {
+                string survivors = KillProcessTree((int)pi.dwProcessId);
+                Assert.Fail($"[Debug] did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
+            }
+            _ = NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode);
+            return unchecked((int)exitCode);
         }
 
         private static string BuildProcessArguments(string invocationMode, string scriptPath)
@@ -251,8 +339,9 @@ namespace PSADT.Invoke.Tests
         /// <summary>
         /// Gets a script that leaves ping running with every inheritable handle PowerShell has, records its ID, then exits.
         /// </summary>
+        /// <param name="exitCode">The exit code for the script to exit with.</param>
         /// <returns>The script source.</returns>
-        private static string GetStartPingScript()
+        private static string GetStartPingScript(int exitCode)
         {
             return string.Join(
                 Environment.NewLine,
@@ -260,8 +349,7 @@ namespace PSADT.Invoke.Tests
                 "$startInfo.UseShellExecute = $false",
                 "$startInfo.WorkingDirectory = [System.Environment]::SystemDirectory",
                 $"[System.IO.File]::WriteAllText((Join-Path -Path $PSScriptRoot -ChildPath '{PingIdFileName}'), [System.Diagnostics.Process]::Start($startInfo).Id)",
-                "exit 0",
-                "");
+                GetExitScript(exitCode));
         }
 
         /// <summary>
@@ -275,6 +363,32 @@ namespace PSADT.Invoke.Tests
                 "$ErrorActionPreference = 'Stop'",
                 "Add-Type -Namespace PSADT.Invoke.Tests -Name ConsoleWindowProbe -MemberDefinition '[System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] public static extern System.IntPtr GetConsoleWindow();'",
                 "if ([PSADT.Invoke.Tests.ConsoleWindowProbe]::GetConsoleWindow() -ne [System.IntPtr]::Zero)",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
+        /// Gets a script that writes <see cref="DebugOutputMarker"/>, then exits with 2 if the launcher is not attached to
+        /// PowerShell's console, as an error alone exits with 1.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetDebugConsoleScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "$ErrorActionPreference = 'Stop'",
+                $"'{DebugOutputMarker}'",
+                "Add-Type -Namespace PSADT.Invoke.Tests -Name ConsoleProcessProbe -MemberDefinition '[System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] public static extern uint GetConsoleProcessList(uint[] processList, uint processCount);'",
+                "$processIds = [System.UInt32[]]::new(64)",
+                "$count = [PSADT.Invoke.Tests.ConsoleProcessProbe]::GetConsoleProcessList($processIds, $processIds.Length)",
+                "$names = foreach ($processId in $processIds[0..($count - 1)])",
+                "{",
+                "    (Get-Process -Id $processId).ProcessName",
+                "}",
+                "if ($names -notcontains 'Invoke-AppDeployToolkit')",
                 "{",
                 "    exit 2",
                 "}",

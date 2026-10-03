@@ -27,16 +27,15 @@ namespace PSADT.Invoke
         /// Serves as the application entry point, launching the PowerShell deployment script with the specified
         /// command-line arguments.
         /// </summary>
-        /// <remarks>If debug mode is enabled via command-line arguments, additional diagnostic output is
-        /// written to the console, and standard output and error streams from the PowerShell process are redirected. In
-        /// the event of a critical error outside of debug mode, the process terminates immediately using
-        /// Environment.FailFast. Exit codes 60010 and 60011 indicate specific failure scenarios during preparation or
-        /// script launch, respectively.</remarks>
+        /// <remarks>If debug mode is enabled via command-line arguments, additional diagnostic output is written
+        /// to the console, and the PowerShell process runs in that same console. In the event of a critical error
+        /// outside of debug mode, the process terminates immediately using Environment.FailFast. Exit codes 60010
+        /// and 60011 indicate specific failure scenarios during preparation or script launch, respectively.</remarks>
         /// <param name="argv">An array of command-line arguments to configure the deployment process and script invocation. Arguments may
         /// include options such as debug mode or script path.</param>
         /// <returns>An integer exit code indicating the result of the deployment operation. Returns 0 for success, or a nonzero
         /// value if an error occurs.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the PowerShell process fails to start or if specified command-line arguments are invalid. The exception message provides details about the failure.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if specified command-line arguments are invalid. The exception message provides details about the failure.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This executable stands alone and does not reference PSADT, so the wrapper is not available to it.")]
         private static int Main(string[] argv)
         {
@@ -54,75 +53,35 @@ namespace PSADT.Invoke
                         return 1;
                     }
 
-                    // Establish the PowerShell process start information.
+                    // Establish the PowerShell path and arguments.
                     WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
-                    ProcessStartInfo processStartInfo = new()
-                    {
-                        FileName = GetPowerShellPath(argv),
-                        Arguments = GetPowerShellArguments(argv),
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        WorkingDirectory = currentPath,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    };
-                    WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
-                    WriteDebugMessage($"PowerShell Args: [{processStartInfo.Arguments}]");
-                    WriteDebugMessage($"Working Directory: [{processStartInfo.WorkingDirectory}]");
+                    string fileName = GetPowerShellPath(argv);
+                    string arguments = GetPowerShellArguments(argv);
+                    WriteDebugMessage($"PowerShell Path: [{fileName}]");
+                    WriteDebugMessage($"PowerShell Args: [{arguments}]");
+                    WriteDebugMessage($"Working Directory: [{currentPath}]");
 
                     // Null out PSModulePath to prevent any module conflicts.
                     // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
                     Environment.SetEnvironmentVariable("PSModulePath", value: null);
 
-                    // Invoke the given script as per the StartInfo.
+                    // Invoke the given script.
+                    WriteDebugMessage("Commencing invocation.\n");
                     try
                     {
-                        // Start PowerShell ourselves unless we're debugging, which needs the redirection above.
-                        if (!inDebugMode)
-                        {
-                            STARTUPINFOW startupInfo = new() { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
-                            _ = NativeMethods.CreateProcess(processStartInfo.FileName, $"\"{processStartInfo.FileName}\" {processStartInfo.Arguments}\0".ToCharArray(), bInheritHandles: false, PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW, processStartInfo.WorkingDirectory, in startupInfo, out PROCESS_INFORMATION pi);
-                            using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
-                            using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
-                            _ = NativeMethods.WaitForSingleObject(hProcess, PInvoke.INFINITE);
-                            _ = NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode);
-                            return unchecked((int)exitCode);
-                        }
-
-                        // Redirect the output and error streams, then start.
-                        using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = true };
-                        process.ErrorDataReceived += static (sender, e) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(e.Data))
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.Error.WriteLine(e.Data);
-                                Console.ResetColor();
-                            }
-                        };
-                        process.OutputDataReceived += static (sender, e) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(e.Data))
-                            {
-                                Console.WriteLine(e.Data);
-                            }
-                        };
-                        WriteDebugMessage("Commencing invocation.\n");
-                        if (!process.Start())
-                        {
-                            throw new InvalidOperationException("Failed to start the PowerShell process.");
-                        }
-
-                        // Begin reading the output and error streams, then exit with the process's exit code.
-                        process.BeginOutputReadLine();
-                        process.BeginErrorReadLine();
-                        process.WaitForExit();
-                        return process.ExitCode;
+                        // Run PowerShell in our console if debugging gave us one, otherwise without a console window.
+                        STARTUPINFOW startupInfo = new() { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                        PROCESS_CREATION_FLAGS creationFlags = !inDebugMode || PInvoke.GetConsoleWindow().IsNull ? PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW : 0;
+                        _ = NativeMethods.CreateProcess(fileName, $"\"{fileName}\" {arguments}\0".ToCharArray(), bInheritHandles: false, creationFlags, currentPath, in startupInfo, out PROCESS_INFORMATION pi);
+                        using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
+                        using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
+                        _ = NativeMethods.WaitForSingleObject(hProcess, PInvoke.INFINITE);
+                        _ = NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode);
+                        return unchecked((int)exitCode);
                     }
                     catch (Exception ex)
                     {
-                        string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
+                        string errorMessage = $"Error launching [{fileName} {arguments}].";
                         WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                         if (!inDebugMode)
                         {
