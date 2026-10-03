@@ -401,16 +401,24 @@ namespace PSADT.Tests.TestHelpers
 
             // Enumeration itself can be refused, and individual entries in the cache can carry
             // permissions that exclude an unelevated caller, so both are treated as "no fixture".
-            IEnumerable<FileInfo> packages;
+            return FindFirstReadableFile(() => installerCache.EnumerateFiles(pattern, SearchOption.TopDirectoryOnly));
+        }
+
+        /// <summary>
+        /// Returns the first of the enumerated files that the caller can open for reading.
+        /// </summary>
+        /// <param name="enumerate">Starts the enumeration, which can fail as it starts or part-way through.</param>
+        /// <returns>The first readable file, or <see langword="null"/> if there is none or the enumeration failed.</returns>
+        internal static FileInfo? FindFirstReadableFile(Func<IEnumerable<FileInfo>> enumerate)
+        {
             try
             {
-                packages = installerCache.EnumerateFiles(pattern, SearchOption.TopDirectoryOnly);
+                return enumerate().FirstOrDefault(static file => CanOpenForReading(file));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 return null;
             }
-            return packages.FirstOrDefault(static package => CanOpenForReading(package));
         }
 
         /// <summary>
