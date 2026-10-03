@@ -231,7 +231,7 @@ namespace PSADT.Invoke
             string pwshExecutablePath = pwshDefaultPath;
             if (coreSpecified)
             {
-                if (Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator).Where(static p => File.Exists(Path.Join(p, "pwsh.exe"))).Select(static p => Path.Join(p, "pwsh.exe")).FirstOrDefault() is not string pwshCorePath)
+                if (Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator).Where(static p => Path.IsPathFullyQualified(p) && File.Exists(Path.Join(p, "pwsh.exe"))).Select(static p => Path.Join(p, "pwsh.exe")).FirstOrDefault() is not string pwshCorePath)
                 {
                     throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
