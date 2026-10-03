@@ -185,6 +185,24 @@ namespace PSADT.Invoke.Tests
             }
         }
 
+        /// <summary>
+        /// Verifies that with /Debug, a Ctrl+C or Ctrl+Break in the console reaches PowerShell, even though the launcher
+        /// was started ignoring Ctrl+C, but leaves the launcher waiting for its exit code.
+        /// </summary>
+        /// <param name="ctrlEvent">The console control event to raise, 0 for Ctrl+C and 1 for Ctrl+Break.</param>
+        [Theory(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        [InlineData(0u)]
+        [InlineData(1u)]
+        public static void Main_LeavesConsoleControlEventsToPowerShellInDebugMode(uint ctrlEvent)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetConsoleControlScript(ctrlEvent), Encoding.UTF8);
+
+            Assert.Equal(0, RunDebugInvoker(invokerPath, scriptPath));
+        }
+
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
         {
             return Process.Start(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath)) ?? throw new InvalidOperationException("Failed to start the launcher process.");
@@ -224,7 +242,8 @@ namespace PSADT.Invoke.Tests
         /// prompt returns at once, and writes its output to a file beside it.
         /// </summary>
         /// <remarks>The framework drops <c language="csharp">WindowStyle</c> outside ShellExecute, so the launcher is started
-        /// through its own CreateProcess wrapper for SW_HIDE to reach the console it allocates.</remarks>
+        /// through its own CreateProcess wrapper for SW_HIDE to reach the console it allocates. It starts in a new process
+        /// group, which ignores Ctrl+C, so it always begins the way a parent ignoring Ctrl+C would leave it.</remarks>
         /// <param name="invokerPath">The path to the launcher.</param>
         /// <param name="scriptPath">The path to the script to run.</param>
         /// <returns>The exit code of the launcher.</returns>
@@ -245,7 +264,7 @@ namespace PSADT.Invoke.Tests
                 hStdOutput = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
                 hStdError = (HANDLE)output.SafeFileHandle.DangerousGetHandle(),
             };
-            _ = NativeMethods.CreateProcess(invokerPath, $"\"{invokerPath}\" /Debug {BuildProcessArguments(DefaultMode, scriptPath)}\0".ToCharArray(), bInheritHandles: true, 0, directoryPath, in startupInfo, out PROCESS_INFORMATION pi);
+            _ = NativeMethods.CreateProcess(invokerPath, $"\"{invokerPath}\" /Debug {BuildProcessArguments(DefaultMode, scriptPath)}\0".ToCharArray(), bInheritHandles: true, PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP, directoryPath, in startupInfo, out PROCESS_INFORMATION pi);
             using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
             using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
             if (NativeMethods.WaitForSingleObject(hProcess, ProcessTimeoutMilliseconds) is not WAIT_EVENT.WAIT_OBJECT_0)
@@ -389,6 +408,46 @@ namespace PSADT.Invoke.Tests
                 "    (Get-Process -Id $processId).ProcessName",
                 "}",
                 "if ($names -notcontains 'Invoke-AppDeployToolkit')",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
+        /// Gets a script that raises a console control event for its whole console and gives the launcher time to die of
+        /// it, then exits with 2 if PowerShell never received the event, as an error alone exits with 1.
+        /// </summary>
+        /// <param name="ctrlEvent">The console control event to raise.</param>
+        /// <returns>The script source.</returns>
+        private static string GetConsoleControlScript(uint ctrlEvent)
+        {
+            return string.Join(
+                Environment.NewLine,
+                "$ErrorActionPreference = 'Stop'",
+                "Add-Type -Namespace PSADT.Invoke.Tests -Name ConsoleControlProbe -MemberDefinition '",
+                "    public delegate bool HandlerRoutine(uint ctrlType);",
+                "    public static volatile bool Received;",
+                "    private static readonly HandlerRoutine Record = ctrlType => Received = true;",
+                "    [System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] private static extern bool SetConsoleCtrlHandler(HandlerRoutine handlerRoutine, bool add);",
+                "    [System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] public static extern bool GenerateConsoleCtrlEvent(uint ctrlEvent, uint processGroupId);",
+                "    [System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] public static extern uint GetConsoleProcessList(uint[] processList, uint processCount);",
+                "    public static bool Listen()",
+                "    {",
+                "        return SetConsoleCtrlHandler(Record, true);",
+                "    }",
+                "'",
+                "$processIds = [System.UInt32[]]::new(64)",
+                "$count = [PSADT.Invoke.Tests.ConsoleControlProbe]::GetConsoleProcessList($processIds, $processIds.Length)",
+                "$launcher = foreach ($processId in $processIds[0..($count - 1)])",
+                "{",
+                "    Get-Process -Id $processId | Where-Object -Property ProcessName -EQ -Value 'Invoke-AppDeployToolkit'",
+                "}",
+                "$null = [PSADT.Invoke.Tests.ConsoleControlProbe]::Listen()",
+                $"$null = [PSADT.Invoke.Tests.ConsoleControlProbe]::GenerateConsoleCtrlEvent({ctrlEvent.ToString(CultureInfo.InvariantCulture)}, 0)",
+                "$null = $launcher.WaitForExit(5000)",
+                "if (![PSADT.Invoke.Tests.ConsoleControlProbe]::Received)",
                 "{",
                 "    exit 2",
                 "}",

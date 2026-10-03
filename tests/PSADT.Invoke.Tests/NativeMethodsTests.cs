@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
 using Windows.Win32.System.Threading;
 using Xunit;
 
 namespace PSADT.Invoke.Tests
 {
     /// <summary>
-    /// Tests the launcher's wrappers over the native functions it starts and waits on PowerShell with.
+    /// Tests the launcher's wrappers over the native functions it runs PowerShell with.
     /// </summary>
     public sealed class NativeMethodsTests
     {
@@ -27,6 +28,12 @@ namespace PSADT.Invoke.Tests
 
         private const int ErrorFileNotFound = 2;
         private const int ErrorInvalidHandle = 6;
+        private const int ErrorInvalidParameter = 87;
+
+        /// <summary>
+        /// A handler routine that leaves every event to the next one. Removal must pass the same instance that was added.
+        /// </summary>
+        private static readonly PHANDLER_ROUTINE PassThroughHandlerRoutine = static _ => false;
 
         /// <summary>
         /// Verifies that a created process runs its command line, and that waiting on it then yields its exit code.
@@ -128,6 +135,26 @@ namespace PSADT.Invoke.Tests
 
             Win32Exception ex = Assert.Throws<Win32Exception>(() => NativeMethods.GetExitCodeProcess(hProcess, out _));
             Assert.Equal(ErrorInvalidHandle, ex.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that a handler routine can be added and then removed again.
+        /// </summary>
+        [Fact]
+        public void SetConsoleCtrlHandler_AddsAndRemovesAHandlerRoutine()
+        {
+            Assert.True(NativeMethods.SetConsoleCtrlHandler(PassThroughHandlerRoutine, Add: true));
+            Assert.True(NativeMethods.SetConsoleCtrlHandler(PassThroughHandlerRoutine, Add: false));
+        }
+
+        /// <summary>
+        /// Verifies that removing a handler routine that was never added surfaces the native failure.
+        /// </summary>
+        [Fact]
+        public void SetConsoleCtrlHandler_ThrowsForAHandlerRoutineNeverAdded()
+        {
+            Win32Exception ex = Assert.Throws<Win32Exception>(static () => NativeMethods.SetConsoleCtrlHandler(static _ => false, Add: false));
+            Assert.Equal(ErrorInvalidParameter, ex.NativeErrorCode);
         }
     }
 }

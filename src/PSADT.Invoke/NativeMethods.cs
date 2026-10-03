@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -177,6 +178,22 @@ namespace PSADT.Invoke
         internal static BOOL FreeConsole()
         {
             BOOL res = Windows.Win32.PInvoke.FreeConsole();
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Adds or removes an application-defined handler routine from the list of handler functions for the calling process.
+        /// </summary>
+        /// <remarks>With a null <paramref name="HandlerRoutine"/>, <paramref name="Add"/> instead sets whether the calling
+        /// process ignores Ctrl+C, which processes it creates afterwards inherit.</remarks>
+        /// <param name="HandlerRoutine">The handler routine to add or remove, or null.</param>
+        /// <param name="Add">true to add the handler routine, or to ignore Ctrl+C when <paramref name="HandlerRoutine"/> is null;
+        /// false to remove it, or to restore normal Ctrl+C processing.</param>
+        /// <returns>true if the function succeeds; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying SetConsoleCtrlHandler call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL SetConsoleCtrlHandler(PHANDLER_ROUTINE? HandlerRoutine, BOOL Add)
+        {
+            BOOL res = Windows.Win32.PInvoke.SetConsoleCtrlHandler(HandlerRoutine, Add);
             return !res ? throw new Win32Exception() : res;
         }
 

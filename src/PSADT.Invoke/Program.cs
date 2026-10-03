@@ -116,8 +116,9 @@ namespace PSADT.Invoke
         /// Enables debug mode if the "/Debug" command-line argument is present and removes it from the argument list.
         /// </summary>
         /// <remarks>Debug mode is enabled only if the application is running in an interactive user
-        /// environment. This method modifies the provided argument list by removing all instances of the "/Debug"
-        /// argument, regardless of case.</remarks>
+        /// environment. The launcher then ignores Ctrl+C and Ctrl+Break, which still reach the PowerShell process
+        /// sharing its console, even if the launcher was started ignoring Ctrl+C. This method modifies the provided
+        /// argument list by removing all instances of the "/Debug" argument, regardless of case.</remarks>
         /// <param name="argv">The list of command-line arguments to inspect and modify. Cannot be null.</param>
         private static void ConfigureDebugMode(List<string> argv)
         {
@@ -127,15 +128,18 @@ namespace PSADT.Invoke
             }
             if (!inDebugMode && Environment.UserInteractive)
             {
+                // PowerShell shares this console, so leave Ctrl+C and Ctrl+Break to it and keep waiting for its exit code.
+                // A parent may have started us ignoring Ctrl+C, which PowerShell would inherit, so undo that too.
                 try
                 {
-                    inDebugMode = NativeMethods.AllocConsole();
+                    inDebugMode = NativeMethods.AllocConsole(); Console.CancelKeyPress += IgnoreCancelKeyPress;
                 }
                 catch (Exception ex)
                 {
                     Environment.FailFast("Failed to allocate a console for debug mode.", ex);
                     throw;
                 }
+                _ = NativeMethods.SetConsoleCtrlHandler(HandlerRoutine: null, Add: false);
             }
             _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
         }
@@ -190,6 +194,10 @@ namespace PSADT.Invoke
             {
                 return;
                 throw;
+            }
+            finally
+            {
+                Console.CancelKeyPress -= IgnoreCancelKeyPress;
             }
         }
 
@@ -426,6 +434,11 @@ namespace PSADT.Invoke
         /// Determines if the application is in debug mode.
         /// </summary>
         private static bool inDebugMode = Debugger.IsAttached;
+
+        /// <summary>
+        /// Ignores Ctrl+C and Ctrl+Break in debug mode, leaving them to the PowerShell process sharing the console.
+        /// </summary>
+        private static readonly ConsoleCancelEventHandler IgnoreCancelKeyPress = static (sender, e) => e.Cancel = true;
 
         /// <summary>
         /// The <see cref="Assembly"/> containing the <see cref="Program"/> type.

@@ -10,6 +10,7 @@ NtQueryInformationProcess
 OpenProcess
 PROCESS_BASIC_INFORMATION
 RtlNtStatusToDosError
+SetConsoleCtrlHandler
 SetProcessDPIAware
 STATUS_SUCCESS
 WaitForSingleObject
