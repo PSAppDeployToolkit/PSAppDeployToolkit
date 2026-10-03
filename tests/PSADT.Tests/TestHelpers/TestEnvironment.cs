@@ -394,13 +394,9 @@ namespace PSADT.Tests.TestHelpers
         private static FileInfo? FindFirstReadableCachedPackage(string pattern)
         {
             DirectoryInfo installerCache = new(InstallerCacheDirectory);
-            if (!installerCache.Exists)
-            {
-                return null;
-            }
 
-            // Enumeration itself can be refused, and individual entries in the cache can carry
-            // permissions that exclude an unelevated caller, so both are treated as "no fixture".
+            // The cache can be missing or refuse enumeration, and individual entries in it can carry
+            // permissions that exclude an unelevated caller, so all of these are treated as "no fixture".
             return FindFirstReadableFile(() => installerCache.EnumerateFiles(pattern, SearchOption.TopDirectoryOnly));
         }
 

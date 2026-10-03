@@ -63,6 +63,20 @@ namespace PSADT.Tests.TestHelpers
         }
 
         /// <summary>
+        /// Verifies that enumerating a directory that is not there produces no fixture.
+        /// </summary>
+        [Fact]
+        public void FindFirstReadableFile_ReturnsNullForAMissingDirectory()
+        {
+            // Arrange
+            using TempDirectory temp = new();
+            DirectoryInfo missing = new(temp.GetPath("missing"));
+
+            // Act & Assert
+            Assert.Null(TestEnvironment.FindFirstReadableFile(() => missing.EnumerateFiles("*.msp", SearchOption.TopDirectoryOnly)));
+        }
+
+        /// <summary>
         /// Verifies that an enumeration failing part-way through produces no fixture rather than an exception.
         /// </summary>
         [Fact]
