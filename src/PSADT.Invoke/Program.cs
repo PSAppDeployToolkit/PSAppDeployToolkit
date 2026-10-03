@@ -243,7 +243,6 @@ namespace PSADT.Invoke
             // Check if x86 PowerShell mode was specified on command line.
             if (x32Specified)
             {
-                // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
                 _ = argv.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64", StringComparison.Ordinal))
@@ -252,8 +251,8 @@ namespace PSADT.Invoke
                 }
             }
 
-            // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
-            return !pwshExecutablePath.Equals(pwshDefaultPath, StringComparison.OrdinalIgnoreCase) || GetParentProcessPaths().FirstOrDefault(static p => Path.GetFileNameWithoutExtension(p).Equals("pwsh", StringComparison.OrdinalIgnoreCase)) is not string parentPath
+            // If no mode was specified, follow a PowerShell Core (7) ancestor when there is one.
+            return x32Specified || coreSpecified || GetParentProcessPaths().FirstOrDefault(static p => Path.GetFileNameWithoutExtension(p).Equals("pwsh", StringComparison.OrdinalIgnoreCase)) is not string parentPath
                 ? pwshExecutablePath
                 : parentPath;
         }

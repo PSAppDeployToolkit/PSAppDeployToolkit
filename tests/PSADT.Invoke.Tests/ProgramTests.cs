@@ -169,7 +169,6 @@ namespace PSADT.Invoke.Tests
         /// <summary>
         /// Verifies that without /32 or /Core, the launcher runs the script in the PowerShell 7 that started it.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if PowerShell 7 cannot be started.</exception>
         [Fact(Skip = PowerShellCoreSkipReason, SkipUnless = nameof(IsPowerShellCoreAvailable))]
         public static void Main_RunsInThePowerShellCoreThatStartedIt()
         {
@@ -178,17 +177,46 @@ namespace PSADT.Invoke.Tests
             string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
             File.WriteAllText(scriptPath, GetEditionScript(), Encoding.UTF8);
 
-            ProcessStartInfo startInfo = new()
-            {
-                FileName = "pwsh.exe",
-                Arguments = $"-NoProfile -NonInteractive -Command \"exit (Start-Process -FilePath '{invokerPath.Replace("'", "''")}' -Wait -PassThru).ExitCode\"",
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                WorkingDirectory = temporaryDirectory.DirectoryPath,
-            };
-            using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start PowerShell 7.");
+            using Process process = StartPowerShellCore($"exit (Start-Process -FilePath '{invokerPath.Replace("'", "''")}' -Wait -PassThru).ExitCode", temporaryDirectory.DirectoryPath);
             WaitForInvokerExit(process, DefaultMode);
+
+            Assert.Equal(0, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that without /32 or /Core, the launcher runs the script in a PowerShell 7 further up its ancestors
+        /// than its parent.
+        /// </summary>
+        [Fact(Skip = PowerShellCoreSkipReason, SkipUnless = nameof(IsPowerShellCoreAvailable))]
+        public static void Main_RunsInAPowerShellCoreAboveItsParent()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetEditionScript(), Encoding.UTF8);
+            string batchPath = Path.Join(temporaryDirectory.DirectoryPath, "StartInvoker.cmd");
+            File.WriteAllText(batchPath, $"@start \"\" /wait \"%~dp0{Path.GetFileName(invokerPath)}\"{Environment.NewLine}@exit /b %errorlevel%{Environment.NewLine}", Encoding.ASCII);
+
+            // PowerShell 7 starts cmd.exe for the batch file, which starts the launcher.
+            using Process process = StartPowerShellCore($"exit (Start-Process -FilePath '{batchPath.Replace("'", "''")}' -WindowStyle Hidden -Wait -PassThru).ExitCode", temporaryDirectory.DirectoryPath);
+            WaitForInvokerExit(process, DefaultMode);
+
+            Assert.Equal(0, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that /32 runs the script in the x86 Windows PowerShell even when PowerShell 7 started the launcher.
+        /// </summary>
+        [Fact(Skip = PowerShellCoreSkipReason, SkipUnless = nameof(IsPowerShellCoreAvailable))]
+        public static void Main_Runs32BitWindowsPowerShellFor32UnderPowerShellCore()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, Get32BitWindowsPowerShellScript(), Encoding.UTF8);
+
+            using Process process = StartPowerShellCore($"exit (Start-Process -FilePath '{invokerPath.Replace("'", "''")}' -ArgumentList '/32' -Wait -PassThru).ExitCode", temporaryDirectory.DirectoryPath);
+            WaitForInvokerExit(process, FileX86Mode);
 
             Assert.Equal(0, process.ExitCode);
         }
@@ -302,6 +330,48 @@ namespace PSADT.Invoke.Tests
 
             Assert.Equal(60010, RunDebugInvokerWithArguments(invokerPath, arguments));
             Assert.Contains(expectedMessage, ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that with /Debug, /Core is refused with 60010 when there is no PowerShell 7 on the path, rather than
+        /// ending the launcher through FailFast.
+        /// </summary>
+        /// <remarks>The launcher runs on a hidden desktop of WinSta0, so /Debug still allocates its console, and gets its
+        /// path from the helper that starts it.</remarks>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_RefusesCoreWithoutPowerShellCoreOnThePathInDebugMode()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory emptyDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetExitScript(0), Encoding.UTF8);
+
+            Assert.Equal(60010, RunHiddenDesktopInvoker(invokerPath, "/Debug /Core", interactive: true, emptyDirectory.DirectoryPath, Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName)).ExitCode);
+            Assert.Contains("The [/Core] parameter was specified, but PowerShell Core was not found on this system.", ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that /Core starts the first PowerShell 7 on the path. Neither one there can start, so the launch fails
+        /// with 60011 under /Debug, naming the one the launcher chose.
+        /// </summary>
+        /// <remarks>The launcher runs on a hidden desktop of WinSta0, so /Debug still allocates its console, and gets its
+        /// path from the helper that starts it.</remarks>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_StartsTheFirstPowerShellCoreOnThePathForCore()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory emptyDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory firstDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory secondDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetExitScript(0), Encoding.UTF8);
+            string firstPath = Path.Join(firstDirectory.DirectoryPath, "pwsh.exe");
+            File.WriteAllBytes(firstPath, []);
+            File.WriteAllBytes(Path.Join(secondDirectory.DirectoryPath, "pwsh.exe"), []);
+            string searchPath = $"{emptyDirectory.DirectoryPath}{Path.PathSeparator}{firstDirectory.DirectoryPath}{Path.PathSeparator}{secondDirectory.DirectoryPath}";
+
+            Assert.Equal(60011, RunHiddenDesktopInvoker(invokerPath, "/Debug /Core", interactive: true, searchPath, Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName)).ExitCode);
+            Assert.Contains($"Error launching [{firstPath} ", ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -468,19 +538,24 @@ namespace PSADT.Invoke.Tests
         /// <param name="invokerPath">The path to the launcher.</param>
         /// <param name="arguments">The launcher's arguments.</param>
         /// <param name="interactive">Whether to use a desktop of WinSta0, closing the launcher's message box.</param>
+        /// <param name="searchPath">The PATH to give the launcher, or null for this process's.</param>
+        /// <param name="outputPath">The file to write the launcher's output to, reading its input from an empty file so that the
+        /// closing key prompt of /Debug returns at once, or null to leave both alone.</param>
         /// <returns>The exit code of the launcher, and the caption and lines of the message box it showed, which are empty
         /// if it showed none.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the launcher's directory cannot be resolved, or Windows PowerShell cannot be started.</exception>
-        private static (int ExitCode, string MessageBoxCaption, string[] MessageBoxLines) RunHiddenDesktopInvoker(string invokerPath, string arguments, bool interactive)
+        private static (int ExitCode, string MessageBoxCaption, string[] MessageBoxLines) RunHiddenDesktopInvoker(string invokerPath, string arguments, bool interactive, string? searchPath = null, string? outputPath = null)
         {
             string directoryPath = Path.GetDirectoryName(invokerPath) ?? throw new InvalidOperationException("Failed to resolve the launcher directory.");
             string helperPath = Path.Join(directoryPath, HiddenDesktopHelperFileName);
             string resultPath = Path.Join(directoryPath, HiddenDesktopResultFileName);
             File.WriteAllText(helperPath, GetHiddenDesktopHelperScript(), Encoding.UTF8);
+            string searchPathArgument = searchPath is null ? string.Empty : $" -SearchPath \"{searchPath}\"";
+            string outputPathArgument = outputPath is null ? string.Empty : $" -OutputPath \"{outputPath}\"";
             ProcessStartInfo startInfo = new()
             {
                 FileName = Path.Join(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"),
-                Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{helperPath}\" -InvokerPath \"{invokerPath}\" -Arguments \"{arguments}\" -ResultPath \"{resultPath}\" -TimeoutMilliseconds {ProcessTimeoutMilliseconds}{(interactive ? " -Interactive" : string.Empty)}",
+                Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{helperPath}\" -InvokerPath \"{invokerPath}\" -Arguments \"{arguments}\" -ResultPath \"{resultPath}\" -TimeoutMilliseconds {ProcessTimeoutMilliseconds}{(interactive ? " -Interactive" : string.Empty)}{searchPathArgument}{outputPathArgument}",
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
@@ -655,6 +730,22 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Gets a script that exits with 2 unless it runs in a 32-bit Windows PowerShell, as an error alone exits with 1.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string Get32BitWindowsPowerShellScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "if ($PSVersionTable.PSEdition -ne 'Desktop' -or [System.Environment]::Is64BitProcess)",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
         /// Gets a Windows PowerShell script that runs a launcher on a new desktop nobody can see, then writes its exit code,
         /// or "TimedOut" and its process ID if it is still running when the time is up, to a file. With -Interactive, the
         /// desktop is on WinSta0, and the caption and text of a message box the launcher shows follow, the box closed for it.
@@ -667,12 +758,13 @@ namespace PSADT.Invoke.Tests
         private static string GetHiddenDesktopHelperScript()
         {
             return """
-                param ([System.String]$InvokerPath, [System.String]$Arguments, [System.String]$ResultPath, [System.UInt32]$TimeoutMilliseconds, [System.Management.Automation.SwitchParameter]$Interactive)
+                param ([System.String]$InvokerPath, [System.String]$Arguments, [System.String]$ResultPath, [System.UInt32]$TimeoutMilliseconds, [System.Management.Automation.SwitchParameter]$Interactive, [System.String]$SearchPath, [System.String]$OutputPath)
                 $ErrorActionPreference = 'Stop'
                 Add-Type -TypeDefinition @'
                 using System;
                 using System.ComponentModel;
                 using System.Globalization;
+                using System.IO;
                 using System.Runtime.InteropServices;
                 using System.Text;
                 using System.Threading;
@@ -687,6 +779,9 @@ namespace PSADT.Invoke.Tests
                         private const uint WaitTimeout = 0x102;
                         private const uint WmClose = 0x10;
                         private const int MessageBoxTextId = 0xFFFF;
+                        private const int StartfUseStdHandles = 0x100;
+                        private const uint HandleFlagInherit = 1;
+                        private static readonly int[] StandardHandles = new int[] { -10, -11, -12 };
 
                         private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
@@ -770,7 +865,13 @@ namespace PSADT.Invoke.Tests
                         [DllImport("user32.dll", SetLastError = true)]
                         private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
-                        public static string[] Run(string applicationName, string commandLine, uint timeoutMilliseconds, bool interactive)
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern IntPtr GetStdHandle(int nStdHandle);
+
+                        [DllImport("kernel32.dll", SetLastError = true)]
+                        private static extern bool SetHandleInformation(IntPtr hObject, uint dwMask, uint dwFlags);
+
+                        public static string[] Run(string applicationName, string commandLine, uint timeoutMilliseconds, bool interactive, string outputPath)
                         {
                             IntPtr windowStation = interactive ? GetProcessWindowStation() : CreateWindowStation(null, 0, WinStaAllAccess, IntPtr.Zero);
                             StringBuilder windowStationName = new StringBuilder(256);
@@ -802,10 +903,35 @@ namespace PSADT.Invoke.Tests
                             STARTUPINFO startupInfo = new STARTUPINFO();
                             startupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFO));
                             startupInfo.lpDesktop = windowStationName + "\\" + desktopName;
+
+                            // Input from an empty file makes the closing key prompt of /Debug return at once. Only these files are
+                            // inherited, not this helper's own standard handles.
+                            FileStream input = null;
+                            FileStream output = null;
+                            if (outputPath.Length > 0)
+                            {
+                                File.WriteAllText(outputPath + ".input", string.Empty);
+                                input = new FileStream(outputPath + ".input", FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Inheritable);
+                                output = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Inheritable);
+                                foreach (int standardHandle in StandardHandles)
+                                {
+                                    SetHandleInformation(GetStdHandle(standardHandle), HandleFlagInherit, 0);
+                                }
+                                startupInfo.dwFlags = StartfUseStdHandles;
+                                startupInfo.hStdInput = input.SafeFileHandle.DangerousGetHandle();
+                                startupInfo.hStdOutput = output.SafeFileHandle.DangerousGetHandle();
+                                startupInfo.hStdError = startupInfo.hStdOutput;
+                            }
                             PROCESS_INFORMATION processInformation;
-                            if (!CreateProcess(applicationName, new StringBuilder(commandLine), IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, null, ref startupInfo, out processInformation))
+                            if (!CreateProcess(applicationName, new StringBuilder(commandLine), IntPtr.Zero, IntPtr.Zero, output != null, 0, IntPtr.Zero, null, ref startupInfo, out processInformation))
                             {
                                 throw new Win32Exception();
+                            }
+                            if (output != null)
+                            {
+                                // The launcher has its own copies of the handles now.
+                                input.Dispose();
+                                output.Dispose();
                             }
 
                             // Messages only reach a window from a thread on its desktop, so the message box is closed from one.
@@ -884,7 +1010,11 @@ namespace PSADT.Invoke.Tests
                     }
                 }
                 '@
-                [System.IO.File]::WriteAllLines($ResultPath, [System.String[]][PSADT.Invoke.Tests.HiddenDesktop]::Run($InvokerPath, ('"{0}" {1}' -f $InvokerPath, $Arguments), $TimeoutMilliseconds, $Interactive.IsPresent))
+                if ($SearchPath)
+                {
+                    $env:PATH = $SearchPath
+                }
+                [System.IO.File]::WriteAllLines($ResultPath, [System.String[]][PSADT.Invoke.Tests.HiddenDesktop]::Run($InvokerPath, ('"{0}" {1}' -f $InvokerPath, $Arguments), $TimeoutMilliseconds, $Interactive.IsPresent, $OutputPath))
                 """;
         }
 
@@ -991,6 +1121,27 @@ namespace PSADT.Invoke.Tests
             return argument.IndexOfAny([' ', '\t', '\r', '\n']) == -1
                 ? argument
                 : "\"" + argument.Replace("\"", "\\\"") + "\"";
+        }
+
+        /// <summary>
+        /// Starts PowerShell 7 without a console window to run a command.
+        /// </summary>
+        /// <param name="command">The command to run, which must not contain a double quote.</param>
+        /// <param name="workingDirectory">The directory to run the command in.</param>
+        /// <returns>The PowerShell 7 process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if PowerShell 7 cannot be started.</exception>
+        private static Process StartPowerShellCore(string command, string workingDirectory)
+        {
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "pwsh.exe",
+                Arguments = $"-NoProfile -NonInteractive -Command \"{command}\"",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = workingDirectory,
+            };
+            return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start PowerShell 7.");
         }
 
         private static Process StartWhereProcess()
