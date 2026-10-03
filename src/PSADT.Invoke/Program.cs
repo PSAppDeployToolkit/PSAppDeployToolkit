@@ -204,8 +204,8 @@ namespace PSADT.Invoke
         /// <summary>
         /// Determines the appropriate PowerShell executable path based on the specified command-line arguments.
         /// </summary>
-        /// <remarks>If neither "/32" nor "/Core" is specified, and the parent process is PowerShell Core,
-        /// the method returns the path of the parent process's executable. The method modifies <paramref
+        /// <remarks>If neither "/32" nor "/Core" is specified, and an ancestor process is PowerShell Core,
+        /// the method returns the path of the nearest such ancestor's executable. The method modifies <paramref
         /// name="argv"/> by removing any recognized mode arguments to prevent them from being passed to the
         /// PowerShell script.</remarks>
         /// <param name="argv">A list of command-line arguments that may include PowerShell mode specifiers such as "/32" for x86 mode or
@@ -253,9 +253,9 @@ namespace PSADT.Invoke
             }
 
             // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
-            return pwshExecutablePath.Equals(pwshDefaultPath, StringComparison.OrdinalIgnoreCase) && GetParentProcesses().FirstOrDefault(static p => p.ProcessName.Equals("pwsh", StringComparison.OrdinalIgnoreCase)) is Process parentProcess
-                ? parentProcess.MainModule.FileName
-                : pwshExecutablePath;
+            return !pwshExecutablePath.Equals(pwshDefaultPath, StringComparison.OrdinalIgnoreCase) || GetParentProcessPaths().FirstOrDefault(static p => Path.GetFileNameWithoutExtension(p).Equals("pwsh", StringComparison.OrdinalIgnoreCase)) is not string parentPath
+                ? pwshExecutablePath
+                : parentPath;
         }
 
         /// <summary>
@@ -321,58 +321,64 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Retrieves a read-only collection containing the parent processes of the current process, ordered from
-        /// immediate parent up the process hierarchy.
+        /// Retrieves the executable paths of the current process's ancestors, from its parent upwards.
         /// </summary>
-        /// <remarks>The returned collection does not include the current process itself. The order of the
-        /// collection starts with the immediate parent and proceeds up the process tree. If a parent process cannot be
-        /// accessed or does not exist, the collection may be truncated.</remarks>
-        /// <returns>A read-only collection of <see cref="Process"/> objects representing the parent processes
-        /// of the current process. The collection is empty if no parent processes can be determined.</returns>
-        private static IEnumerable<Process> GetParentProcesses()
+        /// <remarks>The walk ends at the first parent that cannot be queried, or that started after its child, as a process
+        /// given the ID of a parent that has since exited does.</remarks>
+        /// <returns>The executable path of each ancestor, nearest first. The list is empty if no parent can be determined.</returns>
+        private static IEnumerable<string> GetParentProcessPaths()
         {
-            // Internal method to get the parent process of a given process.
-            static int GetParentProcessId(int processId)
+            // Internal method to open a process for the queries made of it.
+            static SafeFileHandle OpenForQuery(uint processId)
             {
-                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
-                _ = NativeMethods.NtQueryInformationProcess(hProcess, out PROCESS_BASIC_INFORMATION pbi);
-                return (int)pbi.InheritedFromUniqueProcessId;
+                return NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, processId);
             }
 
-            // Build a list of parent processes and return it to the caller.
-            int processId = (int)PInvoke.GetCurrentProcessId();
-            List<int> processesIds = [];
-            while (true)
+            // Internal method to get when a process started, and the ID of the process that started it.
+            static (System.Runtime.InteropServices.ComTypes.FILETIME CreationTime, uint ParentProcessId) QueryProcess(SafeHandle hProcess)
             {
-                // Attempt to get the parent process ID. If this fails (e.g., process has exited or can't access parent), break the loop.
+                _ = NativeMethods.GetProcessTimes(hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME creationTime, out _, out _, out _);
+                _ = NativeMethods.NtQueryInformationProcess(hProcess, out PROCESS_BASIC_INFORMATION pbi);
+                return (creationTime, (uint)pbi.InheritedFromUniqueProcessId);
+            }
+
+            // Internal method to get the executable path of a process.
+            static string GetExecutablePath(SafeFileHandle hProcess)
+            {
+                char[] exeName = new char[short.MaxValue];
+                uint size = (uint)exeName.Length;
+                _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, exeName, ref size);
+                return new(exeName, 0, (int)size);
+            }
+
+            // Walk up from this process, stopping at a parent that can't be queried, was seen already, or started after its child.
+            uint processId = PInvoke.GetCurrentProcessId();
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            (System.Runtime.InteropServices.ComTypes.FILETIME childCreationTime, uint parentProcessId) = QueryProcess(hProcess);
+            HashSet<uint> processIds = [processId];
+            while (processIds.Add(parentProcessId))
+            {
+                System.Runtime.InteropServices.ComTypes.FILETIME creationTime;
+                uint grandparentProcessId;
+                string executablePath;
                 try
                 {
-                    processId = GetParentProcessId(processId);
+                    using SafeFileHandle hParent = OpenForQuery(parentProcessId);
+                    (creationTime, grandparentProcessId) = QueryProcess(hParent);
+                    if (PInvoke.CompareFileTime(in creationTime, in childCreationTime) > 0)
+                    {
+                        break;
+                    }
+                    executablePath = GetExecutablePath(hParent);
                 }
                 catch
                 {
                     break;
                     throw;
                 }
-
-                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
-                if (processesIds.Contains(processId))
-                {
-                    break;
-                }
-                processesIds.Add(processId);
-
-                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
-                Process process;
-                try
-                {
-                    process = Process.GetProcessById(processId);
-                }
-                catch (ArgumentException)
-                {
-                    break;
-                }
-                yield return process;
+                yield return executablePath;
+                parentProcessId = grandparentProcessId;
+                childCreationTime = creationTime;
             }
         }
 
