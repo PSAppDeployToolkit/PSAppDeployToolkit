@@ -9,6 +9,9 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.Invoke
 {
+    /// <summary>
+    /// Provides a set of internal static methods that wrap native Windows API calls for process and console management.
+    /// </summary>
     internal static class NativeMethods
     {
         /// <summary>
@@ -67,6 +70,69 @@ namespace PSADT.Invoke
         {
             SafeFileHandle res = Windows.Win32.PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
             return res.IsInvalid ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Creates a new process and its primary thread, running in the security context of the calling process.
+        /// </summary>
+        /// <remarks>The new process gets default security and the environment of the calling process. The caller is
+        /// responsible for closing the handles in the returned <see cref="PROCESS_INFORMATION"/> structure.</remarks>
+        /// <param name="lpApplicationName">The full path of the module to execute.</param>
+        /// <param name="lpCommandLine">The null-terminated command line to execute. CreateProcess can modify its contents.</param>
+        /// <param name="bInheritHandles">true if each inheritable handle in the calling process is inherited by the new process; otherwise, false.</param>
+        /// <param name="dwCreationFlags">The flags that control the priority class and the creation of the process.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process.</param>
+        /// <param name="lpStartupInfo">The window station, desktop, standard handles and appearance of the main window for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains information about the new process and its primary thread.</param>
+        /// <returns>true if the process was created; otherwise, an exception is thrown.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpApplicationName"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
+        /// <exception cref="Win32Exception">Thrown if the underlying CreateProcess call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL CreateProcess(string lpApplicationName, char[] lpCommandLine, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, string lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            if (string.IsNullOrWhiteSpace(lpApplicationName))
+            {
+                throw new ArgumentNullException(nameof(lpApplicationName), "Application name cannot be null or empty.");
+            }
+            if (Array.IndexOf(lpCommandLine, '\0') < 0)
+            {
+                throw new ArgumentException("The command line must be null-terminated.", nameof(lpCommandLine));
+            }
+            BOOL res;
+            unsafe
+            {
+                fixed (char* pCommandLine = lpCommandLine)
+                {
+                    res = Windows.Win32.PInvoke.CreateProcess(lpApplicationName, pCommandLine, lpProcessAttributes: null, lpThreadAttributes: null, bInheritHandles, dwCreationFlags, lpEnvironment: null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                }
+            }
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Waits until the specified object is in the signaled state or the time-out interval elapses.
+        /// </summary>
+        /// <param name="hHandle">A handle to the object to wait for, which must have the SYNCHRONIZE access right.</param>
+        /// <param name="dwMilliseconds">The time-out interval, in milliseconds, or <see cref="Windows.Win32.PInvoke.INFINITE"/> to wait indefinitely.</param>
+        /// <returns>A <see cref="WAIT_EVENT"/> value indicating the event that caused the method to return.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying WaitForSingleObject call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, uint dwMilliseconds)
+        {
+            WAIT_EVENT res = Windows.Win32.PInvoke.WaitForSingleObject(hHandle, dwMilliseconds);
+            return res is WAIT_EVENT.WAIT_FAILED ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves the termination status of the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpExitCode">When this method returns, contains the exit code of the process, or STILL_ACTIVE if it has not terminated.</param>
+        /// <returns>true if the termination status was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying GetExitCodeProcess call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
+        {
+            BOOL res = Windows.Win32.PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
+            return !res ? throw new Win32Exception() : res;
         }
 
         /// <summary>

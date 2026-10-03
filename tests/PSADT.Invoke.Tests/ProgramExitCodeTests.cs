@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace PSADT.Invoke.Tests
@@ -25,7 +28,8 @@ namespace PSADT.Invoke.Tests
         private const string FileCoreMode = "FileCore";
         private const string FileX86Mode = "FileX86";
         private const string InvokerFileName = "Invoke-AppDeployToolkit.exe";
-        private static readonly int[] ScriptExitCodes = [0, 42, 3010];
+        private const string PingIdFileName = "ping.pid";
+        private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
 
         /// <summary>
         /// Gets launcher invocation modes and expected script exit codes.
@@ -65,18 +69,80 @@ namespace PSADT.Invoke.Tests
             File.WriteAllText(scriptPath, GetExitScript(expectedExitCode), Encoding.UTF8);
 
             using Process process = StartInvoker(invokerPath, invocationMode, scriptPath);
-            if (!process.WaitForExit(ProcessTimeoutMilliseconds))
-            {
-                string survivors = KillProcessTree(process.Id);
-                Assert.Fail($"[{invocationMode}] did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
-            }
+            WaitForInvokerExit(process, invocationMode);
 
             Assert.Equal(expectedExitCode, process.ExitCode);
         }
 
+        /// <summary>
+        /// Verifies that the launcher writes nothing to its own output or error streams outside debug mode.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public static async Task Main_WritesNothingToOutputOrErrorAsync()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetExitScript(0), Encoding.UTF8);
+
+            using RedirectedInvoker invoker = RedirectedInvoker.Start(invokerPath, scriptPath);
+            WaitForInvokerExit(invoker.Process, DefaultMode);
+
+            Assert.True(await ClosesOutputInTimeAsync(invoker.Process).ConfigureAwait(true), "The launcher's output streams were still open after it exited.");
+            Assert.Empty(invoker.Lines);
+        }
+
+        /// <summary>
+        /// Verifies that PowerShell inherits none of the launcher's handles, so a process the deployment leaves running
+        /// cannot hold the launcher's output streams open.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public static async Task Main_DoesNotPassItsHandlesToPowerShellAsync()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetStartPingScript(), Encoding.UTF8);
+
+            using RedirectedInvoker invoker = RedirectedInvoker.Start(invokerPath, scriptPath);
+            try
+            {
+                WaitForInvokerExit(invoker.Process, DefaultMode);
+                Assert.True(await ClosesOutputInTimeAsync(invoker.Process).ConfigureAwait(true), "A process that PowerShell started is holding the launcher's output streams open.");
+            }
+            finally
+            {
+                StopPing(temporaryDirectory.DirectoryPath);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that PowerShell runs without a console window, hidden or otherwise.
+        /// </summary>
+        [Fact]
+        public static void Main_StartsPowerShellWithoutAConsoleWindow()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetConsoleWindowScript(), Encoding.UTF8);
+
+            using Process process = StartInvoker(invokerPath, DefaultMode, scriptPath);
+            WaitForInvokerExit(process, DefaultMode);
+
+            Assert.Equal(0, process.ExitCode);
+        }
+
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
         {
-            ProcessStartInfo startInfo = new()
+            return Process.Start(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath)) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+        }
+
+        private static ProcessStartInfo CreateInvokerStartInfo(string invokerPath, string invocationMode, string scriptPath)
+        {
+            return new()
             {
                 FileName = invokerPath,
                 Arguments = BuildProcessArguments(invocationMode, scriptPath),
@@ -85,7 +151,22 @@ namespace PSADT.Invoke.Tests
                 WindowStyle = ProcessWindowStyle.Hidden,
                 WorkingDirectory = Path.GetDirectoryName(invokerPath),
             };
-            return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+        }
+
+        private static void WaitForInvokerExit(Process process, string invocationMode)
+        {
+            if (!process.WaitForExit(ProcessTimeoutMilliseconds))
+            {
+                string survivors = KillProcessTree(process.Id);
+                Assert.Fail($"[{invocationMode}] did not exit within {ProcessTimeoutMilliseconds}ms. Killed:{Environment.NewLine}{survivors}");
+            }
+        }
+
+        private static async Task<bool> ClosesOutputInTimeAsync(Process process)
+        {
+            // The overload without a timeout also waits for the redirected streams to close.
+            Task closed = Task.Run(process.WaitForExit, TestContext.Current.CancellationToken);
+            return await Task.WhenAny(closed, Task.Delay(ProcessTimeoutMilliseconds, TestContext.Current.CancellationToken)).ConfigureAwait(false) == closed;
         }
 
         private static string BuildProcessArguments(string invocationMode, string scriptPath)
@@ -118,10 +199,9 @@ namespace PSADT.Invoke.Tests
         /// Terminates a process and everything it started.
         /// </summary>
         /// <remarks>
-        /// The launcher starts PowerShell through ShellExecute, so no job object ties the two together and
-        /// <c language="csharp">Process.Kill</c> takes only the launcher. An abandoned child holds the test's temporary
-        /// directory open and competes for the runner for the rest of the job. The .NET Framework has no
-        /// entireProcessTree overload, so the walk is taskkill's.
+        /// No job object ties the launcher to the PowerShell it starts, so <c language="csharp">Process.Kill</c> takes
+        /// only the launcher. An abandoned child holds the test's temporary directory open and competes for the runner
+        /// for the rest of the job. The .NET Framework has no entireProcessTree overload, so the walk is taskkill's.
         /// </remarks>
         /// <param name="processId">The identifier of the process at the root of the tree.</param>
         /// <returns>
@@ -166,6 +246,49 @@ namespace PSADT.Invoke.Tests
         private static string GetExitScript(int exitCode)
         {
             return "exit " + exitCode.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+        }
+
+        /// <summary>
+        /// Gets a script that leaves ping running with every inheritable handle PowerShell has, records its ID, then exits.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetStartPingScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "$startInfo = [System.Diagnostics.ProcessStartInfo]::new((Join-Path -Path ([System.Environment]::SystemDirectory) -ChildPath 'PING.EXE'), '-n 600 127.0.0.1')",
+                "$startInfo.UseShellExecute = $false",
+                "$startInfo.WorkingDirectory = [System.Environment]::SystemDirectory",
+                $"[System.IO.File]::WriteAllText((Join-Path -Path $PSScriptRoot -ChildPath '{PingIdFileName}'), [System.Diagnostics.Process]::Start($startInfo).Id)",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
+        /// Gets a script that exits with 2 if PowerShell has a console window, as an error alone exits with 1.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetConsoleWindowScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "$ErrorActionPreference = 'Stop'",
+                "Add-Type -Namespace PSADT.Invoke.Tests -Name ConsoleWindowProbe -MemberDefinition '[System.Runtime.InteropServices.DllImport(\"kernel32.dll\")] public static extern System.IntPtr GetConsoleWindow();'",
+                "if ([PSADT.Invoke.Tests.ConsoleWindowProbe]::GetConsoleWindow() -ne [System.IntPtr]::Zero)",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        private static void StopPing(string directoryPath)
+        {
+            string idPath = Path.Join(directoryPath, PingIdFileName);
+            if (File.Exists(idPath))
+            {
+                _ = KillProcessTree(int.Parse(File.ReadAllText(idPath).Trim(), CultureInfo.InvariantCulture));
+            }
         }
 
         private static string GetInvokerPath()
@@ -252,6 +375,48 @@ namespace PSADT.Invoke.Tests
                 catch (UnauthorizedAccessException ex)
                 {
                     Trace.WriteLine(ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A launcher started with its output and error streams redirected, recording every line it writes to either.
+        /// </summary>
+        private sealed class RedirectedInvoker : IDisposable
+        {
+            private readonly ConcurrentQueue<string> lines = new();
+
+            private RedirectedInvoker(Process process)
+            {
+                Process = process;
+                Process.OutputDataReceived += (sender, e) => Record(e.Data);
+                Process.ErrorDataReceived += (sender, e) => Record(e.Data);
+                Process.BeginOutputReadLine();
+                Process.BeginErrorReadLine();
+            }
+
+            internal Process Process { get; }
+
+            internal IReadOnlyCollection<string> Lines => lines;
+
+            internal static RedirectedInvoker Start(string invokerPath, string scriptPath)
+            {
+                ProcessStartInfo startInfo = CreateInvokerStartInfo(invokerPath, DefaultMode, scriptPath);
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+                return new(Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start the launcher process."));
+            }
+
+            public void Dispose()
+            {
+                Process.Dispose();
+            }
+
+            private void Record(string? line)
+            {
+                if (line is not null)
+                {
+                    lines.Enqueue(line);
                 }
             }
         }

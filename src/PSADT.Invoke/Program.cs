@@ -62,9 +62,9 @@ namespace PSADT.Invoke
                         Arguments = GetPowerShellArguments(argv),
                         WindowStyle = ProcessWindowStyle.Hidden,
                         WorkingDirectory = currentPath,
-                        RedirectStandardOutput = inDebugMode,
-                        RedirectStandardError = inDebugMode,
-                        UseShellExecute = !inDebugMode,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
                         CreateNoWindow = true,
                     };
                     WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
@@ -78,39 +78,45 @@ namespace PSADT.Invoke
                     // Invoke the given script as per the StartInfo.
                     try
                     {
-                        // Redirect the output and error streams if we're debugging, then start.
-                        using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
-                        if (inDebugMode)
+                        // Start PowerShell ourselves unless we're debugging, which needs the redirection above.
+                        if (!inDebugMode)
                         {
-                            process.ErrorDataReceived += static (sender, e) =>
-                            {
-                                if (!string.IsNullOrWhiteSpace(e.Data))
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.Error.WriteLine(e.Data);
-                                    Console.ResetColor();
-                                }
-                            };
-                            process.OutputDataReceived += static (sender, e) =>
-                            {
-                                if (!string.IsNullOrWhiteSpace(e.Data))
-                                {
-                                    Console.WriteLine(e.Data);
-                                }
-                            };
+                            STARTUPINFOW startupInfo = new() { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                            _ = NativeMethods.CreateProcess(processStartInfo.FileName, $"\"{processStartInfo.FileName}\" {processStartInfo.Arguments}\0".ToCharArray(), bInheritHandles: false, PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW, processStartInfo.WorkingDirectory, in startupInfo, out PROCESS_INFORMATION pi);
+                            using SafeProcessHandle hProcess = new(pi.hProcess, ownsHandle: true);
+                            using SafeWaitHandle hThread = new(pi.hThread, ownsHandle: true);
+                            _ = NativeMethods.WaitForSingleObject(hProcess, PInvoke.INFINITE);
+                            _ = NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode);
+                            return unchecked((int)exitCode);
                         }
+
+                        // Redirect the output and error streams, then start.
+                        using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = true };
+                        process.ErrorDataReceived += static (sender, e) =>
+                        {
+                            if (!string.IsNullOrWhiteSpace(e.Data))
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Error.WriteLine(e.Data);
+                                Console.ResetColor();
+                            }
+                        };
+                        process.OutputDataReceived += static (sender, e) =>
+                        {
+                            if (!string.IsNullOrWhiteSpace(e.Data))
+                            {
+                                Console.WriteLine(e.Data);
+                            }
+                        };
                         WriteDebugMessage("Commencing invocation.\n");
                         if (!process.Start())
                         {
                             throw new InvalidOperationException("Failed to start the PowerShell process.");
                         }
 
-                        // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
-                        if (inDebugMode)
-                        {
-                            process.BeginOutputReadLine();
-                            process.BeginErrorReadLine();
-                        }
+                        // Begin reading the output and error streams, then exit with the process's exit code.
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
                         process.WaitForExit();
                         return process.ExitCode;
                     }

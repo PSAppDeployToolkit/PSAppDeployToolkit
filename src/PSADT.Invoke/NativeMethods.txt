@@ -1,7 +1,10 @@
 ﻿AllocConsole
+CreateProcess
 FreeConsole
 GetConsoleWindow
 GetCurrentProcessId
+GetExitCodeProcess
+INFINITE
 MessageBox
 NtQueryInformationProcess
 OpenProcess
@@ -9,3 +12,4 @@ PROCESS_BASIC_INFORMATION
 RtlNtStatusToDosError
 SetProcessDPIAware
 STATUS_SUCCESS
+WaitForSingleObject
