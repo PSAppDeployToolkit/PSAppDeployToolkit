@@ -376,6 +376,32 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that /Core skips a path entry that isn't a full path, which would find a PowerShell 7 in the directory
+        /// the launcher was started in. Neither one can start, so the launch fails with 60011 under /Debug, naming the one
+        /// the launcher chose.
+        /// </summary>
+        /// <remarks>The launcher runs on a hidden desktop of WinSta0, so /Debug still allocates its console, and gets its
+        /// path from the helper that starts it, in the launcher's own directory.</remarks>
+        /// <param name="entry">The entry put first on the path.</param>
+        [Theory(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        [InlineData("")]
+        [InlineData(".")]
+        public static void Main_SkipsPathEntriesThatAreNotFullPathsForCore(string entry)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory coreDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetExitScript(0), Encoding.UTF8);
+            File.WriteAllBytes(Path.Join(temporaryDirectory.DirectoryPath, "pwsh.exe"), []);
+            string corePath = Path.Join(coreDirectory.DirectoryPath, "pwsh.exe");
+            File.WriteAllBytes(corePath, []);
+            string searchPath = $"{entry}{Path.PathSeparator}{coreDirectory.DirectoryPath}";
+
+            Assert.Equal(60011, RunHiddenDesktopInvoker(invokerPath, "/Debug /Core", interactive: true, searchPath, Path.Join(temporaryDirectory.DirectoryPath, DebugOutputFileName)).ExitCode);
+            Assert.Contains($"Error launching [{corePath} ", ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that outside an interactive session, /? shows no message box and /Debug allocates no console, as
         /// nobody could answer either: the launcher returns without waiting, and /Debug runs the script as normal.
         /// </summary>
