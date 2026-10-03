@@ -41,11 +41,17 @@ namespace PSADT.Invoke.Tests
         private const string DebugSkipReason = "/Debug only allocates a console in an interactive session.";
         private const string PowerShellCoreSkipReason = "PowerShell 7 is not installed.";
         private const string MessageBoxSkipReason = "The help is only shown in a message box in an interactive session.";
+        private const string WorkingDirectoryFileName = "cwd.txt";
         private const string HiddenDesktopHelperFileName = "hiddendesktop.ps1";
         private const string HiddenDesktopResultFileName = "hiddendesktop.txt";
         private const string ReusedParentHelperFileName = "reusedparent.ps1";
         private const string ReusedParentResultFileName = "reusedparent.txt";
         private const string UsageLine = "  Invoke-AppDeployToolkit.exe [/Debug] [/32] [-File <FileName>] [-DeploymentScriptParameter]";
+        private const string ModulePathMarker = @"C:\PSADT.Invoke.Tests\Modules";
+        private const string EnvironmentMarkerName = "PSADT_INVOKE_TESTS_MARKER";
+        private const string EnvironmentMarkerValue = "Inherited";
+        private const string RelativeScriptDirectory = "Sub Folder";
+        private const string RelativeScriptPath = RelativeScriptDirectory + @"\Relative Script.ps1";
         private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
 
         /// <summary>
@@ -83,6 +89,30 @@ namespace PSADT.Invoke.Tests
                     {
                         data.Add(FileCoreMode, exitCode);
                     }
+                }
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Gets the invocation modes that run the script in each installed edition of PowerShell.
+        /// </summary>
+        public static TheoryData<string> PowerShellEditionData => [.. GetEditionModes()];
+
+        /// <summary>
+        /// Gets the invocation modes for each installed edition of PowerShell, with scripts that end without an exit
+        /// statement and the exit codes expected for them.
+        /// </summary>
+        public static TheoryData<string, string, int> ScriptEndingData
+        {
+            get
+            {
+                TheoryData<string, string, int> data = [];
+                foreach (string invocationMode in GetEditionModes())
+                {
+                    data.Add(invocationMode, "throw 'The deployment failed.'", 1);
+                    data.Add(invocationMode, "cmd.exe /c exit 7", 7);
+                    data.Add(invocationMode, "$null = 'The deployment finished.'", 0);
                 }
                 return data;
             }
@@ -353,6 +383,25 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that with /Debug, a failure to start PowerShell is written to the console and returns 60011, rather
+        /// than ending the launcher through FailFast.
+        /// </summary>
+        [Fact(Skip = DebugSkipReason, SkipUnless = nameof(IsUserInteractive))]
+        public static void Main_ReturnsLaunchFailuresInDebugMode()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            File.WriteAllText(GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode), GetExitScript(0), Encoding.UTF8);
+
+            // PowerShell's command line adds its own path, switches and wrapper to the launcher's arguments, so filling the
+            // launcher's to just under CreateProcess's 32,767 characters takes PowerShell's past them.
+            const string prefix = "-Note a";
+            string arguments = prefix + new string('a', 32_700 - $"\"{invokerPath}\" /Debug {prefix}".Length);
+            Assert.Equal(60011, RunDebugInvokerWithArguments(invokerPath, arguments));
+            Assert.Contains("Error launching", ReadDebugOutput(temporaryDirectory.DirectoryPath), StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Verifies that with /Debug, /Core is refused with 60010 when there is no PowerShell 7 on the path, rather than
         /// ending the launcher through FailFast.
         /// </summary>
@@ -460,6 +509,104 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that a relative script path, given with -File or on its own, is found from the launcher's directory
+        /// rather than from the directory the launcher was started in.
+        /// </summary>
+        /// <param name="arguments">The launcher's arguments, naming the script by its relative path.</param>
+        [Theory]
+        [InlineData("-File \"" + RelativeScriptPath + "\"")]
+        [InlineData("\"" + RelativeScriptPath + "\"")]
+        public static void Main_FindsARelativeScriptPathFromItsOwnDirectory(string arguments)
+        {
+            using TemporaryDirectory launcherDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory startDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(launcherDirectory.DirectoryPath);
+            _ = Directory.CreateDirectory(Path.Join(launcherDirectory.DirectoryPath, RelativeScriptDirectory));
+            File.WriteAllText(Path.Join(launcherDirectory.DirectoryPath, RelativeScriptPath), GetExitScript(23), Encoding.UTF8);
+
+            // The script at the same path from the start directory runs instead if the path is resolved from there.
+            _ = Directory.CreateDirectory(Path.Join(startDirectory.DirectoryPath, RelativeScriptDirectory));
+            File.WriteAllText(Path.Join(startDirectory.DirectoryPath, RelativeScriptPath), GetExitScript(99), Encoding.UTF8);
+
+            using Process process = StartInvokerWithArguments(invokerPath, arguments, startDirectory.DirectoryPath);
+            WaitForInvokerExit(process, arguments);
+
+            Assert.Equal(23, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that the script runs in the launcher's directory, whichever directory the launcher was started in.
+        /// </summary>
+        /// <param name="invocationMode">The launcher invocation mode.</param>
+        [Theory]
+        [MemberData(nameof(PowerShellEditionData))]
+        public static void Main_RunsTheScriptInTheLaunchersDirectory(string invocationMode)
+        {
+            using TemporaryDirectory launcherDirectory = TemporaryDirectory.Create();
+            using TemporaryDirectory startDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(launcherDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(launcherDirectory.DirectoryPath, invocationMode);
+            File.WriteAllText(scriptPath, GetWorkingDirectoryScript(), Encoding.UTF8);
+
+            ProcessStartInfo startInfo = CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath);
+            startInfo.WorkingDirectory = startDirectory.DirectoryPath;
+            using Process process = StartInvoker(startInfo);
+            WaitForInvokerExit(process, invocationMode);
+
+            Assert.Equal(0, process.ExitCode);
+            Assert.True(File.Exists(Path.Join(launcherDirectory.DirectoryPath, WorkingDirectoryFileName)), "The script did not run in the launcher's directory.");
+            Assert.False(File.Exists(Path.Join(startDirectory.DirectoryPath, WorkingDirectoryFileName)), "The script ran in the directory the launcher was started in.");
+        }
+
+        /// <summary>
+        /// Verifies that the script gets the launcher's environment without PSModulePath, which is cleared so that the
+        /// caller's module paths cannot bring other versions of modules into the deployment.
+        /// </summary>
+        /// <param name="invocationMode">The launcher invocation mode.</param>
+        [Theory]
+        [MemberData(nameof(PowerShellEditionData))]
+        public static void Main_ClearsPSModulePathButPassesTheRestOfTheEnvironment(string invocationMode)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, invocationMode);
+            File.WriteAllText(scriptPath, GetEnvironmentScript(), Encoding.UTF8);
+
+            ProcessStartInfo startInfo = CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath);
+            startInfo.Environment["PSModulePath"] = ModulePathMarker;
+            startInfo.Environment[EnvironmentMarkerName] = EnvironmentMarkerValue;
+            using Process process = StartInvoker(startInfo);
+            WaitForInvokerExit(process, invocationMode);
+
+            Assert.Equal(0, process.ExitCode);
+            string[] environment = ReadArgumentDump(temporaryDirectory.DirectoryPath);
+            Assert.DoesNotContain(ModulePathMarker, environment[0], StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(EnvironmentMarkerValue, environment[1]);
+        }
+
+        /// <summary>
+        /// Verifies that a script that ends without an exit statement returns 1 if it throws, otherwise the exit code of
+        /// the last native command it ran, or 0 if it ran none.
+        /// </summary>
+        /// <param name="invocationMode">The launcher invocation mode.</param>
+        /// <param name="script">The script's only statement.</param>
+        /// <param name="expectedExitCode">The expected launcher process exit code.</param>
+        [Theory]
+        [MemberData(nameof(ScriptEndingData))]
+        public static void Main_ReturnsTheOutcomeOfAScriptThatDoesNotExit(string invocationMode, string script, int expectedExitCode)
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, invocationMode);
+            File.WriteAllText(scriptPath, script + Environment.NewLine, Encoding.UTF8);
+
+            using Process process = StartInvoker(invokerPath, invocationMode, scriptPath);
+            WaitForInvokerExit(process, invocationMode);
+
+            Assert.Equal(expectedExitCode, process.ExitCode);
+        }
+
+        /// <summary>
         /// Verifies that only the first argument can name the script, so a later one ending in .ps1 reaches the default
         /// script as a value rather than running in its place.
         /// </summary>
@@ -512,10 +659,15 @@ namespace PSADT.Invoke.Tests
 
         private static Process StartInvoker(string invokerPath, string invocationMode, string scriptPath)
         {
-            return Process.Start(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath)) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+            return StartInvoker(CreateInvokerStartInfo(invokerPath, invocationMode, scriptPath));
         }
 
-        private static Process StartInvokerWithArguments(string invokerPath, string arguments)
+        private static Process StartInvoker(ProcessStartInfo startInfo)
+        {
+            return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+        }
+
+        private static Process StartInvokerWithArguments(string invokerPath, string arguments, string? workingDirectory = null)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -524,9 +676,9 @@ namespace PSADT.Invoke.Tests
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 WindowStyle = ProcessWindowStyle.Hidden,
-                WorkingDirectory = Path.GetDirectoryName(invokerPath),
+                WorkingDirectory = workingDirectory ?? Path.GetDirectoryName(invokerPath),
             };
-            return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start the launcher process.");
+            return StartInvoker(startInfo);
         }
 
         private static string[] ReadArgumentDump(string directoryPath)
@@ -921,6 +1073,31 @@ namespace PSADT.Invoke.Tests
                 "}",
                 "exit 0",
                 "");
+        }
+
+        /// <summary>
+        /// Gets a script that writes its PSModulePath, then the value of <see cref="EnvironmentMarkerName"/>, to a file
+        /// beside it, then exits.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetEnvironmentScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                $"[System.IO.File]::WriteAllLines((Join-Path -Path $PSScriptRoot -ChildPath '{ArgumentDumpFileName}'), [System.String[]]@($env:PSModulePath, $env:{EnvironmentMarkerName}))",
+                GetExitScript(0));
+        }
+
+        /// <summary>
+        /// Gets a script that writes <see cref="WorkingDirectoryFileName"/> to its current directory, then exits.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetWorkingDirectoryScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                $"Set-Content -LiteralPath '{WorkingDirectoryFileName}' -Value 'Here'",
+                GetExitScript(0));
         }
 
         /// <summary>
@@ -1553,6 +1730,11 @@ namespace PSADT.Invoke.Tests
                 WorkingDirectory = workingDirectory,
             };
             return Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start PowerShell 7.");
+        }
+
+        private static string[] GetEditionModes()
+        {
+            return IsPowerShellCoreAvailable ? [DefaultMode, FileCoreMode] : [DefaultMode];
         }
 
         private static Process StartWhereProcess()
