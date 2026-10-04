@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -297,6 +300,48 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
+        /// Declines a source that would need UIAccess added when the caller cannot add it, without attempting the duplication.
+        /// </summary>
+        [Fact]
+        public void TryGetCandidateToken_DeclinesUiAccessItCannotAdd()
+        {
+            Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
+            Assert.SkipWhen(PrivilegeManager.HasPrivilege(Interop.SE_PRIVILEGE.SeTcbPrivilege), "Requires a caller without SeTcbPrivilege.");
+            using SafeFileHandle source = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE);
+            ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(source);
+            ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            ElevatedTokenType elevation = metadata.Elevated ? ElevatedTokenType.HighestMandatory : ElevatedTokenType.None;
+            Assert.SkipUnless(!metadata.UIAccess && ProcessTokenProvider.IsSuitable(session, metadata.Logon, metadata, elevation), "The host's own token is not an ordinary desktop token.");
+            List<string> thrown = [];
+            int threadId = Environment.CurrentManagedThreadId;
+            void RecordException(object? sender, FirstChanceExceptionEventArgs e)
+            {
+                if (Environment.CurrentManagedThreadId == threadId)
+                {
+                    thrown.Add($"{e.Exception.GetType().Name}: {e.Exception.Message}");
+                }
+            }
+
+            AppDomain.CurrentDomain.FirstChanceException += RecordException;
+            bool success;
+            SafeFileHandle? duplicate;
+            try
+            {
+                success = TryGetCandidateToken(source, metadata, session, metadata.Logon, elevation, uiAccess: true, out duplicate);
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.FirstChanceException -= RecordException;
+            }
+            using (duplicate)
+            {
+                Assert.False(success);
+                Assert.Null(duplicate);
+                Assert.Empty(thrown);
+            }
+        }
+
+        /// <summary>
         /// Declines an inaccessible session without returning a token.
         /// </summary>
         [Fact]
@@ -350,6 +395,28 @@ namespace PSADT.Tests.Security
         private static ProcessTokenMetadata CreateToken(ProcessTokenLogon reference, bool elevated = false)
         {
             return new(reference.Sid!, reference.SessionId, reference.AuthenticationId, TOKEN_TYPE.TokenPrimary, elevated, new("S-1-16-8192"), Restricted: false, AppContainer: false, UIAccess: false, reference);
+        }
+
+        /// <summary>
+        /// Asks the provider about one candidate source, which stays private rather than being widened for the tests.
+        /// </summary>
+        /// <param name="source">The borrowed token.</param>
+        /// <param name="metadata">The source metadata.</param>
+        /// <param name="session">The desktop owner.</param>
+        /// <param name="reference">The original logon.</param>
+        /// <param name="elevatedTokenType">The requested elevation.</param>
+        /// <param name="uiAccess">Whether UIAccess is required.</param>
+        /// <param name="duplicate">The validated duplicate.</param>
+        /// <returns>Whether acquisition succeeded.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the method cannot be found or does not return a boolean.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The candidate step is deliberately private, so the tests reach it by reflection rather than widening it.")]
+        private static bool TryGetCandidateToken(SafeFileHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenLogon reference, ElevatedTokenType elevatedTokenType, bool uiAccess, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out SafeFileHandle? duplicate)
+        {
+            MethodInfo method = typeof(ProcessTokenProvider).GetMethod("TryGetCandidateToken", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new InvalidOperationException("The TryGetCandidateToken method was not found.");
+            object?[] arguments = [source, metadata, session, reference, elevatedTokenType, uiAccess, null, null];
+            bool success = method.Invoke(null, arguments) is bool result ? result : throw new InvalidOperationException("The TryGetCandidateToken method did not return a boolean.");
+            duplicate = arguments[7] as SafeFileHandle;
+            return success && duplicate is not null;
         }
     }
 }

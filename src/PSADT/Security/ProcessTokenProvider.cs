@@ -302,6 +302,12 @@ namespace PSADT.Security
         /// <returns>Whether acquisition succeeded.</returns>
         private static bool TryGetCandidateToken(SafeHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenLogon reference, ElevatedTokenType elevatedTokenType, bool uiAccess, ProcessTokenMetadata? linkedToken, [NotNullWhen(true)] out SafeFileHandle? duplicate)
         {
+            // Without SeTcbPrivilege, UIAccess can't be added, so only a source that already has it qualifies.
+            if (uiAccess && !metadata.UIAccess && !CanSetUIAccess)
+            {
+                duplicate = null;
+                return false;
+            }
             try
             {
                 return TryDuplicate(source, session, reference, ReadToken, handle => TokenManager.GetPrimaryToken(handle, uiAccess && !metadata.UIAccess), () => ReadSession(session.SessionId) == session && FindReference(session, ReadLogons()) == reference, out duplicate, elevatedTokenType, uiAccess, linkedToken);
@@ -383,5 +389,10 @@ namespace PSADT.Security
         /// The high mandatory integrity label.
         /// </summary>
         private static readonly SecurityIdentifier HighIntegritySid = new("S-1-16-12288");
+
+        /// <summary>
+        /// Indicates whether the current execution context can set UIAccess on a duplicate, which requires SeTcbPrivilege.
+        /// </summary>
+        private static readonly bool CanSetUIAccess = PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege);
     }
 }
