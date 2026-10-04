@@ -318,17 +318,13 @@ namespace PSADT.Security
             _ = NativeMethods.OpenProcessToken(processHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle token);
             using (token)
             {
-                // A split pair is only ever proven through the counterpart, so skip the attempt that cannot succeed.
+                // A split pair is only ever proven through the counterpart, so the routes that have one go first and the
+                // one that cannot is the fallback. An unsplit token has no counterpart to read and reaches it directly.
                 ProcessTokenMetadata primary = ReadToken(token);
-                if (reference.Counterpart is null && TryGetCandidateToken(token, primary, session, reference, elevatedTokenType, uiAccess, linkedToken: null, out duplicate))
-                {
-                    return true;
-                }
-
-                // Duplicating from the linked token needs the primary token that only SeTcbPrivilege gets you. For everyone
-                // else it arrives at identification level, so it can corroborate the pair but cannot itself be copied.
                 if (primary.ElevationType is not TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
                 {
+                    // Duplicating from the linked token needs the primary token that only SeTcbPrivilege gets you. For everyone
+                    // else it arrives at identification level, so it can corroborate the pair but cannot itself be copied.
                     using SafeFileHandle linked = TokenManager.GetLinkedToken(token);
                     ProcessTokenMetadata linkedMetadata = ReadToken(linked);
                     if (TryGetCandidateToken(token, primary, session, reference, elevatedTokenType, uiAccess, linkedMetadata, out duplicate) || TryGetCandidateToken(linked, linkedMetadata, session, reference, elevatedTokenType, uiAccess, primary, out duplicate))
@@ -336,8 +332,7 @@ namespace PSADT.Security
                         return true;
                     }
                 }
-                duplicate = null;
-                return false;
+                return TryGetCandidateToken(token, primary, session, reference, elevatedTokenType, uiAccess, linkedToken: null, out duplicate);
             }
         }
 
