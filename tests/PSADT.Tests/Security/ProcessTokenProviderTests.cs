@@ -187,9 +187,41 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
+        /// Acquires the elevated half of the caller's own split logon, where a failure cannot be an environment problem.
+        /// </summary>
+        /// <remarks>Once the caller is an elevated split-token administrator owning its own session, its own process is a
+        /// qualifying source, so success is guaranteed and this asserts rather than skipping. It is the only test that runs
+        /// the stability recheck and the counterpart-backed candidate together, which no unit test reaches.</remarks>
+        [Fact(Skip = "Requires an elevated interactive desktop.", SkipUnless = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
+        public void TryGetToken_AcquiresTheElevatedHalfOfTheCallersOwnSplitLogon()
+        {
+            Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
+            using SafeFileHandle self = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(self);
+            ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            Assert.SkipUnless(metadata.Elevated && !metadata.UIAccess && metadata.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull
+                && metadata.TokenType is TOKEN_TYPE.TokenPrimary && session.Sid.Equals(metadata.Sid),
+                "Requires an elevated split-token caller that owns its own session.");
+            foreach (ElevatedTokenType elevation in new[] { ElevatedTokenType.HighestMandatory, ElevatedTokenType.HighestAvailable })
+            {
+                bool success = ProcessTokenProvider.TryGetToken(session.SessionId, session.Sid, elevation, uiAccess: false, out SafeFileHandle? token);
+                using (token)
+                {
+                    Assert.True(success, $"{elevation} must succeed when the caller's own elevated token is itself a candidate.");
+                    Assert.NotNull(token);
+                    ProcessTokenMetadata acquired = ProcessTokenProvider.ReadToken(token);
+                    Assert.True(acquired.Elevated);
+                    Assert.Equal(TOKEN_TYPE.TokenPrimary, acquired.TokenType);
+                    Assert.Equal(session.Sid, acquired.Sid);
+                    Assert.Equal(session.SessionId, acquired.SessionId);
+                }
+            }
+        }
+
+        /// <summary>
         /// Acquires a UIAccess token from a process that already has one, the only route open without SeTcbPrivilege.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Requires an elevated interactive desktop.", SkipUnless = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
         public void TryGetToken_AcquiresUiAccessFromAnExistingUiAccessProcess()
         {
             Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
