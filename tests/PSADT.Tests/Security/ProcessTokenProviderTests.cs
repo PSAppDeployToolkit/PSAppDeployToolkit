@@ -283,6 +283,9 @@ namespace PSADT.Tests.Security
         [InlineData("luid", false)]
         [InlineData("impersonation", true)]
         [InlineData("restricted", false)]
+        [InlineData("candidateSession", false)]
+        [InlineData("candidateSid", false)]
+        [InlineData("candidateNoSid", false)]
         [InlineData("appContainer", false)]
         [InlineData("unsplit", false)]
         [InlineData("netonly", false)]
@@ -290,7 +293,10 @@ namespace PSADT.Tests.Security
         {
             ProcessTokenLogon reference = CreateLogon();
             ProcessTokenSession session = new(reference.SessionId, reference.Sid!, 100);
-            ProcessTokenLogon secondary = new(new LUID { LowPart = 43 }, reference.SessionId, reference.Sid,
+            ProcessTokenLogon secondary = new(new LUID { LowPart = 43 },
+                difference.Equals("candidateSession", StringComparison.Ordinal) ? 6u : reference.SessionId,
+                difference.Equals("candidateNoSid", StringComparison.Ordinal) ? null
+                    : difference.Equals("candidateSid", StringComparison.Ordinal) ? new(WellKnownSidType.LocalSystemSid, domainSid: null) : reference.Sid,
                 difference.Equals("netonly", StringComparison.Ordinal) ? SECURITY_LOGON_TYPE.NewCredentials : SECURITY_LOGON_TYPE.Interactive, 0, 102);
             ProcessTokenMetadata candidate = new(reference.Sid!, reference.SessionId, secondary.AuthenticationId, TOKEN_TYPE.TokenPrimary,
                 Elevated: true, new("S-1-16-12288"), Restricted: false, AppContainer: false, UIAccess: false, secondary, TOKEN_ELEVATION_TYPE.TokenElevationTypeFull);
@@ -527,6 +533,39 @@ namespace PSADT.Tests.Security
                 Elevated: true, new("S-1-16-12288"), Restricted: false, AppContainer: false, UIAccess: false, unflagged, TOKEN_ELEVATION_TYPE.TokenElevationTypeFull);
             ProcessTokenReference reference = spoilCounterpart ? new(valid, unflagged) : new(unflagged);
             Assert.False(ProcessTokenProvider.IsSuitable(session, reference, candidate, ElevatedTokenType.None, linkedToken: spoilCounterpart ? counterpart : null));
+        }
+
+        /// <summary>
+        /// Requires an elevated token to carry high integrity, so one demoted below it cannot pass as elevated.
+        /// </summary>
+        /// <param name="integrity">The candidate integrity SID.</param>
+        /// <param name="expected">Whether the candidate is accepted.</param>
+        [Theory]
+        [InlineData("S-1-16-12288", true)]
+        [InlineData("S-1-16-8192", false)]
+        [InlineData("S-1-16-8448", false)]
+        [InlineData("S-1-16-16384", false)]
+        public void IsSuitable_RequiresHighIntegrityForAnElevatedToken(string integrity, bool expected)
+        {
+            ProcessTokenLogon reference = CreateLogon();
+            ProcessTokenSession session = new(reference.SessionId, reference.Sid!, 100);
+            ProcessTokenMetadata token = new(reference.Sid!, reference.SessionId, reference.AuthenticationId, TOKEN_TYPE.TokenPrimary,
+                Elevated: true, new(integrity), Restricted: false, AppContainer: false, UIAccess: false, reference, TOKEN_ELEVATION_TYPE.TokenElevationTypeFull);
+            Assert.Equal(expected, ProcessTokenProvider.IsSuitable(session, new(reference), token, ElevatedTokenType.HighestMandatory));
+        }
+
+        /// <summary>
+        /// Refuses session zero even when every other piece of evidence agrees, because it is not a desktop.
+        /// </summary>
+        [Fact]
+        public void IsSuitable_RefusesSessionZero()
+        {
+            ProcessTokenLogon logon = new(new LUID { LowPart = 42 }, 0, new("S-1-5-21-1-2-3-1001"), SECURITY_LOGON_TYPE.Interactive,
+                Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON, 101);
+            ProcessTokenSession session = new(0, logon.Sid!, 100);
+            ProcessTokenMetadata token = new(logon.Sid!, 0, logon.AuthenticationId, TOKEN_TYPE.TokenPrimary, Elevated: false,
+                new("S-1-16-8192"), Restricted: false, AppContainer: false, UIAccess: false, logon);
+            Assert.False(ProcessTokenProvider.IsSuitable(session, new(logon), token));
         }
 
         /// <summary>
