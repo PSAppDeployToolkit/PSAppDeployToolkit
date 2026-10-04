@@ -156,6 +156,74 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
+        /// Refuses a duplicate whose elevation type does not match the source it was taken from.
+        /// </summary>
+        /// <remarks>Both metadata sets are suitable on their own, so this comparison is the only thing standing between a
+        /// duplicate that silently changed elevation and the caller.</remarks>
+        [Fact]
+        public void TryDuplicate_RejectsADuplicateThatChangedElevationType()
+        {
+            ProcessTokenLogon reference = CreateLogon();
+            ProcessTokenSession session = new(reference.SessionId, reference.Sid!, 100);
+            using SafeFileHandle source = new(new IntPtr(123), ownsHandle: false);
+            using SafeFileHandle duplicate = new(new IntPtr(456), ownsHandle: false);
+            bool success = ProcessTokenProvider.TryDuplicate(source, session, new(reference),
+                handle => new(reference.Sid!, reference.SessionId, reference.AuthenticationId, TOKEN_TYPE.TokenPrimary, Elevated: false,
+                    new("S-1-16-8192"), Restricted: false, AppContainer: false, UIAccess: false, reference,
+                    ReferenceEquals(handle, source) ? TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited : TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault),
+                _ => duplicate, static () => true, out SafeFileHandle? result);
+            using (result)
+            {
+                Assert.False(success);
+                Assert.Null(result);
+                Assert.True(duplicate.IsClosed);
+            }
+        }
+
+        /// <summary>
+        /// Refuses a duplicate handle that Windows never opened, rather than reading it.
+        /// </summary>
+        [Fact]
+        public void TryDuplicate_RejectsAnInvalidDuplicate()
+        {
+            ProcessTokenLogon reference = CreateLogon();
+            ProcessTokenSession session = new(reference.SessionId, reference.Sid!, 100);
+            using SafeFileHandle source = new(new IntPtr(123), ownsHandle: false);
+            using SafeFileHandle duplicate = new(IntPtr.Zero, ownsHandle: false);
+            bool success = ProcessTokenProvider.TryDuplicate(source, session, new(reference),
+                _ => CreateToken(reference), _ => duplicate, static () => true, out SafeFileHandle? result);
+            using (result)
+            {
+                Assert.False(success);
+                Assert.Null(result);
+            }
+        }
+
+        /// <summary>
+        /// Refuses a source carrying UIAccess the caller did not ask for, without duplicating it first.
+        /// </summary>
+        /// <remarks>Duplication cannot remove UIAccess, so a copy would be refused anyway; refusing the source is what stops
+        /// the pointless duplication.</remarks>
+        [Fact]
+        public void TryDuplicate_RejectsUnrequestedUiAccessBeforeDuplication()
+        {
+            ProcessTokenLogon reference = CreateLogon();
+            ProcessTokenSession session = new(reference.SessionId, reference.Sid!, 100);
+            using SafeFileHandle source = new(new IntPtr(123), ownsHandle: false);
+            bool success = ProcessTokenProvider.TryDuplicate(source, session, new(reference),
+                _ => new(reference.Sid!, reference.SessionId, reference.AuthenticationId, TOKEN_TYPE.TokenPrimary, Elevated: false,
+                    new("S-1-16-8448"), Restricted: false, AppContainer: false, UIAccess: true, reference),
+                static _ => throw new InvalidOperationException("Must not duplicate."), static () => throw new InvalidOperationException("Must not recheck."),
+                out SafeFileHandle? result);
+            using (result)
+            {
+                Assert.False(success);
+                Assert.Null(result);
+                Assert.False(source.IsClosed);
+            }
+        }
+
+        /// <summary>
         /// Copies the caller's native elevation type rather than defaulting every token to unsplit.
         /// </summary>
         [Fact]
@@ -413,6 +481,21 @@ namespace PSADT.Tests.Security
                 Assert.False(success);
                 Assert.Null(duplicate);
                 Assert.Empty(thrown);
+            }
+        }
+
+        /// <summary>
+        /// Declines a session whose owner is not the account the caller said to expect.
+        /// </summary>
+        [Fact]
+        public void TryGetToken_RefusesAnOwnerOtherThanTheExpectedOne()
+        {
+            Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
+            Assert.False(ProcessTokenProvider.TryGetToken(AccountUtilities.CallerSessionId, new(WellKnownSidType.LocalSystemSid, domainSid: null),
+                ElevatedTokenType.None, uiAccess: false, out SafeFileHandle? token));
+            using (token)
+            {
+                Assert.Null(token);
             }
         }
 
