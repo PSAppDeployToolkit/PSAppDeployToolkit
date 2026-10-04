@@ -187,6 +187,27 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
+        /// Acquires a UIAccess token from a process that already has one, the only route open without SeTcbPrivilege.
+        /// </summary>
+        [Fact]
+        public void TryGetToken_AcquiresUiAccessFromAnExistingUiAccessProcess()
+        {
+            Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
+            ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            bool success = ProcessTokenProvider.TryGetToken(session.SessionId, session.Sid, ElevatedTokenType.None, uiAccess: true, out SafeFileHandle? token);
+            using (token)
+            {
+                Assert.Equal(token is not null, success);
+                Assert.SkipWhen(!success, "No accessible unelevated UIAccess desktop token was available.");
+                Assert.NotNull(token);
+                ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(token);
+                Assert.True(metadata.UIAccess);
+                Assert.False(metadata.Elevated);
+                Assert.Equal(TOKEN_TYPE.TokenPrimary, metadata.TokenType);
+            }
+        }
+
+        /// <summary>
         /// Selects elevation without treating an inaccessible split token as an unsplit standard user.
         /// </summary>
         /// <param name="request">The requested elevation.</param>
@@ -262,6 +283,8 @@ namespace PSADT.Tests.Security
         [Theory]
         [InlineData(true, true, "S-1-16-8192", true)]
         [InlineData(true, true, "S-1-16-8448", true)]
+        [InlineData(true, true, "S-1-16-12288", true)]
+        [InlineData(false, false, "S-1-16-12288", false)]
         [InlineData(true, false, "S-1-16-8192", false)]
         [InlineData(false, true, "S-1-16-8448", false)]
         [InlineData(false, false, "S-1-16-8448", false)]

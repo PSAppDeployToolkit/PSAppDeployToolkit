@@ -198,7 +198,8 @@ namespace PSADT.Security
         /// Requires original-logon provenance and a primary token matching the requested capabilities.
         /// </summary>
         /// <remarks>Nothing in the LSA records says the two halves of a split pair belong together, so a candidate must prove
-        /// it by presenting the other half as its kernel-linked counterpart.</remarks>
+        /// it by presenting the other half as its kernel-linked counterpart. A UIAccess token is accepted at high integrity as
+        /// well as medium-plus, because Windows raises these processes to high while leaving the token unelevated.</remarks>
         /// <param name="session">The WTS owner reference.</param>
         /// <param name="reference">The original interactive logon, which may be a split pair.</param>
         /// <param name="token">The copied candidate metadata.</param>
@@ -220,7 +221,7 @@ namespace PSADT.Security
                 && (reference.Counterpart is null ? token.Logon == reference.Logon || IsLinkedCounterpart(session, reference.Logon, token, linkedToken) : reference.Includes(token.Logon) && IsLinkedCounterpart(session, token.Logon == reference.Logon ? reference.Counterpart : reference.Logon, token, linkedToken))
                 && token.TokenType is TOKEN_TYPE.TokenPrimary
                 && !token.Restricted && !token.AppContainer && token.UIAccess == uiAccess
-                && (token.Elevated ? token.IntegritySid.Equals(HighIntegritySid) : token.IntegritySid.Equals(MediumIntegritySid) || (uiAccess && token.IntegritySid.Equals(MediumPlusIntegritySid)))
+                && (token.Elevated ? token.IntegritySid.Equals(HighIntegritySid) : token.IntegritySid.Equals(MediumIntegritySid) || (uiAccess && (token.IntegritySid.Equals(MediumPlusIntegritySid) || token.IntegritySid.Equals(HighIntegritySid))))
                 && elevatedTokenType switch
                 {
                     ElevatedTokenType.None => !token.Elevated,
