@@ -262,22 +262,24 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
-        /// Acquires the elevated half of the caller's own split logon, where a failure cannot be an environment problem.
+        /// Acquires the caller's own elevated token, in a situation where acquisition is obliged to succeed.
         /// </summary>
-        /// <remarks>Once the caller is an elevated split-token administrator owning its own session, its own process is a
+        /// <remarks>Once the caller is an elevated administrator owning its own session, its own process is a
         /// qualifying source, so this asserts rather than skipping. A failure still has one environmental cause - logon
         /// evidence that cannot be reconciled, such as a stale record under a reused session identifier - and failing loudly
-        /// on that is wanted, because it is indistinguishable from the bug at the point of use.</remarks>
+        /// on that is wanted, because it is indistinguishable from the bug at the point of use. An unsplit caller is admitted
+        /// deliberately: that is the only configuration in which the no-counterpart fallback can be reached.</remarks>
         [Fact(Skip = "Requires an elevated interactive desktop.", SkipUnless = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
-        public void TryGetToken_AcquiresTheElevatedHalfOfTheCallersOwnSplitLogon()
+        public void TryGetToken_AcquiresTheCallersOwnElevatedToken()
         {
             Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
             using SafeFileHandle self = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
             ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(self);
             ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
-            Assert.SkipUnless(metadata.Elevated && !metadata.UIAccess && metadata.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull
-                && metadata.TokenType is TOKEN_TYPE.TokenPrimary && session.Sid.Equals(metadata.Sid),
-                "Requires an elevated split-token caller that owns its own session.");
+            Assert.SkipUnless(metadata.Elevated && !metadata.UIAccess && metadata.TokenType is TOKEN_TYPE.TokenPrimary
+                && metadata.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull or TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault
+                && session.Sid.Equals(metadata.Sid),
+                "Requires an elevated caller that owns its own session.");
             foreach (ElevatedTokenType elevation in new[] { ElevatedTokenType.HighestMandatory, ElevatedTokenType.HighestAvailable })
             {
                 bool success = ProcessTokenProvider.TryGetToken(session.SessionId, session.Sid, elevation, uiAccess: false, out SafeFileHandle? token);
@@ -550,6 +552,21 @@ namespace PSADT.Tests.Security
             Assert.True(pair.Includes(elevated));
             Assert.Equal(pair, ProcessTokenProvider.FindReference(session, [limited, elevated]));
             Assert.Null(ProcessTokenProvider.FindReference(session, [limited, elevated, CreateLogon(44)]));
+        }
+
+        /// <summary>
+        /// Accepts a record carrying the other user flags a real logon arrives with, not just the Winlogon bit alone.
+        /// </summary>
+        /// <remarks>A console logon reports `LOGON_CACHED_ACCOUNT | LOGON_OPTIMIZED | LOGON_WINLOGON`, so comparing the
+        /// flags for equality rather than testing the bit would refuse every one of them.</remarks>
+        [Fact]
+        public void FindReference_AcceptsARecordCarryingTheOtherUserFlags()
+        {
+            ProcessTokenSession session = new(5, new("S-1-5-21-1-2-3-1001"), 100);
+            ProcessTokenLogon decorated = new(new LUID { LowPart = 42 }, session.SessionId, session.Sid, SECURITY_LOGON_TYPE.Interactive,
+                Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_CACHED_ACCOUNT | Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_OPTIMIZED
+                    | Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON, 101);
+            Assert.Same(decorated, ProcessTokenProvider.FindReference(session, [decorated])?.Logon);
         }
 
         /// <summary>
