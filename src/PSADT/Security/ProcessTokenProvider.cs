@@ -36,7 +36,7 @@ namespace PSADT.Security
         internal static bool TryGetToken(uint sessionId, SecurityIdentifier? expectedSid, ElevatedTokenType elevatedTokenType, bool uiAccess, [NotNullWhen(true)] out SafeFileHandle? token)
         {
             // Internal worker method for repeated calling if `ElevatedTokenType.HighestAvailable`.
-            static bool TryGetTokenForElevation(Process[] processes, uint sessionId, ElevatedTokenType selection, bool uiAccess, ProcessTokenSession session, ProcessTokenLogon reference, [NotNullWhen(true)] out SafeFileHandle? selectedToken)
+            static bool TryGetTokenForElevation(Process[] processes, uint sessionId, ElevatedTokenType selection, bool uiAccess, ProcessTokenSession session, ProcessTokenReference reference, [NotNullWhen(true)] out SafeFileHandle? selectedToken)
             {
                 foreach (Process process in processes)
                 {
@@ -67,7 +67,7 @@ namespace PSADT.Security
                 {
                     return false;
                 }
-                if (FindReference(session, ReadLogons()) is not ProcessTokenLogon reference)
+                if (FindReference(session, ReadLogons()) is not ProcessTokenReference reference)
                 {
                     return false;
                 }
@@ -104,7 +104,7 @@ namespace PSADT.Security
         /// </summary>
         /// <param name="source">The borrowed candidate token.</param>
         /// <param name="session">The independent desktop owner.</param>
-        /// <param name="reference">The unique Winlogon reference.</param>
+        /// <param name="reference">The Winlogon reference, which may be a split pair.</param>
         /// <param name="readToken">Reads token suitability and provenance.</param>
         /// <param name="duplicateToken">Duplicates with the required primary-token rights.</param>
         /// <param name="referenceIsStable">Rechecks the desktop and logon reference.</param>
@@ -113,7 +113,7 @@ namespace PSADT.Security
         /// <param name="uiAccess">Whether UIAccess is required.</param>
         /// <param name="linkedToken">Metadata read from the source's kernel-provided linked token.</param>
         /// <returns>Whether the duplicate passed all validation checks.</returns>
-        internal static bool TryDuplicate(SafeHandle source, ProcessTokenSession session, ProcessTokenLogon reference, Func<SafeHandle, ProcessTokenMetadata> readToken, Func<SafeHandle, SafeFileHandle> duplicateToken, Func<bool> referenceIsStable, [NotNullWhen(true)] out SafeFileHandle? result, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false, ProcessTokenMetadata? linkedToken = null)
+        internal static bool TryDuplicate(SafeHandle source, ProcessTokenSession session, ProcessTokenReference reference, Func<SafeHandle, ProcessTokenMetadata> readToken, Func<SafeHandle, SafeFileHandle> duplicateToken, Func<bool> referenceIsStable, [NotNullWhen(true)] out SafeFileHandle? result, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false, ProcessTokenMetadata? linkedToken = null)
         {
             // Duplication can add UIAccess but not remove it, so only the copy must match exactly.
             ProcessTokenMetadata original = readToken(source); if (!IsSuitable(session, reference, original, elevatedTokenType, original.UIAccess, linkedToken) || (original.UIAccess && !uiAccess))
@@ -148,50 +148,76 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Finds exactly one original interactive Winlogon record belonging to the WTS owner.
+        /// Finds the original interactive Winlogon logon belonging to the WTS owner, which may be a UAC split pair.
         /// </summary>
+        /// <remarks>A split-token administrator has two indistinguishable records for one logon, so both are kept; a
+        /// third record, or the same record twice, is evidence that cannot be reconciled and is refused.</remarks>
         /// <param name="session">The independently resolved session owner.</param>
         /// <param name="logons">The complete LSA enumeration.</param>
-        /// <returns>The unique matching record, or null for missing or ambiguous evidence.</returns>
-        internal static ProcessTokenLogon? FindReference(ProcessTokenSession session, IEnumerable<ProcessTokenLogon> logons)
+        /// <returns>The matching logon, or null for missing or ambiguous evidence.</returns>
+        internal static ProcessTokenReference? FindReference(ProcessTokenSession session, IEnumerable<ProcessTokenLogon> logons)
         {
-            ProcessTokenLogon? reference = null;
+            ProcessTokenLogon? reference = null; ProcessTokenLogon? counterpart = null;
             foreach (ProcessTokenLogon logon in logons)
             {
-                if (logon.SessionId != session.SessionId || logon.Sid is null || !session.Sid.Equals(logon.Sid) || !logon.UserFlags.HasFlag(Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON) || logon.LogonType is not (SECURITY_LOGON_TYPE.Interactive or SECURITY_LOGON_TYPE.RemoteInteractive or SECURITY_LOGON_TYPE.CachedInteractive or SECURITY_LOGON_TYPE.CachedRemoteInteractive))
+                if (!IsReferenceCandidate(session, logon))
                 {
                     continue;
                 }
-                if (reference is not null)
+                if (counterpart is not null || logon == reference)
                 {
                     return null;
                 }
-                reference = logon;
+                if (reference is null)
+                {
+                    reference = logon;
+                }
+                else
+                {
+                    counterpart = logon;
+                }
             }
-            return reference;
+            return reference is not null
+                ? new(reference, counterpart)
+                : null;
+        }
+
+        /// <summary>
+        /// Determines whether one LSA record is an original interactive Winlogon logon for the session owner.
+        /// </summary>
+        /// <param name="session">The independently resolved session owner.</param>
+        /// <param name="logon">The record to test.</param>
+        /// <returns>Whether the record can serve as a logon reference.</returns>
+        private static bool IsReferenceCandidate(ProcessTokenSession session, ProcessTokenLogon logon)
+        {
+            return logon.SessionId == session.SessionId && logon.Sid is not null && session.Sid.Equals(logon.Sid) && logon.UserFlags.HasFlag(Interop.MSV_SUB_AUTHENTICATION_FILTER.LOGON_WINLOGON)
+                && logon.LogonType is SECURITY_LOGON_TYPE.Interactive or SECURITY_LOGON_TYPE.RemoteInteractive or SECURITY_LOGON_TYPE.CachedInteractive or SECURITY_LOGON_TYPE.CachedRemoteInteractive;
         }
 
         /// <summary>
         /// Requires original-logon provenance and a primary token matching the requested capabilities.
         /// </summary>
+        /// <remarks>Nothing in the LSA records says the two halves of a split pair belong together, so a candidate must prove
+        /// it by presenting the other half as its kernel-linked counterpart.</remarks>
         /// <param name="session">The WTS owner reference.</param>
-        /// <param name="reference">The unique original interactive logon.</param>
+        /// <param name="reference">The original interactive logon, which may be a split pair.</param>
         /// <param name="token">The copied candidate metadata.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is required.</param>
         /// <param name="linkedToken">The kernel-linked counterpart, if queried.</param>
         /// <returns>Whether every provenance and suitability requirement is met.</returns>
-        internal static bool IsSuitable(ProcessTokenSession session, ProcessTokenLogon reference, ProcessTokenMetadata token, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false, ProcessTokenMetadata? linkedToken = null)
+        internal static bool IsSuitable(ProcessTokenSession session, ProcessTokenReference reference, ProcessTokenMetadata token, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false, ProcessTokenMetadata? linkedToken = null)
         {
             return session.SessionId is not 0
-                && FindReference(session, [reference]) is not null
+                && IsReferenceCandidate(session, reference.Logon)
+                && (reference.Counterpart is null || IsReferenceCandidate(session, reference.Counterpart))
                 && token.SessionId == session.SessionId
                 && session.Sid.Equals(token.Sid)
                 && IsSameLogon(in token.AuthenticationId, in token.Logon.AuthenticationId)
                 && token.Logon.SessionId == session.SessionId
                 && token.Logon.Sid is not null && session.Sid.Equals(token.Logon.Sid)
                 && token.Logon.LogonType is SECURITY_LOGON_TYPE.Interactive or SECURITY_LOGON_TYPE.RemoteInteractive or SECURITY_LOGON_TYPE.CachedInteractive or SECURITY_LOGON_TYPE.CachedRemoteInteractive
-                && (token.Logon == reference || (linkedToken is not null && linkedToken.Logon == reference && IsSameLogon(in linkedToken.AuthenticationId, in reference.AuthenticationId) && linkedToken.SessionId == session.SessionId && session.Sid.Equals(linkedToken.Sid) && linkedToken.TokenType is TOKEN_TYPE.TokenPrimary && !linkedToken.Restricted && !linkedToken.AppContainer && ((token.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull && linkedToken.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited) || (token.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited && linkedToken.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull))))
+                && (reference.Counterpart is null ? token.Logon == reference.Logon || IsLinkedCounterpart(session, reference.Logon, token, linkedToken) : reference.Includes(token.Logon) && IsLinkedCounterpart(session, token.Logon == reference.Logon ? reference.Counterpart : reference.Logon, token, linkedToken))
                 && token.TokenType is TOKEN_TYPE.TokenPrimary
                 && !token.Restricted && !token.AppContainer && token.UIAccess == uiAccess
                 && (token.Elevated ? token.IntegritySid.Equals(HighIntegritySid) : token.IntegritySid.Equals(MediumIntegritySid) || (uiAccess && token.IntegritySid.Equals(MediumPlusIntegritySid)))
@@ -202,6 +228,27 @@ namespace PSADT.Security
                     ElevatedTokenType.HighestMandatory => token.Elevated,
                     _ => false,
                 };
+        }
+
+        /// <summary>
+        /// Determines whether a kernel-linked counterpart ties a candidate to the expected logon.
+        /// </summary>
+        /// <remarks>The counterpart is read for its metadata only and is never the token handed back, so its token type is
+        /// not constrained; without SeTcbPrivilege Windows only ever returns an impersonation token for a linked token.</remarks>
+        /// <param name="session">The WTS owner reference.</param>
+        /// <param name="expected">The logon the counterpart must belong to.</param>
+        /// <param name="token">The candidate metadata.</param>
+        /// <param name="linkedToken">The kernel-linked counterpart, if queried.</param>
+        /// <returns>Whether the counterpart ties the candidate to the expected logon.</returns>
+        private static bool IsLinkedCounterpart(ProcessTokenSession session, ProcessTokenLogon expected, ProcessTokenMetadata token, ProcessTokenMetadata? linkedToken)
+        {
+            return linkedToken is not null
+                && linkedToken.Logon == expected
+                && IsSameLogon(in linkedToken.AuthenticationId, in expected.AuthenticationId)
+                && linkedToken.SessionId == session.SessionId
+                && session.Sid.Equals(linkedToken.Sid)
+                && !linkedToken.Restricted && !linkedToken.AppContainer
+                && ((token.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull && linkedToken.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited) || (token.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited && linkedToken.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeFull));
         }
 
         /// <summary>
@@ -258,19 +305,20 @@ namespace PSADT.Security
         /// </summary>
         /// <param name="processId">The candidate process identifier.</param>
         /// <param name="session">The desktop owner reference.</param>
-        /// <param name="reference">The unique original logon.</param>
+        /// <param name="reference">The original logon, which may be a split pair.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is required.</param>
         /// <param name="duplicate">The owned duplicate on success, or null if the candidate is unsuitable.</param>
         /// <returns>Whether a suitable primary token was obtained.</returns>
-        private static bool TryGetProcessToken(uint processId, ProcessTokenSession session, ProcessTokenLogon reference, ElevatedTokenType elevatedTokenType, bool uiAccess, [NotNullWhen(true)] out SafeFileHandle? duplicate)
+        private static bool TryGetProcessToken(uint processId, ProcessTokenSession session, ProcessTokenReference reference, ElevatedTokenType elevatedTokenType, bool uiAccess, [NotNullWhen(true)] out SafeFileHandle? duplicate)
         {
             using SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, processId);
             _ = NativeMethods.OpenProcessToken(processHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle token);
             using (token)
             {
+                // A split pair is only ever proven through the counterpart, so skip the attempt that cannot succeed.
                 ProcessTokenMetadata primary = ReadToken(token);
-                if (TryGetCandidateToken(token, primary, session, reference, elevatedTokenType, uiAccess, linkedToken: null, out duplicate))
+                if (reference.Counterpart is null && TryGetCandidateToken(token, primary, session, reference, elevatedTokenType, uiAccess, linkedToken: null, out duplicate))
                 {
                     return true;
                 }
@@ -294,13 +342,13 @@ namespace PSADT.Security
         /// <param name="source">The borrowed token.</param>
         /// <param name="metadata">The source metadata.</param>
         /// <param name="session">The desktop owner.</param>
-        /// <param name="reference">The original logon.</param>
+        /// <param name="reference">The original logon, which may be a split pair.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is required.</param>
         /// <param name="linkedToken">The kernel-linked counterpart.</param>
         /// <param name="duplicate">The validated duplicate.</param>
         /// <returns>Whether acquisition succeeded.</returns>
-        private static bool TryGetCandidateToken(SafeHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenLogon reference, ElevatedTokenType elevatedTokenType, bool uiAccess, ProcessTokenMetadata? linkedToken, [NotNullWhen(true)] out SafeFileHandle? duplicate)
+        private static bool TryGetCandidateToken(SafeHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenReference reference, ElevatedTokenType elevatedTokenType, bool uiAccess, ProcessTokenMetadata? linkedToken, [NotNullWhen(true)] out SafeFileHandle? duplicate)
         {
             // Without SeTcbPrivilege, UIAccess can't be added, so only a source that already has it qualifies.
             if (uiAccess && !metadata.UIAccess && !CanSetUIAccess)
