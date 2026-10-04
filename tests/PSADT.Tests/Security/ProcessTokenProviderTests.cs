@@ -174,13 +174,20 @@ namespace PSADT.Tests.Security
         {
             Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
             ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            bool obliged = SessionHoldsAnUnelevatedCandidate(session, uiAccess: false);
             bool success = ProcessTokenProvider.TryGetToken(session.SessionId, session.Sid, ElevatedTokenType.None, uiAccess: false, out SafeFileHandle? token);
             using (token)
             {
                 Assert.Equal(token is not null, success);
-                Assert.SkipWhen(!success, "No accessible ordinary desktop token was available.");
+                Assert.SkipUnless(obliged || success, "No process in the session holds the caller's own unelevated token.");
+                Assert.True(success, "Acquisition must succeed while the session holds an unelevated process of the caller's own logon.");
                 Assert.NotNull(token);
                 ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(token);
+                Assert.False(metadata.Elevated);
+                Assert.False(metadata.UIAccess);
+                Assert.Equal(TOKEN_TYPE.TokenPrimary, metadata.TokenType);
+                Assert.Equal(session.Sid, metadata.Sid);
+                Assert.Equal(session.SessionId, metadata.SessionId);
                 Assert.True(ProcessTokenProvider.IsSuitable(session, new(metadata.Logon), metadata));
                 Assert.False(token.IsInvalid);
             }
@@ -190,8 +197,9 @@ namespace PSADT.Tests.Security
         /// Acquires the elevated half of the caller's own split logon, where a failure cannot be an environment problem.
         /// </summary>
         /// <remarks>Once the caller is an elevated split-token administrator owning its own session, its own process is a
-        /// qualifying source, so success is guaranteed and this asserts rather than skipping. It is the only test that runs
-        /// the stability recheck and the counterpart-backed candidate together, which no unit test reaches.</remarks>
+        /// qualifying source, so this asserts rather than skipping. A failure still has one environmental cause - logon
+        /// evidence that cannot be reconciled, such as a stale record under a reused session identifier - and failing loudly
+        /// on that is wanted, because it is indistinguishable from the bug at the point of use.</remarks>
         [Fact(Skip = "Requires an elevated interactive desktop.", SkipUnless = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
         public void TryGetToken_AcquiresTheElevatedHalfOfTheCallersOwnSplitLogon()
         {
@@ -226,11 +234,13 @@ namespace PSADT.Tests.Security
         {
             Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
             ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            bool obliged = SessionHoldsAnUnelevatedCandidate(session, uiAccess: true);
             bool success = ProcessTokenProvider.TryGetToken(session.SessionId, session.Sid, ElevatedTokenType.None, uiAccess: true, out SafeFileHandle? token);
             using (token)
             {
                 Assert.Equal(token is not null, success);
-                Assert.SkipWhen(!success, "No accessible unelevated UIAccess desktop token was available.");
+                Assert.SkipUnless(obliged || success, "No process in the session holds the caller's own unelevated UIAccess token.");
+                Assert.True(success, "Acquisition must succeed while the session holds a UIAccess process of the caller's own logon.");
                 Assert.NotNull(token);
                 ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(token);
                 Assert.True(metadata.UIAccess);
@@ -566,6 +576,63 @@ namespace PSADT.Tests.Security
             ProcessTokenMetadata token = new(logon.Sid!, 0, logon.AuthenticationId, TOKEN_TYPE.TokenPrimary, Elevated: false,
                 new("S-1-16-8192"), Restricted: false, AppContainer: false, UIAccess: false, logon);
             Assert.False(ProcessTokenProvider.IsSuitable(session, new(logon), token));
+        }
+
+        /// <summary>
+        /// Determines whether the session holds a process the provider is obliged to be able to serve.
+        /// </summary>
+        /// <remarks>Judged from the kernel's own token data rather than from the rules under test, so a regression in those
+        /// rules fails the test instead of quietly turning it into a skip.</remarks>
+        /// <param name="session">The desktop owner.</param>
+        /// <param name="uiAccess">Whether the token must carry UIAccess.</param>
+        /// <returns>Whether acquisition of an unelevated token must succeed.</returns>
+        private static bool SessionHoldsAnUnelevatedCandidate(ProcessTokenSession session, bool uiAccess)
+        {
+            using SafeFileHandle self = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            ProcessTokenMetadata caller = ProcessTokenProvider.ReadToken(self);
+            if (!session.Sid.Equals(caller.Sid) || caller.ElevationType is TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+            {
+                return false;
+            }
+            LUID unelevated = caller.AuthenticationId;
+            if (caller.Elevated)
+            {
+                using SafeFileHandle linked = TokenManager.GetLinkedToken(self);
+                unelevated = ProcessTokenProvider.ReadToken(linked).AuthenticationId;
+            }
+            foreach (System.Diagnostics.Process process in System.Diagnostics.Process.GetProcesses())
+            {
+                using (process)
+                {
+                    try
+                    {
+                        if (process.Id is 0 || process.SessionId != session.SessionId)
+                        {
+                            continue;
+                        }
+                        using SafeFileHandle handle = Interop.NativeMethods.OpenProcess(Windows.Win32.System.Threading.PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)process.Id);
+                        _ = Interop.NativeMethods.OpenProcessToken(handle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle token);
+                        using (token)
+                        {
+                            ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(token);
+                            if (metadata.AuthenticationId.LowPart == unelevated.LowPart && metadata.AuthenticationId.HighPart == unelevated.HighPart
+                                && metadata.TokenType is TOKEN_TYPE.TokenPrimary && !metadata.Elevated && !metadata.Restricted && !metadata.AppContainer
+                                && metadata.UIAccess == uiAccess && metadata.SessionId == session.SessionId && session.Sid.Equals(metadata.Sid)
+                                && (uiAccess
+                                    ? metadata.IntegritySid.Equals(new SecurityIdentifier("S-1-16-8448")) || metadata.IntegritySid.Equals(new SecurityIdentifier("S-1-16-12288"))
+                                    : metadata.IntegritySid.Equals(new SecurityIdentifier("S-1-16-8192"))))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or UnauthorizedAccessException)
+                    {
+                        continue;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
