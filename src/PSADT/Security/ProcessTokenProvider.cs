@@ -234,8 +234,9 @@ namespace PSADT.Security
         /// <summary>
         /// Determines whether a kernel-linked counterpart ties a candidate to the expected logon.
         /// </summary>
-        /// <remarks>The counterpart is read for its metadata only and is never the token handed back, so its token type is
-        /// not constrained; without SeTcbPrivilege Windows only ever returns an impersonation token for a linked token.</remarks>
+        /// <remarks>The counterpart is read for its metadata only and is never the token handed back, so its token type is not
+        /// constrained. Without SeTcbPrivilege Windows returns a linked token as an identification-level impersonation token,
+        /// which metadata can be read from but which cannot be duplicated into anything usable.</remarks>
         /// <param name="session">The WTS owner reference.</param>
         /// <param name="expected">The logon the counterpart must belong to.</param>
         /// <param name="token">The candidate metadata.</param>
@@ -323,6 +324,9 @@ namespace PSADT.Security
                 {
                     return true;
                 }
+
+                // Duplicating from the linked token needs the primary token that only SeTcbPrivilege gets you. For everyone
+                // else it arrives at identification level, so it can corroborate the pair but cannot itself be copied.
                 if (primary.ElevationType is not TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
                 {
                     using SafeFileHandle linked = TokenManager.GetLinkedToken(token);
