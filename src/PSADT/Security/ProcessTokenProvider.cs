@@ -115,8 +115,8 @@ namespace PSADT.Security
         /// <returns>Whether the duplicate passed all validation checks.</returns>
         internal static bool TryDuplicate(SafeHandle source, ProcessTokenSession session, ProcessTokenLogon reference, Func<SafeHandle, ProcessTokenMetadata> readToken, Func<SafeHandle, SafeFileHandle> duplicateToken, Func<bool> referenceIsStable, [NotNullWhen(true)] out SafeFileHandle? result, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false, ProcessTokenMetadata? linkedToken = null)
         {
-            ProcessTokenMetadata original = readToken(source);
-            if (!IsSuitable(session, reference, original, elevatedTokenType, original.UIAccess, linkedToken) || (original.UIAccess && !uiAccess))
+            // Duplication can add UIAccess but not remove it, so only the copy must match exactly.
+            ProcessTokenMetadata original = readToken(source); if (!IsSuitable(session, reference, original, elevatedTokenType, original.UIAccess, linkedToken) || (original.UIAccess && !uiAccess))
             {
                 result = null;
                 return false;
