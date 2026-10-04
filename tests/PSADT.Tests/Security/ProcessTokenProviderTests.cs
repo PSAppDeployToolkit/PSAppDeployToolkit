@@ -472,7 +472,7 @@ namespace PSADT.Tests.Security
             SafeFileHandle? duplicate;
             try
             {
-                success = TryGetCandidateToken(source, metadata, session, new(metadata.Logon), elevation, uiAccess: true, out duplicate);
+                success = TryGetCandidateToken(source, metadata, session, new(metadata.Logon), elevation, uiAccess: true, linkedToken: null, out duplicate);
             }
             finally
             {
@@ -483,6 +483,43 @@ namespace PSADT.Tests.Security
                 Assert.False(success);
                 Assert.Null(duplicate);
                 Assert.Empty(thrown);
+            }
+        }
+
+        /// <summary>
+        /// Refuses a duplicate once the session or logon evidence it was checked against has changed.
+        /// </summary>
+        /// <param name="sessionChanged">Whether the session changes, rather than the logon reference.</param>
+        [Theory(Skip = "Requires an elevated interactive desktop.", SkipUnless = nameof(TestEnvironment.IsElevated), SkipType = typeof(TestEnvironment))]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void TryGetCandidateToken_RefusesAnObservationThatChangedBeforeTheRecheck(bool sessionChanged)
+        {
+            Assert.SkipWhen(AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerSessionId is 0, "Requires a non-SYSTEM desktop caller.");
+            using SafeFileHandle source = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE);
+            ProcessTokenMetadata metadata = ProcessTokenProvider.ReadToken(source);
+            ProcessTokenSession session = ProcessTokenProvider.ReadSession(AccountUtilities.CallerSessionId);
+            ProcessTokenMetadata? linked = null;
+            if (metadata.ElevationType is not TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+            {
+                using SafeFileHandle linkedSource = TokenManager.GetLinkedToken(source);
+                linked = ProcessTokenProvider.ReadToken(linkedSource);
+            }
+            ProcessTokenReference reference = linked is not null ? new(metadata.Logon, linked.Logon) : new(metadata.Logon);
+            Assert.SkipUnless(ProcessTokenProvider.IsSuitable(session, reference, metadata, ElevatedTokenType.HighestMandatory, linkedToken: linked), "Requires an elevated caller whose own token belongs to its session's logon.");
+            Assert.SkipUnless(sessionChanged || linked is not null, "Only a split logon offers a second reference the host's token satisfies.");
+            bool acquired = TryGetCandidateToken(source, metadata, session, reference, ElevatedTokenType.HighestMandatory, uiAccess: false, linked, out SafeFileHandle? control);
+            using (control)
+            {
+                Assert.True(acquired, "The host's own token must be acquirable against its own logon.");
+            }
+            bool success = sessionChanged
+                ? TryGetCandidateToken(source, metadata, new(session.SessionId, session.Sid, session.LogonTime + 1), reference, ElevatedTokenType.HighestMandatory, uiAccess: false, linked, out SafeFileHandle? duplicate)
+                : TryGetCandidateToken(source, metadata, session, new(metadata.Logon), ElevatedTokenType.HighestMandatory, uiAccess: false, linkedToken: null, out duplicate);
+            using (duplicate)
+            {
+                Assert.False(success);
+                Assert.Null(duplicate);
             }
         }
 
@@ -765,14 +802,15 @@ namespace PSADT.Tests.Security
         /// <param name="reference">The original logon, which may be a split pair.</param>
         /// <param name="elevatedTokenType">The requested elevation.</param>
         /// <param name="uiAccess">Whether UIAccess is required.</param>
+        /// <param name="linkedToken">The kernel-linked counterpart, if any.</param>
         /// <param name="duplicate">The validated duplicate.</param>
         /// <returns>Whether acquisition succeeded.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the method cannot be found or does not return a boolean.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The candidate step is deliberately private, so the tests reach it by reflection rather than widening it.")]
-        private static bool TryGetCandidateToken(SafeFileHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenReference reference, ElevatedTokenType elevatedTokenType, bool uiAccess, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out SafeFileHandle? duplicate)
+        private static bool TryGetCandidateToken(SafeFileHandle source, ProcessTokenMetadata metadata, ProcessTokenSession session, ProcessTokenReference reference, ElevatedTokenType elevatedTokenType, bool uiAccess, ProcessTokenMetadata? linkedToken, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out SafeFileHandle? duplicate)
         {
             MethodInfo method = typeof(ProcessTokenProvider).GetMethod("TryGetCandidateToken", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new InvalidOperationException("The TryGetCandidateToken method was not found.");
-            object?[] arguments = [source, metadata, session, reference, elevatedTokenType, uiAccess, null, null];
+            object?[] arguments = [source, metadata, session, reference, elevatedTokenType, uiAccess, linkedToken, null];
             bool success = method.Invoke(null, arguments) is bool result ? result : throw new InvalidOperationException("The TryGetCandidateToken method did not return a boolean.");
             duplicate = arguments[7] as SafeFileHandle;
             return success && duplicate is not null;
