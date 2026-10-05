@@ -65,9 +65,10 @@ namespace PSADT.Tests.ProcessManagement
         public void GetParentProcess_ResolvesToALiveProcess()
         {
             // Act
-            using Process parent = ProcessUtilities.GetParentProcess();
+            using Process? parent = ProcessUtilities.GetParentProcess();
 
             // Assert
+            Assert.NotNull(parent);
             Assert.Equal(ProcessUtilities.GetParentProcessId(), parent.Id);
             Assert.False(string.IsNullOrWhiteSpace(parent.ProcessName));
         }
@@ -102,6 +103,66 @@ namespace PSADT.Tests.ProcessManagement
             // The immediate parent heads the chain, so whatever else is on it, that much is known
             Assert.NotEmpty(ancestorIds);
             Assert.Equal(ProcessUtilities.GetParentProcessId(), ancestorIds[0]);
+        }
+
+        /// <summary>
+        /// Verifies that each process in the parent chain is the parent of the one before it.
+        /// </summary>
+        [Fact]
+        public void GetParentProcesses_ReturnsEachParentInTurn()
+        {
+            // Act
+            IReadOnlyList<int> ancestorIds = [.. ProcessUtilities.GetParentProcesses().Select(static p =>
+            {
+                using (p)
+                {
+                    return p.Id;
+                }
+            })];
+
+            // Assert
+            for (int i = 1; i < ancestorIds.Count; i++)
+            {
+                Assert.Equal(ProcessUtilities.GetParentProcessId(ancestorIds[i - 1]), ancestorIds[i]);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the walk stops at a parent whose identifier Windows has given to a process younger than the
+        /// child, rather than taking that process for the parent.
+        /// </summary>
+        [Fact]
+        public void GetParentProcesses_StopsAtAParentWhoseIdentifierWasReused()
+        {
+            // Arrange: a child of a process started for it, which the walk goes through while that process exists
+            using SuspendedProcess parent = SuspendedProcess.Start();
+            using SuspendedProcess child = SuspendedProcess.Start(parent);
+            int[] expectedIds = [(int)parent.Id, (int)PInvoke.GetCurrentProcessId()];
+            Assert.Equal(expectedIds, GetAncestorIds(child.Handle).Take(2));
+
+            // The parent exits, and a process started after the child is given its identifier
+            parent.Dispose();
+            using SuspendedProcess? reuser = SuspendedProcess.StartWithId(parent.Id, TimeSpan.FromMinutes(2));
+            Assert.SkipWhen(reuser is null, "Windows did not give the exited parent's identifier to another process in time.");
+
+            // Act & Assert
+            Assert.Empty(GetAncestorIds(child.Handle));
+        }
+
+        /// <summary>
+        /// Verifies that a process this host starts walks up through this host to this host's own parent, so the walk
+        /// carries on past the immediate parent.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = Wow64SkipReason, SkipUnless = nameof(TestEnvironment.CanRunUnderWow64), SkipType = typeof(TestEnvironment))]
+        public async Task GetParentProcesses_WalksPastTheImmediateParentAsync()
+        {
+            // Act
+            Wow64PowerShellResult result = await Wow64PowerShell.InvokeAsync("([PSADT.ProcessManagement.ProcessUtilities]::GetParentProcesses() | Select-Object -First 2 | ForEach-Object -MemberName Id) -join ','").ConfigureAwait(true);
+
+            // Assert
+            Assert.True(result.Value is not null, result.Describe());
+            Assert.Equal(PInvoke.GetCurrentProcessId().ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + ProcessUtilities.GetParentProcessId().ToString(System.Globalization.CultureInfo.InvariantCulture), result.Value);
         }
 
         /// <summary>
@@ -478,6 +539,22 @@ namespace PSADT.Tests.ProcessManagement
             {
                 _ = NativeMethods.SetSecurityInfo(process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, psidOwner: null, psidGroup: null, pAcl, pSacl: null);
             }
+        }
+
+        /// <summary>
+        /// Walks up from a process, disposing of each parent found.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process to walk up from.</param>
+        /// <returns>The identifier of each parent, nearest first.</returns>
+        private static List<int> GetAncestorIds(SafeProcessHandle hProcess)
+        {
+            return [.. ProcessUtilities.GetParentProcesses(hProcess).Select(static p =>
+            {
+                using (p)
+                {
+                    return p.Id;
+                }
+            })];
         }
 
         /// <summary>

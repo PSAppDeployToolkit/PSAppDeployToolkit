@@ -812,8 +812,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <typeparam name="T">The expected return type from the client.</typeparam>
         /// <returns>The result from the client, deserialized to type <typeparamref name="T"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the client process returns an invalid or empty response.</exception>
-        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
+        /// <exception cref="ServerException">Thrown when the response cannot be read, or the client returns an error or no data.</exception>
         private async ValueTask<T> ReadResponseAsync<T>()
         {
             // Read and decrypt the client's response, on a thread of its own as the wait lasts as long as the client takes to answer.
@@ -827,17 +826,32 @@ namespace PSADT.ClientServer
             {
                 throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }
+            return DeserializeResponse<T>(response);
+        }
 
-            // Deserialize based on the success marker, overwriting the decrypted response once it has been read.
+        /// <summary>
+        /// Deserializes a decrypted response from the client by its marker, overwriting it once read.
+        /// </summary>
+        /// <remarks>Separated from the read so that every marker can be asserted, since a real client only sends the two it knows.</remarks>
+        /// <typeparam name="T">The expected return type from the client.</typeparam>
+        /// <param name="response">The decrypted response: a <see cref="ResponseMarker"/>, then the serialized result or exception.</param>
+        /// <returns>The result from the client, deserialized to type <typeparamref name="T"/>.</returns>
+        /// <exception cref="ServerException">Thrown when the response is too short, carries an unknown marker, or reports an exception from the client.</exception>
+        internal static T DeserializeResponse<T>(byte[] response)
+        {
+            // Deserialize based on the marker, overwriting the decrypted response once it has been read.
             // The length test sits inside the scope that clears it, since a response too short to deserialize is
             // still one that was decrypted.
             try
             {
                 return response.Length < 2
                     ? throw new ServerException("The client process returned an invalid or empty response.")
-                    : response[0] != (byte)ResponseMarker.Success
-                    ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
-                    : DataSerialization.DeserializeFromBytes<T>(response, 1);
+                    : (ResponseMarker)response[0] switch
+                    {
+                        ResponseMarker.Success => DataSerialization.DeserializeFromBytes<T>(response, 1),
+                        ResponseMarker.Error => throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1)),
+                        _ => throw new ServerException($"The client process returned a response with an unknown marker of 0x{response[0].ToString("X2", CultureInfo.InvariantCulture)}."),
+                    };
             }
             finally
             {

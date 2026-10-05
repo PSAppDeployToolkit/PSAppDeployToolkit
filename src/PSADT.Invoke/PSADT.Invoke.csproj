@@ -28,6 +28,7 @@
 
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
+      M:System.IO.Path.IsPathFullyQualified(System.String)|
       M:System.IO.Path.Join|
     </MeziantouPolyfill_IncludedPolyfills>
     <DefineConstants>$(DefineConstants);MEZIANTOU_POLYFILL_SKIP_MICROSOFT_CODEANALYSIS_EMBEDDEDATTRIBUTE</DefineConstants>

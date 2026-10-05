@@ -4,11 +4,15 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.Invoke
 {
+    /// <summary>
+    /// Provides a set of internal static methods that wrap native Windows API calls for process and console management.
+    /// </summary>
     internal static class NativeMethods
     {
         /// <summary>
@@ -70,6 +74,124 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
+        /// Retrieves the pseudo-handle for the current process, which has every access right to it.
+        /// </summary>
+        /// <remarks>The pseudo-handle's value of -1 counts as invalid to <see cref="SafeHandle"/>, so disposing of the
+        /// returned handle never tries to close it.</remarks>
+        /// <returns>The current process's pseudo-handle.</returns>
+        internal static SafeProcessHandle GetCurrentProcess()
+        {
+            return new(Windows.Win32.PInvoke.GetCurrentProcess(), ownsHandle: true);
+        }
+
+        /// <summary>
+        /// Creates a new process and its primary thread, running in the security context of the calling process.
+        /// </summary>
+        /// <remarks>The new process gets default security and the environment of the calling process. The caller is
+        /// responsible for closing the handles in the returned <see cref="PROCESS_INFORMATION"/> structure.</remarks>
+        /// <param name="lpApplicationName">The full path of the module to execute.</param>
+        /// <param name="lpCommandLine">The null-terminated command line to execute. CreateProcess can modify its contents.</param>
+        /// <param name="bInheritHandles">true if each inheritable handle in the calling process is inherited by the new process; otherwise, false.</param>
+        /// <param name="dwCreationFlags">The flags that control the priority class and the creation of the process.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process.</param>
+        /// <param name="lpStartupInfo">The window station, desktop, standard handles and appearance of the main window for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains information about the new process and its primary thread.</param>
+        /// <returns>true if the process was created; otherwise, an exception is thrown.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpApplicationName"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
+        /// <exception cref="Win32Exception">Thrown if the underlying CreateProcess call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL CreateProcess(string lpApplicationName, char[] lpCommandLine, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, string lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            if (string.IsNullOrWhiteSpace(lpApplicationName))
+            {
+                throw new ArgumentNullException(nameof(lpApplicationName), "Application name cannot be null or empty.");
+            }
+            if (Array.IndexOf(lpCommandLine, '\0') < 0)
+            {
+                throw new ArgumentException("The command line must be null-terminated.", nameof(lpCommandLine));
+            }
+            BOOL res;
+            unsafe
+            {
+                fixed (char* pCommandLine = lpCommandLine)
+                {
+                    res = Windows.Win32.PInvoke.CreateProcess(lpApplicationName, pCommandLine, lpProcessAttributes: null, lpThreadAttributes: null, bInheritHandles, dwCreationFlags, lpEnvironment: null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                }
+            }
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Waits until the specified object is in the signaled state or the time-out interval elapses.
+        /// </summary>
+        /// <param name="hHandle">A handle to the object to wait for, which must have the SYNCHRONIZE access right.</param>
+        /// <param name="dwMilliseconds">The time-out interval, in milliseconds, or <see cref="Windows.Win32.PInvoke.INFINITE"/> to wait indefinitely.</param>
+        /// <returns>A <see cref="WAIT_EVENT"/> value indicating the event that caused the method to return.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying WaitForSingleObject call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, uint dwMilliseconds)
+        {
+            WAIT_EVENT res = Windows.Win32.PInvoke.WaitForSingleObject(hHandle, dwMilliseconds);
+            return res is WAIT_EVENT.WAIT_FAILED ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves the termination status of the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpExitCode">When this method returns, contains the exit code of the process, or STILL_ACTIVE if it has not terminated.</param>
+        /// <returns>true if the termination status was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying GetExitCodeProcess call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
+        {
+            BOOL res = Windows.Win32.PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves timing information for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpCreationTime">When this method returns, contains the creation time of the process.</param>
+        /// <param name="lpExitTime">When this method returns, contains the exit time of the process, which is undefined while it is still running.</param>
+        /// <param name="lpKernelTime">When this method returns, contains the amount of time that the process has executed in kernel mode.</param>
+        /// <param name="lpUserTime">When this method returns, contains the amount of time that the process has executed in user mode.</param>
+        /// <returns>true if the timing information was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying GetProcessTimes call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL GetProcessTimes(SafeHandle hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME lpCreationTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpExitTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpKernelTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpUserTime)
+        {
+            BOOL res = Windows.Win32.PInvoke.GetProcessTimes(hProcess, out lpCreationTime, out lpExitTime, out lpKernelTime, out lpUserTime);
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves the full name of the executable image of the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="dwFlags">The format of the returned path.</param>
+        /// <param name="lpExeName">The buffer that receives the path.</param>
+        /// <param name="lpdwSize">On input, the number of characters <paramref name="lpExeName"/> can hold. When this method returns, the
+        /// number of characters written to it, not counting the terminating null character.</param>
+        /// <returns>true if the path was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="lpdwSize"/> is larger than <paramref name="lpExeName"/>.</exception>
+        /// <exception cref="Win32Exception">Thrown if the underlying QueryFullProcessImageName call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL QueryFullProcessImageName(SafeHandle hProcess, PROCESS_NAME_FORMAT dwFlags, char[] lpExeName, ref uint lpdwSize)
+        {
+            if (lpdwSize > lpExeName.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lpdwSize), lpdwSize, "The size cannot be larger than the buffer.");
+            }
+            BOOL res;
+            unsafe
+            {
+                fixed (char* pExeName = lpExeName)
+                {
+                    res = Windows.Win32.PInvoke.QueryFullProcessImageName(hProcess, dwFlags, pExeName, ref lpdwSize);
+                }
+            }
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
         /// Allocates a new console for the calling process.
         /// </summary>
         /// <remarks>This method is typically used by applications that do not have a console by default,
@@ -111,6 +233,22 @@ namespace PSADT.Invoke
         internal static BOOL FreeConsole()
         {
             BOOL res = Windows.Win32.PInvoke.FreeConsole();
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Adds or removes an application-defined handler routine from the list of handler functions for the calling process.
+        /// </summary>
+        /// <remarks>With a null <paramref name="HandlerRoutine"/>, <paramref name="Add"/> instead sets whether the calling
+        /// process ignores Ctrl+C, which processes it creates afterwards inherit.</remarks>
+        /// <param name="HandlerRoutine">The handler routine to add or remove, or null.</param>
+        /// <param name="Add">true to add the handler routine, or to ignore Ctrl+C when <paramref name="HandlerRoutine"/> is null;
+        /// false to remove it, or to restore normal Ctrl+C processing.</param>
+        /// <returns>true if the function succeeds; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying SetConsoleCtrlHandler call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL SetConsoleCtrlHandler(PHANDLER_ROUTINE? HandlerRoutine, BOOL Add)
+        {
+            BOOL res = Windows.Win32.PInvoke.SetConsoleCtrlHandler(HandlerRoutine, Add);
             return !res ? throw new Win32Exception() : res;
         }
 

@@ -100,7 +100,7 @@ Describe 'Get-ADTDefaultConfig' {
             # defaults straight out of the module would quietly ignore an administrator's setting.
             InModuleScope -ModuleName PSAppDeployToolkit {
                 (Get-ADTDefaultConfig).MSI.MutexWaitTime | Should -Be 600
-                Mock Get-ChildItem { 'policy-key' } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
+                Mock Get-ChildItem { [PSCustomObject]@{ PSChildName = 'policy-key' } } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
                 Mock Convert-ADTRegistryKeyToHashtable { @{ MSI = @{ MutexWaitTime = 42 }; Toolkit = @{ FileCopyMode = 'Robocopy' } } }
                 $config = Get-ADTDefaultConfig
                 $config.MSI.MutexWaitTime | Should -Be 42
@@ -113,7 +113,7 @@ Describe 'Get-ADTDefaultConfig' {
             # values resolves there. This path expands before the module is initialized and had nothing to
             # resolve them against, so the expansion threw rather than returning a config.
             InModuleScope -ModuleName PSAppDeployToolkit {
-                Mock Get-ChildItem { 'policy-key' } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
+                Mock Get-ChildItem { [PSCustomObject]@{ PSChildName = 'policy-key' } } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
                 # Both forms carry the same value, so the answer is the same whether or not the account
                 # running the tests owns the configured path and gets redirected to the other one.
                 Mock Convert-ADTRegistryKeyToHashtable { @{ Toolkit = @{ LogPath = '$envWinDir\ADTProbeLogs'; LogPathNoAdminRights = '$envWinDir\ADTProbeLogs' } } }
@@ -126,7 +126,7 @@ Describe 'Get-ADTDefaultConfig' {
             # must not be read as a name only the environment table could supply.
             InModuleScope -ModuleName PSAppDeployToolkit {
                 Mock New-ADTEnvironmentTable { }
-                Mock Get-ChildItem { 'policy-key' } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
+                Mock Get-ChildItem { [PSCustomObject]@{ PSChildName = 'policy-key' } } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
                 Mock Convert-ADTRegistryKeyToHashtable { @{ Toolkit = @{ LogPath = '${env:ProgramData}\ADTProbeLogs'; LogPathNoAdminRights = '${env:ProgramData}\ADTProbeLogs' } } }
                 (Get-ADTDefaultConfig).Toolkit.LogPath | Should -BeExactly "$([System.Environment]::GetEnvironmentVariable('ProgramData'))\ADTProbeLogs"
                 Should -Invoke New-ADTEnvironmentTable -Times 0 -Exactly
@@ -135,7 +135,7 @@ Describe 'Get-ADTDefaultConfig' {
 
         It 'Leaves the keys the policy says nothing about alone' {
             InModuleScope -ModuleName PSAppDeployToolkit {
-                Mock Get-ChildItem { 'policy-key' } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
+                Mock Get-ChildItem { [PSCustomObject]@{ PSChildName = 'policy-key' } } -ParameterFilter { $LiteralPath -like '*Policies\PSAppDeployToolkit\Config*' }
                 Mock Convert-ADTRegistryKeyToHashtable { @{ MSI = @{ MutexWaitTime = 42 } } }
                 (Get-ADTDefaultConfig).UI.DefaultTimeout | Should -Be 3300
             }

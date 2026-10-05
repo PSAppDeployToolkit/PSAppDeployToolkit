@@ -359,6 +359,25 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a command the client does not recognise comes back as an invalid command, and the client keeps answering.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact(Skip = "Requires the client executables and a caller that is the logged-on user.", SkipUnless = nameof(TestEnvironment.CanLaunchClient), SkipType = typeof(TestEnvironment))]
+        public async Task ServerInstance_ReportsACommandTheClientDoesNotRecognise()
+        {
+            // Arrange
+            await using ServerInstance instance = new(AccountUtilities.CallerRunAsActiveUser);
+            await instance.OpenAsync().ConfigureAwait(true);
+
+            // Act
+            ServerException failure = await Assert.ThrowsAsync<ServerException>(async () => await InvokeAsync<bool>(instance, (PipeCommand)byte.MaxValue).ConfigureAwait(true)).ConfigureAwait(true);
+
+            // Assert: the client named the problem, and is still answering
+            Assert.Equal((int)ClientExitCode.InvalidCommand, Assert.IsType<ClientException>(failure.InnerException).HResult);
+            Assert.False(await instance.ProgressDialogOpenAsync().ConfigureAwait(true));
+        }
+
+        /// <summary>
         /// Verifies that a log frame is taken off the stream even when there is no session to write it to.
         /// </summary>
         /// <remarks>
@@ -568,6 +587,85 @@ namespace PSADT.ClientServer.Server.Tests
             {
                 temp.Delete(recursive: true);
             }
+        }
+
+        /// <summary>
+        /// Verifies that a successful response gives back the result the client serialized.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_ReturnsTheResultOfASuccessfulResponse()
+        {
+            Assert.Equal("a value", ServerInstance.DeserializeResponse<string>([(byte)ResponseMarker.Success, .. DataSerialization.SerializeToBytes("a value")]));
+        }
+
+        /// <summary>
+        /// Verifies that an error response is raised with the client's own exception inside it.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_RaisesTheExceptionTheClientReported()
+        {
+            // Arrange
+            byte[] response = [(byte)ResponseMarker.Error, .. DataSerialization.SerializeToBytes<Exception>(new ClientException("the client gave up", ClientExitCode.InvalidRequest))];
+
+            // Act
+            ServerException failure = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(response));
+
+            // Assert
+            Assert.Equal("the client gave up", Assert.IsType<ClientException>(failure.InnerException).Message);
+        }
+
+        /// <summary>
+        /// Verifies that a response with no marker, or nothing after its marker, is refused.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_RefusesAResponseWithNothingToDeserialize()
+        {
+            // Act
+            ServerException empty = Assert.Throws<ServerException>(static () => ServerInstance.DeserializeResponse<string>([]));
+            ServerException markerOnly = Assert.Throws<ServerException>(static () => ServerInstance.DeserializeResponse<string>([(byte)ResponseMarker.Success]));
+
+            // Assert
+            Assert.Contains("invalid or empty response", empty.Message, StringComparison.Ordinal);
+            Assert.Contains("invalid or empty response", markerOnly.Message, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Verifies that a marker other than the two defined is refused, even ahead of an exception that would deserialize.
+        /// </summary>
+        /// <param name="marker">The marker to send.</param>
+        [Theory]
+        [InlineData((byte)0x02)] // The first value past the two defined.
+        [InlineData(byte.MaxValue)] // Nothing like either.
+        public void DeserializeResponse_RefusesAnUnknownMarker(byte marker)
+        {
+            // Arrange
+            byte[] response = [marker, .. DataSerialization.SerializeToBytes<Exception>(new ClientException("the client gave up", ClientExitCode.InvalidRequest))];
+
+            // Act
+            ServerException failure = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(response));
+
+            // Assert
+            Assert.Contains("unknown marker", failure.Message, StringComparison.Ordinal);
+            Assert.Null(failure.InnerException);
+        }
+
+        /// <summary>
+        /// Verifies that a response is overwritten once read, whether it was accepted or refused.
+        /// </summary>
+        [Fact]
+        public void DeserializeResponse_OverwritesTheResponseOnceRead()
+        {
+            // Arrange
+            byte[] accepted = [(byte)ResponseMarker.Success, .. DataSerialization.SerializeToBytes("a value")];
+            byte[] refused = [(byte)ResponseMarker.Success];
+
+            // Act
+            _ = ServerInstance.DeserializeResponse<string>(accepted);
+            _ = Assert.Throws<ServerException>(() => ServerInstance.DeserializeResponse<string>(refused));
+
+            // Assert
+            Assert.Equal(new byte[accepted.Length], accepted);
+            Assert.Equal(new byte[refused.Length], refused);
         }
 
         /// <summary>
@@ -907,6 +1005,22 @@ namespace PSADT.ClientServer.Server.Tests
             MethodInfo handler = typeof(ServerInstance).GetMethod("ProcessExit_Handler", BindingFlags.NonPublic | BindingFlags.Instance)
                 ?? throw new InvalidOperationException("ServerInstance no longer carries a handler for the host's exit.");
             _ = handler.Invoke(instance, [null, EventArgs.Empty]);
+        }
+
+        /// <summary>
+        /// Sends a bare command through an instance's private sender, the only way to send one the client does not define.
+        /// </summary>
+        /// <typeparam name="TResult">The type to read the answer as.</typeparam>
+        /// <param name="instance">The instance whose client to ask.</param>
+        /// <param name="command">The command to send.</param>
+        /// <returns>The client's answer.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the instance no longer carries the sender this calls.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "An instance only sends the commands it defines, and a client's answer to any other is a case worth covering.")]
+        private static async Task<TResult> InvokeAsync<TResult>(ServerInstance instance, PipeCommand command)
+        {
+            MethodInfo invoke = Array.Find(typeof(ServerInstance).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance), static method => method.Name.Equals("InvokeAsync", StringComparison.Ordinal) && method.GetParameters().Length is 1)
+                ?? throw new InvalidOperationException("ServerInstance no longer carries a bare-command InvokeAsync for the tests to call.");
+            return await ((ValueTask<TResult>)(invoke.MakeGenericMethod(typeof(TResult)).Invoke(instance, [command]) ?? throw new InvalidOperationException("InvokeAsync answered with nothing."))).ConfigureAwait(true);
         }
 
         /// <summary>
