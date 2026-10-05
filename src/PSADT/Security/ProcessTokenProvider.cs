@@ -151,7 +151,7 @@ namespace PSADT.Security
         /// Finds the original interactive Winlogon logon belonging to the WTS owner, which may be a UAC split pair.
         /// </summary>
         /// <remarks>A split-token administrator has two indistinguishable records for one logon, so both are kept; a
-        /// third record, or the same record twice, is evidence that cannot be reconciled and is refused.</remarks>
+        /// third record, or the same logon session twice, is evidence that cannot be reconciled and is refused.</remarks>
         /// <param name="session">The independently resolved session owner.</param>
         /// <param name="logons">The complete LSA enumeration.</param>
         /// <returns>The matching logon, or null for missing or ambiguous evidence.</returns>
@@ -164,7 +164,7 @@ namespace PSADT.Security
                 {
                     continue;
                 }
-                if (counterpart is not null || logon == reference)
+                if (counterpart is not null || (reference is not null && IsSameLogon(in logon.AuthenticationId, in reference.AuthenticationId)))
                 {
                     return null;
                 }

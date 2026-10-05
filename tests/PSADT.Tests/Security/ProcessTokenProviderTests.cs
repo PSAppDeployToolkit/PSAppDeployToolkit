@@ -65,7 +65,7 @@ namespace PSADT.Tests.Security
         }
 
         /// <summary>
-        /// Requires one unambiguous original logon, ignoring secondary logons and refusing a repeated record.
+        /// Requires one unambiguous original logon, ignoring secondary logons and refusing a repeated logon session.
         /// </summary>
         [Fact]
         public void FindReference_RejectsMissingAndAmbiguousReferences()
@@ -74,6 +74,7 @@ namespace PSADT.Tests.Security
             ProcessTokenLogon reference = CreateLogon();
             ProcessTokenLogon secondary = new(new LUID { LowPart = 43 }, 5, session.Sid, SECURITY_LOGON_TYPE.Interactive, 0, 200);
             ProcessTokenLogon unresolved = new(in reference.AuthenticationId, session.SessionId, Sid: null, reference.LogonType, reference.UserFlags, reference.LogonTime);
+            ProcessTokenLogon conflicting = new(in reference.AuthenticationId, session.SessionId, reference.Sid, reference.LogonType, reference.UserFlags, reference.LogonTime + 1);
             Assert.Null(ProcessTokenProvider.FindReference(session, []));
             Assert.Null(ProcessTokenProvider.FindReference(session, [unresolved]));
             Assert.Null(ProcessTokenProvider.FindReference(session, [secondary]));
@@ -81,6 +82,7 @@ namespace PSADT.Tests.Security
             Assert.Same(reference, single?.Logon);
             Assert.Null(single?.Counterpart);
             Assert.Null(ProcessTokenProvider.FindReference(session, [reference, reference]));
+            Assert.Null(ProcessTokenProvider.FindReference(session, [reference, conflicting]));
         }
 
         /// <summary>
