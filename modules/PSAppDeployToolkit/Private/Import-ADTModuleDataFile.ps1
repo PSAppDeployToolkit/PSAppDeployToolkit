@@ -75,12 +75,14 @@ function Private:Import-ADTModuleDataFile
 
     # Import the default data first and foremost, keeping a pristine copy to tell which settings ship as null.
     $section = [System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName))
+    $defaultSection = (Get-ADTModuleDefaults).$section
     $initialUICulture = $UICulture
     $defaultData = while ($true)
     {
-        if (($defaultSection = (Get-ADTModuleDefaults).$section).ContainsKey($UICulture.Name))
+        [System.Management.Automation.ScriptBlock]$dataScriptBlock = $null
+        if ($defaultSection.TryGetValue($UICulture.Name, [ref]$dataScriptBlock))
         {
-            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression
+            $dataScriptBlock.Ast.EndBlock.Statements.PipelineElements.Expression
             $UICulture = $initialUICulture
             break
         }
