@@ -186,6 +186,31 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Verifies that the current process is given as its pseudo-handle, which reports itself invalid so that disposing
+        /// of it never closes it.
+        /// </summary>
+        [Fact]
+        public void GetCurrentProcess_IsThePseudoHandleAndReportsItselfInvalid()
+        {
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+
+            Assert.Equal(-1L, hProcess.DangerousGetHandle().ToInt64());
+            Assert.True(hProcess.IsInvalid);
+        }
+
+        /// <summary>
+        /// Verifies that the pseudo-handle of the current process can be queried, as the walk up its parents does.
+        /// </summary>
+        [Fact]
+        public void GetCurrentProcess_QueriesTheCurrentProcess()
+        {
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+
+            Assert.Equal(0, NativeMethods.NtQueryInformationProcess(hProcess, out PROCESS_BASIC_INFORMATION pbi));
+            Assert.Equal(PInvoke.GetCurrentProcessId(), pbi.UniqueProcessId);
+        }
+
+        /// <summary>
         /// Verifies that the basic information of the current process reports its own ID.
         /// </summary>
         [Fact]
@@ -207,6 +232,73 @@ namespace PSADT.Invoke.Tests
 
             Win32Exception ex = Assert.Throws<Win32Exception>(() => NativeMethods.NtQueryInformationProcess(hProcess, out _));
             Assert.Equal(ErrorInvalidHandle, ex.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that the creation time reported for the current process lies within the last day.
+        /// </summary>
+        [Fact]
+        public void GetProcessTimes_ReportsWhenTheProcessStarted()
+        {
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, PInvoke.GetCurrentProcessId());
+
+            _ = NativeMethods.GetProcessTimes(hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME creationTime, out _, out _, out _);
+            DateTime startTime = DateTime.FromFileTimeUtc(unchecked(((long)creationTime.dwHighDateTime << 32) | (uint)creationTime.dwLowDateTime));
+            Assert.InRange(startTime, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Verifies that querying the times of an invalid handle surfaces the native failure.
+        /// </summary>
+        [Fact]
+        public void GetProcessTimes_ThrowsForAnInvalidHandle()
+        {
+            using SafeWaitHandle hProcess = new(IntPtr.Zero, ownsHandle: false);
+
+            Win32Exception ex = Assert.Throws<Win32Exception>(() => NativeMethods.GetProcessTimes(hProcess, out _, out _, out _, out _));
+            Assert.Equal(ErrorInvalidHandle, ex.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that the executable path of the current process is that of the test host.
+        /// </summary>
+        [Fact]
+        public void QueryFullProcessImageName_ReturnsTheExecutablePath()
+        {
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, PInvoke.GetCurrentProcessId());
+            char[] exeName = new char[short.MaxValue];
+            uint size = (uint)exeName.Length;
+
+            _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, exeName, ref size);
+            Assert.Equal(typeof(NativeMethodsTests).Assembly.Location, new string(exeName, 0, (int)size), ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Verifies that querying the executable path of an invalid handle surfaces the native failure.
+        /// </summary>
+        [Fact]
+        public void QueryFullProcessImageName_ThrowsForAnInvalidHandle()
+        {
+            using SafeWaitHandle hProcess = new(IntPtr.Zero, ownsHandle: false);
+            char[] exeName = new char[short.MaxValue];
+            uint size = (uint)exeName.Length;
+
+            Win32Exception ex = Assert.Throws<Win32Exception>(() => NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, exeName, ref size));
+            Assert.Equal(ErrorInvalidHandle, ex.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that a size larger than the buffer is refused before the native call can write past its end.
+        /// </summary>
+        [Fact]
+        public void QueryFullProcessImageName_ThrowsForASizeLargerThanTheBuffer()
+        {
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, PInvoke.GetCurrentProcessId());
+            char[] exeName = new char[1];
+            uint size = 2;
+
+            ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, exeName, ref size));
+            Assert.Equal("lpdwSize", ex.ParamName);
         }
 
         /// <summary>

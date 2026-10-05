@@ -74,6 +74,17 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
+        /// Retrieves the pseudo-handle for the current process, which has every access right to it.
+        /// </summary>
+        /// <remarks>The pseudo-handle's value of -1 counts as invalid to <see cref="SafeHandle"/>, so disposing of the
+        /// returned handle never tries to close it.</remarks>
+        /// <returns>The current process's pseudo-handle.</returns>
+        internal static SafeProcessHandle GetCurrentProcess()
+        {
+            return new(Windows.Win32.PInvoke.GetCurrentProcess(), ownsHandle: true);
+        }
+
+        /// <summary>
         /// Creates a new process and its primary thread, running in the security context of the calling process.
         /// </summary>
         /// <remarks>The new process gets default security and the environment of the calling process. The caller is
@@ -133,6 +144,50 @@ namespace PSADT.Invoke
         internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
         {
             BOOL res = Windows.Win32.PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves timing information for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpCreationTime">When this method returns, contains the creation time of the process.</param>
+        /// <param name="lpExitTime">When this method returns, contains the exit time of the process, which is undefined while it is still running.</param>
+        /// <param name="lpKernelTime">When this method returns, contains the amount of time that the process has executed in kernel mode.</param>
+        /// <param name="lpUserTime">When this method returns, contains the amount of time that the process has executed in user mode.</param>
+        /// <returns>true if the timing information was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying GetProcessTimes call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL GetProcessTimes(SafeHandle hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME lpCreationTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpExitTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpKernelTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpUserTime)
+        {
+            BOOL res = Windows.Win32.PInvoke.GetProcessTimes(hProcess, out lpCreationTime, out lpExitTime, out lpKernelTime, out lpUserTime);
+            return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Retrieves the full name of the executable image of the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process, which must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="dwFlags">The format of the returned path.</param>
+        /// <param name="lpExeName">The buffer that receives the path.</param>
+        /// <param name="lpdwSize">On input, the number of characters <paramref name="lpExeName"/> can hold. When this method returns, the
+        /// number of characters written to it, not counting the terminating null character.</param>
+        /// <returns>true if the path was retrieved; otherwise, an exception is thrown.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="lpdwSize"/> is larger than <paramref name="lpExeName"/>.</exception>
+        /// <exception cref="Win32Exception">Thrown if the underlying QueryFullProcessImageName call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
+        internal static BOOL QueryFullProcessImageName(SafeHandle hProcess, PROCESS_NAME_FORMAT dwFlags, char[] lpExeName, ref uint lpdwSize)
+        {
+            if (lpdwSize > lpExeName.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lpdwSize), lpdwSize, "The size cannot be larger than the buffer.");
+            }
+            BOOL res;
+            unsafe
+            {
+                fixed (char* pExeName = lpExeName)
+                {
+                    res = Windows.Win32.PInvoke.QueryFullProcessImageName(hProcess, dwFlags, pExeName, ref lpdwSize);
+                }
+            }
             return !res ? throw new Win32Exception() : res;
         }
 

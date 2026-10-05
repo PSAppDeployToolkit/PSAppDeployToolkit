@@ -37,12 +37,25 @@ namespace PSADT.Invoke.Tests
         private const string DebugOutputFileName = "output.txt";
         private const string DebugOutputMarker = "PowerShell wrote this.";
         private const string DebugSkipReason = "/Debug only allocates a console in an interactive session.";
+        private const string PowerShellCoreSkipReason = "PowerShell 7 is not installed.";
         private static readonly int[] ScriptExitCodes = [0, 42, 3010, -1];
 
         /// <summary>
         /// Gets a value indicating whether this session is interactive, which /Debug needs before it allocates a console.
         /// </summary>
         public static bool IsUserInteractive => Environment.UserInteractive;
+
+        /// <summary>
+        /// Gets a value indicating whether PowerShell 7 can be found on the path.
+        /// </summary>
+        public static bool IsPowerShellCoreAvailable
+        {
+            get
+            {
+                using Process process = StartWhereProcess();
+                return process.WaitForExit(ProcessTimeoutMilliseconds) && process.ExitCode is 0;
+            }
+        }
 
         /// <summary>
         /// Gets launcher invocation modes and expected script exit codes.
@@ -58,7 +71,7 @@ namespace PSADT.Invoke.Tests
                     data.Add(FileMode, exitCode);
                     data.Add(DirectScriptMode, exitCode);
                     data.Add(FileX86Mode, exitCode);
-                    if (IsPowerShellCoreAvailable())
+                    if (IsPowerShellCoreAvailable)
                     {
                         data.Add(FileCoreMode, exitCode);
                     }
@@ -143,6 +156,33 @@ namespace PSADT.Invoke.Tests
             File.WriteAllText(scriptPath, GetConsoleWindowScript(), Encoding.UTF8);
 
             using Process process = StartInvoker(invokerPath, DefaultMode, scriptPath);
+            WaitForInvokerExit(process, DefaultMode);
+
+            Assert.Equal(0, process.ExitCode);
+        }
+
+        /// <summary>
+        /// Verifies that without /32 or /Core, the launcher runs the script in the PowerShell 7 that started it.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if PowerShell 7 cannot be started.</exception>
+        [Fact(Skip = PowerShellCoreSkipReason, SkipUnless = nameof(IsPowerShellCoreAvailable))]
+        public static void Main_RunsInThePowerShellCoreThatStartedIt()
+        {
+            using TemporaryDirectory temporaryDirectory = TemporaryDirectory.Create();
+            string invokerPath = CopyInvokerTo(temporaryDirectory.DirectoryPath);
+            string scriptPath = GetScriptPath(temporaryDirectory.DirectoryPath, DefaultMode);
+            File.WriteAllText(scriptPath, GetEditionScript(), Encoding.UTF8);
+
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "pwsh.exe",
+                Arguments = $"-NoProfile -NonInteractive -Command \"exit (Start-Process -FilePath '{invokerPath.Replace("'", "''")}' -Wait -PassThru).ExitCode\"",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = temporaryDirectory.DirectoryPath,
+            };
+            using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start PowerShell 7.");
             WaitForInvokerExit(process, DefaultMode);
 
             Assert.Equal(0, process.ExitCode);
@@ -390,6 +430,22 @@ namespace PSADT.Invoke.Tests
         }
 
         /// <summary>
+        /// Gets a script that exits with 2 unless it runs in PowerShell 7, as an error alone exits with 1.
+        /// </summary>
+        /// <returns>The script source.</returns>
+        private static string GetEditionScript()
+        {
+            return string.Join(
+                Environment.NewLine,
+                "if ($PSVersionTable.PSEdition -ne 'Core')",
+                "{",
+                "    exit 2",
+                "}",
+                "exit 0",
+                "");
+        }
+
+        /// <summary>
         /// Gets a script that writes <see cref="DebugOutputMarker"/>, then exits with 2 if the launcher is not attached to
         /// PowerShell's console, as an error alone exits with 1.
         /// </summary>
@@ -485,12 +541,6 @@ namespace PSADT.Invoke.Tests
             return invocationMode.Equals(DefaultMode, StringComparison.Ordinal)
                 ? Path.Join(directoryPath, "Invoke-AppDeployToolkit.ps1")
                 : Path.Join(directoryPath, "Exit With Code.ps1");
-        }
-
-        private static bool IsPowerShellCoreAvailable()
-        {
-            using Process process = StartWhereProcess();
-            return process.WaitForExit(ProcessTimeoutMilliseconds) && process.ExitCode is 0;
         }
 
         private static string QuoteArgument(string argument)
