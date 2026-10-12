@@ -210,39 +210,39 @@ function New-ADTTemplate
         [System.Collections.IDictionary]$Config,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PreInstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$InstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PostInstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PreUninstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$UninstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PostUninstallScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PreRepairScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$RepairScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PostRepairScriptBlock,
 
         [Parameter(Mandatory = $false)]
@@ -389,12 +389,17 @@ function New-ADTTemplate
             param
             (
                 [Parameter(Mandatory = $true)]
-                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+                [ValidateNotNullOrEmpty()]
                 [System.Management.Automation.ScriptBlock[]]$ScriptBlock
             )
 
             $scriptBodies = foreach ($sb in $ScriptBlock)
             {
+                if ([System.String]::IsNullOrWhiteSpace($sb.ToString()))
+                {
+                    continue
+                }
+
                 # Trim leading empty lines (but not whitespace to preserve indentation) and trailing whitespace, replace tabs with spaces, then split into lines to analyze indentation.
                 $lines = ([regex]::Replace($sb.ToString().TrimStart("`r", "`n").TrimEnd(), '(?m)^\t+', { param($m) '    ' * $m.Value.Length })).Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None)
                 $minIndent = ($lines | Where-Object { $_ -match '\S' } | ForEach-Object { [regex]::Match($_, '^ *').Length } | Measure-Object -Minimum).Minimum
@@ -782,10 +787,11 @@ if ($adtSession.UseDefaultMsi)
                             }
 
                             # Replace the entire scriptblock expression (including braces) with the user's content.
+                            $scriptBody = ConvertTo-ADTScriptBody -ScriptBlock $PSBoundParameters[$sbParamName]
                             $scriptReplacements.Add([PSCustomObject]@{
                                     Start = $sbAst.Extent.StartOffset
                                     End = $sbAst.Extent.EndOffset
-                                    Value = '{' + [System.Environment]::NewLine + (ConvertTo-ADTScriptBody -ScriptBlock $PSBoundParameters[$sbParamName]) + [System.Environment]::NewLine + '}'
+                                    Value = '{' + [System.Environment]::NewLine + $(if ($scriptBody) { $scriptBody + [System.Environment]::NewLine }) + '}'
                                 })
                         }
                     }
