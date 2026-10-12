@@ -439,6 +439,13 @@ Describe 'New-ADTTemplate' {
             }
         }
 
+        Context 'Empty scriptblock' {
+            It 'Writes an empty scriptblock with a single line break between the braces' {
+                $content = (Get-ADTTemplateContent -Params @{ PostInstallScriptBlock = {} }).ScriptContent
+                $content | Should -Match 'New-Variable -Name Post-Install -Force -Value \{\r?\n\}'
+            }
+        }
+
         Context 'ZeroConfig' {
             Context 'ZeroConfig alone injects default MSI logic into Install, Uninstall, and Repair' {
                 BeforeAll {
