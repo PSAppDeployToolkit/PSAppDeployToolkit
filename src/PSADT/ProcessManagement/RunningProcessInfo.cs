@@ -139,89 +139,89 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            Process[] allProcesses = [.. Process.GetProcesses().Where(p => p.Id > 0 && processDefinitions.Any(pd => pd.ProcessNameIsMatch(p.ProcessName)))]; List<RunningProcessInfo> runningProcesses = [];
-            foreach (ProcessDefinition processDefinition in processDefinitions)
+            Process[] allProcesses = Process.GetProcesses(); List<RunningProcessInfo> runningProcesses = [];
+            HashSet<Process> retainedProcesses = new(ReferenceEqualityComparer.Instance);
+            try
             {
-                // Loop through each process and check if it matches the definition.
-                bool nameIsFullyQualifiedPath = processDefinition.NameIsFullyQualifiedPath();
-                foreach (Process process in allProcesses)
+                foreach (ProcessDefinition processDefinition in processDefinitions)
                 {
-                    // Skip this process if it doesn't match the name.
-                    if (!processDefinition.ProcessNameIsMatch(process.ProcessName))
+                    // Loop through each process and check if it matches the definition.
+                    bool nameIsFullyQualifiedPath = processDefinition.NameIsFullyQualifiedPath();
+                    foreach (Process process in allProcesses.Where(process => process.Id > 0 && processDefinition.ProcessNameIsMatch(process.ProcessName) && !ProcessUtilities.HasProcessExited(process)))
                     {
-                        continue;
-                    }
-
-                    // Skip this process if it's not running anymore.
-                    if (ProcessUtilities.HasProcessExited(process))
-                    {
-                        continue;
-                    }
-
-                    // Only throw if the ProcessDefinition's name doesn't contain a wildcard character.
-                    try
-                    {
-                        // Continue if this isn't our process or it's ended since we cached it.
-                        if (nameIsFullyQualifiedPath && (GetProcessFilePath(process, processFilePathMap, ntPathLookupTable) is not string filePath || !processDefinition.IsNameMatch(filePath)))
-                        {
-                            continue;
-                        }
-
-                        // Try to get the command line. If we can't, skip this process.
-                        string[] argv;
+                        // Only throw if the ProcessDefinition's name doesn't contain a wildcard character.
                         try
                         {
-                            if (ProcessUtilities.HasProcessExited(process))
+                            // Continue if this isn't our process or it's ended since we cached it.
+                            if (nameIsFullyQualifiedPath && (GetProcessFilePath(process, processFilePathMap, ntPathLookupTable) is not string filePath || !processDefinition.IsNameMatch(filePath)))
                             {
                                 continue;
                             }
-                            argv = GetProcessArgv(process, processFilePathMap, processArgvMap, ntPathLookupTable);
-                        }
-                        catch (ArgumentException)
-                        {
-                            continue;
-                        }
 
-                        // If we couldn't get the command line, skip this process.
-                        if (argv.Length is 0)
-                        {
-                            continue;
-                        }
-
-                        // Calculate a description for the running application.
-                        string description = processDefinition.Description is string defDescription && !string.IsNullOrWhiteSpace(defDescription)
-                            ? defDescription
-                            : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
-                            ? fileDescription
-                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && GetProcessDescription(process, argv[0]) is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
-                            ? procDescription
-                            : process.ProcessName;
-
-                        // Grab the process owner if we can.
-                        SecurityIdentifier? sid = null;
-                        if (!ProcessUtilities.HasProcessExited(process))
-                        {
+                            // Try to get the command line. If we can't, skip this process.
+                            string[] argv;
                             try
                             {
-                                sid = ProcessUtilities.GetProcessSid(process);
+                                if (ProcessUtilities.HasProcessExited(process))
+                                {
+                                    continue;
+                                }
+                                argv = GetProcessArgv(process, processFilePathMap, processArgvMap, ntPathLookupTable);
                             }
-                            catch (Exception ex) when (ex.Message is not null)
+                            catch (ArgumentException)
                             {
-                                sid = null;
+                                continue;
+                            }
+
+                            // If we couldn't get the command line, skip this process.
+                            if (argv.Length is 0)
+                            {
+                                continue;
+                            }
+
+                            // Calculate a description for the running application.
+                            string description = processDefinition.Description is string defDescription && !string.IsNullOrWhiteSpace(defDescription)
+                                ? defDescription
+                                : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
+                                ? fileDescription
+                                : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && GetProcessDescription(process, argv[0]) is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
+                                ? procDescription
+                                : process.ProcessName;
+
+                            // Grab the process owner if we can.
+                            SecurityIdentifier? sid = null;
+                            if (!ProcessUtilities.HasProcessExited(process))
+                            {
+                                try
+                                {
+                                    sid = ProcessUtilities.GetProcessSid(process);
+                                }
+                                catch (Exception ex) when (ex.Message is not null)
+                                {
+                                    sid = null;
+                                }
+                            }
+
+                            // Store the process information.
+                            if (!ProcessUtilities.HasProcessExited(process))
+                            {
+                                runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
+                                retainedProcesses.Add(process);
                             }
                         }
-
-                        // Store the process information.
-                        if (!ProcessUtilities.HasProcessExited(process))
+                        catch when (processDefinition.Name.Contains('*', StringComparison.Ordinal))
                         {
-                            runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
+                            continue;
+                            throw;
                         }
                     }
-                    catch when (processDefinition.Name.Contains('*', StringComparison.Ordinal))
-                    {
-                        continue;
-                        throw;
-                    }
+                }
+            }
+            finally
+            {
+                foreach (Process process in allProcesses.Where(process => !retainedProcesses.Contains(process)))
+                {
+                    process.Dispose();
                 }
             }
 

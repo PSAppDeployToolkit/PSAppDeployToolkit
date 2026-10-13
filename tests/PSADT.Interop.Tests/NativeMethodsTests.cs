@@ -221,6 +221,37 @@ namespace PSADT.Interop.Tests
         }
 
         /// <summary>
+        /// Verifies that the creation time reported for the running process lies within the last day.
+        /// </summary>
+        [Fact]
+        public void GetProcessTimes_ReportsWhenTheRunningProcessStarted()
+        {
+            // Arrange
+            using SafeProcessHandle process = NativeMethods.GetCurrentProcess();
+
+            // Act
+            _ = NativeMethods.GetProcessTimes(process, out System.Runtime.InteropServices.ComTypes.FILETIME creationTime, out _, out _, out _);
+
+            // Assert
+            DateTime startTime = DateTime.FromFileTimeUtc(unchecked(((long)creationTime.dwHighDateTime << 32) | (uint)creationTime.dwLowDateTime));
+            Assert.InRange(startTime, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Verifies that asking an invalid handle for its process times is raised as a failure rather than answered.
+        /// </summary>
+        [Fact]
+        public void GetProcessTimes_RaisesAFailureForAnInvalidHandle()
+        {
+            // Arrange
+            using SafeProcessHandle invalid = new(IntPtr.Zero, ownsHandle: false);
+
+            // Act & Assert
+            Win32Exception exception = Assert.Throws<Win32Exception>(() => NativeMethods.GetProcessTimes(invalid, out _, out _, out _, out _));
+            Assert.Equal((int)WIN32_ERROR.ERROR_INVALID_HANDLE, exception.NativeErrorCode);
+        }
+
+        /// <summary>
         /// Verifies that the running process reports a WOW64 architecture exactly when the framework reports a
         /// 32-bit process on a 64-bit system, and that the system's own architecture is always reported.
         /// </summary>

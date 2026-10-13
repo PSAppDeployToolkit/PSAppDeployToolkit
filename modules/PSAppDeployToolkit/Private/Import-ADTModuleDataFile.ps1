@@ -75,12 +75,14 @@ function Private:Import-ADTModuleDataFile
 
     # Import the default data first and foremost, keeping a pristine copy to tell which settings ship as null.
     $section = [System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName))
+    $defaultSection = (Get-ADTModuleDefaults).$section
     $initialUICulture = $UICulture
     $defaultData = while ($true)
     {
-        if (($defaultSection = (Get-ADTModuleDefaults).$section).ContainsKey($UICulture.Name))
+        [System.Management.Automation.ScriptBlock]$dataScriptBlock = $null
+        if ($defaultSection.TryGetValue($UICulture.Name, [ref]$dataScriptBlock))
         {
-            $defaultSection.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression
+            $dataScriptBlock.Ast.EndBlock.Statements.PipelineElements.Expression
             $UICulture = $initialUICulture
             break
         }
@@ -135,6 +137,7 @@ function Private:Import-ADTModuleDataFile
     }
 
     # Walk each key from its un-cultured values up through the culture chain, so the most culture-specific value wins.
+    # Culture keys sit beside the sections, so a key named for a culture is only read as a section the data already has.
     $cultureNames = [System.Collections.Generic.List[System.String]]::new()
     for ($culture = $UICulture; ![System.String]::IsNullOrWhiteSpace($culture.Name); $culture = $culture.Parent)
     {
@@ -145,7 +148,7 @@ function Private:Import-ADTModuleDataFile
     {
         foreach ($cultureName in $cultureNames)
         {
-            if ($policySettings = Get-ChildItem -LiteralPath "$policyKey\$section$(if ($cultureName.Length) { "\$cultureName" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
+            if ($policySettings = Get-ChildItem -LiteralPath "$policyKey\$section$(if ($cultureName.Length) { "\$cultureName" })" -ErrorAction Ignore | & { process { if ($importedData.ContainsKey($_.PSChildName) -or ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name -notcontains $_.PSChildName)) { return $_ } } } | Convert-ADTRegistryKeyToHashtable)
             {
                 Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings -Defaults $defaults
             }

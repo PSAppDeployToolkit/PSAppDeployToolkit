@@ -17,7 +17,7 @@ function Private:Get-ADTDefaultConfig
             }
             if (($section.Value -is [System.String]) -and ($section.Value -match '\$(?!env:|\{env:)[A-Za-z_{]'))
             {
-                $true
+                return $true
             }
         }
     }
@@ -39,7 +39,7 @@ function Private:Get-ADTDefaultConfig
     Update-ADTConfigTempVariables -Config $config
 
     # Expand any variables in the config, loading a new environment table if required.
-    if ($config | Test-ADTConfigNamesEnvironmentValue)
+    if ($config | Test-ADTConfigNamesEnvironmentValue | Select-Object -First 1)
     {
         (New-ADTEnvironmentTable).PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     }

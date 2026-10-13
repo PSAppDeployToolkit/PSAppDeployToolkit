@@ -200,6 +200,25 @@ Describe 'Import-ADTModuleDataFile' {
             (Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }).Toolkit.CompanyName | Should -BeExactly 'Australia'
         }
 
+        It 'Takes no section from a culture key' {
+            # Culture keys sit beside the sections, so reading the un-cultured key whole took each in as a section too.
+            Set-PolicyValue -Key 'Config\en-AU\Toolkit' -Name CompanyName -Value 'Australia'
+            Set-PolicyValue -Key 'Config\fr-FR\Toolkit' -Name CompanyName -Value 'France'
+            $data = Import-PolicyProbe -Splat @{ UICulture = [System.Globalization.CultureInfo]::new('en-AU') }
+            $data.Toolkit.CompanyName | Should -BeExactly 'Australia'
+            $data.Keys | Should -Not -Contain 'en-AU'
+            $data.Keys | Should -Not -Contain 'fr-FR'
+        }
+
+        It 'Reads a section that shares its name with a culture' {
+            # Stands in for a shipped section a culture could one day share a name with, which must keep its policy.
+            $deployment = "$TestDrive\culture-named"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Encoding UTF8 -Value "@{ fr = @{ Greeting = 'Bonjour' } }"
+            Set-PolicyValue -Key 'Config\fr' -Name Greeting -Value 'Salut'
+            (Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).fr.Greeting | Should -BeExactly 'Salut'
+        }
+
         It 'Keeps a value the defaults do not have' {
             Set-PolicyValue -Key 'Config\UI' -Name DialogStyleCompatMode -Value 'Classic'
             (Import-PolicyProbe).UI.DialogStyleCompatMode | Should -BeExactly 'Classic'
