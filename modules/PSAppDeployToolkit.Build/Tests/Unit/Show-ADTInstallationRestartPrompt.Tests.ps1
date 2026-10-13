@@ -63,6 +63,18 @@ Describe 'Show-ADTInstallationRestartPrompt' {
             Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter { $ShowModalDialog -and ($DialogType -eq 'RestartDialog') }
         }
 
+        # -CustomMessageText must not depend on -CustomMessage, matching Show-ADTInstallationWelcome.
+        It 'Shows the custom message <Name>' -ForEach @(
+            @{ Name = 'from -CustomMessageText alone'; Splat = @{ CustomMessageText = 'Custom text' }; Expected = 'Custom text' }
+            @{ Name = 'from -CustomMessageText over -CustomMessage'; Splat = @{ CustomMessage = $true; CustomMessageText = 'Custom text' }; Expected = 'Custom text' }
+            @{ Name = 'as nothing when neither is given'; Splat = @{}; Expected = $null }
+        ) {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser }
+            Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { }
+            Show-ADTInstallationRestartPrompt -Force @Splat
+            Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter { $ShowModalDialog -and ($Options.CustomMessageText -ceq $Expected) } -Times 1 -Exactly
+        }
+
         # Asking for both is not a contradiction the binder can catch, so the function has to decide, and
         # a caller who asked to see the dialog gets to see it rather than having a restart armed behind it.
         It 'Prefers the forced prompt over arming a silent restart' {

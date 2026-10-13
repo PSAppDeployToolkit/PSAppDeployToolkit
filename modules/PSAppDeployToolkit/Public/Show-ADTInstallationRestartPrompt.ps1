@@ -408,16 +408,13 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.RestartPromptPersistInterval))
                 }
-                if ($CustomMessage)
+                if ($PSBoundParameters.ContainsKey('CustomMessageText'))
                 {
-                    if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
-                    {
-                        $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
-                    }
-                    else
-                    {
-                        $dialogOptions.Add('CustomMessageText', $CustomMessageText)
-                    }
+                    $dialogOptions.Add('CustomMessageText', $CustomMessageText)
+                }
+                elseif ($CustomMessage)
+                {
+                    $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {
