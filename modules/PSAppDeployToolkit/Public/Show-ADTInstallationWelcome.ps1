@@ -98,10 +98,10 @@ function Show-ADTInstallationWelcome
         Specifies that the user can move the dialog on the screen.
 
     .PARAMETER CustomMessage
-        Specify whether to display a custom message as specified in the `strings.psd1` file below the main preamble. Custom message must be populated for each language section in the `strings.psd1` file.
+        Displays an additional custom message after the standard dialog text. Custom message must be populated for each language section in the `strings.psd1` file.
 
     .PARAMETER CustomMessageText
-        Specifies a literal custom message to display, ignoring the custom message specified in the `strings.psd1` file.
+        Displays an additional custom message after the standard dialog text, using the supplied text. This overrides any custom message set in the `strings.psd1` file.
 
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the deployment to proceed.

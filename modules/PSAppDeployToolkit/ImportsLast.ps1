@@ -317,7 +317,7 @@ try
                                                     Uninstall = 'In order for the uninstallation to complete, you must restart your computer.'
                                                 }
 
-                                                # This is a custom message to display at the Restart window.
+                                                # An additional custom message to display after the standard Restart window text when -CustomMessage is specified.
                                                 CustomMessage = $null
 
                                                 # Text displayed when indicating when the device will be restarted.
@@ -448,7 +448,7 @@ try
                                                     }
                                                 }
 
-                                                # This is a custom message to display at the Welcome Screen window.
+                                                # An additional custom message to display after the standard Welcome Screen window text when -CustomMessage is specified.
                                                 CustomMessage = $null
                                             }
                                         }
