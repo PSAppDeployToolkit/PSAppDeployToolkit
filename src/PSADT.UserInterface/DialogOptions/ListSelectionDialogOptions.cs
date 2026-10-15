@@ -40,6 +40,8 @@ namespace PSADT.UserInterface.DialogOptions
             (bool?)options["DialogAllowMinimize"],
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
+            (DialogSize?)options["FluentDialogSize"],
+            (double?)options["FluentDialogScale"],
             (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."),
             (DialogMessageAlignment?)options["MessageAlignment"],
             (string?)options["ButtonLeftText"],
@@ -78,6 +80,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
         /// does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, persistence is disabled.</param>
+        /// <param name="fluentDialogSize">The rendered size of the dialog. If <see langword="null"/>, the dialog follows the display
+        /// scaling configured in Windows.</param>
+        /// <param name="fluentDialogScale">An additional multiplier applied on top of <paramref name="fluentDialogSize"/>. If
+        /// <see langword="null"/>, no additional scaling is applied.</param>
         /// <param name="messageText">The main message text displayed in the dialog.</param>
         /// <param name="messageAlignment">The alignment of the message text within the dialog. If <see langword="null"/>, the default alignment is
         /// used.</param>
@@ -93,7 +99,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="selectedIndex">The index for the default item to be displayed for user selection.</param>
         /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
-        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogDefaultButton? defaultButton, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int? selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, defaultButton, icon, minimizeWindows)
+        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, DialogSize? fluentDialogSize, double? fluentDialogScale, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogDefaultButton? defaultButton, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int? selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogSize, fluentDialogScale, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, defaultButton, icon, minimizeWindows)
         {
             ArgumentNullException.ThrowIfNull(strings);
             ArgumentNullException.ThrowIfNull(listItems);

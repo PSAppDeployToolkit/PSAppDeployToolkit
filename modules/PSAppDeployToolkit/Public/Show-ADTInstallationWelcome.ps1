@@ -1196,6 +1196,14 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
                     }
+                    if ($null -ne $adtConfig.UI.FluentDialogSize)
+                    {
+                        $dialogOptions.Add('FluentDialogSize', [PSADT.UserInterface.DialogSize]$adtConfig.UI.FluentDialogSize)
+                    }
+                    if ($null -ne $adtConfig.UI.FluentDialogScale)
+                    {
+                        $dialogOptions.Add('FluentDialogScale', [System.Double]$adtConfig.UI.FluentDialogScale)
+                    }
                     if ($ContinueOnProcessClosure -and !$dialogOptions.ContainsKey('ContinueOnProcessClosure'))
                     {
                         $dialogOptions.Add('ContinueOnProcessClosure', $true)

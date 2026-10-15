@@ -47,7 +47,9 @@ namespace PSADT.UserInterface.DialogOptions
             (bool?)options["DialogAllowMove"],
             (bool?)options["DialogAllowMinimize"],
             (TimeSpan?)options["DialogExpiryDuration"],
-            (TimeSpan?)options["DialogPersistInterval"])
+            (TimeSpan?)options["DialogPersistInterval"],
+            (DialogSize?)options["FluentDialogSize"],
+            (double?)options["FluentDialogScale"])
         {
         }
 
@@ -72,9 +74,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If null or false, the minimize button remains hidden (default behavior). Only explicit <see langword="true"/> opts the dialog into minimize support.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
+        /// <param name="fluentDialogSize">The rendered size of the dialog. If null, the dialog follows the display scaling configured in Windows.</param>
+        /// <param name="fluentDialogScale">An additional multiplier applied on top of <paramref name="fluentDialogSize"/>. If null, no additional scaling is applied.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null, DialogSize? fluentDialogSize = null, double? fluentDialogScale = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -109,6 +113,12 @@ namespace PSADT.UserInterface.DialogOptions
             DialogAllowMinimize = dialogAllowMinimize;
             DialogExpiryDuration = dialogExpiryDuration;
             DialogPersistInterval = dialogPersistInterval;
+            FluentDialogSize = fluentDialogSize;
+            if (fluentDialogScale is not null && (fluentDialogScale.Value < MinimumFluentDialogScale || fluentDialogScale.Value > MaximumFluentDialogScale))
+            {
+                throw new ArgumentOutOfRangeException(nameof(fluentDialogScale), fluentDialogScale, $"The dialog scale must be between {MinimumFluentDialogScale.ToString(CultureInfo.InvariantCulture)} and {MaximumFluentDialogScale.ToString(CultureInfo.InvariantCulture)}.");
+            }
+            FluentDialogScale = fluentDialogScale;
         }
 
         /// <summary>
@@ -202,6 +212,28 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly TimeSpan? DialogPersistInterval;
+
+        /// <summary>
+        /// The rendered size of the dialog. Only honoured by the Fluent dialogs.
+        /// </summary>
+        [DataMember]
+        public readonly DialogSize? FluentDialogSize;
+
+        /// <summary>
+        /// An additional multiplier applied on top of <see cref="FluentDialogSize"/>. Only honoured by the Fluent dialogs.
+        /// </summary>
+        [DataMember]
+        public readonly double? FluentDialogScale;
+
+        /// <summary>
+        /// The smallest multiplier accepted for <see cref="FluentDialogScale"/>.
+        /// </summary>
+        public const double MinimumFluentDialogScale = 0.5;
+
+        /// <summary>
+        /// The largest multiplier accepted for <see cref="FluentDialogScale"/>.
+        /// </summary>
+        public const double MaximumFluentDialogScale = 3.0;
 
         /// <summary>
         /// Gets the culture name string for serialization.

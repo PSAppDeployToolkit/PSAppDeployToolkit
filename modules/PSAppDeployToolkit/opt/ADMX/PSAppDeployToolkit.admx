@@ -348,6 +348,46 @@
         <text id="FluentAccentColorDark" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="FluentAccentColorDark" required="false" />
       </elements>
     </policy>
+    <policy name="FluentDialogSize" class="Machine" displayName="$(string.FluentDialogSize_Display)" explainText="$(string.FluentDialogSize_Explain)" presentation="$(presentation.FluentDialogSize)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI">
+      <parentCategory ref="UI" />
+      <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
+      <elements>
+        <enum id="FluentDialogSize" valueName="FluentDialogSize" required="true">
+          <item displayName="$(string.FluentDialogSizeAuto)">
+            <value>
+              <string>Auto</string>
+            </value>
+          </item>
+          <item displayName="$(string.FluentDialogSizeSmall)">
+            <value>
+              <string>Small</string>
+            </value>
+          </item>
+          <item displayName="$(string.FluentDialogSizeMedium)">
+            <value>
+              <string>Medium</string>
+            </value>
+          </item>
+          <item displayName="$(string.FluentDialogSizeLarge)">
+            <value>
+              <string>Large</string>
+            </value>
+          </item>
+          <item displayName="$(string.FluentDialogSizeExtraLarge)">
+            <value>
+              <string>ExtraLarge</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="FluentDialogScale" class="Machine" displayName="$(string.FluentDialogScale_Display)" explainText="$(string.FluentDialogScale_Explain)" presentation="$(presentation.FluentDialogScale)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI">
+      <parentCategory ref="UI" />
+      <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
+      <elements>
+        <text id="FluentDialogScale" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="FluentDialogScale" required="false" />
+      </elements>
+    </policy>
     <policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
       <parentCategory ref="UI" />
       <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />
