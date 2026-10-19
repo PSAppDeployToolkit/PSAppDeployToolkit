@@ -359,6 +359,108 @@ Describe 'New-ADTTemplate' {
         It 'Throws ConfigKeyTypeMismatch when providing hashtable for scalar key' {
             { New-ADTTemplate -Destination $TestDrive -Force -Config @{ MSI = @{ InstallParams = @{ Nested = 'bad' } } } } | Should -Throw -ErrorId 'ConfigKeyTypeMismatch*'
         }
+
+        It 'Throws ConfigKeyDuplicate when a key is specified more than once with differing case' {
+            $msi = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+            $msi.Add('InstallParams', 'First')
+            $msi.Add('INSTALLPARAMS', 'Second')
+            { New-ADTTemplate -Destination $TestDrive -Force -Config @{ MSI = $msi } } | Should -Throw -ErrorId 'ConfigKeyDuplicate*'
+        }
+    }
+
+    Context 'Strings' {
+        BeforeAll {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
+            $template = Get-ADTTemplateContent -Params @{
+                Strings = @{
+                    en = @{ BalloonTip = @{ Start = @{ Install = 'English install started.' } }; CustomSection = @{ Value = 'Custom English value' } }
+                    FR = @{ BALLOONTIP = @{ start = @{ INSTALL = 'Le install has started.' } } }
+                    'PT-br' = @{ BalloonTip = @{ Complete = @{ Repair = 'Reparo personalizado.' } } }
+                    'zz-Test' = @{ BalloonTip = @{ Start = @{ Install = 'New language install started.' } } }
+                }
+            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'enStrings', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
+            $enStrings = Import-PowerShellDataFile -LiteralPath (Join-Path $template.Path 'Strings\strings.psd1')
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'frStringsPath', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
+            $frStringsPath = Join-Path $template.Path 'Strings\fr\strings.psd1'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ptBrStrings', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
+            $ptBrStrings = Import-PowerShellDataFile -LiteralPath (Join-Path $template.Path 'Strings\pt-BR\strings.psd1')
+        }
+
+        It 'Overrides English strings in the root strings.psd1 while preserving siblings' {
+            $enStrings.BalloonTip.Start.Install | Should -Be 'English install started.'
+            $enStrings.BalloonTip.Start.Repair | Should -Be 'Repair started.'
+        }
+
+        It 'Allows adding new string sections' {
+            $enStrings.CustomSection.Value | Should -Be 'Custom English value'
+        }
+
+        It 'Matches language codes and keys case-insensitively' {
+            (Import-PowerShellDataFile -LiteralPath $frStringsPath).BalloonTip.Start.Install | Should -Be 'Le install has started.'
+            $ptBrStrings.BalloonTip.Complete.Repair | Should -Be 'Reparo personalizado.'
+        }
+
+        It 'Preserves the original key casing when overriding with differently cased keys' {
+            $frContent = Get-Content -LiteralPath $frStringsPath -Raw
+            $frContent | Should -Not -MatchExactly 'BALLOONTIP|INSTALL\s*='
+            $frContent | Should -MatchExactly 'BalloonTip = @\{'
+        }
+
+        It 'Does not create language folders for English or differently cased language codes' {
+            Join-Path $template.Path 'Strings\en' | Should -Not -Exist
+            $languageFolders = (Get-ChildItem -LiteralPath (Join-Path $template.Path 'Strings') -Directory).Name
+            $languageFolders -ccontains 'fr' | Should -BeTrue
+            $languageFolders -ccontains 'pt-BR' | Should -BeTrue
+            $languageFolders -ccontains 'FR' | Should -BeFalse
+            $languageFolders -ccontains 'PT-br' | Should -BeFalse
+        }
+
+        It 'Creates a new language from the English string table with the supplied values applied' {
+            $zzStrings = Import-PowerShellDataFile -LiteralPath (Join-Path $template.Path 'Strings\zz-Test\strings.psd1')
+            $zzStrings.BalloonTip.Start.Install | Should -Be 'New language install started.'
+            $zzStrings.BalloonTip.Start.Repair | Should -Be 'Repair started.'
+            $zzStrings.ContainsKey('CustomSection') | Should -BeFalse
+        }
+    }
+
+    Context 'Strings error handling' {
+        It 'Throws StringsLanguageInvalid for a language code that is not a valid folder name' -ForEach @(
+            @{ Value = '..\evil' }
+            @{ Value = 'fr\..\..' }
+            @{ Value = 'x' }
+        ) {
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings @{ $Value = @{ BalloonTip = @{ Start = @{ Install = 'x' } } } } } | Should -Throw -ErrorId 'StringsLanguageInvalid*'
+        }
+
+        It 'Throws StringsKeyDuplicate when a new language is specified more than once with differing case' {
+            $strings = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+            $strings.Add('zz', @{ BalloonTip = @{ Start = @{ Install = 'First' } } })
+            $strings.Add('ZZ', @{ BalloonTip = @{ Start = @{ Install = 'Second' } } })
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings $strings } | Should -Throw -ErrorId 'StringsKeyDuplicate*'
+        }
+
+        It 'Throws StringsKeyDuplicate when a language is specified more than once with differing case' {
+            $strings = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+            $strings.Add('en', @{ BalloonTip = @{ Start = @{ Install = 'First' } } })
+            $strings.Add('EN', @{ BalloonTip = @{ Start = @{ Install = 'Second' } } })
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings $strings } | Should -Throw -ErrorId 'StringsKeyDuplicate*'
+        }
+
+        It 'Throws StringsKeyDuplicate when a key is specified more than once with differing case' {
+            $start = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+            $start.Add('Install', 'First')
+            $start.Add('install', 'Second')
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings @{ fr = @{ BalloonTip = @{ Start = $start } } } } | Should -Throw -ErrorId 'StringsKeyDuplicate*'
+        }
+
+        It 'Throws StringsKeyTypeMismatch when providing hashtable for scalar key' {
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings @{ en = @{ BalloonTip = @{ Start = @{ Install = @{ Nested = 'bad' } } } } } } | Should -Throw -ErrorId 'StringsKeyTypeMismatch*'
+        }
+
+        It 'Throws StringsLanguageValueInvalid when a language value is not a dictionary' {
+            { New-ADTTemplate -Destination $TestDrive -Force -Strings @{ en = 'bad' } } | Should -Throw -ErrorId 'StringsLanguageValueInvalid*'
+        }
     }
 
     Context 'ScriptBlocks' {
@@ -632,6 +734,7 @@ Describe 'New-ADTTemplate' {
     Context 'New parameter validation' {
         It 'Rejects -<Parameter> when its category is excluded' -ForEach @(
             @{ Parameter = 'Config'; Value = @{ Toolkit = @{ LogPath = 'logs' } } }
+            @{ Parameter = 'Strings'; Value = @{ en = @{ BalloonTip = @{ Start = @{ Install = 'x' } } } } }
             @{ Parameter = 'Files'; Value = 'setup.msi' }
             @{ Parameter = 'SupportFiles'; Value = 'settings.xml' }
         ) {

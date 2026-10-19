@@ -26,13 +26,16 @@ function New-ADTTemplate
         The base name to use for the generated launcher files, without a file extension.
 
     .PARAMETER ExcludeContent
-        Specifies one or more optional content categories to omit from the generated template. Valid values are Assets, Config, Extensions, Files, Module, Strings and SupportFiles. All content is included by default. You cannot exclude Files, SupportFiles or Config if specifying those items as separate parameters. You can exclude Assets while specifying -Assets to omit the default assets. Excluding Module omits the bundled PSAppDeployToolkit module for deployments that provide it externally.
+        Specifies one or more optional content categories to omit from the generated template. Valid values are Assets, Config, Extensions, Files, Module, Strings and SupportFiles. All content is included by default. You cannot exclude Files, SupportFiles, Config or Strings if specifying those items as separate parameters. You can exclude Assets while specifying -Assets to omit the default assets. Excluding Module omits the bundled PSAppDeployToolkit module for deployments that provide it externally.
 
     .PARAMETER SessionProperties
         A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Only supported when -Version is 4.
 
     .PARAMETER Config
         A dictionary of key-value pairs to override or add to the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @\{ MSI = @\{ InstallParams = 'REBOOT=ReallySuppress /QB-!' \} \}). Existing keys are overridden in place. New keys or sections that do not exist in the default config are appended at the end of the relevant hashtable level.
+
+    .PARAMETER Strings
+        A dictionary of language codes to key-value pairs to override or add to the generated strings.psd1 files. Each top-level key must be a language code (e.g. en, fr, pt-BR), where en targets Strings\strings.psd1 and every other language targets Strings\<language>\strings.psd1. A language that the module does not ship is created from a copy of the English string table with the supplied values applied on top. The value for each language must mirror the string table's nested hashtable layout (e.g. @\{ en = @\{ BalloonTip = @\{ Start = @\{ Install = 'Install has started.' \} \} \} \}). Language codes and keys are matched case-insensitively; specifying the same language or key more than once with differing case is an error. Existing keys are overridden in place. New keys that do not exist in the default string table are appended at the end of the relevant hashtable level.
 
     .PARAMETER PreInstallScriptBlock
         A ScriptBlock whose content will replace the Pre-Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
@@ -133,6 +136,11 @@ function New-ADTTemplate
         Creates a new v4 template with custom icons copied to Assets, with config.psd1 updated and configured to use them.
 
     .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -Strings @{ en = @{ BalloonTip = @{ Start = @{ Install = 'Contoso App installation started.' } } }; fr = @{ BalloonTip = @{ Start = @{ Install = 'Contoso App : installation en cours.' } } } }
+
+        Creates a new v4 template with the English and French balloon tip text for the start of an installation overridden.
+
+    .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7' } -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock { Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
 
         Creates a new v4 template with session properties defined, an MSI copied to Files and install/uninstall commands added.
@@ -210,6 +218,10 @@ function New-ADTTemplate
         [System.Collections.IDictionary]$Config,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.Collections.IDictionary]$Strings,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$PreInstallScriptBlock,
 
@@ -279,7 +291,7 @@ function New-ADTTemplate
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Reject content inputs whose destination category has been excluded. Assets is allowed so custom assets can be provided while excluding the defaults.
-        if (($invalidParams = @('Config', 'Files', 'SupportFiles').Where({ ($_ -in $ExcludeContent) -and $PSBoundParameters.ContainsKey($_) })))
+        if (($invalidParams = @('Config', 'Files', 'Strings', 'SupportFiles').Where({ ($_ -in $ExcludeContent) -and $PSBoundParameters.ContainsKey($_) })))
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("The following parameters cannot be supplied when their content is excluded: $($invalidParams -join ', ').")
@@ -408,26 +420,36 @@ function New-ADTTemplate
             return ($scriptBodies -join ([System.Environment]::NewLine * 2))
         }
 
-        # Helper to return a list of text replacements for a config.psd1 text content based on a dictionary of settings.
-        function Get-ADTConfigReplacements
+        # Helper to return a list of text replacements for a config.psd1 or strings.psd1 text content based on a dictionary of settings.
+        function Get-ADTDataFileReplacement
         {
             [CmdletBinding()]
             [OutputType([PSCustomObject[]])]
             param
             (
                 [Parameter(Mandatory = $true)]
-                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-                [System.String]$ConfigText,
+                [ValidateSet('Config', 'Strings')]
+                [System.String]$DataName,
 
                 [Parameter(Mandatory = $true)]
                 [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-                [System.Collections.IDictionary]$Settings
+                [System.String]$DataFileText,
+
+                [Parameter(Mandatory = $true)]
+                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+                [System.Collections.IDictionary]$Settings,
+
+                [Parameter(Mandatory = $false)]
+                [ValidateNotNullOrEmpty()]
+                [System.String]$KeyPath
             )
 
-            $configHashtableAst = [System.Management.Automation.Language.Parser]::ParseInput($ConfigText, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].Expression
-            $configInsertions = @{}
+            $dataFileHashtableAst = [System.Management.Automation.Language.Parser]::ParseInput($DataFileText, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].Expression
+            $dataFileInsertions = @{}
+            $dataLabel = $DataName.ToLowerInvariant()
+            $keyTypeMismatchErrorId = "$($DataName)KeyTypeMismatch"
 
-            # Recursive scriptblock to walk user dictionary against config AST.
+            # Recursive scriptblock to walk user dictionary against data file AST.
             $collectReplacements = {
                 param ([System.Collections.IDictionary]$SettingsDict, $HashtableAst, [System.String]$Path)
                 foreach ($kvp in $SettingsDict.GetEnumerator())
@@ -436,10 +458,10 @@ function New-ADTTemplate
                     $matchingKvp = $HashtableAst.KeyValuePairs.Where({ $_.Item1.Value -eq $kvp.Key })
                     if ($matchingKvp.Count -eq 0)
                     {
-                        # Key does not exist in the default config; accumulate it for insertion.
+                        # Key does not exist in the default data file; accumulate it for insertion.
                         $serializedValue = ConvertTo-ADTExpression -InputObject $kvp.Value -LiteralString
-                        $closingBraceOffset = $ConfigText.LastIndexOf('}', $HashtableAst.Extent.EndOffset - 1)
-                        $braceLineStart = $ConfigText.LastIndexOf("`n", $closingBraceOffset - 1) + 1
+                        $closingBraceOffset = $DataFileText.LastIndexOf('}', $HashtableAst.Extent.EndOffset - 1)
+                        $braceLineStart = $DataFileText.LastIndexOf("`n", $closingBraceOffset - 1) + 1
                         $indent = if ($HashtableAst.KeyValuePairs.Count -gt 0)
                         {
                             ' ' * ($HashtableAst.KeyValuePairs[0].Item1.Extent.StartColumnNumber - 1)
@@ -448,11 +470,11 @@ function New-ADTTemplate
                         {
                             '    '
                         }
-                        if (!$configInsertions.ContainsKey($braceLineStart))
+                        if (!$dataFileInsertions.ContainsKey($braceLineStart))
                         {
-                            $configInsertions[$braceLineStart] = [System.Collections.Generic.List[System.String]]::new()
+                            $dataFileInsertions[$braceLineStart] = [System.Collections.Generic.List[System.String]]::new()
                         }
-                        $configInsertions[$braceLineStart].Add("${indent}'$([System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent($kvp.Key))' = $serializedValue")
+                        $dataFileInsertions[$braceLineStart].Add("${indent}'$([System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent($kvp.Key))' = $serializedValue")
                         continue
                     }
                     $astValue = $matchingKvp[0].Item2.PipelineElements[0].Expression
@@ -461,9 +483,9 @@ function New-ADTTemplate
                         if ($astValue -isnot [System.Management.Automation.Language.HashtableAst])
                         {
                             $naerParams = @{
-                                Exception = [System.ArgumentException]::new("The config key '$currentPath' is not a hashtable in the default configuration but a hashtable value was provided.")
+                                Exception = [System.ArgumentException]::new("The $dataLabel key '$currentPath' is not a hashtable in the default $dataLabel.psd1 file but a hashtable value was provided.")
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                ErrorId = 'ConfigKeyTypeMismatch'
+                                ErrorId = $keyTypeMismatchErrorId
                                 TargetObject = $currentPath
                                 RecommendedAction = 'Please provide a scalar value for this key and try again.'
                             }
@@ -481,15 +503,15 @@ function New-ADTTemplate
                     }
                 }
             }
-            & $collectReplacements -SettingsDict $Settings -HashtableAst $configHashtableAst -Path $null
+            & $collectReplacements -SettingsDict $Settings -HashtableAst $dataFileHashtableAst -Path $KeyPath
 
             # Convert accumulated new-key insertions into replacement objects.
-            foreach ($offset in $configInsertions.Keys)
+            foreach ($offset in $dataFileInsertions.Keys)
             {
                 [PSCustomObject]@{
                     Start = $offset
                     End = $offset
-                    Value = (($configInsertions[$offset] -join [System.Environment]::NewLine) + [System.Environment]::NewLine)
+                    Value = (($dataFileInsertions[$offset] -join [System.Environment]::NewLine) + [System.Environment]::NewLine)
                 }
             }
         }
@@ -536,6 +558,80 @@ function New-ADTTemplate
                     RecommendedAction = "Please use -Version 4 or remove the -$($invalidParams -join ', -') parameter(s) and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+        }
+
+        # Keys are matched case-insensitively, so reject dictionaries (e.g. generic dictionaries) that supply the same key with differing case.
+        $assertUniqueKeys = {
+            param ([System.Collections.IDictionary]$Dictionary, [System.String]$DataName, [System.String]$Path)
+            $seenKeys = [System.Collections.Generic.HashSet[System.String]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($kvp in $Dictionary.GetEnumerator())
+            {
+                $key = $kvp.Key.ToString()
+                $currentPath = if ($Path) { "$Path.$key" } else { $key }
+                if (!$seenKeys.Add($key))
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new("The $($DataName.ToLowerInvariant()) key '$currentPath' is specified more than once with differing case.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = "$($DataName)KeyDuplicate"
+                        TargetObject = $currentPath
+                        RecommendedAction = 'Please specify each key only once (keys are not case-sensitive) and try again.'
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
+                if ($kvp.Value -is [System.Collections.IDictionary])
+                {
+                    & $assertUniqueKeys -Dictionary $kvp.Value -DataName $DataName -Path $currentPath
+                }
+            }
+        }
+        if ($PSBoundParameters.ContainsKey('Config'))
+        {
+            & $assertUniqueKeys -Dictionary $Config -DataName Config -Path $null
+        }
+
+        # Resolve each -Strings language to its default string table key. English is the root string table, keyed by an empty string.
+        $stringsByLanguage = [System.Collections.Generic.Dictionary[System.String, System.Collections.IDictionary]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        if ($PSBoundParameters.ContainsKey('Strings'))
+        {
+            & $assertUniqueKeys -Dictionary $Strings -DataName Strings -Path $null
+            $languageLookup = [System.Collections.Generic.Dictionary[System.String, System.String]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($shippedLanguage in (Get-ADTModuleDefaults).Strings.Keys)
+            {
+                $languageLookup.Add($(if ($shippedLanguage) { $shippedLanguage } else { 'en' }), $shippedLanguage)
+            }
+            foreach ($language in $Strings.GetEnumerator())
+            {
+                $languageName = $language.Key.ToString(); $languageKey = $null
+                if (!$languageLookup.TryGetValue($languageName, [ref]$languageKey))
+                {
+                    # New languages become folder names, so restrict them to language tag characters.
+                    if ($languageName -notmatch '\A[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*\z')
+                    {
+                        $naerParams = @{
+                            Exception = [System.ArgumentException]::new("The language [$languageName] specified in -Strings is not a valid language code.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                            ErrorId = 'StringsLanguageInvalid'
+                            TargetObject = $languageName
+                            RecommendedAction = 'Please specify a language code such as en, fr or pt-BR and try again.'
+                        }
+                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    }
+                    $languageKey = $languageName
+                }
+                if (($language.Value -isnot [System.Collections.IDictionary]) -or ($language.Value.Count -eq 0))
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new("The value for language [$languageName] specified in -Strings is not a non-empty dictionary.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = 'StringsLanguageValueInvalid'
+                        TargetObject = $language.Value
+                        RecommendedAction = 'Please provide a hashtable of string table overrides for this language and try again.'
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
+                $stringsByLanguage.Add($languageKey, $language.Value)
             }
         }
 
@@ -661,7 +757,7 @@ if ($adtSession.UseDefaultMsi)
                     $configText = (Get-ADTModuleDefaults).Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png')
                     if ($PSBoundParameters.ContainsKey('Config'))
                     {
-                        $configReplacements = Get-ADTConfigReplacements -ConfigText $configText -Settings $Config
+                        $configReplacements = Get-ADTDataFileReplacement -DataName Config -DataFileText $configText -Settings $Config
                         $configText = Set-ADTTextReplacements -InputText $configText -Replacements $configReplacements
                     }
                     $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
@@ -671,17 +767,24 @@ if ($adtSession.UseDefaultMsi)
                 # Export the string data from the module to disk.
                 if ('Strings' -notin $ExcludeContent)
                 {
-                    $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
-                    foreach ($stringData in (Get-ADTModuleDefaults).Strings.GetEnumerator())
+                    $defaultStrings = (Get-ADTModuleDefaults).Strings
+                    $languages = @($defaultStrings.Keys) + @($stringsByLanguage.Keys.Where({ !$defaultStrings.ContainsKey($_) }))
+                    foreach ($language in $languages)
                     {
-                        if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
+                        # New languages start from the English string table.
+                        $stringsScriptBlock = if ($defaultStrings.ContainsKey($language)) { $defaultStrings[$language] } else { $defaultStrings[[System.String]::Empty] }
+                        if ($stringsByLanguage.ContainsKey($language))
                         {
-                            continue
+                            $stringsText = $stringsScriptBlock.ToString()
+                            if (($stringsReplacements = Get-ADTDataFileReplacement -DataName Strings -DataFileText $stringsText -Settings $stringsByLanguage[$language] -KeyPath $(if ($language) { $language } else { 'en' })))
+                            {
+                                $stringsScriptBlock = [System.Management.Automation.ScriptBlock]::Create((Set-ADTTextReplacements -InputText $stringsText -Replacements $stringsReplacements))
+                            }
                         }
-                        $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
-                        Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
+                        $stringsPath = [System.IO.Path]::Combine("$templatePath\Strings", $language)
+                        $null = New-Item -Path $stringsPath -ItemType Directory -Force
+                        Export-ADTScriptBlockToFile -ScriptBlock $stringsScriptBlock -LiteralPath "$stringsPath\strings.psd1"
                     }
-                    Export-ADTScriptBlockToFile -ScriptBlock (Get-ADTModuleDefaults).Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
                 }
 
                 # Ensure all editable ps*1 files are not read-only and remove any digital signatures.
