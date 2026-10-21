@@ -81,6 +81,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     ArgumentException.ThrowIfNullOrWhiteSpace(options.CustomMessageText);
                     labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
+                    AllowScrolling(labelCustomMessage);
                 }
                 else
                 {
@@ -88,6 +89,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
 
                 // Set up the process service.
+                AllowScrolling(listBoxCloseProcesses);
                 listBoxCloseProcesses.Items.Clear();
                 if (state.RunningProcessService is not null)
                 {

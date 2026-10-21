@@ -124,6 +124,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     labelMessage.TextAlign = alignment;
                 }
                 labelMessage.Text = StripFormattingTags(options.MessageText);
+                AllowScrolling(labelMessage);
             }
 
             // Resume the dialog now that we've applied any options.

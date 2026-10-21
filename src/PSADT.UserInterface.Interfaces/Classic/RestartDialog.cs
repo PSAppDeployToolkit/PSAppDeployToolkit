@@ -74,6 +74,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     ArgumentException.ThrowIfNullOrWhiteSpace(options.CustomMessageText);
                     labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
+                    AllowScrolling(labelCustomMessage);
                 }
                 else
                 {

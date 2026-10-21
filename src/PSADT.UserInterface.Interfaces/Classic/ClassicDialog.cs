@@ -62,6 +62,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 FormClosing += Form_FormClosing;
                 FormClosed += Form_FormClosed;
                 Load += Form_Load;
+                SizeChanged += Form_SizeChanged;
                 ResumeLayout();
 
                 // Set the expiry timer if specified.
@@ -143,6 +144,47 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
+        /// Lets the specified list box give up height, down to two rows, when the dialog is too tall for the screen.
+        /// </summary>
+        /// <remarks>The list box must fill a panel of its own, whose height is what gets constrained.</remarks>
+        /// <param name="listBox">The list box to allow to shrink. Its rows already scroll.</param>
+        private protected void AllowScrolling(ListBox listBox)
+        {
+            scrollableList = listBox;
+        }
+
+        /// <summary>
+        /// Lets the specified label scroll, down to four lines, when the dialog is too tall for the screen.
+        /// </summary>
+        /// <remarks>The label is moved into a panel of its own, which takes its place, margin and anchoring.</remarks>
+        /// <param name="label">The label to allow to scroll.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the label has not been added to the dialog.</exception>
+        private protected void AllowScrolling(Label label)
+        {
+            Control parent = label.Parent ?? throw new InvalidOperationException("The label must be part of the dialog before it can scroll.");
+            Panel host = new() { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Anchor = label.Anchor, Margin = label.Margin, Padding = Padding.Empty };
+            if (parent is TableLayoutPanel table)
+            {
+                TableLayoutPanelCellPosition position = table.GetPositionFromControl(label);
+                int columnSpan = table.GetColumnSpan(label);
+                host.Controls.Add(label);
+                table.Controls.Add(host, position.Column, position.Row);
+                table.SetColumnSpan(host, columnSpan);
+            }
+            else
+            {
+                int index = parent.Controls.GetChildIndex(label);
+                host.Controls.Add(label);
+                parent.Controls.Add(host);
+                parent.Controls.SetChildIndex(host, index);
+            }
+            label.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            label.Margin = Padding.Empty;
+            label.Location = Point.Empty;
+            scrollableLabelHosts.Add(host);
+        }
+
+        /// <summary>
         /// Formats a specified time interval as a string in hours, minutes, and seconds.
         /// </summary>
         /// <remarks>The formatted string includes the total number of hours, which may exceed 24 if the
@@ -219,9 +261,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
-            // Set the form's scale and starting location.
-            ScaleDialog(dialogScale);
-            PositionForm();
+            // Set the form's size and starting location.
+            FitAndPositionForm();
 
             // Start the persist timer if it's available.
             if (persistTimer.Interval != int.MaxValue)
@@ -248,7 +289,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // We're on a thread pool thread → marshal back to UI thread.
             if (!IsDisposed && IsHandleCreated)
             {
-                _ = BeginInvoke(PositionForm);
+                _ = BeginInvoke(FitAndPositionForm);
             }
         }
 
@@ -266,7 +307,21 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Taskbar moves / size changes often show up here.
             if (!IsDisposed && IsHandleCreated && (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.Desktop or UserPreferenceCategory.Window))
             {
-                _ = BeginInvoke(PositionForm);
+                _ = BeginInvoke(FitAndPositionForm);
+            }
+        }
+
+        /// <summary>
+        /// Handles the form's size changing, such as when its content changes, by refitting and repositioning it.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void Form_SizeChanged(object? sender, EventArgs e)
+        {
+            // Bringing the dialog to the front minimizes and restores it, and a minimized form has no size to fit.
+            if (!fitting && Visible && WindowState is FormWindowState.Normal)
+            {
+                FitAndPositionForm();
             }
         }
 
@@ -500,6 +555,123 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
+        /// Fits the form within the working area of its screen, then positions it.
+        /// </summary>
+        private void FitAndPositionForm()
+        {
+            FitToWorkingArea();
+            PositionForm();
+        }
+
+        /// <summary>
+        /// Fits the form within the working area of its screen, first letting its scrollable regions give up height and
+        /// only then scaling it down.
+        /// </summary>
+        private void FitToWorkingArea()
+        {
+            if (fitting || WindowState is not FormWindowState.Normal)
+            {
+                return;
+            }
+            fitting = true;
+            try
+            {
+                // Lay the dialog out at its designed size with nothing constrained to find its natural size. Fonts and
+                // wrapping don't scale linearly, so measuring at whatever scale is applied would give a different answer.
+                foreach (Panel host in scrollableLabelHosts)
+                {
+                    SetLabelScrollHeight(host, height: null);
+                }
+                ScaleDialog(1.0);
+                Panel? listPanel = scrollableList?.Parent is Panel panel && Contains(panel) ? panel : null;
+                if (listPanel is not null)
+                {
+                    designListHeight ??= listPanel.Height;
+                    listPanel.Height = designListHeight.Value;
+                }
+
+                // The list gives up height first, down to two rows, then each label down to four lines.
+                List<DialogFitRegion> regions = [];
+                if (listPanel is not null && scrollableList is not null)
+                {
+                    int listBorder = scrollableList.Height - scrollableList.ClientSize.Height;
+                    regions.Add(new(listPanel.Height, Math.Min(listPanel.Height, (scrollableList.ItemHeight * 2) + listBorder)));
+                }
+                // Lines are measured with GDI, as the label draws with it, rather than trusting Font.Height from GDI+.
+                foreach (Panel host in scrollableLabelHosts)
+                {
+                    regions.Add(new(host.Height, Math.Min(host.Height, TextRenderer.MeasureText("X", host.Controls[0].Font).Height * 4)));
+                }
+
+                // Fit within the working area, less the margin the dialog keeps from its edges and the window frame.
+                Rectangle workingArea = Screen.FromControl(this).WorkingArea;
+                int margin = (int)Math.Round(ScreenEdgeMargin * NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0, MidpointRounding.AwayFromZero);
+                Size frame = Size - ClientSize;
+                int availableHeight = workingArea.Height - (2 * margin) - frame.Height;
+                DialogFit fit = DialogFitCalculator.Calculate(ClientSize.Width, ClientSize.Height, workingArea.Width - (2 * margin) - frame.Width, availableHeight, dialogScale, regions);
+                ScaleDialog(fit.Scale);
+                SuspendLayout();
+                int region = 0;
+                if (listPanel is not null)
+                {
+                    double maxHeight = fit.RegionMaxHeights[region++];
+                    if (!double.IsPositiveInfinity(maxHeight))
+                    {
+                        listPanel.Height = (int)Math.Floor(maxHeight * appliedScale);
+                    }
+                }
+                foreach (Panel host in scrollableLabelHosts)
+                {
+                    double maxHeight = fit.RegionMaxHeights[region++];
+                    if (!double.IsPositiveInfinity(maxHeight))
+                    {
+                        SetLabelScrollHeight(host, (int)Math.Floor(maxHeight * appliedScale));
+                    }
+                }
+                ResumeLayout();
+
+                // WinForms rounds every scaled size, so take off whatever overflow that leaves behind.
+                if (ClientSize.Height > availableHeight)
+                {
+                    ScaleDialog(Math.Max(BaseDialogOptions.MinimumDialogScale, appliedScale * availableHeight / ClientSize.Height));
+                }
+            }
+            finally
+            {
+                fitting = false;
+            }
+        }
+
+        /// <summary>
+        /// Constrains a scrollable label's host panel to the specified height, or lets it size to the label again.
+        /// </summary>
+        /// <param name="host">The panel hosting the label.</param>
+        /// <param name="height">The height to constrain the panel to, or <see langword="null"/> to stop constraining it.</param>
+        private static void SetLabelScrollHeight(Panel host, int? height)
+        {
+            // The label narrows by the scroll bar's width while it scrolls so its text never runs beneath the bar.
+            Control label = host.Controls[0];
+            int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
+            if (height is null)
+            {
+                if (host.AutoScroll)
+                {
+                    host.AutoScroll = false;
+                    label.MaximumSize = new(label.MaximumSize.Width + scrollBarWidth, 0);
+                    label.MinimumSize = new(label.MinimumSize.Width > 0 ? label.MinimumSize.Width + scrollBarWidth : 0, label.MinimumSize.Height);
+                    host.AutoSize = true;
+                }
+                return;
+            }
+            Size size = new(host.Width, height.Value);
+            host.AutoSize = false;
+            label.MaximumSize = new(label.MaximumSize.Width - scrollBarWidth, 0);
+            label.MinimumSize = new(label.MinimumSize.Width > 0 ? label.MinimumSize.Width - scrollBarWidth : 0, label.MinimumSize.Height);
+            host.Size = size;
+            host.AutoScroll = true;
+        }
+
+        /// <summary>
         /// Scales the dialog's layout and fonts relative to its designed size.
         /// </summary>
         /// <remarks>WinForms scales bounds, margins, padding and size limits but not fonts, so every explicitly set font
@@ -668,6 +840,31 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// The fonts created for the current scale, released when replaced.
         /// </summary>
         private List<Font> scaledFonts = [];
+
+        /// <summary>
+        /// The list box allowed to give up height when the dialog is too tall, if any.
+        /// </summary>
+        private ListBox? scrollableList;
+
+        /// <summary>
+        /// The designed height of the scrollable list box's panel, captured on first fitting.
+        /// </summary>
+        private int? designListHeight;
+
+        /// <summary>
+        /// The panels hosting labels allowed to scroll when the dialog is too tall, in the order they give up height.
+        /// </summary>
+        private readonly List<Panel> scrollableLabelHosts = [];
+
+        /// <summary>
+        /// Whether the dialog is currently being fitted, so the size changes it causes don't refit it again.
+        /// </summary>
+        private bool fitting;
+
+        /// <summary>
+        /// The margin, in device-independent pixels, kept between the dialog and the edges of the working area.
+        /// </summary>
+        private const int ScreenEdgeMargin = 16;
 
         /// <summary>
         /// Cache for icons to avoid loading them multiple times.
