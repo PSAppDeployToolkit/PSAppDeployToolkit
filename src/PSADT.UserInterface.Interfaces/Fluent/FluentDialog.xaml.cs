@@ -869,18 +869,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     }
             }
 
-            // Ensure the window is within the screen bounds.
+            // Adjust for workArea offset.
+            string dialogPosName = _dialogPosition.ToString();
+            left -= _dialogPosition is DialogPosition.Default || dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 18 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -18 : 0;
+            top -= _dialogPosition is DialogPosition.Default || dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 14 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -14 : 0;
+
+            // Ensure the window is within the screen bounds, after the offsets so they can't push it back out.
             left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right - ActualWidth));
             top = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - ActualHeight));
 
             // Align positions to whole pixels.
             left = Math.Floor(left);
             top = Math.Floor(top);
-
-            // Adjust for workArea offset.
-            string dialogPosName = _dialogPosition.ToString();
-            left -= _dialogPosition is DialogPosition.Default || dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 18 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -18 : 0;
-            top -= _dialogPosition is DialogPosition.Default || dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 14 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -14 : 0;
 
             // Set positions in DIPs.
             Left = _startingLeft = left;
