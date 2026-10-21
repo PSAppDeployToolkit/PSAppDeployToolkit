@@ -6,6 +6,8 @@
     <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
     <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
     <ApplicationIcon>..\..\src\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <!-- The client's manifest without uiAccess, so the harness starts DPI aware just as the client does. -->
+    <ApplicationManifest>..\..\src\PSADT.ClientServer.Client\Properties\app.compatible.manifest</ApplicationManifest>
     <StartupObject>PSADT.UserInterface.Interfaces.TestHarness.Program</StartupObject>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
