@@ -835,10 +835,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (messageHeight > 0)
             {
                 double lineHeight = MessageTextBlock.FontFamily.LineSpacing * MessageTextBlock.FontSize;
-                double messageNatural = MessageScrollViewer.ExtentHeight;
+                double messagePadding = MessageScrollViewer.Padding.Top + MessageScrollViewer.Padding.Bottom;
+                double messageNatural = MessageScrollViewer.ExtentHeight + messagePadding;
                 naturalHeight += messageNatural - messageHeight;
                 messageRegion = regions.Count;
-                regions.Add(new(messageNatural, Math.Min(messageNatural, lineHeight * 4)));
+                regions.Add(new(messageNatural, Math.Min(messageNatural, (lineHeight * 4) + messagePadding)));
             }
 
             // Fit within the work area, less the margin the dialog keeps from its edges.
@@ -884,7 +885,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Masking the content rather than the scroll viewer keeps the scroll bar unfaded. The gradient spans the
             // viewport in the content's own coordinates, which move with the offset when the content scrolls physically.
-            double viewportTop = scrollViewer.TranslatePoint(default, content).Y;
+            // The viewport is the content presenter, which a scroll viewer's padding can inset from the scroll viewer.
+            UIElement viewport = scrollViewer.Template?.FindName("PART_ScrollContentPresenter", scrollViewer) as UIElement ?? scrollViewer;
+            double viewportTop = viewport.TranslatePoint(default, content).Y;
             double fade = Math.Min(0.5, ScrollFadeHeight / e.ViewportHeight);
             content.OpacityMask = new LinearGradientBrush(
             [

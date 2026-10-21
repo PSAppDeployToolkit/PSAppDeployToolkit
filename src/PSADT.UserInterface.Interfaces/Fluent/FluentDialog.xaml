@@ -193,10 +193,10 @@
                 Orientation="Vertical"
                 >
 
-                <!-- Message Panel -->
+                <!-- Message Panel. Padding rather than margin, so the scroll bar runs the full height while the text stays inset. -->
                 <ScrollViewer
                     x:Name="MessageScrollViewer"
-                    Margin="0,16"
+                    Padding="0,16"
                     AutomationProperties.Name="Message Scroll Container"
                     HorizontalScrollBarVisibility="Disabled"
                     Style="{DynamicResource ScrollViewerStyle}"
