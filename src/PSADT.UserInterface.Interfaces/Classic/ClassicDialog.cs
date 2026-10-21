@@ -144,7 +144,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Lets the specified list box give up height, down to two rows, when the dialog is too tall for the screen.
+        /// Lets the specified list box give up height, down to four rows, when the dialog is too tall for the screen.
         /// </summary>
         /// <remarks>The list box must fill a panel of its own, whose height is what gets constrained.</remarks>
         /// <param name="listBox">The list box to allow to shrink. Its rows already scroll.</param>
@@ -319,7 +319,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private void Form_SizeChanged(object? sender, EventArgs e)
         {
             // Bringing the dialog to the front minimizes and restores it, and a minimized form has no size to fit.
-            if (!fitting && Visible && WindowState is FormWindowState.Normal)
+            if (!fitting && Visible && WindowState is FormWindowState.Normal && Size != fittedSize)
             {
                 FitAndPositionForm();
             }
@@ -590,12 +590,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     listPanel.Height = designListHeight.Value;
                 }
 
-                // The list gives up height first, down to two rows, then each label down to four lines.
+                // The list gives up height first, down to four rows so its scroll bar keeps room for a thumb between its arrows, then each label down to four lines.
                 List<DialogFitRegion> regions = [];
                 if (listPanel is not null && scrollableList is not null)
                 {
                     int listBorder = scrollableList.Height - scrollableList.ClientSize.Height;
-                    regions.Add(new(listPanel.Height, Math.Min(listPanel.Height, (scrollableList.ItemHeight * 2) + listBorder)));
+                    regions.Add(new(listPanel.Height, Math.Min(listPanel.Height, (scrollableList.ItemHeight * 4) + listBorder)));
                 }
                 // Lines are measured with GDI, as the label draws with it, rather than trusting Font.Height from GDI+.
                 foreach (Panel host in scrollableLabelHosts)
@@ -635,6 +635,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     ScaleDialog(Math.Max(BaseDialogOptions.MinimumDialogScale, appliedScale * availableHeight / ClientSize.Height));
                 }
+                fittedSize = Size;
             }
             finally
             {
@@ -860,6 +861,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Whether the dialog is currently being fitted, so the size changes it causes don't refit it again.
         /// </summary>
         private bool fitting;
+
+        /// <summary>
+        /// The size the dialog was last fitted to, so returning to it, as on restoring from minimized, doesn't refit it.
+        /// </summary>
+        private Size fittedSize;
 
         /// <summary>
         /// The margin, in device-independent pixels, kept between the dialog and the edges of the working area.
