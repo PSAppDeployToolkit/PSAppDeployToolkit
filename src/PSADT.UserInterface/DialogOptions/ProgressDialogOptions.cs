@@ -37,6 +37,7 @@ namespace PSADT.UserInterface.DialogOptions
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
             (double?)options["FluentDialogScale"],
+            (double?)options["ClassicDialogScale"],
             (string?)options["ProgressMessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'ProgressMessageText' is missing."),
             (string?)options["ProgressDetailMessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'ProgressDetailMessageText' is missing."),
             (double?)options["ProgressPercentage"],
@@ -70,6 +71,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
         /// used.</param>
         /// <param name="fluentDialogScale">The scale of the Fluent dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
+        /// <param name="classicDialogScale">The scale of the Classic dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
         /// <param name="progressMessageText">The main progress message text displayed in the dialog. Cannot be <see langword="null"/>.</param>
         /// <param name="progressDetailMessageText">The detailed progress message text displayed in the dialog. Cannot be <see langword="null"/>.</param>
         /// <param name="progressPercentage">The percentage of progress completed, represented as a value between 0 and 100. If <see langword="null"/>,
@@ -79,7 +81,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="progressMessageText"/> or <paramref name="progressDetailMessageText"/> is <see
         /// langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="progressPercentage"/> has a value that is not between 0 and 100.</exception>
-        private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale)
+        private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, double? classicDialogScale, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale, classicDialogScale)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageText);
             ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessageText);

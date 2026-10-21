@@ -100,6 +100,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // The minimize box is all that has to move; the designer already supplies the rest, so
                 // the four further assignments this block used to carry only rewrote existing values.
                 MinimizeBox = options.DialogAllowMinimize is true;
+
+                // Set the requested scale, applied once the derived dialog has laid itself out.
+                if (options.ClassicDialogScale is not null)
+                {
+                    dialogScale = options.ClassicDialogScale.Value;
+                }
             }
 
             // Set the dialog result.
@@ -213,7 +219,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
-            // Set the form's starting location.
+            // Set the form's scale and starting location.
+            ScaleDialog(dialogScale);
             PositionForm();
 
             // Start the persist timer if it's available.
@@ -493,6 +500,58 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
+        /// Scales the dialog's layout and fonts relative to its designed size.
+        /// </summary>
+        /// <remarks>WinForms scales bounds, margins, padding and size limits but not fonts, so every explicitly set font
+        /// is rescaled from its designed size. Bounds are scaled by the ratio to the scale already applied.</remarks>
+        /// <param name="scale">The scale to apply, where 1.0 is the designed size.</param>
+        private void ScaleDialog(double scale)
+        {
+            if (Math.Abs(scale - appliedScale) < 0.001)
+            {
+                return;
+            }
+
+            // A font is explicitly set wherever it isn't the very instance inherited from the parent.
+            if (designFonts is null)
+            {
+                designFonts = new() { { this, Font } };
+                Stack<Control> pending = new([this]);
+                while (pending.Count > 0)
+                {
+                    Control parent = pending.Pop();
+                    foreach (Control child in parent.Controls)
+                    {
+                        if (!ReferenceEquals(child.Font, parent.Font))
+                        {
+                            designFonts.Add(child, child.Font);
+                        }
+                        pending.Push(child);
+                    }
+                }
+            }
+
+            // Rescale everything, then swap in the new fonts and release the ones they replace.
+            SuspendLayout();
+            float ratio = (float)(scale / appliedScale);
+            Scale(new SizeF(ratio, ratio));
+            List<Font> replacedFonts = scaledFonts;
+            scaledFonts = [];
+            foreach (KeyValuePair<Control, Font> designFont in designFonts)
+            {
+                Font font = new(designFont.Value.FontFamily, (float)(designFont.Value.Size * scale), designFont.Value.Style, designFont.Value.Unit, designFont.Value.GdiCharSet);
+                designFont.Key.Font = font;
+                scaledFonts.Add(font);
+            }
+            ResumeLayout();
+            foreach (Font font in replacedFonts)
+            {
+                font.Dispose();
+            }
+            appliedScale = scale;
+        }
+
+        /// <summary>
         /// Handles the timer tick event for persisting the dialog.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -589,6 +648,26 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Indicates whether the dialog is allowed to be moved.
         /// </summary>
         private readonly bool dialogAllowMove = true;
+
+        /// <summary>
+        /// The scale requested for the dialog, relative to its designed size.
+        /// </summary>
+        private readonly double dialogScale = 1.0;
+
+        /// <summary>
+        /// The scale currently applied to the dialog.
+        /// </summary>
+        private double appliedScale = 1.0;
+
+        /// <summary>
+        /// The explicitly set fonts of the form and its controls at their designed size, captured on first scaling.
+        /// </summary>
+        private Dictionary<Control, Font>? designFonts;
+
+        /// <summary>
+        /// The fonts created for the current scale, released when replaced.
+        /// </summary>
+        private List<Font> scaledFonts = [];
 
         /// <summary>
         /// Cache for icons to avoid loading them multiple times.

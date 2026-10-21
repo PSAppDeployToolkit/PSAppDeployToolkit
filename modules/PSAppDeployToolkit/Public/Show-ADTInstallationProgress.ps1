@@ -285,6 +285,10 @@ function Show-ADTInstallationProgress
                     {
                         $dialogOptions.Add('FluentDialogScale', $adtConfig.UI.FluentDialogScale)
                     }
+                    if ($null -ne $adtConfig.UI.ClassicDialogScale)
+                    {
+                        $dialogOptions.Add('ClassicDialogScale', $adtConfig.UI.ClassicDialogScale)
+                    }
                     $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ProgressDialogOptions]) -Data $dialogOptions
 
                     # Create the new progress dialog.

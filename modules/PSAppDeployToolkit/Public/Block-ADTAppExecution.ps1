@@ -175,6 +175,10 @@ function Block-ADTAppExecution
                 {
                     $dialogOptions.Add('FluentDialogScale', $adtConfig.UI.FluentDialogScale)
                 }
+                if ($null -ne $adtConfig.UI.ClassicDialogScale)
+                {
+                    $dialogOptions.Add('ClassicDialogScale', $adtConfig.UI.ClassicDialogScale)
+                }
                 $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
 
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.

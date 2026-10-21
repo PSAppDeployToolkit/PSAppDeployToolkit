@@ -40,6 +40,7 @@ namespace PSADT.UserInterface.DialogOptions
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
             (double?)options["FluentDialogScale"],
+            (double?)options["ClassicDialogScale"],
             (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."),
             (DialogMessageAlignment?)options["MessageAlignment"],
             (string?)options["ButtonLeftText"],
@@ -77,6 +78,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
         /// used.</param>
         /// <param name="fluentDialogScale">The scale of the Fluent dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
+        /// <param name="classicDialogScale">The scale of the Classic dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
         /// <param name="messageText">The main message text displayed in the dialog. Cannot be <see langword="null"/> or empty.</param>
         /// <param name="messageAlignment">The alignment of the message text within the dialog. If <see langword="null"/>, the default alignment is
         /// used.</param>
@@ -89,7 +91,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
         /// <param name="minimizeWindows">Indicates whether all other windows should be minimized when the dialog is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="messageText"/> is <see langword="null"/> or empty.</exception>
-        private protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogDefaultButton? defaultButton, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale)
+        private protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, double? classicDialogScale, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogDefaultButton? defaultButton, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale, classicDialogScale)
         {
             // At least one button must be defined.
             if (buttonLeftText is not null)

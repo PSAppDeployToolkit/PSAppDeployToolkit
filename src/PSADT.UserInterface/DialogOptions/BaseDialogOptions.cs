@@ -48,7 +48,8 @@ namespace PSADT.UserInterface.DialogOptions
             (bool?)options["DialogAllowMinimize"],
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
-            (double?)options["FluentDialogScale"])
+            (double?)options["FluentDialogScale"],
+            (double?)options["ClassicDialogScale"])
         {
         }
 
@@ -74,10 +75,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <param name="fluentDialogScale">The scale of the Fluent dialog relative to its designed size at the current display scaling. If null, the designed size is used.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="fluentDialogScale"/> is outside <see cref="MinimumDialogScale"/> and <see cref="MaximumDialogScale"/>.</exception>
+        /// <param name="classicDialogScale">The scale of the Classic dialog relative to its designed size at the current display scaling. If null, the designed size is used.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="fluentDialogScale"/> or <paramref name="classicDialogScale"/> is outside <see cref="MinimumDialogScale"/> and <see cref="MaximumDialogScale"/>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null, double? fluentDialogScale = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null, double? fluentDialogScale = null, double? classicDialogScale = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -113,6 +115,7 @@ namespace PSADT.UserInterface.DialogOptions
             DialogExpiryDuration = dialogExpiryDuration;
             DialogPersistInterval = dialogPersistInterval;
             FluentDialogScale = ThrowIfDialogScaleIsInvalid(fluentDialogScale, nameof(fluentDialogScale));
+            ClassicDialogScale = ThrowIfDialogScaleIsInvalid(classicDialogScale, nameof(classicDialogScale));
         }
 
         /// <summary>
@@ -212,6 +215,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly double? FluentDialogScale;
+
+        /// <summary>
+        /// The scale of the Classic dialog relative to its designed size at the current display scaling.
+        /// </summary>
+        [DataMember]
+        public readonly double? ClassicDialogScale;
 
         /// <summary>
         /// The smallest accepted dialog scale.

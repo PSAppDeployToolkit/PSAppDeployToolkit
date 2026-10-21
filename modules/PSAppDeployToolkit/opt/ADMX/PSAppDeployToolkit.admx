@@ -355,6 +355,13 @@
         <text id="FluentDialogScale" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="FluentDialogScale" required="true" />
       </elements>
     </policy>
+    <policy name="ClassicDialogScale" class="Machine" displayName="$(string.ClassicDialogScale_Display)" explainText="$(string.ClassicDialogScale_Explain)" presentation="$(presentation.ClassicDialogScale)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI">
+      <parentCategory ref="UI" />
+      <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
+      <elements>
+        <text id="ClassicDialogScale" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="ClassicDialogScale" required="true" />
+      </elements>
+    </policy>
     <policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
       <parentCategory ref="UI" />
       <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />

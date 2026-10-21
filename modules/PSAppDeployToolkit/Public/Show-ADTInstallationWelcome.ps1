@@ -1200,6 +1200,10 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('FluentDialogScale', $adtConfig.UI.FluentDialogScale)
                     }
+                    if ($null -ne $adtConfig.UI.ClassicDialogScale)
+                    {
+                        $dialogOptions.Add('ClassicDialogScale', $adtConfig.UI.ClassicDialogScale)
+                    }
                     if ($ContinueOnProcessClosure -and !$dialogOptions.ContainsKey('ContinueOnProcessClosure'))
                     {
                         $dialogOptions.Add('ContinueOnProcessClosure', $true)

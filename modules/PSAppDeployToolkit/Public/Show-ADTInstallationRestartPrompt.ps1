@@ -428,6 +428,10 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('FluentDialogScale', $adtConfig.UI.FluentDialogScale)
                 }
+                if ($null -ne $adtConfig.UI.ClassicDialogScale)
+                {
+                    $dialogOptions.Add('ClassicDialogScale', $adtConfig.UI.ClassicDialogScale)
+                }
                 $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.RestartDialogOptions]) -Data $dialogOptions -DeploymentType $deploymentType
 
                 # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.

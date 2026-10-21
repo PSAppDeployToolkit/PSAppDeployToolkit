@@ -471,6 +471,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentDialogScale', $adtConfig.UI.FluentDialogScale)
                 }
+                if ($null -ne $adtConfig.UI.ClassicDialogScale)
+                {
+                    $dialogOptions.Add('ClassicDialogScale', $adtConfig.UI.ClassicDialogScale)
+                }
                 if ($ListItems)
                 {
                     $dialogOptions.Add('ListItems', $ListItems)

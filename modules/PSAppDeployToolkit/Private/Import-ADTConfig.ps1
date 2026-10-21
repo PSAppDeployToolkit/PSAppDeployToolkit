@@ -161,7 +161,7 @@ function Private:Import-ADTConfig
     }
 
     # Confirm the dialog scales are within range. Policy values arrive as strings, so store them back as doubles.
-    foreach ($scaleKey in 'FluentDialogScale')
+    foreach ($scaleKey in 'FluentDialogScale', 'ClassicDialogScale')
     {
         $scale = $config.UI.$scaleKey -as [System.Double]
         if (!(($scale -ge [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale) -and ($scale -le [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)))

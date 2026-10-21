@@ -41,6 +41,7 @@ namespace PSADT.UserInterface.DialogOptions
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
             (double?)options["FluentDialogScale"],
+            (double?)options["ClassicDialogScale"],
             new((IDictionary?)options["Strings"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Strings' is missing."), deploymentType),
             (TimeSpan?)options["CountdownDuration"],
             (TimeSpan?)options["CountdownNoMinimizeDuration"],
@@ -76,6 +77,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
         /// used.</param>
         /// <param name="fluentDialogScale">The scale of the Fluent dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
+        /// <param name="classicDialogScale">The scale of the Classic dialog relative to its designed size. If <see langword="null"/>, the designed size is used.</param>
         /// <param name="strings">The localized strings used for dialog text and labels. Cannot be <see langword="null"/>.</param>
         /// <param name="countdownDuration">The duration of the countdown timer displayed in the dialog. If <see langword="null"/>, no countdown timer
         /// is displayed.</param>
@@ -86,7 +88,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
         /// <param name="dialogAllowCancel">Indicates whether the dialog displays a Cancel button that closes the prompt without restarting. If <see langword="null"/> or <see langword="false"/>, no Cancel button is shown.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
-        private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? shutdownReasonText, bool? noForceCloseApps, string? customMessageText, bool? dialogAllowCancel) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale)
+        private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, double? fluentDialogScale, double? classicDialogScale, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? shutdownReasonText, bool? noForceCloseApps, string? customMessageText, bool? dialogAllowCancel) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogScale, classicDialogScale)
         {
             if (customMessageText is not null)
             {

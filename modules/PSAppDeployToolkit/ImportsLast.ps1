@@ -139,6 +139,10 @@ try
                                                 # Accepts a value between 0.5 and 1.0, e.g. `FluentDialogScale = 0.9` draws the dialogs 10% smaller. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentDialogScale = 1.0
 
+                                                # Scale of the Classic dialogs relative to their designed size, on top of the display scaling configured in Windows.
+                                                # Accepts a value between 0.5 and 1.0, e.g. `ClassicDialogScale = 0.9` draws the dialogs 10% smaller. Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                ClassicDialogScale = 1.0
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 
