@@ -39,6 +39,9 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
             // What dialog style are we running with?
             const DialogStyle dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
 
+            // e.g. set PSADT_DIALOG_SCALE=0.9 before launching to try a scale without a rebuild.
+            double dialogScale = double.TryParse(EnvironmentUtilities.GetEnvironmentVariable("PSADT_DIALOG_SCALE"), NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedDialogScale) ? parsedDialogScale : 1.0;
+
             // Read PSADT's string table into memory.
             string importsLastPath = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\modules\PSAppDeployToolkit\ImportsLast.ps1");
             ScriptBlockAst stringsAst = Parser.ParseFile(importsLastPath, out _, out ParseError[]? errors);
@@ -133,6 +136,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "DeferralsRemaining", deferralsRemaining },
                     { "DeferralDeadline", deferralDeadline },
                     { "CustomMessageText", customMessageText },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
                 };
@@ -150,6 +154,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "AppBannerImage", appBannerImage },
                     { "ProgressMessageText", progressMessageText },
                     { "ProgressDetailMessageText", progressDetailMessageText },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "AdditionalOption", true },
                 });
@@ -170,6 +175,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
@@ -190,6 +196,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
@@ -209,6 +216,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
@@ -231,6 +239,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "InitialSelectedItem", listDialogItems[0] },
                     { "Strings", (Hashtable)stringTable["ListSelectionPrompt"]! },
                     { "MinimizeWindows", false },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
@@ -252,6 +261,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "ButtonRightText", inputDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "MessageAlignment", DialogMessageAlignment.Left },
                 });
@@ -270,6 +280,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "CountdownDuration", restartCountdownDuration },
                     { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                     // { "CustomMessageText", customMessageText },
+                    { "FluentDialogScale", dialogScale },
                     { "Language", CultureInfo.CurrentCulture },
                     { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
                 };

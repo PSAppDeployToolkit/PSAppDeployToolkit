@@ -135,6 +135,10 @@ try
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorDark = $null
 
+                                                # Scale of the Fluent dialogs relative to their designed size, on top of the display scaling configured in Windows.
+                                                # Accepts a value between 0.5 and 1.0, e.g. `FluentDialogScale = 0.9` draws the dialogs 10% smaller. Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                FluentDialogScale = 1.0
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 

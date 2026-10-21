@@ -9,7 +9,7 @@ using Xunit;
 namespace PSADT.UserInterface.Tests.DialogOptions
 {
     /// <summary>
-    /// Tests the fifteen options every dialog shares.
+    /// Tests the sixteen options every dialog shares.
     /// </summary>
     /// <remarks>
     /// <c language="csharp">BaseDialogOptions</c> is abstract and both its constructors are <c language="csharp">private protected</c>, so it
@@ -52,6 +52,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
                 ["DialogAllowMinimize"] = true,
                 ["DialogExpiryDuration"] = TimeSpan.FromMinutes(30),
                 ["DialogPersistInterval"] = TimeSpan.FromSeconds(90),
+                ["FluentDialogScale"] = 0.9,
                 ["ProgressMessageText"] = "the progress message",
                 ["ProgressDetailMessageText"] = "the detail message",
             };
@@ -75,6 +76,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.True(options.DialogAllowMinimize);
             Assert.Equal(TimeSpan.FromMinutes(30), options.DialogExpiryDuration);
             Assert.Equal(TimeSpan.FromSeconds(90), options.DialogPersistInterval);
+            Assert.Equal(0.9, options.FluentDialogScale);
         }
 
         /// <summary>
@@ -102,6 +104,49 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.DialogAllowMinimize);
             Assert.Null(options.DialogExpiryDuration);
             Assert.Null(options.DialogPersistInterval);
+            Assert.Null(options.FluentDialogScale);
+        }
+
+        /// <summary>
+        /// Verifies that a dialog scale outside the accepted range is refused.
+        /// </summary>
+        /// <param name="scale">The scale to supply.</param>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.49)]
+        [InlineData(1.01)]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        public void Constructor_RefusesADialogScaleOutOfRange(double scale)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentDialogScale"] = scale;
+
+            // Act & Assert
+            ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressDialogOptions(table));
+            Assert.Equal("fluentDialogScale", exception.ParamName);
+        }
+
+        /// <summary>
+        /// Verifies that a dialog scale within the accepted range, bounds included, is kept.
+        /// </summary>
+        /// <param name="scale">The scale to supply.</param>
+        [Theory]
+        [InlineData(BaseDialogOptions.MinimumDialogScale)]
+        [InlineData(0.75)]
+        [InlineData(BaseDialogOptions.MaximumDialogScale)]
+        public void Constructor_AcceptsADialogScaleWithinRange(double scale)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentDialogScale"] = scale;
+
+            // Act
+            ProgressDialogOptions options = new(table);
+
+            // Assert
+            Assert.Equal(scale, options.FluentDialogScale);
         }
 
         /// <summary>

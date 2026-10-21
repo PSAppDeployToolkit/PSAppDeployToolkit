@@ -103,6 +103,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _dialogMinimizeVisible = options.DialogAllowMinimize.Value;
             }
             IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
+            _designMaxWidth = MaxWidth;
+            _designMaxHeight = MaxHeight;
+            if (options.FluentDialogScale is not null)
+            {
+                _dialogScale = options.FluentDialogScale.Value;
+            }
+            ApplyDialogScale(_dialogScale);
             WindowStartupLocation = WindowStartupLocation.Manual;
 
             // Park the window off every monitor before any layout or show. Everything that positions it
@@ -765,6 +772,23 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
+        /// Scales the dialog's content and window constraints relative to the designed size.
+        /// </summary>
+        /// <param name="scale">The scale to apply, where 1.0 is the designed size.</param>
+        private void ApplyDialogScale(double scale)
+        {
+            if (Content is not FrameworkElement root)
+            {
+                return;
+            }
+
+            // The window constraints come from the design sizes every time, so repeated calls never compound.
+            root.LayoutTransform = scale.Equals(1.0) ? Transform.Identity : new ScaleTransform(scale, scale);
+            MaxWidth = Width = _designMaxWidth * scale;
+            MaxHeight = _designMaxHeight * scale;
+        }
+
+        /// <summary>
         /// Positions the window on the screen based on the specified dialog position. Suppressed
         /// while <see cref="_firstShowPending"/> is <see langword="true"/> so the window stays at
         /// <see cref="OffscreenCoordinate"/> until the first-show reveal in
@@ -1055,6 +1079,21 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Whether the dialog's minimize control is visible.
         /// </summary>
         private protected readonly bool _dialogMinimizeVisible;
+
+        /// <summary>
+        /// The scale requested for the dialog, relative to its designed size.
+        /// </summary>
+        private readonly double _dialogScale = 1.0;
+
+        /// <summary>
+        /// The window's designed maximum width, before any scale is applied.
+        /// </summary>
+        private readonly double _designMaxWidth;
+
+        /// <summary>
+        /// The window's designed maximum height, before any scale is applied.
+        /// </summary>
+        private readonly double _designMaxHeight;
 
         /// <summary>
         /// The timer that drives the countdown, if the dialog has one.

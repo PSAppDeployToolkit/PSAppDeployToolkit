@@ -160,6 +160,24 @@ function Private:Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError($_)
     }
 
+    # Confirm the dialog scales are within range. Policy values arrive as strings, so store them back as doubles.
+    foreach ($scaleKey in 'FluentDialogScale')
+    {
+        $scale = $config.UI.$scaleKey -as [System.Double]
+        if (!(($scale -ge [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale) -and ($scale -le [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentOutOfRangeException]::new("The value for [$scaleKey] must be between [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale)] and [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)].", $null)
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                ErrorId = 'ConfigDialogScaleOutOfRange'
+                TargetObject = $config.UI.$scaleKey
+                RecommendedAction = "Review your configuration and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        $config.UI.$scaleKey = $scale
+    }
+
     # Expand out environment variables and asset file paths.
     $Environment.PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath

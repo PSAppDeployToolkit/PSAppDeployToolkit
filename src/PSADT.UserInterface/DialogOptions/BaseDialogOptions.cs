@@ -47,7 +47,8 @@ namespace PSADT.UserInterface.DialogOptions
             (bool?)options["DialogAllowMove"],
             (bool?)options["DialogAllowMinimize"],
             (TimeSpan?)options["DialogExpiryDuration"],
-            (TimeSpan?)options["DialogPersistInterval"])
+            (TimeSpan?)options["DialogPersistInterval"],
+            (double?)options["FluentDialogScale"])
         {
         }
 
@@ -72,9 +73,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If null or false, the minimize button remains hidden (default behavior). Only explicit <see langword="true"/> opts the dialog into minimize support.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
+        /// <param name="fluentDialogScale">The scale of the Fluent dialog relative to its designed size at the current display scaling. If null, the designed size is used.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="fluentDialogScale"/> is outside <see cref="MinimumDialogScale"/> and <see cref="MaximumDialogScale"/>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null, double? fluentDialogScale = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -109,6 +112,7 @@ namespace PSADT.UserInterface.DialogOptions
             DialogAllowMinimize = dialogAllowMinimize;
             DialogExpiryDuration = dialogExpiryDuration;
             DialogPersistInterval = dialogPersistInterval;
+            FluentDialogScale = ThrowIfDialogScaleIsInvalid(fluentDialogScale, nameof(fluentDialogScale));
         }
 
         /// <summary>
@@ -204,6 +208,22 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly TimeSpan? DialogPersistInterval;
 
         /// <summary>
+        /// The scale of the Fluent dialog relative to its designed size at the current display scaling.
+        /// </summary>
+        [DataMember]
+        public readonly double? FluentDialogScale;
+
+        /// <summary>
+        /// The smallest accepted dialog scale.
+        /// </summary>
+        public const double MinimumDialogScale = 0.5;
+
+        /// <summary>
+        /// The largest accepted dialog scale.
+        /// </summary>
+        public const double MaximumDialogScale = 1.0;
+
+        /// <summary>
         /// Gets the culture name string for serialization.
         /// </summary>
         [DataMember]
@@ -252,6 +272,21 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new BadImageFormatException($"The specified [{identifier}] is not a valid image format", identifier, ex);
             }
+        }
+
+        /// <summary>
+        /// Validates that the specified dialog scale, if any, is within the accepted range.
+        /// </summary>
+        /// <param name="scale">The scale to validate.</param>
+        /// <param name="paramName">The name of the parameter the scale was supplied through.</param>
+        /// <returns>The original scale if it is null or within range.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="scale"/> is outside <see cref="MinimumDialogScale"/> and <see cref="MaximumDialogScale"/>.</exception>
+        [StackTraceHidden]
+        private static double? ThrowIfDialogScaleIsInvalid(double? scale, string paramName)
+        {
+            return scale is null || (scale.Value >= MinimumDialogScale && scale.Value <= MaximumDialogScale)
+                ? scale
+                : throw new ArgumentOutOfRangeException(paramName, scale, $"The dialog scale must be between {MinimumDialogScale.ToString(CultureInfo.InvariantCulture)} and {MaximumDialogScale.ToString(CultureInfo.InvariantCulture)}.");
         }
     }
 }
