@@ -194,32 +194,41 @@
                 >
 
                 <!-- Message Panel -->
-                <StackPanel
-                    x:Name="MessageTextStackPanel"
-                    VerticalAlignment="Top"
-                    AutomationProperties.Name="Message Container"
-                    Orientation="Vertical"
+                <ScrollViewer
+                    x:Name="MessageScrollViewer"
+                    Margin="0,16"
+                    AutomationProperties.Name="Message Scroll Container"
+                    HorizontalScrollBarVisibility="Disabled"
+                    Style="{DynamicResource ScrollViewerStyle}"
+                    VerticalScrollBarVisibility="Auto"
                     >
+                    <StackPanel
+                        x:Name="MessageTextStackPanel"
+                        VerticalAlignment="Top"
+                        AutomationProperties.Name="Message Container"
+                        Orientation="Vertical"
+                        >
 
-                    <TextBlock
-                        x:Name="MessageTextBlock"
-                        Margin="16"
-                        ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Message Text"
-                        Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
-                        TextWrapping="Wrap"
-                        />
+                        <TextBlock
+                            x:Name="MessageTextBlock"
+                            Margin="16,0"
+                            ui:TextBlockExtensions.Typography="Body"
+                            AutomationProperties.Name="Message Text"
+                            Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
+                            TextWrapping="Wrap"
+                            />
 
-                    <TextBlock
-                        x:Name="CustomMessageTextBlock"
-                        Margin="16,0,16,16"
-                        ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Additional Message Text"
-                        Text="This is a custom message that can be added to the CloseApps and Restart dialogs directly via PowerShell."
-                        TextWrapping="Wrap"
-                        />
+                        <TextBlock
+                            x:Name="CustomMessageTextBlock"
+                            Margin="16,16,16,0"
+                            ui:TextBlockExtensions.Typography="Body"
+                            AutomationProperties.Name="Additional Message Text"
+                            Text="This is a custom message that can be added to the CloseApps and Restart dialogs directly via PowerShell."
+                            TextWrapping="Wrap"
+                            />
 
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
                 <!-- Close Apps Panel -->
                 <StackPanel
                     x:Name="CloseAppsStackPanel"

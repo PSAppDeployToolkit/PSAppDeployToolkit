@@ -105,6 +105,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
             _designMaxWidth = MaxWidth;
             _designMaxHeight = MaxHeight;
+            _designListMaxHeight = CloseAppsListView.MaxHeight;
             if (options.FluentDialogScale is not null)
             {
                 _dialogScale = options.FluentDialogScale.Value;
@@ -201,6 +202,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
             SizeChanged += FluentDialog_SizeChanged;
             Loaded += FluentDialog_Loaded;
+            MessageScrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            CloseAppsListView.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ScrollViewer_ScrollChanged));
 
             // Set the initial dialog result to the provided value, which may be updated by button clicks or timers.
             DialogResult = dialogResult;
@@ -304,6 +307,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UpdateButtonLayout();
             UpdateRowDefinition();
             UpdateLayout();
+            FitToWorkArea();
+            UpdateLayout();
             // PositionWindow is suppressed while _firstShowPending=true; the window stays
             // off-screen at OffscreenCoordinate. _startingLeft/_startingTop will be set to
             // the on-screen coords by the reveal-time PositionWindow call in OnContentRendered.
@@ -366,7 +371,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e">An object that contains the event data, including information about the new size of the window.</param>
         private void FluentDialog_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            // Only reposition window - no animations
+            // Only refit and reposition the window - no animations
+            FitToWorkArea();
             PositionWindow();
         }
 
@@ -381,11 +387,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e">An object that contains information about the property that changed, including its name.</param>
         private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            // Reposition the window if screen dimensions or work area change.
+            // Refit and reposition the window if screen dimensions or work area change.
             if (e.PropertyName.Equals(nameof(SystemParameters.PrimaryScreenWidth), StringComparison.Ordinal) || e.PropertyName.Equals(nameof(SystemParameters.PrimaryScreenHeight), StringComparison.Ordinal) || e.PropertyName.Equals(nameof(SystemParameters.WorkArea), StringComparison.Ordinal))
             {
+                FitToWorkArea();
                 PositionWindow();
             }
+        }
+
+        /// <inheritdoc />
+        protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+        {
+            base.OnDpiChanged(oldDpi, newDpi);
+            FitToWorkArea();
+            PositionWindow();
         }
 
         /// <summary>
@@ -777,15 +792,110 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="scale">The scale to apply, where 1.0 is the designed size.</param>
         private void ApplyDialogScale(double scale)
         {
-            if (Content is not FrameworkElement root)
+            if (Content is not FrameworkElement root || Math.Abs(scale - _appliedScale) < ScaleTolerance)
             {
                 return;
             }
 
             // The window constraints come from the design sizes every time, so repeated calls never compound.
-            root.LayoutTransform = scale.Equals(1.0) ? Transform.Identity : new ScaleTransform(scale, scale);
+            root.LayoutTransform = Math.Abs(scale - 1.0) < ScaleTolerance ? Transform.Identity : new ScaleTransform(scale, scale);
             MaxWidth = Width = _designMaxWidth * scale;
             MaxHeight = _designMaxHeight * scale;
+            _appliedScale = scale;
+        }
+
+        /// <summary>
+        /// Fits the dialog within the work area by scaling it and constraining its scrollable regions.
+        /// </summary>
+        private void FitToWorkArea()
+        {
+            if (Content is not FrameworkElement root || root.ActualHeight <= 0)
+            {
+                return;
+            }
+
+            // Natural sizes are derived from the settled layout. Re-measuring here, inside SizeChanged, would hand the
+            // window an unconstrained size and loop between the natural and fitted heights.
+            double naturalHeight = root.ActualHeight;
+            List<DialogFitRegion> regions = [];
+            int listRegion = -1, messageRegion = -1;
+
+            // The app list gives up height first, down to two rows, then the message down to four lines.
+            double listHeight = CloseAppsListView.ActualHeight;
+            if (listHeight > 0)
+            {
+                double rowHeight = CloseAppsListView.ItemContainerGenerator.ContainerFromIndex(0) is FrameworkElement row && row.ActualHeight > 0 ? row.ActualHeight : _designListMaxHeight / 3;
+                double listBorder = CloseAppsListView.BorderThickness.Top + CloseAppsListView.BorderThickness.Bottom;
+                double listNatural = Math.Min(_designListMaxHeight, (CloseAppsListView.Items.Count * rowHeight) + listBorder);
+                naturalHeight += listNatural - listHeight;
+                listRegion = regions.Count;
+                regions.Add(new(listNatural, Math.Min(listNatural, (rowHeight * 2) + listBorder)));
+            }
+            double messageHeight = MessageScrollViewer.ActualHeight;
+            if (messageHeight > 0)
+            {
+                double lineHeight = MessageTextBlock.FontFamily.LineSpacing * MessageTextBlock.FontSize;
+                double messageNatural = MessageScrollViewer.ExtentHeight;
+                naturalHeight += messageNatural - messageHeight;
+                messageRegion = regions.Count;
+                regions.Add(new(messageNatural, Math.Min(messageNatural, lineHeight * 4)));
+            }
+
+            // Fit within the work area, less the margin the dialog keeps from its edges.
+            Rect workArea = SystemParameters.WorkArea;
+            DialogFit fit = DialogFitCalculator.Calculate(_designMaxWidth, naturalHeight, workArea.Width - (2 * HorizontalScreenMargin), workArea.Height - (2 * VerticalScreenMargin), _dialogScale, regions);
+            ApplyDialogScale(fit.Scale);
+            SetMaxHeightIfChanged(CloseAppsListView, listRegion >= 0 ? Math.Min(_designListMaxHeight, fit.RegionMaxHeights[listRegion]) : _designListMaxHeight);
+            SetMaxHeightIfChanged(MessageScrollViewer, messageRegion >= 0 ? fit.RegionMaxHeights[messageRegion] : double.PositiveInfinity);
+        }
+
+        /// <summary>
+        /// Sets an element's maximum height, ignoring changes too small to matter so layout rounding can't cause a refit loop.
+        /// </summary>
+        /// <param name="element">The element to constrain.</param>
+        /// <param name="maxHeight">The maximum height to apply.</param>
+        private static void SetMaxHeightIfChanged(FrameworkElement element, double maxHeight)
+        {
+            // Two infinities differ by NaN, which fails the comparison and correctly leaves the value alone.
+            if (Math.Abs(element.MaxHeight - maxHeight) >= 0.5)
+            {
+                element.MaxHeight = maxHeight;
+            }
+        }
+
+        /// <summary>
+        /// Fades the edges of a scrollable region wherever there is more content to scroll to.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data, including the scroll position and extent.</param>
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            if (e.OriginalSource is not ScrollViewer scrollViewer || scrollViewer.Content is not UIElement content)
+            {
+                return;
+            }
+            bool moreAbove = e.VerticalOffset > 0.5;
+            bool moreBelow = e.VerticalOffset + e.ViewportHeight < e.ExtentHeight - 0.5;
+            if ((!moreAbove && !moreBelow) || e.ViewportHeight <= 0)
+            {
+                content.OpacityMask = null;
+                return;
+            }
+
+            // Masking the content rather than the scroll viewer keeps the scroll bar unfaded. The gradient spans the
+            // viewport in the content's own coordinates, which move with the offset when the content scrolls physically.
+            double viewportTop = scrollViewer.TranslatePoint(default, content).Y;
+            double fade = Math.Min(0.5, ScrollFadeHeight / e.ViewportHeight);
+            content.OpacityMask = new LinearGradientBrush(
+            [
+                new(moreAbove ? Colors.Transparent : Colors.Black, 0),
+                new(Colors.Black, fade),
+                new(Colors.Black, 1 - fade),
+                new(moreBelow ? Colors.Transparent : Colors.Black, 1),
+            ], new(0, viewportTop), new(0, viewportTop + e.ViewportHeight))
+            {
+                MappingMode = BrushMappingMode.Absolute,
+            };
         }
 
         /// <summary>
@@ -1086,6 +1196,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private readonly double _dialogScale = 1.0;
 
         /// <summary>
+        /// The scale currently applied to the dialog. NaN until the first scale is applied.
+        /// </summary>
+        private double _appliedScale = double.NaN;
+
+        /// <summary>
         /// The window's designed maximum width, before any scale is applied.
         /// </summary>
         private readonly double _designMaxWidth;
@@ -1094,6 +1209,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The window's designed maximum height, before any scale is applied.
         /// </summary>
         private readonly double _designMaxHeight;
+
+        /// <summary>
+        /// The app list's designed maximum height, enough for three rows.
+        /// </summary>
+        private readonly double _designListMaxHeight;
 
         /// <summary>
         /// The timer that drives the countdown, if the dialog has one.
@@ -1148,6 +1268,26 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// the <c language="csharp">Loaded</c> event all occur while the window is invisible and off-screen.
         /// </summary>
         private const double OffscreenCoordinate = -32000;
+
+        /// <summary>
+        /// The horizontal margin kept between the dialog and the edges of the work area when fitting it.
+        /// </summary>
+        private const double HorizontalScreenMargin = 18;
+
+        /// <summary>
+        /// The vertical margin kept between the dialog and the edges of the work area when fitting it.
+        /// </summary>
+        private const double VerticalScreenMargin = 16;
+
+        /// <summary>
+        /// The difference below which two scales are treated as equal.
+        /// </summary>
+        private const double ScaleTolerance = 0.001;
+
+        /// <summary>
+        /// The height of the fade at each edge of a scrollable region with more content beyond it.
+        /// </summary>
+        private const double ScrollFadeHeight = 8;
 
         /// <summary>
         /// Guards the off-screen first-show hold. <see langword="true"/> from construction until
