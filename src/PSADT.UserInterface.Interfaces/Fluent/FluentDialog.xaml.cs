@@ -888,7 +888,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // The viewport is the content presenter, which a scroll viewer's padding can inset from the scroll viewer.
             UIElement viewport = scrollViewer.Template?.FindName("PART_ScrollContentPresenter", scrollViewer) as UIElement ?? scrollViewer;
             double viewportTop = viewport.TranslatePoint(default, content).Y;
-            double fade = Math.Min(0.5, ScrollFadeHeight / e.ViewportHeight);
+            double fade = Math.Min(0.5, (ReferenceEquals(scrollViewer, MessageScrollViewer) ? MessageScrollFadeHeight : ListScrollFadeHeight) / e.ViewportHeight);
             content.OpacityMask = new LinearGradientBrush(
             [
                 new(moreAbove ? Colors.Transparent : Colors.Black, 0),
@@ -1288,9 +1288,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private const double ScaleTolerance = 0.001;
 
         /// <summary>
-        /// The height of the fade at each edge of a scrollable region with more content beyond it.
+        /// The height of the fade at each edge of the message area when there is more text beyond it.
         /// </summary>
-        private const double ScrollFadeHeight = 8;
+        private const double MessageScrollFadeHeight = 8;
+
+        /// <summary>
+        /// The height of the fade at each edge of the app list when there are more apps beyond it. It must exceed the
+        /// rows' 12 DIP padding to reach a cut-off row's content.
+        /// </summary>
+        private const double ListScrollFadeHeight = 24;
 
         /// <summary>
         /// Guards the off-screen first-show hold. <see langword="true"/> from construction until
