@@ -63,6 +63,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 FormClosed += Form_FormClosed;
                 Load += Form_Load;
                 SizeChanged += Form_SizeChanged;
+                Disposed += (_, _) =>
+                {
+                    foreach (Font font in scaledFonts)
+                    {
+                        font.Dispose();
+                    }
+                };
                 ResumeLayout();
 
                 // Set the expiry timer if specified.
