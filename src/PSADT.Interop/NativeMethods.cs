@@ -1978,6 +1978,23 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Retrieves timing information for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process whose timing information is to be retrieved. The handle must have the
+        /// PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpCreationTime">When this method returns, contains the creation time of the process.</param>
+        /// <param name="lpExitTime">When this method returns, contains the exit time of the process, which is undefined while it is still running.</param>
+        /// <param name="lpKernelTime">When this method returns, contains the amount of time that the process has executed in kernel mode.</param>
+        /// <param name="lpUserTime">When this method returns, contains the amount of time that the process has executed in user mode.</param>
+        /// <returns><see langword="true"/> if the timing information was retrieved; otherwise, an exception is thrown.</returns>
+        internal static BOOL GetProcessTimes(SafeHandle hProcess, out System.Runtime.InteropServices.ComTypes.FILETIME lpCreationTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpExitTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpKernelTime, out System.Runtime.InteropServices.ComTypes.FILETIME lpUserTime)
+        {
+            ArgumentException.ThrowIfNullOrClosed(hProcess);
+            BOOL res = PInvoke.GetProcessTimes(hProcess, out lpCreationTime, out lpExitTime, out lpKernelTime, out lpUserTime);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Duplicates an object handle from one process to another, allowing the target process to access the same
         /// object with specified access rights and options.
         /// </summary>
