@@ -135,6 +135,21 @@ try
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorDark = $null
 
+                                                # Controls how large the Fluent dialogs are drawn. Choose from 'Auto', 'Small', 'Medium', 'Large' or 'ExtraLarge'.
+                                                # 'Auto' is the default and draws the dialogs at their designed size, which means they follow the display scaling
+                                                # configured in Windows: a device set to 200% gets dialogs twice the size of a device set to 100%. Every other
+                                                # value instead sizes the dialogs as a share of the screen's width - 22% for 'Small', 30% for 'Medium', 40% for
+                                                # 'Large' and 50% for 'ExtraLarge' - so the dialogs cover the same proportion of the display on every endpoint
+                                                # no matter its resolution or zoom level. That share is clamped so the dialogs stay legible on small screens and
+                                                # stay proportionate on ultrawide ones, and their height never exceeds 90% of the screen.
+                                                # Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                FluentDialogSize = 'Auto'
+
+                                                # An additional multiplier applied on top of FluentDialogSize, for when none of the presets are quite right.
+                                                # Accepts a value between 0.5 and 3.0, e.g. `FluentDialogScale = 1.25` turns the 40% of 'Large' into 50%.
+                                                # Leave as $null to apply no further adjustment. Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                FluentDialogScale = $null
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 

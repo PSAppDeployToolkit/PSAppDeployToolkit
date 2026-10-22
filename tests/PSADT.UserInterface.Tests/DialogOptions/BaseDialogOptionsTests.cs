@@ -9,7 +9,7 @@ using Xunit;
 namespace PSADT.UserInterface.Tests.DialogOptions
 {
     /// <summary>
-    /// Tests the fifteen options every dialog shares.
+    /// Tests the seventeen options every dialog shares.
     /// </summary>
     /// <remarks>
     /// <c language="csharp">BaseDialogOptions</c> is abstract and both its constructors are <c language="csharp">private protected</c>, so it
@@ -52,6 +52,8 @@ namespace PSADT.UserInterface.Tests.DialogOptions
                 ["DialogAllowMinimize"] = true,
                 ["DialogExpiryDuration"] = TimeSpan.FromMinutes(30),
                 ["DialogPersistInterval"] = TimeSpan.FromSeconds(90),
+                ["FluentDialogSize"] = DialogSize.Large,
+                ["FluentDialogScale"] = 1.25,
                 ["ProgressMessageText"] = "the progress message",
                 ["ProgressDetailMessageText"] = "the detail message",
             };
@@ -75,6 +77,8 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.True(options.DialogAllowMinimize);
             Assert.Equal(TimeSpan.FromMinutes(30), options.DialogExpiryDuration);
             Assert.Equal(TimeSpan.FromSeconds(90), options.DialogPersistInterval);
+            Assert.Equal(DialogSize.Large, options.FluentDialogSize);
+            Assert.Equal(1.25, options.FluentDialogScale);
         }
 
         /// <summary>
@@ -102,6 +106,53 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.DialogAllowMinimize);
             Assert.Null(options.DialogExpiryDuration);
             Assert.Null(options.DialogPersistInterval);
+            Assert.Null(options.FluentDialogSize);
+            Assert.Null(options.FluentDialogScale);
+        }
+
+        /// <summary>
+        /// Verifies that a dialog scale outside the accepted band is refused at construction.
+        /// </summary>
+        /// <remarks>
+        /// The scale reaches the dialog as a layout transform. Caught here it is one failed deployment
+        /// with a named parameter; let through, it renders every dialog of that deployment unusable.
+        /// </remarks>
+        /// <param name="scale">The scale to supply.</param>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.25)]
+        [InlineData(3.5)]
+        [InlineData(100.0)]
+        public void Constructor_RefusesADialogScaleOutOfRange(double scale)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentDialogScale"] = scale;
+
+            // Act & Assert
+            ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressDialogOptions(table));
+            Assert.Equal("fluentDialogScale", ex.ParamName);
+        }
+
+        /// <summary>
+        /// Verifies that the bounds themselves are accepted.
+        /// </summary>
+        /// <param name="scale">The scale to supply.</param>
+        [Theory]
+        [InlineData(BaseDialogOptions.MinimumFluentDialogScale)]
+        [InlineData(1.0)]
+        [InlineData(BaseDialogOptions.MaximumFluentDialogScale)]
+        public void Constructor_AcceptsADialogScaleWithinRange(double scale)
+        {
+            // Arrange
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentDialogScale"] = scale;
+
+            // Act
+            ProgressDialogOptions options = new(table);
+
+            // Assert
+            Assert.Equal(scale, options.FluentDialogScale);
         }
 
         /// <summary>

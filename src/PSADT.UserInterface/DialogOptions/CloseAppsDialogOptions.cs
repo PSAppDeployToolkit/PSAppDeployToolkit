@@ -39,6 +39,8 @@ namespace PSADT.UserInterface.DialogOptions
             (bool?)options["DialogAllowMinimize"],
             (TimeSpan?)options["DialogExpiryDuration"],
             (TimeSpan?)options["DialogPersistInterval"],
+            (DialogSize?)options["FluentDialogSize"],
+            (double?)options["FluentDialogScale"],
             new((IDictionary?)options["Strings"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Strings' is missing."), deploymentType),
             (uint?)options["DeferralsRemaining"],
             (DateTime?)options["DeferralDeadline"],
@@ -78,6 +80,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
         /// does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, persistence is disabled.</param>
+        /// <param name="fluentDialogSize">The rendered size of the dialog. If <see langword="null"/>, the dialog follows the display
+        /// scaling configured in Windows.</param>
+        /// <param name="fluentDialogScale">An additional multiplier applied on top of <paramref name="fluentDialogSize"/>. If
+        /// <see langword="null"/>, no additional scaling is applied.</param>
         /// <param name="strings">An object containing localized strings used in the dialog.</param>
         /// <param name="deferralsRemaining">The number of deferrals remaining for the dialog. If <see langword="null"/>, deferrals are not tracked.</param>
         /// <param name="deferralDeadline">The deadline by which all deferrals must be completed. If <see langword="null"/>, no deadline is enforced.</param>
@@ -88,7 +94,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="forcedCountdown">A value indicating whether the countdown timer is mandatory and cannot be skipped.</param>
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
-        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, int? fluentAccentColorDark, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, DialogSize? fluentDialogSize, double? fluentDialogScale, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, fluentAccentColorDark, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval, fluentDialogSize, fluentDialogScale)
         {
             if (customMessageText is not null)
             {

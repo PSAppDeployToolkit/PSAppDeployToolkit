@@ -160,6 +160,35 @@ function Private:Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError($_)
     }
 
+    # Confirm the specified dialog size and scale are valid.
+    if ($null -ne $config.UI.FluentDialogSize)
+    {
+        try
+        {
+            $null = [PSADT.UserInterface.DialogSize]$config.UI.FluentDialogSize
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+    if ($null -ne $config.UI.FluentDialogScale)
+    {
+        $fluentDialogScale = $config.UI.FluentDialogScale -as [System.Double]
+        if (($null -eq $fluentDialogScale) -or ($fluentDialogScale -lt [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumFluentDialogScale) -or ($fluentDialogScale -gt [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumFluentDialogScale))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentOutOfRangeException]::new("The value for [FluentDialogScale] must be between [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumFluentDialogScale)] and [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumFluentDialogScale)].", $null)
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                ErrorId = 'ConfigFluentDialogScaleInvalid'
+                TargetObject = $config.UI.FluentDialogScale
+                RecommendedAction = "Review your configuration and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        $config.UI.FluentDialogScale = $fluentDialogScale
+    }
+
     # Expand out environment variables and asset file paths.
     $Environment.PSObject.Properties | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
     $config.Assets | Update-ADTAssetFilePath

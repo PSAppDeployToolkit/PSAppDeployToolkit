@@ -171,6 +171,14 @@ function Block-ADTAppExecution
                 {
                     $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
                 }
+                if ($null -ne $adtConfig.UI.FluentDialogSize)
+                {
+                    $dialogOptions.Add('FluentDialogSize', [PSADT.UserInterface.DialogSize]$adtConfig.UI.FluentDialogSize)
+                }
+                if ($null -ne $adtConfig.UI.FluentDialogScale)
+                {
+                    $dialogOptions.Add('FluentDialogScale', [System.Double]$adtConfig.UI.FluentDialogScale)
+                }
                 $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
 
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.
