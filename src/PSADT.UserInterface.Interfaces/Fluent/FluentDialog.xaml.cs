@@ -890,7 +890,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UIElement viewport = scrollViewer.Template?.FindName("PART_ScrollContentPresenter", scrollViewer) as UIElement ?? scrollViewer;
             double viewportTop = viewport.TranslatePoint(default, content).Y;
             double fade = Math.Min(0.5, (ReferenceEquals(scrollViewer, MessageScrollViewer) ? MessageScrollFadeHeight : ListScrollFadeHeight) / e.ViewportHeight);
-            content.OpacityMask = new LinearGradientBrush(
+            LinearGradientBrush mask = new(
             [
                 new(moreAbove ? Colors.Transparent : Colors.Black, 0),
                 new(Colors.Black, fade),
@@ -900,6 +900,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 MappingMode = BrushMappingMode.Absolute,
             };
+            mask.Freeze();
+            content.OpacityMask = mask;
         }
 
         /// <summary>
