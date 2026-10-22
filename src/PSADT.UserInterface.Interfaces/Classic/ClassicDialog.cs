@@ -651,6 +651,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private static void SetLabelScrollHeight(Panel host, int? height)
         {
             // The label narrows by the scroll bar's width while it scrolls so its text never runs beneath the bar.
+            // Whether the panel already scrolls records whether the label is narrowed, so it is only ever narrowed once.
             Control label = host.Controls[0];
             int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
             if (height is null)
@@ -665,9 +666,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 return;
             }
             Size size = new(host.Width, height.Value);
-            host.AutoSize = false;
-            label.MaximumSize = new(label.MaximumSize.Width - scrollBarWidth, 0);
-            label.MinimumSize = new(label.MinimumSize.Width > 0 ? label.MinimumSize.Width - scrollBarWidth : 0, label.MinimumSize.Height);
+            if (!host.AutoScroll)
+            {
+                host.AutoSize = false;
+                label.MaximumSize = new(label.MaximumSize.Width - scrollBarWidth, 0);
+                label.MinimumSize = new(label.MinimumSize.Width > 0 ? label.MinimumSize.Width - scrollBarWidth : 0, label.MinimumSize.Height);
+            }
             host.Size = size;
             host.AutoScroll = true;
         }
