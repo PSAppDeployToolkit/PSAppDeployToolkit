@@ -239,6 +239,52 @@ Describe 'Import-ADTConfig' {
             }
         }
 
+        It 'Stores a <Key> written as <Literal> as the double <Expected>' -ForEach @(
+            @{ Key = 'FluentDialogScale'; Literal = '0.75'; Expected = 0.75 }
+            @{ Key = 'ClassicDialogScale'; Literal = '1'; Expected = 1.0 }
+            @{ Key = 'FluentDialogScale'; Literal = "'0.9'"; Expected = 0.9 }
+            @{ Key = 'ClassicDialogScale'; Literal = "'0.5'"; Expected = 0.5 }
+        ) {
+            # Group policy hands every value over as a string, so a quoted number has to be read the same as a literal one.
+            $dir = "$TestDrive\Scale$Key$($Literal -replace '\W')"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ $Key = $Literal } }"
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir; Key = $Key; Expected = $Expected } {
+                $scale = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.$Key
+                $scale | Should -BeOfType ([System.Double])
+                $scale | Should -Be $Expected
+            }
+        }
+
+        It 'Treats a null <Key> as the default scale' -ForEach @(
+            @{ Key = 'FluentDialogScale' }
+            @{ Key = 'ClassicDialogScale' }
+        ) {
+            # A null in a deployment's config leaves the module default in place rather than failing validation.
+            $dir = "$TestDrive\ScaleNull$Key"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ $Key = `$null } }"
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir; Key = $Key } {
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.$Key | Should -Be 1.0
+            }
+        }
+
+        It 'Refuses a <Key> written as <Literal>' -ForEach @(
+            @{ Key = 'FluentDialogScale'; Literal = '0.49' }
+            @{ Key = 'ClassicDialogScale'; Literal = '1.01' }
+            @{ Key = 'FluentDialogScale'; Literal = '$true' }
+            @{ Key = 'ClassicDialogScale'; Literal = "'0,9'" }
+            @{ Key = 'FluentDialogScale'; Literal = "'Small'" }
+        ) {
+            # A boolean or a decimal comma would otherwise convert to a scale nobody asked for: 1, and 9.
+            $dir = "$TestDrive\BadScale$Key$($Literal -replace '\W')"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ $Key = $Literal } }"
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
+                { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir } | Should -Throw -ErrorId 'ConfigDialogScaleOutOfRange,Import-ADTConfig'
+            }
+        }
+
         It 'Refuses the same directory twice' {
             InModuleScope -ModuleName PSAppDeployToolkit {
                 { Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory 'C:\Windows', 'C:\Windows' } | Should -Throw -ErrorId 'ParameterArgumentValidationError,Import-ADTConfig'
