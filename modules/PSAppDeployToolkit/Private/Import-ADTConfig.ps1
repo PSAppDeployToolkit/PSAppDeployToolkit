@@ -160,17 +160,34 @@ function Private:Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError($_)
     }
 
-    # Confirm the dialog scales are within range. Policy values arrive as strings, so store them back as doubles.
+    # Confirm the dialog scales are numbers within range, where null leaves the designed size. Policy values arrive as strings, so store them back as doubles.
     foreach ($scaleKey in 'FluentDialogScale', 'ClassicDialogScale')
     {
-        $scale = $config.UI.$scaleKey -as [System.Double]
-        if (!(($scale -ge [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale) -and ($scale -le [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)))
+        $value = $config.UI.$scaleKey
+        if ($null -eq $value)
+        {
+            continue
+        }
+        $scale = $null
+        if ($value -is [System.String])
+        {
+            $parsed = 0.0
+            if ([System.Double]::TryParse($value, [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$parsed))
+            {
+                $scale = $parsed
+            }
+        }
+        elseif (($value -is [System.Int32]) -or ($value -is [System.Int64]) -or ($value -is [System.Double]) -or ($value -is [System.Decimal]))
+        {
+            $scale = [System.Double]$value
+        }
+        if (($null -eq $scale) -or !(($scale -ge [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale) -and ($scale -le [PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)))
         {
             $naerParams = @{
-                Exception = [System.ArgumentOutOfRangeException]::new("The value for [$scaleKey] must be between [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale)] and [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)].", $null)
+                Exception = [System.ArgumentOutOfRangeException]::new("The value for [$scaleKey] must be a number between [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MinimumDialogScale)] and [$([PSADT.UserInterface.DialogOptions.BaseDialogOptions]::MaximumDialogScale)], written with a decimal point.", $null)
                 Category = [System.Management.Automation.ErrorCategory]::InvalidData
                 ErrorId = 'ConfigDialogScaleOutOfRange'
-                TargetObject = $config.UI.$scaleKey
+                TargetObject = $value
                 RecommendedAction = "Review your configuration and try again."
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
