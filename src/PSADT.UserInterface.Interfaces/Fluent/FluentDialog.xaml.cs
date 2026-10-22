@@ -396,6 +396,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <inheritdoc />
+        /// <remarks>The client is system DPI aware, so this only fires once the process is made per-monitor DPI aware.</remarks>
         protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
         {
             base.OnDpiChanged(oldDpi, newDpi);
