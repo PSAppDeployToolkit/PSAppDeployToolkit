@@ -92,8 +92,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     tableLayoutPanelIconMessage.SuspendLayout();
                     tableLayoutPanelIconMessage.Controls.Remove(pictureIcon);
-                    tableLayoutPanelIconMessage.SetColumn(labelMessage, 0);
-                    tableLayoutPanelIconMessage.SetColumnSpan(labelMessage, 2);
+                    tableLayoutPanelIconMessage.SetColumn(flowLayoutPanelMessage, 0);
+                    tableLayoutPanelIconMessage.SetColumnSpan(flowLayoutPanelMessage, 2);
                     int extraWidth = (int)tableLayoutPanelIconMessage.ColumnStyles[0].Width;
                     labelMessage.MinimumSize = new(labelMessage.MinimumSize.Width + extraWidth, labelMessage.MinimumSize.Height);
                     labelMessage.MaximumSize = new(labelMessage.MaximumSize.Width + extraWidth, labelMessage.MaximumSize.Height);
@@ -124,7 +124,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     labelMessage.TextAlign = alignment;
                 }
                 labelMessage.Text = StripFormattingTags(options.MessageText);
-                AllowScrolling(labelMessage);
+                AllowScrolling(flowLayoutPanelMessage);
             }
 
             // Resume the dialog now that we've applied any options.

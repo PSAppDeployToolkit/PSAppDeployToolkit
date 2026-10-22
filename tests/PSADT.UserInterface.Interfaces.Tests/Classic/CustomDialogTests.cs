@@ -136,7 +136,7 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
             // Assert
             Assert.False(FormControls.Holds(dialog, "pictureIcon"));
             TableLayoutPanel panel = FormControls.Find<TableLayoutPanel>(dialog, "tableLayoutPanelIconMessage");
-            Label message = FormControls.Find<Label>(dialog, "labelMessage");
+            FlowLayoutPanel message = FormControls.Find<FlowLayoutPanel>(dialog, "flowLayoutPanelMessage");
             Assert.Equal(0, panel.GetColumn(message));
             Assert.Equal(2, panel.GetColumnSpan(message));
         }

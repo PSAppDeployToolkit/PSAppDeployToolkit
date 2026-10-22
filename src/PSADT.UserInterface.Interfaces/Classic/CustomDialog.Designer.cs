@@ -34,6 +34,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private void InitializeComponent()
         {
             this.tableLayoutPanelIconMessage = new System.Windows.Forms.TableLayoutPanel();
+            this.flowLayoutPanelMessage = new System.Windows.Forms.FlowLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
             this.pictureIcon = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
@@ -44,6 +45,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.tableLayoutPanelIconMessage.SuspendLayout();
+            this.flowLayoutPanelMessage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureIcon)).BeginInit();
             this.tableLayoutPanelButton.SuspendLayout();
             this.flowLayoutPanelDialog.SuspendLayout();
@@ -60,7 +62,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.tableLayoutPanelIconMessage.ColumnCount = 2;
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
+            this.tableLayoutPanelIconMessage.Controls.Add(this.flowLayoutPanelMessage, 1, 0);
             this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
             this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(16, 11);
             this.tableLayoutPanelIconMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
@@ -72,18 +74,31 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(480, 50);
             this.tableLayoutPanelIconMessage.TabIndex = 3;
             // 
+            // flowLayoutPanelMessage
+            // 
+            this.flowLayoutPanelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.flowLayoutPanelMessage.AutoSize = true;
+            this.flowLayoutPanelMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelMessage.Controls.Add(this.labelMessage);
+            this.flowLayoutPanelMessage.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelMessage.Location = new System.Drawing.Point(62, 1);
+            this.flowLayoutPanelMessage.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.flowLayoutPanelMessage.Name = "flowLayoutPanelMessage";
+            this.flowLayoutPanelMessage.Size = new System.Drawing.Size(417, 45);
+            this.flowLayoutPanelMessage.TabIndex = 1;
+            this.flowLayoutPanelMessage.WrapContents = false;
+            // 
             // labelMessage
             // 
-            this.labelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Location = new System.Drawing.Point(62, 1);
-            this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.labelMessage.Location = new System.Drawing.Point(0, 0);
+            this.labelMessage.Margin = new System.Windows.Forms.Padding(0);
             this.labelMessage.MaximumSize = new System.Drawing.Size(417, 0);
             this.labelMessage.MinimumSize = new System.Drawing.Size(417, 0);
             this.labelMessage.Name = "labelMessage";
             this.labelMessage.Size = new System.Drawing.Size(417, 45);
-            this.labelMessage.TabIndex = 1;
+            this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
     " exercitation ullamco laboris...";
@@ -220,6 +235,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
             this.tableLayoutPanelIconMessage.ResumeLayout(false);
             this.tableLayoutPanelIconMessage.PerformLayout();
+            this.flowLayoutPanelMessage.ResumeLayout(false);
+            this.flowLayoutPanelMessage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureIcon)).EndInit();
             this.tableLayoutPanelButton.ResumeLayout(false);
             this.flowLayoutPanelDialog.ResumeLayout(false);
@@ -238,6 +255,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private PictureBox pictureIcon;
         private TableLayoutPanel tableLayoutPanelButton;
         private Label labelMessage;
+        private FlowLayoutPanel flowLayoutPanelMessage;
         private Button buttonLeft;
         private Button buttonRight;
         private Button buttonMiddle;

@@ -161,33 +161,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Lets the specified label scroll, down to four lines, when the dialog is too tall for the screen.
+        /// Lets the label in the specified panel scroll, down to four lines, when the dialog is too tall for the screen.
         /// </summary>
-        /// <remarks>The label is moved into a panel of its own, which takes its place, margin and anchoring.</remarks>
-        /// <param name="label">The label to allow to scroll.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the label has not been added to the dialog.</exception>
-        private protected void AllowScrolling(Label label)
+        /// <remarks>The panel must hold only the label and size itself to it, so constraining the panel's height is what makes the label scroll.</remarks>
+        /// <param name="host">The panel hosting the label.</param>
+        private protected void AllowScrolling(Panel host)
         {
-            Control parent = label.Parent ?? throw new InvalidOperationException("The label must be part of the dialog before it can scroll.");
-            Panel host = new() { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Anchor = label.Anchor, Margin = label.Margin, Padding = Padding.Empty };
-            if (parent is TableLayoutPanel table)
-            {
-                TableLayoutPanelCellPosition position = table.GetPositionFromControl(label);
-                int columnSpan = table.GetColumnSpan(label);
-                host.Controls.Add(label);
-                table.Controls.Add(host, position.Column, position.Row);
-                table.SetColumnSpan(host, columnSpan);
-            }
-            else
-            {
-                int index = parent.Controls.GetChildIndex(label);
-                host.Controls.Add(label);
-                parent.Controls.Add(host);
-                parent.Controls.SetChildIndex(host, index);
-            }
-            label.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            label.Margin = Padding.Empty;
-            label.Location = Point.Empty;
             scrollableLabelHosts.Add(host);
         }
 

@@ -32,6 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.components = new System.ComponentModel.Container();
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
+            this.flowLayoutPanelCustomMessage = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelCountdown = new System.Windows.Forms.FlowLayoutPanel();
             this.labelRestartMessage = new System.Windows.Forms.Label();
@@ -45,6 +46,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.countdownTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelDialog.SuspendLayout();
+            this.flowLayoutPanelCustomMessage.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
@@ -58,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
-            this.flowLayoutPanelDialog.Controls.Add(this.labelCustomMessage);
+            this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCustomMessage);
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCountdown);
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
@@ -87,18 +89,31 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelMessage.Text = "In order for the installation to complete, you must restart your computer.";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // flowLayoutPanelCustomMessage
+            // 
+            this.flowLayoutPanelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.flowLayoutPanelCustomMessage.AutoSize = true;
+            this.flowLayoutPanelCustomMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelCustomMessage.Controls.Add(this.labelCustomMessage);
+            this.flowLayoutPanelCustomMessage.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelCustomMessage.Location = new System.Drawing.Point(16, 38);
+            this.flowLayoutPanelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.flowLayoutPanelCustomMessage.Name = "flowLayoutPanelCustomMessage";
+            this.flowLayoutPanelCustomMessage.Size = new System.Drawing.Size(480, 30);
+            this.flowLayoutPanelCustomMessage.TabIndex = 5;
+            this.flowLayoutPanelCustomMessage.WrapContents = false;
+            // 
             // labelCustomMessage
             // 
-            this.labelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCustomMessage.AutoSize = true;
-            this.labelCustomMessage.Location = new System.Drawing.Point(16, 38);
-            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.labelCustomMessage.Location = new System.Drawing.Point(0, 0);
+            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0);
             this.labelCustomMessage.MaximumSize = new System.Drawing.Size(480, 0);
             this.labelCustomMessage.MinimumSize = new System.Drawing.Size(480, 0);
             this.labelCustomMessage.Name = "labelCustomMessage";
             this.labelCustomMessage.Size = new System.Drawing.Size(480, 30);
-            this.labelCustomMessage.TabIndex = 5;
+            this.labelCustomMessage.TabIndex = 0;
             this.labelCustomMessage.Text = "This is an optional custom text message. It can be used to display specific infor" +
     "mation to the user before they reboot their device.";
             this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -274,6 +289,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();
+            this.flowLayoutPanelCustomMessage.ResumeLayout(false);
+            this.flowLayoutPanelCustomMessage.PerformLayout();
             this.flowLayoutPanelCountdown.ResumeLayout(false);
             this.flowLayoutPanelCountdown.PerformLayout();
             this.tableLayoutPanelButton.ResumeLayout(false);
@@ -298,6 +315,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private Label labelTimeRemaining;
         private Label labelCountdown;
         private Label labelCustomMessage;
+        private FlowLayoutPanel flowLayoutPanelCustomMessage;
         private PictureBox pictureBanner;
         private FlowLayoutPanel flowLayoutPanelBase;
         private Timer countdownTimer;

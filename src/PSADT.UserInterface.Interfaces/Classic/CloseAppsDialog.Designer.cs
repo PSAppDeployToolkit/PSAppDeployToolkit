@@ -37,6 +37,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelWelcomeMessage = new System.Windows.Forms.Label();
             this.labelAppName = new System.Windows.Forms.Label();
+            this.flowLayoutPanelCustomMessage = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelCloseApps = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCloseProcessesMessage = new System.Windows.Forms.Label();
@@ -58,6 +59,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.countdownTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelDialog.SuspendLayout();
+            this.flowLayoutPanelCustomMessage.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.panelCloseProcesses.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
@@ -75,7 +77,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelWelcomeMessage);
             this.flowLayoutPanelDialog.Controls.Add(this.labelAppName);
-            this.flowLayoutPanelDialog.Controls.Add(this.labelCustomMessage);
+            this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCustomMessage);
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCloseApps);
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelDeferral);
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCountdown);
@@ -122,18 +124,31 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelAppName.Text = "Adobe Acrobat Unified 25.001.20422";
             this.labelAppName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // flowLayoutPanelCustomMessage
+            // 
+            this.flowLayoutPanelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.flowLayoutPanelCustomMessage.AutoSize = true;
+            this.flowLayoutPanelCustomMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelCustomMessage.Controls.Add(this.labelCustomMessage);
+            this.flowLayoutPanelCustomMessage.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelCustomMessage.Location = new System.Drawing.Point(16, 71);
+            this.flowLayoutPanelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.flowLayoutPanelCustomMessage.Name = "flowLayoutPanelCustomMessage";
+            this.flowLayoutPanelCustomMessage.Size = new System.Drawing.Size(480, 30);
+            this.flowLayoutPanelCustomMessage.TabIndex = 5;
+            this.flowLayoutPanelCustomMessage.WrapContents = false;
+            // 
             // labelCustomMessage
             // 
-            this.labelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCustomMessage.AutoSize = true;
-            this.labelCustomMessage.Location = new System.Drawing.Point(16, 71);
-            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.labelCustomMessage.Location = new System.Drawing.Point(0, 0);
+            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0);
             this.labelCustomMessage.MaximumSize = new System.Drawing.Size(480, 0);
             this.labelCustomMessage.MinimumSize = new System.Drawing.Size(480, 0);
             this.labelCustomMessage.Name = "labelCustomMessage";
             this.labelCustomMessage.Size = new System.Drawing.Size(480, 30);
-            this.labelCustomMessage.TabIndex = 5;
+            this.labelCustomMessage.TabIndex = 0;
             this.labelCustomMessage.Text = "This is a custom message that you can optionally display here. This could include" +
     " info specific to the app, or general info for your end users.";
             this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -427,6 +442,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();
+            this.flowLayoutPanelCustomMessage.ResumeLayout(false);
+            this.flowLayoutPanelCustomMessage.PerformLayout();
             this.flowLayoutPanelCloseApps.ResumeLayout(false);
             this.flowLayoutPanelCloseApps.PerformLayout();
             this.panelCloseProcesses.ResumeLayout(false);
@@ -461,6 +478,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private Button buttonCloseProcesses;
         private Button buttonDefer;
         private Label labelCustomMessage;
+        private FlowLayoutPanel flowLayoutPanelCustomMessage;
         private ToolTip toolTipButtonContinue;
         private Button buttonContinue;
         private PictureBox pictureBanner;
