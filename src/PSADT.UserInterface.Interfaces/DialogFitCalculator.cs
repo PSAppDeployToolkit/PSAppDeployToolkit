@@ -25,9 +25,15 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="scale">The requested scale.</param>
         /// <param name="scrollableRegions">The regions that can scroll, in the order they should give up height.</param>
         /// <returns>The scale to apply and the maximum height for each scrollable region, at a scale of 1.0.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="scrollableRegions"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="scale"/> is outside <see cref="BaseDialogOptions.MinimumDialogScale"/> and <see cref="BaseDialogOptions.MaximumDialogScale"/>.</exception>
         internal static DialogFit Calculate(double naturalWidth, double naturalHeight, double availableWidth, double availableHeight, double scale, IReadOnlyList<DialogFitRegion> scrollableRegions)
         {
             ArgumentNullException.ThrowIfNull(scrollableRegions);
+            if (scale is not (>= BaseDialogOptions.MinimumDialogScale and <= BaseDialogOptions.MaximumDialogScale))
+            {
+                throw new ArgumentOutOfRangeException(nameof(scale), scale, "The scale must be within the accepted dialog scale range.");
+            }
             double[] regionMaxHeights = new double[scrollableRegions.Count];
             for (int i = 0; i < regionMaxHeights.Length; i++)
             {

@@ -1,4 +1,5 @@
-﻿using PSADT.UserInterface.DialogOptions;
+﻿using System;
+using PSADT.UserInterface.DialogOptions;
 using Xunit;
 
 namespace PSADT.UserInterface.Interfaces.Tests
@@ -143,6 +144,22 @@ namespace PSADT.UserInterface.Interfaces.Tests
             // Assert
             Assert.Equal(1.0, fit.Scale, 6);
             Assert.Equal(double.PositiveInfinity, fit.RegionMaxHeights[0]);
+        }
+
+        /// <summary>
+        /// Verifies that a requested scale outside the accepted range is refused.
+        /// </summary>
+        /// <param name="scale">The requested scale.</param>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.49)]
+        [InlineData(1.01)]
+        [InlineData(double.NaN)]
+        public void Calculate_RefusesAScaleOutOfRange(double scale)
+        {
+            // Act & Assert
+            ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => DialogFitCalculator.Calculate(580, 600, 1000, 700, scale, []));
+            Assert.Equal("scale", exception.ParamName);
         }
     }
 }
