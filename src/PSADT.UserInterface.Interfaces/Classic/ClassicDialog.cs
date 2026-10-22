@@ -616,33 +616,43 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 Size frame = Size - ClientSize;
                 int availableHeight = workingArea.Height - (2 * margin) - frame.Height;
                 DialogFit fit = DialogFitCalculator.Calculate(ClientSize.Width, ClientSize.Height, workingArea.Width - (2 * margin) - frame.Width, availableHeight, dialogScale, regions);
-                ScaleDialog(fit.Scale);
-                SuspendLayout();
-                int region = 0;
-                if (listPanel is not null)
-                {
-                    double maxHeight = fit.RegionMaxHeights[region++];
-                    if (!double.IsPositiveInfinity(maxHeight))
-                    {
-                        listPanel.Height = (int)Math.Floor(maxHeight * appliedScale);
-                    }
-                }
-                foreach (Panel host in scrollableLabelHosts)
-                {
-                    double maxHeight = fit.RegionMaxHeights[region++];
-                    if (!double.IsPositiveInfinity(maxHeight))
-                    {
-                        SetLabelScrollHeight(host, (int)Math.Floor(maxHeight * appliedScale));
-                    }
-                }
-                ResumeLayout();
+                ApplyFit(fit.Scale);
 
                 // WinForms rounds every scaled size, so take off whatever overflow that leaves behind.
                 if (ClientSize.Height > availableHeight)
                 {
-                    ScaleDialog(Math.Max(BaseDialogOptions.MinimumDialogScale, appliedScale * availableHeight / ClientSize.Height));
+                    ApplyFit(Math.Max(BaseDialogOptions.MinimumDialogScale, appliedScale * availableHeight / ClientSize.Height));
                 }
                 fittedSize = Size;
+
+                // Rescaling restores the designed layout, so the regions are unconstrained first and constrained again after.
+                void ApplyFit(double scale)
+                {
+                    foreach (Panel host in scrollableLabelHosts)
+                    {
+                        SetLabelScrollHeight(host, height: null);
+                    }
+                    ScaleDialog(scale);
+                    SuspendLayout();
+                    int region = 0;
+                    if (listPanel is not null)
+                    {
+                        double maxHeight = fit.RegionMaxHeights[region++];
+                        if (!double.IsPositiveInfinity(maxHeight))
+                        {
+                            listPanel.Height = (int)Math.Floor(maxHeight * appliedScale);
+                        }
+                    }
+                    foreach (Panel host in scrollableLabelHosts)
+                    {
+                        double maxHeight = fit.RegionMaxHeights[region++];
+                        if (!double.IsPositiveInfinity(maxHeight))
+                        {
+                            SetLabelScrollHeight(host, (int)Math.Floor(maxHeight * appliedScale));
+                        }
+                    }
+                    ResumeLayout();
+                }
             }
             finally
             {
@@ -687,7 +697,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Scales the dialog's layout and fonts relative to its designed size.
         /// </summary>
         /// <remarks>WinForms scales bounds, margins, padding and size limits but not fonts, so every explicitly set font
-        /// is rescaled from its designed size. Bounds are scaled by the ratio to the scale already applied.</remarks>
+        /// is rescaled from its designed size. The layout is restored to its design before every scale rather than scaled
+        /// by the ratio to the last one, as WinForms rounds each scaled size and repeated round trips would drift.</remarks>
         /// <param name="scale">The scale to apply, where 1.0 is the designed size.</param>
         private void ScaleDialog(double scale)
         {
@@ -696,14 +707,28 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 return;
             }
 
-            // A font is explicitly set wherever it isn't the very instance inherited from the parent.
-            if (designFonts is null)
+            // Capture the design before the first scale. A font is explicitly set wherever it isn't the very instance inherited from the parent.
+            if (designFonts is null || designLayout is null || designStyleSizes is null)
             {
                 designFonts = new() { { this, Font } };
+                designLayout = [];
+                designStyleSizes = [];
                 Stack<Control> pending = new([this]);
                 while (pending.Count > 0)
                 {
                     Control parent = pending.Pop();
+                    designLayout.Add(parent, (parent.Bounds, parent.Margin, parent.Padding, parent.MinimumSize, parent.MaximumSize));
+                    if (parent is TableLayoutPanel table)
+                    {
+                        foreach (ColumnStyle style in table.ColumnStyles)
+                        {
+                            designStyleSizes.Add(style, style.Width);
+                        }
+                        foreach (RowStyle style in table.RowStyles)
+                        {
+                            designStyleSizes.Add(style, style.Height);
+                        }
+                    }
                     foreach (Control child in parent.Controls)
                     {
                         if (!ReferenceEquals(child.Font, parent.Font))
@@ -715,14 +740,46 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
             }
 
-            // Rescale everything, then swap in the new fonts and release the ones they replace.
+            // Restore the design, scale it, then swap in the fonts and release the ones they replace.
             SuspendLayout();
-            float ratio = (float)(scale / appliedScale);
-            Scale(new SizeF(ratio, ratio));
+            foreach (KeyValuePair<Control, (Rectangle Bounds, Padding Margin, Padding Padding, Size MinimumSize, Size MaximumSize)> design in designLayout)
+            {
+                // The form's own bounds are left alone, as it sizes itself to its content and is positioned after fitting.
+                Control control = design.Key;
+                control.MinimumSize = Size.Empty;
+                control.MaximumSize = design.Value.MaximumSize;
+                control.MinimumSize = design.Value.MinimumSize;
+                control.Margin = design.Value.Margin;
+                control.Padding = design.Value.Padding;
+                if (!ReferenceEquals(control, this))
+                {
+                    control.Bounds = design.Value.Bounds;
+                }
+            }
+            foreach (KeyValuePair<TableLayoutStyle, float> design in designStyleSizes)
+            {
+                if (design.Key is ColumnStyle column)
+                {
+                    column.Width = design.Value;
+                }
+                else if (design.Key is RowStyle row)
+                {
+                    row.Height = design.Value;
+                }
+            }
+            if (Math.Abs(scale - 1.0) >= 0.001)
+            {
+                Scale(new SizeF((float)scale, (float)scale));
+            }
             List<Font> replacedFonts = scaledFonts;
             scaledFonts = [];
             foreach (KeyValuePair<Control, Font> designFont in designFonts)
             {
+                if (Math.Abs(scale - 1.0) < 0.001)
+                {
+                    designFont.Key.Font = designFont.Value;
+                    continue;
+                }
                 Font font = new(designFont.Value.FontFamily, (float)(designFont.Value.Size * scale), designFont.Value.Style, designFont.Value.Unit, designFont.Value.GdiCharSet);
                 designFont.Key.Font = font;
                 scaledFonts.Add(font);
@@ -847,6 +904,16 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// The explicitly set fonts of the form and its controls at their designed size, captured on first scaling.
         /// </summary>
         private Dictionary<Control, Font>? designFonts;
+
+        /// <summary>
+        /// The bounds, spacing and size limits of the form and its controls as designed, captured on first scaling.
+        /// </summary>
+        private Dictionary<Control, (Rectangle Bounds, Padding Margin, Padding Padding, Size MinimumSize, Size MaximumSize)>? designLayout;
+
+        /// <summary>
+        /// The sizes of the table layout row and column styles as designed, captured on first scaling.
+        /// </summary>
+        private Dictionary<TableLayoutStyle, float>? designStyleSizes;
 
         /// <summary>
         /// The fonts created for the current scale, released when replaced.

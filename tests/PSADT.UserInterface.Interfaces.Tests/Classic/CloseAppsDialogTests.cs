@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using PSADT.ProcessManagement;
@@ -394,6 +397,43 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         }
 
         /// <summary>
+        /// Verifies that scaling the dialog down and back up again settles rather than drifting.
+        /// </summary>
+        /// <remarks>
+        /// Every refit scales the dialog back to its designed size to measure it and then down again, each step by
+        /// the ratio to the scale already applied. Windows Forms rounds every scaled bound to whole pixels, so the
+        /// first round trip can leave a bound a pixel out, but after that the layout has to stop moving or repeated
+        /// refits would walk the dialog away from its design.
+        /// </remarks>
+        [Fact]
+        public async Task ScaleDialog_SettlesAfterRepeatedRoundTrips()
+        {
+            // Arrange: a custom message and a running application, so the scrollable label and list are both laid out.
+            Hashtable table = SampleOptions.CloseAppsDialog();
+            table["CustomMessageText"] = "A custom message long enough to wrap onto a second line of the dialog, so that its height depends on its width.";
+            await using CloseAppsDialogState state = SomethingRunning();
+            using CloseAppsDialog dialog = Build(table, state);
+
+            // Act
+            string settled = DialogHost.Run(() =>
+            {
+                ScaleRoundTrip(dialog);
+                return Layout(dialog);
+            });
+            string repeated = DialogHost.Run(() =>
+            {
+                for (int i = 0; i < 20; i++)
+                {
+                    ScaleRoundTrip(dialog);
+                }
+                return Layout(dialog);
+            });
+
+            // Assert
+            Assert.Equal(settled, repeated);
+        }
+
+        /// <summary>
         /// The description given to the process the tests use as a running application.
         /// </summary>
         private const string RunningApplicationDescription = "The Test Host";
@@ -426,6 +466,38 @@ namespace PSADT.UserInterface.Interfaces.Tests.Classic
         private static CloseAppsDialog Build(Hashtable table, CloseAppsDialogState state)
         {
             return DialogHost.Run(() => new CloseAppsDialog(new CloseAppsDialogOptions(DeploymentType.Install, table), state));
+        }
+
+        /// <summary>
+        /// Scales the dialog through the steps a refit takes: to the fitted scale, by the rounding correction, then back to its designed size.
+        /// </summary>
+        /// <param name="dialog">The dialog to scale.</param>
+        private static void ScaleRoundTrip(CloseAppsDialog dialog)
+        {
+            NonPublic.Call(dialog, "ScaleDialog", 0.8);
+            NonPublic.Call(dialog, "ScaleDialog", 0.77);
+            NonPublic.Call(dialog, "ScaleDialog", 1.0);
+        }
+
+        /// <summary>
+        /// Describes the bounds, spacing and size limits of a control and everything in it.
+        /// </summary>
+        /// <param name="root">The control to describe.</param>
+        /// <returns>The description.</returns>
+        private static string Layout(Control root)
+        {
+            StringBuilder layout = new();
+            Stack<Control> pending = new([root]);
+            while (pending.Count > 0)
+            {
+                Control control = pending.Pop();
+                _ = layout.Append(string.Create(CultureInfo.InvariantCulture, $"{control.Name}:{control.Bounds}:{control.Margin}:{control.Padding}:{control.MinimumSize}:{control.MaximumSize};"));
+                foreach (Control child in control.Controls)
+                {
+                    pending.Push(child);
+                }
+            }
+            return layout.ToString();
         }
 
         /// <summary>
