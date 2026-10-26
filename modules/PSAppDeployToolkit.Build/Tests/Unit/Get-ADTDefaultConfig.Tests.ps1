@@ -21,6 +21,12 @@ Describe 'Get-ADTDefaultConfig' {
             }
         }
 
+        It 'Defaults to automatic UI rendering' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                (Get-ADTDefaultConfig).UI.ForceSoftwareRendering | Should -BeFalse
+            }
+        }
+
         It 'Leaves the module uninitialized' {
             # Answering without paying for an initialization is the entire point, so a caller that only
             # needs one value must not end up seating the module as a side effect.

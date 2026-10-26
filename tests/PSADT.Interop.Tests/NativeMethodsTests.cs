@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
@@ -314,6 +315,47 @@ namespace PSADT.Interop.Tests
             // Assert
             Win32Exception inner = Assert.IsType<Win32Exception>(exception.InnerException);
             Assert.Equal((int)WIN32_ERROR.ERROR_MOD_NOT_FOUND, inner.NativeErrorCode);
+        }
+
+        /// <summary>
+        /// Verifies that invalid WTS byte counts release a returned allocation before throwing.
+        /// </summary>
+        /// <param name="bytesReturned">The invalid native byte count.</param>
+        [Theory]
+        [InlineData(0U)]
+        [InlineData(int.MaxValue + 1U)]
+        public void CreateWtsQueryBuffer_InvalidLengthFreesAllocationOnce(uint bytesReturned)
+        {
+            nint allocation = Marshal.AllocHGlobal(1);
+            int freeCount = 0;
+            try
+            {
+                _ = Assert.Throws<InvalidOperationException>(() => NativeMethods.CreateWtsQueryBuffer(allocation, bytesReturned, pointer =>
+                {
+                    Assert.Equal(allocation, pointer);
+                    freeCount++;
+                    Marshal.FreeHGlobal(pointer);
+                }));
+                Assert.Equal(1, freeCount);
+            }
+            finally
+            {
+                if (freeCount is 0)
+                {
+                    Marshal.FreeHGlobal(allocation);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifies that a null WTS result has no native allocation to release.
+        /// </summary>
+        [Fact]
+        public void CreateWtsQueryBuffer_NullPointerDoesNotCallFree()
+        {
+            int freeCount = 0;
+            _ = Assert.Throws<InvalidOperationException>(() => NativeMethods.CreateWtsQueryBuffer(default, 0, _ => freeCount++));
+            Assert.Equal(0, freeCount);
         }
 
         /// <summary>

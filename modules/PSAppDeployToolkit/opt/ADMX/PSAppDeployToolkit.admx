@@ -359,6 +359,16 @@
         </boolean>
       </elements>
     </policy>
+    <policy name="ForceSoftwareRendering" class="Machine" displayName="$(string.ForceSoftwareRendering_Display)" explainText="$(string.ForceSoftwareRendering_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI" valueName="ForceSoftwareRendering">
+      <parentCategory ref="UI" />
+      <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_2" />
+      <enabledValue>
+        <string>True</string>
+      </enabledValue>
+      <disabledValue>
+        <string>False</string>
+      </disabledValue>
+    </policy>
     <policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
       <parentCategory ref="UI" />
       <supportedOn ref="SUPPORTED_PSAppDeployToolkit_4_0" />

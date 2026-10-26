@@ -84,6 +84,26 @@ namespace PSADT.ClientServer.Server.Tests
 
             // Assert
             Assert.Equal(user, instance.RunAsActiveUser);
+            Assert.False(instance.ForceSoftwareRendering);
+        }
+
+        /// <summary>
+        /// Checks the constructor retains the override and places it on the client's command line.
+        /// </summary>
+        /// <param name="forceSoftwareRendering">The startup override.</param>
+        /// <param name="expectedValue">The serialized Boolean argument.</param>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Theory]
+        [InlineData(false, "False")]
+        [InlineData(true, "True")]
+        public async Task ServerInstance_CarriesRenderingChoiceIntoClientArguments(bool forceSoftwareRendering, string expectedValue)
+        {
+            await using ServerInstance instance = new(SomeUser(), forceSoftwareRendering);
+
+            Assert.Equal(forceSoftwareRendering, instance.ForceSoftwareRendering);
+            Assert.Equal(
+                ["/ClientServer", "-InputPipe", "11", "-OutputPipe", "12", "-LogPipe", "13", "-ForceSoftwareRendering", expectedValue],
+                instance.CreateClientArguments(11, 12, 13));
         }
 
         /// <summary>

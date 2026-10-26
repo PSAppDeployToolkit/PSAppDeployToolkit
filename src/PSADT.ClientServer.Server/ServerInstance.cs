@@ -41,9 +41,20 @@ namespace PSADT.ClientServer
         /// All communication infrastructure (pipes, encryption, cancellation tokens) is initialized inline.
         /// Call <see cref="OpenAsync"/> to start the client process and begin communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
+            : this(runAsActiveUser, forceSoftwareRendering: false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a client/server instance with a rendering preference fixed for the client's lifetime.
+        /// </summary>
+        /// <param name="runAsActiveUser">The user whose session will host the client.</param>
+        /// <param name="forceSoftwareRendering">Whether the client must use software rendering.</param>
+        public ServerInstance(RunAsActiveUser runAsActiveUser, bool forceSoftwareRendering)
         {
             ArgumentNullException.ThrowIfNull(runAsActiveUser);
             RunAsActiveUser = runAsActiveUser;
+            ForceSoftwareRendering = forceSoftwareRendering;
         }
 
         /// <summary>
@@ -126,7 +137,7 @@ namespace PSADT.ClientServer
                     nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
                     nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
                     _clientProcess = ClientServerUtilities.StartClientOperationAsync(
-                        ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
+                        CreateClientArguments(outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle),
                         RunAsActiveUser,
                         [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
                         _clientProcessCts.Token
@@ -917,6 +928,16 @@ namespace PSADT.ClientServer
         /// user-specific data. It is intended for internal use and should not be exposed directly to external
         /// consumers.</remarks>
         public RunAsActiveUser RunAsActiveUser { get; }
+
+        /// <summary>
+        /// Gets the software rendering override supplied when this client/server instance was created.
+        /// </summary>
+        public bool ForceSoftwareRendering { get; }
+
+        internal string[] CreateClientArguments(nint inputPipe, nint outputPipe, nint logPipe)
+        {
+            return ["/ClientServer", "-InputPipe", ((long)inputPipe).ToString(CultureInfo.InvariantCulture), "-OutputPipe", ((long)outputPipe).ToString(CultureInfo.InvariantCulture), "-LogPipe", ((long)logPipe).ToString(CultureInfo.InvariantCulture), "-ForceSoftwareRendering", ForceSoftwareRendering.ToString(CultureInfo.InvariantCulture)];
+        }
 
         /// <summary>
         /// Gets a value indicating whether the process is currently running.

@@ -199,6 +199,8 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown when a required pipe handle is missing, invalid, or cannot be opened.</exception>
         private static async ValueTask<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
         {
+            SetForceSoftwareRendering(arguments);
+
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
             {
@@ -660,8 +662,11 @@ namespace PSADT.ClientServer
             {
                 if (arg.Equals("/ShowModalDialog", StringComparison.Ordinal) || arg.Equals("/smd", StringComparison.Ordinal))
                 {
+                    ReadOnlyDictionary<string, string> arguments = ArgvToDictionary(argv);
+                    SetForceSoftwareRendering(arguments);
+
                     // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
-                    if (AccountUtilities.CallerIsLocalSystem && ArgvToDictionary(argv).TryGetValue("BlockExecution", out string? blockExecutionStr) && bool.TryParse(blockExecutionStr, out bool blockExecution) && blockExecution)
+                    if (AccountUtilities.CallerIsLocalSystem && arguments.TryGetValue("BlockExecution", out string? blockExecutionStr) && bool.TryParse(blockExecutionStr, out bool blockExecution) && blockExecution)
                     {
                         // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
                         string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0]; IEnumerable<string>? argumentList = command.Length > 1 ? command.Skip(1) : null;
@@ -670,7 +675,7 @@ namespace PSADT.ClientServer
                     }
 
                     // Confirm we have a DialogType and that it's valid.
-                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("DialogType", out string? dialogTypeStr) || string.IsNullOrWhiteSpace(dialogTypeStr))
+                    if (!arguments.TryGetValue("DialogType", out string? dialogTypeStr) || string.IsNullOrWhiteSpace(dialogTypeStr))
                     {
                         throw new ClientException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
                     }
@@ -927,6 +932,20 @@ namespace PSADT.ClientServer
         private static int GetUserToastNotificationMode()
         {
             return !NotificationsUtilities.TryGetNotificationMode(out ToastNotificationMode? mode) ? -1 : (int)mode.Value;
+        }
+
+        private static void SetForceSoftwareRendering(ReadOnlyDictionary<string, string> arguments)
+        {
+            bool forceSoftwareRendering = ParseForceSoftwareRendering(arguments);
+            AppDomain.CurrentDomain.SetData(ClientServerUtilities.ForceSoftwareRenderingDataKey, forceSoftwareRendering);
+        }
+
+        private static bool ParseForceSoftwareRendering(ReadOnlyDictionary<string, string> arguments)
+        {
+            return arguments.TryGetValue("ForceSoftwareRendering", out string? value)
+                && (bool.TryParse(value, out bool forceSoftwareRendering)
+                    ? forceSoftwareRendering
+                    : throw new ClientException($"The specified ForceSoftwareRendering value [{value}] must be True or False.", ClientExitCode.InvalidArguments));
         }
 
         /// <summary>

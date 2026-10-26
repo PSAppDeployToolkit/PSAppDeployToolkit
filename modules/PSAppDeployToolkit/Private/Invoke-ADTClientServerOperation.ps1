@@ -198,6 +198,19 @@ function Private:Invoke-ADTClientServerOperation
         }
     }
 
+    # A persistent client keeps its startup rendering choice for its entire lifetime.
+    $forceSoftwareRendering = [System.Boolean]::Parse([string]($(if (!(Test-ADTModuleInitialized)) { Get-ADTDefaultConfig } else { Get-ADTConfig }).UI.ForceSoftwareRendering))
+    if ((Test-ADTClientServerActive) -and (Get-ADTClientServerInstance).IsRunning -and (Get-ADTClientServerInstance).ForceSoftwareRendering -ne $forceSoftwareRendering)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new('UI.ForceSoftwareRendering differs from the running UI client. Set it before Open-ADTSession or wait for the next client lifecycle.')
+            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            ErrorId = 'ClientServerRenderingConfigurationChanged'
+            TargetObject = $forceSoftwareRendering
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
     # If the client/server process is instantiated but no longer running, clean up before continuing.
     if ((Test-ADTClientServerActive) -and !(Get-ADTClientServerInstance).IsRunning)
     {
@@ -238,7 +251,7 @@ function Private:Invoke-ADTClientServerOperation
 
             # Instantiate a new ServerInstance object as required, then add the necessary callback.
             Write-ADTLogEntry -Message 'Instantiating user client/server process.'
-            $clientServerInstance = $Script:ClientServerInstance = [PSADT.ClientServer.ServerInstance]::new($User)
+            $clientServerInstance = $Script:ClientServerInstance = [PSADT.ClientServer.ServerInstance]::new($User, $forceSoftwareRendering)
             try
             {
                 $null = $clientServerInstance.OpenAsync().ConfigureAwait($false).GetAwaiter().GetResult()
@@ -535,6 +548,7 @@ function Private:Invoke-ADTClientServerOperation
         $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
         $null = $PSBoundParameters.Remove('NoWait')
         $null = $PSBoundParameters.Remove('User')
+        $PSBoundParameters['ForceSoftwareRendering'] = $forceSoftwareRendering.ToString()
         if ($PSBoundParameters.ContainsKey('Options'))
         {
             $PSBoundParameters.Options = [PSADT.ClientServer.DataSerialization]::SerializeToString($Options)

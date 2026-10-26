@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -13,9 +14,11 @@ using PSADT.AccountManagement;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
+using PSADT.TerminalServices;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
+using PSADT.UserInterface.Interfaces.Rendering;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Logging;
@@ -32,6 +35,8 @@ namespace PSADT.UserInterface.Interfaces
     [SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class DialogManager
     {
+        private static readonly RemoteRenderingLifecycle rendering;
+
         /// <summary>
         /// Initializes the WPF application when the class is first accessed.
         /// </summary>
@@ -44,37 +49,52 @@ namespace PSADT.UserInterface.Interfaces
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
             Action<Exception> unhandledExceptionHandler = (Action<Exception>?)AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
-            // Shut WPF down on process exit, or shutdown stalls for ~2.5 seconds. InvokeShutdown() rather
-            // than Application.Shutdown(), which invalidates HWNDs before ManagedWndProcTracker walks them.
-            AppDomain.CurrentDomain.ProcessExit += static (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeShutdown();
+            // Register before WPF startup so this handler can finish before WPF's own process-exit cleanup.
+            // Wait for the dispatcher thread to finish after InvokeShutdown() to avoid HWND cleanup races.
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
             // Configure WinForms modernisations here the NotifyIcon can create a IWin32Window which will make this throw if called afterwards.
             System.Windows.Forms.Application.EnableVisualStyles(); System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(defaultValue: false);
 
-            // Force all WPF dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
-            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+            // Choose the process preference before WPF creates its first Application or window.
+            bool forceSoftwareRendering = AppDomain.CurrentDomain.GetData(ClientServerUtilities.ForceSoftwareRenderingDataKey) is true;
+            rendering = new(
+                forceSoftwareRendering,
+                static () => AccountUtilities.CallerSessionId,
+                CurrentSessionRenderingInfo.Query,
+                static () => System.Windows.Media.RenderOptions.ProcessRenderMode,
+                static mode => System.Windows.Media.RenderOptions.ProcessRenderMode = mode,
+                static handler => SystemEvents.SessionSwitch += handler,
+                static handler => SystemEvents.SessionSwitch -= handler,
+                static message => Trace.TraceInformation(message),
+                static message => Trace.TraceWarning(message));
+            rendering.ApplyInitial();
 
             // Create and start the WPF application thread.
             using ManualResetEvent dispatcherRunning = new(initialState: false);
             Exception? appThreadException = null;
-            Thread appThread = new(() =>
+            appThread = new(() =>
             {
                 try
                 {
                     // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
                     System.Windows.Application app = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
                     app.DispatcherUnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
+                    app.Dispatcher.ShutdownStarted += static (_, _) => rendering.Dispose();
+                    app.Exit += static (_, _) => rendering.Dispose();
                     app.Startup += async (_, _) =>
                     {
                         if (!await app.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
                         {
                             throw new InvalidProgramException("Failed to signal that the WPF dispatcher is running.");
                         }
+                        rendering.Start(action => app.Dispatcher.BeginInvoke(action, System.Windows.Threading.DispatcherPriority.Normal));
                     };
                     _ = app.Run();
                 }
                 catch (Exception exception)
                 {
+                    rendering.Dispose();
                     // We capture the error for later rethrowing so that we can ensure the dispatcher is signaled to avoid deadlocks.
                     appThreadException = exception;
                     if (!dispatcherRunning.Set())
@@ -105,6 +125,25 @@ namespace PSADT.UserInterface.Interfaces
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
             _ = dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
+        }
+
+        /// <summary>
+        /// Shuts down the WPF dispatcher and waits for its thread to finish before process-exit cleanup continues.
+        /// </summary>
+        /// <param name="sender">The source of the process-exit event.</param>
+        /// <param name="e">The process-exit event data.</param>
+        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Application.Current is required to shut down the dedicated WPF dispatcher.")]
+        private static void OnProcessExit(object? sender, EventArgs e)
+        {
+            System.Windows.Threading.Dispatcher? dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if ((dispatcher?.HasShutdownStarted) is false)
+            {
+                dispatcher.InvokeShutdown();
+            }
+            if (appThread.IsAlive && Thread.CurrentThread != appThread)
+            {
+                appThread.Join();
+            }
         }
 
         /// <summary>
@@ -701,6 +740,11 @@ namespace PSADT.UserInterface.Interfaces
         {
             return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
         }
+
+        /// <summary>
+        /// The dedicated thread that owns the WPF application and dispatcher.
+        /// </summary>
+        private static readonly Thread appThread;
 
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.

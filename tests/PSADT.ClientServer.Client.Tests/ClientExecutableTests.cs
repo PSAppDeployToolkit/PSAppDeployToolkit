@@ -39,6 +39,129 @@ namespace PSADT.ClientServer.Client.Tests
         /// The reason a test is skipped when the client executables are not beside the assembly.
         /// </summary>
         private const string ClientRequired = "Requires the client executables alongside the test assembly.";
+        private const string RenderingDataKey = "PSADT.UserInterface.DialogManager.ForceSoftwareRendering";
+        private static readonly string[] InvalidStandaloneArguments = ["/ShowModalDialog", "-ForceSoftwareRendering", "invalid"];
+        private static readonly string[] ValidStandaloneArguments = ["/ShowModalDialog", "-ForceSoftwareRendering", "True"];
+
+        /// <summary>
+        /// Checks the startup rendering default and both explicit Boolean values.
+        /// </summary>
+        /// <param name="value">The supplied value, or null when the switch is absent.</param>
+        /// <param name="expected">The expected rendering override.</param>
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("False", false)]
+        [InlineData("True", true)]
+        [InlineData("true", true)]
+        public void ParseForceSoftwareRendering_UsesFalseOnlyWhenAbsentOrExplicitlyFalse(string? value, bool expected)
+        {
+            Dictionary<string, string> values = new(StringComparer.OrdinalIgnoreCase);
+            if (value is not null)
+            {
+                values.Add("ForceSoftwareRendering", value);
+            }
+
+            bool actual = NonPublic.CallStatic<bool>(Subject, "ParseForceSoftwareRendering", new ReadOnlyDictionary<string, string>(values));
+            Assert.Equal(expected, actual);
+        }
+
+        /// <summary>
+        /// Checks malformed values are refused instead of silently selecting automatic mode.
+        /// </summary>
+        /// <param name="value">The malformed supplied value.</param>
+        [Theory]
+        [InlineData("1")]
+        [InlineData("not-a-boolean")]
+        [InlineData("")]
+        public void ParseForceSoftwareRendering_RejectsMalformedSuppliedValue(string value)
+        {
+            Dictionary<string, string> values = new(StringComparer.OrdinalIgnoreCase) { ["ForceSoftwareRendering"] = value };
+            AssertRefused(ClientExitCode.InvalidArguments, () => _ = NonPublic.CallStatic<bool>(Subject, "ParseForceSoftwareRendering", new ReadOnlyDictionary<string, string>(values)));
+        }
+
+        /// <summary>
+        /// Checks the parsed override is published under the shared startup key.
+        /// </summary>
+        [Fact]
+        public void SetForceSoftwareRendering_PublishesParsedValueBeforeDialogDispatch()
+        {
+            object? original = AppDomain.CurrentDomain.GetData(RenderingDataKey);
+            try
+            {
+                Dictionary<string, string> values = new(StringComparer.OrdinalIgnoreCase) { ["ForceSoftwareRendering"] = "True" };
+                NonPublic.CallStatic(Subject, "SetForceSoftwareRendering", new ReadOnlyDictionary<string, string>(values));
+                Assert.True(Assert.IsType<bool>(AppDomain.CurrentDomain.GetData(RenderingDataKey)));
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.SetData(RenderingDataKey, original);
+            }
+        }
+
+        /// <summary>
+        /// Checks invalid startup input is refused before any pipe is opened.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task ClientServerMode_RejectsMalformedRenderingChoiceBeforeOpeningPipes()
+        {
+            Dictionary<string, string> values = new(StringComparer.OrdinalIgnoreCase) { ["ForceSoftwareRendering"] = "invalid" };
+            ValueTask<int> operation = NonPublic.CallStatic<ValueTask<int>>(Subject, "EnterClientServerModeAsync", new ReadOnlyDictionary<string, string>(values));
+            ClientException error = await Assert.ThrowsAsync<ClientException>(async () => await operation.ConfigureAwait(true)).ConfigureAwait(true);
+            Assert.Equal(ClientExitCode.InvalidArguments, (ClientExitCode)error.HResult);
+        }
+
+        /// <summary>
+        /// Checks invalid standalone input is refused before dialog dispatch.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task StandaloneMode_RejectsMalformedRenderingChoiceBeforeShowingDialog()
+        {
+            ValueTask<int> operation = NonPublic.CallStatic<ValueTask<int>>(Subject, "EnterStandaloneModeAsync", [InvalidStandaloneArguments]);
+            ClientException error = await Assert.ThrowsAsync<ClientException>(async () => await operation.ConfigureAwait(true)).ConfigureAwait(true);
+            Assert.Equal(ClientExitCode.InvalidArguments, (ClientExitCode)error.HResult);
+        }
+
+        /// <summary>
+        /// Checks a differently cased external switch reaches the strict Boolean parser.
+        /// </summary>
+        [Fact]
+        public void ArgvToDictionary_CarriesDifferentlyCasedRenderingSwitch()
+        {
+            ReadOnlyDictionary<string, string> arguments = ArgvToDictionary(["/ShowModalDialog", "-fOrCeSoFtWaReReNdErInG", "True"]);
+            Assert.True(NonPublic.CallStatic<bool>(Subject, "ParseForceSoftwareRendering", arguments));
+        }
+
+        /// <summary>
+        /// Checks an empty supplied switch is rejected by the command-line boundary.
+        /// </summary>
+        [Fact]
+        public void ArgvToDictionary_RejectsEmptyRenderingValue()
+        {
+            AssertRefused(ClientExitCode.InvalidArguments, static () => ArgvToDictionary(["/ShowModalDialog", "-ForceSoftwareRendering", ""]));
+        }
+
+        /// <summary>
+        /// Checks a valid modal startup publishes its preference before dialog arguments are validated.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous test.</returns>
+        [Fact]
+        public async Task StandaloneMode_PublishesRenderingChoiceBeforeDialogValidation()
+        {
+            object? original = AppDomain.CurrentDomain.GetData(RenderingDataKey);
+            try
+            {
+                ValueTask<int> operation = NonPublic.CallStatic<ValueTask<int>>(Subject, "EnterStandaloneModeAsync", [ValidStandaloneArguments]);
+                ClientException error = await Assert.ThrowsAsync<ClientException>(async () => await operation.ConfigureAwait(true)).ConfigureAwait(true);
+                Assert.Equal(ClientExitCode.NoDialogType, (ClientExitCode)error.HResult);
+                Assert.True(Assert.IsType<bool>(AppDomain.CurrentDomain.GetData(RenderingDataKey)));
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.SetData(RenderingDataKey, original);
+            }
+        }
 
         #region ArgvToDictionary
 

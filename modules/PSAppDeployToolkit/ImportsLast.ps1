@@ -135,6 +135,15 @@ try
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorDark = $null
 
+                                                # Use WPF's automatic renderer selection so hardware acceleration is available where supported.
+                                                # Confirmed Windows remote sessions (including RDP and Hyper-V Enhanced Session Mode) and Citrix sessions use software rendering.
+                                                # Set to $true if UI issues occur with remote support tools such as ScreenConnect or TeamViewer.
+                                                # The override is also available for Hyper-V Basic Session Mode, which normally follows the console rendering path.
+                                                # Automatic mode rechecks after console/remote connection changes when session notifications are available; the override stays fixed for the UI client.
+                                                # Set before Open-ADTSession or before the next UI client starts.
+                                                # Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                ForceSoftwareRendering = $false
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 

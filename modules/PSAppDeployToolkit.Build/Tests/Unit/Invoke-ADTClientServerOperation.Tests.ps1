@@ -6,6 +6,157 @@
     Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 }
 Describe 'Invoke-ADTClientServerOperation' {
+    Context 'Rendering choice for an existing client' {
+        It 'Rejects a changed choice before closing or invoking the client' {
+            InModuleScope -ModuleName PSAppDeployToolkit {
+                Mock Test-ADTModuleInitialized { $true }
+                Mock Get-ADTConfig { @{ UI = @{ ForceSoftwareRendering = $true } } }
+                Mock Test-ADTClientServerActive { $true }
+                Mock Get-ADTClientServerInstance { [pscustomobject]@{ IsRunning = $true; ForceSoftwareRendering = $false } }
+                Mock Close-ADTClientServerInstance { }
+
+                $user = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                { Invoke-ADTClientServerOperation -ProgressDialogOpen -User $user } | Should -Throw -ExpectedMessage '*UI.ForceSoftwareRendering differs from the running UI client*'
+                Should -Invoke Close-ADTClientServerInstance -Times 0 -Exactly
+            }
+        }
+
+        It 'Reuses a running client with the same rendering choice without closing or opening another' -ForEach @(
+            @{ Choice = $false }
+            @{ Choice = $true }
+        ) {
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Choice = $Choice } {
+                $user = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                $originalVariable = Get-Variable -Name ClientServerInstance -Scope Script -ErrorAction Ignore
+                $Script:RequestedRendering = $Choice
+                $fake = [pscustomobject]@{ IsRunning = $true; ForceSoftwareRendering = $Choice; RunAsActiveUser = $user }
+                $fake | Add-Member -MemberType ScriptMethod -Name ProgressDialogOpenAsync -Value { [System.Threading.Tasks.ValueTask[bool]]::new($true) }
+                $fake | Add-Member -MemberType ScriptMethod -Name GetLogWriterException -Value { $null }
+                $Script:ClientServerInstance = $fake
+                Mock Test-ADTModuleInitialized { $true }
+                Mock Get-ADTConfig { @{ UI = @{ ForceSoftwareRendering = $Script:RequestedRendering } } }
+                Mock Test-ADTClientServerActive { $true }
+                Mock Get-ADTClientServerInstance { $Script:ClientServerInstance }
+                Mock Test-ADTSessionActive { $false }
+                Mock Close-ADTClientServerInstance { throw 'A matching client must not close.' }
+                Mock Add-ADTModuleCallback { throw 'A matching client must not register a new lifecycle callback.' }
+                Mock Set-ADTClientServerFilePermissions { throw 'A matching client must not prepare a new launch.' }
+                try
+                {
+                    { Invoke-ADTClientServerOperation -ProgressDialogOpen -User $user } | Should -Not -Throw
+                    Should -Invoke Close-ADTClientServerInstance -Times 0 -Exactly
+                    Should -Invoke Add-ADTModuleCallback -Times 0 -Exactly
+                    Should -Invoke Set-ADTClientServerFilePermissions -Times 0 -Exactly
+                    [object]::ReferenceEquals($Script:ClientServerInstance, $fake) | Should -BeTrue
+                }
+                finally
+                {
+                    if ($originalVariable)
+                    {
+                        $Script:ClientServerInstance = $originalVariable.Value
+                    }
+                    else
+                    {
+                        Remove-Variable -Name ClientServerInstance -Scope Script -ErrorAction Ignore
+                    }
+                }
+            }
+        }
+    }
+
+    Context 'Rendering choice for a new client' {
+        It 'Passes the effective Boolean to the exact unlaunched constructor expression' -ForEach @(
+            @{ Choice = $false }
+            @{ Choice = $true }
+        ) {
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Choice = $Choice } {
+                $Script:RequestedRendering = $Choice
+                Mock Test-ADTModuleInitialized { $true }
+                Mock Get-ADTConfig { @{ UI = @{ ForceSoftwareRendering = $Script:RequestedRendering } } }
+                $ast = (Get-Command Invoke-ADTClientServerOperation).ScriptBlock.Ast
+                $assignment = @($ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -eq '$forceSoftwareRendering' }, $true))
+                $constructor = @($ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and $node.Extent.Text -match '^\[PSADT\.ClientServer\.ServerInstance\]::new\(' }, $true))
+                $assignment.Count | Should -Be 1
+                $constructor.Count | Should -Be 1
+
+                # Run only these two nodes selected from the module's own AST, without launching the client.
+                $assignmentBlock = [System.Management.Automation.ScriptBlock]::Create($assignment[0].Extent.Text)
+                $constructorBlock = [System.Management.Automation.ScriptBlock]::Create($constructor[0].Extent.Text)
+                $User = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                . $assignmentBlock
+                $instance = & $constructorBlock
+                try
+                {
+                    $instance.ForceSoftwareRendering | Should -Be $Choice
+                    $instance.RunAsActiveUser | Should -Be $User
+                    $instance.IsRunning | Should -BeFalse
+                }
+                finally
+                {
+                    $instance.DisposeAsync().AsTask().GetAwaiter().GetResult()
+                }
+            }
+        }
+    }
+
+    Context 'Rendering choice for a standalone launch' {
+        It 'Serializes the effective Boolean before any client launch' -ForEach @(
+            @{ Choice = $false; Serialized = 'False' }
+            @{ Choice = $true; Serialized = 'True' }
+        ) {
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Choice = $Choice; Serialized = $Serialized } {
+                $Script:RequestedRendering = $Choice
+                $Script:CapturedArguments = $null
+                Mock Test-ADTModuleInitialized { $true }
+                Mock Get-ADTConfig { @{ UI = @{ ForceSoftwareRendering = $Script:RequestedRendering } } }
+                Mock Test-ADTClientServerActive { $false }
+                Mock Test-ADTSessionActive { $false }
+                Mock Set-ADTClientServerFilePermissions { }
+                Mock Set-ADTRegistryKey {
+                    $Script:CapturedArguments = $Value
+                    throw 'CapturedBeforeLaunch'
+                }
+
+                $user = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                { Invoke-ADTClientServerOperation -GetForegroundWindowProcessId -User $user } | Should -Throw -ExpectedMessage '*CapturedBeforeLaunch*'
+                Should -Invoke Set-ADTRegistryKey -Times 1 -Exactly
+                $Script:CapturedArguments | Should -Not -BeNullOrEmpty
+                $type = [System.Collections.ObjectModel.ReadOnlyDictionary[string, string]]
+                $arguments = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($Script:CapturedArguments, $type)
+                $arguments['ForceSoftwareRendering'] | Should -BeExactly $Serialized
+            }
+        }
+
+        It 'Serializes the pre-initialization default or policy choice without reading initialized config' -ForEach @(
+            @{ Choice = $false; Serialized = 'False' }
+            @{ Choice = $true; Serialized = 'True' }
+        ) {
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Choice = $Choice; Serialized = $Serialized } {
+                $Script:RequestedRendering = $Choice
+                $Script:CapturedArguments = $null
+                Mock Test-ADTModuleInitialized { $false }
+                Mock Get-ADTDefaultConfig { @{ UI = @{ ForceSoftwareRendering = $Script:RequestedRendering } } }
+                Mock Get-ADTConfig { throw 'Initialized config must not be read before initialization.' }
+                Mock Test-ADTClientServerActive { $false }
+                Mock Test-ADTSessionActive { $false }
+                Mock Set-ADTClientServerFilePermissions { }
+                Mock Set-ADTRegistryKey {
+                    $Script:CapturedArguments = $Value
+                    throw 'CapturedBeforeLaunch'
+                }
+
+                $user = [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+                { Invoke-ADTClientServerOperation -GetForegroundWindowProcessId -User $user } | Should -Throw -ExpectedMessage '*CapturedBeforeLaunch*'
+                Should -Invoke Get-ADTDefaultConfig -Times 1 -Exactly
+                Should -Invoke Get-ADTConfig -Times 0 -Exactly
+                Should -Invoke Set-ADTRegistryKey -Times 1 -Exactly
+                $type = [System.Collections.ObjectModel.ReadOnlyDictionary[string, string]]
+                $arguments = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($Script:CapturedArguments, $type)
+                $arguments['ForceSoftwareRendering'] | Should -BeExactly $Serialized
+            }
+        }
+    }
+
     # Contract only. Every operation this offers reaches the client running in the logged-on user's
     # session, and the ones worth asserting against are covered through the functions that call it:
     # Test-ADTNotifyIconOpen, Test-ADTInstallationProgressOpen and Start-ADTProcessAsUser among them.

@@ -28,6 +28,10 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 |---------------------|-----------------|
 | ![CustomLightMode](https://github.com/user-attachments/assets/c092999f-46a2-43f6-bd28-bc2bdcd03b76) | ![CustomDarkMode](https://github.com/user-attachments/assets/26be16d2-f13e-491d-af86-72a169200f27) |
 
+## Upcoming changes for 4.2
+
+UI rendering returns to WPF's automatic renderer selection so hardware acceleration is available where supported. Windows sessions confirmed as remote, including RDP or Hyper-V Enhanced Session Mode when Windows reports them as remote, and confirmed Citrix sessions use software rendering. Set `UI.ForceSoftwareRendering = $true` in `Config/config.psd1` before `Open-ADTSession` if UI issues occur with remote support tools such as ScreenConnect or TeamViewer. The override is also available for Hyper-V Basic Session Mode, which normally follows the console rendering path. Automatic mode rechecks after console/remote connection changes when session notifications are available, while the explicit override remains fixed for the UI client's lifetime. This changes the previous always-software behavior.
+
 ## 🖥️ What's New in v4.2 RC2 - 2026-10-01
 
 ### Highlights

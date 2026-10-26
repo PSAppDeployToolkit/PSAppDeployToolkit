@@ -193,6 +193,28 @@ Describe 'Import-ADTModuleDataFile' {
             (Import-PolicyProbe).Toolkit.CompanyName | Should -BeExactly 'Versioned'
         }
 
+        It 'Applies the versioned software rendering policy over the automatic default' {
+            (Import-PolicyProbe).UI.ForceSoftwareRendering | Should -BeFalse
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name ForceSoftwareRendering -Value 'True'
+            [System.Boolean]::Parse([string]((Import-PolicyProbe).UI.ForceSoftwareRendering)) | Should -BeTrue
+        }
+
+        It 'Lets a disabled versioned rendering policy override a deployment override' {
+            $deployment = "$TestDrive\rendering-override"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Encoding UTF8 -Value '@{ UI = @{ ForceSoftwareRendering = $true } }'
+
+            (Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).UI.ForceSoftwareRendering | Should -BeTrue
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name ForceSoftwareRendering -Value 'False'
+            [System.Boolean]::Parse([string]((Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).UI.ForceSoftwareRendering)) | Should -BeFalse
+        }
+
+        It 'Lets the versioned rendering policy win over a conflicting shared value' {
+            Set-PolicyValue -Key 'Config\UI' -Name ForceSoftwareRendering -Value 'True'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name ForceSoftwareRendering -Value 'False'
+            [System.Boolean]::Parse([string]((Import-PolicyProbe).UI.ForceSoftwareRendering)) | Should -BeFalse
+        }
+
         It 'Ignores a key versioned beyond this module' {
             Set-PolicyValue -Key 'Config\Toolkit' -Name CompanyName -Value 'Shared'
             Set-PolicyValue -Key "$script:NextLayer\Config\Toolkit" -Name CompanyName -Value 'Future'

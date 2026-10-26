@@ -3843,14 +3843,41 @@ namespace PSADT.Interop
         internal static BOOL WTSQuerySessionInformation(uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
             BOOL res = PInvoke.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
+            nint pointer = ppBuffer.ToIntPtr();
             if (!res)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                Exception error = ExceptionUtilities.GetExceptionForLastWin32Error();
+                if (pointer is not (0 or -1))
+                {
+                    FreeWtsQueryBuffer(pointer);
+                }
+                throw error;
             }
-            InvalidOperationException.ThrowIfNullOrInvalid(ppBuffer, "The session information buffer returned from 'WTSQuerySessionInformation()' is null or invalid.");
-            InvalidOperationException.ThrowIfZero(bytesReturned, "The byte count returned from 'WTSQuerySessionInformation()' is zero.");
-            pBuffer = new(ppBuffer.ToIntPtr(), (int)bytesReturned, ownsHandle: true);
+            pBuffer = CreateWtsQueryBuffer(pointer, bytesReturned, FreeWtsQueryBuffer);
             return res;
+        }
+
+        internal static SafeWtsHandle CreateWtsQueryBuffer(nint pointer, uint bytesReturned, Action<nint> freeInvalidBuffer)
+        {
+            ArgumentNullException.ThrowIfNull(freeInvalidBuffer);
+            if (pointer is 0 or -1)
+            {
+                throw new InvalidOperationException("The session information buffer returned from 'WTSQuerySessionInformation()' is null or invalid.");
+            }
+            if (bytesReturned is 0 or > int.MaxValue)
+            {
+                freeInvalidBuffer(pointer);
+                throw new InvalidOperationException("The byte count returned from 'WTSQuerySessionInformation()' is invalid.");
+            }
+            return new(pointer, (int)bytesReturned, ownsHandle: true);
+        }
+
+        private static void FreeWtsQueryBuffer(nint pointer)
+        {
+            unsafe
+            {
+                PInvoke.WTSFreeMemory((void*)pointer);
+            }
         }
 
         /// <summary>

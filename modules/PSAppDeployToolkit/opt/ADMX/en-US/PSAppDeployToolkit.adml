@@ -89,6 +89,8 @@
       <string id="FluentAccentColor_Explain">Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7. Leave empty to clear a value set in the deployment's config on 4.2.0 or higher; earlier versions ignore an empty value.</string>
       <string id="FluentAccentColorDark_Display">FluentAccentColorDark</string>
       <string id="FluentAccentColorDark_Explain">Specify the Accent Color in hex for dark mode (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7. Requires PSAppDeployToolkit 4.2.0 or higher. Leave empty to clear a value set in the deployment's config.</string>
+      <string id="ForceSoftwareRendering_Display">ForceSoftwareRendering</string>
+      <string id="ForceSoftwareRendering_Explain">By default (False), the UI client uses automatic WPF rendering and switches to software rendering only for a positively detected Windows or Citrix remote session. Enable (True) to force software rendering for viewers such as ScreenConnect, TeamViewer, or Hyper-V basic mode when needed. This setting is fixed when a UI client starts; set it before Open-ADTSession or the next client lifecycle. Requires PSAppDeployToolkit 4.2.0 or higher.</string>
       <string id="FluentAccentColor_4_2_Display">FluentAccentColor (4.2)</string>
       <string id="FluentAccentColor_4_2_Explain">Set a packed ARGB accent color and choose whether its visible Light and Dark colors are exact. Unchecked uses calculated accent shades. The Dark color remains in FluentAccentColorDark. Requires PSAppDeployToolkit 4.2.0 or higher. Leave Color empty to clear a deployment color.</string>
       <string id="DialogStyle_Display">DialogStyle</string>

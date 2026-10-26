@@ -19,6 +19,8 @@ namespace PSADT.Foundation
     /// infrastructure and is not designed for direct use by external code.</remarks>
     public static class ClientServerUtilities
     {
+        internal const string ForceSoftwareRenderingDataKey = "PSADT.UserInterface.DialogManager.ForceSoftwareRendering";
+
         /// <summary>
         /// Initializes static members of the ClientServerUtilities class.
         /// </summary>
