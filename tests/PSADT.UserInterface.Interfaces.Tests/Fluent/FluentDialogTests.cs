@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PSADT.UserInterface.DialogOptions;
@@ -612,22 +613,22 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Verifies that the dialog is parked off screen until it has something to show.
+        /// Verifies that construction leaves coordinates unset for normal source-time positioning.
         /// </summary>
         /// <remarks>
-        /// A window that sized itself to its content on screen would be seen doing it. The dialog is
-        /// therefore built at a coordinate no monitor covers and only moved into place once its content
-        /// has rendered, so the first thing anyone sees is the finished article.
+        /// The dialog is positioned from its actual layout in OnSourceInitialized. Constructor-time
+        /// off-screen coordinates would bypass that normal startup path and reintroduce a reveal move.
         /// </remarks>
         [Fact]
-        public void Constructor_ParksTheWindowOffScreen()
+        public void Constructor_LeavesCoordinatesUnsetForSourcePositioning()
         {
             // Act & Assert
             WithDialog(SampleOptions.CustomDialog(), static dialog =>
             {
-                Assert.True(dialog.Left < -30000, FormattableString.Invariant($"Expected the window to be parked off screen, but Left was {dialog.Left}."));
-                Assert.True(dialog.Top < -30000, FormattableString.Invariant($"Expected the window to be parked off screen, but Top was {dialog.Top}."));
+                Assert.True(double.IsNaN(dialog.Left), FormattableString.Invariant($"Expected an unset Left before source positioning, but it was {dialog.Left}."));
+                Assert.True(double.IsNaN(dialog.Top), FormattableString.Invariant($"Expected an unset Top before source positioning, but it was {dialog.Top}."));
                 Assert.Equal(WindowStartupLocation.Manual, dialog.WindowStartupLocation);
+                Assert.Equal(IntPtr.Zero, new WindowInteropHelper(dialog).Handle);
             });
         }
 
