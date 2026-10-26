@@ -75,6 +75,27 @@ Describe 'Show-ADTInstallationRestartPrompt' {
             Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter { $ShowModalDialog -and ($Options.CustomMessageText -ceq $Expected) } -Times 1 -Exactly
         }
 
+        It 'Forwards the structured Fluent accent option to the restart dialog' {
+            $config = InModuleScope -ModuleName PSAppDeployToolkit { Get-ADTConfig }
+            $originalAccent = $config.UI.FluentAccentColor
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser }
+            Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { }
+
+            try
+            {
+                $config.UI.FluentAccentColor = @{ Color = -16746281; Exact = $true }
+                Show-ADTInstallationRestartPrompt -Force
+
+                Should -Invoke -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation -ParameterFilter {
+                    $ShowModalDialog -and ($DialogType -eq 'RestartDialog') -and ($Options.FluentAccentColor.Color -eq -16746281) -and $Options.FluentAccentColor.Exact
+                }
+            }
+            finally
+            {
+                $config.UI.FluentAccentColor = $originalAccent
+            }
+        }
+
         # Asking for both is not a contradiction the binder can catch, so the function has to decide, and
         # a caller who asked to see the dialog gets to see it rather than having a restart armed behind it.
         It 'Prefers the forced prompt over arming a silent restart' {

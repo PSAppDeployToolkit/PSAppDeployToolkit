@@ -85,6 +85,37 @@ Describe 'Import-ADTModuleDataFile' {
         }
     }
 
+    Context 'In-memory 4.2 accent policy conversion' {
+        It 'Converts flat registry values and overlays Exact on a scalar color' {
+            $deployment = "$TestDrive\memoryAccent"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Value '@{ UI = @{ FluentAccentColor = 0xFF0078D7 } }'
+
+            Mock -ModuleName PSAppDeployToolkit Get-ChildItem {
+                if ($LiteralPath -eq 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit')
+                {
+                    $version = [pscustomobject]@{ PSChildName = '4.2'; PSPath = "$LiteralPath\4.2" }
+                    $version | Add-Member -MemberType ScriptMethod -Name Dispose -Value { }
+                    return $version
+                }
+                if ($LiteralPath -like '*\4.2\Config')
+                {
+                    return [pscustomobject]@{ PSPath = "$LiteralPath\UI" }
+                }
+            }
+            Mock -ModuleName PSAppDeployToolkit Get-ItemProperty {
+                [pscustomobject]@{
+                    PSPath = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\4.2\Config\UI'
+                    'FluentAccentColor.Exact' = 'True'
+                }
+            }
+
+            $accent = Import-Probe -Splat @{ BaseDirectory = $deployment; FileName = 'config.psd1' }
+            $accent.UI.FluentAccentColor.Color | Should -Be -16746281
+            $accent.UI.FluentAccentColor.Exact | Should -BeTrue
+        }
+    }
+
     Context 'Machine policy' {
         BeforeAll {
             # Read from a key under the current user's hive so nothing needs elevation. The versioned keys are
@@ -239,6 +270,43 @@ Describe 'Import-ADTModuleDataFile' {
             Set-PolicyValue -Key 'Config\Assets' -Name LogoDark -Value 'C:\Brand\Dark.png'
             Set-PolicyValue -Key "$script:ThisLayer\Config\Assets" -Name LogoDark -Value ''
             ($null -eq (Import-PolicyProbe).Assets.LogoDark) | Should -BeTrue
+        }
+
+        It 'Layers the 4.2 structured accent policy over a shared scalar color' {
+            Set-PolicyValue -Key 'Config\UI' -Name FluentAccentColor -Value '0xFF0078D7'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name 'FluentAccentColor.Exact' -Value 'True'
+            $accent = (Import-PolicyProbe).UI.FluentAccentColor
+            $accent.Color | Should -Be -16746281
+            $accent.Exact | Should -BeTrue
+        }
+
+        It 'Preserves Exact when a later policy scalar changes Color' {
+            $deployment = "$TestDrive\exactBeforeScalar"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name FluentAccentColor -Value '-1'
+            $accent = (Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).UI.FluentAccentColor
+            $accent.Color | Should -Be -1
+            $accent.Exact | Should -BeTrue
+        }
+
+        It 'Applies explicit false and a blank Color in the 4.2 policy' {
+            $deployment = "$TestDrive\exactBeforeFalse"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name 'FluentAccentColor.Color' -Value ''
+            Set-PolicyValue -Key "$script:ThisLayer\Config\UI" -Name 'FluentAccentColor.Exact' -Value 'False'
+            $accent = (Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).UI.FluentAccentColor
+            $accent.Color | Should -BeNullOrEmpty
+            $accent.Exact | Should -BeFalse
+        }
+
+        It 'Clears a structured accent with a blank scalar policy' {
+            $deployment = "$TestDrive\accent"
+            $null = New-Item -Path "$deployment\$((Get-UICulture).Name)" -ItemType Directory -Force
+            Set-Content -LiteralPath "$deployment\$((Get-UICulture).Name)\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            Set-PolicyValue -Key 'Config\UI' -Name FluentAccentColor -Value ''
+            (Import-PolicyProbe -Splat @{ BaseDirectory = $deployment }).UI.FluentAccentColor | Should -BeNullOrEmpty
         }
 
         It 'Ignores a blank policy value for a setting that cannot be blank' {

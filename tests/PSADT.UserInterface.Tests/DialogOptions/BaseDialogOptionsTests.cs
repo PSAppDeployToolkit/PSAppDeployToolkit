@@ -4,12 +4,13 @@ using System.Globalization;
 using System.IO;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Tests.TestHelpers;
+using PSAppDeployToolkit.Foundation;
 using Xunit;
 
 namespace PSADT.UserInterface.Tests.DialogOptions
 {
     /// <summary>
-    /// Tests the fifteen options every dialog shares.
+    /// Tests the sixteen options every dialog shares.
     /// </summary>
     /// <remarks>
     /// <c language="csharp">BaseDialogOptions</c> is abstract and both its constructors are <c language="csharp">private protected</c>, so it
@@ -45,7 +46,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
                 ["AppTaskbarIconImage"] = taskbarIcon,
                 ["DialogTopMost"] = true,
                 ["Language"] = new CultureInfo("fr-FR"),
-                ["FluentAccentColor"] = 0x0078D4,
+                ["FluentAccentColor"] = new Hashtable { ["Color"] = 0x0078D4, ["Exact"] = true },
                 ["FluentAccentColorDark"] = 0x60CDFF,
                 ["DialogPosition"] = DialogPosition.BottomRight,
                 ["DialogAllowMove"] = true,
@@ -68,8 +69,9 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Equal(taskbarIcon, options.AppTaskbarIconImage);
             Assert.True(options.DialogTopMost);
             Assert.Equal("fr-FR", options.Language.Name);
-            Assert.Equal(0x0078D4, options.FluentAccentColor);
+            Assert.Equal(0x0078D4, options.FluentAccentColor?.Color);
             Assert.Equal(0x60CDFF, options.FluentAccentColorDark);
+            Assert.True(options.FluentAccentColor?.Exact);
             Assert.Equal(DialogPosition.BottomRight, options.DialogPosition);
             Assert.True(options.DialogAllowMove);
             Assert.True(options.DialogAllowMinimize);
@@ -102,6 +104,87 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.DialogAllowMinimize);
             Assert.Null(options.DialogExpiryDuration);
             Assert.Null(options.DialogPersistInterval);
+        }
+
+        /// <summary>
+        /// Verifies every concrete dialog handles inline colors and rejects malformed members.
+        /// </summary>
+        /// <param name="kind">The dialog fixture to construct.</param>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        public void EveryConcreteDialog_AcceptsInlineAccentAndRejectsBadExact(int kind)
+        {
+            Hashtable table = DialogTable(kind);
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = unchecked((int)0xFF0078D7), ["Exact"] = true };
+            BaseDialogOptions options = CreateDialog(kind, table);
+            Assert.Equal(unchecked((int)0xFF0078D7), options.FluentAccentColor?.Color);
+            Assert.True(options.FluentAccentColor?.Exact);
+
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = 0, ["Exact"] = false };
+            options = CreateDialog(kind, table);
+            Assert.Equal(0, options.FluentAccentColor?.Color);
+            Assert.False(options.FluentAccentColor?.Exact);
+
+            table["FluentAccentColor"] = new Hashtable { ["Exact"] = true };
+            options = CreateDialog(kind, table);
+            Assert.Null(options.FluentAccentColor?.Color);
+            Assert.True(options.FluentAccentColor?.Exact);
+
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = 23, ["Exact"] = "true" };
+            _ = Assert.Throws<ArgumentException>(() => CreateDialog(kind, table));
+            _ = table["FluentAccentColor"] = new Hashtable { ["Color"] = "23" };
+            _ = Assert.Throws<ArgumentException>(() => CreateDialog(kind, table));
+        }
+
+        /// <summary>
+        /// Verifies numeric input stays calculated and typed input is retained.
+        /// </summary>
+        [Fact]
+        public void Constructor_AcceptsLegacyScalarAndTypedAccent()
+        {
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentAccentColor"] = -1;
+            ProgressDialogOptions scalar = new(table);
+            Assert.Equal(-1, scalar.FluentAccentColor?.Color);
+            Assert.False(scalar.FluentAccentColor?.Exact);
+
+            FluentAccentColorOptions typed = new(123, exact: true);
+            _ = table["FluentAccentColor"] = typed;
+            ProgressDialogOptions structured = new(table);
+            Assert.Same(typed, structured.FluentAccentColor);
+        }
+
+        private static Hashtable DialogTable(int kind)
+        {
+            return kind switch
+            {
+                0 => SampleOptions.ProgressDialog(),
+                1 => SampleOptions.CustomDialog(),
+                2 => SampleOptions.InputDialog(),
+                3 => SampleOptions.ListSelectionDialog(),
+                4 => SampleOptions.CloseAppsDialog(),
+                5 => SampleOptions.RestartDialog(),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+            };
+        }
+
+        private static BaseDialogOptions CreateDialog(int kind, Hashtable table)
+        {
+            return kind switch
+            {
+                0 => new ProgressDialogOptions(table),
+                1 => new CustomDialogOptions(table),
+                2 => new InputDialogOptions(table),
+                3 => new ListSelectionDialogOptions(table),
+                4 => new CloseAppsDialogOptions(DeploymentType.Install, table),
+                5 => new RestartDialogOptions(DeploymentType.Install, table),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+            };
         }
 
         /// <summary>

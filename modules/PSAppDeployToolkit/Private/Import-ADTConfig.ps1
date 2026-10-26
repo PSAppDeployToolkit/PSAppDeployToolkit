@@ -113,7 +113,7 @@ function Private:Import-ADTConfig
         foreach ($section in $($_.GetEnumerator()))
         {
             # Re-process if this is a hashtable.
-            if ($section.Value -is [System.Collections.Hashtable])
+            if (($section.Value -is [System.Collections.Hashtable]) -and ($section.Key -ne 'FluentAccentColor'))
             {
                 $section.Value | & $MyInvocation.MyCommand; continue
             }

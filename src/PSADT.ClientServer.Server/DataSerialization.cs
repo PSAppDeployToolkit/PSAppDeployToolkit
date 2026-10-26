@@ -408,6 +408,7 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogOptions.CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogClassicStrings),
                 typeof(UserInterface.DialogOptions.CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogFluentStrings),
                 typeof(UserInterface.DialogOptions.CustomDialogOptions),
+                typeof(UserInterface.DialogOptions.FluentAccentColorOptions),
                 typeof(UserInterface.DialogOptions.DialogBoxOptions),
                 typeof(UserInterface.DialogOptions.HelpConsoleOptions),
                 typeof(UserInterface.DialogOptions.InputDialogOptions),

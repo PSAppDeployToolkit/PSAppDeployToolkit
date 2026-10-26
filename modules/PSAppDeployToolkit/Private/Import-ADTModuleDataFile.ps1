@@ -49,6 +49,29 @@ function Private:Import-ADTModuleDataFile
         # Process the provided default data so we can add missing data to the data file.
         foreach ($section in $NewData.GetEnumerator())
         {
+            # The accent setting alone accepts both its original scalar and the 4.2 Color/Exact form.
+            # Keep either member supplied by an earlier layer when the later layer supplies only the other.
+            if ($section.Key -eq 'FluentAccentColor' -and $DataFile.ContainsKey($section.Key))
+            {
+                if ($section.Value -is [System.Collections.Hashtable])
+                {
+                    if ($DataFile.($section.Key) -isnot [System.Collections.Hashtable])
+                    {
+                        $DataFile.($section.Key) = @{ Color = $DataFile.($section.Key) }
+                    }
+                    foreach ($member in $section.Value.GetEnumerator())
+                    {
+                        $DataFile.($section.Key).($member.Key) = $member.Value
+                    }
+                    continue
+                }
+                if ((Out-ADTString -InputObject $section.Value) -and ($DataFile.($section.Key) -is [System.Collections.Hashtable]))
+                {
+                    $DataFile.($section.Key).Color = $section.Value
+                    continue
+                }
+            }
+
             # Recursively process hashtables, otherwise just update the value.
             if ($section.Value -is [System.Collections.Hashtable])
             {
@@ -147,6 +170,30 @@ function Private:Import-ADTModuleDataFile
         {
             if ($policySettings = Get-ChildItem -LiteralPath "$policyKey\$section$(if ($cultureName.Length) { "\$cultureName" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
             {
+                # The 4.2 ADMX twin writes two flat registry values. Expand only those two
+                # known UI values; ordinary registry names retain their existing meaning.
+                if ($section -eq 'Config' -and $policyKey.EndsWith('\4.2', [System.StringComparison]::OrdinalIgnoreCase) -and $policySettings.ContainsKey('UI'))
+                {
+                    $uiPolicy = $policySettings.UI
+                    $accent = @{}
+                    if ($uiPolicy.ContainsKey('FluentAccentColor'))
+                    {
+                        $accent.Color = $uiPolicy.FluentAccentColor
+                    }
+                    foreach ($member in 'Color', 'Exact')
+                    {
+                        $name = "FluentAccentColor.$member"
+                        if ($uiPolicy.ContainsKey($name))
+                        {
+                            $accent[$member] = $uiPolicy[$name]
+                            $uiPolicy.Remove($name)
+                        }
+                    }
+                    if ($accent.Count)
+                    {
+                        $uiPolicy.FluentAccentColor = $accent
+                    }
+                }
                 Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings -Defaults $defaults
             }
         }

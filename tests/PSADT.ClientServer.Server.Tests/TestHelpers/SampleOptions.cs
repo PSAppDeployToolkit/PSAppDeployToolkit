@@ -101,8 +101,9 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
         /// Builds progress dialog options.
         /// </summary>
         /// <param name="progressMessageText">The progress message, varied to tell two instances apart.</param>
+        /// <param name="accent">The optional typed accent carried across the pipe.</param>
         /// <returns>The options.</returns>
-        internal static ProgressDialogOptions ProgressDialog(string progressMessageText = "the progress message")
+        internal static ProgressDialogOptions ProgressDialog(string progressMessageText = "the progress message", FluentAccentColorOptions? accent = null)
         {
             return new(new Hashtable
             {
@@ -112,6 +113,7 @@ namespace PSADT.ClientServer.Server.Tests.TestHelpers
                 ["AppBannerImage"] = SampleImage,
                 ["DialogTopMost"] = true,
                 ["Language"] = CultureInfo.InvariantCulture,
+                ["FluentAccentColor"] = accent,
                 ["ProgressMessageText"] = progressMessageText,
                 ["ProgressDetailMessageText"] = "the detail message",
             });

@@ -72,6 +72,10 @@ Describe 'Import-ADTConfig' {
             $script:Config.Assets.LogoDark | Should -BeNullOrEmpty
             $script:Config.Assets.TaskbarIcon | Should -BeNullOrEmpty
         }
+
+        It 'Keeps the accent color unset by default' {
+            $script:Config.UI.FluentAccentColor | Should -BeNullOrEmpty
+        }
     }
 
     Context 'Supplemental configuration' {
@@ -81,6 +85,69 @@ Describe 'Import-ADTConfig' {
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultTimeout = 4242 } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
                 (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.DefaultTimeout | Should -Be 4242
+            }
+        }
+
+        It 'Accepts a structured exact Fluent accent color override' {
+            $dir = "$TestDrive\ExactAccent"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
+                $accent = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.FluentAccentColor
+                $accent.Color | Should -Be -16746281
+                $accent.Exact | Should -BeTrue
+            }
+        }
+
+        It 'Retains a scalar color when a later layer sets Exact only' {
+            $first = "$TestDrive\AccentFirst"
+            $second = "$TestDrive\AccentSecond"
+            $null = New-Item -Path $first, $second -ItemType Directory -Force
+            Set-Content -LiteralPath "$first\config.psd1" -Value '@{ UI = @{ FluentAccentColor = 0xFF0078D7 } }'
+            Set-Content -LiteralPath "$second\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Exact = $true } } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Directories = @($first, $second) } {
+                $accent = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Directories).UI.FluentAccentColor
+                $accent.Color | Should -Be -16746281
+                $accent.Exact | Should -BeTrue
+            }
+        }
+
+        It 'Retains Exact when a later scalar changes Color and honors explicit false' {
+            $first = "$TestDrive\ExactFirst"
+            $second = "$TestDrive\ExactSecond"
+            $third = "$TestDrive\ExactThird"
+            $null = New-Item -Path $first, $second, $third -ItemType Directory -Force
+            Set-Content -LiteralPath "$first\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0; Exact = $true } } }'
+            Set-Content -LiteralPath "$second\config.psd1" -Value '@{ UI = @{ FluentAccentColor = -1 } }'
+            Set-Content -LiteralPath "$third\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Exact = $false } } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ First = $first; Second = $second; Third = $third } {
+                $accent = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory @($First, $Second)).UI.FluentAccentColor
+                $accent.Color | Should -Be -1
+                $accent.Exact | Should -BeTrue
+                $accent = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory @($First, $Second, $Third)).UI.FluentAccentColor
+                $accent.Exact | Should -BeFalse
+            }
+        }
+
+        It 'Clears a structured accent when a later config file leaves the scalar blank' {
+            $first = "$TestDrive\StructuredBeforeBlank"
+            $second = "$TestDrive\BlankAfterStructured"
+            $null = New-Item -Path $first, $second -ItemType Directory -Force
+            Set-Content -LiteralPath "$first\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            Set-Content -LiteralPath "$second\config.psd1" -Value "@{ UI = @{ FluentAccentColor = '' } }"
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Directories = @($first, $second) } {
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Directories).UI.FluentAccentColor | Should -BeNullOrEmpty
+            }
+        }
+
+        It 'Clears a structured accent when a later config file sets null' {
+            $first = "$TestDrive\StructuredBeforeNull"
+            $second = "$TestDrive\NullAfterStructured"
+            $null = New-Item -Path $first, $second -ItemType Directory -Force
+            Set-Content -LiteralPath "$first\config.psd1" -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $true } } }'
+            Set-Content -LiteralPath "$second\config.psd1" -Value '@{ UI = @{ FluentAccentColor = $null } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Directories = @($first, $second) } {
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Directories).UI.FluentAccentColor | Should -BeNullOrEmpty
             }
         }
 

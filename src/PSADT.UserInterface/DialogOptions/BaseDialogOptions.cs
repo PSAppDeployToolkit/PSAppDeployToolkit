@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.DialogOptions
             (string?)options["AppTaskbarIconImage"],
             (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
             (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
-            (int?)options["FluentAccentColor"],
+            FluentAccentColorOptions.Parse(options["FluentAccentColor"]),
             (int?)options["FluentAccentColorDark"],
             (DialogPosition?)options["DialogPosition"],
             (bool?)options["DialogAllowMove"],
@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, FluentAccentColorOptions? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -163,7 +163,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// The accent color for the dialog.
         /// </summary>
         [DataMember]
-        public readonly int? FluentAccentColor;
+        public readonly FluentAccentColorOptions? FluentAccentColor;
 
         /// <summary>
         /// The accent color (dark mode) for the dialog.

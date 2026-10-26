@@ -78,6 +78,7 @@ namespace PSADT.UserInterface.Tests
                     "CloseAppsDialogStrings",
                     "CustomDialogOptions",
                     "DialogBoxOptions",
+                    "FluentAccentColorOptions",
                     "HelpConsoleOptions",
                     "InputDialogOptions",
                     "ListSelectionDialogOptions",

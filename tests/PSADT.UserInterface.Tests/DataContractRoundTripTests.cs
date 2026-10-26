@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,6 +108,22 @@ namespace PSADT.UserInterface.Tests
         }
 
         /// <summary>
+        /// Verifies that exact accent selection survives the client/server data contract.
+        /// </summary>
+        [Fact]
+        public void Options_InlineExactAccentSurvivesBaseTypeRoundTrip()
+        {
+            Hashtable table = SampleOptions.CustomDialog();
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = unchecked((int)0xFF0078D7), ["Exact"] = true };
+            BaseDialogOptions original = new CustomDialogOptions(table);
+
+            BaseDialogOptions restored = Assert.IsType<CustomDialogOptions>(RoundTrip(original, typeof(BaseDialogOptions)));
+
+            Assert.Equal(unchecked((int)0xFF0078D7), restored.FluentAccentColor?.Color);
+            Assert.True(restored.FluentAccentColor?.Exact);
+        }
+
+        /// <summary>
         /// Verifies that a derived result survives being sent as its base type.
         /// </summary>
         /// <remarks>
@@ -174,6 +191,7 @@ namespace PSADT.UserInterface.Tests
                 "CloseAppsDialogStrings",
                 "CloseAppsDialogClassicStrings",
                 "CloseAppsDialogFluentStrings",
+                "FluentAccentColorOptions",
                 "ListSelectionDialogStrings",
                 "RestartDialogStrings",
             };

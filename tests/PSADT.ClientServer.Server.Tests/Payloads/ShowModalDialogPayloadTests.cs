@@ -86,6 +86,21 @@ namespace PSADT.ClientServer.Server.Tests.Payloads
         }
 
         /// <summary>
+        /// Verifies an inline exact accent survives the actual modal-dialog payload serializer.
+        /// </summary>
+        [Fact]
+        public void ShowModalDialogPayload_RoundTripsInlineExactAccent()
+        {
+            FluentAccentColorOptions accent = new(unchecked((int)0xFF0078D7), exact: true);
+            ShowModalDialogPayload original = new(DialogType.ProgressDialog, DialogStyle.Fluent, SampleOptions.ProgressDialog(accent: accent));
+
+            ShowModalDialogPayload restored = DataSerialization.DeserializeFromBytes<ShowModalDialogPayload>(DataSerialization.SerializeToBytes(original));
+
+            ProgressDialogOptions options = Assert.IsType<ProgressDialogOptions>(restored.Options);
+            Assert.Equal(accent, options.FluentAccentColor);
+        }
+
+        /// <summary>
         /// Verifies that a payload carrying options which themselves hold a list compares by that list's
         /// contents.
         /// </summary>
