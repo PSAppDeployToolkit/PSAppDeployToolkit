@@ -86,6 +86,32 @@ namespace Fluence.Wpf.Tests.Control
             return string.IsNullOrWhiteSpace(culture.DateTimeFormat.PMDesignator) ? "PM" : culture.DateTimeFormat.PMDesignator;
         }
 
+        private static void AssertPeriodColorParity(Selector hourList, Selector periodList, Border highlight, Grid selectorsGrid)
+        {
+            FrameworkElement selectedPeriod = Assert.IsType<FrameworkElement>(
+                periodList.ItemContainerGenerator.ContainerFromIndex(periodList.SelectedIndex), exactMatch: false);
+            FrameworkElement otherPeriod = Assert.IsType<FrameworkElement>(
+                periodList.ItemContainerGenerator.ContainerFromIndex(periodList.SelectedIndex is LoopingPaddingItemsCount
+                    ? LoopingPaddingItemsCount + 1 : LoopingPaddingItemsCount), exactMatch: false);
+            FrameworkElement selectedHour = Assert.IsType<FrameworkElement>(
+                hourList.ItemContainerGenerator.ContainerFromIndex(hourList.SelectedIndex), exactMatch: false);
+            FrameworkElement otherHour = Assert.IsType<FrameworkElement>(
+                hourList.ItemContainerGenerator.ContainerFromIndex(hourList.SelectedIndex - 1), exactMatch: false);
+
+            Assert.Equal(highlight.TranslatePoint(new Point(0, 0), selectorsGrid).Y,
+                selectedPeriod.TranslatePoint(new Point(0, 0), selectorsGrid).Y, 1);
+            Assert.Equal(highlight.ActualHeight, selectedPeriod.ActualHeight, 1);
+
+            TextBlock selectedPeriodGlyph = Assert.IsType<TextBlock>(VisualTree.FindVisualChild<TextBlock>(selectedPeriod));
+            TextBlock otherPeriodGlyph = Assert.IsType<TextBlock>(VisualTree.FindVisualChild<TextBlock>(otherPeriod));
+            TextBlock selectedHourGlyph = Assert.IsType<TextBlock>(VisualTree.FindVisualChild<TextBlock>(selectedHour));
+            TextBlock otherHourGlyph = Assert.IsType<TextBlock>(VisualTree.FindVisualChild<TextBlock>(otherHour));
+            BrushAssert.AssertBrushColor(selectedPeriodGlyph.Foreground, "PickerSelectedForegroundBrush");
+            BrushAssert.AssertBrushColor(otherPeriodGlyph.Foreground, "TextFillColorPrimaryBrush");
+            Assert.Equal(BrushAssert.SolidColor(selectedHourGlyph.Foreground), BrushAssert.SolidColor(selectedPeriodGlyph.Foreground));
+            Assert.Equal(BrushAssert.SolidColor(otherHourGlyph.Foreground), BrushAssert.SolidColor(otherPeriodGlyph.Foreground));
+        }
+
         [Fact]
         public Task TimePicker_DefaultStyle_AppliesTemplatePartsAsync()
         {
@@ -245,6 +271,35 @@ namespace Fluence.Wpf.Tests.Control
                     Assert.Equal(1, LoopingColumnSourceIndex(hourList));
                     Assert.Equal(30, LoopingColumnSourceIndex(minuteList));
                     Assert.Equal(LoopingPaddingItemsCount + 1, periodList.SelectedIndex);
+
+                    Border highlight = Assert.IsType<Border>(template.FindName("HighlightRect", picker));
+                    Grid selectorsGrid = Assert.IsType<Grid>(template.FindName("SelectorsGrid", picker));
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () =>
+                            periodList.ItemContainerGenerator.ContainerFromIndex(periodList.SelectedIndex) is FrameworkElement realized
+                            && realized.ActualHeight > 0
+                            && highlight.ActualHeight > 0).ConfigureAwait(true));
+
+                    AssertPeriodColorParity(hourList, periodList, highlight, selectorsGrid);
+
+                    SelectPaddedColumnValue(periodList, 0);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () =>
+                            periodList.ItemContainerGenerator.ContainerFromIndex(periodList.SelectedIndex) is FrameworkElement realized
+                            && Math.Abs(realized.TranslatePoint(new Point(0, 0), selectorsGrid).Y
+                                - highlight.TranslatePoint(new Point(0, 0), selectorsGrid).Y) < 1).ConfigureAwait(true));
+                    AssertPeriodColorParity(hourList, periodList, highlight, selectorsGrid);
+
+                    foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
+                    {
+                        ApplicationThemeManager.Apply(theme);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+                        AssertPeriodColorParity(hourList, periodList, highlight, selectorsGrid);
+                        SelectPaddedColumnValue(periodList, 1);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        AssertPeriodColorParity(hourList, periodList, highlight, selectorsGrid);
+                        SelectPaddedColumnValue(periodList, 0);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    }
                 }
                 finally
                 {

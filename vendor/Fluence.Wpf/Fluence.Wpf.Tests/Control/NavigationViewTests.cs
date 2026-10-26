@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -56,6 +57,67 @@ namespace Fluence.Wpf.Tests.Control
     /// </summary>
     public sealed class NavigationViewTests : IAsyncLifetime
     {
+        [Fact]
+        public Task NavigationView_FooterMenuItemsClear_ReleasesSelectionAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                NavigationView nav = new();
+                NavigationViewItem footer = new() { Content = "Footer" };
+                nav.FooterMenuItems.Add(footer);
+                nav.SelectFooterMenuItem(footer);
+
+                nav.FooterMenuItems.Clear();
+
+                Assert.Empty(nav.FooterMenuItems);
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(footer.IsSelected);
+                Assert.Null(nav.SelectedItem);
+            });
+        }
+
+        [Fact]
+        public Task NavigationView_FooterMutations_ReconcileSurvivingItemsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                NavigationView nav = new();
+                NavigationViewItem selected = new() { Content = "Selected" };
+                NavigationViewItem other = new() { Content = "Other" };
+                nav.FooterMenuItems.Add(selected);
+                nav.FooterMenuItems.Add(other);
+                nav.SelectFooterMenuItem(selected);
+
+                nav.FooterMenuItems.Move(0, 1);
+                Assert.Same(selected, nav.SelectedFooterItem);
+                Assert.True(selected.IsSelected);
+
+                // No visual host: duplicate UIElement references must not be rendered twice.
+                nav.FooterMenuItems.Add(selected);
+                Assert.True(nav.FooterMenuItems.Remove(selected));
+                Assert.Same(selected, nav.SelectedFooterItem);
+                Assert.True(selected.IsSelected);
+
+                nav.FooterMenuItems[1] = new NavigationViewItem { Content = "Replacement" };
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(selected.IsSelected);
+
+                nav.FooterMenuItems.Clear();
+                nav.FooterMenuItems.Add(selected);
+                nav.SelectFooterMenuItem(selected);
+                Assert.True(nav.FooterMenuItems.Remove(selected));
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(selected.IsSelected);
+
+                NavigationViewItem main = new() { Content = "Main" };
+                _ = nav.Items.Add(main);
+                nav.SelectedItem = main;
+                nav.FooterMenuItems.Add(other);
+                nav.FooterMenuItems.Clear();
+                Assert.Same(main, nav.SelectedItem);
+            });
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -2839,11 +2901,22 @@ namespace Fluence.Wpf.Tests.Control
                 {
                     window.Show();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => window.IsLoaded && footer.IsLoaded).ConfigureAwait(true),
+                        "The window and footer must be loaded before connecting UI Automation.");
+                    window.UpdateLayout();
                     // Ask UIA for the window root so provider conversion does not depend on
                     // an external accessibility client having already connected the peer tree.
+                    // Its synchronous native handshake belongs on a dedicated MTA thread:
+                    // thread-pool queueing must not consume the connection timeout.
                     IntPtr windowHandle = new WindowInteropHelper(window).Handle;
-                    Task<AutomationElement> rootTask = Task.Run(() => AutomationElement.FromHandle(windowHandle), TestContext.Current.CancellationToken);
-                    Assert.True(await WaitUntilAsync(window.Dispatcher, 5000, () => rootTask.IsCompleted).ConfigureAwait(true), "UI Automation did not connect the window root.");
+                    Task<AutomationElement> rootTask = Task.Factory.StartNew(() =>
+                    {
+                        Assert.Equal(ApartmentState.MTA, Thread.CurrentThread.GetApartmentState());
+                        Assert.False(Thread.CurrentThread.IsThreadPoolThread);
+                        return AutomationElement.FromHandle(windowHandle);
+                    }, TestContext.Current.CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 5000, () => rootTask.IsCompleted).ConfigureAwait(true),
+                        $"UI Automation did not connect the window root. Client task status: {rootTask.Status}.");
                     AutomationElement root = await rootTask.ConfigureAwait(true);
                     Assert.NotNull(root);
                     NavigationViewItemAutomationPeer peer = Assert.IsType<NavigationViewItemAutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(footer));

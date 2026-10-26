@@ -1,0 +1,107 @@
+﻿---
+id: Set-FluenceBackdrop
+title: Set-FluenceBackdrop
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Sets the Fluent system backdrop for the process (and optionally a specific window).
+
+## SYNTAX
+
+```powershell
+Set-FluenceBackdrop [-Backdrop] <string> [-Window <Window>]
+```
+
+## DESCRIPTION
+
+Runs on the UI (STA) thread.
+When -Window is supplied its SystemBackdropType is set, then
+the theme pipeline is re-applied with the requested backdrop and the current theme so the
+computed resources match.
+The accent intent is preserved.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Set-FluenceBackdrop -Backdrop Acrylic
+```
+
+### EXAMPLE 2
+
+```powershell
+Set-FluenceBackdrop -Backdrop Mica -Window $window
+```
+
+## PARAMETERS
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Auto lets the library pick the backdrop the running
+Windows build supports.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Window
+
+An optional System.Windows.Window whose SystemBackdropType is updated.
+When supplied it
+must be a window owned by the Fluence UI thread.
+
+```yaml
+Type: System.Windows.Window
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+When -Window is supplied it
+must be a window owned by the Fluence UI thread.
+
+## RELATED LINKS

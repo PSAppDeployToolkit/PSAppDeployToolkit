@@ -1,0 +1,142 @@
+﻿---
+id: New-FluenceButton
+title: New-FluenceButton
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Builds a single button specification for Show-FluenceDialog.
+
+## SYNTAX
+
+```powershell
+New-FluenceButton [-Text] <string> [-Name <string>] [-IsDefault] [-IsCancel]
+```
+
+## DESCRIPTION
+
+Returns a Fluence.Button object carrying the caption, the result key, and the default and
+cancel flags.
+Pass one or more to Show-FluenceDialog -Buttons; a plain string there is
+shorthand for a button with no flags, so this cmdlet is what you use to mark one.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+New-FluenceButton -Text 'Sign in' -Name Login -IsDefault
+```
+
+### EXAMPLE 2
+
+```powershell
+Show-FluenceDialog -Message 'Delete the folder?' -Buttons (New-FluenceButton 'Delete' -IsDefault), (New-FluenceButton 'Keep' -IsCancel)
+```
+
+## PARAMETERS
+
+### -IsCancel
+
+Mark as the cancel button (activated by Esc; skips input validation).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -IsDefault
+
+Mark as the default button (activated by Enter).
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Name
+
+The result key; defaults to Text.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Text
+
+The button caption (and the default result key).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### Fluence.Button
+
+## NOTES
+
+Does not require a host application.
+
+## RELATED LINKS

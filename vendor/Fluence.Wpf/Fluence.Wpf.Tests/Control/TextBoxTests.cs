@@ -430,9 +430,18 @@ namespace Fluence.Wpf.Tests.Control
 
                     Border mainBorder = Assert.IsType<Border>(textBox.Template.FindName("MainBorder", textBox));
                     Button clearButton = Assert.IsType<Button>(textBox.Template.FindName("PART_ClearButton", textBox));
+                    FrameworkElement contentHost = Assert.IsType<FrameworkElement>(textBox.Template.FindName("PART_ContentHost", textBox), exactMatch: false);
+                    Grid editorColumn = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentHost));
+                    Grid editorRow = Assert.IsType<Grid>(VisualTreeHelper.GetParent(editorColumn));
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(editorRow));
+                    double dpi = VisualTreeHelper.GetDpi(textBox).DpiScaleY;
+                    double roundedTop = Math.Round(textBox.BorderThickness.Top * dpi, MidpointRounding.ToEven) / dpi;
+                    double roundedBottom = Math.Round(textBox.BorderThickness.Bottom * dpi, MidpointRounding.ToEven) / dpi;
+                    double expectedHeight = contentGrid.ActualHeight + roundedTop + roundedBottom;
 
                     Assert.Equal(new Thickness(10, 5, 6, 6), textBox.Padding);
                     Assert.Equal(32.0, textBox.MinHeight);
+                    Assert.Equal(expectedHeight, mainBorder.ActualHeight, 0.01);
                     _ = Assert.IsType<LinearGradientBrush>(mainBorder.BorderBrush, exactMatch: false);
                     Assert.Equal(30.0, clearButton.Width, 0.1);
                 }
@@ -444,7 +453,7 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
-        public Task TextBox_FocusState_ShowsAccentLineUnderneathAsync()
+        public Task TextBox_FocusState_UsesRoundedFocusedBorderWithoutMovingEditorAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -453,8 +462,62 @@ namespace Fluence.Wpf.Tests.Control
                 {
                     Width = 260,
                     Text = "Focused",
+                    CornerRadius = new CornerRadius(12),
+                    BorderThickness = new Thickness(3),
+                    ClearButtonEnabled = false,
                 };
+                Button other = new() { Content = "Other" };
 
+                try
+                {
+                    window.Content = new StackPanel { Children = { other, textBox } };
+                    window.Show();
+                    _ = other.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Border mainBorder = Assert.IsType<Border>(textBox.Template.FindName("MainBorder", textBox));
+                    FrameworkElement contentHost = Assert.IsType<FrameworkElement>(textBox.Template.FindName("PART_ContentHost", textBox), exactMatch: false);
+                    Assert.False(textBox.IsKeyboardFocusWithin);
+                    Point borderPoint = mainBorder.TransformToAncestor(window).Transform(new Point(0.5, mainBorder.ActualHeight / 2));
+                    Assert.Same(mainBorder, window.InputHitTest(borderPoint));
+                    Point editorBefore = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Size editorSizeBefore = new(contentHost.ActualWidth, contentHost.ActualHeight);
+                    double heightBefore = textBox.ActualHeight;
+
+                    _ = textBox.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.True(textBox.IsKeyboardFocused);
+                    Assert.Equal(new CornerRadius(12), mainBorder.CornerRadius);
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                    Assert.Null(textBox.Template.FindName("FocusAccentLine", textBox));
+                    Assert.Equal(heightBefore, textBox.ActualHeight, 0.01);
+                    Point editorAfter = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Assert.Equal(editorBefore.X, editorAfter.X, 0.01);
+                    Assert.Equal(editorBefore.Y, editorAfter.Y, 0.01);
+                    Assert.Equal(editorSizeBefore.Width, contentHost.ActualWidth, 0.01);
+                    Assert.Equal(editorSizeBefore.Height, contentHost.ActualHeight, 0.01);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(ValidationState.Success, "SystemFillColorSuccessBrush")]
+        [InlineData(ValidationState.Warning, "SystemFillColorCautionBrush")]
+        [InlineData(ValidationState.Error, "SystemFillColorCriticalBrush")]
+        public Task TextBox_FocusedValidation_UsesStatusBorderWithoutAccentAsync(ValidationState state, string brushKey)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                Window window = new();
+                Controls.TextBox textBox = new() { Width = 260, Text = "Value", ValidationState = state };
                 try
                 {
                     window.Content = textBox;
@@ -463,10 +526,50 @@ namespace Fluence.Wpf.Tests.Control
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Border accentLine = Assert.IsType<Border>(textBox.Template.FindName("FocusAccentLine", textBox));
+                    Border mainBorder = Assert.IsType<Border>(textBox.Template.FindName("MainBorder", textBox));
+                    Border validationLine = Assert.IsType<Border>(textBox.Template.FindName("PART_ValidationLine", textBox));
+                    Assert.True(textBox.IsKeyboardFocused);
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource(brushKey), mainBorder.BorderBrush);
+                    Assert.Same(Application.Current.TryFindResource(brushKey), validationLine.Background);
+                    Assert.Equal(1.0, validationLine.Opacity);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
 
-                    Assert.Equal(1.0, accentLine.Opacity);
-                    Assert.Equal(2.0, accentLine.Height);
+        [Fact]
+        public Task TextBox_FocusedBorder_FollowsLiveThemeChangesAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Window window = new();
+                Controls.TextBox textBox = new() { Width = 260, Text = "Focused" };
+                try
+                {
+                    window.Content = textBox;
+                    window.Show();
+                    _ = textBox.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    Border mainBorder = Assert.IsType<Border>(textBox.Template.FindName("MainBorder", textBox));
+                    foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
+                    {
+                        ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        Assert.True(textBox.IsKeyboardFocused);
+                        Thickness expected = theme is ApplicationTheme.HighContrast
+                            ? new Thickness(2)
+                            : new Thickness(1, 1, 1, 2);
+                        Assert.Equal(expected, mainBorder.BorderThickness);
+                        Assert.Equal(expected, Assert.IsType<Thickness>(Application.Current.TryFindResource("TextControlBorderThemeThicknessFocused")));
+                        Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                    }
                 }
                 finally
                 {
@@ -565,6 +668,54 @@ namespace Fluence.Wpf.Tests.Control
                 finally
                 {
                     window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task TextBox_CharacterCounterDisplaySwitch_IsPerInstanceAndSurvivesRetemplateAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Controls.TextBox first = new() { Width = 260, MaxLength = 7, Text = "Hi" };
+                Controls.TextBox second = new() { Width = 260, MaxLength = 3, Text = "A" };
+                Window window = new() { Content = new StackPanel { Children = { first, second } } };
+
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    TextBlock firstCounter = Assert.IsType<TextBlock>(first.Template.FindName("PART_CharacterCounter", first));
+                    TextBlock secondCounter = Assert.IsType<TextBlock>(second.Template.FindName("PART_CharacterCounter", second));
+                    Assert.True(first.ShowCharacterCounter);
+                    Assert.True(second.ShowCharacterCounter);
+                    Assert.Equal(Visibility.Visible, firstCounter.Visibility);
+                    Assert.Equal(Visibility.Visible, secondCounter.Visibility);
+
+                    first.ShowCharacterCounter = false;
+                    Assert.Equal(Visibility.Collapsed, firstCounter.Visibility);
+                    Assert.Equal(Visibility.Visible, secondCounter.Visibility);
+
+                    first.Text = "Hello";
+                    first.MaxLength = 9;
+                    Assert.Equal(Visibility.Collapsed, firstCounter.Visibility);
+
+                    ControlTemplate template = first.Template;
+                    first.Template = null;
+                    first.Template = template;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    firstCounter = Assert.IsType<TextBlock>(first.Template.FindName("PART_CharacterCounter", first));
+                    Assert.Equal(Visibility.Collapsed, firstCounter.Visibility);
+
+                    first.ShowCharacterCounter = true;
+                    Assert.Equal(Visibility.Visible, firstCounter.Visibility);
+                    Assert.Equal("5/9", firstCounter.Text, StringComparer.Ordinal);
+                    Assert.Equal("1/3", secondCounter.Text, StringComparer.Ordinal);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
                 }
             });
         }

@@ -36,17 +36,23 @@ using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using Fluence.Wpf.Tests.Infrastructure;
 using Xunit;
 using static Fluence.Wpf.Tests.Infrastructure.VisualTree;
 
 namespace Fluence.Wpf.Tests.Control
 {
-    public sealed class NumberBoxTests : IClassFixture<LightThemeFixture>
+    public sealed class NumberBoxTests : IAsyncLifetime
     {
-        public NumberBoxTests(LightThemeFixture fixture)
+        public ValueTask InitializeAsync()
         {
-            _ = fixture;
+            return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
         }
 
         [Fact]
@@ -713,6 +719,137 @@ namespace Fluence.Wpf.Tests.Control
                     BrushAssert.AssertBrushColor(upButton.Background, "SubtleFillColorTransparentBrush");
                     BrushAssert.AssertBrushColor(downButton.BorderBrush, "ControlFillColorTransparentBrush");
                     BrushAssert.AssertBrushColor(downButton.Background, "SubtleFillColorTransparentBrush");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Fact]
+        public Task NumberBox_FocusPaint_DoesNotMoveEditorOrSpinButtonsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Window window = new();
+                Button other = new() { Content = "Other" };
+                Controls.NumberBox numberBox = new()
+                {
+                    Width = 180,
+                    Value = 3,
+                    MinHeight = 45,
+                    Padding = new Thickness(0),
+                    SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
+                    BorderThickness = new Thickness(3),
+                };
+
+                try
+                {
+                    window.Content = new StackPanel { Children = { other, numberBox } };
+                    window.Show();
+                    _ = other.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Border mainBorder = Assert.IsType<Border>(numberBox.Template.FindName("MainBorder", numberBox));
+                    TextBox editor = Assert.IsType<TextBox>(numberBox.Template.FindName("PART_TextBox", numberBox));
+                    RepeatButton upButton = Assert.IsType<RepeatButton>(numberBox.Template.FindName("PART_UpButton", numberBox));
+                    Point edge = mainBorder.TransformToAncestor(window).Transform(new Point(0.5, mainBorder.ActualHeight / 2));
+                    Assert.Same(mainBorder, window.InputHitTest(edge));
+                    Point editorBefore = editor.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Point spinBefore = upButton.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Size editorSizeBefore = new(editor.ActualWidth, editor.ActualHeight);
+                    Size spinSizeBefore = new(upButton.ActualWidth, upButton.ActualHeight);
+                    double heightBefore = numberBox.ActualHeight;
+                    double dpi = VisualTreeHelper.GetDpi(numberBox).DpiScaleY;
+                    if (Math.Abs(dpi - 1.0) < 0.01)
+                    {
+                        Assert.Equal(45.0, mainBorder.ActualHeight, 0.01);
+                        Assert.Equal(37.0, editor.ActualHeight, 0.01);
+                        Assert.Equal(29.0, upButton.ActualHeight, 0.01);
+                    }
+                    else if (Math.Abs(dpi - 1.5) < 0.01)
+                    {
+                        Assert.Equal(45.333333, mainBorder.ActualHeight, 0.01);
+                        Assert.Equal(38.666667, editor.ActualHeight, 0.01);
+                        Assert.Equal(30.666667, upButton.ActualHeight, 0.01);
+                    }
+
+                    _ = editor.Focus();
+                    _ = Keyboard.Focus(editor);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.True(editor.IsKeyboardFocused);
+                    Assert.True(numberBox.IsKeyboardFocusWithin);
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                    Assert.Null(numberBox.Template.FindName("FocusLine", numberBox));
+                    Assert.Equal(heightBefore, numberBox.ActualHeight, 0.01);
+                    Point editorAfter = editor.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Point spinAfter = upButton.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Assert.Equal(editorBefore.X, editorAfter.X, 0.01);
+                    Assert.Equal(editorBefore.Y, editorAfter.Y, 0.01);
+                    Assert.Equal(spinBefore.X, spinAfter.X, 0.01);
+                    Assert.Equal(spinBefore.Y, spinAfter.Y, 0.01);
+                    Assert.Equal(editorSizeBefore.Width, editor.ActualWidth, 0.01);
+                    Assert.Equal(editorSizeBefore.Height, editor.ActualHeight, 0.01);
+                    Assert.Equal(spinSizeBefore.Width, upButton.ActualWidth, 0.01);
+                    Assert.Equal(spinSizeBefore.Height, upButton.ActualHeight, 0.01);
+                    Assert.Same(mainBorder, window.InputHitTest(edge));
+
+                    _ = upButton.Focus();
+                    _ = Keyboard.Focus(upButton);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(editor.IsKeyboardFocused);
+                    Assert.True(numberBox.IsKeyboardFocusWithin);
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(upButton);
+                    IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);
+                    invoke.Invoke();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.Equal(4.0, numberBox.Value);
+                    Assert.Equal("4", editor.Text, StringComparer.Ordinal);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Fact]
+        public Task NumberBox_FocusedBorder_FollowsLiveThemeChangesAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Window window = new();
+                Controls.NumberBox numberBox = new() { Width = 180, Value = 3 };
+                try
+                {
+                    window.Content = numberBox;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    TextBox editor = Assert.IsType<TextBox>(numberBox.Template.FindName("PART_TextBox", numberBox));
+                    Border mainBorder = Assert.IsType<Border>(numberBox.Template.FindName("MainBorder", numberBox));
+                    _ = editor.Focus();
+                    _ = Keyboard.Focus(editor);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
+                    {
+                        ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        Assert.True(editor.IsKeyboardFocused);
+                        Thickness expected = theme is ApplicationTheme.HighContrast
+                            ? new Thickness(2)
+                            : new Thickness(1, 1, 1, 2);
+                        Assert.Equal(expected, mainBorder.BorderThickness);
+                        Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                    }
                 }
                 finally
                 {

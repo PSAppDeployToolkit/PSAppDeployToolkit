@@ -1,0 +1,455 @@
+﻿---
+id: Show-FluenceDialog
+title: Show-FluenceDialog
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a themed Fluent dialog built from prompts and buttons, and returns the user's input.
+
+## SYNTAX
+
+```powershell
+Show-FluenceDialog [[-Title] <string>] [[-TitleBarIcon] <string>] [[-Message] <string[]>]
+ [[-Icon] <string>] [[-Prompts] <Object[]>] [[-Buttons] <Object[]>] [[-Timeout] <int>]
+ [[-Image] <string>] [[-MessageAlignment] <string>] [[-Position] <string>] [[-Theme] <string>]
+ [[-Backdrop] <string>] [[-Accent] <Color>] [[-MinWidth] <int>] [[-ParentWindow] <Window>]
+ [-Countdown] [-Topmost]
+```
+
+## DESCRIPTION
+
+Renders a FluenceWindow with an optional message, a stack of input prompts, and a row of
+buttons.
+Returns a Fluence.DialogResult object with a property per named prompt and a boolean
+per button, plus Cancelled and TimedOut flags.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Show-FluenceDialog -Title 'Setup' -Prompts 'Your name?' -Buttons OK
+```
+
+### EXAMPLE 2
+
+```powershell
+$r = Show-FluenceDialog -Message 'Installation starts in one minute.' -Buttons 'Start now', 'Defer' -Timeout 60 -Countdown
+if ($r.TimedOut -or $r.'Start now') { Start-Install }
+```
+
+Counts down on the first button and proceeds when the user clicks it or the minute elapses.
+
+## PARAMETERS
+
+### -Accent
+
+Optional accent color (System.Windows.Media.Color or a parseable string).
+Defaults to system accent.
+
+```yaml
+Type: System.Windows.Media.Color
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 12
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 11
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Buttons
+
+Strings or Fluence.Button objects (see New-FluenceButton).
+Defaults to a single OK button.
+A bare 'Cancel' string is treated as a cancel button (closes on Esc, no validation); any
+other bare string (for example 'No' or 'Close') is a plain button, so build it with
+New-FluenceButton -IsCancel if you want it to act as the Esc/cancel affordance.
+
+```yaml
+Type: System.Object[]
+DefaultValue: "@('OK')"
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 5
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Countdown
+
+Show the remaining seconds in the caption of the default button (or the first button when
+none is default), refreshed every second.
+Requires -Timeout.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Icon
+
+Optional severity icon shown to the left of the message.
+None (default) renders the message
+as plain text.
+Info, Success, Warning, Error, and Question each map to a Segoe Fluent glyph
+and themed brush (Question uses the Help glyph with the Informational brush).
+
+```yaml
+Type: System.String
+DefaultValue: None
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Image
+
+An image shown above the message at up to 120 device-independent pixels high: a file path,
+a file: URI, or a pack: URI (pack://application:,,,/Assembly;component/path).
+Other schemes
+are rejected before the dialog opens.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 7
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+One or more message lines shown above the prompts.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MessageAlignment
+
+Left (default) or Center.
+Applies to the image and the message lines.
+
+```yaml
+Type: System.String
+DefaultValue: Left
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 8
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MinWidth
+
+Minimum window width (default 360).
+
+```yaml
+Type: System.Int32
+DefaultValue: 360
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 13
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ParentWindow
+
+An owning System.Windows.Window for modal parenting.
+
+```yaml
+Type: System.Windows.Window
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 14
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Position
+
+Center (default), TopRight, or BottomRight of the primary work area.
+With -ParentWindow,
+Center gives way to centering over the owner, but TopRight and BottomRight still win: they
+are applied from the window's Loaded handler, which runs after WPF has placed it.
+
+```yaml
+Type: System.String
+DefaultValue: Center
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 9
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Prompts
+
+Strings or Fluence.Prompt objects (see New-FluencePrompt).
+A bare string becomes a Text prompt.
+
+```yaml
+Type: System.Object[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 10
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Timeout
+
+Seconds after which the dialog closes on its own with TimedOut set to $true and no button
+flag set.
+Between 1 and 86400.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 6
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+
+```yaml
+Type: System.String
+DefaultValue: Fluence
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Topmost
+
+Show above other windows.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### Fluence.DialogResult
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+Blocks until the dialog closes.
+
+## RELATED LINKS

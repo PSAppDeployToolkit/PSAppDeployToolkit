@@ -1,4 +1,5 @@
 ﻿/*
+ *
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without

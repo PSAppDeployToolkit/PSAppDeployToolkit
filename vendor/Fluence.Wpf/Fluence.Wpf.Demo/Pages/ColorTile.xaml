@@ -3,8 +3,9 @@
 
     Colors page brush tile, modelled on the WinUI 3 Gallery's
     Controls/DesignGuidance/ColorTile.xaml: the tile is painted in the brush it documents and
-    carries the tile name, a usage note, the brush key, a copy button, and an optional 1px right
-    separator. Foreground comes from the page per tile, as the Gallery does. See ColorTile.xaml.cs.
+    carries the tile name, a usage note, a brush-key or material-reference footer, a copy button,
+    and an optional 1px right separator. Foreground comes from the page per tile, as the Gallery does.
+    See ColorTile.xaml.cs.
 -->
 <UserControl
     x:Class="Fluence.Wpf.Demo.Pages.ColorTile"
@@ -66,7 +67,7 @@
                     AutomationProperties.Name="Copy brush name"
                     Click="CopyBrushNameButton_Click"
                     Foreground="{Binding Foreground, ElementName=Root}"
-                    Tag="{Binding ColorBrushName, ElementName=Root}"
+                    Tag="{Binding CopyPayload, ElementName=Root}"
                     ToolTip="Copy brush name">
                     <fluence:FontIcon
                         x:Name="CopyBrushNameGlyph"
@@ -89,9 +90,34 @@
                     Grid.ColumnSpan="2"
                     Margin="{DynamicResource DemoColorTileBrushNameMargin}"
                     Foreground="{Binding Foreground, ElementName=Root}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{Binding ColorBrushName, ElementName=Root}"
-                    TextWrapping="Wrap" />
+                    TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style BasedOn="{StaticResource CaptionTextBlockStyle}" TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsBackdropReference, ElementName=Root}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock
+                    x:Name="BackdropReferenceFooter"
+                    Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    Margin="{DynamicResource DemoColorTileBrushNameMargin}"
+                    Foreground="{Binding Foreground, ElementName=Root}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding IsBackdropReference, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">See <Hyperlink
+                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                        NavigateUri="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop"
+                        RequestNavigate="DocumentationLink_RequestNavigate">SystemBackdrop</Hyperlink> and <Hyperlink
+                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                        NavigateUri="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.systembackdropelement"
+                        RequestNavigate="DocumentationLink_RequestNavigate">SystemBackdropElement</Hyperlink></TextBlock>
             </Grid>
         </fluence:Border>
 

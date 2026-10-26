@@ -67,7 +67,7 @@
                                 x:Name="PART_BadgeBackground"
                                 Height="16"
                                 MinWidth="16"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Background="{DynamicResource SystemControlHighlightAccentBrush}"
                                 BorderBrush="{DynamicResource ControlFillColorTransparentBrush}"
                                 BorderThickness="2"
                                 CornerRadius="8" />
@@ -79,7 +79,7 @@
                                 FontFamily="{TemplateBinding FontFamily}"
                                 FontSize="10"
                                 FontWeight="SemiBold"
-                                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Foreground="{DynamicResource PersonPictureBadgeForegroundBrush}"
                                 Text="" />
                         </Grid>
                         <VisualStateManager.VisualStateGroups>

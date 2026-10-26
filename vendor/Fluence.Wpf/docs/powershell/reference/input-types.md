@@ -1,36 +1,34 @@
-﻿# Input types
+﻿# Prompt input types
 
-The `-InputType` values accepted by `New-FluencePrompt`, the Fluence control each renders, and the value the result carries. `Get-FluenceInput` accepts the same values except `List`, which selects from a set rather than capturing a typed value; `Show-FluenceListSelection` is the cmdlet for that.
+`New-FluencePrompt -InputType` selects the control and determines the value placed on a dialog result. `Get-FluenceInput` supports these types except `List`; use `Show-FluenceListSelection` for a standalone list. See [collect and validate input](../how-to/forms-and-validation.md) for recipes.
 
-| InputType | Control | Result value type | Untouched value | Notes |
-| --- | --- | --- | --- | --- |
-| `Text` (default) | `Fluence.Wpf.Controls.TextBox` | `string` | `DefaultValue` or `$null` | Single line. |
-| `Multiline` | `Fluence.Wpf.Controls.TextBox` (AcceptsReturn, 3 lines minimum) | `string` | `DefaultValue` or `$null` | Enter inserts a newline. |
-| `Password` | `System.Windows.Controls.PasswordBox` with the Fluence style and reveal button | `SecureString` (`string` with `-AsPlainText`) | Secure copy of the default, or an empty SecureString | Dispose the returned SecureString when done. Defaults must be strings and remain plaintext in the spec. Regex validation requires `-AsPlainText`; custom validators receive the selected return type. |
-| `Number` | `Fluence.Wpf.Controls.NumberBox` | `double` | `DefaultValue` or `0` | `DefaultValue` must convert to `double`. |
-| `Checkbox` | `Fluence.Wpf.Controls.CheckBox` | `bool` | `DefaultValue` or `$false` | The prompt `Message` is the check box label; no separate label is shown. `DefaultValue` is converted with `[Convert]::ToBoolean`, so `'false'` is `$false`. |
-| `Toggle` | `Fluence.Wpf.Controls.ToggleSwitch` (On / Off) | `bool` | `DefaultValue` or `$false` | Same conversion as `Checkbox`. |
-| `Choice` | `Fluence.Wpf.Controls.ComboBox` (`-As Combo`, default) or a column of `RadioButton` (`-As Radio`) | `string` | `DefaultValue` or `$null` | Requires `-ValidateSet`. |
-| `List` | `Fluence.Wpf.Controls.ListView`, 240 device-independent pixels high at most | `string`, or `object[]` with `-MultiSelect` | `DefaultValue`, or `@()` with `-MultiSelect` | Requires `-ValidateSet`. With `-MultiSelect` the value is always an array, even for one selected item. |
-| `Date` | `Fluence.Wpf.Controls.DatePicker` | `System.DateTime` or `$null` | `DefaultValue` or `$null` | `DefaultValue` must convert to `datetime`. |
-| `Time` | `Fluence.Wpf.Controls.TimePicker` | `System.TimeSpan` or `$null` | `DefaultValue` or `$null` | `DefaultValue` must convert to `timespan`. |
-| `FileOpen` | `TextBox` plus a Browse button opening `Microsoft.Win32.OpenFileDialog` | `string` (path) | `DefaultValue` or `$null` | |
-| `FileSave` | `TextBox` plus a Browse button opening `Microsoft.Win32.SaveFileDialog` | `string` (path) | `DefaultValue` or `$null` | |
-| `FolderOpen` | `TextBox` plus a Browse button opening `System.Windows.Forms.FolderBrowserDialog` | `string` (path) | `DefaultValue` or `$null` | Works on both editions. |
-| `Link` | `Fluence.Wpf.Controls.HyperlinkButton` | `string` (the URI given as `DefaultValue`) | `DefaultValue` | Display-only; `Message` is the link text, `DefaultValue` the target. No label is shown. |
+| Input type | Rendered control | Result when untouched | Notes |
+| --- | --- | --- | --- |
+| `Text` | Fluence `TextBox` | Default string or `$null`. | Single line; default input type. |
+| `Multiline` | Fluence `TextBox` | Default string or `$null`. | Enter adds a line; minimum height is three lines. |
+| `Password` | Styled WPF `PasswordBox` | Secure copy of string default or empty `SecureString`. | `-AsPlainText` changes result to string. |
+| `Number` | Fluence `NumberBox` | Default converted to `double`, or `0`. | Result type is `double`. |
+| `Checkbox` | Fluence `CheckBox` | Default converted to `bool`, or `$false`. | `Message` is the check box caption. |
+| `Toggle` | Fluence `ToggleSwitch` | Default converted to `bool`, or `$false`. | On or Off control. |
+| `Choice` | Fluence `ComboBox`, or radio buttons with `-As Radio` | Default string or `$null`. | Requires `-ValidateSet`. |
+| `List` | Fluence `ListView` | Default selection, or empty array with `-MultiSelect`. | Requires `-ValidateSet`; multi selection always returns an array. |
+| `Date` | Fluence `DatePicker` | Default `DateTime` or `$null`. | Default must convert to `datetime`. |
+| `Time` | Fluence `TimePicker` | Default `TimeSpan` or `$null`. | Default must convert to `timespan`. |
+| `FileOpen` | Text box and Open picker | Default path string or `$null`. | Uses `Microsoft.Win32.OpenFileDialog`. |
+| `FileSave` | Text box and Save picker | Default path string or `$null`. | Uses `Microsoft.Win32.SaveFileDialog`. |
+| `FolderOpen` | Text box and folder picker | Default path string or `$null`. | Uses `System.Windows.Forms.FolderBrowserDialog`. |
+| `Link` | Fluence `HyperlinkButton` | URI string in `DefaultValue`. | Display only; `Message` is link text. |
 
-## Validation
+`New-FluencePrompt` converts defaults for `Number`, `Date`, `Time`, `Checkbox`, and `Toggle` when the specification is created. Conversion failures occur before a window opens. Boolean defaults use `[Convert]::ToBoolean`, so the string `'false'` becomes `$false`.
 
-Validation runs when a non-cancel button is clicked, in prompt order, and stops at the first failure. The failure message is shown in an error `InfoBar` under the prompts and the dialog stays open. Cancel buttons, Esc and the title-bar X skip validation.
+## Validation rules
 
-| Rule | Passes when |
+Validation runs for non-cancel actions in prompt order. The first failing prompt displays an error InfoBar and keeps the dialog open. A cancel button, Esc, or title bar dismissal skips validation.
+
+| Option | Passing value |
 | --- | --- |
-| `-ValidateNotEmpty` | A secure Password has `Length` greater than zero; whitespace characters count and the value is not decrypted. For other types, the value converted to a string is not empty or whitespace. For an array (a `List` with `-MultiSelect`) this means at least one item. |
-| `-ValidatePattern <regex>` | The value is empty, or its string form matches the pattern. Combine with `-ValidateNotEmpty` to require a match. Password prompts require explicit `-AsPlainText`. |
-| `-ValidateScript { param($value) ... }` | The last object the scriptblock emits is truthy. An exception inside the scriptblock counts as a failure. Password validators receive SecureString by default, or a string with `-AsPlainText`; do not retain or dispose the validator input. |
+| `-ValidateNotEmpty` | A nonblank scalar, at least one selected item for a multi select list, or a secure password with `Length` greater than zero. Password whitespace counts. |
+| `-ValidatePattern <regex>` | Empty value or a value whose string form matches the pattern. Pair with `-ValidateNotEmpty` when required. Password patterns require `-AsPlainText`. |
+| `-ValidateScript { param($value) ... }` | The last output is truthy. A thrown exception fails the rule. The password argument follows the selected `SecureString` or plain string return mode. |
 
-Messages: `'<Name>' is required.`, `'<Name>' does not match the required format.`, `'<Name>' failed validation.`
-
-## Default value coercion
-
-`New-FluencePrompt` converts `-DefaultValue` at build time for `Number` (`double`), `Date` (`datetime`), `Time` (`timespan`), `Checkbox` and `Toggle` (`bool` via `[Convert]::ToBoolean`). A value that does not convert throws immediately with the input type and the conversion error in the message, before any window opens.
+The displayed messages are `'<Name>' is required.`, `'<Name>' does not match the required format.`, and `'<Name>' failed validation.` A password validator must not retain or dispose the secure argument supplied by the module.

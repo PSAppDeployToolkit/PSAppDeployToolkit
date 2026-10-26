@@ -1,0 +1,321 @@
+﻿---
+id: Show-FluenceProgress
+title: Show-FluenceProgress
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a non-modal themed progress window and returns a handle for updating and closing it.
+
+## SYNTAX
+
+```powershell
+Show-FluenceProgress [-Message] <string> [-Title <string>] [-TitleBarIcon <string>]
+ [-Detail <string>] [-PercentComplete <double>] [-NotTopmost] [-Position <string>] [-Width <int>]
+ [-Theme <string>] [-Backdrop <string>] [-Accent <Color>]
+```
+
+## DESCRIPTION
+
+Opens a fixed-width FluenceWindow with a message line, an optional detail line, and a Fluence
+ProgressBar, indeterminate by default.
+The call returns as soon as the window is shown; the
+script keeps running.
+Change the text or percentage with Update-FluenceProgress and close the
+window with Close-FluenceProgress.
+The user cannot close it: the caption buttons are hidden.
+
+On the inline STA host (Windows PowerShell and pwsh by default) the window shares the caller's
+thread, so it repaints on every Show-FluenceProgress and Update-FluenceProgress call and stays
+static in between; update it at least every few seconds during long work.
+On an MTA host
+(pwsh -mta) the window lives on the module-owned UI runspace, stays responsive between updates,
+and other Fluence dialogs can still be shown while it is open.
+An existing host application is supported only when this command runs on its dispatcher
+thread; automatic dispatch to a foreign UI thread is not supported.
+
+Use Message as the required status line.
+Add Detail for a second line, and PercentComplete
+when progress is determinate.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+$progress = Show-FluenceProgress -Title 'Contoso Suite' -Message 'Installing...' -Detail 'Copying files'
+Update-FluenceProgress -Handle $progress -Detail 'Registering components' -PercentComplete 60
+Close-FluenceProgress -Handle $progress
+```
+
+## PARAMETERS
+
+### -Accent
+
+Optional accent color (System.Windows.Media.Color or a parseable string).
+Defaults to system accent.
+
+```yaml
+Type: System.Windows.Media.Color
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Detail
+
+An optional second line in the secondary text color, for example the current file or step.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+The main status line.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NotTopmost
+
+Do not keep the window above other windows.
+Topmost is the default.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PercentComplete
+
+When given, the bar is determinate at this value (clamped to 0..100).
+Omit for an
+indeterminate bar.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Position
+
+Center (default), TopRight, or BottomRight of the primary work area.
+
+```yaml
+Type: System.String
+DefaultValue: Center
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+
+```yaml
+Type: System.String
+DefaultValue: Fluence
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Width
+
+The window width in device-independent pixels.
+Defaults to 450.
+
+```yaml
+Type: System.Int32
+DefaultValue: 450
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### Fluence.ProgressHandle
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+Only one progress window can be
+open at a time.
+
+## RELATED LINKS

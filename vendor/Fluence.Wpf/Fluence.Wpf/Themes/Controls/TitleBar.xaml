@@ -175,7 +175,7 @@
                             Grid.Column="5"
                             MaxWidth="20"
                             MaxHeight="20"
-                            Margin="8,0,12,0"
+                            Margin="8,0,16,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Content="{TemplateBinding Icon}" />

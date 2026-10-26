@@ -29,16 +29,22 @@
 
                     <!--  WinUI Gallery Typography page: the type ramp table is a ControlExample with source, not a bare catalog.  -->
                     <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
-                        <Grid x:Name="TypographyTable" HorizontalAlignment="Stretch">
-                            <!--  Star weights reproduce the Gallery's measured column widths (137 / 111 / 203 dip at its own content width). The minimums stay well under those so the star columns give way before the row can grow past the card and clip the copy button.  -->
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="180" />
-                                <ColumnDefinition Width="1.2*" MinWidth="100" />
-                                <ColumnDefinition Width="1*" MinWidth="84" />
-                                <ColumnDefinition Width="1.7*" MinWidth="130" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                        </Grid>
+                        <StackPanel>
+                            <fluence:TextBlock
+                                Margin="12,0,0,12"
+                                Text="Fluence TextBlock uses the Fluent type ramp."
+                                Typography="Subtitle" />
+                            <Grid x:Name="TypographyTable" HorizontalAlignment="Stretch">
+                                <!--  Star weights reproduce the Gallery's measured column widths (137 / 111 / 203 dip at its own content width). The minimums stay well under those so the star columns give way before the row can grow past the card and clip the copy button.  -->
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="180" />
+                                    <ColumnDefinition Width="1.2*" MinWidth="100" />
+                                    <ColumnDefinition Width="1*" MinWidth="84" />
+                                    <ColumnDefinition Width="1.7*" MinWidth="130" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </StackPanel>
                     </ContentControl>
                     <local:DemoSampleControl SampleDescription="Type ramp" />
                 </StackPanel>

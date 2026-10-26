@@ -1,0 +1,765 @@
+﻿---
+id: Show-FluenceWindow
+title: Show-FluenceWindow
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a themed Fluent (FluenceWindow) window built from a content scriptblock or XAML, and
+returns the value the window stashed before closing.
+
+## SYNTAX
+
+### ContentBlock (Default)
+
+```powershell
+Show-FluenceWindow [[-Content] <scriptblock>] [-Title <string>] [-TitleBarIcon <string>]
+ [-Width <double>] [-Height <double>] [-MinWidth <double>] [-MinHeight <double>]
+ [-SizeToContent <SizeToContent>] [-StartupLocation <WindowStartupLocation>] [-Topmost]
+ [-ResizeMode <ResizeMode>] [-CornerStyle <string>] [-ExtendsContentIntoTitleBar] [-ShowTitle]
+ [-ShowIcon] [-NoMinimizeButton] [-NoMaximizeButton] [-NoCloseButton] [-Theme <string>]
+ [-Backdrop <string>] [-Accent <Color>] [-WatchSystemTheme] [-Owner <Window>] [-Data <hashtable>]
+ [-PassThru]
+```
+
+### XamlString
+
+```powershell
+Show-FluenceWindow -Xaml <string> [-Initialize <scriptblock>] [-Title <string>]
+ [-TitleBarIcon <string>] [-Width <double>] [-Height <double>] [-MinWidth <double>]
+ [-MinHeight <double>] [-SizeToContent <SizeToContent>] [-StartupLocation <WindowStartupLocation>]
+ [-Topmost] [-ResizeMode <ResizeMode>] [-CornerStyle <string>] [-ExtendsContentIntoTitleBar]
+ [-ShowTitle] [-ShowIcon] [-NoMinimizeButton] [-NoMaximizeButton] [-NoCloseButton] [-Theme <string>]
+ [-Backdrop <string>] [-Accent <Color>] [-WatchSystemTheme] [-Owner <Window>] [-Data <hashtable>]
+ [-PassThru]
+```
+
+### XamlFile
+
+```powershell
+Show-FluenceWindow -XamlPath <string> [-Initialize <scriptblock>] [-Title <string>]
+ [-TitleBarIcon <string>] [-Width <double>] [-Height <double>] [-MinWidth <double>]
+ [-MinHeight <double>] [-SizeToContent <SizeToContent>] [-StartupLocation <WindowStartupLocation>]
+ [-Topmost] [-ResizeMode <ResizeMode>] [-CornerStyle <string>] [-ExtendsContentIntoTitleBar]
+ [-ShowTitle] [-ShowIcon] [-NoMinimizeButton] [-NoMaximizeButton] [-NoCloseButton] [-Theme <string>]
+ [-Backdrop <string>] [-Accent <Color>] [-WatchSystemTheme] [-Owner <Window>] [-Data <hashtable>]
+ [-PassThru]
+```
+
+## DESCRIPTION
+
+Hosts a full Fluence.Wpf window from PowerShell.
+Three shapes are supported: a -Content
+scriptblock that builds the window body in code, a -Xaml string parsed at runtime, or a
+-XamlPath file loaded at runtime.
+A XAML root that is itself a Window is shown directly; any
+other root is hosted inside a FluenceWindow.
+The optional -Initialize block (XAML modes) runs
+against the window after it is built, so named controls can be wired with FindName and add_*
+handlers.
+Close the window with Close-FluenceWindow -Result &lt;value&gt; to set the return value;
+the value stashed on the window's Tag is returned.
+XAML and callbacks are trusted code:
+do not load XAML from an untrusted source.
+XamlReader does not provide a sandbox.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Show-FluenceWindow -Content {
+    param($Window, $Data)
+    $stack = [System.Windows.Controls.StackPanel]::new()
+    $stack.Margin = [System.Windows.Thickness]::new(24)
+    $ok = [Fluence.Wpf.Controls.Button]::new()
+    $ok.Content = 'OK'
+    $ok.add_Click({ Close-FluenceWindow -Window $Window -Result 'ok' }.GetNewClosure())
+    $null = $stack.Children.Add($ok)
+    $Window.Content = $stack
+} -Title 'Hello' -Width 400 -Height 200
+```
+
+Builds the window body in code and returns 'ok' when the button is clicked.
+
+### EXAMPLE 2
+
+```powershell
+$xaml = @'
+<fluence:FluenceWindow
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    Title="From XAML" Width="480" Height="260">
+    <fluence:Button x:Name="Ok" Content="OK" />
+</fluence:FluenceWindow>
+'@
+Show-FluenceWindow -Xaml $xaml -Initialize {
+    param($Window, $Data)
+    $Window.FindName('Ok').add_Click({ Close-FluenceWindow -Window $Window -Result 'done' }.GetNewClosure())
+}
+```
+
+Parses a FluenceWindow from a XAML string and wires its named button in -Initialize.
+
+### EXAMPLE 3
+
+```powershell
+Show-FluenceWindow -XamlPath 'C:\ui\MainWindow.xaml' -Initialize {
+    param($Window, $Data)
+    $Window.FindName('AccentButton').add_Click({
+        [Fluence.Wpf.ApplicationAccentColorManager]::ApplySystemAccent()
+    }.GetNewClosure())
+} -WatchSystemTheme
+```
+
+Loads the window from a .xaml file, wires a named control, and follows OS theme changes.
+
+## PARAMETERS
+
+### -Accent
+
+Optional accent color (System.Windows.Media.Color or a parseable string).
+Defaults to system accent.
+
+```yaml
+Type: System.Windows.Media.Color
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Content
+
+A scriptblock that builds the window body.
+It receives the FluenceWindow as the first argument
+and the -Data hashtable as the second, and typically sets $Window.Content and wires handlers.
+
+```yaml
+Type: System.Management.Automation.ScriptBlock
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ContentBlock
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -CornerStyle
+
+The DWM rounded-corner preference: Default, DoNotRound, Round, or RoundSmall.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Data
+
+A hashtable passed as the second argument to the -Content and -Initialize blocks.
+On an MTA
+host this is how values cross to the UI runspace, since caller-defined functions, variables,
+and closures are not available there.
+
+```yaml
+Type: System.Collections.Hashtable
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ExtendsContentIntoTitleBar
+
+Extend the window content into the title bar area.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Height
+
+The window height in device-independent pixels.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Initialize
+
+A scriptblock run against the window after XAML is loaded (XamlString and XamlFile only).
+It
+receives the window as the first argument and the -Data hashtable as the second.
+
+```yaml
+Type: System.Management.Automation.ScriptBlock
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: XamlFile
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+- Name: XamlString
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MinHeight
+
+The minimum window height.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MinWidth
+
+The minimum window width.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoCloseButton
+
+Hide the close caption button.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoMaximizeButton
+
+Hide the maximize caption button.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoMinimizeButton
+
+Hide the minimize caption button.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Owner
+
+An owning System.Windows.Window for modal parenting; forces CenterOwner startup location.
+
+```yaml
+Type: System.Windows.Window
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PassThru
+
+Return a Fluence.WindowResult object (Result and Closed) instead of the bare stashed value.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ResizeMode
+
+The window resize mode (NoResize, CanMinimize, CanResize, or CanResizeWithGrip).
+
+```yaml
+Type: System.Windows.ResizeMode
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ShowIcon
+
+Show the window icon in the title bar.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ShowTitle
+
+Show the title text in the title bar.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SizeToContent
+
+How the window sizes to its content (Manual, Width, Height, or WidthAndHeight).
+Default Manual.
+
+```yaml
+Type: System.Windows.SizeToContent
+DefaultValue: Manual
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -StartupLocation
+
+Where the window first appears (Manual, CenterScreen, or CenterOwner).
+Default CenterScreen;
+forced to CenterOwner when -Owner is supplied.
+
+```yaml
+Type: System.Windows.WindowStartupLocation
+DefaultValue: CenterScreen
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+Defaults to 'Fluence'.
+For a Window XAML
+root, the XAML title remains unless this parameter is bound.
+
+```yaml
+Type: System.String
+DefaultValue: Fluence
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Topmost
+
+Show the window above other windows.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WatchSystemTheme
+
+Follow OS light/dark/high-contrast changes while the window is open; stops watching on close.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Width
+
+The window width in device-independent pixels.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Xaml
+
+A XAML string parsed with XamlReader.Parse.
+A FluenceWindow (or any Window) root is shown
+directly; any other root is hosted inside a new FluenceWindow.
+String input has no implicit
+file location for relative resources.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: XamlString
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -XamlPath
+
+A path to a .xaml file loaded with XamlReader.Load.
+The path is resolved on the calling thread.
+Relative resource dictionaries and images resolve beside the supplied XAML file.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: XamlFile
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Object
+
+## NOTES
+
+Establishes or reuses a WPF Application on an STA UI thread and blocks until the window closes.
+On a multi-threaded-apartment host (for example pwsh -mta) the content and handler scriptblocks
+run on a separate module-owned UI runspace and cannot reference caller-defined functions,
+variables, or closures; pass values through -Data instead.
+
+## RELATED LINKS

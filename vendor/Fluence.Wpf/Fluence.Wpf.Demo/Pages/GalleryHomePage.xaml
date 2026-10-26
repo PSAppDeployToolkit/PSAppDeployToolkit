@@ -5,34 +5,45 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="800"
-    d:DesignWidth="900"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
     <!--
         This landing/catalog page renders directly, outside the DemoSampleControl
-        teaching-sample contract. The brand lockup leads into the control catalog;
+        teaching-sample contract. The SVG-derived banner leads into the control catalog;
         all gallery destinations use the shell's route tags.
-        The brand artwork follows the theme, including high-contrast polarity,
+        The SVG-derived native WPF banner follows the theme, including high-contrast polarity,
         without code-behind theme subscriptions.
     -->
     <Page.Resources>
-        <fluence:ThemeDictionary>
-            <fluence:ThemeDictionary.ThemeDictionaries>
-                <fluence:ThemeResourceDictionary ThemeKey="Light">
-                    <StaticResource x:Key="HomeHeroImageSource" ResourceKey="FluenceHeaderLightDrawingImage" />
-                </fluence:ThemeResourceDictionary>
-                <fluence:ThemeResourceDictionary ThemeKey="Dark">
-                    <StaticResource x:Key="HomeHeroImageSource" ResourceKey="FluenceHeaderDarkDrawingImage" />
-                </fluence:ThemeResourceDictionary>
-                <fluence:ThemeResourceDictionary ThemeKey="HighContrastBlack">
-                    <StaticResource x:Key="HomeHeroImageSource" ResourceKey="FluenceHeaderDarkDrawingImage" />
-                </fluence:ThemeResourceDictionary>
-                <fluence:ThemeResourceDictionary ThemeKey="HighContrastWhite">
-                    <StaticResource x:Key="HomeHeroImageSource" ResourceKey="FluenceHeaderLightDrawingImage" />
-                </fluence:ThemeResourceDictionary>
-            </fluence:ThemeDictionary.ThemeDictionaries>
-        </fluence:ThemeDictionary>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Fluence.Wpf.Demo;component/Resources/BannerDrawings.xaml" />
+                <fluence:ThemeDictionary>
+                    <fluence:ThemeDictionary.ThemeDictionaries>
+                        <fluence:ThemeResourceDictionary ThemeKey="Light">
+                            <Style x:Key="HomeHeroImageStyle" TargetType="{x:Type Image}">
+                                <Setter Property="Source" Value="{DynamicResource HomeBannerLightDrawingImage}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                        <fluence:ThemeResourceDictionary ThemeKey="Dark">
+                            <Style x:Key="HomeHeroImageStyle" TargetType="{x:Type Image}">
+                                <Setter Property="Source" Value="{DynamicResource HomeBannerDarkDrawingImage}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                        <fluence:ThemeResourceDictionary ThemeKey="HighContrastBlack">
+                            <Style x:Key="HomeHeroImageStyle" TargetType="{x:Type Image}">
+                                <Setter Property="Source" Value="{DynamicResource HomeBannerDarkDrawingImage}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                        <fluence:ThemeResourceDictionary ThemeKey="HighContrastWhite">
+                            <Style x:Key="HomeHeroImageStyle" TargetType="{x:Type Image}">
+                                <Setter Property="Source" Value="{DynamicResource HomeBannerLightDrawingImage}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                    </fluence:ThemeDictionary.ThemeDictionaries>
+                </fluence:ThemeDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Page.Resources>
     <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel
@@ -40,48 +51,16 @@
             SizeChanged="PageContent_SizeChanged"
             Style="{StaticResource GalleryPageContentStackStyle}">
             <StackPanel x:Name="HeroContent" Margin="{DynamicResource HomeHeroMargin}">
-                <Image
-                    x:Name="BrandHeroImage"
-                    AutomationProperties.Name="Fluence.WPF"
-                    Source="{DynamicResource HomeHeroImageSource}"
-                    Style="{StaticResource HomeBrandImageStyle}" />
-                <TextBlock
-                    Style="{StaticResource HomeIntroStyle}"
-                    Text="Fluent design for native WPF apps." />
-                <StackPanel
-                    HorizontalAlignment="Center"
-                    Margin="{DynamicResource HomeSocialLinksMargin}"
-                    Orientation="Horizontal">
-                    <fluence:HyperlinkButton
-                        x:Name="GitHubLink"
-                        AutomationProperties.Name="Fluence.WPF on GitHub"
-                        NavigateUri="https://github.com/sintaxasn/fluence.wpf"
-                        Style="{StaticResource HomeSocialLinkStyle}"
-                        ToolTip="Fluence.WPF on GitHub">
-                        <fluence:HyperlinkButton.Icon>
-                            <Path Data="{StaticResource HomeGitHubGeometry}" Style="{StaticResource HomeSocialIconStyle}" />
-                        </fluence:HyperlinkButton.Icon>
-                    </fluence:HyperlinkButton>
-                    <fluence:HyperlinkButton
-                        x:Name="LinkedInLink"
-                        AutomationProperties.Name="Dan Cunningham on LinkedIn"
-                        NavigateUri="https://linkedin.com/in/sintaxasn"
-                        Style="{StaticResource HomeSocialLinkStyle}"
-                        ToolTip="Dan Cunningham on LinkedIn">
-                        <fluence:HyperlinkButton.Icon>
-                            <Path Data="{StaticResource HomeLinkedInGeometry}" Style="{StaticResource HomeSocialIconStyle}" />
-                        </fluence:HyperlinkButton.Icon>
-                    </fluence:HyperlinkButton>
-                </StackPanel>
-                <fluence:Button
-                    x:Name="ExploreControlsButton"
-                    HorizontalAlignment="Center"
-                    Appearance="Accent"
-                    AutomationProperties.Name="Explore controls"
-                    Click="Card_Click"
-                    Content="Explore controls"
-                    Margin="{DynamicResource HomeActionsMargin}"
-                    Tag="buttons" />
+                <Grid HorizontalAlignment="Stretch" MaxWidth="620">
+                    <Image
+                        x:Name="BrandHeroImage"
+                        AutomationProperties.Name="Fluence.WPF banner"
+                        AutomationProperties.HelpText="Fluent design controls and theming for WPF and PowerShell. Supports .NET 4.7.2, 8, and 10 or later; Windows PowerShell 5.1 and PowerShell 7.4 or later."
+                        HorizontalAlignment="Stretch"
+                        MaxWidth="620"
+                        Stretch="Uniform"
+                        Style="{DynamicResource HomeHeroImageStyle}" />
+                </Grid>
             </StackPanel>
 
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Explore the controls" />
@@ -99,7 +78,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="buttons">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE8E5;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/Button.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Buttons" />
@@ -113,7 +92,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="selection">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE73E;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/Checkbox.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Selection" />
@@ -127,7 +106,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="inputs">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE70F;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/TextBox.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Inputs" />
@@ -141,7 +120,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="navigation">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE700;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/NavigationView.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Navigation" />
@@ -155,7 +134,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="tabs">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE748;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/TabView.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Tabs" />
@@ -169,7 +148,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="menus">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE712;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/MenuFlyout.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Menus" />
@@ -183,7 +162,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="data">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE80A;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/ListView.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Collections" />
@@ -197,7 +176,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="trees">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE71C;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/TreeView.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Trees" />
@@ -211,7 +190,7 @@
                     Style="{StaticResource HomeCatalogCardStyle}"
                     Tag="status">
                     <fluence:Card.Icon>
-                        <fluence:FontIcon Glyph="&#xE916;" Style="{StaticResource HomeCatalogIconStyle}" />
+                        <Image Source="pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/InfoBar.png" Style="{StaticResource HomeCatalogImageStyle}" />
                     </fluence:Card.Icon>
                     <fluence:Card.Header>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Status" />
@@ -221,7 +200,7 @@
             </UniformGrid>
 
             <TextBlock
-                Margin="{DynamicResource HomeFoundationsHeadingMargin}"
+                Margin="16,8,16,16"
                 Style="{StaticResource SubtitleTextBlockStyle}"
                 Text="Make it yours" />
             <UniformGrid

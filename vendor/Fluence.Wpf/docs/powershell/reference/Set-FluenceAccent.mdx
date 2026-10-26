@@ -1,0 +1,108 @@
+﻿---
+id: Set-FluenceAccent
+title: Set-FluenceAccent
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Sets the Fluent accent color, either to a custom color or back to the system accent.
+
+## SYNTAX
+
+### Custom (Default)
+
+```powershell
+Set-FluenceAccent [-Color] <Color>
+```
+
+### System
+
+```powershell
+Set-FluenceAccent -System
+```
+
+## DESCRIPTION
+
+Runs the Fluence accent resolver on the UI (STA) thread and re-runs the theme pipeline so
+every accent-derived brush is recomputed.
+Use -Color to pin the accent ramp to a custom
+color, or -System to reset the accent intent to the OS palette.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Set-FluenceAccent -Color '#0078D4'
+```
+
+### EXAMPLE 2
+
+```powershell
+Set-FluenceAccent -System
+```
+
+## PARAMETERS
+
+### -Color
+
+The custom accent color (System.Windows.Media.Color or a parseable string).
+
+```yaml
+Type: System.Windows.Media.Color
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Custom
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -System
+
+Reset the accent intent to the system (OS) accent.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: System
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+
+## RELATED LINKS

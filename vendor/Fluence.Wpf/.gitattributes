@@ -33,3 +33,4 @@
 *.jpg   binary
 *.ico   binary
 *.gif  binary
+assets/*.eps binary

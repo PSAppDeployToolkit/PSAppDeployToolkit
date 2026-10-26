@@ -64,6 +64,8 @@ namespace Fluence.Wpf.Controls
     [TemplateVisualState(GroupName = "BackButtonStates", Name = "BackButtonCollapsed")]
     public class NavigationView : Selector
     {
+        private readonly HashSet<NavigationViewItem> _hookedFooterItems = [];
+
         /// <summary>
         /// Name of the back button template part.
         /// </summary>
@@ -820,34 +822,34 @@ defaultValue: null,
 
         private void OnFooterMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.OldItems is not null)
-            {
-                foreach (object entry in e.OldItems)
-                {
-                    if (entry is NavigationViewItem footerItem)
-                    {
-                        UnhookFooterItem(footerItem);
-                        if (ReferenceEquals(footerItem, SelectedFooterItem))
-                        {
-                            SelectedFooterItem = null;
-                        }
-                    }
-                }
-            }
-
-            if (e.NewItems is not null)
-            {
-                foreach (object entry in e.NewItems)
-                {
-                    if (entry is NavigationViewItem footerItem)
-                    {
-                        HookFooterItem(footerItem);
-                    }
-                }
-            }
-
+            ReconcileFooterItems();
             UpdatePaneFooterSeparatorVisibility();
             ScheduleIndicatorPosition(animate: false);
+        }
+
+        private void ReconcileFooterItems()
+        {
+            HashSet<NavigationViewItem> current = [.. FooterMenuItems.OfType<NavigationViewItem>()];
+            foreach (NavigationViewItem item in _hookedFooterItems.ToArray())
+            {
+                if (!current.Contains(item))
+                {
+                    UnhookFooterItem(item);
+                    _ = _hookedFooterItems.Remove(item);
+                }
+            }
+            foreach (NavigationViewItem item in current)
+            {
+                if (_hookedFooterItems.Add(item))
+                {
+                    HookFooterItem(item);
+                }
+            }
+            if (SelectedFooterItem is { } selected && !current.Contains(selected))
+            {
+                selected.SetCurrentValue(System.Windows.Controls.ListBoxItem.IsSelectedProperty, value: false);
+                SelectedFooterItem = null;
+            }
         }
 
         private static void OnPaneFooterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

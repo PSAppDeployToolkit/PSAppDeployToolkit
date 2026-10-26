@@ -1,0 +1,77 @@
+﻿---
+id: Close-FluenceProgress
+title: Close-FluenceProgress
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Closes a progress window opened by Show-FluenceProgress.
+
+## SYNTAX
+
+```powershell
+Close-FluenceProgress [-Handle] <ProgressHandle>
+```
+
+## DESCRIPTION
+
+Closes the window on its UI thread and marks the handle closed.
+Closing an already closed
+handle is a no-op, so a finally block can call this unconditionally.
+On an MTA host this also
+ends the UI pump that kept the window live and releases the module's UI runspace for the next
+dialog.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+try { $progress = Show-FluenceProgress -Message 'Working...'; Invoke-Work } finally { Close-FluenceProgress -Handle $progress }
+```
+
+## PARAMETERS
+
+### -Handle
+
+The Fluence.ProgressHandle returned by Show-FluenceProgress.
+
+```yaml
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Void
+
+## NOTES
+
+Runs on the UI thread that owns the window.
+A window implies a running Application, so no
+application is created here.
+
+## RELATED LINKS

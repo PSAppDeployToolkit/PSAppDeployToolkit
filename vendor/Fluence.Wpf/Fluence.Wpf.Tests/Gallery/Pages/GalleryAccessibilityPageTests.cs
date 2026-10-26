@@ -28,7 +28,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -85,14 +84,14 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     Assert.Equal(3, tabOrder.Children.Count);
                     Assert.Equal(KeyboardNavigationMode.Local, KeyboardNavigation.GetTabNavigation(tabOrder));
 
-                    Controls.HyperlinkButton hyperlink = Assert.IsType<Controls.HyperlinkButton>(DemoTestHost.FindVisualChildren<Controls.HyperlinkButton>(primary).FirstOrDefault(), exactMatch: false);
                     Controls.Button? tabOrderFirst = DemoTestHost.FindByName<Controls.Button>(page, "ExplicitTabOrderFirstButton");
                     Controls.Button? tabOrderSecond = DemoTestHost.FindByName<Controls.Button>(page, "ExplicitTabOrderSecondButton");
                     Controls.Button? tabOrderThird = DemoTestHost.FindByName<Controls.Button>(page, "ExplicitTabOrderThirdButton");
                     AssertTabOrderButton(tabOrderFirst, 1, "Tab order: 1 (first)");
                     AssertTabOrderButton(tabOrderSecond, 2, "Tab order: 2");
                     AssertTabOrderButton(tabOrderThird, 3, "Tab order: 3");
-                    AssertNextFocus(window, hyperlink, tabOrderFirst, "Tab should enter the explicit tab-order group after the preceding hyperlink.");
+                    // The sample's Source code expander is another tab stop at the outer scope.
+                    // Verify the order owned by this Local navigation group from inside it.
                     AssertNextFocus(window, tabOrderFirst, tabOrderSecond, "Explicit tab-order group should move from 1 to 2.");
                     AssertNextFocus(window, tabOrderSecond, tabOrderThird, "Explicit tab-order group should move from 2 to 3.");
 

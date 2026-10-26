@@ -155,7 +155,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid Margin="{TemplateBinding MarginMaximized}">
+                        <Grid x:Name="PART_ThemeTransitionRoot" Margin="{TemplateBinding MarginMaximized}">
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="TitleBarRow" Height="Auto" />
                                 <RowDefinition Height="*" />
@@ -303,6 +303,13 @@
                                 Grid.Row="0"
                                 Grid.RowSpan="2"
                                 Panel.ZIndex="10" />
+                            <!--  A snapshot of the previous WPF surface fades out after a theme change.  -->
+                            <Grid
+                                x:Name="PART_ThemeTransitionOverlayHost"
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Panel.ZIndex="11"
+                                IsHitTestVisible="False" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>

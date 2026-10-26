@@ -213,7 +213,7 @@
                                                 Grid.ColumnSpan="3"
                                                 Height="{Binding ItemHeight, ElementName=PART_MonthList}"
                                                 VerticalAlignment="Center"
-                                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                                Background="{DynamicResource SystemControlHighlightAccentBrush}"
                                                 CornerRadius="{DynamicResource ControlCornerRadius}"
                                                 IsHitTestVisible="False" />
                                             <controls:LoopingSelectorList

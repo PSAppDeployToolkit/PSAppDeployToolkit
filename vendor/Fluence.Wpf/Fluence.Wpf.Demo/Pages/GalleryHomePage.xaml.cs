@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Demo.Pages
         }
 
         // The hero lockup swap is fully declarative: a ThemeDictionary in the page
-        // resources maps HomeHeroImageSource per theme (including the high-contrast
+        // resources maps HomeHeroImageStyle per theme (including the high-contrast
         // polarity tables), so no ApplicationThemeManager.Changed subscription exists here.
 
         private void PageContent_SizeChanged(object sender, SizeChangedEventArgs e)

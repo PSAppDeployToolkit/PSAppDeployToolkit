@@ -16,8 +16,10 @@
     the cards or against the window edge.
 
     Deviations from the Gallery, all forced by the platform:
-    - WPF has no per-element system backdrop, so the Acrylic and Mica tiles show their fallback brushes.
-    - The tile-less Mica Background group is omitted: WPF has no per-element Mica.
+    - WPF has no per-element system backdrop. The Mica Alt group exposes the window's standard
+      Mica through transparent preview backing; other material tiles show their fallback brushes.
+    - Mica Background documents window materials with solid fallback previews and copyable WPF
+      SystemBackdropType settings; WPF has no per-element Mica or Mica Alt.
     - High Contrast shows one grid of the live SystemColor* aliases instead of four hard-coded palettes.
 -->
 <Page

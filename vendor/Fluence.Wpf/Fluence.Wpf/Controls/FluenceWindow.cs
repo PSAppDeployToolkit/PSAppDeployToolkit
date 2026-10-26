@@ -39,6 +39,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shell;
 using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Native;
+using Fluence.Wpf.Theming;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -63,6 +64,8 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_MaximizeButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplatePart(Name = PART_RestoreButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplatePart(Name = PART_CloseButton, Type = typeof(System.Windows.Controls.Button))]
+    [TemplatePart(Name = PART_ThemeTransitionRoot, Type = typeof(Grid))]
+    [TemplatePart(Name = PART_ThemeTransitionOverlayHost, Type = typeof(Grid))]
     public class FluenceWindow : Window
     {
         #region Constants
@@ -86,6 +89,10 @@ namespace Fluence.Wpf.Controls
         /// Template part name for the close caption button.
         /// </summary>
         private const string PART_CloseButton = "PART_CloseButton";
+
+        private const string PART_ThemeTransitionRoot = "PART_ThemeTransitionRoot";
+
+        private const string PART_ThemeTransitionOverlayHost = "PART_ThemeTransitionOverlayHost";
 
         /// <summary>
         /// Default <see cref="TitleBarHeight"/>. Matches the WinUI 3 canonical expanded title-bar
@@ -469,6 +476,7 @@ namespace Fluence.Wpf.Controls
         public static ImageSource? DefaultIcon { get; } = CreateDefaultIcon();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "This is an internal resource URI.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The optional icon must fail to null; an exception escaping this static initializer would prevent every FluenceWindow from being constructed.")]
         private static ImageSource? CreateDefaultIcon()
         {
             try
@@ -495,13 +503,9 @@ namespace Fluence.Wpf.Controls
             // or session-0 host such as PSADT running as SYSTEM) must degrade to a null icon, never
             // escape this static field initializer and fault the FluenceWindow type with a
             // TypeInitializationException - that would break every window construction in the process.
-            // The when-filter is always true (Exception.Message is never null); it catches broadly while
-            // satisfying the no-general-catch analyzers, matching the filtered-catch idiom used elsewhere
-            // in this assembly.
             catch
             {
                 return null;
-                throw;
             }
         }
 
@@ -551,7 +555,16 @@ namespace Fluence.Wpf.Controls
             _ = CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, OnMinimizeWindow, OnCanMinimizeWindow));
             _ = CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, OnRestoreWindow, OnCanResizeWindow));
 
-            _windowChrome = WindowPolicy.CreateWindowChrome();
+            // Configure the fixed chrome before attaching it; state-dependent values are refreshed below.
+            _windowChrome = new WindowChrome
+            {
+                CaptionHeight = 0,
+                CornerRadius = new CornerRadius(0),
+                GlassFrameThickness = new Thickness(-1),
+                ResizeBorderThickness = new Thickness(4),
+                UseAeroCaptionButtons = false,
+                NonClientFrameEdges = NonClientFrameEdges.None,
+            };
             SetValue(WindowChrome.WindowChromeProperty, _windowChrome);
             UpdateWindowChrome();
             UpdateShellMetrics();
@@ -579,11 +592,18 @@ namespace Fluence.Wpf.Controls
         {
             // Be tolerant of incomplete design-time templates: missing caption parts should
             // disable only caption-button behavior rather than failing the whole window.
+            _themeTransitionOverlay?.Clear();
+            _themeTransitionOverlay = null;
             base.OnApplyTemplate();
             _minimizeButton = GetTemplateChild(PART_MinimizeButton) as System.Windows.Controls.Button;
             _maximizeButton = GetTemplateChild(PART_MaximizeButton) as System.Windows.Controls.Button;
             _restoreButton = GetTemplateChild(PART_RestoreButton) as System.Windows.Controls.Button;
             _closeButton = GetTemplateChild(PART_CloseButton) as System.Windows.Controls.Button;
+            if (GetTemplateChild(PART_ThemeTransitionRoot) is Grid root &&
+                GetTemplateChild(PART_ThemeTransitionOverlayHost) is Grid host)
+            {
+                _themeTransitionOverlay = new ThemeTransitionOverlay(this, root, host);
+            }
             UpdateCaptionButtons();
         }
 
@@ -594,7 +614,6 @@ namespace Fluence.Wpf.Controls
             _handle = new WindowInteropHelper(this).EnsureHandle();
             _hwndSource = HwndSource.FromHwnd(_handle);
             _hwndSource?.AddHook(WndProc);
-            UpdateWindowChrome();
             ApplyWindowShell();
 
             // Subscribe AFTER realisation (not in the constructor) so only shown windows are pinned
@@ -602,6 +621,8 @@ namespace Fluence.Wpf.Controls
             SystemThemeWatcher.Watch(this);
             ApplicationThemeManager.Changed += OnThemeChanged;
             ApplicationAccentColorManager.AccentColorChanged += OnAccentColorChanged;
+            FluenceThemeEngine.PreparingPublish += OnPreparingThemePublish;
+            FluenceThemeEngine.Published += OnThemePublished;
 
             // SizeToContent leaves the template root arranged one layout pass behind the realised
             // client size (see FillClientAreaForSizeToContent); correct it once the window has its
@@ -672,6 +693,10 @@ namespace Fluence.Wpf.Controls
             SystemThemeWatcher.UnWatch(this);
             ApplicationThemeManager.Changed -= OnThemeChanged;
             ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
+            FluenceThemeEngine.PreparingPublish -= OnPreparingThemePublish;
+            FluenceThemeEngine.Published -= OnThemePublished;
+            _themeTransitionOverlay?.Clear();
+            _themeTransitionOverlay = null;
             SizeChanged -= OnSizeChangedForSizeToContent;
 
             // A FromHwnd source is WPF-owned; release the hook and the reference without disposing.
@@ -742,6 +767,16 @@ namespace Fluence.Wpf.Controls
 
         #region Theme and accent manager handlers
 
+        private void OnPreparingThemePublish(object? sender, ThemePublishEventArgs e)
+        {
+            _themeTransitionOverlay?.Prepare(e.PreviousTheme, e.NextTheme);
+        }
+
+        private void OnThemePublished(object? sender, EventArgs e)
+        {
+            _themeTransitionOverlay?.Play();
+        }
+
         private void OnThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
             // Only ApplyBackdrop here. Every theme change runs through the engine, which raises
@@ -779,6 +814,8 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void ApplyWindowShell()
         {
+            UpdateWindowChrome();
+
             if (_handle != IntPtr.Zero)
             {
                 HideNativeCaptionButtons();
@@ -940,11 +977,10 @@ namespace Fluence.Wpf.Controls
         /// (authoritative per AGENTS.md 4.2), and the two tokens the fallback composite needs when
         /// that key is not defined, then delegates the decision to the pure
         /// <see cref="WindowPolicy.ResolveContentLayerPreBlend"/>. The result is applied as the
-        /// bottom-most layer of the affected control: a pre-blended opaque plate restores the
-        /// brightness the translucent token specifies, and everything WPF composites on top of it is
-        /// then blended by WPF itself at full precision, so it is unaffected by the DWM alpha
-        /// quantisation this substitutes for. See the KNOWN_ISSUES.md entry "Translucent layers over
-        /// a DWM backdrop lose alpha precision on a 10 bpc display".
+        /// bottom-most layer of the affected control when the policy selects an opaque fallback.
+        /// Dark Mica keeps the published translucent brush so the content layer retains the
+        /// wallpaper-informed backdrop tint. See the KNOWN_ISSUES.md entry "Translucent layers over
+        /// a DWM backdrop lose alpha precision on a 10 bpc display" for the retained Light fallback.
         /// </para>
         /// <para>
         /// Called on every <see cref="ApplyBackdrop"/> (theme and backdrop changes already re-run
@@ -1115,7 +1151,8 @@ namespace Fluence.Wpf.Controls
                 IsActive,
                 ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled,
                 capabilities,
-                ApplicationAccentColorManager.SystemAccentColor);
+                ApplicationAccentColorManager.SystemAccentColor,
+                isHighContrast: ApplicationThemeManager.GetResolvedTheme() is ApplicationTheme.HighContrast);
 
             SetCurrentValue(BorderBrushProperty, TryFindResource(plan.TemplateBorderBrushResourceKey) as Brush ?? Brushes.Transparent);
             SetCurrentValue(BorderThicknessProperty, plan.TemplateBorderThickness);
@@ -1267,10 +1304,8 @@ namespace Fluence.Wpf.Controls
         #region Caption-button reflow
 
         /// <summary>
-        /// Recomputes the visibility and enabled state of all four caption buttons by blending the
-        /// <see cref="CaptionButtonChrome"/> baselines (derived from <see cref="Window.ResizeMode"/>
-        /// and <see cref="Window.WindowState"/>) with any explicitly-set caption-chrome DP overrides,
-        /// then reflows the button slots so collapsed buttons leave no gap.
+        /// Applies the effective caption-button policy and reflows the button slots so collapsed
+        /// buttons leave no gap.
         /// </summary>
         private void UpdateCaptionButtons()
         {
@@ -1279,59 +1314,34 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            // Minimize: an explicit IsMinimizeButtonVisible (e.g. flipped back to Visible under
-            // ResizeMode=NoResize) wins over the ResizeMode-derived baseline; otherwise keep the
-            // chrome defaults. IsMinimizable gates the enabled state.
-            CaptionButtonChrome.GetMinimizeChrome(ResizeMode, out Visibility minimizeVisibility, out bool minimizeEnabled);
-            if (IsCaptionChromeOverrideExplicit(IsMinimizeButtonVisibleProperty))
-            {
-                minimizeVisibility = IsMinimizeButtonVisible;
-                minimizeEnabled = minimizeVisibility is Visibility.Visible;
-            }
-            if (!IsMinimizable)
-            {
-                minimizeEnabled = false;
-            }
+            CaptionButtonChrome.GetMinimizeChrome(
+                ResizeMode,
+                GetCaptionVisibilityOverride(IsMinimizeButtonVisibleProperty),
+                IsMinimizable,
+                out Visibility minimizeVisibility,
+                out bool minimizeEnabled);
             _minimizeButton.Visibility = minimizeVisibility;
             _minimizeButton.IsEnabled = minimizeEnabled;
 
-            // Maximize / restore: the pair shares one slot; the visible member tracks WindowState.
             CaptionButtonChrome.GetMaximizeRestoreChrome(
                 ResizeMode,
                 WindowState,
+                GetCaptionVisibilityOverride(IsMaximizeButtonVisibleProperty),
+                IsMaximizable,
                 out Visibility maxVis,
                 out Visibility restVis,
                 out bool maxEn,
                 out bool restEn);
-            if (IsCaptionChromeOverrideExplicit(IsMaximizeButtonVisibleProperty))
-            {
-                ApplyMaximizeRestoreVisibilityOverride(IsMaximizeButtonVisible, out maxVis, out restVis);
-                bool explicitlyVisible = IsMaximizeButtonVisible is Visibility.Visible;
-                maxEn = explicitlyVisible && WindowState is not WindowState.Maximized;
-                restEn = explicitlyVisible && WindowState is WindowState.Maximized;
-            }
-            if (!IsMaximizable)
-            {
-                maxEn = false;
-                restEn = false;
-            }
             _maximizeButton.Visibility = maxVis;
             _restoreButton.Visibility = restVis;
             _maximizeButton.IsEnabled = maxEn;
             _restoreButton.IsEnabled = restEn;
 
-            // Close: always present from the chrome baseline; an explicit override or IsClosable=false
-            // can hide or disable it.
-            CaptionButtonChrome.GetCloseChrome(out Visibility closeVisibility, out bool closeEnabled);
-            if (IsCaptionChromeOverrideExplicit(IsCloseButtonVisibleProperty))
-            {
-                closeVisibility = IsCloseButtonVisible;
-                closeEnabled = closeVisibility is Visibility.Visible;
-            }
-            if (!IsClosable)
-            {
-                closeEnabled = false;
-            }
+            CaptionButtonChrome.GetCloseChrome(
+                GetCaptionVisibilityOverride(IsCloseButtonVisibleProperty),
+                IsClosable,
+                out Visibility closeVisibility,
+                out bool closeEnabled);
             _closeButton.Visibility = closeVisibility;
             _closeButton.IsEnabled = closeEnabled;
 
@@ -1383,41 +1393,16 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Translates an explicit <see cref="IsMaximizeButtonVisible"/> value into the concrete
-        /// maximize / restore visibilities for the current window state (only one of the pair is ever
-        /// shown).
+        /// Returns the effective caption visibility when its value comes from an explicit source,
+        /// including a style or binding; otherwise returns <see langword="null"/>.
         /// </summary>
-        /// <param name="visibility">The explicit visibility value to apply.</param>
-        /// <param name="maximizeVisibility">The resulting visibility of the maximize button.</param>
-        /// <param name="restoreVisibility">The resulting visibility of the restore button.</param>
-        private void ApplyMaximizeRestoreVisibilityOverride(Visibility visibility, out Visibility maximizeVisibility, out Visibility restoreVisibility)
-        {
-            if (visibility is Visibility.Visible)
-            {
-                maximizeVisibility = WindowState is WindowState.Maximized ? Visibility.Collapsed : Visibility.Visible;
-                restoreVisibility = WindowState is WindowState.Maximized ? Visibility.Visible : Visibility.Collapsed;
-                return;
-            }
-            if (visibility is Visibility.Hidden)
-            {
-                maximizeVisibility = WindowState is WindowState.Maximized ? Visibility.Collapsed : Visibility.Hidden;
-                restoreVisibility = WindowState is WindowState.Maximized ? Visibility.Hidden : Visibility.Collapsed;
-                return;
-            }
-            maximizeVisibility = Visibility.Collapsed;
-            restoreVisibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> when the caption-chrome override property has been explicitly assigned
-        /// (via code, XAML local value, style, binding, etc.) rather than left at its declared default.
-        /// </summary>
-        /// <param name="dp">The dependency property to check.</param>
-        /// <returns><see langword="true"/> if the property has been explicitly assigned; otherwise, <see langword="false"/>.</returns>
-        private bool IsCaptionChromeOverrideExplicit(DependencyProperty dp)
+        /// <param name="dp">The caption visibility dependency property.</param>
+        private Visibility? GetCaptionVisibilityOverride(DependencyProperty dp)
         {
             ValueSource source = DependencyPropertyHelper.GetValueSource(this, dp);
-            return source.BaseValueSource is not BaseValueSource.Default and not BaseValueSource.Inherited;
+            return source.BaseValueSource is not BaseValueSource.Default and not BaseValueSource.Inherited
+                ? (Visibility)GetValue(dp)
+                : null;
         }
 
         #endregion Caption-button reflow
@@ -1716,19 +1701,16 @@ namespace Fluence.Wpf.Controls
             // windows whose IsMaximizable=false, or on Windows 10 where the flyout doesn't
             // exist at all. In those cases, fall through to 0 so WPF input routing handles
             // the click as a normal button press.
-            bool shouldExposeSnapFlyout = SnapLayoutHelper.IsSnapLayoutEnabled()
-                && IsMaximizable
-                && OsVersionHelper.IsWindows11;
-            if (_maximizeButton?.Visibility is Visibility.Visible &&
+            if ((_maximizeButton?.Visibility is Visibility.Visible &&
                 _maximizeButton.IsEnabled &&
-                IsOverElement(_maximizeButton, point))
-            {
-                return shouldExposeSnapFlyout ? PInvoke.HTMAXBUTTON : 0;
-            }
-            if (_restoreButton?.Visibility is Visibility.Visible &&
+                IsOverElement(_maximizeButton, point)) ||
+                (_restoreButton?.Visibility is Visibility.Visible &&
                 _restoreButton.IsEnabled &&
-                IsOverElement(_restoreButton, point))
+                IsOverElement(_restoreButton, point)))
             {
+                bool shouldExposeSnapFlyout = SnapLayoutHelper.IsSnapLayoutEnabled()
+                    && IsMaximizable
+                    && OsVersionHelper.IsWindows11;
                 return shouldExposeSnapFlyout ? PInvoke.HTMAXBUTTON : 0;
             }
 
@@ -1884,22 +1866,18 @@ namespace Fluence.Wpf.Controls
 
         private void OnCanResizeWindow(object sender, CanExecuteRoutedEventArgs e)
         {
-            bool allowedByResizeMode =
-                ResizeMode is ResizeMode.CanResize or
-                ResizeMode.CanResizeWithGrip;
-            bool allowedByExplicitDp =
-                IsCaptionChromeOverrideExplicit(IsMaximizeButtonVisibleProperty) &&
-                IsMaximizeButtonVisible is Visibility.Visible;
-            e.CanExecute = (allowedByResizeMode || allowedByExplicitDp) && IsMaximizable;
+            e.CanExecute = CaptionButtonChrome.CanMaximize(
+                ResizeMode,
+                GetCaptionVisibilityOverride(IsMaximizeButtonVisibleProperty),
+                IsMaximizable);
         }
 
         private void OnCanMinimizeWindow(object sender, CanExecuteRoutedEventArgs e)
         {
-            bool allowedByResizeMode = ResizeMode is not ResizeMode.NoResize;
-            bool allowedByExplicitDp =
-                IsCaptionChromeOverrideExplicit(IsMinimizeButtonVisibleProperty) &&
-                IsMinimizeButtonVisible is Visibility.Visible;
-            e.CanExecute = (allowedByResizeMode || allowedByExplicitDp) && IsMinimizable;
+            e.CanExecute = CaptionButtonChrome.CanMinimize(
+                ResizeMode,
+                GetCaptionVisibilityOverride(IsMinimizeButtonVisibleProperty),
+                IsMinimizable);
         }
 
         private void OnCloseWindow(object sender, ExecutedRoutedEventArgs e)
@@ -2010,6 +1988,8 @@ namespace Fluence.Wpf.Controls
         /// The close caption button template part, or <see langword="null"/> if absent.
         /// </summary>
         private System.Windows.Controls.Button? _closeButton;
+
+        private ThemeTransitionOverlay? _themeTransitionOverlay;
 
         /// <summary>
         /// The WPF-owned <see cref="HwndSource"/> for the realised window, used for the message hook,

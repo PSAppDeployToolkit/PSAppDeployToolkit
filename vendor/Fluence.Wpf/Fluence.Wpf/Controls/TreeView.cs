@@ -26,13 +26,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using System.Windows.Threading;
 
 namespace Fluence.Wpf.Controls
 {
@@ -45,6 +48,7 @@ namespace Fluence.Wpf.Controls
     {
         private readonly ArrayList _selectedItems = [];
         private bool _updatingSelectionChecks;
+        private DispatcherOperation? _pendingSelectionRefresh;
 
         /// <summary>
         /// Initializes static members of the TreeView class and overrides the default style metadata.
@@ -65,6 +69,7 @@ namespace Fluence.Wpf.Controls
         public TreeView()
         {
             SelectedItems = _selectedItems;
+            ItemContainerGenerator.StatusChanged += OnContainerStatusChanged;
         }
 
         /// <summary>
@@ -261,6 +266,45 @@ namespace Fluence.Wpf.Controls
             ApplySelectionModeToContainers(this);
         }
 
+        private void OnContainerStatusChanged(object? sender, EventArgs e)
+        {
+            // A checked-state binding can be evaluated before its new container has an
+            // owner. Reconcile once generation completes, including after retemplating.
+            if (SelectionMode is TreeViewSelectionMode.Multiple
+                && ItemContainerGenerator.Status is GeneratorStatus.ContainersGenerated
+                && !_updatingSelectionChecks
+                && _pendingSelectionRefresh is not { Status: DispatcherOperationStatus.Pending })
+            {
+                _pendingSelectionRefresh = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(RefreshBoundSelection));
+            }
+        }
+
+        private void RefreshBoundSelection()
+        {
+            _pendingSelectionRefresh = null;
+            if (!IsLoaded || SelectionMode is not TreeViewSelectionMode.Multiple)
+            {
+                return;
+            }
+
+            _updatingSelectionChecks = true;
+            try
+            {
+                foreach (object item in Items)
+                {
+                    if (ItemContainerGenerator.ContainerFromItem(item) is TreeViewItem container)
+                    {
+                        container.GetBindingExpression(TreeViewItem.IsSelectionCheckedProperty)?.UpdateTarget();
+                    }
+                }
+                RebuildMultipleSelectedItems();
+            }
+            finally
+            {
+                _updatingSelectionChecks = false;
+            }
+        }
+
         private static void OnSelectionModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is TreeView treeView)
@@ -425,11 +469,33 @@ namespace Fluence.Wpf.Controls
 
         private void RebuildMultipleSelectedItems()
         {
+            ArrayList current = [];
+            AddCheckedItems(this, current);
+            if (MatchesSelectedItems(current))
+            {
+                return;
+            }
             _selectedItems.Clear();
-            AddCheckedItems(this);
+            _selectedItems.AddRange(current);
         }
 
-        private void AddCheckedItems(ItemsControl owner)
+        private bool MatchesSelectedItems(IList current)
+        {
+            if (current.Count != _selectedItems.Count)
+            {
+                return false;
+            }
+            for (int index = 0; index < current.Count; index++)
+            {
+                if (!ReferenceEquals(current[index], _selectedItems[index]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static void AddCheckedItems(ItemsControl owner, IList selection)
         {
             foreach (object item in owner.Items)
             {
@@ -444,13 +510,13 @@ namespace Fluence.Wpf.Controls
                 if (container.IsSelectionChecked is true)
                 {
                     object selectedItem = GetSelectedItemValue(container);
-                    if (!_selectedItems.Contains(selectedItem))
+                    if (!selection.Contains(selectedItem))
                     {
-                        _ = _selectedItems.Add(selectedItem);
+                        _ = selection.Add(selectedItem);
                     }
                 }
 
-                AddCheckedItems(container);
+                AddCheckedItems(container, selection);
             }
         }
 

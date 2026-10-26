@@ -1,0 +1,291 @@
+﻿---
+id: Show-FluenceListSelection
+title: Show-FluenceListSelection
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a themed dialog with a list of items to pick from and returns the selection.
+
+## SYNTAX
+
+```powershell
+Show-FluenceListSelection [-Items] <string[]> [-Message <string>] [-Title <string>]
+ [-TitleBarIcon <string>] [-MultiSelect] [-DefaultValue <Object>] [-Timeout <int>] [-Countdown]
+ [-Theme <string>] [-Backdrop <string>]
+```
+
+## DESCRIPTION
+
+A single List prompt (see New-FluencePrompt -InputType List) with OK and Cancel buttons.
+OK
+requires a selection.
+Returns the selected item, or with -MultiSelect an array of the selected
+items (an array even when one item is selected).
+Returns $null when the user cancels or the
+dialog times out.
+
+Use MultiSelect to return an array, including when only one item is selected.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+$region = Show-FluenceListSelection -Message 'Choose a region' -Items 'Europe', 'Americas', 'Asia Pacific'
+```
+
+### EXAMPLE 2
+
+```powershell
+$features = Show-FluenceListSelection -Message 'Features to install' -Items 'Core', 'Docs', 'Samples' -MultiSelect -DefaultValue 'Core'
+if ($null -ne $features) { "Installing: $($features -join ', ')" }
+```
+
+## PARAMETERS
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Countdown
+
+Show the remaining seconds in the OK button's caption.
+Requires -Timeout.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DefaultValue
+
+The item (or, with -MultiSelect, items) selected when the dialog opens.
+
+```yaml
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Items
+
+The items to list, in display order.
+At least one is required.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+The label shown above the list.
+
+```yaml
+Type: System.String
+DefaultValue: Select an item
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MultiSelect
+
+Allow more than one item to be selected; the result is then an array.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Timeout
+
+Seconds after which the dialog closes on its own and $null is returned.
+Between 1 and 86400.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+
+```yaml
+Type: System.String
+DefaultValue: Fluence
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Object
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+Blocks until the dialog closes.
+
+## RELATED LINKS

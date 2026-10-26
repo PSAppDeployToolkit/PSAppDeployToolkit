@@ -1,0 +1,58 @@
+﻿---
+id: Get-FluenceTheme
+title: Get-FluenceTheme
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Returns the current Fluence theme state for the process.
+
+## SYNTAX
+
+```powershell
+Get-FluenceTheme
+```
+
+## DESCRIPTION
+
+Reads the process-wide theme statics directly (current theme, resolved theme, current
+backdrop, and dark-mode flag) and returns them as an object.
+This is a cheap, side-effect
+free reader; it does not marshal onto a UI thread or create a WPF Application.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-FluenceTheme
+```
+
+### EXAMPLE 2
+
+```powershell
+(Get-FluenceTheme).IsAppInDarkMode
+```
+
+## PARAMETERS
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### Fluence.ThemeInfo
+
+## NOTES
+
+Reads current process theme state; does not require or create a host application.
+
+## RELATED LINKS

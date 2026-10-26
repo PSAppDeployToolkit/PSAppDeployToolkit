@@ -48,11 +48,13 @@
                                         <fluence:FontIcon Glyph="&#xE80F;" IconFontSize="16" />
                                     </fluence:NavigationViewItem.Icon>
                                 </fluence:NavigationViewItem>
+                                <fluence:NavigationViewItemHeader Content="Workspace" />
                                 <fluence:NavigationViewItem Content="Files">
                                     <fluence:NavigationViewItem.Icon>
                                         <fluence:FontIcon Glyph="&#xE8B7;" IconFontSize="16" />
                                     </fluence:NavigationViewItem.Icon>
                                 </fluence:NavigationViewItem>
+                                <fluence:NavigationViewItemSeparator />
                                 <fluence:NavigationViewItem Content="Reports">
                                     <fluence:NavigationViewItem.Icon>
                                         <fluence:FontIcon Glyph="&#xE9D9;" IconFontSize="16" />
@@ -61,7 +63,7 @@
                             </fluence:NavigationView>
                         </Border>
                     </ContentControl>
-                    <local:DemoSampleControl SampleDescription="Use a left pane when the app has several persistent destinations and enough horizontal space." />
+                    <local:DemoSampleControl SampleDescription="Use a left pane for persistent destinations, with a header and separator to group the items." />
 
 
                     <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">

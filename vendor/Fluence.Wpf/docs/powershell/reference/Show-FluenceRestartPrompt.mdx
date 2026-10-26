@@ -1,0 +1,283 @@
+﻿---
+id: Show-FluenceRestartPrompt
+title: Show-FluenceRestartPrompt
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a themed restart prompt with Restart now and Restart later buttons and an optional countdown.
+
+## SYNTAX
+
+### Countdown (Default)
+
+```powershell
+Show-FluenceRestartPrompt [[-Message] <string[]>] [-Title <string>] [-TitleBarIcon <string>]
+ [-Countdown <int>] [-Icon <string>] [-NotTopmost] [-Theme <string>] [-Backdrop <string>]
+```
+
+### NoCountdown
+
+```powershell
+Show-FluenceRestartPrompt [[-Message] <string[]>] -NoCountdown [-Title <string>]
+ [-TitleBarIcon <string>] [-Icon <string>] [-NotTopmost] [-Theme <string>] [-Backdrop <string>]
+```
+
+## DESCRIPTION
+
+A deployment-style prompt built on Show-FluenceDialog: a warning icon, a message, a Restart now
+default button and a Restart later cancel button.
+By default it counts down sixty seconds on
+the Restart now button and returns 'TimedOut' when nobody answers; -Countdown changes the
+seconds and -NoCountdown removes the timer.
+The window is topmost unless -NotTopmost is given.
+The prompt never restarts the machine itself: act on the returned value.
+
+The prompt reports a decision; it never restarts the computer.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+switch (Show-FluenceRestartPrompt) {
+    'Restart'  { Restart-Computer -Force }
+    'TimedOut' { Restart-Computer -Force }
+    'Later'    { Write-Output 'Deferred by the user.' }
+}
+```
+
+### EXAMPLE 2
+
+```powershell
+Show-FluenceRestartPrompt -Message 'Contoso Suite was installed.', 'Restart to finish.' -Countdown 300
+```
+
+## PARAMETERS
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Countdown
+
+Seconds until the prompt times out, shown on the Restart now button.
+Defaults to 60.
+
+```yaml
+Type: System.Int32
+DefaultValue: 60
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Countdown
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Icon
+
+The severity icon beside the message.
+Warning (default), Info, Success, Error, Question, or None.
+
+```yaml
+Type: System.String
+DefaultValue: Warning
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+One or more message lines.
+Defaults to a generic "restart required" sentence.
+
+```yaml
+Type: System.String[]
+DefaultValue: "@('The installation requires a restart to complete. Save your work before restarting.')"
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoCountdown
+
+Show the prompt without a timer; it stays open until the user answers.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: NoCountdown
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NotTopmost
+
+Do not keep the prompt above other windows.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+
+```yaml
+Type: System.String
+DefaultValue: Restart required
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.String. 'Restart'
+
+### System.String
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+Blocks until the prompt closes.
+
+## RELATED LINKS

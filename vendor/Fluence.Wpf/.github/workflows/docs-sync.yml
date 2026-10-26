@@ -1,0 +1,178 @@
+﻿name: Generate and sync source documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: source-docs-sync
+  cancel-in-progress: false
+
+jobs:
+  generate-and-sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build API documentation input
+        shell: pwsh
+        run: dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Release -f net10.0-windows10.0.26100.0
+
+      - name: Generate C# API pages
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release
+
+      - name: Build and stage the PowerShell module
+        shell: pwsh
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release -Build
+
+      - name: Install PowerShell documentation generator
+        shell: pwsh
+        run: Install-Module -Name Alt3.Docusaurus.Powershell -RequiredVersion 2.0.1 -Scope CurrentUser -Force -ErrorAction Stop
+
+      - name: Generate PowerShell function pages
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1
+
+      - name: Verify website token
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        env:
+          WEBSITE_DOCS_TOKEN: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WEBSITE_DOCS_TOKEN)) {
+            throw 'WEBSITE_DOCS_TOKEN is missing. Configure a fine-grained token with Contents: read and write on sintaxasn/Fluence.Wpf.Website.'
+          }
+
+      - name: Checkout website
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: sintaxasn/Fluence.Wpf.Website
+          ref: main
+          token: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+          path: .website
+          persist-credentials: false
+
+      - name: Sync selected pages to website checkout
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/Docs/Sync-WebsiteDocs.ps1 -WebsiteDocsPath (Join-Path $PWD '.website/docs')
+
+      - name: Setup pnpm for website validation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js for website validation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: .website/website/pnpm-lock.yaml
+
+      - name: Install website dependencies
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website documentation transforms
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm check:docs-transform
+
+      - name: Type check website
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm typecheck
+
+      - name: Build website with synced pages
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm build
+
+      # Both pushes follow generation and, when enabled, website validation. Git
+      # rejects a non-fast-forward update if another run advances either branch.
+      - name: Commit and publish generated source pages
+        shell: pwsh
+        env:
+          SOURCE_DOCS_TOKEN: ${{ github.token }}
+        run: |
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:SOURCE_DOCS_TOKEN"))
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
+          $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $encoded"
+          $sourceHead = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the checked out source commit.' }
+          $remoteSource = git ls-remote --exit-code origin refs/heads/main
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the current source main commit.' }
+          if (($remoteSource -split '\s+')[0] -ne $sourceHead) {
+            throw 'Source main advanced during documentation generation. Retry the workflow from the latest main.'
+          }
+          git add -- docs/api docs/powershell/reference tools/ApiDocs/coverage.md
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage generated source documentation.' }
+          git diff --cached --quiet
+          $diffExit = $LASTEXITCODE
+          if ($diffExit -eq 0) {
+            Write-Host 'Generated source documentation is current.'
+          } else {
+            if ($diffExit -ne 1) { throw 'Could not inspect generated source documentation.' }
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs: refresh generated API and PowerShell reference'
+            if ($LASTEXITCODE -ne 0) { throw 'Could not commit generated source documentation.' }
+            git push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw 'Could not publish generated source documentation. Retry the workflow from the latest main.' }
+          }
+
+      - name: Commit website documentation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        env:
+          WEBSITE_DOCS_TOKEN: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+          SOURCE_DOCS_TOKEN: ${{ github.token }}
+        run: |
+          $sourceEncoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:SOURCE_DOCS_TOKEN"))
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
+          $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $sourceEncoded"
+          $sourceHead = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the source commit.' }
+          $remoteSource = git ls-remote --exit-code origin refs/heads/main
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the current source main commit.' }
+          if (($remoteSource -split '\s+')[0] -ne $sourceHead) {
+            throw 'Source main advanced before website publication. Retry the workflow from the latest main.'
+          }
+          git -C .website add -- docs/api docs/powershell/reference docs/controls.md docs/theming.md docs/winui-parity.md
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage website documentation.' }
+          git -C .website diff --cached --quiet
+          $diffExit = $LASTEXITCODE
+          if ($diffExit -eq 0) {
+            Write-Host 'Website documentation is current.'
+          } else {
+            if ($diffExit -ne 1) { throw 'Could not inspect website documentation.' }
+            git -C .website -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs: sync source API and reference pages'
+            if ($LASTEXITCODE -ne 0) { throw 'Could not commit website documentation.' }
+            $websiteEncoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:WEBSITE_DOCS_TOKEN"))
+            $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $websiteEncoded"
+            git -C .website push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw 'Could not publish website documentation. Retry the workflow from the latest main.' }
+          }

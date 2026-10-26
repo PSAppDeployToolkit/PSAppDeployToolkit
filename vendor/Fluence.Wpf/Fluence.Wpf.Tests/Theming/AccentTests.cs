@@ -27,11 +27,15 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Tests.Infrastructure;
+using Fluence.Wpf.Theming;
 using Xunit;
 
 // Captured Windows accent ramps, measured 2026-05-23 from the OS palette on this
@@ -73,8 +77,8 @@ namespace Fluence.Wpf.Tests.Theming
     /// <summary>
     /// Pins observable properties of the fallback accent ramp generator. The system
     /// <c language="text">AccentPalette</c> registry blob is the source of truth for any system accent
-    /// (see <see cref="RegistryHelper.TryGetAccentPalette"/>); the generator only runs
-    /// when that blob is unavailable or when the caller supplies a custom color.
+    /// (see <see cref="RegistryHelper.TryGetAccentPalette"/>); the generator runs when that
+    /// blob is unavailable or a custom color does not match the active Windows accent.
     /// </summary>
     public sealed class AccentTests : IAsyncLifetime
     {
@@ -123,7 +127,8 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
 
                 Color customColor = Color.FromRgb(0xFF, 0x88, 0x00);
-                ApplicationAccentColorManager.ApplyCustomAccent(customColor);
+                Action<Color> applyLegacy = ApplicationAccentColorManager.ApplyCustomAccent;
+                applyLegacy(customColor);
 
                 Assert.Equal(customColor, ApplicationAccentColorManager.SystemAccentColor);
 
@@ -209,7 +214,8 @@ namespace Fluence.Wpf.Tests.Theming
                 Color darkSeed = Color.FromRgb(0x47, 0x9E, 0xF5);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
-                ApplicationAccentColorManager.ApplyCustomAccent(lightSeed, darkSeed);
+                Action<Color, Color> applyLegacy = ApplicationAccentColorManager.ApplyCustomAccent;
+                applyLegacy(lightSeed, darkSeed);
                 Assert.Equal(lightSeed, ApplicationAccentColorManager.SystemAccentColor);
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
@@ -269,6 +275,222 @@ namespace Fluence.Wpf.Tests.Theming
 
                 Assert.Equal(ApplicationAccentColorManager.SystemAccentColorLight2, darkPrimary);
                 Assert.Equal(ApplicationAccentColorManager.SystemAccentColorDark1, lightPrimary);
+            });
+        }
+
+        [Fact]
+        public Task MatchingCustomSeed_UsesCapturedPaletteAcrossThemesAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                // Windows palette captures for blue, plum, and green. These pin the palette
+                // handoff independently of whichever accent this test machine currently uses.
+                AccentPalette[] capturedPalettes =
+                [
+                    new(Color.FromRgb(0x99, 0xEB, 0xFF), Color.FromRgb(0x4C, 0xC2, 0xFF),
+                        Color.FromRgb(0x00, 0x91, 0xF8), Color.FromRgb(0x00, 0x78, 0xD4),
+                        Color.FromRgb(0x00, 0x67, 0xC0), Color.FromRgb(0x00, 0x3E, 0x92), Color.FromRgb(0x00, 0x1A, 0x68)),
+                    new(Color.FromRgb(0xEF, 0xAC, 0xF2), Color.FromRgb(0xD9, 0x5B, 0xE6),
+                        Color.FromRgb(0xAB, 0x1D, 0xBE), Color.FromRgb(0x88, 0x17, 0x98),
+                        Color.FromRgb(0x7B, 0x14, 0x8B), Color.FromRgb(0x5B, 0x0C, 0x6D), Color.FromRgb(0x3F, 0x04, 0x51)),
+                    new(Color.FromRgb(0x95, 0xEF, 0x81), Color.FromRgb(0x45, 0xE5, 0x32),
+                        Color.FromRgb(0x19, 0xA1, 0x15), Color.FromRgb(0x10, 0x7C, 0x10),
+                        Color.FromRgb(0x0E, 0x6D, 0x0E), Color.FromRgb(0x08, 0x4B, 0x08), Color.FromRgb(0x03, 0x2B, 0x03)),
+                ];
+
+                foreach (AccentPalette captured in capturedPalettes)
+                {
+                    AccentIntent intent = AccentIntent.FromCustom(captured.Accent, captured);
+                    AccentPalette light = AccentResolver.Resolve(intent, ApplicationTheme.Light);
+                    AccentPalette dark = AccentResolver.Resolve(intent, ApplicationTheme.Dark);
+                    Dictionary<string, Color> lightColors = ColorMap.Build(ApplicationTheme.Light, light, deterministicChrome: true);
+                    Dictionary<string, Color> darkColors = ColorMap.Build(ApplicationTheme.Dark, dark, deterministicChrome: true);
+
+                    Assert.Equal(captured.Light3, light.Light3);
+                    Assert.Equal(captured.Light2, light.Light2);
+                    Assert.Equal(captured.Light1, light.Light1);
+                    Assert.Equal(captured.Accent, light.Accent);
+                    Assert.Equal(captured.Dark1, light.Dark1);
+                    Assert.Equal(captured.Dark2, light.Dark2);
+                    Assert.Equal(captured.Dark3, light.Dark3);
+                    Assert.Equal(captured.Light2, dark.Light2);
+                    Assert.Equal(captured.Dark1, dark.Dark1);
+                    Assert.Equal(captured.Dark1, lightColors["AccentFillColorDefault"]);
+                    Assert.Equal(captured.Light2, darkColors["AccentFillColorDefault"]);
+                    Assert.Equal((byte)0xE6, lightColors["AccentFillColorSecondary"].A);
+                    Assert.Equal((byte)0xE6, darkColors["AccentFillColorSecondary"].A);
+                }
+            });
+        }
+
+        [Fact]
+        public void UnmatchedCustomSeed_UsesGeneratedRampEvenWhenRgbMatches()
+        {
+            AccentPalette captured = new(Color.FromRgb(0x99, 0xEB, 0xFF), Color.FromRgb(0x4C, 0xC2, 0xFF),
+                Color.FromRgb(0x00, 0x91, 0xF8), Color.FromRgb(0x00, 0x78, 0xD4),
+                Color.FromRgb(0x00, 0x67, 0xC0), Color.FromRgb(0x00, 0x3E, 0x92), Color.FromRgb(0x00, 0x1A, 0x68));
+            Color sameRgbDifferentAlpha = Color.FromArgb(0x80, 0x00, 0x78, 0xD4);
+            AccentPalette actual = AccentResolver.Resolve(
+                AccentIntent.FromCustom(sameRgbDifferentAlpha, captured), ApplicationTheme.Light);
+            AccentPalette generated = AccentResolver.Resolve(
+                AccentIntent.FromCustomGenerated(sameRgbDifferentAlpha), ApplicationTheme.Light);
+
+            Assert.Equal(generated.Light2, actual.Light2);
+            Assert.Equal(generated.Dark1, actual.Dark1);
+            Assert.NotEqual(captured.Dark1, actual.Dark1);
+        }
+
+        [Fact(SkipUnless = nameof(SystemAccentPalettePresent), Skip = "AccentPalette not present on this machine; cannot verify live custom capture.")]
+        public Task CurrentSystemSeed_CustomIntentUsesCapturedPaletteAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Assert.True(RegistryHelper.TryGetAccentPalette(out Color[]? captured));
+                Assert.NotNull(captured);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(captured[3]);
+
+                Assert.Equal(captured[4], ApplicationAccentColorManager.SystemAccentColorPrimary);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+                Assert.Equal(captured[1], ApplicationAccentColorManager.SystemAccentColorPrimary);
+
+                ApplicationAccentColorManager.ApplyCustomAccentExact(captured[3]);
+                Assert.Equal(captured[1], ApplicationAccentColorManager.SystemAccentColorPrimary);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Assert.Equal(captured[3], ApplicationAccentColorManager.SystemAccentColorPrimary);
+            });
+        }
+
+        [Fact]
+        public Task ApplyCustomAccent_ExactOneColor_PreservesLightAndDerivesDarkAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Color exactLight = Color.FromRgb(0x87, 0xAB, 0xC8);
+                Application app = Application.Current;
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(exactLight, exact: true);
+
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColor);
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.Equal(exactLight, Assert.IsType<Color>(app.TryFindResource("SystemAccentColorPrimary")));
+                Assert.Equal(exactLight, Assert.IsType<Color>(app.TryFindResource("AccentFillColorDefault")));
+                Assert.Equal(exactLight, Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush")).Color);
+                Assert.Equal(Colors.Black, Assert.IsType<Color>(app.TryFindResource("TextOnAccentFillColorPrimary")));
+
+                Controls.Button button = new()
+                {
+                    Appearance = ControlAppearance.Accent,
+                    Content = "Exact accent",
+                };
+                Window window = new() { Content = button };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+                    Border restFill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+                    Assert.Equal(exactLight, Assert.IsType<SolidColorBrush>(restFill.Background).Color);
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+                    Color derivedDark = ApplicationAccentColorManager.SystemAccentColorLight2;
+                    Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColor);
+                    Assert.Equal(derivedDark, ApplicationAccentColorManager.SystemAccentColorPrimary);
+                    Assert.Equal(derivedDark, Assert.IsType<Color>(app.TryFindResource("AccentFillColorDefault")));
+                    Assert.Equal(derivedDark, Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush")).Color);
+                    Assert.Equal(derivedDark, Assert.IsType<SolidColorBrush>(restFill.Background).Color);
+                }
+                finally
+                {
+                    window.Close();
+                }
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColorPrimary);
+
+                Action<Color> applyLegacyExact = ApplicationAccentColorManager.ApplyCustomAccentExact;
+                applyLegacyExact(exactLight);
+                Assert.Equal(exactLight, Assert.IsType<Color>(app.TryFindResource("AccentFillColorDefault")));
+            });
+        }
+
+        [Fact]
+        public Task ApplyCustomAccent_ExactPair_FollowsThemeWithoutRewritingRampAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Color exactLight = Color.FromRgb(0x87, 0xAB, 0xC8);
+                Color exactDark = Color.FromRgb(0x24, 0x36, 0x4B);
+                Application app = Application.Current;
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(
+                    lightThemeAccent: exactLight, darkThemeAccent: exactDark, exact: true);
+
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColor);
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.Equal(exactLight, Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush")).Color);
+                Assert.Equal(Colors.Black, Assert.IsType<Color>(app.TryFindResource("TextOnAccentFillColorPrimary")));
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+                Assert.Equal(exactDark, ApplicationAccentColorManager.SystemAccentColor);
+                Assert.Equal(exactDark, ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.Equal(exactDark, Assert.IsType<Color>(app.TryFindResource("SystemAccentColorPrimary")));
+                Assert.Equal(exactDark, Assert.IsType<SolidColorBrush>(app.TryFindResource("AccentFillColorDefaultBrush")).Color);
+                Assert.Equal(Colors.White, Assert.IsType<Color>(app.TryFindResource("TextOnAccentFillColorPrimary")));
+
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
+                Assert.Equal(exactDark, ApplicationAccentColorManager.SystemAccentColor);
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorDark1,
+                    ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.Equal(SystemColors.WindowColor,
+                    Assert.IsType<Color>(app.TryFindResource("AccentFillColorDefault")));
+                Assert.Equal(SystemColors.HighlightColor,
+                    Assert.IsType<Color>(app.TryFindResource("AccentButtonBackground")));
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Assert.Equal(exactLight, ApplicationAccentColorManager.SystemAccentColorPrimary);
+            });
+        }
+
+        [Fact]
+        public Task ApplyCustomAccent_EqualExactPair_RemainsExactInDarkAndSystemResetRestoresAdaptiveAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Color exact = Color.FromRgb(0x87, 0xAB, 0xC8);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(exact, exact, exact: true);
+
+                Assert.Equal(exact, ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.Equal(exact, Assert.IsType<Color>(Application.Current.TryFindResource("AccentFillColorDefault")));
+
+                int eventCount = 0;
+                void OnAccentColorChanged(object? sender, EventArgs e)
+                {
+                    eventCount++;
+                }
+                ApplicationAccentColorManager.AccentColorChanged += OnAccentColorChanged;
+                try
+                {
+                    Action<Color, Color> applyLegacyExact = ApplicationAccentColorManager.ApplyCustomAccentExact;
+                    applyLegacyExact(exact, exact);
+                }
+                finally
+                {
+                    ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
+                }
+
+                Assert.Equal(0, eventCount);
+                Assert.Equal(exact, ApplicationAccentColorManager.SystemAccentColorPrimary);
+
+                ApplicationAccentColorManager.ApplyCustomAccent(exact);
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorLight2,
+                    ApplicationAccentColorManager.SystemAccentColorPrimary);
+                Assert.NotEqual(exact, ApplicationAccentColorManager.SystemAccentColorPrimary);
+
+                ApplicationAccentColorManager.ApplySystemAccent();
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorLight2,
+                    ApplicationAccentColorManager.SystemAccentColorPrimary);
             });
         }
 
@@ -380,6 +602,77 @@ namespace Fluence.Wpf.Tests.Theming
             Assert.True(d2V <= d1V, $"Dark2 V should be <= Dark1 V for {Hex(baseColor)}");
         }
 
+        [Fact]
+        public void GeneratedRamp_HeldOutWindowsPalettes_StaysWithinRgbErrorBudget()
+        {
+            // Captured Windows palettes held out from the 21 ramps used to fit the L* targets.
+            // Each row is requested seed, Windows-applied accent, then Light1/2/3 and Dark1/2/3.
+            string[] rows =
+            [
+                "D32F2F D93533 DF4D47 EF8B7D F8AF9C BF2523 921B1A 650A09",
+                "F44336 E23029 E7483D F38671 FAAA90 C7201B 991815 690907",
+                "EF6C00 CC4F00 E76200 FFA031 FFC159 AF3E00 892800 5E0E00",
+                "FF9800 B95F00 D47600 FFB81D FFD445 9E4A00 7D3000 561100",
+                "F9A825 AC6800 CB8200 FFC71D FFDF4B 935100 733400 4E1300",
+                "FDD835 8D7600 AE9700 FFED06 FFF937 785C00 5D3B00 3D1500",
+                "2E7D32 368438 42A342 87CC84 AAE9A4 2A6C2C 1B4E1C 0A2B0A",
+                "66BB6A 30873B 3BA547 7DD183 A3E9A5 256F2E 18501E 092C0B",
+                "1565C0 3373D0 4D89D8 90C3EB B7E4F7 285AB4 1A3A90 091666",
+                "42A5F5 007DC9 009AEF 51D3FF 8AEFFF 0064AC 004488 001F5E",
+                "3949AB 636AD2 7B80D9 B9B9EC DDDAF7 3B43C7 2C2F97 121367",
+                "5C6BC0 606EC3 7784CD B4BDE6 D7DEF4 424FB0 303784 11145C",
+                "6A1B9A 9F50CF AE66D7 D7A1EB EEC3F6 8434BC 5D278F 330E64",
+                "AB47BC AE4ABF BB61C9 DD9CE4 F0BEF3 913AA3 6D2580 430D57",
+            ];
+            Assert.Equal(14, rows.Length);
+            int[] errorTotals = new int[6];
+            int reportedAccentDifferences = 0;
+
+            foreach (string row in rows)
+            {
+                string[] values = row.Split(' ');
+                Assert.Equal(8, values.Length);
+                Color seed = ParseRgb(values[0]);
+                Color windowsAccent = ParseRgb(values[1]);
+                AccentPalette palette = AccentResolver.Resolve(
+                    AccentIntent.FromCustomGenerated(seed), ApplicationTheme.Light);
+                Assert.Equal(seed, palette.Accent);
+                if (seed != windowsAccent)
+                {
+                    reportedAccentDifferences++;
+                    Assert.NotEqual(windowsAccent, palette.Accent);
+                }
+
+                Color[] generated = [palette.Light1, palette.Light2, palette.Light3,
+                    palette.Dark1, palette.Dark2, palette.Dark3];
+                for (int i = 0; i < generated.Length; i++)
+                {
+                    Color expected = ParseRgb(values[i + 2]);
+                    Color actual = generated[i];
+                    errorTotals[i] += Math.Abs(actual.R - expected.R)
+                        + Math.Abs(actual.G - expected.G)
+                        + Math.Abs(actual.B - expected.B);
+                }
+            }
+
+            Assert.True(reportedAccentDifferences > 0,
+                "Held-out rows must include Windows-reported accents that differ from the requested seed.");
+            double[] budgets = [25, 52, 52, 22, 25, 35];
+            string[] labels = ["Light1", "Light2", "Light3", "Dark1", "Dark2", "Dark3"];
+            int totalError = 0;
+            for (int i = 0; i < errorTotals.Length; i++)
+            {
+                double mean = errorTotals[i] / (double)rows.Length;
+                Assert.True(mean <= budgets[i], string.Format(CultureInfo.InvariantCulture,
+                    "{0} mean RGB L1 error {1:F2} exceeds {2:F2}.", labels[i], mean, budgets[i]));
+                totalError += errorTotals[i];
+            }
+
+            double overallMean = totalError / (double)(rows.Length * errorTotals.Length);
+            Assert.True(overallMean <= 36, string.Format(CultureInfo.InvariantCulture,
+                "Overall mean RGB L1 error {0:F2} exceeds 36.", overallMean));
+        }
+
         /// <summary>
         /// Sanity check: when a system <c language="text">AccentPalette</c> is present, the registry helper
         /// must return seven distinct opaque colors. This pins the contract relied on by
@@ -414,6 +707,12 @@ namespace Fluence.Wpf.Tests.Theming
         private static string Hex(Color c)
         {
             return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+        }
+
+        private static Color ParseRgb(string hex)
+        {
+            return Color.FromRgb(Convert.ToByte(hex[..2], 16),
+                Convert.ToByte(hex[2..4], 16), Convert.ToByte(hex[4..6], 16));
         }
     }
 }

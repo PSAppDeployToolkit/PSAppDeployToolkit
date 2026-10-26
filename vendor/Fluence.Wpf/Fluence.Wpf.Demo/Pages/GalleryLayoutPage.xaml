@@ -49,7 +49,7 @@
                     <local:DemoSampleControl SampleDescription="Use Border to frame a region, StackPanel spacing for readable rows, and Separator to divide related content." />
 
                     <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
-                        <DockPanel LastChildFill="True">
+                        <fluence:DockPanel LastChildFill="True" Spacing="12">
                             <fluence:Button
                                 Appearance="Accent"
                                 Content="Apply"
@@ -58,7 +58,7 @@
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="DockPanel keeps the command aligned to the edge." />
-                        </DockPanel>
+                        </fluence:DockPanel>
                     </ContentControl>
                     <local:DemoSampleControl SampleDescription="Use DockPanel when one element should pin to an edge while the remaining content fills the available space." />
 
@@ -76,15 +76,15 @@
                     <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                         <fluence:Expander x:Name="DockPanelOptionsExpander">
                             <fluence:Expander.Header>
-                                <DockPanel LastChildFill="True">
+                                <fluence:DockPanel LastChildFill="True" Spacing="8">
                                     <fluence:Button Content="Edit" DockPanel.Dock="Right" />
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                         Text="Delivery options" />
-                                </DockPanel>
+                                </fluence:DockPanel>
                             </fluence:Expander.Header>
-                            <DockPanel Margin="0,16,0,0" LastChildFill="True">
+                            <fluence:DockPanel Margin="0,16,0,0" LastChildFill="True" Spacing="8">
                                 <fluence:ToggleSwitch
                                     DockPanel.Dock="Right"
                                     OffContent="Off"
@@ -94,10 +94,31 @@
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     Text="Notify me when the package ships."
                                     TextWrapping="Wrap" />
-                            </DockPanel>
+                            </fluence:DockPanel>
                         </fluence:Expander>
                     </ContentControl>
                     <local:DemoSampleControl SampleDescription="Use DockPanel inside Expander headers and content when the summary and secondary action need edge alignment." />
+
+                    <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                        <fluence:SmoothScrollViewer
+                            Height="180"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Visible">
+                            <fluence:StackPanel Spacing="8">
+                                <TextBlock Text="Scroll this list to see the remaining items." />
+                                <TextBlock Text="Item 1 - Planning" />
+                                <TextBlock Text="Item 2 - Design" />
+                                <TextBlock Text="Item 3 - Build" />
+                                <TextBlock Text="Item 4 - Review" />
+                                <TextBlock Text="Item 5 - Release" />
+                                <TextBlock Text="Item 6 - Follow-up" />
+                                <TextBlock Text="Item 7 - Support" />
+                                <TextBlock Text="Item 8 - Archive" />
+                                <TextBlock Text="End of the list" />
+                            </fluence:StackPanel>
+                        </fluence:SmoothScrollViewer>
+                    </ContentControl>
+                    <local:DemoSampleControl SampleDescription="Use SmoothScrollViewer for a constrained list; its Fluence scrollbar shows the scroll position." />
                 </StackPanel>
             </fluence:SmoothScrollViewer>
         </Grid>

@@ -58,6 +58,100 @@ namespace Fluence.Wpf.Tests.Gallery
     /// </summary>
     public sealed class DemoShellTests : IAsyncLifetime
     {
+        [Theory]
+        [InlineData("settings")]
+        [InlineData("preferences")]
+        [InlineData("  SeTtInGs  ")]
+        public Task MainWindow_Search_EnterSettingsAndPreferencesSelectsFooterAsync(string query)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                MainWindow window = DemoTestHost.CreateShownMainWindow();
+                try
+                {
+                    Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(DemoTestHost.FindByName<Controls.AutoSuggestBox>(window, "NavSearchBox"), exactMatch: false);
+                    search.Text = query;
+                    RaiseSearchKey(search, window, Key.Enter);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    AssertSettingsFooterSelected(window);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("  ")]
+        [InlineData("no such gallery route")]
+        public Task MainWindow_Search_EmptyAndUnmatchedEnter_PreservesCurrentPageAsync(string query)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                MainWindow window = DemoTestHost.CreateShownMainWindow();
+                try
+                {
+                    window.NavigateTo("buttons");
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    object before = GetSelectedPageContent(window);
+                    Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(DemoTestHost.FindByName<Controls.AutoSuggestBox>(window, "NavSearchBox"), exactMatch: false);
+                    search.Text = query;
+                    RaiseSearchKey(search, window, Key.Enter);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.Same(before, GetSelectedPageContent(window));
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Fact]
+        public Task MainWindow_Search_ChosenSettingsSuggestionSelectsFooterAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                MainWindow window = DemoTestHost.CreateShownMainWindow();
+                try
+                {
+                    Controls.AutoSuggestBox search = Assert.IsType<Controls.AutoSuggestBox>(DemoTestHost.FindByName<Controls.AutoSuggestBox>(window, "NavSearchBox"), exactMatch: false);
+                    TextBox editor = Assert.IsType<TextBox>(search.Template.FindName("PART_TextBox", search), exactMatch: false);
+                    _ = editor.Focus();
+                    editor.Text = "preferences";
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    RaiseSearchKey(editor, window, Key.Down);
+                    RaiseSearchKey(editor, window, Key.Enter);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    AssertSettingsFooterSelected(window);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        private static void AssertSettingsFooterSelected(MainWindow window)
+        {
+            Controls.NavigationView nav = Assert.IsType<Controls.NavigationView>(DemoTestHost.FindByName<Controls.NavigationView>(window, "DemoNav"), exactMatch: false);
+            Controls.NavigationViewItem settings = Assert.IsType<Controls.NavigationViewItem>(DemoTestHost.FindByName<Controls.NavigationViewItem>(window, "SettingsNavigationItem"), exactMatch: false);
+            Frame frame = Assert.IsType<Frame>(nav.Content, exactMatch: false);
+            _ = Assert.IsType<GallerySettingsPage>(frame.Content);
+            Assert.Same(settings, nav.SelectedFooterItem);
+            Assert.Null(nav.SelectedItem);
+        }
+
+        private static void RaiseSearchKey(UIElement target, Window window, Key key)
+        {
+            target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(window), 0, key)
+            {
+                RoutedEvent = UIElement.PreviewKeyDownEvent,
+            });
+        }
+
         // The four TreeView samples the Trees page hosts, all deliberately borderless.
         private static readonly string[] BorderlessTreeSampleNames =
             ["HierarchyTreeView", "SelectionTreeView", "MultiSelectTreeView", "ExpansionTreeView"];
@@ -557,12 +651,21 @@ namespace Fluence.Wpf.Tests.Gallery
                     DependencyObject selectedContent = Assert.IsType<DependencyObject>(nav.Content, exactMatch: false);
 
                     List<Controls.ComboBox> comboBoxes = [.. FindVisualChildren<Controls.ComboBox>(selectedContent)];
-                    Assert.True(comboBoxes.Count >= 2, "ComboBox page should display multiple ComboBox examples.");
+                    Controls.ComboBox bound = Assert.IsType<Controls.ComboBox>(FindVisualChildByName<Controls.ComboBox>(selectedContent, "ItemsSourceDemoCombo"), exactMatch: false);
+                    Controls.ComboBox editable = Assert.IsType<Controls.ComboBox>(FindVisualChildByName<Controls.ComboBox>(selectedContent, "EditableDemoCombo"), exactMatch: false);
+                    Assert.Contains(bound, comboBoxes);
+                    Assert.Contains(editable, comboBoxes);
+                    Assert.Equal(3, comboBoxes.Count(comboBox => !ReferenceEquals(comboBox, bound) && !ReferenceEquals(comboBox, editable)));
 
-                    foreach (Controls.ComboBox comboBox in comboBoxes)
+                    foreach (Controls.ComboBox comboBox in comboBoxes.Where(comboBox => !ReferenceEquals(comboBox, bound) && !ReferenceEquals(comboBox, editable)))
                     {
                         Assert.Equal(-1, comboBox.SelectedIndex);
                     }
+
+                    Assert.Equal(0, bound.SelectedIndex);
+                    Assert.Equal("Alpha", bound.SelectedItem);
+                    Assert.Equal(0, editable.SelectedIndex);
+                    Assert.Equal("Alpha", editable.SelectedItem);
                 }
                 finally
                 {
@@ -1100,8 +1203,8 @@ namespace Fluence.Wpf.Tests.Gallery
                     "Layout page should have a dedicated Expander DemoSampleControl.");
 
                 Controls.Expander dockPanelExpander = Assert.IsType<Controls.Expander>(FindVisualChildByName<Controls.Expander>(window, "DockPanelOptionsExpander"), exactMatch: false);
-                _ = Assert.IsType<DockPanel>(dockPanelExpander.Header, exactMatch: false);
-                _ = Assert.IsType<DockPanel>(dockPanelExpander.Content, exactMatch: false);
+                _ = Assert.IsType<Controls.DockPanel>(dockPanelExpander.Header, exactMatch: false);
+                _ = Assert.IsType<Controls.DockPanel>(dockPanelExpander.Content, exactMatch: false);
             });
         }
 
@@ -1167,7 +1270,7 @@ namespace Fluence.Wpf.Tests.Gallery
             string libraryProject = await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf", "Fluence.Wpf.csproj").ConfigureAwait(true);
             Assert.False(libraryProject.Contains("Fluence.ico", StringComparison.Ordinal),
                 "The library should no longer embed assets\\Fluence.ico now that the brand icon is a XAML vector.");
-            Assert.Contains("<PackageIcon>Fluence_Icon_Light_128.png</PackageIcon>", libraryProject, StringComparison.Ordinal);
+            Assert.Contains("<PackageIcon>Fluence_Icon_128.png</PackageIcon>", libraryProject, StringComparison.Ordinal);
 
             // The three brand DrawingImages live in a dedicated icon dictionary that is merged into
             // Generic.xaml so the keys resolve from application resources.
@@ -1183,10 +1286,10 @@ namespace Fluence.Wpf.Tests.Gallery
             // shows the brand mark in Explorer and on a pre-launch taskbar pin.
             string galleryProject = await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf.Demo", "Fluence.Wpf.Demo.csproj").ConfigureAwait(true);
             Assert.Contains("<ApplicationIcon>", galleryProject, StringComparison.Ordinal);
-            Assert.Contains("Fluence_Icon_Light.ico", galleryProject, StringComparison.Ordinal);
+            Assert.Contains("Fluence_Icon.ico", galleryProject, StringComparison.Ordinal);
             string mvvmProject = await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf.Demo.Mvvm", "Fluence.Wpf.Demo.Mvvm.csproj").ConfigureAwait(true);
             Assert.Contains("<ApplicationIcon>", mvvmProject, StringComparison.Ordinal);
-            Assert.Contains("Fluence_Icon_Light.ico", mvvmProject, StringComparison.Ordinal);
+            Assert.Contains("Fluence_Icon.ico", mvvmProject, StringComparison.Ordinal);
 
             Assert.False((await DemoTestHost.ReadRepositoryFileAsync("Fluence.Wpf.Demo", "MainWindow.xaml").ConfigureAwait(true)).Contains("Icon=\"", StringComparison.Ordinal),
                 "The gallery demo window should inherit the embedded FluenceWindow icon, not set Icon= itself.");
@@ -1584,8 +1687,8 @@ namespace Fluence.Wpf.Tests.Gallery
                     ContentPresenter titleIcon = Assert.IsType<ContentPresenter>(DemoTestHost.FindByName<ContentPresenter>(shellTitleBar, "PART_IconPresenter"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, titleIcon.Visibility);
                     Image titleIconImage = Assert.IsType<Image>(DemoTestHost.FindVisualChildren<Image>(titleIcon).FirstOrDefault(), exactMatch: false);
-                    Assert.Equal(16.0, titleIconImage.ActualWidth, 0.5);
-                    Assert.Equal(16.0, titleIconImage.ActualHeight, 0.5);
+                    Assert.Equal(20.0, titleIconImage.ActualWidth, 0.5);
+                    Assert.Equal(20.0, titleIconImage.ActualHeight, 0.5);
                     Assert.True(GetVisualX(titleIcon, window) >= GetVisualX(titleBarToggle, window) + titleBarToggle.ActualWidth - 0.5,
                         "Title identity should start after the title-bar navigation slot.");
 

@@ -39,6 +39,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Resources;
 
 namespace Fluence.Wpf.Demo.Pages
@@ -62,6 +63,7 @@ namespace Fluence.Wpf.Demo.Pages
             UriKind.Relative);
 
         private readonly List<IconCatalogItem> _allIcons = [];
+        private readonly Dictionary<Border, DoubleAnimation> _ringAnimations = [];
         private List<IconCatalogItem> _filteredIcons = [];
         private IconCatalogItem? _selectedIcon;
         private int _columns = DefaultColumns;
@@ -108,10 +110,92 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void IconTile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: IconCatalogItem icon })
+            if (sender is Button { DataContext: IconCatalogItem icon } tile && !ReferenceEquals(_selectedIcon, icon))
             {
+                Border? previousRing = _selectedIcon is null
+                    ? null
+                    : GetSelectionRing(FindRealizedTile(IconCatalogList, _selectedIcon));
+                Border? nextRing = GetSelectionRing(tile);
+                double previousOpacity = previousRing?.Opacity ?? 0.0;
+                double nextOpacity = nextRing?.Opacity ?? 0.0;
                 SelectIcon(icon);
+                AnimateSelectionRing(previousRing, previousOpacity, 0.0);
+                AnimateSelectionRing(nextRing, nextOpacity, 1.0);
             }
+        }
+
+        private static Button? FindRealizedTile(DependencyObject root, IconCatalogItem icon)
+        {
+            for (int index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, index);
+                if (child is Button { DataContext: IconCatalogItem item } tile && ReferenceEquals(item, icon))
+                {
+                    return tile;
+                }
+
+                Button? match = FindRealizedTile(child, icon);
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            return null;
+        }
+
+        private static Border? GetSelectionRing(Button? tile)
+        {
+            return tile?.Template?.FindName("SelectionRing", tile) as Border;
+        }
+
+        private void AnimateSelectionRing(Border? ring, double from, double to)
+        {
+            if (ring is null)
+            {
+                return;
+            }
+
+            if (SystemParameters.HighContrast
+                || ApplicationThemeManager.ResolvedTheme is ApplicationTheme.HighContrast
+                || !SystemParameters.ClientAreaAnimation
+                || (RenderCapability.Tier >> 16) <= 0
+                || Math.Abs(from - to) < 0.001)
+            {
+                StopSelectionRingAnimation(ring);
+                return;
+            }
+
+            DoubleAnimation animation = new(from, to, new Duration(TimeSpan.FromMilliseconds(100)))
+            {
+                FillBehavior = FillBehavior.Stop,
+            };
+            _ringAnimations[ring] = animation;
+            animation.Completed += (_, _) =>
+            {
+                if (_ringAnimations.TryGetValue(ring, out DoubleAnimation? current) && ReferenceEquals(current, animation))
+                {
+                    StopSelectionRingAnimation(ring);
+                }
+            };
+            ring.Unloaded -= SelectionRing_Unloaded;
+            ring.Unloaded += SelectionRing_Unloaded;
+            ring.BeginAnimation(OpacityProperty, animation, HandoffBehavior.SnapshotAndReplace);
+        }
+
+        private void SelectionRing_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is Border ring)
+            {
+                StopSelectionRingAnimation(ring);
+            }
+        }
+
+        private void StopSelectionRingAnimation(Border ring)
+        {
+            _ = _ringAnimations.Remove(ring);
+            ring.Unloaded -= SelectionRing_Unloaded;
+            ring.BeginAnimation(OpacityProperty, animation: null);
         }
 
         private void IconCatalogList_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -164,6 +248,11 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void RebuildRows()
         {
+            foreach (Border ring in _ringAnimations.Keys.ToArray())
+            {
+                StopSelectionRingAnimation(ring);
+            }
+
             IconCatalogList.ItemsSource = CreateIconRows(_filteredIcons, _columns);
         }
 
@@ -214,7 +303,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Text = tag,
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            text.SetResourceReference(StyleProperty, "CaptionTextBlockStyle");
+            text.SetResourceReference(StyleProperty, "IconDetailTagBodyStyle");
             text.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
 
             Border pill = new()

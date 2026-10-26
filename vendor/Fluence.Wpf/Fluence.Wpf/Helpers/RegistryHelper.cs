@@ -112,9 +112,8 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads the active Windows theme file name from <c language="text">HKCU\...\Themes\CurrentTheme</c>,
         /// strips the directory and extension, and returns the lowercased base name. Returns
-        /// <see langword="null"/> when the value is missing or empty. Used by <c language="csharp">ResolveTheme</c> as a
-        /// defensive dual-fallback ahead of <c language="text">AppsUseLightTheme</c> so that named Windows 11
-        /// themes (e.g. <c language="text">themea.theme</c>) and high-contrast variants are recognised.
+        /// <see langword="null"/> when the value is missing or empty. Used as a defensive High Contrast
+        /// backstop. Ordinary theme filenames do not override <c language="text">AppsUseLightTheme</c>.
         /// </summary>
         internal static string? GetCurrentThemeFileNameLowerInvariant()
         {

@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -71,13 +72,17 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     Controls.SmoothScrollViewer viewer = Assert.IsType<Controls.SmoothScrollViewer>(FindVisualChild<Controls.SmoothScrollViewer>(page));
                     Assert.True(viewer.ScrollableHeight > 288);
                     viewer.ScrollDuration = new Duration(TimeSpan.FromMilliseconds(100));
+                    ModifierKeys modifiersAtWheel = Keyboard.Modifiers;
                     for (int index = 0; index < 4; index++)
                     {
                         viewer.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, -120) { RoutedEvent = Mouse.MouseWheelEvent });
                     }
 
-                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
-                        () => Math.Abs(viewer.VerticalOffset - 288) < 0.01).ConfigureAwait(true));
+                    bool reachedWheelTarget = await WaitUntilAsync(window.Dispatcher, 2000,
+                        () => Math.Abs(viewer.VerticalOffset - 288) < 0.01).ConfigureAwait(true);
+                    Assert.True(reachedWheelTarget, string.Format(CultureInfo.InvariantCulture,
+                        "Wheel burst did not reach 288: vertical={0}, horizontal={1}, scrollableHeight={2}, modifiersAtWheel={3}, modifiersNow={4}.",
+                        viewer.VerticalOffset, viewer.HorizontalOffset, viewer.ScrollableHeight, modifiersAtWheel, Keyboard.Modifiers));
                     viewer.ScrollToVerticalOffset(100);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(100, viewer.VerticalOffset);

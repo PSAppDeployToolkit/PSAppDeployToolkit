@@ -27,11 +27,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Fluence.Wpf.Controls
 {
@@ -58,8 +61,8 @@ namespace Fluence.Wpf.Controls
     /// </para>
     /// </remarks>
     [TemplatePart(Name = PART_AddTabButton, Type = typeof(ButtonBase))]
-    [TemplatePart(Name = PART_ScrollBackButton, Type = typeof(RepeatButton))]
-    [TemplatePart(Name = PART_ScrollForwardButton, Type = typeof(RepeatButton))]
+    [TemplatePart(Name = PART_ScrollBackButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
+    [TemplatePart(Name = PART_ScrollForwardButton, Type = typeof(System.Windows.Controls.Primitives.RepeatButton))]
     [TemplatePart(Name = PART_TabContentScroller, Type = typeof(ScrollViewer))]
     public class TabView : TabControl
     {
@@ -125,6 +128,7 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(TabView),
                 new FrameworkPropertyMetadata(typeof(TabView)));
+            FlowDirectionProperty.OverrideMetadata(typeof(TabView), new FrameworkPropertyMetadata(FlowDirection.LeftToRight, OnFlowDirectionChanged));
         }
 
         /// <summary>
@@ -134,6 +138,12 @@ namespace Fluence.Wpf.Controls
         public TabView()
         {
             AddHandler(TabViewItem.CloseRequestedEvent, new EventHandler<TabViewTabCloseRequestedEventArgs>(OnChildCloseRequested));
+            PreviewKeyDown += OnTabPreviewKeyDown;
+            KeyDown += OnTabKeyDown;
+            Loaded += OnTabLoaded;
+            Unloaded += OnTabUnloaded;
+            SizeChanged += OnTabSizeChanged;
+            ItemContainerGenerator.StatusChanged += OnKeyboardContainersStatusChanged;
         }
 
         /// <summary>
@@ -190,23 +200,27 @@ namespace Fluence.Wpf.Controls
             // Templates can be replaced at runtime. Detach old part handlers before
             // reading the new template parts so repeated ApplyTemplate calls do not
             // accumulate event subscriptions.
+            CancelSelectedHeaderVisibility();
             base.OnApplyTemplate();
             _addTabButton?.Click -= OnAddTabButtonClick;
             _scrollBackButton?.Click -= OnScrollBackClick;
             _scrollForwardButton?.Click -= OnScrollForwardClick;
             _tabContentScroller?.ScrollChanged -= OnTabScrollChanged;
+            _tabContentScroller?.SizeChanged -= OnTabScrollerSizeChanged;
             _addTabButton = GetTemplateChild(PART_AddTabButton) as ButtonBase;
-            _scrollBackButton = GetTemplateChild(PART_ScrollBackButton) as RepeatButton;
-            _scrollForwardButton = GetTemplateChild(PART_ScrollForwardButton) as RepeatButton;
+            _scrollBackButton = GetTemplateChild(PART_ScrollBackButton) as System.Windows.Controls.Primitives.RepeatButton;
+            _scrollForwardButton = GetTemplateChild(PART_ScrollForwardButton) as System.Windows.Controls.Primitives.RepeatButton;
             _tabContentScroller = GetTemplateChild(PART_TabContentScroller) as ScrollViewer;
             _addTabButton?.Click += OnAddTabButtonClick;
             _scrollBackButton?.Click += OnScrollBackClick;
             _scrollForwardButton?.Click += OnScrollForwardClick;
             if (_tabContentScroller is not null)
             {
-                _tabContentScroller.ScrollChanged += OnTabScrollChanged;
+                AttachScrollerHandlers();
                 UpdateScrollButtonVisibility();
             }
+            ReconcileKeyboardHeaders();
+            ScheduleSelectedHeaderVisibility();
         }
 
         /// <inheritdoc />
@@ -231,6 +245,12 @@ namespace Fluence.Wpf.Controls
             // This also covers ItemsSource-bound items, where the container is not the data item
             // itself and RelativeSource PreviousData binding has no adjacency information to bind to.
             UpdateLeadingSeparators();
+            if (element is TabViewItem header)
+            {
+                TrackKeyboardHeader(header);
+                UpdateAddButtonTabStop();
+            }
+            ScheduleSelectedHeaderVisibility();
         }
 
         /// <inheritdoc />
@@ -242,6 +262,8 @@ namespace Fluence.Wpf.Controls
             // the selection; refresh the realized containers immediately (new containers refresh
             // again when prepared).
             UpdateLeadingSeparators();
+            ReconcileKeyboardHeaders();
+            ScheduleSelectedHeaderVisibility();
         }
 
         /// <inheritdoc />
@@ -252,6 +274,263 @@ namespace Fluence.Wpf.Controls
             // The selected tab and its immediate neighbors need their leading separator
             // recomputed whenever the selection moves.
             UpdateLeadingSeparators();
+            ScheduleSelectedHeaderVisibility();
+        }
+
+        private static void OnFlowDirectionChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            ((TabView)sender).ScheduleSelectedHeaderVisibility();
+        }
+
+        private void OnTabLoaded(object sender, RoutedEventArgs e)
+        {
+            AttachScrollerHandlers();
+            ReconcileKeyboardHeaders();
+            ScheduleSelectedHeaderVisibility();
+        }
+
+        private void OnTabUnloaded(object sender, RoutedEventArgs e)
+        {
+            CancelSelectedHeaderVisibility();
+            foreach (TabViewItem header in _keyboardHeaders)
+            {
+                UntrackKeyboardHeader(header);
+            }
+            _keyboardHeaders.Clear();
+            _tabContentScroller?.ScrollChanged -= OnTabScrollChanged;
+            _tabContentScroller?.SizeChanged -= OnTabScrollerSizeChanged;
+        }
+
+        private void AttachScrollerHandlers()
+        {
+            if (_tabContentScroller is not null)
+            {
+                _tabContentScroller.ScrollChanged -= OnTabScrollChanged;
+                _tabContentScroller.SizeChanged -= OnTabScrollerSizeChanged;
+                _tabContentScroller.ScrollChanged += OnTabScrollChanged;
+                _tabContentScroller.SizeChanged += OnTabScrollerSizeChanged;
+            }
+        }
+
+        private void OnTabScrollerSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ScheduleSelectedHeaderVisibility(preserveManualScroll: true);
+        }
+
+        private void OnTabSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ScheduleSelectedHeaderVisibility();
+        }
+
+        private void OnSelectedHeaderSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ScheduleSelectedHeaderVisibility();
+        }
+
+        private void OnSelectedContainerStatusChanged(object? sender, EventArgs e)
+        {
+            if (ItemContainerGenerator.Status is GeneratorStatus.ContainersGenerated)
+            {
+                ScheduleSelectedHeaderVisibility();
+            }
+        }
+
+        private void CancelSelectedHeaderVisibility()
+        {
+            CancelPendingHeaderVisibility();
+            _selectedHeader?.SizeChanged -= OnSelectedHeaderSizeChanged;
+            _selectedHeader = null;
+        }
+
+        private void CancelPendingHeaderVisibility()
+        {
+            _visibilityGeneration++;
+            _ = _selectedHeaderOperation?.Abort();
+            _selectedHeaderOperation = null;
+            ItemContainerGenerator.StatusChanged -= OnSelectedContainerStatusChanged;
+        }
+
+        private void ScheduleSelectedHeaderVisibility(bool preserveManualScroll = false)
+        {
+            if (preserveManualScroll && _manualStripScroll)
+            {
+                return;
+            }
+            _manualStripScroll = false;
+            CancelSelectedHeaderVisibility();
+            if (!IsLoaded || _tabContentScroller is not { } scroller || SelectedItem is not { } selected)
+            {
+                return;
+            }
+
+            int generation = _visibilityGeneration;
+            _selectedHeaderOperation = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                if (generation != _visibilityGeneration || !IsLoaded
+                    || !ReferenceEquals(scroller, _tabContentScroller) || !ReferenceEquals(selected, SelectedItem))
+                {
+                    return;
+                }
+                _selectedHeaderOperation = null;
+                TabViewItem? header = selected as TabViewItem ?? ItemContainerGenerator.ContainerFromItem(selected) as TabViewItem;
+                if (header is null)
+                {
+                    if (ItemContainerGenerator.Status is not GeneratorStatus.ContainersGenerated)
+                    {
+                        ItemContainerGenerator.StatusChanged += OnSelectedContainerStatusChanged;
+                    }
+                    return;
+                }
+                _selectedHeader = header;
+                header.SizeChanged += OnSelectedHeaderSizeChanged;
+                EnsureSelectedHeaderVisible(header, scroller);
+            }));
+        }
+
+        private static void EnsureSelectedHeaderVisible(TabViewItem header, ScrollViewer scroller)
+        {
+            FrameworkElement viewport = scroller.Template?.FindName("PART_ScrollContentPresenter", scroller) as FrameworkElement ?? scroller;
+            double width = scroller.ViewportWidth;
+            if (width <= 0 || !header.IsVisible || !header.IsArrangeValid || !viewport.IsAncestorOf(header))
+            {
+                return;
+            }
+
+            Rect bounds = header.TransformToAncestor(viewport).TransformBounds(new Rect(header.RenderSize));
+            double delta = 0;
+            if (bounds.Width > width || bounds.Left < 0)
+            {
+                // In the inherited-flow strip, WPF mirrors above the viewport. Its local
+                // left edge is the physical leading edge in both LTR and RTL.
+                delta = bounds.Left;
+            }
+            else if (bounds.Right > width)
+            {
+                delta = bounds.Right - width;
+            }
+
+            double offset = Math.Max(0, Math.Min(scroller.ScrollableWidth, scroller.HorizontalOffset + delta));
+            if (Math.Abs(offset - scroller.HorizontalOffset) > 0.5)
+            {
+                scroller.ScrollToHorizontalOffset(offset);
+            }
+        }
+
+        private void OnTabPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Handled || Keyboard.Modifiers is not ModifierKeys.None
+                || _addTabButton is not { IsVisible: true, IsEnabled: true })
+            {
+                return;
+            }
+
+            TabViewItem? last = GetLastKeyboardHeader();
+            Key forward = FlowDirection is FlowDirection.LeftToRight ? Key.Right : Key.Left;
+            Key back = FlowDirection is FlowDirection.LeftToRight ? Key.Left : Key.Right;
+            if (last is not null && e.Key == forward && ReferenceEquals(Keyboard.FocusedElement, last))
+            {
+                e.Handled = _addTabButton.Focus();
+            }
+            else if (last is not null && e.Key == back && ReferenceEquals(Keyboard.FocusedElement, _addTabButton))
+            {
+                e.Handled = last.Focus();
+            }
+        }
+
+        private void OnTabKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!e.Handled && TryRequestClose(e.Key, Keyboard.Modifiers))
+            {
+                e.Handled = true;
+            }
+        }
+
+        internal bool TryRequestClose(Key key, ModifierKeys modifiers)
+        {
+            if (key is not Key.F4 || modifiers is not ModifierKeys.Control || SelectedItem is null)
+            {
+                return false;
+            }
+
+            TabViewItem? selected = SelectedItem as TabViewItem ?? ItemContainerGenerator.ContainerFromItem(SelectedItem) as TabViewItem;
+            if (selected is not { IsClosable: true })
+            {
+                return false;
+            }
+            selected.RequestClose();
+            return true;
+        }
+
+        private TabViewItem? GetLastKeyboardHeader()
+        {
+            for (int index = Items.Count - 1; index >= 0; index--)
+            {
+                if (ItemContainerGenerator.ContainerFromIndex(index) is TabViewItem { IsVisible: true, IsEnabled: true, Focusable: true } item)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        private void OnKeyboardContainersStatusChanged(object? sender, EventArgs e)
+        {
+            if (ItemContainerGenerator.Status is GeneratorStatus.ContainersGenerated)
+            {
+                ReconcileKeyboardHeaders();
+            }
+        }
+
+        private void ReconcileKeyboardHeaders()
+        {
+            HashSet<TabViewItem> current = [];
+            for (int index = 0; index < Items.Count; index++)
+            {
+                if (ItemContainerGenerator.ContainerFromIndex(index) is TabViewItem header)
+                {
+                    _ = current.Add(header);
+                }
+            }
+            foreach (TabViewItem header in _keyboardHeaders)
+            {
+                if (!current.Contains(header))
+                {
+                    UntrackKeyboardHeader(header);
+                }
+            }
+            _keyboardHeaders.IntersectWith(current);
+            foreach (TabViewItem header in current)
+            {
+                TrackKeyboardHeader(header);
+            }
+            UpdateAddButtonTabStop();
+        }
+
+        private void TrackKeyboardHeader(TabViewItem header)
+        {
+            if (_keyboardHeaders.Add(header))
+            {
+                header.IsVisibleChanged += OnHeaderKeyboardAvailabilityChanged;
+                header.IsEnabledChanged += OnHeaderKeyboardAvailabilityChanged;
+                header.FocusableChanged += OnHeaderKeyboardAvailabilityChanged;
+            }
+        }
+
+        private void UntrackKeyboardHeader(TabViewItem header)
+        {
+            header.IsVisibleChanged -= OnHeaderKeyboardAvailabilityChanged;
+            header.IsEnabledChanged -= OnHeaderKeyboardAvailabilityChanged;
+            header.FocusableChanged -= OnHeaderKeyboardAvailabilityChanged;
+        }
+
+        private void OnHeaderKeyboardAvailabilityChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            UpdateAddButtonTabStop();
+        }
+
+        private void UpdateAddButtonTabStop()
+        {
+            _addTabButton?.SetCurrentValue(IsTabStopProperty, GetLastKeyboardHeader() is null);
         }
 
         /// <summary>
@@ -285,17 +564,25 @@ namespace Fluence.Wpf.Controls
 
         private void OnScrollBackClick(object sender, RoutedEventArgs e)
         {
+            _manualStripScroll = true;
+            CancelPendingHeaderVisibility();
             _tabContentScroller?.ScrollToHorizontalOffset(Math.Max(0, _tabContentScroller.HorizontalOffset - ScrollAmount));
         }
 
         private void OnScrollForwardClick(object sender, RoutedEventArgs e)
         {
+            _manualStripScroll = true;
+            CancelPendingHeaderVisibility();
             _tabContentScroller?.ScrollToHorizontalOffset(Math.Min(_tabContentScroller.ScrollableWidth, _tabContentScroller.HorizontalOffset + ScrollAmount));
         }
 
         private void OnTabScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             UpdateScrollButtonVisibility();
+            if (e.ExtentWidthChange is not 0 || e.ViewportWidthChange is not 0)
+            {
+                ScheduleSelectedHeaderVisibility(preserveManualScroll: true);
+            }
         }
 
         private void UpdateScrollButtonVisibility()
@@ -332,7 +619,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Represents the button used to scroll backward in the associated control.
         /// </summary>
-        private RepeatButton? _scrollBackButton;
+        private System.Windows.Controls.Primitives.RepeatButton? _scrollBackButton;
 
         /// <summary>
         /// Represents the button used to scroll content forward in the associated control.
@@ -340,11 +627,16 @@ namespace Fluence.Wpf.Controls
         /// <remarks>This field typically refers to a UI element that enables users to initiate a forward
         /// scroll action, such as in a scrollable list or viewer. The field may be null if the button is not
         /// initialized or present in the control template.</remarks>
-        private RepeatButton? _scrollForwardButton;
+        private System.Windows.Controls.Primitives.RepeatButton? _scrollForwardButton;
 
         /// <summary>
         /// Represents the scroll viewer used to display the tab content area.
         /// </summary>
         private ScrollViewer? _tabContentScroller;
+        private DispatcherOperation? _selectedHeaderOperation;
+        private TabViewItem? _selectedHeader;
+        private int _visibilityGeneration;
+        private bool _manualStripScroll;
+        private readonly HashSet<TabViewItem> _keyboardHeaders = [];
     }
 }

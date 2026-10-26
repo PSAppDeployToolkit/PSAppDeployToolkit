@@ -317,8 +317,9 @@ namespace Fluence.Wpf.Tests.Theming
 
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
 
-                Assert.Equal(3, dicts.Count);
+                Assert.Equal(4, dicts.Count);
                 Assert.NotSame(foreign, dicts[0]);
+                Assert.Same(foreign, dicts[3]);
                 _ = Assert.IsType<Color>(dicts[0]["TextFillColorPrimary"]);
             });
         }

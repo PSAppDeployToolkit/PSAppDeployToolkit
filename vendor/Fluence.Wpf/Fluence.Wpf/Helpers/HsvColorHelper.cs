@@ -235,23 +235,12 @@ namespace Fluence.Wpf.Helpers
         }
 
         /// <summary>
-        /// Generates a six-shade accent ramp from a base color by applying lightness deltas
-        /// in HSL space with saturation pinned to the chroma ceiling. For achromatic inputs
-        /// (HSL S near zero), the base is returned unchanged for every stop so greys do not
-        /// suddenly grow saturation.
-        /// <para>
-        /// Deltas are spaced ~10-12% apart on the L axis so adjacent stops (e.g. Light1
-        /// next to the base, or Dark1 next to the base) are perceptibly distinct - controls
-        /// that reference different rungs of the ramp for hover / pressed / focus states
-        /// then show visible variation. An earlier calibration (Candidate F, fitted against
-        /// 21 OS-captured AccentPalette ramps) used much tighter near-base steps (Light1
-        /// +7%, Dark1 -4%) which approximated the OS perceptual transform but made adjacent
-        /// stops nearly indistinguishable in control templates. We do not mirror the OS
-        /// projection of arbitrary user input into the Fluent-compatible subspace - by
-        /// design we use the user-supplied base verbatim - so the wider spread here is
-        /// the right tradeoff for usable control highlights. See KNOWN_ISSUES.md "OS-
-        /// transform modeling for the accent ramp" for the broader rationale.
-        /// </para>
+        /// Generates a six-shade fallback accent ramp by retaining the base color's HSL
+        /// hue and saturation and matching measured CIELAB D65 lightness targets. The
+        /// targets approximate captured Windows palettes; they are not a Windows formula.
+        /// Since Windows may adjust the requested seed before constructing its palette,
+        /// generated Light and Dark shades are not constrained relative to the raw seed.
+        /// Achromatic inputs (HSL S &lt; 0.05) retain the base at every stop.
         /// </summary>
         /// <param name="baseColor">The base color for the accent ramp.</param>
         /// <param name="light1">The first light shade.</param>
@@ -265,31 +254,58 @@ namespace Fluence.Wpf.Helpers
             out Color light1, out Color light2, out Color light3,
             out Color dark1, out Color dark2, out Color dark3)
         {
-            light3 = ShiftHslMaxSat(baseColor, +0.36);
-            light2 = ShiftHslMaxSat(baseColor, +0.24);
-            light1 = ShiftHslMaxSat(baseColor, +0.12);
-            dark1 = ShiftHslMaxSat(baseColor, -0.10);
-            dark2 = ShiftHslMaxSat(baseColor, -0.20);
-            dark3 = ShiftHslMaxSat(baseColor, -0.30);
+            RgbToHsl(baseColor, out double hue, out double saturation, out double _);
+            if (saturation < 0.05)
+            {
+                light1 = light2 = light3 = dark1 = dark2 = dark3 = baseColor;
+                return;
+            }
+
+            light1 = MatchLabLightness(hue, saturation, 56.0654);
+            light2 = MatchLabLightness(hue, saturation, 71.6411);
+            light3 = MatchLabLightness(hue, saturation, 80.4644);
+            dark1 = MatchLabLightness(hue, saturation, 40.8786);
+            dark2 = MatchLabLightness(hue, saturation, 29.9132);
+            dark3 = MatchLabLightness(hue, saturation, 17.1744);
         }
 
-        /// <summary>
-        /// Shifts a color's HSL lightness by <paramref name="dL"/> with saturation pinned to
-        /// the chroma ceiling (1.0). Achromatic inputs (S &lt; 0.05) are returned unchanged so
-        /// greys do not develop hue.
-        /// </summary>
-        /// <param name="baseColor">The base color to adjust.</param>
-        /// <param name="dL">The delta to apply to the lightness.</param>
-        /// <returns>The adjusted color.</returns>
-        internal static Color ShiftHslMaxSat(Color baseColor, double dL)
+        private static Color MatchLabLightness(double hue, double saturation, double target)
         {
-            RgbToHsl(baseColor, out double h, out double s, out double l);
-            if (s < 0.05)
+            double lower = 0;
+            double upper = 1;
+            for (int i = 0; i < 30; i++)
             {
-                return baseColor;
+                double middle = (lower + upper) / 2;
+                Color candidate = HslToRgb(hue, saturation, middle);
+                if (LabLightness(candidate) < target)
+                {
+                    lower = middle;
+                }
+                else
+                {
+                    upper = middle;
+                }
             }
-            l = Math.Max(0, Math.Min(1, l + dL));
-            return HslToRgb(h, 1.0, l);
+
+            return HslToRgb(hue, saturation, (lower + upper) / 2);
+        }
+
+        private static double LabLightness(Color color)
+        {
+            double r = LinearizeSrgb(color.R);
+            double g = LinearizeSrgb(color.G);
+            double b = LinearizeSrgb(color.B);
+            double y = (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
+            const double LabThreshold = 216.0 / 24389.0;
+            const double LabKappa = 24389.0 / 27.0;
+            double cubeRoot = Math.Pow(y, 1.0 / 3.0);
+            return y > LabThreshold ? (116 * cubeRoot) - 16 : LabKappa * y;
+        }
+
+        private static double LinearizeSrgb(byte channel)
+        {
+            double value = channel / 255.0;
+            return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
         }
 
         /// <summary>

@@ -34,12 +34,128 @@ using System.Windows;
 using System.Windows.Media;
 using Fluence.Wpf.Controls;
 using Fluence.Wpf.Tests.Infrastructure;
+using Fluence.Wpf.Theming;
 using Xunit;
 
 namespace Fluence.Wpf.Tests.Theming
 {
     public class DictionaryStabilityTests : IAsyncLifetime
     {
+        [Fact]
+        public Task Apply_AfterMergedDictionariesClear_ReseedsOwnedSlotsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Application.Current.Resources.MergedDictionaries.Clear();
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+
+                AssertOwnedSlots(Application.Current.Resources.MergedDictionaries, expectedCount: 3);
+            });
+        }
+
+        [Fact]
+        public Task Apply_AfterResourcesReplacement_ReseedsOwnedSlotsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Application.Current.Resources = [];
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+
+                AssertOwnedSlots(Application.Current.Resources.MergedDictionaries, expectedCount: 3);
+            });
+        }
+
+        [Fact]
+        public Task Apply_AfterForeignInsertion_PreservesForeignAndRemovesStaleComputedAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Application app = Application.Current;
+                object oldColor = app.Resources["SolidBackgroundFillColorBase"];
+                ResourceDictionary foreign = new() { ["ConsumerKey"] = "preserved" };
+                app.Resources.MergedDictionaries.Insert(0, foreign);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+
+                Collection<ResourceDictionary> dictionaries = app.Resources.MergedDictionaries;
+                AssertOwnedSlots(dictionaries, expectedCount: 4);
+                Assert.Same(foreign, dictionaries[3]);
+                Assert.Equal("preserved", app.Resources["ConsumerKey"]);
+                Assert.Equal(dictionaries[0]["SolidBackgroundFillColorBase"], app.Resources["SolidBackgroundFillColorBase"]);
+                Assert.NotEqual(oldColor, app.Resources["SolidBackgroundFillColorBase"]);
+            });
+        }
+
+        [Theory]
+        [InlineData(1, false)]
+        [InlineData(1, true)]
+        [InlineData(2, false)]
+        [InlineData(2, true)]
+        public Task Apply_UnchangedFingerprint_RepairsStaticSlotsAsync(int slot, bool replace)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Collection<ResourceDictionary> dictionaries = Application.Current.Resources.MergedDictionaries;
+                ResourceDictionary foreign = new() { ["ConsumerKey"] = "preserved" };
+                if (replace)
+                {
+                    dictionaries[slot] = foreign;
+                }
+                else
+                {
+                    dictionaries.RemoveAt(slot);
+                }
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+
+                AssertOwnedSlots(dictionaries, expectedCount: replace ? 4 : 3);
+                if (replace)
+                {
+                    Assert.Same(foreign, dictionaries[3]);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public Task Apply_DuplicateOwnedStatics_RemovesOnlyCanonicalDuplicatesAsync(bool absolute)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                Collection<ResourceDictionary> dictionaries = Application.Current.Resources.MergedDictionaries;
+                string prefix = absolute ? "pack://application:,,,/" : "/";
+                dictionaries.Add(new ResourceDictionary { Source = new Uri(prefix + "Fluence.Wpf;component/Themes/Typography/Typography.xaml", UriKind.RelativeOrAbsolute) });
+                dictionaries.Add(new ResourceDictionary { Source = new Uri(prefix + "Fluence.Wpf;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute) });
+                ResourceDictionary unrelated = new() { Source = new Uri("/Fluence.Wpf;component/Themes/Controls/TextBlock.xaml", UriKind.Relative) };
+                ResourceDictionary foreign = new() { ["ConsumerKey"] = "preserved" };
+                dictionaries.Add(unrelated);
+                dictionaries.Add(foreign);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+
+                AssertOwnedSlots(dictionaries, expectedCount: 5);
+                Assert.Same(unrelated, dictionaries[3]);
+                Assert.Same(foreign, dictionaries[4]);
+            });
+        }
+
+        private static void AssertOwnedSlots(Collection<ResourceDictionary> dictionaries, int expectedCount)
+        {
+            Assert.Equal(expectedCount, dictionaries.Count);
+            Assert.True(dictionaries[0].Contains(FluenceThemeEngine.ComputedDictionaryMarker));
+            Assert.Equal("pack://application:,,,/Fluence.Wpf;component/Themes/Typography/Typography.xaml", dictionaries[1].Source.OriginalString);
+            Assert.Equal("pack://application:,,,/Fluence.Wpf;component/Themes/Generic.xaml", dictionaries[2].Source.OriginalString);
+            _ = Assert.Single(dictionaries, static dictionary => dictionary.Contains(FluenceThemeEngine.ComputedDictionaryMarker));
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () =>

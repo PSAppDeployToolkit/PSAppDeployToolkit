@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -472,6 +473,116 @@ namespace Fluence.Wpf.Tests.Control
             });
         }
 
+        [Fact]
+        public Task ColorPicker_EmbeddedEditors_KeepRoundedFocusBorderAndEditorGeometryAsync()
+        {
+            return RunColorPickerOptionTestAsync(
+                static () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                static (picker, template, window) =>
+                {
+                    ComboBox representation = GetTemplateElement<ComboBox>(template, picker, "ColorRepresentationComboBox");
+                    string[] editorNames =
+                    [
+                        "PART_HexTextBox", "PART_RedTextBox", "PART_GreenTextBox", "PART_BlueTextBox",
+                        "PART_HueTextBox", "PART_SaturationTextBox", "PART_ValueTextBox", "PART_AlphaTextBox",
+                    ];
+
+                    for (int index = 0; index < editorNames.Length; index++)
+                    {
+                        if (index is 4)
+                        {
+                            representation.SelectedIndex = 1;
+                            WpfTestSta.DrainDispatcher(window.Dispatcher);
+                            window.UpdateLayout();
+                        }
+
+                        TextBox editor = GetTemplateElement<TextBox>(template, picker, editorNames[index]);
+                        Border border = GetTemplateElement<Border>(editor.Template, editor, "MainBorder");
+                        FrameworkElement contentHost = GetTemplateElement<FrameworkElement>(editor.Template, editor, "PART_ContentHost");
+                        Assert.True(editor.IsVisible, editorNames[index]);
+                        Assert.True(contentHost.ActualWidth > 0 && contentHost.ActualHeight > 0, editorNames[index]);
+
+                        Point editorOrigin = contentHost.TransformToAncestor(window).Transform(new Point());
+                        double editorHeight = contentHost.ActualHeight;
+                        double fieldWidth = editor.ActualWidth;
+                        double fieldHeight = editor.ActualHeight;
+
+                        _ = Keyboard.Focus(editor);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        Assert.True(editor.IsKeyboardFocused, editorNames[index]);
+                        Assert.Equal(new CornerRadius(4), border.CornerRadius);
+                        Assert.Equal(new Thickness(1, 1, 1, 2), border.BorderThickness);
+                        Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), border.BorderBrush);
+                        Assert.Equal(fieldHeight, editor.ActualHeight, 0.01);
+                        Assert.Equal(fieldWidth, editor.ActualWidth, 0.01);
+                        Point focusedOrigin = contentHost.TransformToAncestor(window).Transform(new Point());
+                        Assert.Equal(editorOrigin.X, focusedOrigin.X, 0.01);
+                        Assert.Equal(editorOrigin.Y, focusedOrigin.Y, 0.01);
+                        Assert.Equal(editorHeight, contentHost.ActualHeight, 0.01);
+                    }
+                });
+        }
+
+        [Fact]
+        public Task ColorPicker_FocusedHexEditor_TracksLiveThemeAndColorChangesAsync()
+        {
+            return RunColorPickerOptionTestAsync(
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
+                {
+                    TextBox hex = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+                    TextBox red = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
+                    TextBox green = GetTemplateElement<TextBox>(template, picker, "PART_GreenTextBox");
+                    TextBox blue = GetTemplateElement<TextBox>(template, picker, "PART_BlueTextBox");
+                    Border border = GetTemplateElement<Border>(hex.Template, hex, "MainBorder");
+                    _ = Keyboard.Focus(hex);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                    (ApplicationTheme Theme, string Hex, Color Color)[] cases =
+                    [
+                        (ApplicationTheme.Light, "#0078D4", Color.FromRgb(0x00, 0x78, 0xD4)),
+                        (ApplicationTheme.Dark, "#00B294", Color.FromRgb(0x00, 0xB2, 0x94)),
+                        (ApplicationTheme.HighContrast, "#C30052", Color.FromRgb(0xC3, 0x00, 0x52)),
+                        (ApplicationTheme.Light, "#654321", Color.FromRgb(0x65, 0x43, 0x21)),
+                    ];
+
+                    for (int index = 0; index < cases.Length; index++)
+                    {
+                        (ApplicationTheme theme, string hexValue, Color expectedColor) = cases[index];
+                        ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                        if (index == cases.Length - 1)
+                        {
+                            WpfTestSta.DrainDispatcher(window.Dispatcher);
+                            Color priorAccent = Assert.IsType<LinearGradientBrush>(border.BorderBrush).GradientStops[0].Color;
+                            ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0xC3, 0x00, 0x52));
+                            WpfTestSta.DrainDispatcher(window.Dispatcher);
+                            Color newAccent = Assert.IsType<LinearGradientBrush>(border.BorderBrush).GradientStops[0].Color;
+                            Assert.NotEqual(priorAccent, newAccent);
+                            Assert.Equal(Assert.IsType<Color>(Application.Current.TryFindResource("SystemAccentColorPrimary")), newAccent);
+                        }
+
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+                        Assert.True(hex.IsKeyboardFocused, theme.ToString());
+                        Assert.Equal(theme is ApplicationTheme.HighContrast ? new Thickness(2) : new Thickness(1, 1, 1, 2), border.BorderThickness);
+                        Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), border.BorderBrush);
+
+                        hex.Text = hexValue;
+                        RaiseEnterKey(hex);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+
+                        Assert.True(hex.IsKeyboardFocused, theme.ToString());
+                        Assert.Equal(expectedColor, picker.Color);
+                        Assert.Equal(hexValue, hex.Text, StringComparer.Ordinal);
+                        Assert.Equal(expectedColor.R.ToString(CultureInfo.InvariantCulture), red.Text, StringComparer.Ordinal);
+                        Assert.Equal(expectedColor.G.ToString(CultureInfo.InvariantCulture), green.Text, StringComparer.Ordinal);
+                        Assert.Equal(expectedColor.B.ToString(CultureInfo.InvariantCulture), blue.Text, StringComparer.Ordinal);
+                    }
+                });
+        }
+
         // Boilerplate runner for the option-surface tests: constructs the picker on the
         // STA thread, shows it, asserts the template applied, and hands both to verify.
         private static Task RunColorPickerOptionTestAsync(Func<Controls.ColorPicker> createPicker, Action<Controls.ColorPicker, ControlTemplate, Window> verify)
@@ -493,7 +604,7 @@ namespace Fluence.Wpf.Tests.Control
                 }
                 finally
                 {
-                    window.Close();
+                    VisualTree.CloseWindowAndDrain(window);
                 }
             });
         }
@@ -507,7 +618,7 @@ namespace Fluence.Wpf.Tests.Control
             });
         }
 
-        private static T GetTemplateElement<T>(ControlTemplate template, Controls.ColorPicker picker, string name) where T : class
+        private static T GetTemplateElement<T>(ControlTemplate template, System.Windows.Controls.Control picker, string name) where T : class
         {
             return Assert.IsType<T>(template.FindName(name, picker), exactMatch: false);
         }
@@ -701,9 +812,13 @@ namespace Fluence.Wpf.Tests.Control
                     Assert.Equal("255", redTextBox.Text, StringComparer.Ordinal);
                     Assert.Equal("0", greenTextBox.Text, StringComparer.Ordinal);
 
+                    _ = Keyboard.Focus(redTextBox);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(redTextBox.IsKeyboardFocused);
                     redTextBox.Text = "10";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
+                    Assert.True(redTextBox.IsKeyboardFocused);
                     Assert.Equal(Color.FromArgb(255, 10, 0, 0), picker.Color);
                     Assert.Equal("10", redTextBox.Text, StringComparer.Ordinal);
                     Assert.Equal("#0A0000", hexTextBox.Text, StringComparer.Ordinal);
@@ -720,6 +835,7 @@ namespace Fluence.Wpf.Tests.Control
                     FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(template, picker, "PART_SpectrumArea");
                     TextBox hueTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HueTextBox");
                     RangeBase hueSlider = GetTemplateElement<RangeBase>(template, picker, "PART_HueSlider");
+                    ComboBox representation = GetTemplateElement<ComboBox>(template, picker, "ColorRepresentationComboBox");
 
                     // Park saturation on a fractional value the integer display would
                     // quantize away (0.503 displays as 50).
@@ -727,6 +843,11 @@ namespace Fluence.Wpf.Tests.Control
                     picker.ApplySpectrumPoint(new Point(spectrumArea.ActualWidth * fractionalSaturation, 0));
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
+                    representation.SelectedIndex = 1;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = Keyboard.Focus(hueTextBox);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(hueTextBox.IsKeyboardFocused);
                     hueTextBox.Text = "240";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
@@ -735,6 +856,7 @@ namespace Fluence.Wpf.Tests.Control
                     Color quantized = Helpers.HsvColorHelper.WithAlpha(
                         Helpers.HsvColorHelper.HsvToRgb(240, 0.50, 1.0), 255);
 
+                    Assert.True(hueTextBox.IsKeyboardFocused);
                     Assert.Equal(expected, picker.Color);
                     Assert.NotEqual(quantized, picker.Color);
                     Assert.Equal(240d, hueSlider.Value);
@@ -773,14 +895,19 @@ namespace Fluence.Wpf.Tests.Control
 
                     Assert.Equal("100%", alphaTextBox.Text, StringComparer.Ordinal);
 
+                    _ = Keyboard.Focus(alphaTextBox);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(alphaTextBox.IsKeyboardFocused);
                     alphaTextBox.Text = "50";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
+                    Assert.True(alphaTextBox.IsKeyboardFocused);
                     Assert.Equal(128, picker.Color.A);
 
                     RaiseEnterKey(alphaTextBox);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
+                    Assert.True(alphaTextBox.IsKeyboardFocused);
                     Assert.Equal("50%", alphaTextBox.Text, StringComparer.Ordinal);
 
                     alphaTextBox.Text = "200";
@@ -791,6 +918,7 @@ namespace Fluence.Wpf.Tests.Control
                     RaiseEnterKey(alphaTextBox);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
+                    Assert.True(alphaTextBox.IsKeyboardFocused);
                     Assert.Equal("50%", alphaTextBox.Text, StringComparer.Ordinal);
                 });
         }
@@ -833,6 +961,45 @@ namespace Fluence.Wpf.Tests.Control
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.Equal(9, hexTextBox.MaxLength);
+                });
+        }
+
+        [Fact]
+        public Task ColorPicker_HexCounter_IsHiddenWithoutChangingLengthOrColorCommitAsync()
+        {
+            return RunColorPickerOptionTestAsync(
+                static () => new Controls.ColorPicker(),
+                static (picker, template, window) =>
+                {
+                    TextBox hex = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+                    TextBox red = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
+                    TextBlock hexCounter = GetTemplateElement<TextBlock>(hex.Template, hex, "PART_CharacterCounter");
+                    TextBlock redCounter = GetTemplateElement<TextBlock>(red.Template, red, "PART_CharacterCounter");
+
+                    _ = Keyboard.Focus(hex);
+                    Assert.True(hex.IsKeyboardFocused);
+
+                    foreach ((bool alphaEnabled, string text, Color expectedColor) in new[]
+                    {
+                        (false, "#123456", Color.FromRgb(0x12, 0x34, 0x56)),
+                        (true, "#80123456", Color.FromArgb(0x80, 0x12, 0x34, 0x56)),
+                    })
+                    {
+                        picker.IsAlphaEnabled = alphaEnabled;
+                        hex.Text = text;
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        Assert.Equal(text.Length, hex.MaxLength);
+                        Assert.Equal(Visibility.Collapsed, hexCounter.Visibility);
+                        Assert.Equal(Visibility.Visible, redCounter.Visibility);
+                        Assert.Equal(3, red.MaxLength);
+
+                        RaiseEnterKey(hex);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        Assert.Equal(expectedColor, picker.Color);
+                        Assert.Equal(text, hex.Text, StringComparer.Ordinal);
+                    }
                 });
         }
 

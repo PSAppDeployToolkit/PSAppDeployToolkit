@@ -7,7 +7,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Fluence.Wpf.Demo.Mvvm</RootNamespace>
     <AssemblyName>Fluence.Wpf.Demo.Mvvm</AssemblyName>
-    <ApplicationIcon>..\assets\Fluence_Icon_Light.ico</ApplicationIcon>
+    <ApplicationIcon>..\assets\Fluence_Icon.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>

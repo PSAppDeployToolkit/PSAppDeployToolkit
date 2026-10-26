@@ -18,7 +18,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>wpf;fluent;fluent-design;windows11;controls;theme</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>Fluence_Icon_Light_128.png</PackageIcon>
+    <PackageIcon>Fluence_Icon_128.png</PackageIcon>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
@@ -33,11 +33,18 @@
 
   <ItemGroup Label="NuGet package content">
     <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\assets\Fluence_Icon_Light_128.png" Pack="true" PackagePath="\" />
+    <None Include="..\assets\Fluence_Icon_128.png" Pack="true" PackagePath="\" />
+    <None Update="Properties\WinUI.AnimatedAccept.LICENSE.txt" Pack="true" PackagePath="licenses/" />
+  </ItemGroup>
+
+  <ItemGroup Label="Embedded third-party notices">
+    <EmbeddedResource Include="Properties\WinUI.AnimatedAccept.LICENSE.txt" />
   </ItemGroup>
 
   <ItemGroup Label="Embedded window icon">
     <Resource Include="Themes\Icons\Fluence_Icon_NoBackground_256.png" />
+    <Resource Include="Themes\Icons\Fluence_Lockup_Horizontal_Light.png" />
+    <Resource Include="Themes\Icons\Fluence_Lockup_Horizontal_Dark.png" />
   </ItemGroup>
 
   <ItemGroup>

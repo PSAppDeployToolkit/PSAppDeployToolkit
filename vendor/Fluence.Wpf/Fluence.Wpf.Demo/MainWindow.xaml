@@ -5,15 +5,16 @@
     xmlns:fluence="http://schemas.fluencewpf.com"
     Title="Fluence.Wpf - Control Gallery"
     Width="1200"
-    Height="970"
+    Height="1080"
     MinWidth="1200"
-    MinHeight="970"
+    MinHeight="1080"
     Background="{DynamicResource ApplicationBackgroundBrush}"
     CornerStyle="Round"
     ExtendsContentIntoTitleBar="True"
     RenderOptions.BitmapScalingMode="HighQuality"
     SystemBackdropType="Mica"
-    UseLayoutRounding="True">
+    UseLayoutRounding="True"
+    WindowStartupLocation="CenterScreen">
 
     <fluence:FluenceWindow.TitleBar>
         <fluence:TitleBar

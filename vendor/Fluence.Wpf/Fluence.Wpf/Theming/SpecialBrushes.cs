@@ -58,10 +58,16 @@ namespace Fluence.Wpf.Theming
         {
             AddSharedTokens(dict);
 
+            // WinUI text inputs keep a 1-DIP outline with a 2-DIP bottom band on focus.
+            // High Contrast needs a full 2-DIP system-highlight outline instead.
+            dict["TextControlBorderThemeThicknessFocused"] = theme is ApplicationTheme.HighContrast
+                ? new Thickness(2)
+                : new Thickness(1, 1, 1, 2);
+
             // Divergent accent brushes whose Color twin differs from the brush value.
             // Ported verbatim from Theme.Light/Dark.xaml accent-brush overrides (and the legacy
-            // UpdateResources isDark branch). HighContrast keeps these computed values: the legacy
-            // C# accent overlay took precedence over the HC XAML for accent-derived brush keys.
+            // UpdateResources isDark branch). High contrast replaces the shared accent state
+            // brushes with live SystemColors in AddHighContrastBrushes below.
             bool dark = theme is ApplicationTheme.Dark;
             dict["SystemAccentColorPrimaryBrush"] = Solid(dark ? colors["SystemAccentColorDark3"] : colors["SystemAccentColorDark2"]);
             dict["SystemAccentColorSecondaryBrush"] = Solid(colors["SystemAccentColorDark3"]);
@@ -96,7 +102,14 @@ namespace Fluence.Wpf.Theming
             dict["InfoBadgeCautionForegroundBrush"] = Solid(textOnAccent);
             dict["InfoBadgeCriticalForegroundBrush"] = Solid(textOnAccent);
 
-            dict["AccentFillColorSelectedTextBackgroundBrush"] = Solid(colors["SystemAccentColor"]);
+            dict["AccentFillColorSelectedTextBackgroundBrush"] = Solid(colors["AccentFillColorSelectedTextBackground"]);
+            // WinUI control-specific highlight roles remain accent-bearing in HC while the
+            // CommonStyles AccentFillColor* family becomes a neutral window surface.
+            dict["SystemControlHighlightAccentBrush"] = Solid(colors["AccentFillColorDefault"]);
+            dict["SystemControlDisabledAccentBrush"] = Solid(colors["AccentFillColorDisabled"]);
+            dict["TextControlSelectionHighlightBrush"] = Solid(colors["AccentFillColorSelectedTextBackground"]);
+            dict["PersonPictureBadgeForegroundBrush"] = Solid(colors["TextOnAccentFillColorPrimary"]);
+            dict["PickerSelectedForegroundBrush"] = Solid(colors["TextOnAccentFillColorPrimary"]);
             // Shared selection-pill accent for NavigationView, ListView, ListBox, TreeView, and SelectorBar.
             // Light/Dark use AccentFillColorDefault (WinUI NavigationView_themeresources.xaml:180
             // uses the same accent fill for its Default/Light/Dark dictionaries); HighContrast is
@@ -138,6 +151,10 @@ namespace Fluence.Wpf.Theming
             // can reach the drop-down item through a supported key.
             dict["ComboBoxItemCornerRadius"] = new CornerRadius(3);
 
+            // WPF has no ThemeShadow equivalent. This fixed effect is a fallback for transient
+            // surfaces, not a numeric reproduction of WinUI's theme- and elevation-aware shadow.
+            // Keep its values conservative until controlled Windows captures can calibrate
+            // separate WPF effects for the documented surface elevations.
             DropShadowEffect flyoutShadow = new()
             {
                 BlurRadius = 18,
@@ -369,11 +386,10 @@ namespace Fluence.Wpf.Theming
 
         /// <summary>
         /// High-contrast brush overrides snapshot live <see cref="SystemColors"/> members,
-        /// reproducing the non-accent brush overrides in Section 2 of Theme.HighContrast.xaml.
-        /// Accent-derived brushes are intentionally left as their computed twins (the legacy C#
-        /// accent overlay took precedence over the HC XAML for those keys, so the golden records
-        /// the computed palette, not the HC SystemColors). A re-Apply on <c language="csharp">WM_SETTINGCHANGE</c>
-        /// refreshes the snapshot when the HC variant changes.
+        /// reproducing the system-colour mappings in Section 2 of Theme.HighContrast.xaml.
+        /// Shared accent brushes use neutral window roles; control-specific state resources
+        /// choose the highlight pair where WinUI calls for it. A re-Apply on
+        /// <c language="csharp">WM_SETTINGCHANGE</c> refreshes the snapshot when the HC variant changes.
         /// </summary>
         /// <param name="dict">The resource dictionary to populate.</param>
         private static void AddHighContrastBrushes(ResourceDictionary dict)
@@ -388,6 +404,30 @@ namespace Fluence.Wpf.Theming
             Color controlDark = SystemColors.ControlDarkColor;
             Color controlLight = SystemColors.ControlLightColor;
             Color transparent = Colors.Transparent;
+
+            // WinUI CommonStyles keeps these shared HC brushes neutral. Control-specific
+            // resources supply the highlight states for interactive controls below.
+            dict["SystemAccentColorPrimaryBrush"] = Solid(highlight);
+            dict["SystemAccentColorSecondaryBrush"] = Solid(highlight);
+            dict["SystemAccentColorTertiaryBrush"] = Solid(highlight);
+            dict["AccentFillColorSelectedTextBackgroundBrush"] = Solid(window);
+            dict["AccentFillColorDefaultBrush"] = Solid(window);
+            dict["AccentFillColorSecondaryBrush"] = Solid(window);
+            dict["AccentFillColorTertiaryBrush"] = Solid(window);
+            dict["AccentFillColorDisabledBrush"] = Solid(window);
+            dict["AccentTextFillColorPrimaryBrush"] = Solid(windowText);
+            dict["AccentTextFillColorSecondaryBrush"] = Solid(windowText);
+            dict["AccentTextFillColorTertiaryBrush"] = Solid(windowText);
+            dict["AccentTextFillColorDisabledBrush"] = Solid(grayText);
+            dict["TextOnAccentFillColorSelectedTextBrush"] = Solid(windowText);
+            dict["TextOnAccentFillColorPrimaryBrush"] = Solid(windowText);
+            dict["TextOnAccentFillColorSecondaryBrush"] = Solid(windowText);
+            dict["TextOnAccentFillColorDisabledBrush"] = Solid(grayText);
+            dict["SystemControlHighlightAccentBrush"] = Solid(highlight);
+            dict["SystemControlDisabledAccentBrush"] = Solid(grayText);
+            dict["TextControlSelectionHighlightBrush"] = Solid(highlight);
+            dict["PersonPictureBadgeForegroundBrush"] = Solid(highlightText);
+            dict["PickerSelectedForegroundBrush"] = Solid(highlightText);
 
             // Application background. ApplicationPageBackgroundThemeBrush must be kept pointing at
             // the same instance here too, since this override runs after the general Add assignment
@@ -438,9 +478,6 @@ namespace Fluence.Wpf.Theming
             dict["ControlOnImageFillColorTertiaryBrush"] = Solid(control);
             dict["ControlOnImageFillColorDisabledBrush"] = Solid(control);
 
-            // Accent fill disabled (Build skips AccentFillColorDisabled in HC; brush -> GrayText)
-            dict["AccentFillColorDisabledBrush"] = Solid(grayText);
-
             // Control stroke
             dict["ControlStrokeColorDefaultBrush"] = Solid(controlDark);
             dict["ControlStrokeColorSecondaryBrush"] = Solid(controlDark);
@@ -482,7 +519,7 @@ namespace Fluence.Wpf.Theming
             dict["LayerFillColorDefaultBrush"] = Solid(window);
             dict["LayerFillColorAltBrush"] = Solid(window);
             dict["LayerOnAcrylicFillColorDefaultBrush"] = Solid(window);
-            dict["LayerOnAccentAcrylicFillColorDefaultBrush"] = Solid(highlight);
+            dict["LayerOnAccentAcrylicFillColorDefaultBrush"] = Solid(window);
 
             // Layer on mica base alt
             dict["LayerOnMicaBaseAltFillColorDefaultBrush"] = Solid(window);
@@ -507,10 +544,9 @@ namespace Fluence.Wpf.Theming
             // Accent acrylic background fill. ColorMap computes these from the accent ramp and its
             // dark flag is Dark only, so high contrast would otherwise publish the light theme's
             // raw accent tint here while every acrylic sibling above maps to a system colour. The
-            // accent surface's high contrast counterpart is the highlight, as
-            // LayerOnAccentAcrylicFillColorDefaultBrush already uses.
-            dict["AccentAcrylicBackgroundFillColorDefaultBrush"] = Solid(highlight);
-            dict["AccentAcrylicBackgroundFillColorBaseBrush"] = Solid(highlight);
+            // accent surface's high contrast counterpart is the window surface.
+            dict["AccentAcrylicBackgroundFillColorDefaultBrush"] = Solid(window);
+            dict["AccentAcrylicBackgroundFillColorBaseBrush"] = Solid(window);
 
             // Scroll bar track. WinUI resolves ScrollBarTrackFill to AcrylicInAppFillColorDefaultBrush,
             // which the high contrast dictionary redefines as a solid SystemColorWindowColor brush.
@@ -518,18 +554,16 @@ namespace Fluence.Wpf.Theming
             // the seed assigned in Add would ignore the white on black variants.
             dict["ScrollBarTrackFillBrush"] = Solid(window);
 
-            // InfoBadge foregrounds follow whichever plate the severity selected. Attention paints
-            // the live highlight, whose guaranteed partner is the highlight text colour; the other
-            // four paint window text, whose partner is the window colour. A single fixed value
-            // cannot serve both, which is what left a black numeral on a window text plate.
-            dict["InfoBadgeAttentionForegroundBrush"] = Solid(highlightText);
+            // InfoBadge foregrounds follow the plate: in HC all severity fills use window text,
+            // so the numeral uses the matching window surface colour.
+            dict["InfoBadgeAttentionForegroundBrush"] = Solid(window);
             dict["InfoBadgeInformationalForegroundBrush"] = Solid(window);
             dict["InfoBadgeSuccessForegroundBrush"] = Solid(window);
             dict["InfoBadgeCautionForegroundBrush"] = Solid(window);
             dict["InfoBadgeCriticalForegroundBrush"] = Solid(window);
 
-            // System fill (SystemFillColorAttention skipped by Build in HC; brush -> Highlight)
-            dict["SystemFillColorAttentionBrush"] = Solid(highlight);
+            // WinUI's shared attention brush follows window text in HC.
+            dict["SystemFillColorAttentionBrush"] = Solid(windowText);
             dict["SystemFillColorSuccessBrush"] = Solid(windowText);
             dict["SystemFillColorCautionBrush"] = Solid(windowText);
             dict["SystemFillColorCriticalBrush"] = Solid(windowText);
@@ -576,10 +610,6 @@ namespace Fluence.Wpf.Theming
             // rather than a frozen Dark-theme constant, which would be wrong under HC-White.
             dict["AccentFillBackdrop"] = window;
             dict["AccentFillBackdropBrush"] = Solid(window);
-
-            // HC overrides the SelectedText-on-accent Color to black (the brush stays the
-            // computed white, matching the legacy promoted value).
-            dict["TextOnAccentFillColorSelectedText"] = Color.FromRgb(0x00, 0x00, 0x00);
         }
 
         /// <summary>

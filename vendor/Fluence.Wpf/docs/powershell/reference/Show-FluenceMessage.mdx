@@ -1,0 +1,376 @@
+﻿---
+id: Show-FluenceMessage
+title: Show-FluenceMessage
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Shows a themed Fluent message dialog and returns the name of the button the user clicked.
+
+## SYNTAX
+
+```powershell
+Show-FluenceMessage [-Message] <string[]> [-Title <string>] [-TitleBarIcon <string>]
+ [-Icon <string>] [-Buttons <string>] [-DefaultButton <string>] [-Timeout <int>] [-Countdown]
+ [-Image <string>] [-MessageAlignment <string>] [-Position <string>] [-Theme <string>]
+ [-Backdrop <string>]
+```
+
+## DESCRIPTION
+
+A thin wrapper around Show-FluenceDialog that maps a named button preset (OK, OKCancel,
+YesNo, YesNoCancel) to the correct button objects, renders the message as wrapping
+TextBlocks with an optional leading severity FontIcon, and returns the clicked button name
+as a string instead of the full DialogResult.
+For cancel-less presets (OK, YesNo), closing
+the dialog with the title-bar X or Esc returns the safe button name (OK or No) rather than
+$null, so a guard such as `if ($answer -ne 'No')` does not run the affirmative branch on a
+dismiss.
+A timeout returns -DefaultButton when it is given, and the same safe name otherwise.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Show-FluenceMessage -Message 'Proceed?' -Icon Question -Buttons YesNo
+```
+
+### EXAMPLE 2
+
+```powershell
+$answer = Show-FluenceMessage -Message 'Save changes?' -Buttons OKCancel -Icon Warning
+if ($answer -eq 'OK') { Save-Data }
+```
+
+### EXAMPLE 3
+
+```powershell
+$answer = Show-FluenceMessage -Message 'Restart now?' -Buttons YesNo -DefaultButton No -Timeout 30 -Countdown
+```
+
+Counts down on the No button and returns 'No' if nobody answers within thirty seconds.
+
+## PARAMETERS
+
+### -Backdrop
+
+Mica, Acrylic, Tabbed, None, or Auto.
+Omit it to keep the backdrop already applied to the
+process; the first Fluence call in a process applies Mica.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Buttons
+
+Named button set: OK (default), OKCancel, YesNo, or YesNoCancel.
+
+```yaml
+Type: System.String
+DefaultValue: OK
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Countdown
+
+Show the remaining seconds in the default button's caption.
+Requires -Timeout.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DefaultButton
+
+The button (by name, for example 'No') that Enter activates, that carries the countdown
+caption, and that a timeout resolves to.
+Must be one of the names in the chosen preset.
+Defaults to the preset's first button.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Icon
+
+The severity icon to display to the left of the message text.
+Info (default), Success, Warning, Error, Question, or None.
+Each severity maps to a distinct
+Segoe Fluent glyph and themed brush: Success, Warning, and Error use the InfoBar severity
+glyphs; Info uses the Informational glyph; Question uses the Segoe Fluent Help glyph with
+the neutral brush.
+None draws no glyph, which is what an image-led dialog wants.
+The message
+renders as wrapping TextBlocks, not inside an InfoBar.
+
+```yaml
+Type: System.String
+DefaultValue: Info
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Image
+
+An image shown above the message at up to 120 device-independent pixels high: a file path,
+a file: URI, or a pack: URI.
+Other schemes are rejected before the dialog opens.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+One or more message lines displayed in the dialog.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MessageAlignment
+
+Left (default) or Center.
+Applies to the image and the message lines.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Position
+
+Center (default), TopRight, or BottomRight of the primary work area.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Theme
+
+Auto, Light, Dark, or HighContrast.
+Omit it to keep the theme already applied to the process;
+the first Fluence call in a process applies Auto.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Timeout
+
+Seconds after which the dialog closes on its own.
+Between 1 and 86400.
+
+```yaml
+Type: System.Int32
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Title
+
+The window title.
+-TitleBarText is an alias.
+
+```yaml
+Type: System.String
+DefaultValue: Fluence
+SupportsWildcards: false
+Aliases:
+- TitleBarText
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TitleBarIcon
+
+Title bar icon from a local file path, file: URI, or pack: URI.
+Other schemes and missing
+local files are rejected before UI dispatch.
+This does not change a message severity icon.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.String
+
+## NOTES
+
+Uses the calling STA thread or a module-owned STA runspace.
+An existing host application
+is supported only when the command already runs on its dispatcher thread.
+Blocks until the dialog closes.
+
+## RELATED LINKS

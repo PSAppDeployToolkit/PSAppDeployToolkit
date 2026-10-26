@@ -1,0 +1,99 @@
+﻿---
+id: Close-FluenceWindow
+title: Close-FluenceWindow
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Closes a Fluence-hosted window on its UI thread, optionally stashing a result for the host.
+
+## SYNTAX
+
+```powershell
+Close-FluenceWindow [-Window] <Window> [-Result <Object>]
+```
+
+## DESCRIPTION
+
+Runs on the UI (STA) thread that owns the window.
+When -Result is supplied it is stored on
+the window's Tag so the window host can return it, then the window is closed.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Close-FluenceWindow -Window $window
+```
+
+### EXAMPLE 2
+
+```powershell
+Close-FluenceWindow -Window $window -Result 'Saved'
+```
+
+## PARAMETERS
+
+### -Result
+
+An optional value to stash on the window's Tag before closing.
+
+```yaml
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Window
+
+The System.Windows.Window to close.
+
+```yaml
+Type: System.Windows.Window
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+Stashes -Result on the window's Tag for the window host to return, then closes on the UI
+thread.
+A window implies a running Application, so no application is created here.
+
+## RELATED LINKS

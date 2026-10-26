@@ -1,0 +1,167 @@
+﻿---
+id: Update-FluenceProgress
+title: Update-FluenceProgress
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Changes the message, detail, or percentage of an open progress window.
+
+## SYNTAX
+
+```powershell
+Update-FluenceProgress [-Handle] <ProgressHandle> [-Message <string>] [-Detail <string>]
+ [-PercentComplete <double>] [-Indeterminate]
+```
+
+## DESCRIPTION
+
+Only the values you pass change; the rest keep their current text.
+Passing -PercentComplete
+makes the bar determinate (clamped to 0..100); -Indeterminate switches it back.
+On the inline
+STA host this call also lets the window repaint, so call it at least every few seconds during
+long work even when nothing changed.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Update-FluenceProgress -Handle $progress -Message 'Installing components' -PercentComplete 40
+```
+
+### EXAMPLE 2
+
+```powershell
+Update-FluenceProgress -Handle $progress -Detail 'Waiting for the service to start' -Indeterminate
+```
+
+## PARAMETERS
+
+### -Detail
+
+The new detail line.
+An empty string hides it.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Handle
+
+The Fluence.ProgressHandle returned by Show-FluenceProgress.
+
+```yaml
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Indeterminate
+
+Switch the bar back to indeterminate.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Message
+
+The new main status line.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PercentComplete
+
+The new percentage; the bar becomes determinate.
+
+```yaml
+Type: System.Double
+DefaultValue: 0
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### System.Void
+
+## NOTES
+
+Runs on the UI thread that owns the window; blocks only for the duration of the update.
+
+## RELATED LINKS
