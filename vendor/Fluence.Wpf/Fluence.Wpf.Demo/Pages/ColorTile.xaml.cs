@@ -27,22 +27,26 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     /// <summary>
     /// Colors page brush tile, mirroring the WinUI 3 Gallery <c language="csharp">ColorTile</c> control:
-    /// the tile is painted in the brush it documents and shows the tile name, a usage note, the
-    /// brush key and a copy button.
+    /// ordinary brush tiles show their documented brush key, while material-reference tiles show
+    /// documentation links and copy a real window backdrop setting.
     /// </summary>
     /// <remarks>
-    /// The page sets <see cref="Control.Background"/> to the documented brush and
-    /// <see cref="Control.Foreground"/> to the contrasting text brush with
+    /// The page sets <see cref="Control.Background"/> to the documented brush or to a material
+    /// tile's explicitly named solid preview, and <see cref="Control.Foreground"/> to the
+    /// contrasting text brush with
     /// <see cref="FrameworkElement.SetResourceReference"/>, so both follow theme changes.
     /// <see cref="TileCornerRadius"/> lets the first and last tiles in a row round their outer
     /// corners to sit flush inside the rounded tile-grid surface, which WPF's <c language="csharp">Border</c>
@@ -79,6 +83,26 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(string),
                 typeof(ColorTile),
                 new FrameworkPropertyMetadata(string.Empty));
+
+        /// <summary>
+        /// Identifies the <see cref="CopyPayload"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty CopyPayloadProperty =
+            DependencyProperty.Register(
+                nameof(CopyPayload),
+                typeof(string),
+                typeof(ColorTile),
+                new FrameworkPropertyMetadata(string.Empty));
+
+        /// <summary>
+        /// Identifies the <see cref="IsBackdropReference"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsBackdropReferenceProperty =
+            DependencyProperty.Register(
+                nameof(IsBackdropReference),
+                typeof(bool),
+                typeof(ColorTile),
+                new FrameworkPropertyMetadata(defaultValue: false, propertyChangedCallback: OnIsBackdropReferenceChanged));
 
         /// <summary>
         /// Identifies the <see cref="ShowSeparator"/> dependency property.
@@ -246,12 +270,33 @@ namespace Fluence.Wpf.Demo.Pages
         }
 
         /// <summary>
-        /// Gets or sets the Fluence brush key the tile documents and copies.
+        /// Gets or sets the Fluence brush key displayed on an ordinary brush tile.
+        /// Material-reference tiles leave this empty because Mica is a window material, not a brush.
         /// </summary>
         public string ColorBrushName
         {
             get => (string)GetValue(ColorBrushNameProperty);
             set => SetValue(ColorBrushNameProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the exact text copied by the tile's button. Ordinary tiles copy their
+        /// brush key; material-reference tiles copy a <c language="xaml">SystemBackdropType</c> setting.
+        /// </summary>
+        public string CopyPayload
+        {
+            get => (string)GetValue(CopyPayloadProperty);
+            set => SetValue(CopyPayloadProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the tile describes a window backdrop and shows
+        /// links to the WinUI material API in place of a brush-key footer.
+        /// </summary>
+        public bool IsBackdropReference
+        {
+            get => (bool)GetValue(IsBackdropReferenceProperty);
+            set => SetValue(IsBackdropReferenceProperty, value);
         }
 
         /// <summary>
@@ -274,8 +319,8 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void CopyBrushNameButton_Click(object sender, RoutedEventArgs e)
         {
-            string brushName = ColorBrushName;
-            if (string.IsNullOrWhiteSpace(brushName))
+            string copyText = string.IsNullOrWhiteSpace(CopyPayload) ? ColorBrushName : CopyPayload;
+            if (string.IsNullOrWhiteSpace(copyText))
             {
                 return;
             }
@@ -286,7 +331,7 @@ namespace Fluence.Wpf.Demo.Pages
                 // retry runs on a dispatcher timer, so a copy that another process is blocking has
                 // not failed yet at this point and a cue shown now would claim a success that may
                 // never happen.
-                DemoClipboard.SetText(brushName, copied =>
+                DemoClipboard.SetText(copyText, copied =>
                 {
                     if (copied)
                     {
@@ -296,7 +341,7 @@ namespace Fluence.Wpf.Demo.Pages
             }
             catch (ThreadStateException)
             {
-                System.Diagnostics.Debug.WriteLine("Clipboard access requires an STA thread.");
+                Debug.WriteLine("Clipboard access requires an STA thread.");
             }
         }
 
@@ -313,7 +358,7 @@ namespace Fluence.Wpf.Demo.Pages
             }
 
             CopyBrushNameGlyph.SetCurrentValue(Controls.FontIcon.GlyphProperty, CopiedGlyph);
-            CopyBrushNameButton?.SetCurrentValue(ToolTipProperty, CopiedToolTip);
+            CopyBrushNameButton?.SetCurrentValue(ToolTipProperty, IsBackdropReference ? BackdropCopiedToolTip : CopiedToolTip);
 
             _copiedRevert?.Stop();
             _copiedRevert = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
@@ -334,7 +379,26 @@ namespace Fluence.Wpf.Demo.Pages
             _copiedRevert?.Stop();
             _copiedRevert = null;
             CopyBrushNameGlyph?.SetCurrentValue(Controls.FontIcon.GlyphProperty, CopyGlyph);
-            CopyBrushNameButton?.SetCurrentValue(ToolTipProperty, CopyToolTip);
+            CopyBrushNameButton?.SetCurrentValue(ToolTipProperty, IsBackdropReference ? BackdropCopyToolTip : CopyToolTip);
+        }
+
+        private static void OnIsBackdropReferenceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ColorTile tile = (ColorTile)d;
+            if (tile.CopyBrushNameButton is null)
+            {
+                return;
+            }
+
+            bool isBackdrop = e.NewValue is true;
+            AutomationProperties.SetName(tile.CopyBrushNameButton, isBackdrop ? "Copy backdrop setting" : "Copy brush name");
+            tile.CopyBrushNameButton.SetCurrentValue(ToolTipProperty, isBackdrop ? BackdropCopyToolTip : CopyToolTip);
+        }
+
+        private void DocumentationLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            _ = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
 
         /// <summary>
@@ -352,10 +416,14 @@ namespace Fluence.Wpf.Demo.Pages
         /// </summary>
         private const string CopyToolTip = "Copy brush name";
 
+        private const string BackdropCopyToolTip = "Copy backdrop setting";
+
         /// <summary>
         /// The tooltip shown with the success cue, matching the Gallery's copied message.
         /// </summary>
         private const string CopiedToolTip = "Brush name copied to clipboard";
+
+        private const string BackdropCopiedToolTip = "Backdrop setting copied to clipboard";
 
         /// <summary>
         /// How long the success cue stays up.

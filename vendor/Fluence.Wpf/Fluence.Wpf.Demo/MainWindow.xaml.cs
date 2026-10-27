@@ -74,6 +74,7 @@ namespace Fluence.Wpf.Demo
         private readonly DemoNavigationShellState _navigationState;
         private bool _isNavigatingBack;
         private bool _isUpdatingExtendedTitleOverlap;
+        private readonly TranslateTransform _navSearchCenterTransform = new();
         private NavigationViewItem? _currentNavigationItem;
         private System.Windows.Controls.Image? _titleBarIconView;
         private DependencyPropertyDescriptor? _extendsDpd;
@@ -90,6 +91,8 @@ namespace Fluence.Wpf.Demo
         public MainWindow()
         {
             InitializeComponent();
+
+            NavSearchBox.RenderTransform = _navSearchCenterTransform;
 
             Title = GalleryWindowTitle;
             SystemThemeWatcher.Watch(this);
@@ -449,13 +452,8 @@ namespace Fluence.Wpf.Demo
             }
 
             string trimmed = query.Trim();
-            foreach (object obj in DemoNav.Items)
+            foreach (NavigationViewItem item in EnumerateSearchNavigationItems())
             {
-                if (obj is not NavigationViewItem item)
-                {
-                    continue;
-                }
-
                 string title = (item.Content as string) ?? string.Empty;
                 _ = _navigationItemByContainer.TryGetValue(item, out DemoNavigationItem? metadata);
                 if (string.Equals(title, trimmed, StringComparison.OrdinalIgnoreCase) ||
@@ -464,6 +462,11 @@ namespace Fluence.Wpf.Demo
                     return item;
                 }
 
+            }
+
+            foreach (NavigationViewItem item in EnumerateSearchNavigationItems())
+            {
+                _ = _navigationItemByContainer.TryGetValue(item, out DemoNavigationItem? metadata);
                 if (ItemMatches(item, metadata, trimmed))
                 {
                     return item;
@@ -471,6 +474,24 @@ namespace Fluence.Wpf.Demo
             }
 
             return null;
+        }
+
+        private IEnumerable<NavigationViewItem> EnumerateSearchNavigationItems()
+        {
+            foreach (object entry in DemoNav.Items)
+            {
+                if (entry is NavigationViewItem item)
+                {
+                    yield return item;
+                }
+            }
+            foreach (object entry in DemoNav.FooterMenuItems)
+            {
+                if (entry is NavigationViewItem item)
+                {
+                    yield return item;
+                }
+            }
         }
 
         private static bool ItemMatches(NavigationViewItem item, DemoNavigationItem? metadata, string needle)
@@ -776,12 +797,12 @@ namespace Fluence.Wpf.Demo
         {
             if (_titleBarIconView is null)
             {
-                // WinUI 3 Gallery title-bar icon parity: 16x16, not the 20x20 chrome max the
-                // TitleBar template reserves for PART_IconPresenter.
+                // The gallery title-bar icon fills the 20x20 chrome slot reserved by
+                // the TitleBar template for PART_IconPresenter.
                 _titleBarIconView = new System.Windows.Controls.Image
                 {
-                    Width = 16,
-                    Height = 16,
+                    Width = 20,
+                    Height = 20,
                     VerticalAlignment = VerticalAlignment.Center,
                 };
                 RenderOptions.SetBitmapScalingMode(_titleBarIconView, BitmapScalingMode.HighQuality);
@@ -822,7 +843,26 @@ namespace Fluence.Wpf.Demo
 
         private void ScheduleExtendedTitleOverlapCheck()
         {
-            _ = Dispatcher.BeginInvoke(new Action(UpdateExtendedTitleOverlap), DispatcherPriority.Loaded);
+            _ = Dispatcher.BeginInvoke(new Action(UpdateTitleBarLayout), DispatcherPriority.Loaded);
+        }
+
+        private void UpdateTitleBarLayout()
+        {
+            CenterTitleBarSearchInWindow();
+            UpdateExtendedTitleOverlap();
+        }
+
+        private void CenterTitleBarSearchInWindow()
+        {
+            if (ShellTitleBar is null || NavSearchBox is null || ShellTitleBar.ActualWidth <= 0.0
+                || !IsVisualAncestorOf(this, ShellTitleBar))
+            {
+                return;
+            }
+
+            Rect titleBarBounds = ShellTitleBar.TransformToAncestor(this).TransformBounds(
+                new Rect(new Size(ShellTitleBar.ActualWidth, ShellTitleBar.ActualHeight)));
+            _navSearchCenterTransform.X = (ActualWidth / 2.0) - (titleBarBounds.Left + (titleBarBounds.Width / 2.0));
         }
 
         // Hide the title text when the centered search box would overlap it; runs after every

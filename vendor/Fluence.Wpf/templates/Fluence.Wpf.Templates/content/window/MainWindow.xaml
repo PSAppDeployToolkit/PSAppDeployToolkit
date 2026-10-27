@@ -1,0 +1,85 @@
+﻿<fluence:FluenceWindow
+    x:Class="FluenceStarterApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    Title="FluenceStarterApp"
+    Width="540"
+    Height="470"
+    MinWidth="420"
+    MinHeight="470"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    ExtendsContentIntoTitleBar="True"
+    SystemBackdropType="Mica">
+    <fluence:FluenceWindow.TitleBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid Width="20" Height="20" Margin="12,0,8,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Ellipse Width="19" Height="19" Fill="#1D5BAA" Stroke="{DynamicResource TextFillColorPrimaryBrush}" StrokeThickness="1" />
+                <Path Width="14" Height="14" Data="M 7,0 L 14,14 L 7,10 L 0,14 Z" Fill="White" Stretch="Uniform" />
+            </Grid>
+            <fluence:TitleBar
+                Grid.Column="1"
+                Title="FluenceStarterApp"
+                IsBackButtonVisible="False"
+                IsPaneToggleButtonVisible="False" />
+        </Grid>
+    </fluence:FluenceWindow.TitleBar>
+    <Grid Margin="28,76,28,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            FontSize="26"
+            FontWeight="SemiBold"
+            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Text="Welcome to FluenceStarterApp" />
+        <TextBlock
+            Grid.Row="1"
+            Margin="0,8,0,20"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            Text="Choose an option and update the status below." />
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Margin="0,0,0,6" Text="Your name" />
+            <fluence:TextBox x:Name="NameInput" PlaceholderText="Enter a name" />
+        </StackPanel>
+        <StackPanel Grid.Row="3" Margin="0,16,0,0">
+            <TextBlock Margin="0,0,0,6" Text="Option" />
+            <fluence:ComboBox
+                x:Name="OptionInput"
+                DisplayMemberPath="Name"
+                SelectedIndex="0" />
+        </StackPanel>
+        <StackPanel Grid.Row="4" Margin="0,18,0,0" VerticalAlignment="Top">
+            <TextBlock Margin="0,0,0,6" Text="Notifications" />
+            <fluence:ToggleSwitch
+                x:Name="NotificationToggle"
+                AutomationProperties.Name="Notifications"
+                IsChecked="True" />
+        </StackPanel>
+        <StackPanel Grid.Row="5">
+            <fluence:Button
+                HorizontalAlignment="Left"
+                Appearance="Accent"
+                Click="UpdateStatus_Click"
+                Content="Update status" />
+            <TextBlock
+                x:Name="StatusText"
+                Margin="0,14,0,0"
+                AutomationProperties.LiveSetting="Polite"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="Choose values, then select Update status."
+                TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</fluence:FluenceWindow>

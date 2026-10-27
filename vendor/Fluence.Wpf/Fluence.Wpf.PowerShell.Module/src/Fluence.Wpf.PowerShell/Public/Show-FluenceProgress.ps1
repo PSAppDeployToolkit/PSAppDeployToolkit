@@ -1,4 +1,34 @@
-﻿function Show-FluenceProgress
+﻿<#
+Copyright (c) 2026, Dan Cunningham. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#>
+
+
+function Show-FluenceProgress
 {
     <#
     .SYNOPSIS
@@ -16,20 +46,22 @@
         and other Fluence dialogs can still be shown while it is open. An existing host application is supported only when this command runs on its dispatcher
         thread; automatic dispatch to a foreign UI thread is not supported.
 
-        Parameter names mirror the PSADT installation progress dialog: title, message, detail,
-        percent, topmost and position.
+        Use Message as the required status line. Add Detail for a second line, and PercentComplete
+        when progress is determinate.
     .PARAMETER Message
         The main status line.
     .PARAMETER Title
-        The window title. Defaults to 'Fluence'.
+        The window title. -TitleBarText is an alias.
+    .PARAMETER TitleBarIcon
+        Title bar icon from a local file path, file: URI, or pack: URI. Other schemes and missing
+        local files are rejected before UI dispatch. This does not change a message severity icon.
     .PARAMETER Detail
         An optional second line in the secondary text color, for example the current file or step.
     .PARAMETER PercentComplete
         When given, the bar is determinate at this value (clamped to 0..100). Omit for an
         indeterminate bar.
     .PARAMETER NotTopmost
-        Do not keep the window above other windows. Topmost is the default, as for a deployment
-        progress dialog.
+        Do not keep the window above other windows. Topmost is the default.
     .PARAMETER Position
         Center (default), TopRight, or BottomRight of the primary work area.
     .PARAMETER Width
@@ -63,7 +95,11 @@
         [string]$Message,
 
         [Parameter()]
+        [Alias('TitleBarText')]
         [string]$Title = 'Fluence',
+
+        [Parameter()]
+        [string]$TitleBarIcon,
 
         [Parameter()]
         [string]$Detail,
@@ -111,6 +147,12 @@
         $accentColor = $Accent
     }
 
+    $titleBarIconSource = $null
+    if ($PSBoundParameters.ContainsKey('TitleBarIcon'))
+    {
+        $titleBarIconSource = Resolve-FluenceImageSource -Image $TitleBarIcon -ParameterName 'TitleBarIcon'
+    }
+
     # The state hashtable is shared with the UI thread (and, on an MTA host, with another runspace),
     # so it is synchronized. CloseRequested is the pump's exit signal.
     $state = [hashtable]::Synchronized((Resolve-FluenceProgressState -Bound $PSBoundParameters))
@@ -118,6 +160,7 @@
 
     $spec = @{
         Title       = $Title
+        TitleBarIcon = $titleBarIconSource
         Topmost     = (-not [bool]$NotTopmost)
         Position    = $Position
         Width       = $Width

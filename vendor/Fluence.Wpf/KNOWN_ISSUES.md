@@ -1,5 +1,7 @@
 ﻿# Known issues and follow-ups
 
+See the [documentation site](https://fluencewpf.com) for usage, [CHANGELOG.md](CHANGELOG.md) for release and breaking-change notes, and [support](SUPPORT.md) to report a reproducible issue.
+
 This file tracks optional follow-ups and deliberate non-features. Filed bugs with
 reproductions live on the issue tracker; this is the consolidated view for
 maintainers.
@@ -12,9 +14,38 @@ checking the parent does not select those unrealized data items, and newly
 realized child containers do not inherit that earlier checked state. Applications
 that need selection of an entire data hierarchy should maintain that selection in
 their data model. The removal/reset reconciliation in this branch removes detached
-containers from `SelectedItems`; it does not add data-model selection propagation. A checked collapsed parent keeps its state when its bound children change but remain unrealized; only a genuinely empty child collection clears that parent state.
-This limitation needs a separate API and realization-policy decision before any
-claim of complete data-bound cascading support.
+containers from `SelectedItems`; it does not add data-model selection propagation. 
+A checked collapsed parent keeps its state when its bound children change but 
+remain unrealized; only a genuinely empty child collection clears that parent state. 
+This limitation needs a separate API and realization-policy decision before 
+any claim of complete data-bound cascading support.
+
+The shipped template supports opt-in virtualization only in Single and None
+modes. Multiple mode deliberately retains physical scrolling, including when
+the parent requests logical scrolling or a virtualizing ItemsPanel.
+Full template replacement can also write a checked container's teardown default
+through an automatic TwoWay binding. Applications requiring checked-state
+retention across that replacement should own the state in their model and
+control source updates explicitly. The completed-generation refresh restores
+those bound root values and reconciles the existing live SelectedItems list;
+it does not introduce an independent hierarchy-wide selection model.
+
+## Selected text rendering in native WPF editors
+
+`TextBox`, `PasswordBox`, and the native text editor inside `NumberBox` use WPF's
+selection renderer. Their Fluence templates set a theme-aware `SelectionBrush`
+but retain WPF's default `SelectionOpacity` of 0.4. The selection highlight is
+therefore translucent, and selected-text foreground rendering follows WPF rather
+than a separate WinUI text-on-selection brush. WPF's `SelectionTextBrush` was
+added in .NET Framework 4.8 and is unavailable to the library's `net472`
+compile target. Setting `SelectionOpacity` to 1 is not a compatible substitute:
+WPF documents that an opaque selection brush hides the selected text.
+
+The shared templates retain this idiomatic WPF fallback across target
+frameworks. Resource-key parity for selected-text colors does not guarantee
+identical rendered selection to WinUI in every theme or high-contrast scheme.
+See Microsoft's documentation for [TextBox selection opacity](https://learn.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.selectionopacity?view=netframework-4.8.1),
+[PasswordBox selection opacity](https://learn.microsoft.com/en-us/dotnet/api/system.windows.controls.passwordbox.selectionopacity?view=netframework-4.8.1), and the [.NET Framework 4.8 SelectionTextBrush addition](https://learn.microsoft.com/en-us/dotnet/framework/whats-new/whats-new-in-accessibility).
 
 ## Current follow-ups (not defects)
 
@@ -40,7 +71,7 @@ claim of complete data-bound cascading support.
   second after 1 minute 56 seconds, about 591 tests in. The abort point moved
   between runs, so it is non-deterministic, and neither run named a test. Class
   filtering is unaffected: the same assembly completes when it is split, and the
-  two complementary lanes AGENTS.md section 6 describes cover all cases in about
+  two complementary lanes described in Fluence.Wpf.Tests/AGENTS.md cover all cases in about
   2 minutes 57 seconds. CI and the pull-request template therefore run both TFMs
   as two lanes and sum the case counts, which keeps the union provably equal to
   the whole assembly. Nothing here is known to be a product defect; the
@@ -68,7 +99,7 @@ claim of complete data-bound cascading support.
   flaky-test notes named this test. This is grouped with the whole-assembly
   abort above as a suspected symptom of the same `net472` resource pressure
   late in a long single-process run, not a defect in the accent-fill
-  assertion; the two-lane split in AGENTS.md section 6 covers this test
+  assertion; the two-lane split in Fluence.Wpf.Tests/AGENTS.md covers this test
   without reproducing the failure.
 
 - **`GallerySettingsPage_NavigationStyleCombo_FollowsShellPaneToggleAsync`
@@ -121,37 +152,32 @@ claim of complete data-bound cascading support.
   `IsBackEnabled` + `BackRequested` are exposed, but the library does **not**
   track page history. The demo does not use the back button; consumers are
   expected to own their own back stack and route `BackRequested`.
-- **Translucent layers over a DWM backdrop lose alpha precision on a 10 bpc
-  display** - symptom: under `WindowBackdropType.Mica` in Light the `NavigationView`
-  content canvas (`LayerFillColorDefault`, `#80FFFFFF`) reads darker than the
-  pane and title bar, which straight alpha compositing cannot produce. Measured
-  on a desktop whose active display path reports `bitsPerColorChannel = 10`
-  (`DisplayConfigGetDeviceInfo`, SDR, HDR off): a plain WPF window with
-  `WindowChrome` and `DWMSBT_MAINWINDOW` composites its client alpha over the
-  backdrop with the alpha rounded to two bits, {0, 1/3, 2/3, 1}, so
-  `#80FFFFFF` (alpha 0.502 rounds to 2/3) lands at 128 + Mica/3 = 209 instead
-  of the 249 the token specifies, `#24000000` is invisible, and `#60FFFFFF`
-  saturates to white. Colour channels keep full precision. The same figures
-  come out of iNKORE.UI.WPF.Modern on the same desktop, and the quantisation is
-  absent under `WindowBackdropType.None`, where WPF blends the layer itself. The
-  likely mechanism is a `R10G10B10A2` composition surface when the output is
-  10 bits per channel; this is inferred from the measurement, not documented
-  by Microsoft, and is not yet verified against an 8 bpc display. Only
-  `WindowBackdropType.Mica` was measured quantising under
-  `DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO` flags `0x4` (10 bpc, advanced color
-  off); enabling the GPU driver's 10-bit pixel format (AMD Adrenalin, Gaming,
-  Graphics) reported advanced color enabled (flags `0x7`), and under that
-  state Mica, Acrylic, and Tabbed all read full precision. `Tabbed` is
-  included in the fix below by DWM material-family inference, not
-  measurement: it shares the same `DWMSBT_MAINWINDOW` / `DWMSBT_TABBEDWINDOW`
-  family as Mica but was measured only under `0x7`. `Acrylic` is excluded:
-  it too was measured only under `0x7`, where it read full precision, and was
-  never measured under the quantising `0x4` flags, so there is no basis yet
-  to include or exclude it. The library now applies an opaque pre-blend
-  automatically when the window's display reports more than 8 bits per
-  channel with advanced color off and the effective backdrop is Mica or
-  Tabbed; an 8 bpc display, or a 10 bpc display with advanced color enabled,
-  keeps the canonical translucent token.
+- **DWM backdrop alpha precision varies by display path** - a historical
+  measurement on a desktop whose active display path reported
+  `bitsPerColorChannel = 10` (`DisplayConfigGetDeviceInfo`, SDR, HDR off)
+  found that a plain WPF window with `WindowChrome` and `DWMSBT_MAINWINDOW`
+  composited client alpha over Mica in Light using two-bit alpha steps
+  `{0, 1/3, 2/3, 1}`. In that measurement, the `#80FFFFFF` content layer read
+  darker than expected, `#24000000` was invisible, and `#60FFFFFF` saturated
+  to white, while colour channels kept full precision. The same figures were
+  observed with iNKORE.UI.WPF.Modern, and the quantisation was absent under
+  `WindowBackdropType.None`, where WPF blends the layer itself. A likely
+  `R10G10B10A2` composition surface is an inference from that measurement, not
+  documented Microsoft behavior. Enabling the GPU driver's 10-bit pixel format
+  reported advanced color enabled (`DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO`
+  flags `0x7`); Mica, Acrylic, and Tabbed read full precision in that
+  comparison. A later comparison did not reproduce the severe failure, so
+  these observations do not establish a universal driver fix or full-precision
+  behavior across display paths. No equivalent 8 bpc measurement is recorded.
+  Dark Mica is excluded from the opaque compensation on displays reporting
+  more than 8 bits per channel with advanced color off: it retains the
+  canonical translucent `NavigationViewContentBackgroundBrush`
+  (`#4C3A3A3A`) instead of substituting an opaque pre-blend, while preserving
+  source header tint. Light Mica keeps its existing fallback. High Contrast is
+  unchanged, and Tabbed keeps its existing behavior; its inclusion in earlier
+  compensation was based on DWM material-family inference, not measurement.
+  Acrylic was measured only with advanced color enabled, so there is no basis
+  to include or exclude it under the `0x4` flags.
 - **`RenderTargetBitmap` vs DWM backdrop** - DWM Mica / Acrylic is composed by
   the window manager and is **not** visible to `RenderTargetBitmap`. The
   screenshot harness hosts the gallery inside a plain `Window` with a solid

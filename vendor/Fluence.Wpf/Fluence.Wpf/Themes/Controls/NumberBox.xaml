@@ -104,7 +104,11 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{DynamicResource ControlCornerRadius}">
+                            CornerRadius="{DynamicResource ControlCornerRadius}" />
+                        <!--  Keep the original content inset and former focus-line space at every DPI.  -->
+                        <Border
+                            Grid.Row="1"
+                            BorderThickness="{TemplateBinding BorderThickness}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
@@ -128,7 +132,7 @@
                                         FontFamily="{TemplateBinding FontFamily}"
                                         FontSize="{TemplateBinding FontSize}"
                                         Foreground="{TemplateBinding Foreground}"
-                                        SelectionBrush="{DynamicResource AccentFillColorSelectedTextBackgroundBrush}"
+                                        SelectionBrush="{DynamicResource TextControlSelectionHighlightBrush}"
                                         Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!--
@@ -193,16 +197,8 @@
                                         </RepeatButton>
                                     </StackPanel>
                                 </Grid>
-
-                                <!--  Bottom accent line (focus indicator)  -->
-                                <Border
-                                    x:Name="FocusLine"
-                                    Grid.Row="1"
-                                    Height="1.5"
-                                    HorizontalAlignment="Stretch"
-                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                    CornerRadius="0,0,4,4"
-                                    Opacity="0" />
+                                <!--  Preserve the former Auto footer's rounded layout space without painting it.  -->
+                                <Border Grid.Row="1" Height="1.5" IsHitTestVisible="False" />
                             </Grid>
                         </Border>
                     </Grid>
@@ -215,36 +211,8 @@
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
-                            <!--
-                                BorderBrush intentionally stays TextControlElevationBorderBrush on focus
-                                (matching TextBox.xaml and PasswordBox.xaml): the bottom accent FocusLine
-                                already signals focus, and swapping to the flat ControlStrokeColorDefaultBrush
-                                here replaced that gradient underline instead of layering on top of it.
-                            -->
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FocusLine" Storyboard.TargetProperty="Opacity">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FocusLine" Storyboard.TargetProperty="Opacity">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderFocusedBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />

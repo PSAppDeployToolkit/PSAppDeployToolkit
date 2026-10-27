@@ -178,6 +178,38 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
+        public Task ToggleButton_HighContrast_CheckedPressedUsesControlStatePairAsync()
+        {
+            return RunToggleButtonTestAsync(
+                static () =>
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
+                    ApplicationAccentColorManager.ApplyCustomAccent(Colors.Red);
+                    return new PressableToggleButtonProbe { Content = "Contrast", IsChecked = true, IsHitTestVisible = false };
+                },
+                static (application, probe) =>
+                {
+                    Border fill = Assert.IsType<Border>(FindVisualChildByName<Border>(probe, "RestFill"), exactMatch: false);
+                    Assert.Equal(SystemColors.HighlightColor, SolidColor(fill.Background));
+                    Assert.Equal(SystemColors.HighlightTextColor, SolidColor(probe.Foreground));
+                    MultiTrigger hover = Assert.Single(probe.Template.Triggers.OfType<MultiTrigger>(),
+                        static trigger => IsToggleHoverTrigger(trigger, isCheckedValue: true));
+                    Setter foreground = Assert.Single(hover.Setters.OfType<Setter>(),
+                        static setter => setter.Property == System.Windows.Controls.Control.ForegroundProperty);
+                    Assert.Equal("ToggleButtonForegroundCheckedPointerOverBrush",
+                        Assert.IsType<DynamicResourceExtension>(foreground.Value).ResourceKey);
+                    Assert.Equal(SystemColors.ControlTextColor,
+                        ResolvedColor(application, "ToggleButtonBackgroundCheckedPointerOverBrush"));
+                    Assert.Equal(SystemColors.ControlColor,
+                        ResolvedColor(application, "ToggleButtonForegroundCheckedPointerOverBrush"));
+                    probe.SetPressed(value: true);
+                    WpfTestSta.DrainDispatcher(probe.Dispatcher);
+                    Assert.Equal(SystemColors.HighlightTextColor, SolidColor(fill.Background));
+                    Assert.Equal(SystemColors.HighlightColor, SolidColor(probe.Foreground));
+                });
+        }
+
+        [Fact]
         public Task ToggleButton_Indeterminate_RestKeepsDefaultFillAsync()
         {
             return RunToggleButtonTestAsync(

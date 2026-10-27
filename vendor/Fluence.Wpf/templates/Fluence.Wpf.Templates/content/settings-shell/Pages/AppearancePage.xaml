@@ -1,0 +1,83 @@
+﻿<UserControl
+    x:Class="FluenceStarterApp.Pages.AppearancePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    Background="{DynamicResource ApplicationBackgroundBrush}">
+    <fluence:SmoothScrollViewer
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="1000" Margin="28,16,28,24" HorizontalAlignment="Stretch">
+            <TextBlock Style="{StaticResource SettingsPageTitleStyle}" Text="Appearance" />
+            <TextBlock
+                Margin="0,8,0,0"
+                Style="{StaticResource SettingsPageDescriptionStyle}"
+                Text="Choose the theme for this app window. Windows appearance stays as it is." />
+
+            <StackPanel Margin="0,24,0,0">
+                <TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="App theme" />
+                <Border Margin="0,8,0,0" Style="{StaticResource SettingRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <fluence:FontIcon Style="{StaticResource SettingRowIconStyle}" Glyph="&#xE790;" />
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingRowTitleStyle}" Text="Color mode" />
+                            <TextBlock Margin="0,4,0,0" Style="{StaticResource SettingRowDescriptionStyle}" Text="Light, Dark, Auto or High Contrast for this app." />
+                        </StackPanel>
+                        <fluence:ComboBox
+                            x:Name="ThemeChoice"
+                            Grid.Column="4"
+                            Width="154"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="App color mode"
+                            SelectionChanged="ThemeChoice_SelectionChanged">
+                            <ComboBoxItem Content="Auto" />
+                            <ComboBoxItem Content="Light" />
+                            <ComboBoxItem Content="Dark" />
+                            <ComboBoxItem Content="High Contrast" />
+                        </fluence:ComboBox>
+                    </Grid>
+                </Border>
+            </StackPanel>
+            <StackPanel Margin="0,24,0,0">
+                <TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Preview" />
+                <Border Margin="0,8,0,0" Style="{StaticResource SettingRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <fluence:FontIcon Style="{StaticResource SettingRowIconStyle}" Glyph="&#xE72C;" />
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingRowTitleStyle}" Text="Restore automatic theme" />
+                            <TextBlock Margin="0,4,0,0" Style="{StaticResource SettingRowDescriptionStyle}" Text="Follow the current Windows app theme again." />
+                        </StackPanel>
+                        <fluence:Button
+                            Grid.Column="4"
+                            MinWidth="112"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Restore automatic app theme"
+                            Click="RestoreAuto_Click"
+                            Content="Use Auto" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+            <Border Margin="0,24,0,24" Style="{StaticResource SettingRowCardStyle}">
+                <TextBlock
+                    x:Name="ThemeStatus"
+                    AutomationProperties.LiveSetting="Polite"
+                    Style="{StaticResource SettingRowDescriptionStyle}"
+                    Text="This app follows the Windows app theme." />
+            </Border>
+        </StackPanel>
+    </fluence:SmoothScrollViewer>
+</UserControl>

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="FluenceStarterApp.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="32">
+        <StackPanel MaxWidth="640"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+            <TextBlock FontSize="30"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Text="{Binding Heading}" />
+            <TextBlock Margin="0,12,0,0"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding Description}"
+                       TextWrapping="Wrap" />
+            <Border Margin="0,28,0,0"
+                    Padding="20"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource ControlCornerRadius}">
+                <StackPanel>
+                    <TextBlock FontSize="17"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               Text="A small starting point" />
+                    <TextBlock Margin="0,8,0,0"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Text="Each page has a cached view model. Navigate away and return to see its state preserved."
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -209,6 +209,12 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+                            <!--  Keep the content inset at the original border thickness when the painted focus border grows.  -->
+                            <Border
+                                x:Name="LayoutBorder"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}">
                                 <Grid>
                                     <Grid
@@ -218,7 +224,7 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition x:Name="ArrowColumn" Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ContentPresenter
                                             x:Name="LeftIcon"
@@ -243,6 +249,7 @@
                                                 Content="{TemplateBinding SelectionBoxItem}"
                                                 ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
                                                 ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                                 IsHitTestVisible="False"
                                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                                 TextElement.FontSize="{TemplateBinding FontSize}"
@@ -256,6 +263,30 @@
                                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                 Text="{TemplateBinding PlaceholderText}"
                                                 Visibility="Collapsed" />
+                                            <!--  WPF ComboBox owns this native editor's text, selection, and keyboard behavior.  -->
+                                            <TextBox
+                                                x:Name="PART_EditableTextBox"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                FocusVisualStyle="{x:Null}"
+                                                FontFamily="{TemplateBinding FontFamily}"
+                                                FontSize="{TemplateBinding FontSize}"
+                                                Foreground="{TemplateBinding Foreground}"
+                                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                Padding="0"
+                                                Visibility="Collapsed">
+                                                <TextBox.Template>
+                                                    <ControlTemplate TargetType="{x:Type TextBox}">
+                                                        <ScrollViewer
+                                                            x:Name="PART_ContentHost"
+                                                            Focusable="False"
+                                                            HorizontalScrollBarVisibility="Hidden"
+                                                            VerticalScrollBarVisibility="Hidden" />
+                                                    </ControlTemplate>
+                                                </TextBox.Template>
+                                            </TextBox>
                                         </Grid>
                                         <controls:FontIcon
                                             x:Name="ChevronGlyph"
@@ -278,7 +309,7 @@
                                 x:Name="FocusAccentLine"
                                 Height="2"
                                 VerticalAlignment="Bottom"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Background="{DynamicResource SystemControlHighlightAccentBrush}"
                                 CornerRadius="0,0,4,4"
                                 Opacity="0"
                                 Visibility="Collapsed" />
@@ -380,7 +411,8 @@
                             Authority: WinUI 3 ComboBox_DynamicResources.xaml.
                             Fluence intentionally suppresses the ComboBox focus underline; selected
                             dropdown items retain their left selection indicator.
-                            EditableFocusedStates mirrors FocusedStates for future IsEditable support.
+                            EditableFocusedStates is retained for Fluence template compatibility;
+                            editable focus paint is handled by the IsKeyboardFocusWithin trigger.
                         -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="FocusedStates">
@@ -411,6 +443,22 @@
                             <Setter TargetName="contentPresenter" Property="Visibility" Value="Collapsed" />
                             <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
                         </Trigger>
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="ContentLayer" Property="IsHitTestVisible" Value="True" />
+                            <Setter TargetName="ArrowColumn" Property="Width" Value="32" />
+                            <Setter TargetName="contentPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ToggleButton" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="ToggleButton" Property="Width" Value="32" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEditable" Value="True" />
+                                <Condition Property="Text" Value="" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
@@ -419,6 +467,36 @@
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
                             <!--  Focus underline intentionally suppressed; dropdown items own selection visuals.  -->
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition SourceName="ToggleButton" Property="IsPressed" Value="True" />
+                                <Condition Property="IsEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEditable" Value="True" />
+                                <Condition Property="IsKeyboardFocusWithin" Value="True" />
+                                <Condition Property="IsEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderFocusedBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition SourceName="ToggleButton" Property="IsPressed" Value="True" />
+                                <Condition Property="IsKeyboardFocusWithin" Value="True" />
+                                <Condition Property="IsEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <Setter TargetName="ChevronGlyph" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </MultiTrigger>
                         <Trigger Property="IsDropDownOpenedUpward" Value="True">
                             <Setter TargetName="PART_DropdownBorder" Property="CornerRadius" Value="8,8,0,0" />
                             <!--  Track the outer border's runtime shape - see NoiseOverlay comment above.  -->
@@ -430,6 +508,7 @@
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
                             <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
                             <Setter TargetName="MainBorder" Property="BorderThickness" Value="1" />
+                            <Setter TargetName="LayoutBorder" Property="BorderThickness" Value="1" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="ChevronGlyph" Property="Opacity" Value="0.4" />
                         </Trigger>
@@ -438,5 +517,12 @@
             </Setter.Value>
         </Setter>
         <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="IsEditable" Value="True">
+                <!--  The editor is the single tab stop and the rounded field paints editable focus.  -->
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

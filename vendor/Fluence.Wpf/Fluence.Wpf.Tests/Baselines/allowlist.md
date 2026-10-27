@@ -502,3 +502,139 @@ and two hosted gallery scrolling cases for Colors and Data. The five new method 
 are recorded in the method inventories. Discovery rises to 1375 on net472 and 1378
 on net10. The corresponding runtime CI floors are 1374 and 1375 after screenshot
 filtering, preserving the existing explicit regeneration skip.
+
+## PowerShell module examples replace the standalone demo
+
+- `PowerShellDemoScripts_FollowCanonicalBootstrap` is renamed to `PowerShellModuleExamples_UseModule`. It now verifies that the four window examples import the module manifest and use `Show-FluenceWindow`; the module owns the former manual bootstrap.
+- `PowerShellDemoXaml_UsesCurrentFluenceWindowProperties` is renamed to `PowerShellModuleXaml_UsesCurrentFluenceWindowProperties` and validates `Fluence.Wpf.PowerShell.Module/examples/MainWindow.xaml`.
+- Both names are updated in the net472 and net10 baselines. Test case counts are unchanged.
+
+## Window and control branch integration
+
+The merged baseline inventories were checked as multisets against fresh Debug
+`--list-tests json` discovery: 1420 net472 case rows and 1456 net10 case rows.
+Both method inventories also match their framework's discovered method names.
+The merge combines the window branch's new Windowing cases with the ProgressBar,
+RadioButton, and CheckBox cases from the control branch; no additional test was
+removed during merge resolution.
+
+The ordinary CI floors are 1451 net472 and 1452 net10 after filtering out
+`Category=Screenshots`. The floors combine the measured parent-branch TRX deltas
+from their shared base. In the merged net472 output, six Windowing theory
+methods occupy six discovery rows but execute 39 cases, a difference of 33;
+the affected Windowing run confirmed 263 runtime cases versus 230 listed rows.
+The existing slider orientation theory described above likewise has one
+net472 discovery row and two runtime cases. These runtime expansions account
+for the difference between the net472 filtered discovery count of 1417 and
+its CI floor of 1451. The net10 filtered discovery count is 1452.
+
+## TextBox and PasswordBox focus borders
+
+The two `FocusState_ShowsAccentLineUnderneathAsync` checks are renamed to
+`TextBox_FocusState_UsesRoundedFocusedBorderWithoutMovingEditorAsync` and
+`PasswordBox_FocusState_UsesRoundedFocusedBorderWithoutMovingSecureEditorAsync`.
+They now check the rounded border, stable editor bounds, and edge input hit
+testing. Three validation-state cases and one same-window focused theme-cycle
+case are added. No cases are removed.
+
+Fresh Release discovery contains 1424 net472 rows and 1460 net10 rows. Both case
+and method inventories match discovery as multisets. The affected control run
+executes 38 cases per framework, up from 34, so the ordinary CI floors increase
+by four to 1455 net472 and 1456 net10. The existing screenshot exclusions and
+net472 theory-row expansions are unchanged. Validation here runs only the two
+edited control classes, affected resource and embedded-editor checks, and the
+.NET 8 template smoke case; it is not a whole-suite run.
+
+## NumberBox focus border
+
+Added `NumberBox_FocusPaint_DoesNotMoveEditorOrSpinButtonsAsync` and
+`NumberBox_FocusedBorder_FollowsLiveThemeChangesAsync`. They cover immediate
+rounded focus painting, stable editor and spin-button bounds, border-edge
+input hits, spin-button focus routing and invocation, and a live theme cycle.
+No existing cases are removed or renamed.
+
+Discovery contains 1426 net472 rows and 1462 net10 rows, two more per target.
+The NumberBox class grows from 20 to 22 runtime cases, so the ordinary CI
+floors rise by two to 1457 net472 and 1458 net10. Screenshot exclusions and
+existing theory-row expansions are unchanged. Validation runs the NumberBox
+class and its spin-button accessible-name check; it is not a whole-suite run.
+
+## AutoSuggestBox focus integration
+
+Added `AutoSuggestBox_FocusedField_KeepsEditorAndPopupAnchorStableThroughThemeChangesAsync`
+to verify the shared focus border inherited through the embedded Fluence TextBox,
+stable editor layout and popup placement target, border-edge hits, query slot,
+and focused Light/Dark/High Contrast publication. Existing suggestion navigation,
+submission, and query-button cases now assert retained editor focus; arrow
+navigation checks the focused border while the popup is open.
+
+No production template or suggestion/keyboard logic changed. Discovery gains
+one row per full target: 1427 net472 and 1463 net10. The AutoSuggestBox class
+grows from 12 to 13 runtime cases, so ordinary CI floors increase by one to
+1458 net472 and 1459 net10. Screenshot exclusions and theory-row expansions
+are unchanged. Validation runs only the AutoSuggestBox class on both targets.
+
+## Editable ComboBox focus border
+
+Added four facts and a two-row theory for the native editable text part, text
+and selection synchronization, read-only mode, routed arrow-key selection,
+dropdown arrow activation, forward and reverse tab traversal, stable custom
+border geometry, live focused theme changes, and editor hit testing beside
+the arrow. No existing cases are removed or renamed.
+
+Fresh Release discovery contains 1433 net472 rows and 1469 net10 rows, six more
+per target. Both case and method inventories match discovery as multisets.
+The ComboBox class grows from 28 to 34 runtime cases, so ordinary CI floors
+increase by six to 1464 net472 and 1465 net10. Screenshot exclusions and
+existing theory-row expansions are unchanged. Validation runs the ComboBox
+class and its dropdown ClearType check on both targets; it is not a whole-suite
+run.
+
+## ColorPicker embedded editor focus
+
+Added two focused integration cases for the eight embedded Hex, RGB, HSV, and
+alpha editors. They cover the shared rounded focus border, stable field and
+editor insets, live theme and accent changes, and Hex-to-color synchronization.
+Existing channel editing cases now exercise retained editor focus. The normal
+clear button can consume editor width when it appears on focus.
+
+No production code or template changed, and no cases are removed or renamed.
+Fresh Release discovery contains 1435 net472 rows and 1471 net10 rows, two more
+per target. Both case and method inventories match discovery as multisets.
+The ColorPicker class grows from 27 to 29 runtime cases, so ordinary CI floors
+increase by two to 1466 net472 and 1467 net10. Screenshot exclusions and
+existing theory-row expansions are unchanged. Validation runs only the
+ColorPicker class on both full test targets.
+
+## ColorPicker Hex character counter
+
+Added one ColorPicker regression for hiding the Hex counter while preserving
+RGB/ARGB input limits and color commits, and one TextBox regression for the
+internal per-instance counter setting across text changes, MaxLength changes,
+and template reapplication. Ordinary TextBox and ColorPicker channel counters
+retain their existing behavior. No cases are removed or renamed.
+
+Fresh Release discovery contains 1437 net472 rows and 1473 net10 rows, two more
+per target. All four case and method inventories match discovery as multisets.
+ColorPicker grows from 29 to 30 runtime cases and TextBox from 22 to 23, so
+ordinary CI floors increase by two to 1468 net472 and 1469 net10. Screenshot
+exclusions and existing theory-row expansions are unchanged. Validation runs
+only the ColorPicker and TextBox classes on both full test targets.
+
+## GitHub issues #82-#84
+
+Release discovery adds six TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync theory
+cases and one TitleBarGlyphButtonStyle_IsIncludedInPublicKeyInventoryAsync fact.
+The one ReducedMotion_ProgressRing_Indeterminate_RendersStaticFrameWithoutClocksAsync
+fact is replaced by two ReducedMotion_ProgressRing_Indeterminate_KeepsAnimatingAsync
+theory cases. No other cases or method names are removed.
+
+The case and method inventories each rise by eight rows: net472 1526 to 1534 and
+net10 1581 to 1589. All four files match fresh Release discovery as multisets;
+unchanged rows retain their committed order for a focused review diff.
+
+The gallery layout follow-up renames MainWindow_TitleBarSearchBox_CentresOnTheTitleBarAsync
+to MainWindow_TitleBarSearchBox_CentresInWindowAndFitsBarHeightAsync. The title
+bar now reserves caption space, so the gallery search is centered in the full window
+while its vertical fit remains checked against the bar. This is a one-for-one rename
+with no case-count change.

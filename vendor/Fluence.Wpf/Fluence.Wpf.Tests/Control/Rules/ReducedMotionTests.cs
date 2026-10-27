@@ -44,21 +44,29 @@ using static Fluence.Wpf.Tests.Infrastructure.VisualTree;
 namespace Fluence.Wpf.Tests.Control.Rules
 {
     /// <summary>
-    /// Reduced-motion tests: when <see cref="MotionHelper.IsMotionEnabled"/> is false (the
-    /// Windows "Show animations in Windows" accessibility setting is off), code-driven
-    /// animations must not start and controls must jump straight to their final visual state.
+    /// Reduced-motion tests: when <see cref="MotionHelper.IsMotionEnabled"/> is false
+    /// (Windows animation effects are off or rendering is software-only), decorative
+    /// code-driven animations must not start and controls jump to their final visual state.
     /// Every test forces the gate through <see cref="MotionHelper.OverrideIsMotionEnabled"/>;
     /// <see cref="DisposeAsync"/> resets it to null so an escaping exception cannot poison a
     /// later animation test.
     /// <para>
-    /// The one deliberate exception is the indeterminate <see cref="Controls.ProgressBar"/>: its
-    /// motion is the only thing that communicates "work is still happening", so it is treated as
-    /// essential status feedback rather than decoration and keeps animating with the gate off.
-    /// See <see cref="ReducedMotion_ProgressBar_Indeterminate_KeepsAnimatingAsync"/>.
+    /// Indeterminate <see cref="Controls.ProgressBar"/> and <see cref="Controls.ProgressRing"/>
+    /// keep animating: their motion communicates ongoing work and is essential status feedback.
+    /// See <see cref="ReducedMotion_ProgressBar_Indeterminate_KeepsAnimatingAsync"/> and
+    /// <see cref="ReducedMotion_ProgressRing_Indeterminate_KeepsAnimatingAsync"/>.
     /// </para>
     /// </summary>
     public sealed class ReducedMotionTests : IAsyncLifetime
     {
+        private sealed class PressableRadioButtonProbe : Controls.RadioButton
+        {
+            public void SetPressed(bool value)
+            {
+                IsPressed = value;
+            }
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -73,15 +81,96 @@ namespace Fluence.Wpf.Tests.Control.Rules
             }));
         }
 
+        [Fact]
+        public Task ReducedMotion_CheckBox_SnapsCheckAndDashWithoutClocksAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                MotionHelper.OverrideIsMotionEnabled = false;
+                Controls.CheckBox checkBox = new() { Content = "Option", IsThreeState = true, IsChecked = false, IsHitTestVisible = false };
+                Window window = new() { Content = checkBox, Width = 240, Height = 120 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Path check = Assert.IsType<Path>(checkBox.Template.FindName("PART_CheckGlyph", checkBox));
+                    Path dash = Assert.IsType<Path>(checkBox.Template.FindName("PART_IndeterminateGlyph", checkBox));
+
+                    checkBox.IsChecked = true;
+                    Assert.Equal(1.0, check.Opacity);
+                    Assert.Equal(0.0, check.StrokeDashOffset);
+                    Assert.False(check.HasAnimatedProperties);
+
+                    checkBox.IsChecked = null;
+                    Assert.Equal(0.0, check.Opacity);
+                    Assert.Equal(1.0, dash.Opacity);
+                    Assert.False(dash.HasAnimatedProperties);
+
+                    checkBox.IsChecked = false;
+                    Assert.Equal(0.0, dash.Opacity);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Fact]
+        public Task ReducedMotion_RadioButton_SnapsGlyphSizesWithoutClocksAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                MotionHelper.OverrideIsMotionEnabled = false;
+                PressableRadioButtonProbe radio = new() { Content = "Option", IsChecked = true, IsHitTestVisible = false };
+                Window window = new() { Content = radio, Width = 240, Height = 120 };
+
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.False(radio.IsMouseOver);
+                    Ellipse glyph = Assert.IsType<Ellipse>(radio.Template.FindName("PART_CheckGlyph", radio));
+                    Border pressedGlyph = Assert.IsType<Border>(radio.Template.FindName("PART_PressedCheckGlyph", radio));
+
+                    Assert.Equal(12, glyph.Width);
+                    radio.SetPressed(value: true);
+                    Assert.Equal(10, glyph.Width);
+                    Assert.Equal(10, glyph.Height);
+                    Assert.Equal(10, pressedGlyph.Width);
+                    Assert.Equal(1, pressedGlyph.Opacity);
+                    Assert.False(glyph.HasAnimatedProperties);
+                    Assert.False(pressedGlyph.HasAnimatedProperties);
+
+                    radio.IsEnabled = false;
+                    Assert.Equal(14, glyph.Width);
+                    Assert.Equal(14, glyph.Height);
+                    Assert.Equal(0, pressedGlyph.Opacity);
+                    Assert.False(glyph.HasAnimatedProperties);
+                    Assert.False(pressedGlyph.HasAnimatedProperties);
+
+                    radio.IsChecked = false;
+                    Assert.Equal(0, glyph.Opacity);
+                    radio.SetPressed(value: false);
+                    radio.IsEnabled = true;
+                    Assert.Equal(12, glyph.Width);
+                    Assert.Equal(12, glyph.Height);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
         /// <summary>
         /// An indeterminate ProgressBar must keep animating even with motion disabled.
         /// <para>
         /// A determinate bar still reads correctly when frozen, because its fill width carries the
         /// information. An indeterminate bar carries no value at all - the movement *is* the
         /// message - so parking it produces a control that looks like a stalled determinate bar
-        /// and tells the user the operation has hung. That is what happened in PSAppDeployToolkit:
-        /// <c language="powershell">Show-ADTInstallationProgress</c> returned normally but its dialog sat motionless on
-        /// any machine with animation effects off, and the install looked frozen. Screen-reader
+        /// and tells the user the operation has hung. A progress dialog that returns normally but
+        /// sits motionless on a machine with animation effects off makes the work look frozen. Screen-reader
         /// users, the exact audience the reduced-motion work was for, very often have animation
         /// effects off.
         /// </para>
@@ -128,10 +217,12 @@ namespace Fluence.Wpf.Tests.Control.Rules
             });
         }
 
-        [Fact]
-        public Task ReducedMotion_ProgressRing_Indeterminate_RendersStaticFrameWithoutClocksAsync()
+        [Theory]
+        [InlineData(16)]
+        [InlineData(32)]
+        public Task ReducedMotion_ProgressRing_Indeterminate_KeepsAnimatingAsync(double size)
         {
-            return WpfTestSta.RunOnStaAsync(static () =>
+            return WpfTestSta.RunOnStaAsync(async () =>
             {
                 MotionHelper.OverrideIsMotionEnabled = false;
 
@@ -139,8 +230,8 @@ namespace Fluence.Wpf.Tests.Control.Rules
                 {
                     IsActive = true,
                     IsIndeterminate = true,
-                    Width = 64,
-                    Height = 64,
+                    Width = size,
+                    Height = size,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 try
@@ -150,16 +241,31 @@ namespace Fluence.Wpf.Tests.Control.Rules
 
                     Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
                     Assert.Equal(Visibility.Visible, indeterminateArc.Visibility);
-                    Assert.NotNull(indeterminateArc.Data);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => indeterminateArc.Data is not null).ConfigureAwait(true),
+                        "The active ring must draw a visible indeterminate arc with reduced motion.");
 
                     RotateTransform rotate = Assert.IsType<RotateTransform>(GetIndeterminateRotateTransform(ring), exactMatch: false);
+                    Assert.True(rotate.HasAnimatedProperties,
+                        "An active indeterminate ring must continue conveying ongoing work with reduced motion.");
+                    double initialAngle = rotate.Angle;
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => Math.Abs(rotate.Angle - initialAngle) > 1.0).ConfigureAwait(true),
+                        "The indeterminate arc must visibly rotate, not merely hold an animation clock.");
+
+                    ring.ShowPaused = true;
+                    WpfTestSta.DrainDispatcher(w.Dispatcher);
                     Assert.False(rotate.HasAnimatedProperties,
-                        "With motion disabled the indeterminate rotation must not run.");
+                        "A paused ring must remain still even when indeterminate activity is essential motion.");
                     Assert.Equal(90.0, rotate.Angle, 0.01);
+                    Assert.NotNull(indeterminateArc.Data);
+
+                    ring.ShowPaused = false;
+                    WpfTestSta.DrainDispatcher(w.Dispatcher);
+                    Assert.True(rotate.HasAnimatedProperties,
+                        "Clearing the paused state must resume the active indicator.");
                 }
                 finally
                 {
-                    w.Close();
+                    CloseWindowAndDrain(w);
                 }
             });
         }

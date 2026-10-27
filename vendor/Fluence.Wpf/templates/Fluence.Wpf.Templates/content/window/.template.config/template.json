@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Dan Cunningham",
+  "classifications": [ "Desktop", "WPF", "Fluent" ],
+  "identity": "Fluence.Wpf.Templates.Window.CSharp",
+  "name": "Fluence WPF Window",
+  "shortName": "fluence-window",
+  "sourceName": "FluenceStarterApp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

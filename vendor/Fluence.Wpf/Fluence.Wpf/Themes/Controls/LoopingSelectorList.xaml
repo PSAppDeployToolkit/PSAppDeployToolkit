@@ -59,7 +59,7 @@
                         <!--  Selected rows sit on the picker's accent band, so they only flip foreground.  -->
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="RootBorder" Property="Background" Value="Transparent" />
-                            <Setter TargetName="ContentHost" Property="TextElement.Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter TargetName="ContentHost" Property="TextElement.Foreground" Value="{DynamicResource PickerSelectedForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="ContentHost" Property="TextElement.Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />

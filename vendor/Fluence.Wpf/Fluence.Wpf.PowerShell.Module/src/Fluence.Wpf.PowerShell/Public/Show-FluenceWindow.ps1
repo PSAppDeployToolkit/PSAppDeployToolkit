@@ -1,4 +1,34 @@
-﻿function Show-FluenceWindow
+﻿<#
+Copyright (c) 2026, Dan Cunningham. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#>
+
+
+function Show-FluenceWindow
 {
     <#
     .SYNOPSIS
@@ -18,14 +48,20 @@
         and the -Data hashtable as the second, and typically sets $Window.Content and wires handlers.
     .PARAMETER Xaml
         A XAML string parsed with XamlReader.Parse. A FluenceWindow (or any Window) root is shown
-        directly; any other root is hosted inside a new FluenceWindow.
+        directly; any other root is hosted inside a new FluenceWindow. String input has no implicit
+        file location for relative resources.
     .PARAMETER XamlPath
         A path to a .xaml file loaded with XamlReader.Load. The path is resolved on the calling thread.
+        Relative resource dictionaries and images resolve beside the supplied XAML file.
     .PARAMETER Initialize
         A scriptblock run against the window after XAML is loaded (XamlString and XamlFile only). It
         receives the window as the first argument and the -Data hashtable as the second.
     .PARAMETER Title
-        The window title. Default 'Fluence'.
+        The window title. -TitleBarText is an alias. Defaults to 'Fluence'. For a Window XAML
+        root, the XAML title remains unless this parameter is bound.
+    .PARAMETER TitleBarIcon
+        Title bar icon from a local file path, file: URI, or pack: URI. Other schemes and missing
+        local files are rejected before UI dispatch. This does not change a message severity icon.
     .PARAMETER Width
         The window width in device-independent pixels.
     .PARAMETER Height
@@ -139,7 +175,11 @@
         [scriptblock]$Initialize,
 
         [Parameter()]
+        [Alias('TitleBarText')]
         [string]$Title = 'Fluence',
+
+        [Parameter()]
+        [string]$TitleBarIcon,
 
         [Parameter()]
         [double]$Width,
@@ -241,6 +281,12 @@
         $accentColor = $Accent
     }
 
+    $titleBarIconSource = $null
+    if ($PSBoundParameters.ContainsKey('TitleBarIcon'))
+    {
+        $titleBarIconSource = Resolve-FluenceImageSource -Image $TitleBarIcon -ParameterName 'TitleBarIcon'
+    }
+
     $mode = $PSCmdlet.ParameterSetName
 
     # Resolve the XAML file on the calling thread so a missing path surfaces a clear caller-thread
@@ -284,6 +330,7 @@
         Mode             = $mode
         Accent           = $accentColor
         ChromeBound      = $chromeBound
+        TitleBarIcon     = $titleBarIconSource
         Content          = $Content
         ContentText      = $contentText
         Initialize       = $Initialize

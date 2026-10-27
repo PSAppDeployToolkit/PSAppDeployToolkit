@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -203,10 +204,115 @@ namespace Fluence.Wpf.Tests.Control
 
                 Assert.Equal(1.0, progressBar.TrackHeight, 0.1);
                 Assert.Equal(1.0, track.Height, 0.1);
-                Assert.Equal(3.2, progressBar.MinHeight, 0.1);
+                Assert.Equal(3, progressBar.MinHeight, 0.01);
                 Assert.Equal(new CornerRadius(1.5), progressBar.CornerRadius);
 
                 w.Close();
+            });
+        }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(0, 1)]
+        [InlineData(8, 0)]
+        [InlineData(8, 1)]
+        [InlineData(24, 0)]
+        [InlineData(24, 1)]
+        [InlineData(25, 0)]
+        [InlineData(25, 1)]
+        public Task ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(double height, double borderThickness)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    BorderThickness = new Thickness(borderThickness),
+                };
+                if (height > 0)
+                {
+                    progressBar.Height = height;
+                }
+
+                System.Windows.Controls.StackPanel panel = new();
+                _ = panel.Children.Add(progressBar);
+                Window window = new() { Content = panel, Width = 300, Height = 120 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(
+                        FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                    System.Windows.Controls.Border fill = Assert.IsType<System.Windows.Controls.Border>(
+                        FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill"), exactMatch: false);
+                    double pixelsPerDip = VisualTreeHelper.GetDpi(progressBar).DpiScaleY;
+
+                    for (int value = 0; value <= 100; value += 50)
+                    {
+                        progressBar.Value = value;
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        double trackCenter = track.TransformToAncestor(progressBar)
+                            .Transform(new Point(0, track.ActualHeight / 2)).Y;
+                        double fillCenter = fill.TransformToAncestor(progressBar)
+                            .Transform(new Point(0, fill.ActualHeight / 2)).Y;
+                        double errorInPixels = Math.Abs(trackCenter - fillCenter) * pixelsPerDip;
+                        Assert.True(errorInPixels < 0.1,
+                            string.Format(CultureInfo.InvariantCulture,
+                                "At {0:0.##}x DPI, Height={1} (0 means Auto), BorderThickness={2}, Value={3}: rendered track and fill centers differ by {4:0.###} device pixels.",
+                                pixelsPerDip, height, borderThickness, value, errorInPixels));
+                    }
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public Task ProgressBar_AutoHeight_ReservesCustomTrackHeightAsync(double borderThickness)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    TrackHeight = 6,
+                    BorderThickness = new Thickness(borderThickness),
+                };
+                System.Windows.Controls.StackPanel panel = new();
+                _ = panel.Children.Add(progressBar);
+                Window window = new() { Content = panel, Width = 300, Height = 120 };
+
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    System.Windows.Controls.Border track = Assert.IsType<System.Windows.Controls.Border>(
+                        FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track"), exactMatch: false);
+                    double oneDevicePixelInDips = 1 / VisualTreeHelper.GetDpi(progressBar).DpiScaleY;
+                    Rect trackBounds = track.TransformToAncestor(progressBar)
+                        .TransformBounds(new Rect(new Size(track.ActualWidth, track.ActualHeight)));
+
+                    Assert.True(progressBar.ActualHeight + oneDevicePixelInDips >= track.ActualHeight + (2 * borderThickness),
+                        "An Auto-height bar must reserve the custom track height and border.");
+                    Assert.True(trackBounds.Top >= -oneDevicePixelInDips,
+                        "The custom track must stay inside the Auto-height bar at the top.");
+                    Assert.True(trackBounds.Bottom <= progressBar.ActualHeight + oneDevicePixelInDips,
+                        "The custom track must stay inside the Auto-height bar at the bottom.");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
             });
         }
 

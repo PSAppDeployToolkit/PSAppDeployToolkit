@@ -26,12 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Tests.Infrastructure;
 using Xunit;
 using static Fluence.Wpf.Tests.Infrastructure.DispatcherWaits;
@@ -160,7 +162,7 @@ namespace Fluence.Wpf.Tests.Control.Rules
         [Fact]
         public Task CheckBox_CheckedGlyph_UsesIndeterminateDashStrokeWeightAsync()
         {
-            return WpfTestSta.RunOnStaAsync(async static () =>
+            return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Window window = new();
 
@@ -182,17 +184,17 @@ namespace Fluence.Wpf.Tests.Control.Rules
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"), exactMatch: false);
-                    Border indeterminateDash = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndeterminateDash"), exactMatch: false);
+                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "PART_CheckGlyph"), exactMatch: false);
+                    Path indeterminateDash = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "PART_IndeterminateGlyph"), exactMatch: false);
 
-                    // The check-in storyboard now fades the glyph in, so sample until it
-                    // settles at the trigger setter steady state instead of asserting
-                    // immediately after the window shows.
-                    Assert.True(await WaitUntilAsync(window.Dispatcher, 3000, () => checkGlyph.Opacity >= 0.99).ConfigureAwait(true),
-                        "Checked CheckBox state should show the check glyph once the check-in animation settles.");
+                    Assert.Equal(1.0, checkGlyph.Opacity, 0.01);
                     Assert.Equal(0.0, indeterminateDash.Opacity, 0.01);
-                    Assert.Equal(indeterminateDash.Height, checkGlyph.StrokeThickness, 0.01);
-                    Assert.Same(indeterminateDash.Background, checkGlyph.Stroke);
+                    Assert.Equal(1.225, checkGlyph.StrokeThickness, 0.001);
+                    Assert.Equal(checkGlyph.StrokeThickness, indeterminateDash.StrokeThickness, 0.001);
+                    Assert.Equal(PenLineCap.Round, checkGlyph.StrokeStartLineCap);
+                    Assert.Equal(PenLineCap.Round, checkGlyph.StrokeDashCap);
+                    Assert.Same(checkBox.FindResource("CheckBoxCheckGlyphForegroundCheckedBrush"), checkGlyph.Stroke);
+                    Assert.Same(checkBox.FindResource("CheckBoxCheckGlyphForegroundIndeterminateBrush"), indeterminateDash.Stroke);
                 }
                 finally
                 {
@@ -204,10 +206,12 @@ namespace Fluence.Wpf.Tests.Control.Rules
         }
 
         [Fact]
-        public Task CheckBox_CheckIn_GlyphAnimatesInAndUncheckRevertsInstantlyAsync()
+        public Task CheckBox_CheckIn_DrawsPathAndUncheckErasesFromStartAsync()
         {
             return WpfTestSta.RunOnStaAsync(async static () =>
             {
+                bool? previousMotion = MotionHelper.OverrideIsMotionEnabled;
+                MotionHelper.OverrideIsMotionEnabled = true;
                 Window window = new();
 
                 try
@@ -228,55 +232,49 @@ namespace Fluence.Wpf.Tests.Control.Rules
                     window.UpdateLayout();
 
                     _ = checkBox.ApplyTemplate();
-                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "CheckGlyph"), exactMatch: false);
+                    Path checkGlyph = Assert.IsType<Path>(FindVisualChildByName<Path>(checkBox, "PART_CheckGlyph"), exactMatch: false);
                     Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
 
                     checkBox.IsChecked = true;
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-
-                    // The check-in storyboard uses FillBehavior="Stop", so once the clocks
-                    // finish the glyph must fall back to the setter-provided steady state:
-                    // opacity 1 from the checked trigger and 1.0/1.0 from the inline
-                    // ScaleTransform. WPF keeps the finished clocks attached (so
-                    // HasAnimatedProperties stays true); the observable contract is that
-                    // the stopped clocks hold nothing and the base values win.
-                    bool settled = await WaitUntilAsync(window.Dispatcher, 5000, () =>
-                        checkGlyph.RenderTransform is ScaleTransform liveScale
-                        && checkGlyph.Opacity >= 0.9999
-                        && liveScale.ScaleX >= 0.9999
-                        && liveScale.ScaleY >= 0.9999).ConfigureAwait(true);
-                    Assert.True(settled,
-                        "The check-in storyboard should complete and hand the glyph back to the trigger setter steady state.");
-
-                    ScaleTransform scale = Assert.IsType<ScaleTransform>(checkGlyph.RenderTransform);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 1000,
+                        () => checkGlyph.Opacity > 0 && checkGlyph.StrokeDashOffset > 0.1
+                            && checkGlyph.StrokeDashOffset < 10.7).ConfigureAwait(true),
+                        "Check-in must reveal a partial path by arc length rather than fading or scaling the whole tick.");
                     Assert.Equal(1.0, checkGlyph.Opacity, 0.001);
-                    Assert.Equal(1.0, scale.ScaleX, 0.001);
-                    Assert.Equal(1.0, scale.ScaleY, 0.001);
+                    Assert.True(checkGlyph.RenderTransform?.Value.IsIdentity ?? true);
+                    FieldInfo segmentActiveField = Assert.IsType<FieldInfo>(typeof(Controls.CheckBox).GetField(
+                        "_segmentActive", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000,
+                        () => System.Math.Abs(checkGlyph.StrokeDashOffset) < 0.01
+                            && !Assert.IsType<bool>(segmentActiveField.GetValue(checkBox))).ConfigureAwait(true));
 
+                    FieldInfo segmentKindField = Assert.IsType<FieldInfo>(typeof(Controls.CheckBox).GetField(
+                        "_segmentKind", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
+                    MethodInfo applyProgress = Assert.IsType<MethodInfo>(typeof(Controls.CheckBox).GetMethod(
+                        "ApplySegmentProgress", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
                     checkBox.IsChecked = false;
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    await window.Dispatcher.InvokeAsync(static () => { },
+                        System.Windows.Threading.DispatcherPriority.Loaded,
+                        TestContext.Current.CancellationToken).Task.ConfigureAwait(true);
+                    Assert.True(Assert.IsType<bool>(segmentActiveField.GetValue(checkBox)),
+                        "Uncheck must start an active segment.");
+                    Assert.Equal("Erase", segmentKindField.GetValue(checkBox)?.ToString());
 
-                    // Uncheck is deliberately not animated: the trigger setters revert
-                    // instantly and the finished Stop storyboard holds nothing, so the
-                    // glyph disappears in the same dispatcher pass.
-                    Assert.Equal(0.0, checkGlyph.Opacity, 0.001);
-                    Assert.Equal(1.0, scale.ScaleX, 0.001);
-                    Assert.Equal(1.0, scale.ScaleY, 0.001);
-
-                    // A second check-in must replay the animation and settle again
-                    // (SnapshotAndReplace hands off the finished clocks).
-                    checkBox.IsChecked = true;
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    bool resettled = await WaitUntilAsync(window.Dispatcher, 5000, () =>
-                        checkGlyph.RenderTransform is ScaleTransform liveScale
-                        && checkGlyph.Opacity >= 0.9999
-                        && liveScale.ScaleX >= 0.9999
-                        && liveScale.ScaleY >= 0.9999).ConfigureAwait(true);
-                    Assert.True(resettled,
-                        "Re-checking must replay the check-in storyboard and settle at the steady state again.");
+                    // The short erase may finish between software-rendered frames. Verify the
+                    // visual mapping at a controlled midpoint, then let the real route finish.
+                    // This checks the partial path; it does not claim a midpoint frame rendered.
+                    _ = applyProgress.Invoke(checkBox, [0.5]);
+                    Assert.True(checkGlyph.StrokeDashOffset < -0.1 && checkGlyph.Opacity > 0,
+                        "At the erase midpoint, the visible stroke must trim from its start.");
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 1000,
+                        () => checkGlyph.Opacity < 0.01
+                            && System.Math.Abs(checkGlyph.StrokeDashOffset) < 0.01).ConfigureAwait(true),
+                        "The real erase route must finish with the glyph hidden and dash offset cleared.");
                 }
                 finally
                 {
+                    MotionHelper.OverrideIsMotionEnabled = previousMotion;
                     window.Content = null;
                     window.UpdateLayout();
                     window.Close();
@@ -327,6 +325,19 @@ namespace Fluence.Wpf.Tests.Control.Rules
                     // Secondary checks: the setters that drive the layout above.
                     Assert.Equal(HorizontalAlignment.Left, checkBox.HorizontalAlignment);
                     Assert.Equal(120.0, checkBox.MinWidth);
+
+                    Border indicator = Assert.IsType<Border>(FindVisualChildByName<Border>(checkBox, "IndicatorHost"), exactMatch: false);
+                    Assert.Equal(20.0, indicator.ActualWidth, 0.01);
+                    Assert.Equal(20.0, indicator.ActualHeight, 0.01);
+                    Assert.True(checkBox.ActualHeight >= 32.0, "The WinUI CheckBox row has a 32-DIP height floor.");
+                    Assert.Equal(new Thickness(8, 5, 0, 0), checkBox.Padding);
+
+                    double indicatorTop = indicator.TransformToAncestor(checkBox).Transform(new Point()).Y;
+                    checkBox.Description = "A second line explains this option.";
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+                    Assert.Equal(indicatorTop,
+                        indicator.TransformToAncestor(checkBox).Transform(new Point()).Y, 0.5);
                 }
                 finally
                 {

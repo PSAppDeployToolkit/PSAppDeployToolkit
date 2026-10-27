@@ -1,0 +1,93 @@
+﻿<fluence:FluenceWindow x:Class="FluenceStarterApp.MainWindow"
+                        x:Name="ShellWindow"
+                        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:fluence="http://schemas.fluencewpf.com"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:vm="clr-namespace:FluenceStarterApp.ViewModels"
+                        xmlns:views="clr-namespace:FluenceStarterApp.Views"
+                        d:DataContext="{d:DesignInstance Type=vm:ShellViewModel, IsDesignTimeCreatable=True}"
+                        Title="FluenceStarterApp"
+                        Width="1000"
+                        Height="720"
+                        MinWidth="720"
+                        MinHeight="520"
+                        Background="{DynamicResource ApplicationBackgroundBrush}"
+                        CornerStyle="Round"
+                        ExtendsContentIntoTitleBar="True"
+                        SystemBackdropType="Auto"
+                        UseLayoutRounding="True"
+                        WindowStartupLocation="CenterScreen"
+                        mc:Ignorable="d">
+    <fluence:FluenceWindow.Resources>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+            <views:HomeView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ActivityViewModel}">
+            <views:ActivityView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView />
+        </DataTemplate>
+    </fluence:FluenceWindow.Resources>
+
+    <fluence:FluenceWindow.TitleBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid Width="20" Height="20" Margin="12,0,8,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Ellipse Width="19" Height="19" Fill="#1D5BAA" Stroke="{DynamicResource TextFillColorPrimaryBrush}" StrokeThickness="1" />
+                <Path Width="14" Height="14" Data="M 7,0 L 14,14 L 7,10 L 0,14 Z" Fill="White" Stretch="Uniform" />
+            </Grid>
+            <fluence:TitleBar
+                x:Name="ShellTitleBar"
+                Grid.Column="1"
+                Title="FluenceStarterApp"
+                IsBackButtonVisible="True"
+                BackCommand="{Binding DataContext.GoBackCommand, ElementName=ShellWindow}"
+                IsPaneToggleButtonVisible="True"
+                PaneToggleRequested="ShellTitleBar_PaneToggleRequested" />
+        </Grid>
+    </fluence:FluenceWindow.TitleBar>
+
+    <fluence:NavigationView x:Name="AppNavigation"
+                            Background="Transparent"
+                            IsBackButtonVisible="False"
+                            IsPaneToggleButtonVisible="False"
+                            IsPaneOpen="{Binding IsPaneOpen, Mode=TwoWay}"
+                            PaneDisplayMode="LeftCompact"
+                            SelectedIndex="0"
+                            ItemInvoked="AppNavigation_ItemInvoked">
+        <fluence:NavigationViewItem x:Name="HomeNavigationItem" AutomationProperties.Name="Home"
+                                    Content="Home"
+                                    Tag="home">
+            <fluence:NavigationViewItem.Icon>
+                <fluence:FontIcon Glyph="&#xE80F;" IconFontSize="16" />
+            </fluence:NavigationViewItem.Icon>
+        </fluence:NavigationViewItem>
+        <fluence:NavigationViewItem x:Name="ActivityNavigationItem" AutomationProperties.Name="Activity"
+                                    Content="Activity"
+                                    Tag="activity">
+            <fluence:NavigationViewItem.Icon>
+                <fluence:FontIcon Glyph="&#xE9D9;" IconFontSize="16" />
+            </fluence:NavigationViewItem.Icon>
+        </fluence:NavigationViewItem>
+
+        <fluence:NavigationView.FooterMenuItems>
+            <fluence:NavigationViewItem x:Name="SettingsNavigationItem" AutomationProperties.Name="Settings"
+                                        Content="Settings"
+                                        Tag="settings">
+                <fluence:NavigationViewItem.Icon>
+                    <fluence:FontIcon Glyph="&#xE713;" IconFontSize="16" />
+                </fluence:NavigationViewItem.Icon>
+            </fluence:NavigationViewItem>
+        </fluence:NavigationView.FooterMenuItems>
+
+        <fluence:NavigationView.Content>
+            <ContentControl Content="{Binding CurrentPage}" />
+        </fluence:NavigationView.Content>
+    </fluence:NavigationView>
+</fluence:FluenceWindow>

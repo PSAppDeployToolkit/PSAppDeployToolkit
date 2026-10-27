@@ -154,6 +154,11 @@ namespace Fluence.Wpf.Controls
 
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
+            RequestClose();
+        }
+
+        internal void RequestClose()
+        {
             RaiseEvent(new TabViewTabCloseRequestedEventArgs(CloseRequestedEvent, this, this, DataContext ?? this));
         }
 

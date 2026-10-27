@@ -52,15 +52,31 @@ namespace Fluence.Wpf.Theming
         /// <param name="resolvedTheme">The concrete theme resolved for the current apply.</param>
         internal static AccentPalette Resolve(AccentIntent intent, ApplicationTheme resolvedTheme)
         {
-            if (intent.IsSystem && RegistryHelper.TryGetAccentPalette(out Color[]? p) && p?.Length >= 7)
+            if (intent.IsSystem)
             {
-                // OS palette order: [Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3, (8th reserved)].
-                // The length guard is defensive: a short or malformed registry blob falls through to
-                // the generated ramp rather than throwing IndexOutOfRangeException on the Apply hot path.
+                return CaptureCurrentSystemPalette() ?? Generate(GetDwmAccentOrDefault());
+            }
+
+            Color baseColor = intent.CustomFor(resolvedTheme);
+            AccentPalette palette = intent.CapturedPaletteFor(resolvedTheme) ?? Generate(baseColor);
+            bool exactForTheme = intent.IsExact && (resolvedTheme is ApplicationTheme.Light
+                || (intent.HasExplicitDark && resolvedTheme is ApplicationTheme.Dark));
+            return exactForTheme ? palette.WithPrimaryOverride(baseColor) : palette;
+        }
+
+        /// <summary>
+        /// Captures the current seven-rung Windows palette once for a custom intent. The system
+        /// intent calls this on every apply so it continues to follow Windows changes.
+        /// </summary>
+        internal static AccentPalette? CaptureCurrentSystemPalette()
+        {
+            if (RegistryHelper.TryGetAccentPalette(out Color[]? p) && p?.Length >= 7)
+            {
+                // OS order: [Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3, reserved].
                 return new AccentPalette(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
             }
-            Color baseColor = intent.IsSystem ? GetDwmAccentOrDefault() : intent.CustomFor(resolvedTheme);
-            return Generate(baseColor);
+
+            return null;
         }
 
         private static AccentPalette Generate(Color baseColor)

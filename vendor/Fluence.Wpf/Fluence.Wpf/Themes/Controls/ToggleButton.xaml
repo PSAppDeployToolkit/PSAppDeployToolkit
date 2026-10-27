@@ -105,10 +105,10 @@
                         <!--  Checked rest  -->
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="1" />
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedBrush}" />
                         </Trigger>
                         <!--  Checked + hover (not pressed)  -->
                         <MultiTrigger>
@@ -117,10 +117,10 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="IsPressed" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOverBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOverBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOverBrush}" />
                         </MultiTrigger>
                         <!--  Checked + pressed  -->
                         <MultiTrigger>
@@ -128,10 +128,10 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsPressed" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressedBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressedBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressedBrush}" />
                             <MultiTrigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource PressedScaleStoryboard}" />
                             </MultiTrigger.EnterActions>
@@ -209,10 +209,10 @@
                                 <Condition Property="IsEnabled" Value="False" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="RestFill" Property="Background" Value="Transparent" />
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedDisabledBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
                             <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="0" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedDisabledBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>

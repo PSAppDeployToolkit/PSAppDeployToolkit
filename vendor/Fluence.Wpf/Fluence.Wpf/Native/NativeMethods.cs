@@ -282,24 +282,6 @@ namespace Fluence.Wpf.Native
         }
 
         /// <summary>
-        /// Cloaks or uncloaks a window via DWMWA_CLOAK. While cloaked,
-        /// DWM keeps the window fully composed off-screen and does not present it. Retained as part
-        /// of the interop contract; <see cref="Controls.FluenceWindow"/> deliberately
-        /// does not cloak (its first-paint flash is solved by clearing the redirection surface), so
-        /// the never-cloak invariant is asserted by the harden tests via
-        /// <see cref="GetWindowCloakedState"/>. Any caller that does cloak MUST guarantee a matching
-        /// uncloak; a window left cloaked is invisible.
-        /// </summary>
-        /// <param name="hwnd">The target window handle.</param>
-        /// <param name="cloak"><see langword="true"/> to cloak, <see langword="false"/> to uncloak.</param>
-        /// <returns><see langword="true"/> on success.</returns>
-        public static bool SetWindowCloak(IntPtr hwnd, bool cloak)
-        {
-            uint value = cloak ? 1u : 0u;
-            return SetWindowAttribute(hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, value);
-        }
-
-        /// <summary>
         /// Reads the read-only DWMWA_CLOAKED attribute, returning the
         /// reason flags for why the window is cloaked. Zero means the window is not cloaked. Returns
         /// zero on any failure (for example when DWM composition is disabled).
@@ -388,16 +370,6 @@ namespace Fluence.Wpf.Native
         public static uint ColorToColorRef(System.Windows.Media.Color color)
         {
             return (uint)((color.B << 16) | (color.G << 8) | color.R);
-        }
-
-        /// <summary>
-        /// Returns whether DWM desktop composition is currently enabled.
-        /// </summary>
-        /// <returns><see langword="true"/> when composition is enabled.</returns>
-        public static bool IsCompositionEnabled()
-        {
-            int result = PInvoke.DwmIsCompositionEnabled(out BOOL enabled);
-            return result is 0 && enabled;
         }
 
         /// <summary>

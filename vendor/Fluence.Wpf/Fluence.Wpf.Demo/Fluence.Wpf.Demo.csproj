@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Fluence.Wpf.Demo</RootNamespace>
     <AssemblyName>Fluence.Wpf.Demo</AssemblyName>
-    <ApplicationIcon>..\assets\Fluence_Icon_Light.ico</ApplicationIcon>
+    <ApplicationIcon>..\assets\Fluence_Icon.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
@@ -23,6 +23,10 @@
     <Resource Include="Resources\ControlImages\*.png" />
     <Resource Include="Resources\SampleMedia\*.png" />
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
+    <Resource Include="Resources\Fluence_Banner_EmbeddedMark.png" />
+    <Resource Include="Resources\Fluence_Banner_EmbeddedWordmark_Light.png" />
+    <Resource Include="Resources\Fluence_Banner_EmbeddedWordmark_Dark.png" />
+    <Resource Include="Resources\Fluence_Banner_EmbeddedTagline.png" />
     <Content Include="Resources\BootstrapIcons.LICENSE.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

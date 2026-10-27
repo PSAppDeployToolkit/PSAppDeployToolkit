@@ -645,14 +645,15 @@ namespace Fluence.Wpf.Controls
         private void UpdateIndeterminateAnimationState()
         {
             bool isPausedVisual = IsPausedVisualState;
-            bool isMotionEnabled = MotionHelper.IsMotionEnabled;
-            if (!IsLoaded || !IsVisible || !IsActive || !IsIndeterminate || isPausedVisual || !isMotionEnabled)
+            // Indeterminate progress is essential status feedback, including on software-rendered
+            // sessions: without motion the active ring looks stalled. Continue its small arc loop
+            // when the OS disables decorative animation, as ProgressBar does. Paused and hidden
+            // rings still stop their clocks.
+            if (!IsLoaded || !IsVisible || !IsActive || !IsIndeterminate || isPausedVisual)
             {
-                // A paused-but-visible ring still renders its static frame, and a ring whose
-                // motion is disabled by the OS "Show animations" setting renders the same
-                // static frame; an invisible ring needs no frame because nothing paints while
-                // it is collapsed or hidden.
-                bool shouldRenderStaticFrame = IsLoaded && IsVisible && IsActive && IsIndeterminate && (isPausedVisual || !isMotionEnabled);
+                // A paused-but-visible ring renders its static frame; an invisible ring needs
+                // no frame because nothing paints while it is collapsed or hidden.
+                bool shouldRenderStaticFrame = IsLoaded && IsVisible && IsActive && IsIndeterminate && isPausedVisual;
                 StopIndeterminateAnimation();
                 if (shouldRenderStaticFrame)
                 {

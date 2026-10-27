@@ -1,0 +1,196 @@
+﻿name: Generate and sync source documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-docs-sync
+  cancel-in-progress: false
+
+jobs:
+  generate-and-sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Build API documentation input
+        shell: pwsh
+        run: dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Release -f net10.0-windows10.0.26100.0
+
+      - name: Generate C# API pages in ignored staging
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md
+
+      - name: Check C# API pages in ignored staging
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md -Check
+
+      - name: Build and stage the PowerShell module
+        shell: pwsh
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release -Build
+
+      # Restores the CurrentUser module the next step installs. Its version check then skips
+      # PowerShell Gallery. Change the key when the pinned version changes.
+      - name: Cache PowerShell documentation generator
+        uses: actions/cache@v6
+        with:
+          path: ~/Documents/PowerShell/Modules
+          key: ${{ runner.os }}-psmodules-docs-alt3docusaurus2.0.1
+
+      - name: Install PowerShell documentation generator
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable Alt3.Docusaurus.Powershell | Where-Object { $_.Version -eq [version]'2.0.1' })) {
+            Install-Module -Name Alt3.Docusaurus.Powershell -RequiredVersion 2.0.1 -Scope CurrentUser -Force -ErrorAction Stop
+          }
+
+      - name: Generate PowerShell function pages in ignored staging
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference
+
+      - name: Check PowerShell function pages in ignored staging
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference -Check
+
+      - name: Confirm source checkout is unchanged
+        shell: pwsh
+        run: |
+          $status = @(git status --porcelain=v1 --untracked-files=all)
+          if ($LASTEXITCODE -ne 0) { throw 'Could not inspect source Git status.' }
+          if ($status.Count -ne 0) { throw "Generation changed source Git status: $($status -join ', ')" }
+
+      - name: Report website sync disabled
+        if: vars.WEBSITE_DOCS_READY != 'true'
+        shell: pwsh
+        run: Write-Host 'WEBSITE_DOCS_READY is not true. References were generated and checked in ignored source artifacts; no website sync or Git commit will run.'
+
+      - name: Verify website token
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        env:
+          WEBSITE_DOCS_TOKEN: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WEBSITE_DOCS_TOKEN)) {
+            throw 'WEBSITE_DOCS_TOKEN is missing. Configure a fine-grained token with Contents: read and write on sintaxasn/Fluence.Wpf.Website.'
+          }
+
+      - name: Checkout website
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: sintaxasn/Fluence.Wpf.Website
+          ref: main
+          token: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+          path: .website
+          persist-credentials: false
+
+      - name: Initialize website ownership manifest when absent
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath '.website/source-docs-manifest.json' -PathType Leaf)) {
+            pwsh -NoProfile -File tools/Docs/Sync-WebsiteDocs.ps1 -WebsiteDocsPath (Join-Path $PWD '.website/docs') -InitializeManifest
+            if ($LASTEXITCODE -ne 0) { throw 'Could not initialize the website ownership manifest.' }
+          }
+
+      - name: Sync selected pages to website checkout
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/Docs/Sync-WebsiteDocs.ps1 -WebsiteDocsPath (Join-Path $PWD '.website/docs')
+
+      - name: Setup pnpm for website validation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          package_json_file: .website/website/package.json
+
+      - name: Setup Node.js for website validation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: .website/website/pnpm-lock.yaml
+
+      - name: Install website dependencies
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website documentation transforms
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm check:docs-transform
+
+      - name: Type check website
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm typecheck
+
+      - name: Build website with synced pages
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        working-directory: .website/website
+        shell: pwsh
+        run: pnpm build
+
+      - name: Commit website documentation
+        if: vars.WEBSITE_DOCS_READY == 'true'
+        shell: pwsh
+        env:
+          WEBSITE_DOCS_TOKEN: ${{ secrets.WEBSITE_DOCS_TOKEN }}
+          SOURCE_DOCS_TOKEN: ${{ github.token }}
+        run: |
+          $sourceEncoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:SOURCE_DOCS_TOKEN"))
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
+          $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $sourceEncoded"
+          $sourceHead = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the source commit.' }
+          $remoteSource = git ls-remote --exit-code origin refs/heads/main
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the current source main commit.' }
+          if (($remoteSource -split '\s+')[0] -ne $sourceHead) {
+            throw 'Source main advanced before website publication. Retry the workflow from the latest main.'
+          }
+          $websiteEncoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:WEBSITE_DOCS_TOKEN"))
+          $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $websiteEncoded"
+          $websiteHead = git -C .website rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the checked out website commit.' }
+          $remoteWebsite = git -C .website ls-remote --exit-code origin refs/heads/main
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the current website main commit.' }
+          if (($remoteWebsite -split '\s+')[0] -ne $websiteHead) {
+            throw 'Website main advanced during documentation generation. Retry the workflow from the latest main.'
+          }
+          git -C .website add -- docs/api docs/powershell/reference docs/controls.md docs/theming.md docs/winui-parity.md source-docs-manifest.json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage website documentation.' }
+          git -C .website diff --cached --quiet
+          $diffExit = $LASTEXITCODE
+          if ($diffExit -eq 0) {
+            Write-Host 'Website documentation is current.'
+          } else {
+            if ($diffExit -ne 1) { throw 'Could not inspect website documentation.' }
+            git -C .website -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs: sync source API and reference pages'
+            if ($LASTEXITCODE -ne 0) { throw 'Could not commit website documentation.' }
+            git -C .website push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw 'Could not publish website documentation. Retry the workflow from the latest main.' }
+          }

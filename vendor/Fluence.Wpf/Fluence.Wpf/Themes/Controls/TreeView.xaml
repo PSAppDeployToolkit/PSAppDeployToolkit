@@ -235,6 +235,10 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
+    <ItemsPanelTemplate x:Key="TreeViewVirtualizingItemsPanel">
+        <VirtualizingStackPanel />
+    </ItemsPanelTemplate>
+
     <!--
         Fluent TreeView style.
         Transparent background, no border, SmoothScrollViewer integration.
@@ -247,6 +251,7 @@
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.PanningMode" Value="Both" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -263,7 +268,7 @@
                         CornerRadius="{DynamicResource ControlCornerRadius}">
                         <controls:SmoothScrollViewer
                             x:Name="PART_ScrollViewer"
-                            CanContentScroll="False"
+                            CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
                             Focusable="False"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                             PanningMode="{TemplateBinding ScrollViewer.PanningMode}"
@@ -273,6 +278,11 @@
                         </controls:SmoothScrollViewer>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!-- Multiple selection is tracked through realized containers. Keep every
+                             root realized even when a consumer locally opts into logical scrolling. -->
+                        <Trigger Property="SelectionMode" Value="{x:Static fluence:TreeViewSelectionMode.Multiple}">
+                            <Setter TargetName="PART_ScrollViewer" Property="CanContentScroll" Value="False" />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </Trigger>
@@ -281,6 +291,24 @@
             </Setter.Value>
         </Setter>
         <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+                    <Condition Property="SelectionMode" Value="{x:Static fluence:TreeViewSelectionMode.Single}" />
+                </MultiTrigger.Conditions>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+                <Setter Property="ItemsPanel" Value="{StaticResource TreeViewVirtualizingItemsPanel}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+                    <Condition Property="SelectionMode" Value="{x:Static fluence:TreeViewSelectionMode.None}" />
+                </MultiTrigger.Conditions>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+                <Setter Property="ItemsPanel" Value="{StaticResource TreeViewVirtualizingItemsPanel}" />
+            </MultiTrigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

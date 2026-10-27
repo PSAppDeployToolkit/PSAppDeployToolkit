@@ -1,0 +1,4 @@
+/.nuget-packages/
+/bin/
+/obj/
+/NuGet.Config

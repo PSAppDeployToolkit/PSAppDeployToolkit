@@ -28,6 +28,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,6 +38,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using Fluence.Wpf.Controls;
 using Fluence.Wpf.Tests.Infrastructure;
 using Xunit;
@@ -49,6 +53,522 @@ namespace Fluence.Wpf.Tests.Control
     /// </summary>
     public sealed class TabViewTests : IClassFixture<LightThemeFixture>
     {
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight)]
+        [InlineData(FlowDirection.RightToLeft)]
+        public Task TabView_OverflowScrollButtons_VisibilityAndClickFollowOffsetAsync(FlowDirection flow)
+        {
+            return RunOverflowTabsAsync((tabs, _, _, window) =>
+            {
+                tabs.FlowDirection = flow;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                ScrollViewer scroller = GetTabScroller(tabs);
+                System.Windows.Controls.Primitives.RepeatButton back = Assert.IsType<System.Windows.Controls.Primitives.RepeatButton>(tabs.Template.FindName("PART_ScrollBackButton", tabs), exactMatch: false);
+                System.Windows.Controls.Primitives.RepeatButton forward = Assert.IsType<System.Windows.Controls.Primitives.RepeatButton>(tabs.Template.FindName("PART_ScrollForwardButton", tabs), exactMatch: false);
+                _ = back.ApplyTemplate();
+                _ = forward.ApplyTemplate();
+                System.Windows.Controls.TextBlock backGlyph = Assert.IsType<System.Windows.Controls.TextBlock>(back.Template.FindName("ScrollBackGlyph", back));
+                System.Windows.Controls.TextBlock forwardGlyph = Assert.IsType<System.Windows.Controls.TextBlock>(forward.Template.FindName("ScrollForwardGlyph", forward));
+                Assert.Equal(flow is FlowDirection.LeftToRight ? "\uE76B" : "\uE76C", backGlyph.Text);
+                Assert.Equal(flow is FlowDirection.LeftToRight ? "\uE76C" : "\uE76B", forwardGlyph.Text);
+                FrameworkElement viewport = Assert.IsType<ScrollContentPresenter>(FindVisualChild<ScrollContentPresenter>(scroller), exactMatch: false);
+                Rect viewportBounds = viewport.TransformToAncestor(window).TransformBounds(new Rect(viewport.RenderSize));
+                Rect forwardBounds = forward.TransformToAncestor(window).TransformBounds(new Rect(forward.RenderSize));
+                Assert.True(flow is FlowDirection.LeftToRight ? forwardBounds.Left >= viewportBounds.Right : forwardBounds.Right <= viewportBounds.Left);
+                TabViewItem first = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromIndex(0));
+                double firstPosition = first.TransformToAncestor(window).Transform(new Point()).X;
+                int firstVisible = GetFirstVisibleHeader(tabs, viewport, window);
+                Assert.Equal(Visibility.Collapsed, back.Visibility);
+                Assert.Equal(Visibility.Visible, forward.Visibility);
+                InputSimulation.RaiseButtonClick(forward);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                double singleClickOffset = scroller.HorizontalOffset;
+                Assert.True(singleClickOffset > 0);
+                Assert.True(GetFirstVisibleHeader(tabs, viewport, window) > firstVisible);
+                double movedPosition = first.TransformToAncestor(window).Transform(new Point()).X;
+                Assert.True(flow is FlowDirection.LeftToRight ? movedPosition < firstPosition : movedPosition > firstPosition);
+                Assert.Equal(Visibility.Visible, back.Visibility);
+                InputSimulation.RaiseButtonClick(back);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(0, scroller.HorizontalOffset, 0.5);
+                Assert.Equal(firstVisible, GetFirstVisibleHeader(tabs, viewport, window));
+                Assert.Equal(Visibility.Collapsed, back.Visibility);
+                tabs.OnApplyTemplate();
+                tabs.OnApplyTemplate();
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                InputSimulation.RaiseButtonClick(forward);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(singleClickOffset, scroller.HorizontalOffset, 0.5);
+                tabs.SelectedIndex = 29;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                Assert.Equal(Visibility.Visible, back.Visibility);
+                InputSimulation.RaiseButtonClick(forward);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(Visibility.Collapsed, forward.Visibility);
+                tabs.SelectedIndex = 0;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                InputSimulation.RaiseButtonClick(forward);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.True(scroller.HorizontalOffset > 0);
+                tabs.IsAddTabButtonVisible = false;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+            });
+        }
+
+        private static int GetFirstVisibleHeader(TabView tabs, FrameworkElement viewport, Window window)
+        {
+            Rect viewportBounds = viewport.TransformToAncestor(window).TransformBounds(new Rect(viewport.RenderSize));
+            for (int index = 0; index < tabs.Items.Count; index++)
+            {
+                TabViewItem header = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromIndex(index));
+                Rect bounds = header.TransformToAncestor(window).TransformBounds(new Rect(header.RenderSize));
+                bounds.Intersect(viewportBounds);
+                if (!bounds.IsEmpty && bounds.Width > 1)
+                {
+                    return index;
+                }
+            }
+            throw new InvalidOperationException("No tab header intersects the visible strip.");
+        }
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight)]
+        [InlineData(FlowDirection.RightToLeft)]
+        public Task TabView_ProgrammaticSelection_RevealsOffscreenHeaderAsync(FlowDirection flow)
+        {
+            return RunOverflowTabsAsync((tabs, _, outer, _) =>
+            {
+                tabs.FlowDirection = flow;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                double horizontal = outer.HorizontalOffset;
+                double vertical = outer.VerticalOffset;
+                tabs.SelectedIndex = 29;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                Assert.True(GetTabScroller(tabs).HorizontalOffset > 0);
+                tabs.SelectedIndex = 0;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                Assert.Equal(horizontal, outer.HorizontalOffset);
+                Assert.Equal(vertical, outer.VerticalOffset);
+            });
+        }
+
+        [Fact]
+        public Task TabView_KeyboardSelection_RevealsOffscreenHeaderAsync()
+        {
+            return RunOverflowTabsAsync(static (tabs, _, _, _) =>
+            {
+                TabViewItem first = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromIndex(0));
+                Assert.True(first.Focus());
+                InputSimulation.RaiseKeyEvent(tabs, Key.End, UIElement.KeyDownEvent);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(29, tabs.SelectedIndex);
+                AssertSelectedHeaderVisible(tabs);
+            });
+        }
+
+        [Fact]
+        public Task TabView_CollectionChanges_KeepSelectedHeaderVisibleAsync()
+        {
+            return RunOverflowTabsAsync(static (tabs, items, _, _) =>
+            {
+                tabs.SelectedIndex = 29;
+                items.Insert(0, "Inserted");
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                items.Move(30, 0);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                items.Move(0, 30);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                items.RemoveAt(tabs.SelectedIndex);
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                items.Clear();
+                items.Add("Replacement first");
+                items.Add("Replacement last");
+                tabs.SelectedIndex = 1;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+            });
+        }
+
+        [Fact]
+        public Task TabView_ResizeAndRetemplate_KeepSelectionVisibleAsync()
+        {
+            return RunOverflowTabsAsync(static (tabs, _, outer, _) =>
+            {
+                tabs.SelectedIndex = 29;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                tabs.Width = 260;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                tabs.Width = 650;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                ScrollViewer oldScroller = GetTabScroller(tabs);
+                double oldOffset = oldScroller.HorizontalOffset;
+                tabs.SelectedIndex = 0;
+                tabs.Template = null;
+                tabs.ClearValue(System.Windows.Controls.Control.TemplateProperty);
+                tabs.SelectedIndex = 29;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.NotSame(oldScroller, GetTabScroller(tabs));
+                AssertSelectedHeaderVisible(tabs);
+                Assert.Equal(oldOffset, oldScroller.HorizontalOffset);
+                double stableOffset = GetTabScroller(tabs).HorizontalOffset;
+                tabs.OnApplyTemplate();
+                tabs.OnApplyTemplate();
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(stableOffset, GetTabScroller(tabs).HorizontalOffset);
+                TabViewItem selected = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromItem(tabs.SelectedItem));
+                selected.Header = "A wider selected header title";
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs);
+                stableOffset = GetTabScroller(tabs).HorizontalOffset;
+                tabs.SelectedIndex = 0;
+                outer.Content = null;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(stableOffset, GetTabScroller(tabs).HorizontalOffset);
+            });
+        }
+
+        private static readonly double[] _oversizedViewportWidths = [280.0, 390.0];
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight)]
+        [InlineData(FlowDirection.RightToLeft)]
+        public Task TabView_OversizedHeader_AlignsLeadingEdgeWithoutOscillationAsync(FlowDirection flow)
+        {
+            return RunOverflowTabsAsync((tabs, _, outer, _) =>
+            {
+                tabs.FlowDirection = flow;
+                double horizontal = outer.HorizontalOffset;
+                double vertical = outer.VerticalOffset;
+                tabs.SelectedIndex = 15;
+                TabViewItem selected = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromIndex(15));
+                selected.MaxWidth = double.PositiveInfinity;
+                selected.Width = 500;
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                AssertSelectedHeaderVisible(tabs, oversized: true);
+                double offset = GetTabScroller(tabs).HorizontalOffset;
+                tabs.OnApplyTemplate();
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.Equal(offset, GetTabScroller(tabs).HorizontalOffset, 0.5);
+                AssertSelectedHeaderVisible(tabs, oversized: true);
+                tabs.SelectedIndex = 14;
+                tabs.SelectedIndex = 15;
+                foreach (double width in _oversizedViewportWidths)
+                {
+                    tabs.Width = width;
+                    WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                    AssertSelectedHeaderVisible(tabs, oversized: true);
+                    double resizedOffset = GetTabScroller(tabs).HorizontalOffset;
+                    WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                    Assert.Equal(resizedOffset, GetTabScroller(tabs).HorizontalOffset, 0.5);
+                }
+                Assert.Equal(horizontal, outer.HorizontalOffset);
+                Assert.Equal(vertical, outer.VerticalOffset);
+            });
+        }
+
+        private static Task RunOverflowTabsAsync(Action<TabView, ObservableCollection<string>, ScrollViewer, Window> scenario)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                ObservableCollection<string> items = new(Enumerable.Range(0, 30).Select(static index => "Tab " + index.ToString("00", CultureInfo.InvariantCulture)));
+                TabView tabs = new() { Width = 330, Height = 200, ItemsSource = items, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+                Grid surface = new() { Width = 800, Height = 600 };
+                _ = surface.Children.Add(tabs);
+                ScrollViewer outer = new() { Content = surface, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+                Window window = new() { Content = outer, Width = 420, Height = 310 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    scenario(tabs, items, outer, window);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        private static ScrollViewer GetTabScroller(TabView tabs)
+        {
+            return Assert.IsType<ScrollViewer>(tabs.Template.FindName("PART_TabContentScroller", tabs), exactMatch: false);
+        }
+
+        private static void AssertSelectedHeaderVisible(TabView tabs, bool oversized = false)
+        {
+            ScrollViewer scroller = GetTabScroller(tabs);
+            ScrollContentPresenter viewport = Assert.IsType<ScrollContentPresenter>(FindVisualChild<ScrollContentPresenter>(scroller), exactMatch: false);
+            TabViewItem selected = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromItem(tabs.SelectedItem));
+            Window window = Window.GetWindow(tabs);
+            Assert.Equal(FlowDirection.LeftToRight, window.FlowDirection);
+            Rect bounds = selected.TransformToAncestor(window).TransformBounds(new Rect(selected.RenderSize));
+            Rect viewportBounds = viewport.TransformToAncestor(window).TransformBounds(new Rect(viewport.RenderSize));
+            if (oversized)
+            {
+                Assert.True(bounds.Width > viewport.ActualWidth);
+                double actualEdge = tabs.FlowDirection is FlowDirection.LeftToRight ? bounds.Left : bounds.Right;
+                double expectedEdge = tabs.FlowDirection is FlowDirection.LeftToRight ? viewportBounds.Left : viewportBounds.Right;
+                Assert.Equal(expectedEdge, actualEdge, 1.0);
+            }
+            else
+            {
+                Assert.InRange(bounds.Left, viewportBounds.Left - 1, viewportBounds.Right);
+                Assert.InRange(bounds.Right, viewportBounds.Left, viewportBounds.Right + 1);
+            }
+        }
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight, "empty")]
+        [InlineData(FlowDirection.RightToLeft, "empty")]
+        [InlineData(FlowDirection.LeftToRight, "removed")]
+        [InlineData(FlowDirection.RightToLeft, "removed")]
+        [InlineData(FlowDirection.LeftToRight, "disabled")]
+        [InlineData(FlowDirection.RightToLeft, "disabled")]
+        [InlineData(FlowDirection.LeftToRight, "hidden")]
+        [InlineData(FlowDirection.RightToLeft, "hidden")]
+        [InlineData(FlowDirection.LeftToRight, "not-focusable")]
+        [InlineData(FlowDirection.RightToLeft, "not-focusable")]
+        public Task TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(FlowDirection flow, string state)
+        {
+            return RunTabEntryAsync((tabs, items, before, after, add) =>
+            {
+                if (string.Equals(state, "removed", StringComparison.Ordinal))
+                {
+                    items.Clear();
+                }
+                else if (items.Count > 0)
+                {
+                    foreach (TabViewItem header in items)
+                    {
+                        if (string.Equals(state, "disabled", StringComparison.Ordinal))
+                        {
+                            header.IsEnabled = false;
+                        }
+                        else if (string.Equals(state, "hidden", StringComparison.Ordinal))
+                        {
+                            header.Visibility = Visibility.Collapsed;
+                        }
+                        else
+                        {
+                            header.Focusable = false;
+                        }
+                    }
+                }
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.True(before.Focus());
+                Assert.True(before.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+                Assert.Same(add, Keyboard.FocusedElement);
+                Assert.True(add.IsTabStop);
+                int originalCount = items.Count;
+                int requests = 0;
+                tabs.AddTabButtonClick += (_, _) => requests++;
+                InputSimulation.RaiseKeyEvent(add, Key.Enter, UIElement.KeyDownEvent);
+                Assert.Equal(1, requests);
+                Assert.Equal(originalCount, items.Count);
+                Assert.True(add.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+                Assert.Same(after, Keyboard.FocusedElement);
+
+                if (items.Count is 0)
+                {
+                    items.Add(new TabViewItem { Header = "New available tab" });
+                }
+                else
+                {
+                    items[0].IsEnabled = true;
+                    items[0].Visibility = Visibility.Visible;
+                    items[0].Focusable = true;
+                }
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.False(add.IsTabStop);
+            }, flow, initiallyEmpty: string.Equals(state, "empty", StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight, false)]
+        [InlineData(FlowDirection.RightToLeft, false)]
+        [InlineData(FlowDirection.LeftToRight, true)]
+        [InlineData(FlowDirection.RightToLeft, true)]
+        public Task TabView_NoAvailableHeader_HiddenOrDisabledAddIsSkippedAsync(FlowDirection flow, bool hide)
+        {
+            return RunTabEntryAsync((tabs, _, before, after, add) =>
+            {
+                if (hide)
+                {
+                    tabs.IsAddTabButtonVisible = false;
+                }
+                else
+                {
+                    add.IsEnabled = false;
+                }
+                WpfTestSta.DrainDispatcher(tabs.Dispatcher);
+                Assert.True(before.Focus());
+                Assert.True(before.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+                Assert.Same(after, Keyboard.FocusedElement);
+            }, flow, initiallyEmpty: true);
+        }
+
+        private static Task RunTabEntryAsync(Action<TabView, ObservableCollection<TabViewItem>, ButtonBase, ButtonBase, ButtonBase> scenario, FlowDirection flow, bool initiallyEmpty)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                ObservableCollection<TabViewItem> items = initiallyEmpty
+                    ? []
+                    : [new TabViewItem { Header = "First" }, new TabViewItem { Header = "Last" }];
+                TabView tabs = new() { Width = 420, Height = 180, ItemsSource = items, FlowDirection = flow };
+                System.Windows.Controls.Button before = new() { Content = "Before tabs" };
+                System.Windows.Controls.Button after = new() { Content = "After tabs" };
+                System.Windows.Controls.StackPanel layout = new();
+                _ = layout.Children.Add(before);
+                _ = layout.Children.Add(tabs);
+                _ = layout.Children.Add(after);
+                Window window = new() { Content = layout, Width = 480, Height = 320 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    ButtonBase add = Assert.IsType<ButtonBase>(tabs.Template.FindName("PART_AddTabButton", tabs), exactMatch: false);
+                    scenario(tabs, items, before, after, add);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(FlowDirection.LeftToRight, Key.Right, Key.Left)]
+        [InlineData(FlowDirection.RightToLeft, Key.Left, Key.Right)]
+        public Task TabView_AddButton_ArrowFocusAndEnterInvokesRequestOnceAsync(FlowDirection flow, Key forward, Key back)
+        {
+            return RunTabKeyboardAsync((tabs, last, add, outside) =>
+            {
+                int requests = 0;
+                tabs.AddTabButtonClick += (_, _) => requests++;
+                _ = last.Focus();
+                InputSimulation.RaiseKeyEvent(last, forward, UIElement.PreviewKeyDownEvent);
+                Assert.Same(add, Keyboard.FocusedElement);
+                Assert.Equal(1, tabs.SelectedIndex);
+                Assert.True(UIElementAutomationPeer.CreatePeerForElement(add).IsKeyboardFocusable());
+                InputSimulation.RaiseKeyEvent(add, Key.Enter, UIElement.KeyDownEvent);
+                Assert.Equal(1, requests);
+                Assert.Equal(2, tabs.Items.Count);
+
+                InputSimulation.RaiseKeyEvent(add, back, UIElement.PreviewKeyDownEvent);
+                Assert.Same(last, Keyboard.FocusedElement);
+                _ = add.Focus();
+                Assert.True(add.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+                Assert.Same(outside, Keyboard.FocusedElement);
+            }, flow);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public Task TabView_AddButton_HiddenOrDisabledIsSkippedAsync(bool hide)
+        {
+            return RunTabKeyboardAsync((tabs, last, add, _) =>
+            {
+                if (hide)
+                {
+                    tabs.IsAddTabButtonVisible = false;
+                }
+                else
+                {
+                    add.IsEnabled = false;
+                }
+                Assert.True(last.Focus());
+                InputSimulation.RaiseKeyEvent(last, Key.Right, UIElement.PreviewKeyDownEvent);
+                Assert.NotSame(add, Keyboard.FocusedElement);
+                Assert.Equal(2, tabs.Items.Count);
+            });
+        }
+
+        [Fact]
+        public Task TabView_CtrlF4_RequestsSelectedClosableTabOnceAsync()
+        {
+            return RunTabKeyboardAsync(static (tabs, last, _, _) =>
+            {
+                int childRequests = 0;
+                int parentRequests = 0;
+                last.CloseRequested += (_, args) =>
+                {
+                    childRequests++;
+                    Assert.Same(last, args.Tab);
+                    Assert.Same(tabs.SelectedItem, args.Item);
+                };
+                tabs.TabCloseRequested += (_, args) =>
+                {
+                    parentRequests++;
+                    Assert.Same(last, args.Tab);
+                    Assert.Same(tabs.SelectedItem, args.Item);
+                };
+                Assert.True(InvokeCloseShortcut(tabs, Key.F4, ModifierKeys.Control));
+                Assert.Equal(1, childRequests);
+                Assert.Equal(1, parentRequests);
+                Assert.Equal(2, tabs.Items.Count);
+            });
+        }
+
+        [Fact]
+        public Task TabView_CtrlF4_GuardsUnclosableAndNoSelectionAsync()
+        {
+            return RunTabKeyboardAsync(static (tabs, last, _, _) =>
+            {
+                int requests = 0;
+                tabs.TabCloseRequested += (_, _) => requests++;
+                Assert.False(InvokeCloseShortcut(tabs, Key.F4, ModifierKeys.None));
+                Assert.False(InvokeCloseShortcut(tabs, Key.F4, ModifierKeys.Control | ModifierKeys.Shift));
+                Assert.False(InvokeCloseShortcut(tabs, Key.Enter, ModifierKeys.Control));
+                last.IsClosable = false;
+                Assert.False(InvokeCloseShortcut(tabs, Key.F4, ModifierKeys.Control));
+                tabs.SelectedIndex = -1;
+                Assert.False(InvokeCloseShortcut(tabs, Key.F4, ModifierKeys.Control));
+                Assert.Equal(0, requests);
+            });
+        }
+
+        private static bool InvokeCloseShortcut(TabView tabs, Key key, ModifierKeys modifiers)
+        {
+            MethodInfo method = Assert.IsType<MethodInfo>(typeof(TabView).GetMethod("TryRequestClose", BindingFlags.Instance | BindingFlags.NonPublic), exactMatch: false);
+            return Assert.IsType<bool>(method.Invoke(tabs, [key, modifiers]));
+        }
+
+        private static Task RunTabKeyboardAsync(Action<TabView, TabViewItem, ButtonBase, ButtonBase> scenario, FlowDirection flow = FlowDirection.LeftToRight)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                TabView tabs = new() { Width = 420, Height = 180, FlowDirection = flow, ItemsSource = (IReadOnlyList<string>)["First", "Last"], SelectedIndex = 1 };
+                System.Windows.Controls.Button outside = new() { Content = "After tabs" };
+                System.Windows.Controls.StackPanel layout = new();
+                _ = layout.Children.Add(tabs);
+                _ = layout.Children.Add(outside);
+                Window window = new() { Content = layout, Width = 480, Height = 280 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    TabViewItem last = Assert.IsType<TabViewItem>(tabs.ItemContainerGenerator.ContainerFromIndex(1));
+                    ButtonBase add = Assert.IsType<ButtonBase>(tabs.Template.FindName("PART_AddTabButton", tabs), exactMatch: false);
+                    scenario(tabs, last, add, outside);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
         public TabViewTests(LightThemeFixture fixture)
         {
             _ = fixture;

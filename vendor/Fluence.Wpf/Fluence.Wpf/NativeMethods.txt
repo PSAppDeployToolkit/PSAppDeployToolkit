@@ -12,7 +12,6 @@ DisplayConfigGetDeviceInfo
 DWM_SYSTEMBACKDROP_TYPE
 DWM_WINDOW_CORNER_PREFERENCE
 DwmGetWindowAttribute
-DwmIsCompositionEnabled
 DwmSetWindowAttribute
 DWMWA_COLOR_DEFAULT
 DWMWA_COLOR_NONE

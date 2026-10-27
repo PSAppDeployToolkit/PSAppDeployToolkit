@@ -1,4 +1,5 @@
 ﻿/*
+ *
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +57,7 @@ namespace Fluence.Wpf.Demo.Pages
         private static readonly string TypeRampXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Typography.TypeRamp",
             "    <StackPanel>\n" +
+            "        <fluence:TextBlock Text=\"Fluence TextBlock uses the Fluent type ramp.\" Typography=\"Subtitle\" />\n" +
             "        <TextBlock Style=\"{StaticResource CaptionTextBlockStyle}\" Text=\"Caption\" />\n" +
             "        <TextBlock Style=\"{StaticResource BodyTextBlockStyle}\" Text=\"Body\" />\n" +
             "        <TextBlock Style=\"{StaticResource BodyStrongTextBlockStyle}\" Text=\"Body Strong\" />\n" +

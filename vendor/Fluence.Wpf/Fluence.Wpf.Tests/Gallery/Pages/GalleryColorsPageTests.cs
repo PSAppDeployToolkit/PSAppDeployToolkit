@@ -34,6 +34,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Fluence.Wpf.Demo;
@@ -57,12 +58,12 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
             new("Text", ["Text", "Accent Text", "Text On Accent"], [4, 4, 2, 2]),
             new("Fill", ["Control Fill", "Control Alt Fill", "Neutral Solid", "Neutral Strong", "Subtle Fill", "Control On Image Fill", "Accent Fill"], [4, 3, 3, 2, 1, 2, 4, 4, 3, 2]),
             new("Stroke", ["Card Stroke", "Control Elevation (gradient strokes)", "Control Stroke", "Control Strong Stroke", "Surface Stroke", "Divider Stroke", "Focus Stroke"], [2, 3, 2, 4, 3, 2, 2, 1, 2]),
-            new("Background", ["Card Background", "Smoke Background", "Layer", "Layer on Acrylic", "Layer on Mica Base Alt", "Solid Background", "Acrylic Background", "Accent Acrylic Background"], [3, 1, 2, 1, 4, 4, 3, 2, 2]),
+            new("Background", ["Card Background", "Smoke Background", "Layer", "Layer on Acrylic", "Layer on Mica Base Alt", "Solid Background", "Mica Background", "Acrylic Background", "Accent Acrylic Background"], [3, 1, 2, 1, 4, 4, 3, 2, 2, 2]),
             new("Signal", ["System"], [3, 3, 3, 3, 1]),
             new("High Contrast", [], [4, 4, 4, 4, 4]),
         ];
 
-        private const int ExpectedTileCount = 136;
+        private const int ExpectedTileCount = 138;
 
         private Window? _host;
         private GalleryColorsPage? _page;
@@ -194,32 +195,45 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                 Application application = WpfTestSta.EnsureApplication();
                 Controls.SelectorBar selector = ColorSelector(page);
                 CornerRadius middle = Assert.IsType<CornerRadius>(application.TryFindResource("DemoColorTileMiddleCornerRadius"), exactMatch: false);
-                Color surfaceColor = Assert.IsType<SolidColorBrush>(application.TryFindResource("SolidBackgroundFillColorBaseBrush"), exactMatch: false).Color;
+                Brush solidSurface = Assert.IsType<SolidColorBrush>(application.TryFindResource("SolidBackgroundFillColorBaseBrush"), exactMatch: false);
+                Brush micaPreviewSurface = Assert.IsType<SolidColorBrush>(application.TryFindResource("SolidBackgroundFillColorTransparentBrush"), exactMatch: false);
 
                 for (int i = 0; i < selector.Items.Count; i++)
                 {
                     SelectSection(selector, i, page.Dispatcher);
                     foreach (UniformGrid row in TileRows(SectionPanel(page)))
                     {
-                        // WinUI Gallery GalleryTileGridStyle: the row sits on the base solid background inside a 1px card stroke.
+                        // Only the Mica Alt preview exposes the host's Mica through its backing surface.
                         Border surface = Assert.IsType<Border>(row.Parent, exactMatch: false);
-                        Assert.Equal(surfaceColor, Assert.IsType<SolidColorBrush>(surface.Background, exactMatch: false).Color);
+                        bool micaAlt = row.Children.Cast<ColorTile>().All(static tile => tile.ColorBrushName.StartsWith("LayerOnMicaBaseAltFillColor", StringComparison.Ordinal));
+                        Assert.Same(micaAlt ? micaPreviewSurface : solidSurface, surface.Background);
                         Assert.Equal(new Thickness(1), surface.BorderThickness);
 
                         List<ColorTile> tiles = [.. row.Children.Cast<ColorTile>()];
                         for (int t = 0; t < tiles.Count; t++)
                         {
                             ColorTile tile = tiles[t];
-                            if (tile.Tag is null)
+                            if (tile.IsBackdropReference)
+                            {
+                                string fallbackKey = string.Equals(tile.ColorName, "Mica Background / Base", StringComparison.Ordinal)
+                                    ? "SolidBackgroundFillColorBaseBrush"
+                                    : "SolidBackgroundFillColorBaseAltBrush";
+                                Assert.Null(tile.Tag);
+                                Assert.Equal(string.Empty, tile.ColorBrushName, StringComparer.Ordinal);
+                                Assert.Same(application.TryFindResource(fallbackKey), tile.Background);
+                            }
+                            else if (tile.Tag is null)
                             {
                                 // A high contrast palette tile paints one of the fixed palettes the
                                 // Gallery prints, not a live theme brush.
                                 continue;
                             }
-
-                            string key = Assert.IsType<string>(tile.Tag, exactMatch: false);
-                            Assert.Equal(key, tile.ColorBrushName, StringComparer.Ordinal);
-                            Assert.Same(application.TryFindResource(key), tile.Background);
+                            else
+                            {
+                                string key = Assert.IsType<string>(tile.Tag, exactMatch: false);
+                                Assert.Equal(key, tile.ColorBrushName, StringComparer.Ordinal);
+                                Assert.Same(application.TryFindResource(key), tile.Background);
+                            }
                             Assert.NotNull(tile.Foreground);
 
                             int column = t % row.Columns;
@@ -247,15 +261,22 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     SelectSection(selector, i, page.Dispatcher);
                     foreach (ColorPageExample example in DemoTestHost.FindVisualChildren<ColorPageExample>(SectionPanel(page)))
                     {
-                        // WinUI Gallery ColorPageExample backgrounds: quarternary solid, except the accent and smoke groups.
+                        // The Mica Alt example exposes the same host material as its swatches.
                         string expectedKey = example.Title switch
                         {
                             "Text On Accent" => "AccentFillColorDefaultBrush",
                             "Smoke Background" => "SmokeFillColorDefaultBrush",
+                            "Layer on Mica Base Alt" => "SolidBackgroundFillColorTransparentBrush",
                             _ => "SolidBackgroundFillColorQuarternaryBrush",
                         };
                         Assert.Same(application.TryFindResource(expectedKey), example.Background);
                         Assert.NotNull(example.ExampleContent);
+                        if (string.Equals(example.Title, "Mica Background", StringComparison.Ordinal))
+                        {
+                            Assert.Contains("Inline previews use solid fallback colors", example.Description, StringComparison.Ordinal);
+                            Assert.Same(application.TryFindResource("SolidBackgroundFillColorBaseBrush"),
+                                Assert.IsType<Controls.Border>(example.ExampleContent, exactMatch: false).Background);
+                        }
                     }
                 }
             });
@@ -328,9 +349,28 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     foreach (ColorTile tile in DemoTestHost.FindVisualChildren<ColorTile>(SectionPanel(page)))
                     {
                         Controls.Button copy = Assert.Single(DemoTestHost.FindVisualChildren<Controls.Button>(tile));
-                        Assert.Equal(tile.ColorBrushName, copy.Tag as string, StringComparer.Ordinal);
-                        Assert.Equal("Copy brush name", AutomationProperties.GetName(copy), StringComparer.Ordinal);
-                        _ = copiedKeys.Add(tile.ColorBrushName);
+                        Assert.Equal(tile.CopyPayload, copy.Tag as string, StringComparer.Ordinal);
+                        if (tile.IsBackdropReference)
+                        {
+                            string expected = string.Equals(tile.ColorName, "Mica Background / Base", StringComparison.Ordinal)
+                                ? "SystemBackdropType=\"Mica\""
+                                : "SystemBackdropType=\"Tabbed\"";
+                            Assert.Equal(expected, tile.CopyPayload, StringComparer.Ordinal);
+                            Assert.Equal("Copy backdrop setting", AutomationProperties.GetName(copy), StringComparer.Ordinal);
+                            Assert.Equal("Copy backdrop setting", copy.ToolTip as string, StringComparer.Ordinal);
+                            TextBlock footer = Assert.IsType<TextBlock>(DemoTestHost.FindByName<TextBlock>(tile, "BackdropReferenceFooter"), exactMatch: false);
+                            Assert.Equal(Visibility.Visible, footer.Visibility);
+                            Hyperlink[] links = [.. footer.Inlines.OfType<Hyperlink>()];
+                            Assert.Equal(2, links.Length);
+                            Assert.Equal("https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop", links[0].NavigateUri.AbsoluteUri, StringComparer.Ordinal);
+                            Assert.Equal("https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.systembackdropelement", links[1].NavigateUri.AbsoluteUri, StringComparer.Ordinal);
+                        }
+                        else
+                        {
+                            Assert.Equal(tile.ColorBrushName, tile.CopyPayload, StringComparer.Ordinal);
+                            Assert.Equal("Copy brush name", AutomationProperties.GetName(copy), StringComparer.Ordinal);
+                            _ = copiedKeys.Add(tile.ColorBrushName);
+                        }
                     }
                 }
 
@@ -365,10 +405,22 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
 
                     Assert.True(resourceKeys.Count >= 100, "Colors page should expose the WinUI brush catalogue.");
 
+                    SelectSection(selector, 3, window.Dispatcher);
+                    UniformGrid micaAltRow = Assert.Single(TileRows(SectionPanel(page)),
+                        static row => row.Children.Cast<ColorTile>().All(static tile => tile.ColorBrushName.StartsWith("LayerOnMicaBaseAltFillColor", StringComparison.Ordinal)));
+                    Border micaAltSurface = Assert.IsType<Border>(micaAltRow.Parent, exactMatch: false);
+                    ColorPageExample micaAltExample = Assert.Single(DemoTestHost.FindVisualChildren<ColorPageExample>(SectionPanel(page)),
+                        static example => string.Equals(example.Title, "Layer on Mica Base Alt", StringComparison.Ordinal));
+                    Controls.Border tab = Assert.IsType<Controls.Border>(micaAltExample.ExampleContent, exactMatch: false);
+                    ColorTile[] micaBackgroundTiles = [.. DemoTestHost.FindVisualChildren<ColorTile>(SectionPanel(page))
+                        .Where(static tile => tile.IsBackdropReference)];
+                    Assert.Equal(2, micaBackgroundTiles.Length);
+
                     ApplicationTheme[] themes =
                     [
                         ApplicationTheme.Light,
                         ApplicationTheme.Dark,
+                        ApplicationTheme.Light,
                         ApplicationTheme.HighContrast,
                     ];
 
@@ -377,15 +429,44 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     {
                         ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
                         ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                         // Elevation strokes resolve as gradient brushes, so only presence is asserted.
                         unresolved.AddRange(resourceKeys.Where(key => application.TryFindResource(key) is not Brush).Select(key => theme + ": " + key));
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorTransparentBrush"), micaAltSurface.Background);
+                        Assert.Same(micaAltSurface.Background, micaAltExample.Background);
+                        Assert.Equal(0, Assert.IsType<SolidColorBrush>(micaAltSurface.Background, exactMatch: false).Color.A);
+                        Assert.Same(application.TryFindResource("LayerOnMicaBaseAltFillColorDefaultBrush"), tab.Background);
+                        foreach (ColorTile tile in micaAltRow.Children.Cast<ColorTile>())
+                        {
+                            Assert.Same(application.TryFindResource(tile.ColorBrushName), tile.Background);
+                        }
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorBaseBrush"), micaBackgroundTiles[0].Background);
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorBaseAltBrush"), micaBackgroundTiles[1].Background);
+                        AssertBackdropLinkForegrounds(application, micaBackgroundTiles);
+
+                        // An accent publication must not leave either the preview backing or a tile
+                        // bound to a stale brush instance.
+                        ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x22, 0x44, 0x66));
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorTransparentBrush"), micaAltSurface.Background);
+                        Assert.Same(micaAltSurface.Background, micaAltExample.Background);
+                        Assert.Same(application.TryFindResource("LayerOnMicaBaseAltFillColorDefaultBrush"), tab.Background);
+                        foreach (ColorTile tile in micaAltRow.Children.Cast<ColorTile>())
+                        {
+                            Assert.Same(application.TryFindResource(tile.ColorBrushName), tile.Background);
+                        }
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorBaseBrush"), micaBackgroundTiles[0].Background);
+                        Assert.Same(application.TryFindResource("SolidBackgroundFillColorBaseAltBrush"), micaBackgroundTiles[1].Background);
+                        AssertBackdropLinkForegrounds(application, micaBackgroundTiles);
                     }
 
                     Assert.Empty(unresolved);
                 }
                 finally
                 {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+                    ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
                     DemoTestHost.CloseWindow(window);
                 }
             });
@@ -464,13 +545,10 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
         }
 
         /// <summary>
-        /// The copy button copies the brush key and acknowledges it with the Gallery's success cue:
-        /// the glyph swaps to a checkmark and the tooltip reports the copy. The cue is tied to the
-        /// copy actually landing, so what is asserted here is that the two agree. The clipboard is
-        /// a single machine wide resource that this suite cannot own (another process holding it
-        /// makes both a copy and a seeded read fail, and a stale value then reads exactly like a
-        /// fresh copy), so the round trip itself is out of scope; the invariant that matters, and
-        /// the one the cue previously broke, is that the button never claims a copy it did not make.
+        /// A brush tile with only ColorBrushName still copies that key; both material tiles copy
+        /// usable WPF window settings. The success cue and clipboard text agree when a copy lands,
+        /// and the cue returns to its material-specific resting state. The clipboard is machine-wide,
+        /// so a blocked copy may stay in its resting state without claiming success.
         /// </summary>
         [Fact]
         public Task GalleryColorsPage_CopyButton_CueAgreesWithWhetherTheCopyLandedAsync()
@@ -479,33 +557,60 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
             {
                 GalleryColorsPage page = Page();
                 ColorTile tile = DemoTestHost.FindVisualChildren<ColorTile>(page).First();
-                Controls.Button copy = Assert.IsType<Controls.Button>(
-                    DemoTestHost.FindByName<Controls.Button>(tile, "CopyBrushNameButton"), exactMatch: false);
-                Controls.FontIcon glyph = Assert.IsType<Controls.FontIcon>(
-                    DemoTestHost.FindByName<Controls.FontIcon>(tile, "CopyBrushNameGlyph"), exactMatch: false);
+                tile.CopyPayload = string.Empty; // Existing standalone ColorTile callers only set ColorBrushName.
+                await AssertCopyCueAsync(tile, tile.ColorBrushName, isBackdrop: false, page.Dispatcher).ConfigureAwait(true);
 
-                Assert.True(copy.IsHitTestVisible, "The copy button must stay clickable.");
-                Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
-                Assert.Equal("Copy brush name", copy.ToolTip as string, StringComparer.Ordinal);
-
-                copy.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-
-                // DemoClipboard retries on a background priority dispatcher timer, five attempts
-                // 40 ms apart, so the outcome is not settled when the click returns.
-                await DispatcherDelayWaits.WaitForAnimationAndDrainByDelayAsync(page.Dispatcher, 400).ConfigureAwait(true);
-
-                // Exactly one of the two states, never a checkmark over the resting tooltip or the
-                // reverse, which is what an unconditional cue produced.
-                if (string.Equals(glyph.Glyph, "", StringComparison.Ordinal))
-                {
-                    Assert.Equal("Brush name copied to clipboard", copy.ToolTip as string, StringComparer.Ordinal);
-                }
-                else
-                {
-                    Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
-                    Assert.Equal("Copy brush name", copy.ToolTip as string, StringComparer.Ordinal);
-                }
+                SelectSection(ColorSelector(page), 3, page.Dispatcher);
+                ColorTile[] materialTiles = [.. DemoTestHost.FindVisualChildren<ColorTile>(SectionPanel(page))
+                    .Where(static candidate => candidate.IsBackdropReference)];
+                Assert.Equal(2, materialTiles.Length);
+                await AssertCopyCueAsync(materialTiles[0], "SystemBackdropType=\"Mica\"", isBackdrop: true, page.Dispatcher).ConfigureAwait(true);
+                await AssertCopyCueAsync(materialTiles[1], "SystemBackdropType=\"Tabbed\"", isBackdrop: true, page.Dispatcher).ConfigureAwait(true);
             });
+        }
+
+        private static async Task AssertCopyCueAsync(ColorTile tile, string expectedText, bool isBackdrop, Dispatcher dispatcher)
+        {
+            Controls.Button copy = Assert.IsType<Controls.Button>(
+                DemoTestHost.FindByName<Controls.Button>(tile, "CopyBrushNameButton"), exactMatch: false);
+            Controls.FontIcon glyph = Assert.IsType<Controls.FontIcon>(
+                DemoTestHost.FindByName<Controls.FontIcon>(tile, "CopyBrushNameGlyph"), exactMatch: false);
+            string restingTooltip = isBackdrop ? "Copy backdrop setting" : "Copy brush name";
+            string copiedTooltip = isBackdrop ? "Backdrop setting copied to clipboard" : "Brush name copied to clipboard";
+
+            Assert.True(copy.IsHitTestVisible, "The copy button must stay clickable.");
+            Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
+            Assert.Equal(restingTooltip, copy.ToolTip as string, StringComparer.Ordinal);
+            copy.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+
+            // DemoClipboard retries on a background-priority dispatcher timer, five attempts 40 ms apart.
+            await DispatcherDelayWaits.WaitForAnimationAndDrainByDelayAsync(dispatcher, 400).ConfigureAwait(true);
+            if (string.Equals(glyph.Glyph, "", StringComparison.Ordinal))
+            {
+                Assert.Equal(copiedTooltip, copy.ToolTip as string, StringComparer.Ordinal);
+                Assert.Equal(expectedText, Clipboard.GetText(), StringComparer.Ordinal);
+            }
+            else
+            {
+                Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
+                Assert.Equal(restingTooltip, copy.ToolTip as string, StringComparer.Ordinal);
+            }
+
+            await DispatcherDelayWaits.WaitForAnimationAndDrainByDelayAsync(dispatcher, 1300).ConfigureAwait(true);
+            Assert.Equal("", glyph.Glyph, StringComparer.Ordinal);
+            Assert.Equal(restingTooltip, copy.ToolTip as string, StringComparer.Ordinal);
+        }
+
+        private static void AssertBackdropLinkForegrounds(Application application, IEnumerable<ColorTile> tiles)
+        {
+            foreach (ColorTile tile in tiles)
+            {
+                TextBlock footer = Assert.IsType<TextBlock>(DemoTestHost.FindByName<TextBlock>(tile, "BackdropReferenceFooter"), exactMatch: false);
+                foreach (Hyperlink link in footer.Inlines.OfType<Hyperlink>())
+                {
+                    Assert.Same(application.TryFindResource("AccentTextFillColorPrimaryBrush"), link.Foreground);
+                }
+            }
         }
 
         /// <summary>

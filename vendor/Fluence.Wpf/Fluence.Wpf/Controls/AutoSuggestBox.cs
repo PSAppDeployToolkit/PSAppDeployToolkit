@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
@@ -295,6 +296,7 @@ namespace Fluence.Wpf.Controls
             base.OnApplyTemplate();
 
             _textBox?.TextChanged -= OnTextBoxTextChanged;
+            _textBox?.RemoveHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler(OnTextBoxMouseLeftButtonUp));
             _suggestionsList?.PreviewMouseLeftButtonUp -= OnSuggestionsListPreviewMouseLeftButtonUp;
             _popup?.Closed -= OnPopupClosed;
             _queryButton?.Click -= OnQueryButtonClick;
@@ -305,6 +307,7 @@ namespace Fluence.Wpf.Controls
             _queryButton = GetTemplateChild(PART_QueryButton) as ButtonBase;
 
             _textBox?.TextChanged += OnTextBoxTextChanged;
+            _textBox?.AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler(OnTextBoxMouseLeftButtonUp), handledEventsToo: true);
             _suggestionsList?.PreviewMouseLeftButtonUp += OnSuggestionsListPreviewMouseLeftButtonUp;
             _popup?.Closed += OnPopupClosed;
             _queryButton?.Click += OnQueryButtonClick;
@@ -380,7 +383,30 @@ namespace Fluence.Wpf.Controls
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((AutoSuggestBox)d).UpdateSuggestionListState();
+            AutoSuggestBox box = (AutoSuggestBox)d;
+            if (e.OldValue is INotifyCollectionChanged oldSource)
+            {
+                CollectionChangedEventManager.RemoveHandler(oldSource, box.OnSuggestionsCollectionChanged);
+            }
+            if (e.NewValue is INotifyCollectionChanged newSource)
+            {
+                CollectionChangedEventManager.AddHandler(newSource, box.OnSuggestionsCollectionChanged);
+            }
+            box.UpdateSuggestionListState();
+        }
+
+        private void OnSuggestionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                _ = Dispatcher.BeginInvoke(new Action(() => OnSuggestionsCollectionChanged(sender, e)));
+                return;
+            }
+
+            if (ReferenceEquals(sender, ItemsSource))
+            {
+                UpdateSuggestionListState();
+            }
         }
 
         /// <summary>
@@ -432,6 +458,24 @@ namespace Fluence.Wpf.Controls
                 _pendingChangeReason = null;
             }
 
+            UpdateSuggestionListState();
+        }
+
+        private void OnTextBoxMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!ReferenceEquals(sender, _textBox) || !IsLoaded || !IsKeyboardFocusWithin)
+            {
+                return;
+            }
+
+            if (e.OriginalSource is DependencyObject source && _queryButton is not null &&
+                (ReferenceEquals(source, _queryButton) || _queryButton.IsAncestorOf(source)))
+            {
+                return;
+            }
+
+            // The editor may take mouse capture after focus opened the light-dismiss
+            // popup during mouse-down. Once its click is complete, restore the list.
             UpdateSuggestionListState();
         }
 

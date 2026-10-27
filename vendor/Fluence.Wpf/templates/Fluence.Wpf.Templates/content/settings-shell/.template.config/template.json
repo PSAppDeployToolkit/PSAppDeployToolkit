@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Dan Cunningham",
+  "classifications": [ "Desktop", "WPF", "Fluent", "Settings" ],
+  "identity": "Fluence.Wpf.Templates.SettingsShell.CSharp",
+  "name": "Fluence WPF Settings Shell",
+  "shortName": "fluence-settings",
+  "sourceName": "FluenceStarterApp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

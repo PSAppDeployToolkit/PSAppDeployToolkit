@@ -26,15 +26,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GallerySelectionPage : Page
     {
         private bool _updatingSelectAll;
+        private readonly ObservableCollection<string> _comboBoxOptions = ["Alpha", "Beta", "Gamma"];
+        private int _addedComboBoxOptionCount;
 
         private static readonly string CheckBoxStatesXamlSource = DemoSampleXaml.UserControl(
             "Fluence.Wpf.Demo.Pages.Selection.CheckBoxStates",
@@ -197,8 +203,18 @@ namespace Fluence.Wpf.Demo.Pages
                                                             "            <TextBlock\n" +
                                                             "                x:Name=\"WorkToggleStateText\"\n" +
                                                             "                Margin=\"12,0,0,0\"\n" +
-                                                            "                VerticalAlignment=\"Center\"\n" +
-                                                            "                Text=\"On\" />\n" +
+                                                            "                VerticalAlignment=\"Center\">\n" +
+                                                            "                <TextBlock.Style>\n" +
+                                                            "                    <Style TargetType=\"TextBlock\">\n" +
+                                                            "                        <Setter Property=\"Text\" Value=\"Off\" />\n" +
+                                                            "                        <Style.Triggers>\n" +
+                                                            "                            <DataTrigger Binding=\"{Binding IsChecked, ElementName=WorkToggleSwitch}\" Value=\"True\">\n" +
+                                                            "                                <Setter Property=\"Text\" Value=\"On\" />\n" +
+                                                            "                            </DataTrigger>\n" +
+                                                            "                        </Style.Triggers>\n" +
+                                                            "                    </Style>\n" +
+                                                            "                </TextBlock.Style>\n" +
+                                                            "            </TextBlock>\n" +
                                                             "            <fluence:ProgressRing\n" +
                                                             "                x:Name=\"WorkToggleProgressRing\"\n" +
                                                             "                Width=\"36\"\n" +
@@ -292,9 +308,72 @@ namespace Fluence.Wpf.Demo.Pages
                                                              "    }\n" +
                                                              "}\n";
 
+        private static readonly string ComboBoxBoundXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Selection.ComboBoxBound",
+            "    <StackPanel>\n" +
+            "        <fluence:ComboBox x:Name=\"ItemsSourceDemoCombo\" Width=\"480\" HorizontalAlignment=\"Left\" PlaceholderText=\"Choose from a changing list\" SelectionChanged=\"ItemsSourceDemoCombo_SelectionChanged\" />\n" +
+            "        <fluence:Button x:Name=\"AddComboBoxOptionButton\" HorizontalAlignment=\"Left\" Click=\"AddComboBoxOptionButton_Click\" Content=\"Add option\" />\n" +
+            "        <fluence:ComboBox x:Name=\"EditableDemoCombo\" Width=\"480\" HorizontalAlignment=\"Left\" IsEditable=\"True\" PlaceholderText=\"Type or select a value\" SelectionChanged=\"EditableDemoCombo_SelectionChanged\" DropDownClosed=\"EditableDemoCombo_DropDownClosed\" KeyDown=\"EditableDemoCombo_KeyDown\" LostKeyboardFocus=\"EditableDemoCombo_LostKeyboardFocus\" />\n" +
+            "        <TextBlock x:Name=\"ItemsSourceComboStateLabel\" Text=\"SelectedItem: none\" />\n" +
+            "        <TextBlock x:Name=\"EditableComboStateLabel\" Text=\"Text: none; SelectedItem: none\" />\n" +
+            "    </StackPanel>\n");
+
+        private const string ComboBoxBoundCSharpSource = "using System;\n" +
+                                                         "using System.Collections.ObjectModel;\n" +
+                                                         "using System.Globalization;\n" +
+                                                         "using System.Windows;\n" +
+                                                         "using System.Windows.Controls;\n" +
+                                                         "using System.Windows.Input;\n" +
+                                                         "using System.Windows.Threading;\n" +
+                                                         "\n" +
+                                                         "namespace Fluence.Wpf.Demo.Pages.Selection\n" +
+                                                         "{\n" +
+                                                         "public partial class ComboBoxBound : UserControl\n" +
+                                                         "{\n" +
+                                                         "    private readonly ObservableCollection<string> options = [\"Alpha\", \"Beta\", \"Gamma\"];\n" +
+                                                         "    private int addedOptionCount;\n" +
+                                                         "\n" +
+                                                         "    public ComboBoxBound()\n" +
+                                                         "    {\n" +
+                                                         "        InitializeComponent();\n" +
+                                                         "        ItemsSourceDemoCombo.ItemsSource = options;\n" +
+                                                         "        EditableDemoCombo.ItemsSource = options;\n" +
+                                                         "    }\n" +
+                                                         "\n" +
+                                                         "    private void AddComboBoxOptionButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                         "    {\n" +
+                                                         "        addedOptionCount++;\n" +
+                                                         "        options.Add($\"Option {addedOptionCount}\");\n" +
+                                                         "    }\n" +
+                                                         "\n" +
+                                                         "    private void ItemsSourceDemoCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)\n" +
+                                                         "    {\n" +
+                                                         "        ItemsSourceComboStateLabel.Text = $\"SelectedItem: {ItemsSourceDemoCombo.SelectedItem ?? \"none\"}\";\n" +
+                                                         "    }\n" +
+                                                         "\n" +
+                                                         "    private void EditableDemoCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)\n" +
+                                                         "        => Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(Commit));\n" +
+                                                         "    private void EditableDemoCombo_DropDownClosed(object sender, EventArgs e)\n" +
+                                                         "        => Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(Commit));\n" +
+                                                         "    private void EditableDemoCombo_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => Commit();\n" +
+                                                         "    private void EditableDemoCombo_KeyDown(object sender, KeyEventArgs e)\n" +
+                                                         "    {\n" +
+                                                         "        if (e.Key == Key.Return) Commit();\n" +
+                                                         "    }\n" +
+                                                         "\n" +
+                                                         "    private void Commit()\n" +
+                                                         "    {\n" +
+                                                         "        string text = string.IsNullOrWhiteSpace(EditableDemoCombo.Text) ? \"none\" : EditableDemoCombo.Text;\n" +
+                                                         "        EditableComboStateLabel.Text = $\"Text: {text}; SelectedItem: {EditableDemoCombo.SelectedItem ?? \"none\"}\";\n" +
+                                                         "    }\n" +
+                                                         "}\n" +
+                                                         "}\n";
+
         public GallerySelectionPage()
         {
             InitializeComponent();
+            ItemsSourceDemoCombo.ItemsSource = _comboBoxOptions;
+            EditableDemoCombo.ItemsSource = _comboBoxOptions;
 
             DemoSamplePageWiring.Apply(
                 (DependencyObject)Content,
@@ -302,7 +381,8 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(2, RadioButtonGroupsXamlSource, RadioButtonGroupsCSharpSource),
                 new DemoSampleSource(3, ToggleSwitchStatesXamlSource, ToggleSwitchStatesCSharpSource),
                 new DemoSampleSource(4, RatingControlXamlSource, RatingControlCSharpSource),
-                new DemoSampleSource(5, ComboBoxSelectionXamlSource, ComboBoxSelectionCSharpSource));
+                new DemoSampleSource(5, ComboBoxSelectionXamlSource, ComboBoxSelectionCSharpSource),
+                new DemoSampleSource(6, ComboBoxBoundXamlSource, ComboBoxBoundCSharpSource));
         }
 
         private void SelectAllCheckBox_Changed(object? sender, RoutedEventArgs? e)
@@ -353,6 +433,60 @@ namespace Fluence.Wpf.Demo.Pages
                 CultureInfo.CurrentCulture,
                 "Selected: {0}",
                 SelectionDemoCombo.SelectedItem is ComboBoxItem selectedItem ? selectedItem.Content : "none");
+        }
+
+        private void AddComboBoxOptionButton_Click(object sender, RoutedEventArgs e)
+        {
+            _addedComboBoxOptionCount++;
+            _comboBoxOptions.Add(string.Format(CultureInfo.CurrentCulture, "Option {0}", _addedComboBoxOptionCount));
+        }
+
+        private void ItemsSourceDemoCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ItemsSourceComboStateLabel is not null && ItemsSourceDemoCombo is not null)
+            {
+                ItemsSourceComboStateLabel.Text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    "SelectedItem: {0}",
+                    ItemsSourceDemoCombo.SelectedItem ?? "none");
+            }
+        }
+
+        private void EditableDemoCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(CommitEditableComboState));
+        }
+
+        private void EditableDemoCombo_DropDownClosed(object sender, EventArgs e)
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(CommitEditableComboState));
+        }
+
+        private void EditableDemoCombo_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key is Key.Return)
+            {
+                CommitEditableComboState();
+            }
+        }
+
+        private void EditableDemoCombo_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            CommitEditableComboState();
+        }
+
+        private void CommitEditableComboState()
+        {
+            if (EditableComboStateLabel is null || EditableDemoCombo is null)
+            {
+                return;
+            }
+
+            EditableComboStateLabel.Text = string.Format(
+                CultureInfo.CurrentCulture,
+                "Text: {0}; SelectedItem: {1}",
+                string.IsNullOrWhiteSpace(EditableDemoCombo.Text) ? "none" : EditableDemoCombo.Text,
+                EditableDemoCombo.SelectedItem ?? "none");
         }
     }
 }

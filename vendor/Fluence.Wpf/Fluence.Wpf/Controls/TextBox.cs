@@ -248,6 +248,22 @@ namespace Fluence.Wpf.Controls
             TextChanged += OnTextChanged;
         }
 
+        // Compact embedded editors can retain MaxLength without painting a counter over their text.
+        internal bool ShowCharacterCounter
+        {
+            get;
+            set
+            {
+                if (field == value)
+                {
+                    return;
+                }
+
+                field = value;
+                UpdateCharacterCounter();
+            }
+        } = true;
+
         /// <inheritdoc />
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
@@ -293,7 +309,7 @@ namespace Fluence.Wpf.Controls
             {
                 return;
             }
-            if (MaxLength <= 0)
+            if (MaxLength <= 0 || !ShowCharacterCounter)
             {
                 counter.Visibility = Visibility.Collapsed;
                 return;

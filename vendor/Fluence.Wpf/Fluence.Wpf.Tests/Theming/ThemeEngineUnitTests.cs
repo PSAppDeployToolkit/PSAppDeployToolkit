@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests.Theming
 
         private static AccentPalette MakeTestPalette()
         {
-            return AccentResolver.Resolve(AccentIntent.FromCustom(TestBlue), ApplicationTheme.Light);
+            return AccentResolver.Resolve(AccentIntent.FromCustomGenerated(TestBlue), ApplicationTheme.Light);
         }
 
         // ------------------------------------------------------------------ ColorMap --
@@ -108,9 +108,9 @@ namespace Fluence.Wpf.Tests.Theming
         }
 
         /// <summary>
-        /// ColorMap.Build for HighContrast must not emit AccentFillColorDisabled from the C# path
-        /// (the HC guard skips both AccentFillColorDisabled and SystemFillColorAttention overrides).
-        /// The test verifies the HC build produces a result and contains SystemAccentColor.
+        /// ColorMap.Build for HighContrast must still emit the raw SystemAccentColor value so
+        /// callers can inspect the requested palette. The control-facing accent state tokens are
+        /// resolved separately from the live high-contrast SystemColors pair.
         /// </summary>
         [Fact]
         public Task ColorMap_Build_HighContrast_ContainsSystemAccentColorAsync()
@@ -122,9 +122,49 @@ namespace Fluence.Wpf.Tests.Theming
                 Dictionary<string, Color> m = ColorMap.Build(ApplicationTheme.HighContrast, p);
                 Assert.True(m.Count > 5, "ColorMap.Build(HighContrast) must return a non-trivial map.");
                 Assert.True(m.TryGetValue("SystemAccentColor", out Color systemAccentColor), "SystemAccentColor must be present even in HC.");
-                // The HC C# path does NOT inject AccentFillColorDisabled or SystemFillColorAttention
-                // via the guard; those may come from base XAML instead.
                 Assert.Equal(TestBlue, systemAccentColor);
+            });
+        }
+
+        /// <summary>
+        /// ColorMap.Build keeps the shared WinUI high-contrast accent family neutral while
+        /// publishing distinct control-state colors for checked and accent buttons.
+        /// </summary>
+        [Fact]
+        public Task ColorMap_Build_HighContrast_UsesSystemAccentStateColorsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                _ = WpfTestSta.EnsureApplication();
+                AccentPalette p = MakeTestPalette();
+                Dictionary<string, Color> m = ColorMap.Build(ApplicationTheme.HighContrast, p);
+                Color highlight = SystemColors.HighlightColor;
+                Color highlightText = SystemColors.HighlightTextColor;
+                Color grayText = SystemColors.GrayTextColor;
+
+                Color window = SystemColors.WindowColor;
+                Color windowText = SystemColors.WindowTextColor;
+                Assert.Equal(window, m["AccentFillColorSelectedTextBackground"]);
+                Assert.Equal(window, m["AccentFillColorDefault"]);
+                Assert.Equal(window, m["AccentFillColorSecondary"]);
+                Assert.Equal(window, m["AccentFillColorTertiary"]);
+                Assert.Equal(window, m["AccentFillColorDisabled"]);
+                Assert.Equal(windowText, m["AccentTextFillColorPrimary"]);
+                Assert.Equal(windowText, m["AccentTextFillColorSecondary"]);
+                Assert.Equal(windowText, m["AccentTextFillColorTertiary"]);
+                Assert.Equal(grayText, m["AccentTextFillColorDisabled"]);
+                Assert.Equal(windowText, m["TextOnAccentFillColorSelectedText"]);
+                Assert.Equal(windowText, m["TextOnAccentFillColorPrimary"]);
+                Assert.Equal(windowText, m["TextOnAccentFillColorSecondary"]);
+                Assert.Equal(grayText, m["TextOnAccentFillColorDisabled"]);
+                Assert.Equal(highlight, m["AccentButtonBackground"]);
+                Assert.Equal(highlight, m["AccentButtonBackgroundPointerOver"]);
+                Assert.Equal(window, m["AccentButtonBackgroundPressed"]);
+                Assert.Equal(highlightText, m["AccentButtonForeground"]);
+                Assert.Equal(windowText, m["AccentButtonForegroundPressed"]);
+                Assert.Equal(highlight, m["ToggleButtonBackgroundChecked"]);
+                Assert.Equal(SystemColors.ControlTextColor, m["ToggleButtonBackgroundCheckedPointerOver"]);
+                Assert.Equal(highlightText, m["ToggleButtonBackgroundCheckedPressed"]);
             });
         }
 

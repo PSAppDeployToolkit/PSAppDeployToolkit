@@ -11,90 +11,137 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
     <Page.Resources>
-        <!--
-            Iconography tile mirroring the WinUI 3 Gallery icon grid: a flat near-square card
-            (CardBackground over the SolidBackgroundFillColorBase panel), the glyph centered above a
-            caption-size name, and a 2px accent selection ring around the selected tile. 93x92 dip
-            with a 0,0,10,11 margin lands a 103 dip pitch in both directions, matching the WinUI 3
-            Gallery's measured 140x138 px (93x92 dip) tile at a 103 dip pitch.
-        -->
-        <Style x:Key="IconTileButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
-            <Setter Property="Height" Value="92" />
-            <Setter Property="Margin" Value="0,0,10,11" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border
-                            x:Name="SelectionRing"
-                            BorderBrush="Transparent"
-                            BorderThickness="2"
-                            CornerRadius="6">
+        <ResourceDictionary>
+            <!--
+                Iconography tile mirroring the WinUI 3 Gallery icon grid: a flat near-square card
+                (CardBackground over the SolidBackgroundFillColorBase panel), the glyph centered above a
+                caption-size name, and a 1 DIP selection ring around the selected tile. 93x92 dip
+                with a 0,0,10,11 margin lands a 103 dip pitch in both directions, matching the WinUI 3
+                Gallery's measured 140x138 px (93x92 dip) tile at a 103 dip pitch.
+            -->
+            <ControlTemplate x:Key="IconTileButtonTemplate" TargetType="{x:Type Button}">
+                <Grid>
+                    <Border
+                        Margin="2"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
                             <Border
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                                <Grid>
-                                    <Border
-                                        x:Name="HoverLayer"
-                                        Background="Transparent"
-                                        CornerRadius="3" />
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            FontFamily="Segoe Fluent Icons"
-                                            FontSize="30"
-                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Text="{Binding Glyph}"
-                                            TextAlignment="Center" />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Margin="8,0,8,10"
-                                            HorizontalAlignment="Center"
-                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{Binding Name}"
-                                            TextAlignment="Center"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                    </Grid>
-                                </Grid>
-                            </Border>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                <Setter TargetName="SelectionRing" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-                            </DataTrigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Width" Value="93" />
-        </Style>
+                                x:Name="HoverLayer"
+                                Background="Transparent"
+                                CornerRadius="3" />
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    x:Name="IconTileGlyph"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Segoe Fluent Icons"
+                                    FontSize="30"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Text="{Binding Glyph}"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="8,0,8,10"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{Binding Name}"
+                                    TextAlignment="Center"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <Border
+                        x:Name="SelectionRing"
+                        BorderBrush="{TemplateBinding Foreground}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        IsHitTestVisible="False"
+                        Opacity="0" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Setter TargetName="SelectionRing" Property="Opacity" Value="1" />
+                    </DataTrigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
 
-        <!--  Monospace value text for the details rows (Consolas precedent from the previous catalog).  -->
-        <Style
-            x:Key="IconDetailValueStyle"
-            BasedOn="{StaticResource {x:Type TextBlock}}"
-            TargetType="{x:Type TextBlock}">
-            <Setter Property="FontFamily" Value="{StaticResource DemoMonospaceFontFamily}" />
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
+            <Style
+                x:Key="IconDetailHeadingStyle"
+                BasedOn="{StaticResource FieldLabelStyle}"
+                TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="{StaticResource DemoIconDetailHeadingFontSize}" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+
+            <!--  Monospace value text for the details rows (Consolas precedent from the previous catalog).  -->
+            <Style
+                x:Key="IconDetailValueStyle"
+                BasedOn="{StaticResource {x:Type TextBlock}}"
+                TargetType="{x:Type TextBlock}">
+                <Setter Property="FontFamily" Value="{StaticResource DemoMonospaceFontFamily}" />
+                <Setter Property="FontSize" Value="{StaticResource DemoIconDetailBodyFontSize}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style
+                x:Key="IconDetailTagBodyStyle"
+                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="{StaticResource DemoIconDetailBodyFontSize}" />
+                <Setter Property="FontWeight" Value="Normal" />
+            </Style>
+            <ResourceDictionary.MergedDictionaries>
+                <fluence:ThemeDictionary>
+                    <fluence:ThemeDictionary.ThemeDictionaries>
+                        <fluence:ThemeResourceDictionary ThemeKey="Default">
+                            <Style x:Key="IconTileButtonStyle" TargetType="{x:Type Button}">
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+                                <Setter Property="Height" Value="92" />
+                                <Setter Property="Margin" Value="0,0,10,11" />
+                                <Setter Property="Template" Value="{DynamicResource IconTileButtonTemplate}" />
+                                <Setter Property="Width" Value="93" />
+                                <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            </Style>
+                            <Style x:Key="IconPreviewGlyphStyle" TargetType="{x:Type fluence:FontIcon}">
+                                <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                        <fluence:ThemeResourceDictionary ThemeKey="HighContrast">
+                            <Style x:Key="IconTileButtonStyle" TargetType="{x:Type Button}">
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+                                <Setter Property="Height" Value="92" />
+                                <Setter Property="Margin" Value="0,0,10,11" />
+                                <Setter Property="Template" Value="{DynamicResource IconTileButtonTemplate}" />
+                                <Setter Property="Width" Value="93" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Style>
+                            <Style x:Key="IconPreviewGlyphStyle" TargetType="{x:Type fluence:FontIcon}">
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Style>
+                        </fluence:ThemeResourceDictionary>
+                    </fluence:ThemeDictionary.ThemeDictionaries>
+                </fluence:ThemeDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid x:Name="PageRoot" Style="{StaticResource GalleryPageRootStyle}">
@@ -194,7 +241,7 @@
                                             <Button
                                                 AutomationProperties.Name="{Binding Name}"
                                                 Click="IconTile_Click"
-                                                Style="{StaticResource IconTileButtonStyle}"
+                                                Style="{DynamicResource IconTileButtonStyle}"
                                                 ToolTip="{Binding Name}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -219,142 +266,150 @@
                         BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="1,0,0,0"
                         CornerRadius="0,7,7,0">
-                        <StackPanel Margin="20,16,20,16">
-                            <Border
-                                Width="72"
-                                Height="72"
-                                Margin="0,0,0,16"
-                                HorizontalAlignment="Left"
-                                Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{DynamicResource ControlCornerRadius}">
-                                <fluence:FontIcon
-                                    x:Name="IconPreviewGlyph"
+                        <ScrollViewer
+                            x:Name="IconDetailsScrollViewer"
+                            Focusable="False"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="{StaticResource DemoIconDetailsContentMargin}">
+                                <Border
+                                    x:Name="IconPreviewPlate"
+                                    Width="{StaticResource DemoIconPreviewSize}"
+                                    Height="{StaticResource DemoIconPreviewSize}"
+                                    Margin="{StaticResource DemoIconPreviewMargin}"
                                     HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    IconFontSize="32" />
-                            </Border>
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    BorderBrush="{Binding Foreground, ElementName=IconPreviewGlyph}"
+                                    BorderThickness="1"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}">
+                                    <fluence:FontIcon
+                                        x:Name="IconPreviewGlyph"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Style="{DynamicResource IconPreviewGlyphStyle}"
+                                        IconFontSize="{StaticResource DemoIconPreviewGlyphFontSize}" />
+                                </Border>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Icon name" />
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="IconNameValueText" Style="{StaticResource IconDetailValueStyle}" />
-                                <fluence:Button
-                                    x:Name="CopyIconNameButton"
-                                    Grid.Column="1"
-                                    Width="36"
-                                    Height="32"
-                                    MinWidth="36"
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Copy icon name"
-                                    ToolTip="Copy icon name">
-                                    <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
-                                </fluence:Button>
-                            </Grid>
+                                <TextBlock x:Name="IconNameLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="Icon name" />
+                                <Grid Margin="{StaticResource DemoIconDetailGroupMargin}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconNameValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <fluence:Button
+                                        x:Name="CopyIconNameButton"
+                                        Grid.Column="1"
+                                        Width="36"
+                                        Height="32"
+                                        MinWidth="36"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy icon name"
+                                        ToolTip="Copy icon name">
+                                        <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </fluence:Button>
+                                </Grid>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Text glyph" />
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="IconTextGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
-                                <fluence:Button
-                                    x:Name="CopyTextGlyphButton"
-                                    Grid.Column="1"
-                                    Width="36"
-                                    Height="32"
-                                    MinWidth="36"
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Copy text glyph"
-                                    ToolTip="Copy text glyph">
-                                    <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
-                                </fluence:Button>
-                            </Grid>
+                                <TextBlock x:Name="IconTextGlyphLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="Text glyph" />
+                                <Grid Margin="{StaticResource DemoIconDetailGroupMargin}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconTextGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <fluence:Button
+                                        x:Name="CopyTextGlyphButton"
+                                        Grid.Column="1"
+                                        Width="36"
+                                        Height="32"
+                                        MinWidth="36"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy text glyph"
+                                        ToolTip="Copy text glyph">
+                                        <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </fluence:Button>
+                                </Grid>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Code glyph" />
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="IconCodeGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
-                                <fluence:Button
-                                    x:Name="CopyCodeGlyphButton"
-                                    Grid.Column="1"
-                                    Width="36"
-                                    Height="32"
-                                    MinWidth="36"
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Copy code glyph"
-                                    ToolTip="Copy code glyph">
-                                    <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
-                                </fluence:Button>
-                            </Grid>
+                                <TextBlock x:Name="IconCodeGlyphLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="Code glyph" />
+                                <Grid Margin="{StaticResource DemoIconDetailGroupMargin}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconCodeGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <fluence:Button
+                                        x:Name="CopyCodeGlyphButton"
+                                        Grid.Column="1"
+                                        Width="36"
+                                        Height="32"
+                                        MinWidth="36"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy code glyph"
+                                        ToolTip="Copy code glyph">
+                                        <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </fluence:Button>
+                                </Grid>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="FontIcon XAML" />
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="IconXamlValueText" Style="{StaticResource IconDetailValueStyle}" />
-                                <fluence:Button
-                                    x:Name="CopyXamlButton"
-                                    Grid.Column="1"
-                                    Width="36"
-                                    Height="32"
-                                    MinWidth="36"
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Copy FontIcon XAML"
-                                    ToolTip="Copy FontIcon XAML">
-                                    <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
-                                </fluence:Button>
-                            </Grid>
+                                <TextBlock x:Name="IconXamlLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="FontIcon XAML" />
+                                <Grid Margin="{StaticResource DemoIconDetailGroupMargin}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconXamlValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <fluence:Button
+                                        x:Name="CopyXamlButton"
+                                        Grid.Column="1"
+                                        Width="36"
+                                        Height="32"
+                                        MinWidth="36"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy FontIcon XAML"
+                                        ToolTip="Copy FontIcon XAML">
+                                        <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </fluence:Button>
+                                </Grid>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="FontIcon C#" />
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="IconCSharpValueText" Style="{StaticResource IconDetailValueStyle}" />
-                                <fluence:Button
-                                    x:Name="CopyCSharpButton"
-                                    Grid.Column="1"
-                                    Width="36"
-                                    Height="32"
-                                    MinWidth="36"
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Copy FontIcon C#"
-                                    ToolTip="Copy FontIcon C#">
-                                    <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
-                                </fluence:Button>
-                            </Grid>
+                                <TextBlock x:Name="IconCSharpLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="FontIcon C#" />
+                                <Grid Margin="{StaticResource DemoIconDetailGroupMargin}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconCSharpValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <fluence:Button
+                                        x:Name="CopyCSharpButton"
+                                        Grid.Column="1"
+                                        Width="36"
+                                        Height="32"
+                                        MinWidth="36"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy FontIcon C#"
+                                        ToolTip="Copy FontIcon C#">
+                                        <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </fluence:Button>
+                                </Grid>
 
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Tags" />
-                            <WrapPanel x:Name="IconTagsPanel" Margin="0,2,0,0" />
-                            <TextBlock
-                                x:Name="IconNoTagsText"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="No tags available."
-                                Visibility="Collapsed" />
-                        </StackPanel>
+                                <TextBlock x:Name="IconTagsLabel" Style="{StaticResource IconDetailHeadingStyle}" Text="Tags" />
+                                <WrapPanel x:Name="IconTagsPanel" Margin="0,2,0,0" />
+                                <TextBlock
+                                    x:Name="IconNoTagsText"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource IconDetailTagBodyStyle}"
+                                    Text="No tags available."
+                                    Visibility="Collapsed" />
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </Border>

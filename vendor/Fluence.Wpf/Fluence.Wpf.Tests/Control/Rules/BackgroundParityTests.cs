@@ -365,21 +365,14 @@ namespace Fluence.Wpf.Tests.Control.Rules
         }
 
         [Fact]
-        public void PowerShellDemoScripts_FollowCanonicalBootstrap()
+        public void PowerShellModuleExamples_UseModule()
         {
-            string scriptsRoot = Path.Join(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell");
+            string scriptsRoot = Path.Join(FindRepoRoot(), "Fluence.Wpf.PowerShell.Module", "examples");
             string[] scriptNames =
             [
-                "01-HelloWorld.ps1",
-                "02-ThemeAndAccent.ps1",
-                "03-ControlsTour.ps1",
-                "04-LoadXamlFile.ps1",
-            ];
-            string[] retiredScriptNames =
-            [
-                "Show-ControlsDemo.ps1",
-                "Show-ThemeDemo.ps1",
-                "Show-ProgressDemo.ps1",
+                "04-ThemeAndAccent.ps1",
+                "06-ControlsTour.ps1",
+                "05-LoadXamlFile.ps1",
             ];
             List<string> violations = [];
 
@@ -394,49 +387,35 @@ namespace Fluence.Wpf.Tests.Control.Rules
 
                 string source = File.ReadAllText(path);
 
-                // Each script is self-contained and must follow the canonical bootstrap:
-                // relaunch into STA (WPF requirement), create a WPF Application before theming
-                // (otherwise ApplicationThemeManager.Apply has nowhere to publish brushes), and
-                // apply the Fluence theme engine.
-                if (!ContainsOrdinal(source, "GetApartmentState"))
+                // The module owns STA, assembly loading, the Application, theming, and the message loop.
+                if (!ContainsOrdinal(source, "Import-Module \"$PSScriptRoot/../src/Fluence.Wpf.PowerShell/Fluence.Wpf.PowerShell.psd1\""))
                 {
-                    violations.Add(scriptName + " does not relaunch into STA (missing GetApartmentState guard).");
+                    violations.Add(scriptName + " does not import the Fluence.Wpf.PowerShell module manifest.");
                 }
 
-                if (!ContainsOrdinal(source, "System.Windows.Application"))
+                if (!ContainsOrdinal(source, "Show-FluenceWindow -"))
                 {
-                    violations.Add(scriptName + " does not create a System.Windows.Application before theming.");
+                    violations.Add(scriptName + " does not open its window through Show-FluenceWindow.");
                 }
-
-                if (!ContainsOrdinal(source, "ApplicationThemeManager]::Apply"))
-                {
-                    violations.Add(scriptName + " does not call ApplicationThemeManager.Apply.");
-                }
-            }
-
-            // The retired scripts must be gone, and no new script should reference their names.
-            foreach (string retired in retiredScriptNames.Where(retired => File.Exists(Path.Join(scriptsRoot, retired))))
-            {
-                violations.Add(retired + " should have been removed.");
             }
 
             Assert.Empty(violations);
         }
 
         [Fact]
-        public void PowerShellDemoXaml_UsesCurrentFluenceWindowProperties()
+        public void PowerShellModuleXaml_UsesCurrentFluenceWindowProperties()
         {
-            string path = Path.Join(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "MainWindow.xaml");
+            string path = Path.Join(FindRepoRoot(), "Fluence.Wpf.PowerShell.Module", "examples", "MainWindow.xaml");
             string source = File.ReadAllText(path);
 
             Assert.False(ContainsOrdinal(source, "WindowCorners"),
-                "PowerShell demo XAML must not use the old WindowCorners property.");
+                "PowerShell module example XAML must not use the old WindowCorners property.");
             Assert.False(ContainsOrdinal(source, "WindowBackdrop"),
-                "PowerShell demo XAML must not use the old WindowBackdrop property.");
+                "PowerShell module example XAML must not use the old WindowBackdrop property.");
             Assert.True(ContainsOrdinal(source, "CornerStyle=\"Round\""),
-                "PowerShell demo XAML should use CornerStyle.");
+                "PowerShell module example XAML should use CornerStyle.");
             Assert.True(ContainsOrdinal(source, "SystemBackdropType=\"Mica\""),
-                "PowerShell demo XAML should use SystemBackdropType.");
+                "PowerShell module example XAML should use SystemBackdropType.");
         }
 
         [Fact]

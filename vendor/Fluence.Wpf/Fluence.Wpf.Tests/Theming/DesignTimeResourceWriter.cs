@@ -80,6 +80,7 @@ namespace Fluence.Wpf.Tests.Theming
             List<KeyValuePair<string, SolidColorBrush>> brushes = [];
             List<KeyValuePair<string, LinearGradientBrush>> gradients = [];
             List<KeyValuePair<string, CornerRadius>> radii = [];
+            List<KeyValuePair<string, Thickness>> thicknesses = [];
 
             foreach (object keyObject in dict.Keys)
             {
@@ -91,6 +92,9 @@ namespace Fluence.Wpf.Tests.Theming
                         break;
                     case CornerRadius r:
                         radii.Add(new KeyValuePair<string, CornerRadius>(key, r));
+                        break;
+                    case Thickness t:
+                        thicknesses.Add(new KeyValuePair<string, Thickness>(key, t));
                         break;
                     case LinearGradientBrush g:
                         gradients.Add(new KeyValuePair<string, LinearGradientBrush>(key, g));
@@ -109,6 +113,7 @@ namespace Fluence.Wpf.Tests.Theming
             brushes.Sort(static (x, y) => string.CompareOrdinal(x.Key, y.Key));
             gradients.Sort(static (x, y) => string.CompareOrdinal(x.Key, y.Key));
             radii.Sort(static (x, y) => string.CompareOrdinal(x.Key, y.Key));
+            thicknesses.Sort(static (x, y) => string.CompareOrdinal(x.Key, y.Key));
 
             StringBuilder sb = new();
             _ = sb.Append("<ResourceDictionary").Append('\n');
@@ -141,6 +146,13 @@ namespace Fluence.Wpf.Tests.Theming
             foreach (KeyValuePair<string, CornerRadius> kv in radii)
             {
                 _ = sb.Append("    <CornerRadius x:Key=\"").Append(kv.Key).Append("\">").Append(Radius(kv.Value)).Append("</CornerRadius>").Append('\n');
+            }
+            foreach (KeyValuePair<string, Thickness> kv in thicknesses)
+            {
+                _ = sb.Append("    <Thickness x:Key=\"").Append(kv.Key).Append("\">")
+                      .Append(Num(kv.Value.Left)).Append(',').Append(Num(kv.Value.Top)).Append(',')
+                      .Append(Num(kv.Value.Right)).Append(',').Append(Num(kv.Value.Bottom))
+                      .Append("</Thickness>").Append('\n');
             }
 
             _ = sb.Append('\n').Append("</ResourceDictionary>").Append('\n');

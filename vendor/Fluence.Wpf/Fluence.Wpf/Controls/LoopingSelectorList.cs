@@ -369,16 +369,16 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Keeps the selection and the scroll offset in step. An extent change means the panel
-        /// has just measured a new item source, so any offset requested before that was clamped
-        /// against a stale extent and has to be re-applied; otherwise the row that scrolled into
-        /// the middle of the viewport becomes the selected one.
+        /// Keeps the selection and the scroll offset in step. An extent or viewport change means
+        /// the scroll range has just been measured, so any offset requested before that was
+        /// clamped against a stale range and has to be re-applied; otherwise the row that scrolled
+        /// into the middle of the viewport becomes the selected one.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data.</param>
         private void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (e.ExtentHeightChange is not 0)
+            if (e.ExtentHeightChange is not 0 || e.ViewportHeightChange is not 0)
             {
                 ApplyScrollOffset();
                 return;

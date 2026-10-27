@@ -52,11 +52,13 @@ namespace Fluence.Wpf.Demo.Pages
                                                             "                    <fluence:FontIcon Glyph=\"&#xE80F;\" IconFontSize=\"16\" />\n" +
                                                             "                </fluence:NavigationViewItem.Icon>\n" +
                                                             "            </fluence:NavigationViewItem>\n" +
+                                                            "            <fluence:NavigationViewItemHeader Content=\"Workspace\" />\n" +
                                                             "            <fluence:NavigationViewItem Content=\"Files\">\n" +
                                                             "                <fluence:NavigationViewItem.Icon>\n" +
                                                             "                    <fluence:FontIcon Glyph=\"&#xE8B7;\" IconFontSize=\"16\" />\n" +
                                                             "                </fluence:NavigationViewItem.Icon>\n" +
                                                             "            </fluence:NavigationViewItem>\n" +
+                                                            "            <fluence:NavigationViewItemSeparator />\n" +
                                                             "            <fluence:NavigationViewItem Content=\"Reports\">\n" +
                                                             "                <fluence:NavigationViewItem.Icon>\n" +
                                                             "                    <fluence:FontIcon Glyph=\"&#xE9D9;\" IconFontSize=\"16\" />\n" +

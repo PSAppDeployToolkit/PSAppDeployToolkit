@@ -50,13 +50,13 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "</fluence:Border>";
 
         private const string DockPanelXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
-                                                   "<DockPanel LastChildFill=\"True\">\n" +
+                                                   "<fluence:DockPanel LastChildFill=\"True\" Spacing=\"12\">\n" +
                                                    "    <fluence:Button DockPanel.Dock=\"Right\"\n" +
                                                    "               Appearance=\"Accent\"\n" +
                                                    "               Content=\"Apply\" />\n" +
                                                    "    <TextBlock VerticalAlignment=\"Center\"\n" +
                                                    "               Text=\"DockPanel keeps the command aligned to the edge.\" />\n" +
-                                                   "</DockPanel>";
+                                                   "</fluence:DockPanel>";
 
         private const string ExpanderXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
                                                   "<fluence:Expander\n" +
@@ -70,22 +70,40 @@ namespace Fluence.Wpf.Demo.Pages
         private const string DockPanelExpanderXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
                                                            "<fluence:Expander x:Name=\"DockPanelOptionsExpander\">\n" +
                                                            "    <fluence:Expander.Header>\n" +
-                                                           "        <DockPanel LastChildFill=\"True\">\n" +
+                                                           "        <fluence:DockPanel LastChildFill=\"True\" Spacing=\"8\">\n" +
                                                            "            <fluence:Button DockPanel.Dock=\"Right\"\n" +
                                                            "                       Content=\"Edit\" />\n" +
                                                            "            <TextBlock VerticalAlignment=\"Center\"\n" +
                                                            "                       Text=\"Delivery options\" />\n" +
-                                                           "        </DockPanel>\n" +
+                                                           "        </fluence:DockPanel>\n" +
                                                            "    </fluence:Expander.Header>\n" +
-                                                           "    <DockPanel LastChildFill=\"True\">\n" +
+                                                           "    <fluence:DockPanel LastChildFill=\"True\" Spacing=\"8\">\n" +
                                                            "        <fluence:ToggleSwitch DockPanel.Dock=\"Right\"\n" +
                                                            "                         OffContent=\"Off\"\n" +
                                                            "                         OnContent=\"On\" />\n" +
                                                            "        <TextBlock VerticalAlignment=\"Center\"\n" +
                                                            "                   Text=\"Notify me when the package ships.\"\n" +
                                                            "                   TextWrapping=\"Wrap\" />\n" +
-                                                           "    </DockPanel>\n" +
+                                                           "    </fluence:DockPanel>\n" +
                                                            "</fluence:Expander>";
+
+        private const string SmoothScrollViewerXamlSource = "<!-- Intentionally partial layout snippet for a page that already declares the Fluence xmlns. -->\n" +
+                                                              "<fluence:SmoothScrollViewer Height=\"180\"\n" +
+                                                              "                            HorizontalScrollBarVisibility=\"Disabled\"\n" +
+                                                              "                            VerticalScrollBarVisibility=\"Visible\">\n" +
+                                                              "    <fluence:StackPanel Spacing=\"8\">\n" +
+                                                              "        <TextBlock Text=\"Scroll this list to see the remaining items.\" />\n" +
+                                                              "        <TextBlock Text=\"Item 1 - Planning\" />\n" +
+                                                              "        <TextBlock Text=\"Item 2 - Design\" />\n" +
+                                                              "        <TextBlock Text=\"Item 3 - Build\" />\n" +
+                                                              "        <TextBlock Text=\"Item 4 - Review\" />\n" +
+                                                              "        <TextBlock Text=\"Item 5 - Release\" />\n" +
+                                                              "        <TextBlock Text=\"Item 6 - Follow-up\" />\n" +
+                                                              "        <TextBlock Text=\"Item 7 - Support\" />\n" +
+                                                              "        <TextBlock Text=\"Item 8 - Archive\" />\n" +
+                                                              "        <TextBlock Text=\"End of the list\" />\n" +
+                                                              "    </fluence:StackPanel>\n" +
+                                                              "</fluence:SmoothScrollViewer>";
 
         public GalleryLayoutPage()
         {
@@ -95,7 +113,8 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(1, BorderStackPanelXamlSource, string.Empty),
                 new DemoSampleSource(2, DockPanelXamlSource, string.Empty),
                 new DemoSampleSource(3, ExpanderXamlSource, string.Empty),
-                new DemoSampleSource(4, DockPanelExpanderXamlSource, string.Empty));
+                new DemoSampleSource(4, DockPanelExpanderXamlSource, string.Empty),
+                new DemoSampleSource(5, SmoothScrollViewerXamlSource, string.Empty));
         }
     }
 }

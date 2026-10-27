@@ -158,7 +158,9 @@
                         </Style>
                     </ControlTemplate.Resources>
                     <!--
-                        WinUI NavigationViewItemButtonMargin = 4,2 (uniform 4,2,4,2 pill inset).
+                        The 6 DIP left inset aligns the pill with the shared selection rail; the
+                        4 DIP right inset preserves the trailing gutter and 2 DIP vertical insets
+                        preserve the 40 DIP item pitch.
                         BorderThickness is 0 because WinUI's pill paints Background only, with no
                         stroke: a Border's Background fills the rect inside BorderThickness, so the
                         previous BorderThickness="2" with no BorderBrush was invisibly insetting the
@@ -166,7 +168,7 @@
                     -->
                     <Border
                         x:Name="OuterBorder"
-                        Margin="4,2,4,2"
+                        Margin="6,2,4,2"
                         Background="{TemplateBinding Background}"
                         BorderThickness="0"
                         CornerRadius="{DynamicResource ControlCornerRadius}">
@@ -178,7 +180,7 @@
                             Margin="0,0,14,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="IconColumn" Width="40" />
-                                <ColumnDefinition x:Name="GapColumn" Width="6" />
+                                <ColumnDefinition x:Name="GapColumn" Width="4" />
                                 <ColumnDefinition x:Name="ContentColumn" Width="*" />
                                 <ColumnDefinition x:Name="InfoBadgeColumn" Width="Auto" />
                             </Grid.ColumnDefinitions>
@@ -267,7 +269,7 @@
                             <Setter TargetName="InfoBadgePresenter" Property="HorizontalAlignment" Value="Right" />
                             <Setter TargetName="InfoBadgePresenter" Property="VerticalAlignment" Value="Top" />
                             <Setter TargetName="InfoBadgePresenter" Property="Margin" Value="0,2,2,0" />
-                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=24 (4px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally. Zeroing the other three is also what collapses the grid to the icon's own width, which is what puts the badge's right edge inside the rail rather than out at the item's full width.  -->
+                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=26 (6px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally. Zeroing the other three is also what collapses the grid to the icon's own width, which is what puts the badge's right edge inside the rail rather than out at the item's full width.  -->
                             <Setter TargetName="GapColumn" Property="Width" Value="0" />
                             <Setter TargetName="ContentColumn" Property="Width" Value="0" />
                             <Setter TargetName="InfoBadgeColumn" Property="Width" Value="0" />
@@ -287,7 +289,7 @@
                             <Setter TargetName="InfoBadgePresenter" Property="HorizontalAlignment" Value="Right" />
                             <Setter TargetName="InfoBadgePresenter" Property="VerticalAlignment" Value="Top" />
                             <Setter TargetName="InfoBadgePresenter" Property="Margin" Value="0,2,2,0" />
-                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=24 (4px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally. Zeroing the other three is also what collapses the grid to the icon's own width, which is what puts the badge's right edge inside the rail rather than out at the item's full width.  -->
+                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=26 (6px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally. Zeroing the other three is also what collapses the grid to the icon's own width, which is what puts the badge's right edge inside the rail rather than out at the item's full width.  -->
                             <Setter TargetName="GapColumn" Property="Width" Value="0" />
                             <Setter TargetName="ContentColumn" Property="Width" Value="0" />
                             <Setter TargetName="InfoBadgeColumn" Property="Width" Value="0" />
@@ -465,10 +467,11 @@
                                     x:Name="PART_SelectionIndicator"
                                     Width="3"
                                     Height="16"
+                                    UseLayoutRounding="False"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
-                                    CornerRadius="1.5"
+                                    CornerRadius="2"
                                     IsHitTestVisible="False"
                                     Opacity="0"
                                     RenderTransformOrigin="0.5,0.5">
@@ -504,10 +507,11 @@
                                         x:Name="PART_FooterSelectionIndicator"
                                         Width="3"
                                         Height="16"
+                                        UseLayoutRounding="False"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
                                         Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
-                                        CornerRadius="1.5"
+                                        CornerRadius="2"
                                         IsHitTestVisible="False"
                                         Opacity="0"
                                         RenderTransformOrigin="0.5,0.5">
@@ -758,10 +762,11 @@
                                     x:Name="PART_SelectionIndicator"
                                     Width="3"
                                     Height="16"
+                                    UseLayoutRounding="False"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
-                                    CornerRadius="1.5"
+                                    CornerRadius="2"
                                     IsHitTestVisible="False"
                                     Opacity="0"
                                     RenderTransformOrigin="0.5,0.5">
@@ -797,10 +802,11 @@
                                         x:Name="PART_FooterSelectionIndicator"
                                         Width="3"
                                         Height="16"
+                                        UseLayoutRounding="False"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
                                         Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
-                                        CornerRadius="1.5"
+                                        CornerRadius="2"
                                         IsHitTestVisible="False"
                                         Opacity="0"
                                         RenderTransformOrigin="0.5,0.5">

@@ -27,12 +27,15 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using Fluence.Wpf.Tests.Infrastructure;
@@ -49,6 +52,194 @@ namespace Fluence.Wpf.Tests.Control
     /// </summary>
     public sealed class TreeViewTests : IAsyncLifetime
     {
+        [Fact]
+        public Task TreeView_DefaultScrollMode_RemainsPhysicalAsync()
+        {
+            return RunLargeTreeAsync(TreeViewSelectionMode.Single, optIn: false, static (tree, viewer, _, _) =>
+            {
+                Assert.False(viewer.CanContentScroll);
+                Assert.Equal(1000, CountRealizedRoots(tree));
+                Controls.TreeViewItem first = GetRoot(tree, 0);
+                first.IsExpanded = true;
+                Assert.True(first.IsExpanded);
+                viewer.ScrollToBottom();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.True(viewer.VerticalOffset > 0);
+            });
+        }
+
+        [Theory]
+        [InlineData(TreeViewSelectionMode.Single)]
+        [InlineData(TreeViewSelectionMode.None)]
+        public Task TreeView_OptIn_BoundsRealizedRootContainersAsync(TreeViewSelectionMode mode)
+        {
+            return RunLargeTreeAsync(mode, optIn: true, static (tree, viewer, _, _) =>
+            {
+                Assert.True(viewer.CanContentScroll);
+                Assert.NotNull(FindVisualChild<VirtualizingStackPanel>(tree));
+                Assert.InRange(CountRealizedRoots(tree), 1, 99);
+                Assert.Null(tree.SelectedItem);
+            });
+        }
+
+        [Fact]
+        public Task TreeView_SingleRecycling_PreservesBoundSelectionAndExpansionAsync()
+        {
+            return RunLargeTreeAsync(TreeViewSelectionMode.Single, optIn: true, static (tree, viewer, items, _) =>
+            {
+                Controls.TreeViewItem first = GetRoot(tree, 0);
+                first.SetCurrentValue(TreeViewItem.IsSelectedProperty, value: true);
+                first.SetCurrentValue(TreeViewItem.IsExpandedProperty, value: true);
+                Assert.True(items[0].Selected);
+                Assert.True(items[0].Expanded);
+                viewer.ScrollToBottom();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.InRange(CountRealizedRoots(tree), 1, 99);
+                Controls.TreeViewItem last = GetRoot(tree, 999);
+                Assert.False(last.IsSelected);
+                Assert.False(last.IsExpanded);
+                viewer.ScrollToTop();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                first = GetRoot(tree, 0);
+                Assert.True(first.IsSelected);
+                Assert.True(first.IsExpanded);
+                Assert.Same(items[0], tree.SelectedItem);
+            });
+        }
+
+        [Fact]
+        public Task TreeView_MultipleOptIn_UsesPhysicalFallbackAndPreservesSelectionAsync()
+        {
+            return RunLargeTreeAsync(TreeViewSelectionMode.Multiple, optIn: true, static (tree, viewer, items, _) =>
+            {
+                tree.SetValue(ScrollViewer.CanContentScrollProperty, value: true);
+                tree.ItemsPanel = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(VirtualizingStackPanel)));
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.False(viewer.CanContentScroll);
+                Assert.Equal(1000, CountRealizedRoots(tree));
+                IList selection = tree.SelectedItems;
+                Controls.TreeViewItem first = GetRoot(tree, 0);
+                first.IsExpanded = true;
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Controls.TreeViewItem child = Assert.IsType<Controls.TreeViewItem>(first.ItemContainerGenerator.ContainerFromIndex(0));
+                child.SetCurrentValue(Controls.TreeViewItem.IsSelectionCheckedProperty, value: true);
+                Assert.Null(first.IsSelectionChecked);
+                first.SetCurrentValue(Controls.TreeViewItem.IsSelectionCheckedProperty, value: true);
+                viewer.ScrollToBottom();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                GetRoot(tree, 999).SetCurrentValue(Controls.TreeViewItem.IsSelectionCheckedProperty, value: true);
+                Assert.Same(selection, tree.SelectedItems);
+                Assert.Contains(items[0], selection.Cast<object>());
+                Assert.Contains(items[999], selection.Cast<object>());
+                Assert.True(first.IsSelectionChecked);
+                Assert.True(child.IsSelectionChecked);
+            });
+        }
+
+        [Fact]
+        public Task TreeView_ModeSwitch_ReconcilesFallbackWithoutSelectionLossAsync()
+        {
+            return RunLargeTreeAsync(TreeViewSelectionMode.Single, optIn: true, static (tree, _, items, _) =>
+            {
+                GetRoot(tree, 0).SetCurrentValue(TreeViewItem.IsSelectedProperty, value: true);
+                IList selection = tree.SelectedItems;
+                tree.SelectionMode = TreeViewSelectionMode.Multiple;
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.False(GetTreeViewer(tree).CanContentScroll);
+                Assert.Equal(1000, CountRealizedRoots(tree));
+                Controls.TreeViewItem first = GetRoot(tree, 0);
+                first.SetCurrentValue(Controls.TreeViewItem.IsSelectionCheckedProperty, value: true);
+                GetRoot(tree, 999).SetCurrentValue(Controls.TreeViewItem.IsSelectionCheckedProperty, value: true);
+                first.GetBindingExpression(Controls.TreeViewItem.IsSelectionCheckedProperty).UpdateSource();
+                GetRoot(tree, 999).GetBindingExpression(Controls.TreeViewItem.IsSelectionCheckedProperty).UpdateSource();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.True(items[999].Checked);
+                tree.Template = null;
+                tree.ClearValue(System.Windows.Controls.Control.TemplateProperty);
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.False(GetTreeViewer(tree).CanContentScroll);
+                Controls.TreeViewItem restored = GetRoot(tree, 999);
+                BindingExpression? checkedBinding = restored.GetBindingExpression(Controls.TreeViewItem.IsSelectionCheckedProperty);
+                Assert.True(restored.IsSelectionChecked, $"Model={items[999].Checked}; Binding={checkedBinding?.Status}; BoundItem={ReferenceEquals(checkedBinding?.DataItem, items[999])}; Local={restored.ReadLocalValue(Controls.TreeViewItem.IsSelectionCheckedProperty)}");
+                Assert.Same(selection, tree.SelectedItems);
+                Assert.Contains(items[0], selection.Cast<object>());
+                Assert.Contains(items[999], selection.Cast<object>());
+                items.RemoveAt(999);
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.DoesNotContain(selection.Cast<TreeState>(), item => !items.Contains(item));
+                tree.SelectionMode = TreeViewSelectionMode.Single;
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.True(GetTreeViewer(tree).CanContentScroll);
+                items.Clear();
+                WpfTestSta.DrainDispatcher(tree.Dispatcher);
+                Assert.Empty(selection);
+            });
+        }
+
+        private static Task RunLargeTreeAsync(TreeViewSelectionMode mode, bool optIn, Action<Controls.TreeView, ScrollViewer, ObservableCollection<TreeState>, Window> scenario)
+        {
+            return WpfTestSta.RunOnStaAsync(() =>
+            {
+                ObservableCollection<TreeState> items = new(Enumerable.Range(0, 1000).Select(static _ => new TreeState { Selected = false, Expanded = false, Checked = false }));
+                items[0].Children.Add(new TreeState());
+                items[0].Children.Add(new TreeState());
+                Style itemStyle = new(typeof(Controls.TreeViewItem));
+                itemStyle.Setters.Add(new Setter(TreeViewItem.IsSelectedProperty, new Binding(nameof(TreeState.Selected)) { Mode = BindingMode.TwoWay }));
+                itemStyle.Setters.Add(new Setter(TreeViewItem.IsExpandedProperty, new Binding(nameof(TreeState.Expanded)) { Mode = BindingMode.TwoWay }));
+                // The model owns checked state across full template replacement. Explicit updates
+                // prevent the old container's teardown default from overwriting that model.
+                itemStyle.Setters.Add(new Setter(Controls.TreeViewItem.IsSelectionCheckedProperty, new Binding(nameof(TreeState.Checked)) { Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit }));
+                Controls.TreeView tree = new()
+                {
+                    Width = 330,
+                    Height = 280,
+                    SelectionMode = mode,
+                    ItemsSource = items,
+                    ItemContainerStyle = itemStyle,
+                    ItemTemplate = new HierarchicalDataTemplate { ItemsSource = new Binding(nameof(TreeState.Children)) },
+                };
+                tree.SetValue(VirtualizingPanel.IsVirtualizingProperty, optIn);
+                tree.SetValue(VirtualizingPanel.VirtualizationModeProperty, VirtualizationMode.Recycling);
+                Window window = new() { Content = tree, Width = 370, Height = 340 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    scenario(tree, GetTreeViewer(tree), items, window);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        private static ScrollViewer GetTreeViewer(Controls.TreeView tree)
+        {
+            return Assert.IsType<ScrollViewer>(tree.Template.FindName("PART_ScrollViewer", tree), exactMatch: false);
+        }
+
+        private static Controls.TreeViewItem GetRoot(Controls.TreeView tree, int index)
+        {
+            return Assert.IsType<Controls.TreeViewItem>(tree.ItemContainerGenerator.ContainerFromIndex(index));
+        }
+
+        private static int CountRealizedRoots(Controls.TreeView tree)
+        {
+            return Enumerable.Range(0, tree.Items.Count).Count(index => tree.ItemContainerGenerator.ContainerFromIndex(index) is not null);
+        }
+
+        private sealed class TreeState
+        {
+            public bool Selected { get; set; }
+
+            public bool Expanded { get; set; }
+
+            public bool? Checked { get; set; }
+
+            public ObservableCollection<TreeState> Children { get; } = [];
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -619,8 +810,8 @@ namespace Fluence.Wpf.Tests.Control
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
-                System.Collections.ObjectModel.ObservableCollection<string> originalItems = ["Old"];
-                System.Collections.ObjectModel.ObservableCollection<string> replacementItems = ["New"];
+                ObservableCollection<string> originalItems = ["Old"];
+                ObservableCollection<string> replacementItems = ["New"];
                 Controls.TreeView tree = new() { SelectionMode = TreeViewSelectionMode.Multiple, ItemsSource = originalItems };
                 Window window = new() { Content = tree, Width = 300, Height = 240 };
                 try
@@ -646,12 +837,12 @@ namespace Fluence.Wpf.Tests.Control
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
-                System.Collections.ObjectModel.ObservableCollection<string> children = ["First", "Second"];
+                ObservableCollection<string> children = ["First", "Second"];
                 Controls.TreeView tree = new()
                 {
                     SelectionMode = TreeViewSelectionMode.Multiple,
                     ItemsSource = new[] { children },
-                    ItemTemplate = new HierarchicalDataTemplate { ItemsSource = new System.Windows.Data.Binding() },
+                    ItemTemplate = new HierarchicalDataTemplate { ItemsSource = new Binding() },
                 };
                 Window window = new() { Content = tree, Width = 300, Height = 240 };
                 try
@@ -710,7 +901,7 @@ namespace Fluence.Wpf.Tests.Control
                     window.Show();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     selected.IsSelectionChecked = true;
-                    System.Collections.IEnumerator selection = tree.SelectedItems.GetEnumerator();
+                    IEnumerator selection = tree.SelectedItems.GetEnumerator();
                     ItemsControl owner = addChild ? parent : tree;
                     _ = owner.Items.Add(new Controls.TreeViewItem { Header = "Unchecked" });
                     WpfTestSta.DrainDispatcher(window.Dispatcher);

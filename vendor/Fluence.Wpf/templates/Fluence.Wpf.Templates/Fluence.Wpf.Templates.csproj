@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>Fluence.Wpf.Templates</PackageId>
+    <PackageType>Template</PackageType>
+    <Description>Runnable Fluence.Wpf WPF application starters.</Description>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content\**\*"
+             Exclude="content\**\bin\**;content\**\obj\**;content\**\packages.lock.json;content\**\*.lock.json;content\**\*.user" />
+    <Compile Remove="content\**\*.cs" />
+    <PackageReference Remove="@(PackageReference)" />
+    <AdditionalFiles Remove="@(AdditionalFiles)" />
+    <EmbeddedResource Remove="@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <Target Name="RejectPreFixPackageVersion" BeforeTargets="GenerateNuspec"
+          Condition="'$(PackageVersion)' == '0.9.4' Or '$(PackageVersion)' == ''">
+    <Error Text="The pre-fix 0.9.4 version is ineligible for Fluence.Wpf.Templates. Supply a fix-containing PackageVersion." />
+  </Target>
+</Project>

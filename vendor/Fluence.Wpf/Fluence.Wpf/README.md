@@ -1,25 +1,19 @@
-﻿# Fluence.Wpf Library
+﻿# Fluence.Wpf library
 
-This folder contains the reusable WPF control library. It targets `net472` and `net10.0-windows10.0.26100.0` and provides the Fluent/WinUI-style controls, theme resources, accent handling, window chrome, and native interop used by the demo applications.
+This project contains the reusable WPF control library. It targets `net472`, `net8.0-windows10.0.26100.0`, and `net10.0-windows10.0.26100.0`.
 
-## What lives here
+| Area | Contents |
+| --- | --- |
+| `Controls/` | Controls, `FluenceWindow`, and window chrome |
+| `Themes/` | Resource dictionaries, templates, colors, and typography |
+| `Theming/` | Theme resolution and published colors and brushes |
+| `Automation/` | UI Automation peers |
+| `Native/` | Windows interop |
 
-- `Controls/` - public WPF controls such as `FluenceWindow`, `NavigationView`, `TabView`, `Card`, input controls, status controls, and layout helpers.
-- `Themes/` - color, brush, typography, and control-template dictionaries loaded by `ApplicationThemeManager`.
-- `Automation/` - UI Automation peers for custom controls.
-- `Native/` and `Helpers/` - DWM, OS-version, registry, and rendering helpers.
-- `ApplicationThemeManager`, `ApplicationAccentColorManager`, and `SystemThemeWatcher` - the theme/accent lifecycle surface consumers call at startup.
-
-## Build
-
-From the repository root:
+Build from the repository root:
 
 ```powershell
-dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Debug
+dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Release
 ```
 
-All targets use `LangVersion=latest`, but runtime API use must remain compatible with `net472` unless a file is explicitly target-specific. Keep public APIs documented with XML comments and keep `.cs`, `.xaml`, and `.csproj` files encoded as UTF-8 with BOM.
-
-## Maintenance notes
-
-Use `ApplicationThemeManager.Apply(...)` to load the three managed resource-dictionary slots (`[0]` computed colors and brushes, `[1]` Typography, `[2]` Generic) instead of hand-merging `Themes/Generic.xaml`. When changing templates, prefer canonical WinUI-style theme keys and `DynamicResource` for theme/accent-bound brushes. See the root [AGENTS.md](../AGENTS.md), [docs/theming.md](../docs/theming.md), and [docs/controls.md](../docs/controls.md) for the full contract.
+Start with the [first WPF application tutorial](https://fluencewpf.com/docs/tutorials/first-wpf-app), then use the [control catalog](https://fluencewpf.com/docs/controls) and [theming guide](https://fluencewpf.com/docs/theming). Browse the [documentation website](https://fluencewpf.com) for the full set. For project conventions and theme engine internals, read [AGENTS.md](../AGENTS.md).

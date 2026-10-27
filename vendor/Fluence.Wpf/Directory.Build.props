@@ -59,8 +59,8 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.9.0</VersionPrefix>
-    <VersionSuffix>pre</VersionSuffix>
+    <VersionPrefix>0.9.5</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
 

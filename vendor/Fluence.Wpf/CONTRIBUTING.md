@@ -1,93 +1,81 @@
 ﻿# Contributing
 
-Thanks for helping improve Fluence.Wpf, a Windows 11 Fluent / WinUI 3 control library for WPF on .NET Framework 4.7.2, .NET 8, and .NET 10.
+Fluence.Wpf welcomes bug fixes and focused control work. Read the [developer handbook](AGENTS.md) for project conventions and the [documentation site](https://fluencewpf.com) for user-facing documentation.
 
-This file is the contributor guide. The full engineering handbook (conventions, theme architecture, reference authority, and quality gates) is [AGENTS.md](AGENTS.md); read it before a non-trivial change. For AI-assisted work, read [AGENTS.md](AGENTS.md) first.
+## Build
 
-## Build and test
+Use Windows with the .NET SDKs needed by the target frameworks. From the repository root:
 
 ```powershell
 dotnet restore Fluence.Wpf.sln
-dotnet build   Fluence.Wpf.sln -c Debug
+dotnet build Fluence.Wpf.sln -c Debug
 ```
 
-The suite runs on Microsoft Testing Platform, so run the built executable rather than `dotnet test` (the SDK 10 VSTest bridge is gone). A single-process whole-assembly run on `net472` aborts non-deterministically, so `net472` runs locally as two complementary lanes whose union is the whole assembly. `net10.0-windows10.0.26100.0` does not abort and runs locally as one combined invocation; CI additionally splits it into the same two lanes, purely so the two per-TFM case counts can be summed and checked. See AGENTS.md section 6 and `KNOWN_ISSUES.md`.
+The library targets .NET Framework 4.7.2, .NET 8 for Windows, and .NET 10 for Windows. The gallery targets .NET Framework 4.7.2 and .NET 10; the MVVM demo targets .NET 10. The PowerShell module is outside the solution and has its own build and verification scripts.
+
+## Run the .NET tests
+
+The xunit.v3 suite uses Microsoft Testing Platform. Build the solution, then run the executable for the target framework. Run the .NET Framework suite as two complementary class filters because its whole-assembly process can abort. The .NET 10 suite can run in one pass locally; CI splits both target frameworks into two lanes. See the [test project README](Fluence.Wpf.Tests/README.md) for exact commands.
 
 ```powershell
-# net472 runs as two complementary lanes because the whole-assembly run aborts; their union is the whole assembly.
-# net10.0-windows10.0.26100.0 does not abort, so a local run uses one combined invocation.
-Fluence.Wpf.Tests\bin\Debug\net472\Fluence.Wpf.Tests.exe --filter-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --no-ansi --progress off
-Fluence.Wpf.Tests\bin\Debug\net472\Fluence.Wpf.Tests.exe --filter-not-class Fluence.Wpf.Tests.Gallery.DemoShellTests Fluence.Wpf.Tests.Gallery.DemoSampleContractTests Fluence.Wpf.Tests.Control.NavigationViewTests Fluence.Wpf.Tests.Control.ProgressBarTests Fluence.Wpf.Tests.Control.ContentDialogTests Fluence.Wpf.Tests.Control.ColorPickerTests Fluence.Wpf.Tests.Control.TimePickerTests --filter-not-trait "Category=Screenshots" --no-ansi --progress off
-Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-not-trait "Category=Screenshots" --no-ansi --progress off
+Fluence.Wpf.Tests/bin/Debug/net10.0-windows10.0.26100.0/Fluence.Wpf.Tests.exe --filter-not-trait "Category=Screenshots" --no-ansi --progress off
 ```
 
-```powershell
-# A single class or method while iterating.
-Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-class Fluence.Wpf.Tests.Control.ButtonTests
-Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --filter-method "*Button_Rest*"
-```
+The .NET 8 smoke suite is a separate project. Run tests relevant to a change across each affected target framework. UI tests need Windows and an interactive desktop.
 
-Both target frameworks (`net472` and `net10.0-windows10.0.26100.0`) must build and test green. The library builds with `TreatWarningsAsErrors=true`, `WarningLevel=9999`, and `AnalysisLevel=latest-all`: fix warnings at the root cause, do not suppress them. `string.IsNullOrEmpty()` is banned (use `string.IsNullOrWhiteSpace()`); public API needs `///` XML docs or the build fails.
+## Verify the PowerShell module
 
-## PowerShell module
-
-The `Fluence.Wpf.PowerShell` script module under `Fluence.Wpf.PowerShell.Module/` is not a project in the solution and has its own gate. Stage the Release assemblies the solution build produced, then run PSScriptAnalyzer plus the Pester logic lane on both PowerShell editions:
+Build and stage the library assemblies before testing the module:
 
 ```powershell
+dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Release
 pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release
 pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1
-pwsh -NoProfile -MTA -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -SkipAnalyzer
 powershell.exe -NoProfile -STA -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1
 ```
 
-Install the exact Pester and PSScriptAnalyzer versions listed in [docs/release.md](docs/release.md) before running the gate. CI runs the PowerShell checks and module packaging in a separate job after consuming the library artifacts.
+The [module README](Fluence.Wpf.PowerShell.Module/README.md) documents prerequisites, PowerShell 7 MTA, and render lanes. Run the lanes applicable to a module change.
 
-The render lane (`-IncludeUi`) opens real windows and runs locally only; [docs/release.md](docs/release.md) lists it with the expected case counts per lane. The module follows PSADT PowerShell conventions, not the C# ones above: 5.1 and 7 compatible syntax, one function per file with comment-based help and `[OutputType()]`, fully qualified .NET type names, Allman braces, UTF-8 with BOM. Cmdlet reference pages under `docs/powershell/reference/` are generated from the comment-based help, so change the help in the function and re-run `build/Export-ModuleReference.ps1` rather than editing the page.
+## Verify generated documentation
 
-## Formatting and text policy
-
-XAML style (4-space indent, UTF-8 with BOM, LF line endings, final newline) is governed by `.editorconfig`, applied to `.xaml` like every other source file; there is no separate XAML formatter tool. Encoding and text policy are enforced by a repo hook and in CI:
+Build the .NET 10 library and stage the PowerShell module, then write and check references in the same ignored output directories. `-Check` compares every expected byte and rejects extra generated pages. It needs an existing output from the preceding write.
 
 ```powershell
-pwsh -NoProfile .claude/hooks/post-tool-util.ps1 -CheckAll   # CI gate: UTF-8 BOM, LF, banned APIs, hard-coded hex, em/en dashes
+dotnet build Fluence.Wpf/Fluence.Wpf.csproj -c Release -f net10.0-windows10.0.26100.0
+pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md
+pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md -Check
+pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release -Build
+Install-Module Alt3.Docusaurus.Powershell -RequiredVersion 2.0.1 -Scope CurrentUser
+pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference
+pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference -Check
 ```
 
-All source and text files are UTF-8 with BOM and LF; `string.IsNullOrEmpty()` is banned (use `string.IsNullOrWhiteSpace()`); do not inline hex colors in `Themes/Controls/**` or use em/en dashes in `.cs` / `.md`. Generated XAML (`Properties/DesignTime.*.xaml`) is excluded from the repo-wide check.
+Run the documentation tooling tests with the repository's pinned Pester 5.8.0:
 
-## Adding or changing a control
+```powershell
+Import-Module Pester -RequiredVersion 5.8.0
+$testPaths = @('tools/ApiDocs/Generate-ApiDocs.Tests.ps1', 'Fluence.Wpf.PowerShell.Module/tests/Generate-PowerShellReference.Tests.ps1', 'tools/Docs/SourceDocsManifest.Tests.ps1', 'tools/Docs/Sync-WebsiteDocs.Tests.ps1', 'tools/Docs/Select-VisualCaptures.Tests.ps1', 'tools/Docs/Review-VisualCaptures.Tests.ps1')
+$result = Invoke-Pester -Path $testPaths -PassThru
+if ($result.Result -ne 'Passed') { throw "Documentation tooling tests ended with $($result.Result); $($result.FailedCount) assertion(s) failed." }
+```
 
-Subclass the closest WPF type, override `DefaultStyleKeyProperty` metadata in the static constructor, put the template in `Fluence.Wpf/Themes/Controls/<ControlName>.xaml` and merge it from `Themes/Generic.xaml`, mark template parts with `[TemplatePart]` and visual states with `[TemplateVisualState]`, reuse canonical WinUI resource keys through `DynamicResource`, add a design-time entry in `Fluence.Wpf/Properties/DesignTimeResources.xaml`, extend the gallery demo, and add xUnit test coverage. [AGENTS.md](AGENTS.md) section 5 is the full checklist.
+Generated pages, coverage, and capture candidates under `artifacts/docs/` are local artifacts. The [documentation tooling guide](tools/Docs/README.md) explains website sync and separate visual review. Check `git status --short` after generation; source output should not create tracked changes.
 
-## Reference authority
+## Source and documentation rules
 
-Every visual or behavioral decision must be grounded, in this order (see [AGENTS.md](AGENTS.md) Section 4):
+- Keep the repository's BSD 3-Clause header on every C# source file. Document public APIs with XML comments.
+- Follow the nullable and analyzer settings in `Directory.Build.props` and `.editorconfig`. Warnings are build errors.
+- Use the existing theme architecture and canonical resource keys. The [theming guide](https://fluencewpf.com/docs/theming) and [developer handbook](AGENTS.md) describe the contract.
+- Public website authoring and publishing are maintained in the separate [website repository](https://github.com/sintaxasn/Fluence.Wpf.Website). Use this repository for library source, generators, the public changelog, and authored product guides. The website owns tracked published generated pages and images.
+- Preserve public change facts in [CHANGELOG.md](CHANGELOG.md) and document breaking changes there. The workflow in [.github/workflows/build.yml](.github/workflows/build.yml) is the source of truth for CI packaging and publication behavior.
 
-1. In-tree precedent (existing XAML, controls, tests).
-2. Per-domain authority - WinUI 3 CommonStyles for visual tokens and control templates; .NET 10 WPF Themes for WPF-native chrome, accent ramp math, theme detection, and backdrops.
-3. Published Windows 11 design guidance on Microsoft Learn (tie-breaker only).
+Check the text policy before opening a pull request:
 
-"Looks right" is not an acceptable justification.
-
-## Tests
-
-- One sealed class per subject, not a partial. Test files live under `Fluence.Wpf.Tests/` in `Control/`, `Control/Rules/`, `Theming/`, `Windowing/`, `Gallery/`, `Gallery/Pages/`, `Infrastructure/` and `Tools/`, each in the namespace that matches its folder. `Control/Rules/FluentStrokeTests.cs` is the reference pattern for a small template or behaviour probe.
-- A class whose tests touch `Application`, application resources or a `Window` implements `IAsyncLifetime` and calls `TestApp.EnsureLibraryTheme()` from `InitializeAsync` through `WpfTestSta.RunOnStaAsync`. Do not merge the demo dictionary into a library control test; `TestApp.EnsureDemoTheme()` is the explicit opt-in and belongs to the `Gallery/` tests. Pure logic classes stay free of `IAsyncLifetime`.
-- Cover at minimum: default style applies, key template parts resolve, critical dependency property and state transitions, and one theme cycle (`ThemeTestHelpers.ApplyStandardThemeCycle`) for theme-sensitive controls.
-- The HEAD-of-branch test count is the floor. Add tests; do not weaken the baseline. If a test is legitimately obsoleted, remove the whole file in the same change and record the rationale in `CHANGELOG.md`.
-
-## Visual verification
-
-Run `Fluence.Wpf.Demo` and exercise Light / Dark / High Contrast / Auto, a couple of accent swatches, Mica / Acrylic / Tabbed / None backdrops, and at least one control per gallery page. Capture 100% and 150% DPI screenshots when visuals change materially.
-
-## Documentation
-
-- Public guides live in `docs/*.md`. Prefer relative links such as `[text](theming.md)` so they resolve on GitHub and in any future generated site.
-- There is no hosted documentation site yet. The Markdown under `docs/` and at the repository root is the documentation; a site is a roadmap item.
+```powershell
+pwsh .claude/hooks/post-tool-util.ps1 -CheckAll
+git diff --check
+```
 
 ## Pull requests
 
-- Keep changes focused; no unrelated refactors or renames.
-- Update [CHANGELOG.md](CHANGELOG.md) under **Unreleased** (Keep a Changelog format, SemVer).
-- Update public docs ([README.md](README.md), [docs/controls.md](docs/controls.md), [docs/theming.md](docs/theming.md)) when consumer-visible behavior changes.
-- The PR template encodes the build / test / visual / docs gates; fill it in.
-- Maintainers follow [docs/release.md](docs/release.md) when publishing a package or tagging a release.
+Describe the user-facing change, affected target frameworks, and the verification you ran. Include screenshots for visual changes in Light, Dark, and High Contrast when relevant. Link the documentation page or example that teaches the new behavior. The workflow in [.github/workflows/build.yml](.github/workflows/build.yml) is the source of truth for CI packaging and publication behavior.

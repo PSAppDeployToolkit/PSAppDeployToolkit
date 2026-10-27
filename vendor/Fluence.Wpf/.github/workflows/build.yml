@@ -9,28 +9,55 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main]
+
+# A newer push to the same pull request cancels the run it supersedes. Main and tag runs each get
+# a group of their own, because a new run replaces a pending run in its group even without
+# cancel-in-progress. They are never cancelled or replaced, so a release cannot stop partway
+# through publication.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
+      # The NuGet cache is keyed on the committed lock files, which RestoreLockedMode keeps
+      # exact in CI, so a package version change produces a new cache entry.
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      # Tag runs fail here, before the build and test gates, when the tag cannot be released.
+      # The release job repeats both checks as its final gate before publication.
+      - name: Verify tag, tree version, and changelog section
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          $version = (dotnet msbuild Fluence.Wpf/Fluence.Wpf.csproj -getProperty:Version -p:TargetFramework=net472 -nologo).Trim()
+          if ($env:TAG -ne "v$version") {
+            Write-Error "Tag $env:TAG does not match the tree version, which is v$version. Bump VersionPrefix and VersionSuffix in Directory.Build.props, or delete the tag and re-tag the right commit."
+            exit 1
+          }
+          if (-not (Select-String -Path CHANGELOG.md -Pattern ('^##\s+\[' + [regex]::Escape($version) + '\]') -Quiet)) {
+            Write-Error "CHANGELOG.md has no '## [$version]' section. Add one before tagging."
+            exit 1
+          }
+          Write-Host "Tag $env:TAG matches the tree version and has a changelog section."
 
       - name: Check text policy (UTF-8 BOM, LF, banned APIs, hard-coded hex, em/en dashes)
         run: pwsh .claude/hooks/post-tool-util.ps1 -CheckAll
-
-      - uses: actions/cache@v6
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
 
       - name: Restore
         run: dotnet restore Fluence.Wpf.sln
@@ -38,14 +65,20 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build Fluence.Wpf.sln -c Release --no-restore -v minimal
 
+      - name: Generate API references in ignored staging
+        run: pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md
+
+      - name: Check generated API references
+        run: pwsh -NoProfile -File tools/ApiDocs/Generate-ApiDocs.ps1 -Configuration Release -OutputRoot artifacts/docs/api -CoveragePath artifacts/docs/coverage.md -Check
+
       # dotnet format is the tidiness gate: whitespace, code style (IDE####), and any analyzer
       # diagnostic at info severity or above that ships a working Fix All provider.
       - name: Check formatting (dotnet format)
         run: dotnet format Fluence.Wpf.sln --verify-no-changes --severity info --no-restore
 
       # Screenshots-category tests are PNG regenerators (no pass/fail assertion beyond
-      # "rendered without throwing"); they run in full local test runs to refresh
-      # docs/screenshots but are skipped here to keep CI fast.
+      # "rendered without throwing"); they are opt-in capture candidates and are
+      # skipped here. Published website images require a separate visual review.
       #
       # The suite runs on Microsoft Testing Platform, so these steps invoke the built test
       # executable rather than dotnet test: the VSTest target the previous steps used is
@@ -87,17 +120,14 @@ jobs:
       # out of balance. It does not catch the same typo repeated identically in both filters:
       # that would leave lane A empty and lane B carrying the whole assembly, and the sum is
       # unchanged, though a single-process net472 run still aborts loudly (see KNOWN_ISSUES.md).
-      # The floors are the HEAD-of-branch case counts, matching the AGENTS.md baseline policy:
-      # adding tests raises the real total and must not redden CI, while a filter typo drops
-      # cases and does. They exclude the three Screenshots-category cases removed by
-      # --filter-not-trait above; net10 carries all three (the Mvvm capture only targets
-      # net10.0-windows10.0.26100.0), while net472 carries only the two that target it, so
-      # the two floors differ by one screenshot case, not by zero. Raise both when a release
-      # deliberately drops cases, alongside Fluence.Wpf.Tests/Baselines.
+      # The floors combine the integrated branches and subsequent measured ordinary TRX case deltas
+      # after the Screenshots-category filter. TRX total includes skips; net472 discovery can
+      # collapse theory rows that expand at runtime. Recheck both target frameworks when test
+      # discovery changes, and update these floors alongside Fluence.Wpf.Tests/Baselines.
       - name: Check lane case-count sums
         shell: pwsh
         run: |
-          $floor = @{ 'net472' = 1374; 'net10' = 1375 }
+          $floor = @{ 'net472' = 1584; 'net10' = 1588 }
           foreach ($tfm in $floor.Keys) {
             $total = 0
             foreach ($lane in 'laneA', 'laneB') {
@@ -174,15 +204,19 @@ jobs:
             nupkg/*.snupkg
           retention-days: 30
 
-  # Script-module tooling and tests cannot block library artifacts or the .NET release.
+  # Script-module tooling and tests do not block library artifact creation; both
+  # jobs must pass before the combined release publishes either package.
   # This job consumes the exact binaries uploaded by build; no second library build is needed.
   powershell:
     needs: build
     runs-on: windows-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Download library binaries (.NET Framework 4.7.2)
         uses: actions/download-artifact@v8
@@ -196,34 +230,105 @@ jobs:
           name: fluence-wpf-release-dotnet8
           path: Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0
 
+      - name: Download library binaries (.NET 10)
+        uses: actions/download-artifact@v8
+        with:
+          name: fluence-wpf-release-dotnet10
+          path: Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0
+
+      # Restores the CurrentUser modules and NuGet provider the next two steps install. Their
+      # version checks then skip PowerShell Gallery. Change the key when a pinned version changes;
+      # a stale key only costs a reinstall.
+      - name: Cache pinned PowerShell build tools
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/Documents/WindowsPowerShell/Modules
+            ~/Documents/PowerShell/Modules
+            ~/AppData/Local/PackageManagement/ProviderAssemblies
+          key: ${{ runner.os }}-psmodules-nuget2.8.5.208-psscriptanalyzer1.25.0-pester5.8.0-alt3docusaurus2.0.1
+
       # Network setup is explicit and isolated from local package creation. Windows PowerShell
       # needs the external NuGet provider; PowerShell 7 uses its bundled provider.
       - name: Install pinned build tools (Windows PowerShell)
         shell: powershell
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          if (-not (Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue | Where-Object { $_.Version -eq [version]'2.8.5.208' })) {
-            Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.208 -Scope CurrentUser -Force
-          }
-          if (-not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })) {
-            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force
-          }
-          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })) {
-            Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+              if (-not (Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue | Where-Object { $_.Version -eq [version]'2.8.5.208' })) {
+                Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.208 -Scope CurrentUser -Force -ErrorAction Stop
+              }
+              $needAnalyzer = -not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })
+              $needPester = -not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })
+              if (($needAnalyzer -or $needPester) -and -not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+                Register-PSRepository -Default -ErrorAction Stop
+              }
+              if ($needAnalyzer) {
+                Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force -ErrorAction Stop
+              }
+              if ($needPester) {
+                Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+              }
+              break
+            } catch {
+              if ($attempt -eq 3) { throw }
+              Write-Warning "Build-tool installation attempt $attempt failed: $_. Retrying in 15 seconds."
+              Start-Sleep -Seconds 15
+            }
           }
 
       - name: Install pinned build tools (PowerShell 7)
         shell: pwsh
         run: |
-          if (-not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })) {
-            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force
-          }
-          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })) {
-            Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+              $needAnalyzer = -not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { $_.Version -eq [version]'1.25.0' })
+              $needPester = -not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -eq [version]'5.8.0' })
+              $needDocs = -not (Get-Module -ListAvailable Alt3.Docusaurus.Powershell | Where-Object { $_.Version -eq [version]'2.0.1' })
+              if (($needAnalyzer -or $needPester -or $needDocs) -and -not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+                Register-PSRepository -Default -ErrorAction Stop
+              }
+              if ($needAnalyzer) {
+                Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Repository PSGallery -Scope CurrentUser -Force -ErrorAction Stop
+              }
+              if ($needPester) {
+                Install-Module Pester -RequiredVersion 5.8.0 -Repository PSGallery -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+              }
+              if ($needDocs) {
+                Install-Module Alt3.Docusaurus.Powershell -RequiredVersion 2.0.1 -Repository PSGallery -Scope CurrentUser -Force -ErrorAction Stop
+              }
+              break
+            } catch {
+              if ($attempt -eq 3) { throw }
+              Write-Warning "Build-tool installation attempt $attempt failed: $_. Retrying in 15 seconds."
+              Start-Sleep -Seconds 15
+            }
           }
 
       - name: Stage PowerShell module libraries
         run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Build-Module.ps1 -Configuration Release
+
+      - name: Generate PowerShell references in ignored staging
+        run: pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference
+
+      - name: Check generated PowerShell references
+        run: pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference -Check
+
+      - name: Test documentation tooling (PowerShell 7)
+        shell: pwsh
+        run: |
+          Import-Module Pester -RequiredVersion 5.8.0 -ErrorAction Stop
+          $testPaths = @(
+            'tools/ApiDocs/Generate-ApiDocs.Tests.ps1',
+            'Fluence.Wpf.PowerShell.Module/tests/Generate-PowerShellReference.Tests.ps1',
+            'tools/Docs/SourceDocsManifest.Tests.ps1',
+            'tools/Docs/Sync-WebsiteDocs.Tests.ps1',
+            'tools/Docs/Select-VisualCaptures.Tests.ps1',
+            'tools/Docs/Review-VisualCaptures.Tests.ps1'
+          )
+          $result = Invoke-Pester -Path $testPaths -PassThru
+          if ($result.Result -ne 'Passed') { throw "Documentation tooling tests ended with $($result.Result); $($result.FailedCount) assertion(s) failed." }
 
       - name: Test PowerShell module (PowerShell 7)
         run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -TestResultPath TestResults/psmodule/pwsh.xml
@@ -236,7 +341,7 @@ jobs:
         run: powershell.exe -NoProfile -STA -File Fluence.Wpf.PowerShell.Module/build/Test-Module.ps1 -TestResultPath TestResults/psmodule/desktop.xml
 
       - name: Package PowerShell module
-        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Package-Module.ps1 -Configuration Release
+        run: pwsh -NoProfile -File Fluence.Wpf.PowerShell.Module/build/Package-Module.ps1 -Configuration Release -UseExistingBuild
 
       - name: Upload PowerShell module package
         uses: actions/upload-artifact@v7
@@ -244,6 +349,7 @@ jobs:
           name: fluence-ps-module-package
           path: Fluence.Wpf.PowerShell.Module/artifacts/
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload PowerShell module test results
         if: always()
@@ -253,29 +359,36 @@ jobs:
           path: TestResults/psmodule/
           retention-days: 14
 
-  # Version tags (v*) run the .NET build/test/pack gates above and then publish a
-  # GitHub release with the per-TFM library binaries, the demo, and the NuGet
-  # package attached, and push the package to nuget.org. Tags carrying a
+  # Version tags (v*) run the .NET and PowerShell build/test/package gates above.
+  # v0.9.5 is build-only: publishing it later requires a separately authorized
+  # release workflow, because rerunning this tag's workflow retains this guard.
+  # Other version tags publish a GitHub release and packages to nuget.org and
+  # PowerShell Gallery. Tags carrying a
   # SemVer prerelease identifier are marked as prereleases. Write permission is
   # scoped to this job only; the build job stays read-only.
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && github.ref != 'refs/tags/v0.9.5'
+    needs: [build, powershell]
     runs-on: windows-latest
-    # The job runs in the "release" environment so its two irreversible steps, creating the
-    # GitHub release and pushing to nuget.org, can sit behind a required reviewer. The gate itself
-    # is repository configuration (Settings, Environments, "release", required reviewers), not
-    # something this file can declare; docs/release.md lists it as a precondition. Without that
-    # rule the environment exists but waits on nobody.
+    timeout-minutes: 15
+    # The job runs in the "release" environment so its public release and package publication
+    # steps can sit behind a required reviewer. Configure the release environment
+    # in repository settings so the publishing job cannot proceed without review.
     environment: release
     permissions:
       contents: write
+      id-token: write
+    # Scripts read the tag from the environment rather than from an expression expanded into
+    # their source, so a tag name cannot alter the script text.
+    env:
+      TAG: ${{ github.ref_name }}
 
     steps:
       - name: Checkout the tag
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -289,11 +402,11 @@ jobs:
         run: |
           $version = (dotnet msbuild Fluence.Wpf/Fluence.Wpf.csproj -getProperty:Version -p:TargetFramework=net472 -nologo).Trim()
           $expected = "v$version"
-          if ('${{ github.ref_name }}' -ne $expected) {
-            Write-Error "Tag ${{ github.ref_name }} does not match the tree version, which is $expected. Bump VersionPrefix and VersionSuffix in Directory.Build.props, or delete the tag and re-tag the right commit."
+          if ($env:TAG -ne $expected) {
+            Write-Error "Tag $env:TAG does not match the tree version, which is $expected. Bump VersionPrefix and VersionSuffix in Directory.Build.props, or delete the tag and re-tag the right commit."
             exit 1
           }
-          Write-Host "Tag ${{ github.ref_name }} matches the tree version $version."
+          Write-Host "Tag $env:TAG matches the tree version $version."
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
@@ -301,22 +414,31 @@ jobs:
           pattern: fluence-wpf-*
           path: artifacts
 
+      - name: Download PowerShell module package
+        uses: actions/download-artifact@v8
+        with:
+          name: fluence-ps-module-package
+          path: artifacts/fluence-ps-module-package
+
       - name: Stage release assets
         run: |
           New-Item -ItemType Directory dist | Out-Null
-          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet472/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net472.zip"
-          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet8/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net8.0-windows.zip"
-          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet10/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net10.0-windows.zip"
-          Compress-Archive -Path artifacts/fluence-wpf-demo/* -DestinationPath "dist/Fluence.Wpf.Demo-${{ github.ref_name }}-net472.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet472/* -DestinationPath "dist/Fluence.Wpf-${env:TAG}-net472.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet8/* -DestinationPath "dist/Fluence.Wpf-${env:TAG}-net8.0-windows.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet10/* -DestinationPath "dist/Fluence.Wpf-${env:TAG}-net10.0-windows.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-demo/* -DestinationPath "dist/Fluence.Wpf.Demo-${env:TAG}-net472.zip"
           Copy-Item artifacts/fluence-wpf-nupkg/*.nupkg dist/
           Copy-Item artifacts/fluence-wpf-nupkg/*.snupkg dist/
+          Copy-Item artifacts/fluence-ps-module-package/*.zip dist/
+          Copy-Item artifacts/fluence-ps-module-package/*.nupkg dist/
+          Expand-Archive -Path (Get-ChildItem artifacts/fluence-ps-module-package/*.zip | Select-Object -First 1).FullName -DestinationPath module-release
 
       # The release notes are the CHANGELOG section for this version, not
       # commit-generated prose. A missing section fails the job: shipping a
       # release with no notes is worse than not shipping it.
       - name: Slice the changelog for this version
         run: |
-          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $version = $env:TAG.TrimStart('v')
           $lines = Get-Content CHANGELOG.md
           $start = -1
           for ($i = 0; $i -lt $lines.Count; $i++) {
@@ -335,41 +457,106 @@ jobs:
           Write-Host "Release notes:"
           Get-Content release-notes.md
 
+      - name: Verify publication identity and credentials are configured
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER }}
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_USER)) {
+            throw 'NUGET_USER must be set to the nuget.org profile username in the release environment.'
+          }
+          if ([string]::IsNullOrWhiteSpace($env:PSGALLERY_API_KEY)) {
+            throw 'PSGALLERY_API_KEY is not configured for the release job.'
+          }
+
+      # Exchange the release job's GitHub OIDC token before creating a public release.
+      # A missing or mismatched nuget.org trusted-publishing policy fails here.
+      - name: NuGet login (OIDC)
+        id: nuget_login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Verify NuGet login returned a temporary API key
+        env:
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw 'NuGet login did not return a temporary API key.'
+          }
+
       # gh release create fails outright if a release for this tag already exists,
       # which is exactly what a re-run after a failed NuGet push below hits: the
       # release published fine the first time, only the push failed. Checking
-      # first and skipping creation when the release exists lets a re-run reach
-      # the push instead of dying here every time. This never overwrites an
-      # existing release: it either creates one or leaves the existing one alone.
+      # first lets a re-run reach the push instead of dying here every time.
+      # Refresh the assets from this run's verified artifacts when the release
+      # exists, so recovery does not leave packages from an earlier failed run.
+      # Keep the existing release notes and metadata.
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $releaseExists = $false
           try {
-            gh release view '${{ github.ref_name }}' --repo '${{ github.repository }}' *> $null
+            gh release view $env:TAG --repo '${{ github.repository }}' *> $null
             $releaseExists = ($LASTEXITCODE -eq 0)
           } catch {
             $releaseExists = $false
           }
           if ($releaseExists) {
-            Write-Host "Release ${{ github.ref_name }} already exists. Leaving it as is so this re-run reaches the NuGet push below."
+            $assets = @(Get-ChildItem -Path dist -File | ForEach-Object FullName)
+            if ($assets.Count -eq 0) {
+              throw 'No staged release assets were found in dist.'
+            }
+            Write-Host "Release $env:TAG already exists. Refreshing its assets from this run's verified artifacts."
+            gh release upload $env:TAG @assets --repo '${{ github.repository }}' --clobber
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Refreshing the existing GitHub release assets failed.'
+            }
           } else {
-            $ghArgs = @('release', 'create', '${{ github.ref_name }}', '--repo', '${{ github.repository }}')
+            $ghArgs = @('release', 'create', $env:TAG, '--repo', '${{ github.repository }}')
             $ghArgs += (Get-ChildItem dist/* | ForEach-Object FullName)
-            $ghArgs += @('--title', 'Fluence.Wpf ${{ github.ref_name }}', '--notes-file', 'release-notes.md')
+            $ghArgs += @('--title', "Fluence.Wpf $env:TAG", '--notes-file', 'release-notes.md', '--verify-tag')
             # Any SemVer prerelease identifier (-rc.1, -preview, -beta) marks a prerelease.
-            if ('${{ github.ref_name }}'.Contains('-')) { $ghArgs += '--prerelease' }
+            if ($env:TAG.Contains('-')) { $ghArgs += '--prerelease' }
             gh @ghArgs
           }
 
-      # Last, so a failure in the release creation does not leave a package on
-      # nuget.org that cannot be replaced. dotnet nuget push already pushes the
-      # sibling .snupkg from the same folder when one is present, so pushing the
-      # .nupkg alone is enough; --skip-duplicate means a re-run whose package
-      # already reached nuget.org does not fail on that account. The release
-      # step above is what actually makes a re-run after this step fails safe to
-      # retry: it skips recreating a release that already exists and lands here.
+      # After GitHub release creation, so a failure in that step does not leave a package on
+      # nuget.org that cannot be replaced. dotnet nuget push also pushes the
+      # sibling .snupkg. --skip-duplicate makes a retry safe after a successful
+      # push. The path is scoped to the library so the PowerShell Gallery package
+      # attached to the release is not sent to nuget.org.
       - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
         run: |
-          dotnet nuget push dist/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          # PowerShell does not expand wildcards for native commands, so resolve
+          # the package path before passing it to dotnet.
+          $packages = @(Get-ChildItem -Path 'artifacts/fluence-wpf-nupkg' -Filter '*.nupkg' -File)
+          if ($packages.Count -ne 1) {
+            throw "Expected one Fluence.Wpf NuGet package, found $($packages.Count)."
+          }
+          dotnet nuget push $packages[0].FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      # The ZIP and Gallery-format NUPKG are attached to GitHub above. Publish
+      # the packaged module source to PSGallery only after the NuGet push
+      # succeeds. The release environment reviewer gates this public action too.
+      - name: Publish PowerShell module to PowerShell Gallery
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          $modulePath = Join-Path $PWD 'module-release/Fluence.Wpf.PowerShell'
+          $manifestPath = Join-Path $modulePath 'Fluence.Wpf.PowerShell.psd1'
+          $manifest = Import-PowerShellDataFile $manifestPath
+          $moduleName = Split-Path $modulePath -Leaf
+          $version = [string]$manifest.ModuleVersion
+          if (-not [string]::IsNullOrWhiteSpace($manifest.PrivateData.PSData.Prerelease)) {
+            $version = '{0}-{1}' -f $version, $manifest.PrivateData.PSData.Prerelease.TrimStart('-')
+          }
+          $published = Find-Module -Name $moduleName -RequiredVersion $version -AllowPrerelease -ErrorAction SilentlyContinue
+          if ($null -ne $published) {
+            Write-Host "PowerShell Gallery already contains $moduleName $version; skipping duplicate publication."
+          } else {
+            Publish-Module -Path $modulePath -Repository PSGallery -NuGetApiKey $env:PSGALLERY_API_KEY -Force
+          }
