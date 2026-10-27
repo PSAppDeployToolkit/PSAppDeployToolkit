@@ -1,3 +1,33 @@
+﻿<#
+Copyright (c) 2026, Dan Cunningham. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#>
+
+
 param([switch]$CheckAll)
 
 $ErrorActionPreference = "Stop"
@@ -50,7 +80,7 @@ function Get-RelativePath {
     )
 
     $rootWithSeparator = $Root.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
-    return $Path.Substring($rootWithSeparator.Length).Replace('\', '/')
+    return $Path.Substring($rootWithSeparator.Length).Replace([System.IO.Path]::DirectorySeparatorChar, [char]'/')
 }
 
 function Add-FilePath {
@@ -87,7 +117,8 @@ $projectRoot = Get-ProjectRoot
 $extensions = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
 @(".cs", ".xaml", ".csproj", ".props", ".targets", ".sln", ".slnx", ".md", ".yml", ".yaml", ".json", ".ps1", ".psm1", ".psd1", ".ps1xml") | ForEach-Object { [void]$extensions.Add($_) }
 
-# UTF-8 BOM is mandated only for these source types (AGENTS.md section 2). Other tracked types
+# UTF-8 BOM is mandated for these source types except skill entrypoints, whose YAML
+# frontmatter must start at the first byte. Other tracked types
 # (.yml/.yaml/.json/.ps1/.psm1/.psd1/.sln/.slnx) are still checked for line endings and content,
 # but not for a BOM.
 $bomExtensions = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
@@ -189,7 +220,11 @@ for ($i = 0; $i -lt $fullPaths.Count; $i++) {
         $hasBom = $false
     }
 
-    if (-not $hasBom -and $bomExtensions.Contains($extension)) {
+    $isSkillEntrypoint = $relativePath -cmatch '^skills/[^/]+/SKILL[.]md$'
+    if ($isSkillEntrypoint -and $hasBom) {
+        $violations.Add("$relativePath must be UTF-8 without BOM so YAML frontmatter starts at the first byte.")
+    }
+    elseif (-not $isSkillEntrypoint -and -not $hasBom -and $bomExtensions.Contains($extension)) {
         $violations.Add("$relativePath must be UTF-8 with BOM.")
     }
 

@@ -547,7 +547,7 @@ namespace Fluence.Wpf.Controls
         {
             string brushKey = ShowError
                 ? "SystemFillColorCriticalBrush"
-                : ShowPaused ? "SystemFillColorCautionBrush" : "AccentFillColorDefaultBrush";
+                : ShowPaused ? "SystemFillColorCautionBrush" : "SystemControlHighlightAccentBrush";
             _fill?.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, brushKey);
             _indeterminateBar?.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, brushKey);
             _indeterminateBar2?.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, brushKey);
@@ -585,11 +585,9 @@ namespace Fluence.Wpf.Controls
             // different - its fill width still carries the information when frozen - so
             // UpdateFillWidth does honour the gate.
             //
-            // This regressed PSAppDeployToolkit: Show-ADTInstallationProgress returned normally but
-            // its dialog sat motionless on any machine with animation effects off, and the install
-            // looked frozen. ProgressRing solves the same problem the other way, by rendering a
-            // meaningful static resting arc; a bar has no equivalent resting frame that reads as
-            // "busy" rather than "stopped part-way".
+            // Without this exception, an operation with animation effects off could return normally
+            // while its progress dialog sat motionless and made the work look frozen. ProgressRing
+            // follows the same essential-feedback rule for its indeterminate arc.
             //
             // Covered by ReducedMotion_ProgressBar_Indeterminate_KeepsAnimating.
             if (!IsLoaded || !IsVisible || _indeterminateTranslate is null || _indeterminateBar is null)

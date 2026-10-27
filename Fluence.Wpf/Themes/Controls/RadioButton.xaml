@@ -37,11 +37,13 @@
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="Padding" Value="8,0,0,0" />
+        <Setter Property="MinWidth" Value="120" />
+        <Setter Property="Padding" Value="8,6,0,0" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:RadioButton}">
-                    <Grid>
+                    <Grid Background="{TemplateBinding Background}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -57,13 +59,9 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             Width="20"
-                            Height="20"
+                            Height="32"
                             Margin="0,0,0,0"
-                            VerticalAlignment="Center"
-                            RenderTransformOrigin="0.5,0.5">
-                            <Grid.RenderTransform>
-                                <ScaleTransform ScaleX="1" ScaleY="1" />
-                            </Grid.RenderTransform>
+                            VerticalAlignment="Top">
 
                             <!--
                                 Opaque sub-layer under the checked-state ellipses so the accent
@@ -76,61 +74,81 @@
                                 x:Name="IndicatorAccentBackdrop"
                                 Width="20"
                                 Height="20"
+                                VerticalAlignment="Center"
                                 Fill="{DynamicResource AccentFillBackdropBrush}"
-                                Opacity="0" />
+                                Opacity="0"
+                                UseLayoutRounding="False" />
 
                             <!--  Unchecked: normal  -->
                             <Ellipse
                                 x:Name="OuterEllipse"
                                 Width="20"
                                 Height="20"
+                                VerticalAlignment="Center"
                                 Fill="{DynamicResource ControlAltFillColorSecondaryBrush}"
                                 Stroke="{DynamicResource ControlStrongStrokeColorDefaultBrush}"
-                                StrokeThickness="1" />
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--  Unchecked: hover overlay  -->
                             <Ellipse
                                 x:Name="OuterEllipseHover"
                                 Width="20"
                                 Height="20"
+                                VerticalAlignment="Center"
                                 Fill="{DynamicResource ControlAltFillColorTertiaryBrush}"
                                 Opacity="0"
                                 Stroke="{DynamicResource ControlStrongStrokeColorDefaultBrush}"
-                                StrokeThickness="1" />
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--  Unchecked: pressed overlay  -->
                             <Ellipse
                                 x:Name="OuterEllipsePressed"
                                 Width="20"
                                 Height="20"
+                                VerticalAlignment="Center"
                                 Fill="{DynamicResource ControlAltFillColorQuarternaryBrush}"
                                 Opacity="0"
                                 Stroke="{DynamicResource ControlStrongStrokeColorDisabledBrush}"
-                                StrokeThickness="1" />
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--  Checked: accent fill  -->
                             <Ellipse
                                 x:Name="CheckedEllipse"
                                 Width="20"
                                 Height="20"
-                                Fill="{DynamicResource AccentFillColorDefaultBrush}"
-                                Opacity="0" />
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource RadioButtonOuterEllipseCheckedFillBrush}"
+                                Opacity="0"
+                                Stroke="{DynamicResource RadioButtonOuterEllipseCheckedStrokeBrush}"
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--  Checked: hover accent  -->
                             <Ellipse
                                 x:Name="CheckedEllipseHover"
                                 Width="20"
                                 Height="20"
-                                Fill="{DynamicResource AccentFillColorSecondaryBrush}"
-                                Opacity="0" />
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource RadioButtonOuterEllipseCheckedFillPointerOverBrush}"
+                                Opacity="0"
+                                Stroke="{DynamicResource RadioButtonOuterEllipseCheckedStrokePointerOverBrush}"
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--  Checked: pressed accent  -->
                             <Ellipse
                                 x:Name="CheckedEllipsePressed"
                                 Width="20"
                                 Height="20"
-                                Fill="{DynamicResource AccentFillColorTertiaryBrush}"
-                                Opacity="0" />
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource RadioButtonOuterEllipseCheckedFillPressedBrush}"
+                                Opacity="0"
+                                Stroke="{DynamicResource RadioButtonOuterEllipseCheckedStrokePressedBrush}"
+                                StrokeThickness="1"
+                                UseLayoutRounding="False" />
 
                             <!--
                                 Inner dot (color adapts to accent luminance via TextOnAccent).
@@ -139,14 +157,26 @@
                                 ControlElevationBorderBrush while checked and disabled.
                             -->
                             <Ellipse
-                                x:Name="InnerDot"
-                                Width="0"
-                                Height="0"
+                                x:Name="PART_CheckGlyph"
+                                Width="12"
+                                Height="12"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Fill="{DynamicResource RadioButtonCheckGlyphFillBrush}"
+                                Opacity="0"
                                 Stroke="{DynamicResource CircleElevationBorderBrush}"
-                                StrokeThickness="1" />
+                                StrokeThickness="0"
+                                UseLayoutRounding="False" />
+                            <Border
+                                x:Name="PART_PressedCheckGlyph"
+                                Width="4"
+                                Height="4"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource RadioButtonCheckGlyphFillPressedBrush}"
+                                CornerRadius="6"
+                                Opacity="0"
+                                UseLayoutRounding="False" />
                         </Grid>
 
                         <!--  Content  -->
@@ -207,77 +237,20 @@
                                 <Condition Property="IsChecked" Value="False" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="OuterEllipsePressed" Property="Opacity" Value="1" />
-                            <Setter TargetName="IndicatorHost" Property="RenderTransform">
-                                <Setter.Value>
-                                    <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
-                                </Setter.Value>
-                            </Setter>
                         </MultiTrigger>
 
-                        <!--
-                            Checked. The anonymous storyboard below grows the dot, and the named
-                            state storyboards (hover, pressed, disabled) animate the same property
-                            afterwards. WPF layers a later trigger's storyboard over an earlier
-                            trigger's rather than replacing it, even under SnapshotAndReplace, so
-                            each RemoveStoryboard uncovers this grow again rather than dropping the
-                            dot to the template base of 0. Read on its own the handoff looks like it
-                            loses the checked size, and two reviewers have now reported it as a
-                            defect; RadioButton_CheckedDot_KeepsItsCheckedSizeWhenAStateStoryboardIsReleasedAsync
-                            pins the real behaviour.
-                        -->
+                        <!--  Selection switches the dot and accent plate immediately; geometry follows the common interaction state.  -->
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="OuterEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="OuterEllipseHover" Property="Opacity" Value="0" />
                             <Setter TargetName="OuterEllipsePressed" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="1" />
                             <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="1" />
-                            <Setter TargetName="InnerDot" Property="Stroke" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!--  ControlFastAnimationDuration (167 ms) inner-dot grow  -->
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="8" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="8" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.100"
-                                                Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.100"
-                                                Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
+                            <Setter TargetName="PART_CheckGlyph" Property="Opacity" Value="1" />
+                            <Setter TargetName="PART_CheckGlyph" Property="Stroke" Value="{DynamicResource AccentControlElevationBorderBrush}" />
                         </Trigger>
 
-                        <!--
-                            Checked + Hover. WinUI grows the check glyph while the pointer is over it
-                            (RadioButton_themeresources.xaml:255,258), from its resting 12 to 14 over
-                            ControlNormalAnimationDuration on the fast out slow in spline. Fluence rests
-                            the dot at 8 rather than 12, so the WinUI ratios are applied to that base:
-                            14/12 of 8 is 9.33, and 10/12 of 8 is 6.67 for the pressed state below.
-                        -->
+                        <!--  Common-state glyph sizing is owned by RadioButton; these triggers retain semantic brushes.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
@@ -286,35 +259,9 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipseHover" Property="Opacity" Value="1" />
-                            <MultiTrigger.EnterActions>
-                                <BeginStoryboard x:Name="RadioDotHoverStoryboard">
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.25"
-                                                Value="9.33" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.25"
-                                                Value="9.33" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.EnterActions>
-                            <MultiTrigger.ExitActions>
-                                <RemoveStoryboard BeginStoryboardName="RadioDotHoverStoryboard" />
-                            </MultiTrigger.ExitActions>
+                            <Setter TargetName="PART_CheckGlyph" Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFillPointerOverBrush}" />
                         </MultiTrigger>
 
-                        <!--
-                            Checked + Pressed. The dot shrank here by a stamped setter, where WinUI
-                            animates its CheckGlyph (RadioButton_themeresources.xaml:292,295) over
-                            ControlNormalAnimationDuration. Releasing over the control re-enters the
-                            hover trigger above, which grows the dot back to its hover size.
-                        -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsChecked" Value="True" />
@@ -323,27 +270,8 @@
                             <Setter TargetName="CheckedEllipse" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipseHover" Property="Opacity" Value="0" />
                             <Setter TargetName="CheckedEllipsePressed" Property="Opacity" Value="1" />
-                            <MultiTrigger.EnterActions>
-                                <BeginStoryboard x:Name="RadioDotPressedStoryboard">
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.25"
-                                                Value="6.67" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.25"
-                                                Value="6.67" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.EnterActions>
-                            <MultiTrigger.ExitActions>
-                                <RemoveStoryboard BeginStoryboardName="RadioDotPressedStoryboard" />
-                            </MultiTrigger.ExitActions>
+                            <Setter TargetName="PART_CheckGlyph" Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFillPressedBrush}" />
+                            <Setter TargetName="PART_PressedCheckGlyph" Property="Background" Value="{DynamicResource RadioButtonCheckGlyphFillPressedBrush}" />
                         </MultiTrigger>
 
                         <!--
@@ -356,61 +284,26 @@
                             <Setter TargetName="OuterEllipse" Property="Fill" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipseHover" Property="Fill" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipsePressed" Property="Fill" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
-                            <Setter TargetName="CheckedEllipse" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="CheckedEllipseHover" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="CheckedEllipsePressed" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
-                            <Setter TargetName="InnerDot" Property="Fill" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
-                            <Setter TargetName="InnerDot" Property="Stroke" Value="{DynamicResource ControlElevationBorderBrush}" />
+                            <Setter TargetName="CheckedEllipse" Property="Fill" Value="{DynamicResource RadioButtonOuterEllipseCheckedFillDisabledBrush}" />
+                            <Setter TargetName="CheckedEllipseHover" Property="Fill" Value="{DynamicResource RadioButtonOuterEllipseCheckedFillDisabledBrush}" />
+                            <Setter TargetName="CheckedEllipsePressed" Property="Fill" Value="{DynamicResource RadioButtonOuterEllipseCheckedFillDisabledBrush}" />
+                            <Setter TargetName="PART_CheckGlyph" Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFillDisabledBrush}" />
+                            <Setter TargetName="PART_CheckGlyph" Property="Stroke" Value="{DynamicResource ControlElevationBorderBrush}" />
                             <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="0" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="DescriptionText" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipse" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipseHover" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
                             <Setter TargetName="OuterEllipsePressed" Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
+                            <Setter TargetName="CheckedEllipse" Property="Stroke" Value="{DynamicResource RadioButtonOuterEllipseCheckedStrokeDisabledBrush}" />
+                            <Setter TargetName="CheckedEllipseHover" Property="Stroke" Value="{DynamicResource RadioButtonOuterEllipseCheckedStrokeDisabledBrush}" />
+                            <Setter TargetName="CheckedEllipsePressed" Property="Stroke" Value="{DynamicResource RadioButtonOuterEllipseCheckedStrokeDisabledBrush}" />
                         </Trigger>
-
-                        <!--
-                            Disabled + Checked. WinUI grows the glyph to 14 over
-                            ControlFastAnimationDuration while disabled
-                            (RadioButton_themeresources.xaml:338,341), the same size it takes on hover,
-                            because the disabled accent plate behind it carries far less contrast. The
-                            checked condition is Fluence specific: the dot is hidden by a zero size
-                            rather than by opacity, so an unguarded disabled state would reveal it on an
-                            unchecked button.
-                        -->
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsEnabled" Value="False" />
-                                <Condition Property="IsChecked" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <MultiTrigger.EnterActions>
-                                <BeginStoryboard x:Name="RadioDotDisabledStoryboard">
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Width">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="9.33" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="InnerDot" Storyboard.TargetProperty="Height">
-                                            <SplineDoubleKeyFrame
-                                                KeySpline="0,0,0,1"
-                                                KeyTime="0:0:0.167"
-                                                Value="9.33" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.EnterActions>
-                            <MultiTrigger.ExitActions>
-                                <RemoveStoryboard BeginStoryboardName="RadioDotDisabledStoryboard" />
-                            </MultiTrigger.ExitActions>
-                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
 </ResourceDictionary>

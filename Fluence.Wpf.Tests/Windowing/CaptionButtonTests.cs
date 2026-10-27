@@ -261,6 +261,8 @@ namespace Fluence.Wpf.Tests.Windowing
         {
             CaptionButtonChrome.GetMinimizeChrome(
                 ResizeMode.NoResize,
+                visibilityOverride: null,
+                isMinimizable: true,
                 out Visibility vis,
                 out bool en);
 
@@ -273,6 +275,8 @@ namespace Fluence.Wpf.Tests.Windowing
         {
             CaptionButtonChrome.GetMinimizeChrome(
                 ResizeMode.CanResize,
+                visibilityOverride: null,
+                isMinimizable: true,
                 out Visibility vis,
                 out bool en);
 
@@ -286,6 +290,8 @@ namespace Fluence.Wpf.Tests.Windowing
             CaptionButtonChrome.GetMaximizeRestoreChrome(
                 ResizeMode.CanResize,
                 WindowState.Normal,
+                visibilityOverride: null,
+                isMaximizable: true,
                 out Visibility maxVis,
                 out Visibility restVis,
                 out bool maxEn,
@@ -303,6 +309,8 @@ namespace Fluence.Wpf.Tests.Windowing
             CaptionButtonChrome.GetMaximizeRestoreChrome(
                 ResizeMode.CanResize,
                 WindowState.Maximized,
+                visibilityOverride: null,
+                isMaximizable: true,
                 out Visibility maxVis,
                 out Visibility restVis,
                 out bool maxEn,
@@ -320,6 +328,8 @@ namespace Fluence.Wpf.Tests.Windowing
             CaptionButtonChrome.GetMaximizeRestoreChrome(
                 ResizeMode.CanMinimize,
                 WindowState.Normal,
+                visibilityOverride: null,
+                isMaximizable: true,
                 out Visibility maxVis,
                 out _,
                 out bool maxEn,
@@ -334,11 +344,135 @@ namespace Fluence.Wpf.Tests.Windowing
         public void Close_VisibleAndEnabled()
         {
             CaptionButtonChrome.GetCloseChrome(
+                visibilityOverride: null,
+                isClosable: true,
                 out Visibility vis,
                 out bool en);
 
             Assert.Equal(Visibility.Visible, vis);
             Assert.True(en);
+        }
+
+        [Theory]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, true, Visibility.Visible, true)]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, false, Visibility.Visible, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Hidden, true, Visibility.Hidden, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Collapsed, true, Visibility.Collapsed, false)]
+        [InlineData(ResizeMode.CanResize, Visibility.Hidden, true, Visibility.Hidden, false)]
+        [InlineData(ResizeMode.CanResize, Visibility.Collapsed, true, Visibility.Collapsed, false)]
+        [InlineData(ResizeMode.CanMinimize, null, true, Visibility.Visible, true)]
+        public void MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(
+            ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMinimizable,
+            Visibility expectedVisibility,
+            bool expectedEnabled)
+        {
+            CaptionButtonChrome.GetMinimizeChrome(
+                resizeMode,
+                visibilityOverride,
+                isMinimizable,
+                out Visibility visibility,
+                out bool enabled);
+
+            Assert.Equal(expectedVisibility, visibility);
+            Assert.Equal(expectedEnabled, enabled);
+        }
+
+        [Theory]
+        [InlineData(ResizeMode.NoResize, WindowState.Normal, Visibility.Visible, true, Visibility.Visible, Visibility.Collapsed, true, false)]
+        [InlineData(ResizeMode.NoResize, WindowState.Normal, Visibility.Visible, false, Visibility.Visible, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.NoResize, WindowState.Maximized, Visibility.Visible, true, Visibility.Collapsed, Visibility.Visible, false, true)]
+        [InlineData(ResizeMode.CanMinimize, WindowState.Normal, null, true, Visibility.Visible, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Normal, Visibility.Hidden, true, Visibility.Hidden, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Maximized, Visibility.Hidden, true, Visibility.Collapsed, Visibility.Hidden, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Normal, Visibility.Collapsed, true, Visibility.Collapsed, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Maximized, Visibility.Collapsed, true, Visibility.Collapsed, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Normal, (Visibility)99, true, Visibility.Collapsed, Visibility.Collapsed, false, false)]
+        [InlineData(ResizeMode.CanResize, WindowState.Maximized, (Visibility)99, true, Visibility.Collapsed, Visibility.Collapsed, false, false)]
+        public void MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(
+            ResizeMode resizeMode,
+            WindowState windowState,
+            Visibility? visibilityOverride,
+            bool isMaximizable,
+            Visibility expectedMaximizeVisibility,
+            Visibility expectedRestoreVisibility,
+            bool expectedMaximizeEnabled,
+            bool expectedRestoreEnabled)
+        {
+            CaptionButtonChrome.GetMaximizeRestoreChrome(
+                resizeMode,
+                windowState,
+                visibilityOverride,
+                isMaximizable,
+                out Visibility maximizeVisibility,
+                out Visibility restoreVisibility,
+                out bool maximizeEnabled,
+                out bool restoreEnabled);
+
+            Assert.Equal(expectedMaximizeVisibility, maximizeVisibility);
+            Assert.Equal(expectedRestoreVisibility, restoreVisibility);
+            Assert.Equal(expectedMaximizeEnabled, maximizeEnabled);
+            Assert.Equal(expectedRestoreEnabled, restoreEnabled);
+        }
+
+        [Theory]
+        [InlineData(null, false, Visibility.Visible, false)]
+        [InlineData(Visibility.Visible, false, Visibility.Visible, false)]
+        [InlineData(Visibility.Hidden, false, Visibility.Hidden, false)]
+        [InlineData(Visibility.Collapsed, false, Visibility.Collapsed, false)]
+        [InlineData(Visibility.Hidden, true, Visibility.Hidden, false)]
+        public void CloseChrome_VisibilityAndCapability_HaveExpectedResult(
+            Visibility? visibilityOverride,
+            bool isClosable,
+            Visibility expectedVisibility,
+            bool expectedEnabled)
+        {
+            CaptionButtonChrome.GetCloseChrome(
+                visibilityOverride,
+                isClosable,
+                out Visibility visibility,
+                out bool enabled);
+
+            Assert.Equal(expectedVisibility, visibility);
+            Assert.Equal(expectedEnabled, enabled);
+        }
+
+        [Theory]
+        [InlineData(ResizeMode.NoResize, null, true, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, true, true)]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, false, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Hidden, true, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Collapsed, true, false)]
+        [InlineData(ResizeMode.CanResize, Visibility.Hidden, true, true)]
+        [InlineData(ResizeMode.CanResize, Visibility.Collapsed, true, true)]
+        public void CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(
+            ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMinimizable,
+            bool expectedCanExecute)
+        {
+            Assert.Equal(expectedCanExecute,
+                CaptionButtonChrome.CanMinimize(resizeMode, visibilityOverride, isMinimizable));
+        }
+
+        [Theory]
+        [InlineData(ResizeMode.NoResize, null, true, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, true, true)]
+        [InlineData(ResizeMode.NoResize, Visibility.Visible, false, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Hidden, true, false)]
+        [InlineData(ResizeMode.NoResize, Visibility.Collapsed, true, false)]
+        [InlineData(ResizeMode.CanResize, Visibility.Hidden, true, true)]
+        [InlineData(ResizeMode.CanResize, Visibility.Collapsed, true, true)]
+        [InlineData(ResizeMode.CanMinimize, null, true, false)]
+        public void CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(
+            ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMaximizable,
+            bool expectedCanExecute)
+        {
+            Assert.Equal(expectedCanExecute,
+                CaptionButtonChrome.CanMaximize(resizeMode, visibilityOverride, isMaximizable));
         }
 
         #endregion CaptionButtonChrome - visibility and enablement matrix

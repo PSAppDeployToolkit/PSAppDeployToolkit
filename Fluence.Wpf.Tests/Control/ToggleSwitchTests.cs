@@ -172,7 +172,9 @@ namespace Fluence.Wpf.Tests.Control
                     Assert.True(tx.X < 20.0,
                         "Programmatic toggle should start an animation instead of snapping directly to the checked side.");
 
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 250).ConfigureAwait(true);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(tx.X - 20.0) <= 0.5).ConfigureAwait(true),
+                        "The programmatic toggle must reach the checked knob position.");
                     Assert.Equal(20.0, tx.X, 0.5);
                 }
                 finally
@@ -204,7 +206,10 @@ namespace Fluence.Wpf.Tests.Control
                         RoutedEvent = Thumb.DragStartedEvent,
                     };
                     input.RaiseEvent(started);
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 120).ConfigureAwait(true);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(scale.ScaleX - (17.0 / 12.0)) <= 0.05
+                            && Math.Abs(scale.ScaleY - (14.0 / 12.0)) <= 0.05).ConfigureAwait(true),
+                        "The drag press must reach the expanded thumb scale.");
                     Assert.Equal(17.0 / 12.0, scale.ScaleX, 0.05);
                     Assert.Equal(14.0 / 12.0, scale.ScaleY, 0.05);
                     Assert.Equal(12.0, thumb.Width, 0.001);
@@ -223,7 +228,11 @@ namespace Fluence.Wpf.Tests.Control
                     };
                     input.RaiseEvent(completed);
                     Assert.Equal(true, ts.IsChecked);
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 250).ConfigureAwait(true);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(tx.X - 20.0) <= 0.5
+                            && Math.Abs(scale.ScaleX - 1.0) <= 0.05
+                            && Math.Abs(scale.ScaleY - 1.0) <= 0.05).ConfigureAwait(true),
+                        "The knob and thumb must settle after drag completion.");
                     Assert.Equal(20.0, tx.X, 0.5);
                     Assert.Equal(1.0, scale.ScaleX, 0.05);
                     Assert.Equal(1.0, scale.ScaleY, 0.05);
@@ -258,7 +267,10 @@ namespace Fluence.Wpf.Tests.Control
                         RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
                     };
                     input.RaiseEvent(pressed);
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 120).ConfigureAwait(true);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(scale.ScaleX - (17.0 / 12.0)) <= 0.05
+                            && Math.Abs(scale.ScaleY - (14.0 / 12.0)) <= 0.05).ConfigureAwait(true),
+                        "The press path must reach the expanded thumb scale.");
 
                     Assert.Equal(17.0 / 12.0, scale.ScaleX, 0.05);
                     Assert.Equal(14.0 / 12.0, scale.ScaleY, 0.05);
@@ -270,7 +282,9 @@ namespace Fluence.Wpf.Tests.Control
                         RoutedEvent = UIElement.LostMouseCaptureEvent,
                     };
                     input.RaiseEvent(lostCapture);
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 250).ConfigureAwait(true);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(scale.ScaleX - 1.0) <= 0.05).ConfigureAwait(true),
+                        "The thumb must settle after losing capture.");
                     Assert.Equal(1.0, scale.ScaleX, 0.05);
                 }
                 finally
@@ -308,8 +322,10 @@ namespace Fluence.Wpf.Tests.Control
 
                     Assert.Equal(true, ts.IsChecked);
 
-                    await WaitForAnimationAndDrainAsync(w.Dispatcher, 250).ConfigureAwait(true);
                     TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
+                    Assert.True(await WaitUntilAsync(w.Dispatcher, 1000,
+                        () => Math.Abs(tx.X - 20.0) <= 0.5).ConfigureAwait(true),
+                        "The knob must reach the checked position after capture loss.");
                     Assert.Equal(20.0, tx.X, 0.5);
                 }
                 finally

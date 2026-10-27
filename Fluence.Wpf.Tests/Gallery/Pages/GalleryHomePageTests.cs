@@ -59,7 +59,7 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
         }
 
         [Fact]
-        public Task GalleryHomePage_HeroSwapsHeaderLockupWithThemeAsync()
+        public Task GalleryHomePage_HeroSwapsSvgDerivedBannerWithThemeAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -67,20 +67,23 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                 Window window = DemoTestHost.CreateHostWindow(page);
                 try
                 {
-                    Image image = Assert.IsType<Image>(DemoTestHost.FindByName<Image>(page, "BrandHeroImage"), exactMatch: false);
+                    Image image = Find<Image>(page, "BrandHeroImage");
+                    DrawingImage banner = Assert.IsType<DrawingImage>(image.Source);
+                    Assert.Equal(new Rect(0, 0, 4800, 2521), banner.Drawing.Bounds);
+                    DrawingImage brandIcon = Assert.IsType<DrawingImage>(
+                        Application.Current.TryFindResource("FluenceIconBrandDrawingImage"));
+                    Assert.InRange(brandIcon.Drawing.Bounds.Width, 1024, 1025);
+                    Assert.Equal(1024, brandIcon.Drawing.Bounds.Height);
 
-                    DrawingImage light = Assert.IsType<DrawingImage>(Application.Current.TryFindResource("FluenceHeaderLightDrawingImage"));
-                    DrawingImage dark = Assert.IsType<DrawingImage>(Application.Current.TryFindResource("FluenceHeaderDarkDrawingImage"));
-
-                    // The hero shows the lockup drawn for the active theme and swaps on
-                    // theme changes via the page's ThemeDictionary (no code-behind).
-                    Assert.Same(light, image.Source);
+                    // The hero uses native WPF drawings generated from the supplied
+                    // SVG banners and swaps via the page's ThemeDictionary.
+                    Assert.Same(page.TryFindResource("HomeBannerLightDrawingImage"), banner);
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Same(dark, image.Source);
+                    Assert.Same(page.TryFindResource("HomeBannerDarkDrawingImage"), image.Source);
 
                     // High contrast has no fixed polarity, so the page picks whichever
                     // variant reads against the live system window color.
@@ -88,14 +91,15 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.True(ReferenceEquals(image.Source, light) || ReferenceEquals(image.Source, dark),
-                        "High contrast should show one of the two header lockups.");
+                    Color background = SystemColors.WindowColor;
+                    double luminance = (0.299 * background.R) + (0.587 * background.G) + (0.114 * background.B);
+                    Assert.Same(page.TryFindResource(luminance < 128.0 ? "HomeBannerDarkDrawingImage" : "HomeBannerLightDrawingImage"), image.Source);
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Same(light, image.Source);
+                    Assert.Same(page.TryFindResource("HomeBannerLightDrawingImage"), image.Source);
                 }
                 finally
                 {
@@ -105,7 +109,7 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
         }
 
         [Fact]
-        public Task GalleryHomePage_UsesProminentBrandAndAccessibleSocialLinksAsync()
+        public Task GalleryHomePage_UsesProminentAccessibleBrandAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -116,34 +120,52 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     Image brand = Find<Image>(page, "BrandHeroImage");
                     Assert.InRange(brand.ActualWidth, 560, 640);
                     Assert.Equal(Stretch.Uniform, brand.Stretch);
-                    Assert.Equal("Fluence.WPF", AutomationProperties.GetName(brand), StringComparer.Ordinal);
+                    Assert.Equal("Fluence.WPF banner", AutomationProperties.GetName(brand), StringComparer.Ordinal);
+                    Assert.Contains(".NET 4.7.2, 8, and 10 or later", AutomationProperties.GetHelpText(brand), StringComparison.Ordinal);
+                    Assert.True(brand.IsVisible);
+                    Assert.InRange(brand.ActualHeight, 310, 340);
+                    RenderTargetBitmap renderedBrand = new(620, 326, 96, 96, PixelFormats.Pbgra32);
+                    renderedBrand.Render(brand);
+                    byte[] pixels = new byte[620 * 326 * 4];
+                    renderedBrand.CopyPixels(pixels, 620 * 4, 0);
+                    Assert.True(HasVisiblePixels(pixels, 620, 210, 20, 410, 150), "The embedded fan should render.");
+                    Assert.True(HasVisiblePixels(pixels, 620, 100, 150, 520, 215), "The Fluence.WPF wordmark should render.");
+                    Assert.True(HasVisiblePixels(pixels, 620, 5, 260, 615, 325), "The banner support line should render.");
+                    UniformGrid catalog = Find<UniformGrid>(page, "FeaturedControlsGrid");
+                    Assert.True(catalog.TranslatePoint(default, page).Y >= brand.TranslatePoint(default, page).Y + brand.ActualHeight);
 
-                    (string Name, string Destination, string AccessibleName)[] links =
+                    (string Route, string FileName)[] artwork =
                     [
-                        ("GitHubLink", "https://github.com/sintaxasn/fluence.wpf", "Fluence.WPF on GitHub"),
-                        ("LinkedInLink", "https://linkedin.com/in/sintaxasn", "Dan Cunningham on LinkedIn"),
+                        ("buttons", "Button.png"),
+                        ("selection", "Checkbox.png"),
+                        ("inputs", "TextBox.png"),
+                        ("navigation", "NavigationView.png"),
+                        ("tabs", "TabView.png"),
+                        ("menus", "MenuFlyout.png"),
+                        ("data", "ListView.png"),
+                        ("trees", "TreeView.png"),
+                        ("status", "InfoBar.png"),
                     ];
-                    foreach ((string name, string destination, string accessibleName) in links)
+                    foreach ((string route, string fileName) in artwork)
                     {
-                        Controls.HyperlinkButton link = Find<Controls.HyperlinkButton>(page, name);
-                        Assert.Equal(destination, link.NavigateUri.AbsoluteUri, StringComparer.Ordinal);
-                        Assert.Equal(accessibleName, AutomationProperties.GetName(link), StringComparer.Ordinal);
-                        Assert.Equal(accessibleName, link.ToolTip);
-                        Assert.True(link.Focusable);
-                        Assert.InRange(link.ActualWidth, 36, 48);
-                        Assert.InRange(link.ActualHeight, 36, 48);
-                        System.Windows.Shapes.Path icon = Assert.IsType<System.Windows.Shapes.Path>(link.Icon);
-                        Assert.False(icon.Data.IsEmpty());
-                        Assert.True(icon.IsVisible);
-                        Assert.InRange(icon.ActualWidth, 17.0, 19.0);
-                        Assert.InRange(icon.ActualHeight, 17.0, 19.0);
-                        RenderTargetBitmap renderedIcon = new(18, 18, 96, 96, PixelFormats.Pbgra32);
-                        renderedIcon.Render(icon);
-                        byte[] pixels = new byte[18 * 18 * 4];
-                        renderedIcon.CopyPixels(pixels, 18 * 4, 0);
-                        Assert.Contains(pixels, static channel => channel > 0);
-                        Assert.Equal(link.Foreground, icon.Fill);
-                        Assert.True(link.TranslatePoint(default, page).Y >= brand.TranslatePoint(default, page).Y + brand.ActualHeight);
+                        Controls.Card card = Assert.Single(DemoTestHost.FindVisualChildren<Controls.Card>(catalog),
+                            candidate => string.Equals(candidate.Tag as string, route, StringComparison.Ordinal));
+                        Image illustration = Assert.IsType<Image>(card.Icon);
+                        BitmapSource bitmap = Assert.IsType<BitmapSource>(illustration.Source, exactMatch: false);
+                        BitmapSource expected = BitmapFrame.Create(new Uri(
+                            "pack://application:,,,/Fluence.Wpf.Demo;component/Resources/ControlImages/" + fileName,
+                            UriKind.Absolute));
+                        Assert.Equal(expected.PixelWidth, bitmap.PixelWidth);
+                        Assert.Equal(expected.PixelHeight, bitmap.PixelHeight);
+                        Assert.Equal(expected.Format, bitmap.Format);
+                        int stride = ((bitmap.PixelWidth * bitmap.Format.BitsPerPixel) + 7) / 8;
+                        byte[] actualPixels = new byte[stride * bitmap.PixelHeight];
+                        byte[] expectedPixels = new byte[stride * expected.PixelHeight];
+                        bitmap.CopyPixels(actualPixels, stride, 0);
+                        expected.CopyPixels(expectedPixels, stride, 0);
+                        Assert.Equal(expectedPixels, actualPixels);
+                        Assert.InRange(illustration.ActualWidth, 47, 49);
+                        Assert.InRange(illustration.ActualHeight, 47, 49);
                     }
 
                     Assert.Null(DemoTestHost.FindByName<FrameworkElement>(page, "HeroPreviewCard"));
@@ -187,7 +209,10 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     window.NavigateTo("home");
                     Settle(window);
                     GalleryHomePage page = Assert.IsType<GalleryHomePage>(frame.Content);
-                    Invoke(Find<Controls.Button>(page, "ExploreControlsButton"));
+                    Controls.Card buttonCard = Assert.Single(DemoTestHost.FindVisualChildren<Controls.Card>(page),
+                        static candidate => string.Equals(candidate.Tag as string, "buttons", StringComparison.Ordinal));
+                    Assert.True(buttonCard.IsClickable);
+                    Invoke(buttonCard);
                     Settle(window);
                     _ = Assert.IsType<GalleryButtonsPage>(frame.Content);
                 }
@@ -219,6 +244,7 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                         Assert.Equal(columns, catalog.Columns);
                         Assert.Equal(columns is 3 ? 3 : 1, foundations.Columns);
                         Assert.InRange(brand.ActualWidth, 1, 640);
+                        Assert.InRange(brand.ActualHeight / brand.ActualWidth, 0.52, 0.53);
                         Assert.True(brand.ActualWidth <= scroll.ViewportWidth);
                         Assert.True(scroll.ExtentWidth <= scroll.ViewportWidth + 1,
                             "The home page must fit the viewport without horizontal clipping.");
@@ -239,6 +265,23 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
             where T : FrameworkElement
         {
             return Assert.IsType<T>(DemoTestHost.FindByName<T>(root, name), exactMatch: false);
+        }
+
+        private static bool HasVisiblePixels(byte[] pixels, int stridePixels, int left, int top, int right, int bottom)
+        {
+            for (int y = top; y < bottom; y++)
+            {
+                for (int x = left; x < right; x++)
+                {
+                    int pixelIndex = (y * stridePixels) + x;
+                    if (pixels[(pixelIndex * 4) + 3] > 20)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static void Invoke(UIElement element)

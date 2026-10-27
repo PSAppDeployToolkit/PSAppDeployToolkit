@@ -18,7 +18,7 @@
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="MinHeight" Value="32" />
         <Setter Property="Padding" Value="10,5,6,6" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource AccentFillColorSelectedTextBackgroundBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:TextBox}">
@@ -35,7 +35,9 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}">
+                            CornerRadius="{TemplateBinding CornerRadius}" />
+                        <!--  This unpainted border keeps WPF's per-side DPI rounding for the editor inset.  -->
+                        <Border Grid.Row="0" BorderThickness="{TemplateBinding BorderThickness}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
@@ -177,15 +179,6 @@
                             </Grid>
                         </Border>
 
-                        <Border
-                            x:Name="FocusAccentLine"
-                            Grid.Row="0"
-                            Height="2"
-                            VerticalAlignment="Bottom"
-                            Background="{DynamicResource AccentFillColorDefaultBrush}"
-                            CornerRadius="0,0,4,4"
-                            Opacity="0" />
-
                         <!--
                             The helper and validation row. Its top inset rides on the children, not
                             on the panel: a panel margin reserves 9 dip under every field even when
@@ -256,7 +249,8 @@
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
-                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="1" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderFocusedBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -266,27 +260,27 @@
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
                         </MultiTrigger>
 
-                        <!--  Validation states use PART_ValidationLine; hide accent focus line so states do not stack  -->
+                        <!--  Validation colors take precedence over the focused accent border.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsKeyboardFocused" Value="True" />
                                 <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Success}" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsKeyboardFocused" Value="True" />
                                 <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Warning}" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsKeyboardFocused" Value="True" />
                                 <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Error}" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
                         </MultiTrigger>
 
                         <MultiTrigger>

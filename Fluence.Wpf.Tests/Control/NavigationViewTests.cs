@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -56,6 +57,67 @@ namespace Fluence.Wpf.Tests.Control
     /// </summary>
     public sealed class NavigationViewTests : IAsyncLifetime
     {
+        [Fact]
+        public Task NavigationView_FooterMenuItemsClear_ReleasesSelectionAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                NavigationView nav = new();
+                NavigationViewItem footer = new() { Content = "Footer" };
+                nav.FooterMenuItems.Add(footer);
+                nav.SelectFooterMenuItem(footer);
+
+                nav.FooterMenuItems.Clear();
+
+                Assert.Empty(nav.FooterMenuItems);
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(footer.IsSelected);
+                Assert.Null(nav.SelectedItem);
+            });
+        }
+
+        [Fact]
+        public Task NavigationView_FooterMutations_ReconcileSurvivingItemsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                NavigationView nav = new();
+                NavigationViewItem selected = new() { Content = "Selected" };
+                NavigationViewItem other = new() { Content = "Other" };
+                nav.FooterMenuItems.Add(selected);
+                nav.FooterMenuItems.Add(other);
+                nav.SelectFooterMenuItem(selected);
+
+                nav.FooterMenuItems.Move(0, 1);
+                Assert.Same(selected, nav.SelectedFooterItem);
+                Assert.True(selected.IsSelected);
+
+                // No visual host: duplicate UIElement references must not be rendered twice.
+                nav.FooterMenuItems.Add(selected);
+                Assert.True(nav.FooterMenuItems.Remove(selected));
+                Assert.Same(selected, nav.SelectedFooterItem);
+                Assert.True(selected.IsSelected);
+
+                nav.FooterMenuItems[1] = new NavigationViewItem { Content = "Replacement" };
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(selected.IsSelected);
+
+                nav.FooterMenuItems.Clear();
+                nav.FooterMenuItems.Add(selected);
+                nav.SelectFooterMenuItem(selected);
+                Assert.True(nav.FooterMenuItems.Remove(selected));
+                Assert.Null(nav.SelectedFooterItem);
+                Assert.False(selected.IsSelected);
+
+                NavigationViewItem main = new() { Content = "Main" };
+                _ = nav.Items.Add(main);
+                nav.SelectedItem = main;
+                nav.FooterMenuItems.Add(other);
+                nav.FooterMenuItems.Clear();
+                Assert.Same(main, nav.SelectedItem);
+            });
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -1224,7 +1286,7 @@ namespace Fluence.Wpf.Tests.Control
 
                     FrameworkElement indicator = Assert.IsType<FrameworkElement>(nav.GetSelectionIndicatorForTesting(), exactMatch: false);
                     double iconItemX = GetSelectionIndicatorTranslate(indicator).X;
-                    Assert.Equal(4.0, iconItemX, 0.5);
+                    Assert.Equal(6.0, iconItemX, 0.5);
 
                     nav.SelectedIndex = 1;
                     // Settle until the indicator finishes travelling to the child item.
@@ -1441,27 +1503,24 @@ namespace Fluence.Wpf.Tests.Control
 
                     double minimumOpacity = 1.0;
                     double peakScale = 1.0;
-                    for (int sample = 0; sample < 40; sample++)
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 1500, delegate
                     {
                         minimumOpacity = Math.Min(minimumOpacity, indicator.Opacity);
                         peakScale = Math.Max(peakScale, scale.ScaleY);
-                        await Task.Delay(10, TestContext.Current.CancellationToken).ConfigureAwait(true);
-                        WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    }
-
-                    Assert.True(
-                        minimumOpacity > 0.99,
-                        "The indicator must stay at full opacity while it travels; it used to fade out and back in.");
-                    Assert.True(
-                        peakScale > 1.05,
+                        return peakScale > 1.05;
+                    }).ConfigureAwait(true),
                         "The indicator must stretch across the gap mid-flight rather than keeping its rest length.");
 
                     Assert.True(
                         await WaitUntilAsync(window.Dispatcher, 3000, delegate
                         {
+                            minimumOpacity = Math.Min(minimumOpacity, indicator.Opacity);
                             return Math.Abs(scale.ScaleY - 1.0) <= 0.01 && translate.Y > startY;
                         }).ConfigureAwait(true),
                         "The indicator should settle at its rest length on the new item.");
+                    Assert.True(
+                        minimumOpacity > 0.99,
+                        "The indicator must stay at full opacity while it travels; it used to fade out and back in.");
                     Assert.Equal(1.0, indicator.Opacity, 0.01);
                 }
                 finally
@@ -2839,11 +2898,22 @@ namespace Fluence.Wpf.Tests.Control
                 {
                     window.Show();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => window.IsLoaded && footer.IsLoaded).ConfigureAwait(true),
+                        "The window and footer must be loaded before connecting UI Automation.");
+                    window.UpdateLayout();
                     // Ask UIA for the window root so provider conversion does not depend on
                     // an external accessibility client having already connected the peer tree.
+                    // Its synchronous native handshake belongs on a dedicated MTA thread:
+                    // thread-pool queueing must not consume the connection timeout.
                     IntPtr windowHandle = new WindowInteropHelper(window).Handle;
-                    Task<AutomationElement> rootTask = Task.Run(() => AutomationElement.FromHandle(windowHandle), TestContext.Current.CancellationToken);
-                    Assert.True(await WaitUntilAsync(window.Dispatcher, 5000, () => rootTask.IsCompleted).ConfigureAwait(true), "UI Automation did not connect the window root.");
+                    Task<AutomationElement> rootTask = Task.Factory.StartNew(() =>
+                    {
+                        Assert.Equal(ApartmentState.MTA, Thread.CurrentThread.GetApartmentState());
+                        Assert.False(Thread.CurrentThread.IsThreadPoolThread);
+                        return AutomationElement.FromHandle(windowHandle);
+                    }, TestContext.Current.CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 5000, () => rootTask.IsCompleted).ConfigureAwait(true),
+                        $"UI Automation did not connect the window root. Client task status: {rootTask.Status}.");
                     AutomationElement root = await rootTask.ConfigureAwait(true);
                     Assert.NotNull(root);
                     NavigationViewItemAutomationPeer peer = Assert.IsType<NavigationViewItemAutomationPeer>(UIElementAutomationPeer.CreatePeerForElement(footer));
@@ -2960,14 +3030,10 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
-        public Task NavigationViewItem_Left_OuterBorder_MatchesWinUiPillGeometryAsync()
+        public Task NavigationViewItem_Left_OuterBorder_MatchesSelectionRailGeometryAsync()
         {
-            // Regression: OuterBorder used to carry Margin="4,2,0,2" with BorderThickness="2" inside
-            // the item's MinHeight="36", which lost 4 dip of painted height to the margin and 2 dip of
-            // left inset to the invisible (BorderBrush-less) border band, while the 0 right margin left
-            // the pill off-centre in the pane. WinUI NavigationViewItemButtonMargin = 4,2 and
-            // NavigationViewItemOnLeftMinHeight = 36 require a symmetric 4,2,4,2 margin, no border
-            // thickness, and a 36 dip painted pill (with the 2+2 dip margin keeping the 40 dip pitch).
+            // The left pill edge aligns with the shared rail's 6 dip inset. The 4 dip
+            // right margin and 2 dip vertical margins preserve the trailing gutter and 40 dip pitch.
             return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Window window = new();
@@ -2991,7 +3057,7 @@ namespace Fluence.Wpf.Tests.Control
                     System.Windows.Controls.Border outerBorder = Assert.IsType<System.Windows.Controls.Border>(
                         FindVisualChildByName<System.Windows.Controls.Border>(item, "OuterBorder"), exactMatch: false);
 
-                    Assert.Equal(new Thickness(4, 2, 4, 2), outerBorder.Margin);
+                    Assert.Equal(new Thickness(6, 2, 4, 2), outerBorder.Margin);
                     Assert.Equal(new Thickness(0), outerBorder.BorderThickness);
                     Assert.Equal(36.0, outerBorder.ActualHeight, 0.5);
                     Assert.Equal(40.0, item.ActualHeight, 0.5);
@@ -3004,15 +3070,11 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
-        public Task NavigationView_Left_PaneItemsAndFooterSitSymmetricallyInThePaneAsync()
+        public Task NavigationView_Left_PaneItemsAndFooterKeepReferenceItemInsetsAsync()
         {
-            // Regression: the open Left pane gave its items scroller Padding="0,4,8,4" and its
-            // footer Padding="0,0,8,0", a right-only gutter reserving room for the overlay
-            // scrollbar. Every item then sat 4 dip from the pane's left edge (its own
-            // NavigationViewItemButtonMargin) but 12 from the right, which reads as an off-centre
-            // selection pill. WinUI keeps the pane symmetric and lets the overlay rail ride over
-            // the items, so the two gaps have to match. The footer divider is measured too: it
-            // spans the pane rather than stopping short at the footer's inset.
+            // The open Left pane keeps symmetric scroller padding; item buttons use the reference
+            // rail-aligned 6 dip left inset and 4 dip trailing margin. The footer divider spans the
+            // pane rather than stopping short at the footer's inset.
             return WpfTestSta.RunOnStaAsync(static () =>
             {
                 Window window = new();
@@ -3043,7 +3105,8 @@ namespace Fluence.Wpf.Tests.Control
 
                     double left = GetVisualX(outerBorder, pane);
                     double right = pane.ActualWidth - (left + outerBorder.ActualWidth);
-                    Assert.Equal(left, right, 1.0);
+                    Assert.Equal(6.0, left, 0.5);
+                    Assert.Equal(4.0, right, 0.5);
 
                     // The divider reaches both pane edges, so it is not inset by the footer.
                     NavigationViewItemSeparator divider = Assert.IsType<NavigationViewItemSeparator>(

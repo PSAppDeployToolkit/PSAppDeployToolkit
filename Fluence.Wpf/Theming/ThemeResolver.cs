@@ -50,16 +50,23 @@ namespace Fluence.Wpf.Theming
                 return theme;
             }
 
+            bool highContrast = RegistryHelper.IsHighContrastEnabled();
+            return highContrast
+                ? ApplicationTheme.HighContrast
+                : ResolveAuto(isHighContrastEnabled: false, RegistryHelper.GetCurrentThemeFileNameLowerInvariant(), RegistryHelper.GetAppsUseLightTheme());
+        }
+
+        internal static ApplicationTheme ResolveAuto(bool isHighContrastEnabled, string? currentThemeFileName, bool appsUseLightTheme)
+        {
             // High contrast always wins, regardless of the active Windows theme file.
-            if (RegistryHelper.IsHighContrastEnabled())
+            if (isHighContrastEnabled)
             {
                 return ApplicationTheme.HighContrast;
             }
 
-            // Dual fallback: first try HKCU\...\Themes\CurrentTheme filename so Windows 11
-            // named themes (themea.theme ... themed.theme) and HC variants are recognised.
-            // If the filename is unknown or absent, fall through to AppsUseLightTheme.
-            string? themeFile = RegistryHelper.GetCurrentThemeFileNameLowerInvariant();
+            // Keep the filename only as a High Contrast transition backstop. Ordinary
+            // named themes describe the Windows shell, not the app color preference.
+            string? themeFile = currentThemeFileName;
             if (themeFile?.Length > 0)
             {
                 if (themeFile.Contains("hc1", StringComparison.Ordinal)
@@ -71,23 +78,9 @@ namespace Fluence.Wpf.Theming
                     // mid-transition: a Windows HC theme filename always means HighContrast.
                     return ApplicationTheme.HighContrast;
                 }
-                if (themeFile.Contains("dark", StringComparison.Ordinal))
-                {
-                    return ApplicationTheme.Dark;
-                }
-                if (themeFile.Contains("aero", StringComparison.Ordinal)
-                    || themeFile.Contains("basic", StringComparison.Ordinal)
-                    || themeFile.Contains("aerolite", StringComparison.Ordinal)
-                    || themeFile.StartsWith("themea", StringComparison.Ordinal)
-                    || themeFile.StartsWith("themeb", StringComparison.Ordinal)
-                    || themeFile.StartsWith("themec", StringComparison.Ordinal)
-                    || themeFile.StartsWith("themed", StringComparison.Ordinal))
-                {
-                    return ApplicationTheme.Light;
-                }
             }
 
-            return RegistryHelper.GetAppsUseLightTheme() ? ApplicationTheme.Light : ApplicationTheme.Dark;
+            return appsUseLightTheme ? ApplicationTheme.Light : ApplicationTheme.Dark;
         }
     }
 }

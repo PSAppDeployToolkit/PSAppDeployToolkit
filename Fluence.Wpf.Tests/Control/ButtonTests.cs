@@ -42,6 +42,14 @@ namespace Fluence.Wpf.Tests.Control
 {
     public sealed class ButtonTests : IAsyncLifetime
     {
+        private sealed class PressableButtonProbe : Controls.Button
+        {
+            public void SetPressed(bool value)
+            {
+                IsPressed = value;
+            }
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -114,6 +122,52 @@ namespace Fluence.Wpf.Tests.Control
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
 
                 AssertDisabledAccentButtonUsesDarkTokens();
+            });
+        }
+
+        [Fact]
+        public Task Button_HighContrast_ActualStateBrushesSurviveThemeTransitionsAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(Colors.Red);
+                PressableButtonProbe button = new()
+                {
+                    Appearance = ControlAppearance.Accent,
+                    Content = "Contrast",
+                    IsHitTestVisible = false,
+                };
+                Window window = new() { Content = button };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Border fill = Assert.IsType<Border>(button.Template.FindName("RestFill", button));
+                    Assert.Equal(SystemColors.HighlightColor, Assert.IsType<SolidColorBrush>(fill.Background).Color);
+                    Assert.Equal(SystemColors.HighlightTextColor, Assert.IsType<SolidColorBrush>(button.Foreground).Color);
+
+                    button.SetPressed(value: true);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.Equal(SystemColors.WindowColor, Assert.IsType<SolidColorBrush>(fill.Background).Color);
+                    Assert.Equal(SystemColors.WindowTextColor, Assert.IsType<SolidColorBrush>(button.Foreground).Color);
+
+                    button.SetPressed(value: false);
+                    button.IsEnabled = false;
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.Equal(SystemColors.WindowColor, Assert.IsType<SolidColorBrush>(fill.Background).Color);
+                    Assert.Equal(SystemColors.GrayTextColor, Assert.IsType<SolidColorBrush>(button.Foreground).Color);
+
+                    button.IsEnabled = true;
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.None);
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.Equal(SystemColors.HighlightColor, Assert.IsType<SolidColorBrush>(fill.Background).Color);
+                }
+                finally
+                {
+                    window.Close();
+                }
             });
         }
 
@@ -282,10 +336,10 @@ namespace Fluence.Wpf.Tests.Control
                 "ControlFillColorSecondaryBrush",
                 "ControlFillColorTertiaryBrush",
                 "ControlFillColorDisabledBrush",
-                "AccentFillColorSecondaryBrush",
-                "AccentFillColorTertiaryBrush",
-                "AccentFillColorDisabledBrush",
-                "TextOnAccentFillColorSecondaryBrush",
+                "AccentButtonBackgroundPointerOverBrush",
+                "AccentButtonBackgroundPressedBrush",
+                "AccentButtonBackgroundDisabledBrush",
+                "AccentButtonForegroundPressedBrush",
                 "SubtleFillColorTransparentBrush",
                 "SubtleFillColorSecondaryBrush",
                 "SubtleFillColorTertiaryBrush",
@@ -304,7 +358,7 @@ namespace Fluence.Wpf.Tests.Control
                 "<Condition Property=\"IsPressed\" Value=\"True\" />",
                 "<Condition Property=\"Appearance\" Value=\"Accent\" />");
             Assert.False(
-                accentPressedBlock.Contains("AccentFillColorDisabledBrush", StringComparison.Ordinal),
+                accentPressedBlock.Contains("AccentButtonBackgroundDisabledBrush", StringComparison.Ordinal),
                 "Accent pressed state must not reuse the disabled accent fill as the button Background.");
             Assert.False(
                 xaml.Contains("Value=\"Transparent\"", StringComparison.Ordinal),

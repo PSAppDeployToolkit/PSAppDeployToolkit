@@ -32,7 +32,9 @@ using System.Windows.Media;
 namespace Fluence.Wpf.Theming
 {
     /// <summary>
-    /// The seven-rung Windows accent ramp, lightest to darkest.
+    /// The seven colors used by the Windows-aligned accent palette. Generated shade slots
+    /// approximate Windows' corrected palette and are not guaranteed to be lighter or darker
+    /// than the raw custom seed retained as <see cref="Accent"/>.
     /// </summary>
     /// <param name="light3">The lightest tint on the generated accent ramp.</param>
     /// <param name="light2">The second light tint on the generated accent ramp.</param>
@@ -41,8 +43,9 @@ namespace Fluence.Wpf.Theming
     /// <param name="dark1">The first dark shade on the generated accent ramp.</param>
     /// <param name="dark2">The second dark shade on the generated accent ramp.</param>
     /// <param name="dark3">The darkest shade on the generated accent ramp.</param>
+    /// <param name="primaryOverride">An exact visible primary accent, when requested by the caller.</param>
     [StructLayout(LayoutKind.Auto)]
-    internal readonly struct AccentPalette(Color light3, Color light2, Color light1, Color accent, Color dark1, Color dark2, Color dark3)
+    internal readonly struct AccentPalette(Color light3, Color light2, Color light1, Color accent, Color dark1, Color dark2, Color dark3, Color? primaryOverride = null)
     {
         /// <summary>
         /// Gets the lightest tint on the generated accent ramp.
@@ -78,5 +81,20 @@ namespace Fluence.Wpf.Theming
         /// Gets the darkest shade on the generated accent ramp.
         /// </summary>
         public Color Dark3 { get; } = dark3;
+
+        /// <summary>
+        /// Gets the exact visible primary accent when the caller opted into exact colors.
+        /// The raw seven-rung palette remains unchanged.
+        /// </summary>
+        public Color? PrimaryOverride { get; } = primaryOverride;
+
+        /// <summary>
+        /// Returns the same raw ramp with an exact visible primary accent.
+        /// </summary>
+        /// <param name="primary">The exact visible primary accent.</param>
+        public AccentPalette WithPrimaryOverride(Color primary)
+        {
+            return new AccentPalette(Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3, primary);
+        }
     }
 }

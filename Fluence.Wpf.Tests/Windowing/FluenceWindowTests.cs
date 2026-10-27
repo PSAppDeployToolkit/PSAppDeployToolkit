@@ -733,8 +733,17 @@ namespace Fluence.Wpf.Tests.Windowing
 
                     Assert.Same(consumerBrush, w.Resources["NavigationViewContentBackgroundBrush"]);
 
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.Mica);
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Same(consumerBrush, w.Resources["NavigationViewContentBackgroundBrush"]);
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, WindowBackdropType.Mica);
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+                    Assert.Same(consumerBrush, w.Resources["NavigationViewContentBackgroundBrush"]);
+
                     // Even a swing to 8 bpc, which would otherwise remove Fluence's own substitute,
                     // must leave a consumer-owned value alone.
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
                     DisplayDepthProbe.Override = static _ => new DisplayColorDepth(8, advancedColorEnabled: false);
                     w.SystemBackdropType = WindowBackdropType.None;
                     w.SystemBackdropType = WindowBackdropType.Mica;
@@ -752,7 +761,7 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         [Fact]
-        public Task ContentLayerPreBlend_BoundBorder_ResolvesPreBlendThenCanonicalTokenAsync()
+        public Task ContentLayerPreBlend_BoundBorder_TracksLightDarkLightThenDisplayDepthAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -788,6 +797,22 @@ namespace Fluence.Wpf.Tests.Windowing
 
                     Color resolved = Assert.IsType<SolidColorBrush>(border.Background, exactMatch: false).Color;
                     Assert.Equal(Color.FromArgb(0xFF, 0xF9, 0xF9, 0xF9), resolved);
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.Mica);
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    Assert.False(w.Resources.Contains("NavigationViewContentBackgroundBrush"));
+                    Color darkCanonical = Assert.IsType<Color>(app.Resources["NavigationViewContentBackground"]);
+                    Color darkResolved = Assert.IsType<SolidColorBrush>(border.Background, exactMatch: false).Color;
+                    Assert.Equal(Color.FromArgb(0x4C, 0x3A, 0x3A, 0x3A), darkCanonical);
+                    Assert.Equal(darkCanonical, darkResolved);
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
+                    WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
+
+                    Assert.True(w.Resources.Contains("NavigationViewContentBackgroundBrush"));
+                    Color restoredLight = Assert.IsType<SolidColorBrush>(border.Background, exactMatch: false).Color;
+                    Assert.Equal(Color.FromArgb(0xFF, 0xF9, 0xF9, 0xF9), restoredLight);
 
                     DisplayDepthProbe.Override = static _ => new DisplayColorDepth(8, advancedColorEnabled: false);
                     w.SystemBackdropType = WindowBackdropType.None;
@@ -958,12 +983,14 @@ namespace Fluence.Wpf.Tests.Windowing
                 };
                 try
                 {
+                    DisplayDepthProbe.Override = static _ => new DisplayColorDepth(10, advancedColorEnabled: false);
                     w.Show();
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Color highContrastBackground = Assert.IsType<SolidColorBrush>(w.Background, exactMatch: false).Color;
                     Assert.NotEqual(Colors.Transparent, highContrastBackground);
                     Assert.Equal(expectedHighContrastBackground, highContrastBackground);
+                    Assert.False(w.Resources.Contains("NavigationViewContentBackgroundBrush"));
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
@@ -972,6 +999,7 @@ namespace Fluence.Wpf.Tests.Windowing
                     if (HostCanResolveMica())
                     {
                         Assert.Equal(Colors.Transparent, afterLightBackground);
+                        Assert.True(w.Resources.Contains("NavigationViewContentBackgroundBrush"));
                     }
                     else
                     {
@@ -983,6 +1011,7 @@ namespace Fluence.Wpf.Tests.Windowing
                 }
                 finally
                 {
+                    DisplayDepthProbe.Override = null;
                     w.Close();
                     WpfTestSta.DrainDispatcher(WpfTestSta.Dispatcher);
                 }

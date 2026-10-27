@@ -31,141 +31,122 @@ using System.Windows;
 namespace Fluence.Wpf.Controls
 {
     /// <summary>
-    /// Pure-logic helper that computes the baseline visibility and enabled state for each
-    /// caption button as a function of <see cref="ResizeMode"/> and <see cref="WindowState"/>.
-    /// These baselines are then blended with the explicit per-DP overrides
-    /// (<see cref="FluenceWindow.IsMinimizeButtonVisible"/> etc.) in
-    /// <c language="csharp">FluenceWindow.UpdateCaptionButtons</c>.
+    /// Resolves effective caption-button visibility, enabled state, and shared command eligibility.
+    /// A null visibility override leaves the <see cref="ResizeMode"/> baseline in effect.
     /// </summary>
     internal static class CaptionButtonChrome
     {
         /// <summary>
-        /// Computes the baseline visibility and enabled state for the Minimize button.
+        /// Resolves Minimize chrome, including an explicit visibility override and capability flag.
         /// </summary>
-        /// <remarks>
-        /// The Minimize button is collapsed (and disabled) when <paramref name="resizeMode"/> is
-        /// <see cref="ResizeMode.NoResize"/>, because minimizing is not meaningful for a window
-        /// that cannot be interactively resized to its pre-minimize size. For all other resize
-        /// modes the button is visible and enabled.
-        /// </remarks>
-        /// <param name="resizeMode">The window's current <see cref="ResizeMode"/>.</param>
-        /// <param name="visibility">
-        ///   On return, the baseline <see cref="Visibility"/> for the Minimize button.
-        /// </param>
-        /// <param name="isEnabled">
-        ///   On return, <see langword="true"/> when the Minimize button should be interactive.
-        /// </param>
+        /// <param name="resizeMode">The window resize mode.</param>
+        /// <param name="visibilityOverride">An explicit visibility, or null for the baseline.</param>
+        /// <param name="isMinimizable">Whether minimizing is allowed.</param>
+        /// <param name="visibility">The effective Minimize visibility.</param>
+        /// <param name="isEnabled">Whether the Minimize button is enabled.</param>
         internal static void GetMinimizeChrome(
             ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMinimizable,
             out Visibility visibility,
             out bool isEnabled)
         {
-            isEnabled = resizeMode is not ResizeMode.NoResize;
-            visibility = isEnabled ? Visibility.Visible : Visibility.Collapsed;
+            visibility = visibilityOverride ??
+                (resizeMode is ResizeMode.NoResize ? Visibility.Collapsed : Visibility.Visible);
+            isEnabled = visibility is Visibility.Visible &&
+                CanMinimize(resizeMode, visibilityOverride, isMinimizable);
         }
 
         /// <summary>
-        /// Computes the baseline visibility and enabled state for the Close button.
+        /// Resolves the active Maximize or Restore button for the window state.
         /// </summary>
-        /// <remarks>
-        /// The Close button is always visible and enabled at the baseline level. Per-window
-        /// overrides (<see cref="FluenceWindow.IsCloseButtonVisible"/> and
-        /// <see cref="FluenceWindow.IsClosable"/>) can suppress it after this baseline is applied.
-        /// </remarks>
-        /// <param name="visibility">
-        ///   On return, always <see cref="Visibility.Visible"/>.
-        /// </param>
-        /// <param name="isEnabled">
-        ///   On return, always <see langword="true"/>.
-        /// </param>
-        internal static void GetCloseChrome(out Visibility visibility, out bool isEnabled)
-        {
-            visibility = Visibility.Visible;
-            isEnabled = true;
-        }
-
-        /// <summary>
-        /// Computes the baseline visibility and enabled state for the Maximize and Restore buttons.
-        /// </summary>
-        /// <remarks>
-        /// Only one of Maximize and Restore is visible at any time (they occupy the same slot).
-        /// Both are collapsed when <paramref name="resizeMode"/> is
-        /// <see cref="ResizeMode.NoResize"/>. When <paramref name="windowState"/> is
-        /// <see cref="WindowState.Maximized"/> the Restore button is shown and the Maximize button
-        /// is hidden; otherwise the Maximize button is shown. The enabled state follows the same
-        /// gating: <see cref="ResizeMode.NoResize"/> and <see cref="ResizeMode.CanMinimize"/> both
-        /// disable both buttons.
-        /// </remarks>
-        /// <param name="resizeMode">The window's current <see cref="ResizeMode"/>.</param>
-        /// <param name="windowState">The window's current <see cref="WindowState"/>.</param>
-        /// <param name="maximizeVisibility">
-        ///   On return, the baseline <see cref="Visibility"/> for the Maximize button.
-        /// </param>
-        /// <param name="restoreVisibility">
-        ///   On return, the baseline <see cref="Visibility"/> for the Restore button.
-        /// </param>
-        /// <param name="maximizeEnabled">
-        ///   On return, <see langword="true"/> when the Maximize button should be interactive.
-        /// </param>
-        /// <param name="restoreEnabled">
-        ///   On return, <see langword="true"/> when the Restore button should be interactive.
-        /// </param>
+        /// <param name="resizeMode">The window resize mode.</param>
+        /// <param name="windowState">The current window state.</param>
+        /// <param name="visibilityOverride">An explicit visibility, or null for the baseline.</param>
+        /// <param name="isMaximizable">Whether maximizing and restoring are allowed.</param>
+        /// <param name="maximizeVisibility">The effective Maximize visibility.</param>
+        /// <param name="restoreVisibility">The effective Restore visibility.</param>
+        /// <param name="maximizeEnabled">Whether the Maximize button is enabled.</param>
+        /// <param name="restoreEnabled">Whether the Restore button is enabled.</param>
         internal static void GetMaximizeRestoreChrome(
             ResizeMode resizeMode,
             WindowState windowState,
+            Visibility? visibilityOverride,
+            bool isMaximizable,
             out Visibility maximizeVisibility,
             out Visibility restoreVisibility,
             out bool maximizeEnabled,
             out bool restoreEnabled)
         {
-            GetMaximizeRestoreLayout(resizeMode, windowState, out maximizeVisibility, out restoreVisibility);
-
-            if (resizeMode is not ResizeMode.NoResize and not ResizeMode.CanMinimize)
+            bool isMaximized = windowState is WindowState.Maximized;
+            Visibility activeVisibility;
+            if (visibilityOverride is Visibility explicitVisibility)
             {
-                maximizeEnabled = maximizeVisibility is Visibility.Visible;
-                restoreEnabled = restoreVisibility is Visibility.Visible;
+                // An invalid explicit value, like Collapsed, collapses both members of the pair.
+                activeVisibility = explicitVisibility is Visibility.Visible or Visibility.Hidden
+                    ? explicitVisibility
+                    : Visibility.Collapsed;
             }
             else
             {
-                maximizeEnabled = false;
-                restoreEnabled = false;
+                activeVisibility = resizeMode is ResizeMode.NoResize
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
             }
+
+            maximizeVisibility = isMaximized ? Visibility.Collapsed : activeVisibility;
+            restoreVisibility = isMaximized ? activeVisibility : Visibility.Collapsed;
+
+            bool canMaximize = CanMaximize(resizeMode, visibilityOverride, isMaximizable);
+            maximizeEnabled = maximizeVisibility is Visibility.Visible && canMaximize;
+            restoreEnabled = restoreVisibility is Visibility.Visible && canMaximize;
         }
 
         /// <summary>
-        /// Computes the Maximize/Restore button visibility layout without the enabled state.
+        /// Resolves Close chrome from its visibility override and capability flag.
         /// </summary>
-        /// <param name="resizeMode">The window's current <see cref="ResizeMode"/>.</param>
-        /// <param name="windowState">The window's current <see cref="WindowState"/>.</param>
-        /// <param name="maximizeVisibility">
-        ///   On return, the <see cref="Visibility"/> for the Maximize button.
-        /// </param>
-        /// <param name="restoreVisibility">
-        ///   On return, the <see cref="Visibility"/> for the Restore button.
-        /// </param>
-        private static void GetMaximizeRestoreLayout(
-            ResizeMode resizeMode,
-            WindowState windowState,
-            out Visibility maximizeVisibility,
-            out Visibility restoreVisibility)
+        /// <param name="visibilityOverride">An explicit visibility, or null for the baseline.</param>
+        /// <param name="isClosable">Whether closing is allowed.</param>
+        /// <param name="visibility">The effective Close visibility.</param>
+        /// <param name="isEnabled">Whether the Close button is enabled.</param>
+        internal static void GetCloseChrome(
+            Visibility? visibilityOverride,
+            bool isClosable,
+            out Visibility visibility,
+            out bool isEnabled)
         {
-            if (resizeMode is ResizeMode.NoResize)
-            {
-                maximizeVisibility = Visibility.Collapsed;
-                restoreVisibility = Visibility.Collapsed;
-                return;
-            }
+            visibility = visibilityOverride ?? Visibility.Visible;
+            isEnabled = visibility is Visibility.Visible && isClosable;
+        }
 
-            if (windowState is WindowState.Maximized)
-            {
-                maximizeVisibility = Visibility.Collapsed;
-                restoreVisibility = Visibility.Visible;
-            }
-            else
-            {
-                maximizeVisibility = Visibility.Visible;
-                restoreVisibility = Visibility.Collapsed;
-            }
+        /// <summary>
+        /// Returns whether the Minimize command is eligible under the current window policy.
+        /// </summary>
+        /// <param name="resizeMode">The window resize mode.</param>
+        /// <param name="visibilityOverride">An explicit visibility, or null for the baseline.</param>
+        /// <param name="isMinimizable">Whether minimizing is allowed.</param>
+        internal static bool CanMinimize(
+            ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMinimizable)
+        {
+            return (resizeMode is not ResizeMode.NoResize || visibilityOverride is Visibility.Visible) &&
+                isMinimizable;
+        }
+
+        /// <summary>
+        /// Returns whether the Maximize and Restore commands are eligible under the current window policy.
+        /// </summary>
+        /// <param name="resizeMode">The window resize mode.</param>
+        /// <param name="visibilityOverride">An explicit visibility, or null for the baseline.</param>
+        /// <param name="isMaximizable">Whether maximizing and restoring are allowed.</param>
+        internal static bool CanMaximize(
+            ResizeMode resizeMode,
+            Visibility? visibilityOverride,
+            bool isMaximizable)
+        {
+            return (resizeMode is ResizeMode.CanResize or ResizeMode.CanResizeWithGrip ||
+                visibilityOverride is Visibility.Visible) && isMaximizable;
         }
     }
 }

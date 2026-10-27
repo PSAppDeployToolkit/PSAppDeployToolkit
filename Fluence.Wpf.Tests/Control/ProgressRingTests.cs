@@ -269,10 +269,10 @@ namespace Fluence.Wpf.Tests.Control
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
-                await WaitForAnimationAndDrainAsync(w.Dispatcher, 200).ConfigureAwait(true);
 
                 Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
-                Assert.NotNull(indeterminateArc.Data);
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => indeterminateArc.Data is not null).ConfigureAwait(true),
+                    "The indeterminate sweep must produce a visible arc before switching modes.");
 
                 ring.IsIndeterminate = false;
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
@@ -298,10 +298,10 @@ namespace Fluence.Wpf.Tests.Control
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);
-                await WaitForAnimationAndDrainAsync(w.Dispatcher, 200).ConfigureAwait(true);
 
                 Path indeterminateArc = Assert.IsType<Path>(FindVisualChildByName<Path>(ring, "PART_IndeterminateArc"), exactMatch: false);
-                Assert.NotNull(indeterminateArc.Data);
+                Assert.True(await WaitUntilAsync(w.Dispatcher, 2000, () => indeterminateArc.Data is not null).ConfigureAwait(true),
+                    "The indeterminate sweep must produce a visible arc before unloading.");
 
                 w.Close();
                 WpfTestSta.DrainDispatcher(w.Dispatcher);

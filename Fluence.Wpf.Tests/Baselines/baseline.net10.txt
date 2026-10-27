@@ -10,6 +10,43 @@
   Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestore_CanResize_Maximized_ShowsRestoreOnly
   Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestore_CanMinimize_DisablesBoth
   Fluence.Wpf.Tests.Windowing.CaptionButtonTests.Close_VisibleAndEnabled
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: CanMinimize, visibilityOverride: null, isMaximizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: CanResize, visibilityOverride: Collapsed, isMaximizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: CanResize, visibilityOverride: Hidden, isMaximizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Collapsed, isMaximizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Hidden, isMaximizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Visible, isMaximizable: False, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Visible, isMaximizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMaximize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: null, isMaximizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: CanResize, visibilityOverride: Collapsed, isMinimizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: CanResize, visibilityOverride: Hidden, isMinimizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Collapsed, isMinimizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Hidden, isMinimizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Visible, isMinimizable: False, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: Visible, isMinimizable: True, expectedCanExecute: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CanMinimize_CommandPolicy_UsesResizeModeAndExplicitVisible(resizeMode: NoResize, visibilityOverride: null, isMinimizable: True, expectedCanExecute: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CloseChrome_VisibilityAndCapability_HaveExpectedResult(visibilityOverride: Collapsed, isClosable: False, expectedVisibility: Collapsed, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CloseChrome_VisibilityAndCapability_HaveExpectedResult(visibilityOverride: Hidden, isClosable: False, expectedVisibility: Hidden, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CloseChrome_VisibilityAndCapability_HaveExpectedResult(visibilityOverride: Hidden, isClosable: True, expectedVisibility: Hidden, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CloseChrome_VisibilityAndCapability_HaveExpectedResult(visibilityOverride: Visible, isClosable: False, expectedVisibility: Visible, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.CloseChrome_VisibilityAndCapability_HaveExpectedResult(visibilityOverride: null, isClosable: False, expectedVisibility: Visible, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanMinimize, windowState: Normal, visibilityOverride: null, isMaximizable: True, expectedMaximizeVisibility: Visible, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Maximized, visibilityOverride: 99, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Maximized, visibilityOverride: Collapsed, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Maximized, visibilityOverride: Hidden, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Hidden, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Normal, visibilityOverride: 99, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Normal, visibilityOverride: Collapsed, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: CanResize, windowState: Normal, visibilityOverride: Hidden, isMaximizable: True, expectedMaximizeVisibility: Hidden, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: NoResize, windowState: Maximized, visibilityOverride: Visible, isMaximizable: True, expectedMaximizeVisibility: Collapsed, expectedRestoreVisibility: Visible, expectedMaximizeEnabled: False, expectedRestoreEnabled: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: NoResize, windowState: Normal, visibilityOverride: Visible, isMaximizable: False, expectedMaximizeVisibility: Visible, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: False, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MaximizeRestoreChrome_OverrideAndCapability_HaveExpectedActivePair(resizeMode: NoResize, windowState: Normal, visibilityOverride: Visible, isMaximizable: True, expectedMaximizeVisibility: Visible, expectedRestoreVisibility: Collapsed, expectedMaximizeEnabled: True, expectedRestoreEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: CanMinimize, visibilityOverride: null, isMinimizable: True, expectedVisibility: Visible, expectedEnabled: True)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: CanResize, visibilityOverride: Collapsed, isMinimizable: True, expectedVisibility: Collapsed, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: CanResize, visibilityOverride: Hidden, isMinimizable: True, expectedVisibility: Hidden, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: NoResize, visibilityOverride: Collapsed, isMinimizable: True, expectedVisibility: Collapsed, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: NoResize, visibilityOverride: Hidden, isMinimizable: True, expectedVisibility: Hidden, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: NoResize, visibilityOverride: Visible, isMinimizable: False, expectedVisibility: Visible, expectedEnabled: False)
+  Fluence.Wpf.Tests.Windowing.CaptionButtonTests.MinimizeChrome_OverrideAndCapability_HaveExpectedVisibilityAndEnablement(resizeMode: NoResize, visibilityOverride: Visible, isMinimizable: True, expectedVisibility: Visible, expectedEnabled: True)
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.SystemBackdropType_Default_IsAutoAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.SystemBackdropType_CanSetAllValuesAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ThemeCycle_LightDarkHcLight_KeyBrushesResolveAfterEachStepAsync
@@ -33,7 +70,7 @@
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ContentLayerPreBlend_Bpc8_Mica_LeavesWindowResourceAbsentAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ContentLayerPreBlend_OverrideDroppedTo8ThenReapplied_RemovesWindowResourceAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ContentLayerPreBlend_ConsumerOwnedResource_NeverOverwrittenOrRemovedAsync
-  Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ContentLayerPreBlend_BoundBorder_ResolvesPreBlendThenCanonicalTokenAsync
+  Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ContentLayerPreBlend_BoundBorder_TracksLightDarkLightThenDisplayDepthAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ApplicationBackgroundColor_Light_EqualsCanonicalSolidBackgroundFillColorBaseAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ApplyFrame_RealisedWindow_TemplateBorderMatchesCapability_AndBrushIsNeverCardStrokeAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.ApplyFrame_ConsumerStyleSetterOnBorderBrush_BaseValueSourceStaysStyleAsync
@@ -115,16 +152,27 @@
   Fluence.Wpf.Tests.Windowing.TitleBarTests.OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStrippedAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.OnMaximizeWindow_DrivesWindowStateMaximized_EvenAfterSysMenuStrippedAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.OnRestoreWindow_DrivesWindowStateNormal_FromMaximizedAsync
-  Fluence.Wpf.Tests.Windowing.TitleBarTests.MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfigAsync
-  Fluence.Wpf.Tests.Windowing.TitleBarTests.MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfigAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderHostConfigAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.MinimizeButton_EndToEnd_WorksUnderShowDialogModalHostConfigAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.CaptionButtons_AboveContent_WhenExtendsContentIntoTitleBarAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_Template_ExposesNavigationButtonsAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_BackButton_UsesCompactSlotAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: False, hideMinimizeAndMaximize: False, rightToLeft: False, expectedCaptionWidth: 138)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: True, hideMinimizeAndMaximize: False, rightToLeft: False, expectedCaptionWidth: 138)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: True, hideMinimizeAndMaximize: True, rightToLeft: False, expectedCaptionWidth: 46)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: False, hideMinimizeAndMaximize: False, rightToLeft: True, expectedCaptionWidth: 138)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: True, hideMinimizeAndMaximize: False, rightToLeft: True, expectedCaptionWidth: 138)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_RightHeader_EndsAtVisibleCaptionButtonsAsync(extendsContentIntoTitleBar: True, hideMinimizeAndMaximize: True, rightToLeft: True, expectedCaptionWidth: 46)
   Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_PaneToggleClick_ExecutesCommandThenRaisesRequestedAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_BackButtonVisibilityAndCommand_WorkAsync
   Fluence.Wpf.Tests.Windowing.TitleBarTests.TitleBar_Unloaded_UnsubscribesCommandCanExecuteHandlersAsync
-  Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_Icon_DefaultsToEmbeddedFluenceBrandIconAsync
-  Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_Icon_ConsumerAssignedValueOverridesDefaultAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.CaptionButtonBindingVisible_UnderNoResize_OverridesBaselineAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.CaptionButtonHidden_UnderCanResize_DisablesButtonsButKeepsRoutedCommandsAsync(visibility: Collapsed)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.CaptionButtonHidden_UnderCanResize_DisablesButtonsButKeepsRoutedCommandsAsync(visibility: Hidden)
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.CaptionButtonStyleVisible_UnderNoResize_OverridesBaselineAsync
+  Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_Icon_IsUnsetByDefaultAsync
+  Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_Icon_StyleSetterIsRespectedAsync
+  Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_Icon_ConsumerAssignedValueIsPreservedAsync
   Fluence.Wpf.Tests.Windowing.WindowIconTests.FluenceWindow_DefaultIcon_IsSquareBitmapSourceAsync
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveEffectiveBackdrop_Auto_Win11_22H2_ReturnsMica
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveEffectiveBackdrop_Auto_Win11Pre22H2_LegacyMicaOnly_ReturnsMica
@@ -177,12 +225,6 @@
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetCornerPreference_Default_MapsToDwmwcpRound
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetCornerPreference_DoNotRound_MapsToDwmwcpDoNotRound
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetCornerPreference_RoundSmall_MapsToDwmwcpRoundSmall
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_CaptionHeight_IsZero
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_GlassFrameThickness_IsMinusOneForShadow
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_ResizeBorderThickness_Is4
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_DisablesAeroCaptionButtons
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_NonClientFrameEdges_IsNone
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.CreateWindowChrome_CornerRadius_IsZero
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetResizeBorderThickness_Normal_CanResize_Returns4
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetResizeBorderThickness_Normal_CanResizeWithGrip_Returns4
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.GetResizeBorderThickness_Maximized_ReturnsZero
@@ -191,6 +233,7 @@
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_Normal_ActiveWithAccentBorder_UsesAccentKey
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_Normal_Inactive_UsesSurfaceStrokeKey
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_NoBorderColorCapability_KeepsDwmDefault
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_HighContrast_SuppressesAccentBorder
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_BorderColorSupported_Active_TemplateThicknessIsZero
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_BorderColorSupported_Inactive_TemplateThicknessIsZero
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildFramePlan_BorderColorUnsupported_Active_TemplateThicknessIsOne
@@ -210,13 +253,14 @@
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_AdvancedColorEnabled_ReturnsNull
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Light_CanonicalPresent_ReturnsCanonical
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Light_CanonicalNull_ReturnsComputedFallback
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Tabbed_Light_CanonicalPresent_ReturnsCanonical
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalPresent_ReturnsCanonical
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalNull_ReturnsComputedFallback
-  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldApplyContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_ReturnsTrue
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Tabbed_LightAndDark_CanonicalPresent_ReturnsCanonical
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalPresent_ReturnsNull
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalNull_ReturnsNull
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldApplyContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_LightTrueDarkFalse
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldApplyContentLayerPreBlend_Acrylic_ReturnsFalse
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.BuildBackdropPlan_Acrylic_FallsBackToMica_WhenMicaEffectButNoSystemBackdrop
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CaptureGalleryShellNavigationModesAsync
+  Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CaptureGalleryCatalogAndCardsAsync
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CapturePowerShellControlsTourAsync
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CaptureMvvmTaskManagerAsync
   Fluence.Wpf.Tests.Theming.AccentTests.ApplySystemAccent_PopulatesRampAsync
@@ -226,6 +270,12 @@
   Fluence.Wpf.Tests.Theming.AccentTests.ApplyCustomAccent_PerThemeSeeds_FollowResolvedThemeAsync
   Fluence.Wpf.Tests.Theming.AccentTests.ApplyCustomAccent_PerThemeSeeds_RaisesAccentColorChangedOnceAsync
   Fluence.Wpf.Tests.Theming.AccentTests.ThemeChange_UpdatesAdaptiveAccentsAsync
+  Fluence.Wpf.Tests.Theming.AccentTests.MatchingCustomSeed_UsesCapturedPaletteAcrossThemesAsync
+  Fluence.Wpf.Tests.Theming.AccentTests.UnmatchedCustomSeed_UsesGeneratedRampEvenWhenRgbMatches
+  Fluence.Wpf.Tests.Theming.AccentTests.CurrentSystemSeed_CustomIntentUsesCapturedPaletteAsync
+  Fluence.Wpf.Tests.Theming.AccentTests.ApplyCustomAccent_ExactOneColor_PreservesLightAndDerivesDarkAsync
+  Fluence.Wpf.Tests.Theming.AccentTests.ApplyCustomAccent_ExactPair_FollowsThemeWithoutRewritingRampAsync
+  Fluence.Wpf.Tests.Theming.AccentTests.ApplyCustomAccent_EqualExactPair_RemainsExactInDarkAndSystemResetRestoresAdaptiveAsync
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_IsDeterministic(r: 0, g: 120, b: 212)
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_IsDeterministic(r: 202, g: 80, b: 16)
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_IsDeterministic(r: 0, g: 183, b: 195)
@@ -258,6 +308,7 @@
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_DarkVariants_OrderedFromBrightToDim(r: 82, g: 94, b: 84)
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_DarkVariants_OrderedFromBrightToDim(r: 73, g: 130, b: 5)
   Fluence.Wpf.Tests.Theming.AccentTests.GenerateAccentRampWinaccent_DarkVariants_OrderedFromBrightToDim(r: 0, g: 178, b: 148)
+  Fluence.Wpf.Tests.Theming.AccentTests.GeneratedRamp_HeldOutWindowsPalettes_StaysWithinRgbErrorBudget
   Fluence.Wpf.Tests.Theming.AccentTests.TryGetAccentPalette_WhenPresent_ReturnsSevenOpaqueColors
   Fluence.Wpf.Tests.Theming.DesignTimeResourceTests.DesignTimeResources_AreCurrentAsync
   Fluence.Wpf.Tests.Theming.DesignTimeResourceTests.DesignTimeResources_Load_RepresentativeKeysResolveAsync
@@ -310,6 +361,7 @@
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.ColorMap_Build_Light_ContainsRawRampKeysAsync
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.ColorMap_Build_Light_ContainsTitleBarActiveColorAsync
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.ColorMap_Build_HighContrast_ContainsSystemAccentColorAsync
+  Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.ColorMap_Build_HighContrast_UsesSystemAccentStateColorsAsync
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.BrushFactory_Build_ProducesFrozenBrushForColorKeyAsync
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.BrushFactory_Build_PreservesAlphaChannelAsync
   Fluence.Wpf.Tests.Theming.ThemeEngineUnitTests.BaseColorTables_Load_ReturnsColorsAsync(theme: Light, minimumCount: 10)
@@ -357,8 +409,10 @@
   Fluence.Wpf.Tests.Theming.ThemeParityTests.Rebuilt_MatchesGoldenResolvedValuesAsync(theme: HighContrast)
   Fluence.Wpf.Tests.Theming.ThemeParityTests.HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlightAsync
   Fluence.Wpf.Tests.Theming.ThemeParityTests.HighContrast_HighlightTextDerivedBrushes_BindToLiveSystemHighlightTextAsync
+  Fluence.Wpf.Tests.Theming.ThemeParityTests.HighContrast_GrayTextDerivedAccentBrushes_BindToLiveSystemGrayTextAsync
   Fluence.Wpf.Tests.Theming.ThemeParityTests.ApplyTheme_Alone_UsesSystemAccentPaletteAsync
   Fluence.Wpf.Tests.Theming.ThemeParityTests.FirstApply_RaisesAccentColorChanged_BeforeAnyOtherThemeAccessAsync
+  Fluence.Wpf.Tests.Theming.ThemeParityTests.TitleBarGlyphButtonStyle_IsIncludedInPublicKeyInventoryAsync
   Fluence.Wpf.Tests.Theming.ThemeParityTests.PublicKeyInventory_MatchesFrozenSetAsync
   Fluence.Wpf.Tests.Theming.ThemeParityTests.PublicKeyInventory_IsTheSameInEveryThemeAsync(theme: Dark)
   Fluence.Wpf.Tests.Theming.ThemeParityTests.PublicKeyInventory_IsTheSameInEveryThemeAsync(theme: HighContrast)
@@ -386,7 +440,7 @@
   Fluence.Wpf.Tests.Gallery.DemoSampleContractTests.DemoSampleControl_SourceRendererPreservesIndentationAsync
   Fluence.Wpf.Tests.Gallery.DemoSampleContractTests.DemoSampleControl_EmptyCSharpSourceAddsOnlyXamlTabAsync
   Fluence.Wpf.Tests.Gallery.DemoSampleContractTests.DemoSampleControl_SourceExpander_ReopensAfterCollapseAsync
-  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_TitleBarSearchBox_CentresOnTheTitleBarAsync
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_TitleBarSearchBox_CentresInWindowAndFitsBarHeightAsync
   Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_AccentColorButtons_UseButtonControlAsync
   Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_SettingsSelectors_UseExpectedControlsAsync
   Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_AppThemeComboBox_UpdatesStateLabelAsync
@@ -464,8 +518,8 @@
   Fluence.Wpf.Tests.Gallery.Pages.GalleryColorsPageTests.GalleryColorsPage_CopyButton_CueAgreesWithWhetherTheCopyLandedAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryColorsPageTests.GalleryColorsPage_InDarkTheme_StartsWithThemeForegroundAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryColorsPageTests.GalleryColorsPage_ContentStretchesToTheShellWidthAsync
-  Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.GalleryHomePage_HeroSwapsHeaderLockupWithThemeAsync
-  Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.GalleryHomePage_UsesProminentBrandAndAccessibleSocialLinksAsync
+  Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.GalleryHomePage_HeroSwapsSvgDerivedBannerWithThemeAsync
+  Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.GalleryHomePage_UsesProminentAccessibleBrandAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.HomeActions_NavigateToTheirControlPagesAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryHomePageTests.HomeLayout_ReflowsWithoutHorizontalOverflowAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryIconsPageTests.GalleryIconsPage_IconographyHeaderAndSearchFollowWinUiGalleryAsync
@@ -485,6 +539,9 @@
   Fluence.Wpf.Tests.Gallery.Pages.GalleryPageHeaderTests.GalleryPageHeader_FavoriteToggle_FlipsGlyphWhenCheckedAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryPageHeaderTests.GalleryPageHeader_Layout_MirrorsWinUiPageHeaderRowsAsync
   Fluence.Wpf.Tests.Gallery.Pages.GalleryPageHeaderTests.GalleryPageHeader_SourceLinks_ResolveFromHostingPageAsync
+  Fluence.Wpf.Tests.Gallery.Pages.GallerySelectionPageTests.BoundComboBoxSample_CopyableSourceContainsLiveHandlersAsync
+  Fluence.Wpf.Tests.Gallery.Pages.GallerySelectionPageTests.ComboBoxItemsSource_UpdatesWithoutRebuildingPageAsync
+  Fluence.Wpf.Tests.Gallery.Pages.GallerySelectionPageTests.EditableComboBox_CommitsTextAndKeepsTheOnlyFocusedUnderlineAsync
   Fluence.Wpf.Tests.Gallery.Pages.GallerySettingsPageTests.GallerySettingsPage_AppThemeCombo_TracksExternalThemeChangeAsync
   Fluence.Wpf.Tests.Gallery.Pages.GallerySettingsPageTests.GallerySettingsPage_NavigationStyleCombo_TracksExternalIsPaneOpenChangesAsync
   Fluence.Wpf.Tests.Gallery.Pages.GallerySettingsPageTests.GallerySettingsPage_NavigationStyleCombo_SwitchesPaneModeAndKeepsContentLiveAsync
@@ -512,6 +569,7 @@
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ProgrammaticTextChange_RaisesTextChangedWithProgrammaticReasonAsync
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_UserEditInTextBox_RaisesTextChangedWithUserInputReasonAsync
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_IsSuggestionListOpen_ShowsPopupWithItemsAsync
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_EditorClickOpensSuggestionsAfterMouseCaptureAsync
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ChooseSuggestionViaKeyboard_RaisesSuggestionChosenAndQuerySubmittedAsync
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_EnterWithoutSelection_RaisesQuerySubmittedWithCurrentTextAsync
   Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_Escape_ClosesSuggestionListAsync
@@ -531,6 +589,7 @@
   Fluence.Wpf.Tests.Control.ButtonTests.Button_FontProperties_ReachTheContentTextAsync
   Fluence.Wpf.Tests.Control.ButtonTests.Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokensAsync
   Fluence.Wpf.Tests.Control.ButtonTests.Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokensAsync
+  Fluence.Wpf.Tests.Control.ButtonTests.Button_HighContrast_ActualStateBrushesSurviveThemeTransitionsAsync
   Fluence.Wpf.Tests.Control.ButtonTests.Button_RestFill_InsetByStrokeExceptForAccentAsync
   Fluence.Wpf.Tests.Control.ButtonTests.Button_ExplicitToolTip_IsNotClearedByTruncationFallbackAsync
   Fluence.Wpf.Tests.Control.ButtonTests.Button_IconOnly_CentersGlyphAndRestoresGapWithContentAsync
@@ -566,6 +625,11 @@
   Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_DescriptionChanges_UpdatesAutomationHelpTextAsync
   Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_NullDescription_ClearsAutomationHelpTextAsync
   Fluence.Wpf.Tests.Control.CheckBoxTests.Stage3_CheckBox_Content_RoundtripsAsync
+  Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_HighContrast_IndeterminateStatePairsAsync
+  Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_NativeThreeStateAndAutomationPatternRemainIntactAsync
+  Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_IndeterminateHoverStroke_RebindsAcrossLightAndHighContrastAsync
+  Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_QueuedOnOffOn_PreservesFinalOnStateAsync
+  Fluence.Wpf.Tests.Control.CheckBoxTests.CheckBox_QueueOverflowWithMissingRoutes_DrainsNewestStateAsync
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_DefaultStyle_AppliesTemplatePartsAsync
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_SpectrumBitmap_IsGenerated256x256AfterTemplateApplyAsync
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_SetColor_RaisesColorChangedAndUpdatesHexTextAsync
@@ -593,6 +657,12 @@
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_SpectrumArea_IsFocusableTabStopAsync
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_SpectrumKeyboard_RightKeyIncreasesSaturationAsync
   Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_SpectrumKeyboard_UpKeyIncreasesValueAsync
+  Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_EmbeddedEditors_KeepRoundedFocusBorderAndEditorGeometryAsync
+  Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_FocusedHexEditor_TracksLiveThemeAndColorChangesAsync
+  Fluence.Wpf.Tests.Control.ColorPickerTests.ColorPicker_HexCounter_IsHiddenWithoutChangingLengthOrColorCommitAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_ClosedPointerPress_UsesPressedPaintAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_FocusedPointerPress_KeepsFocusedTextRoleAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableArrowPress_PreservesEditorInsetsAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.IsDropDownOpenedUpward_DefaultIsFalseAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.DropdownCornerRadius_DefaultIs8Async
   Fluence.Wpf.Tests.Control.ComboBoxTests.IsDropDownOpenedUpward_FalseWhenDropDownNotOpenAsync
@@ -610,8 +680,15 @@
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_UnfocusedState_FocusAccentLineIsHiddenAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_InitialTemplate_DoesNotShowFocusAccentLineAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_ThemeCycle_FocusedStateKeepsAccentLineHiddenAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableText_UsesNativeEditorAndTracksSelectionAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableEditor_IsTheSingleTabStopAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableFocus_PaintsSharedBorderWithoutMovingEditorAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableFocus_FollowsLiveThemeChangesAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableEditor_RemainsHitTestableBesideArrowAsync(rightPadding: 0)
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_EditableEditor_RemainsHitTestableBesideArrowAsync(rightPadding: 6)
   Fluence.Wpf.Tests.Control.ComboBoxTests.Stage3_ComboBox_PlaceholderText_RoundtripsAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_SelectionChange_UpdatesDisplayedContentAsync
+  Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_DisplayMemberPath_RendersSelectedMemberWhenClosedAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_ItemTemplate_HasHoverOverlayAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_DropDownItem_UsesWinUiMetricsAsync
   Fluence.Wpf.Tests.Control.ComboBoxTests.ComboBox_DropdownReveal_SettlesAtRestAndSurvivesReopenAsync
@@ -893,8 +970,8 @@
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_Automation_FooterSupportsSelectionAndInvocationAsync
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_Automation_GetSelection_ReportsFooterSelectionAsync
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_AfterUnloadReload_SelectionIndicatorStillUpdatesAsync
-  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationViewItem_Left_OuterBorder_MatchesWinUiPillGeometryAsync
-  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_Left_PaneItemsAndFooterSitSymmetricallyInThePaneAsync
+  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationViewItem_Left_OuterBorder_MatchesSelectionRailGeometryAsync
+  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_Left_PaneItemsAndFooterKeepReferenceItemInsetsAsync
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_Left_SharedSelectionIndicator_IsThreeDipWideAsync
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationViewItem_InfoBadge_StaysOnAClosedPaneAsync
   Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationViewItem_ClosedPane_GivesTheIconItsFullColumnAsync(mode: Left)
@@ -933,6 +1010,8 @@
   Fluence.Wpf.Tests.Control.NumberBoxTests.NumberBox_DefaultStyle_LoadsPartsAsync
   Fluence.Wpf.Tests.Control.NumberBoxTests.NumberBox_Value_RoundtripsAsync
   Fluence.Wpf.Tests.Control.NumberBoxTests.NumberBox_InlineSpinButtons_AreBorderlessAtRestAsync
+  Fluence.Wpf.Tests.Control.NumberBoxTests.NumberBox_FocusedBorder_FollowsLiveThemeChangesAsync
+  Fluence.Wpf.Tests.Control.NumberBoxTests.NumberBox_FocusPaint_DoesNotMoveEditorOrSpinButtonsAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_ImplicitFluentStyle_AppliesToNativeControlAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_AutomationPeer_ReportsPasswordEditAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_AccessibleName_IsCarriedByTheControlItselfAsync
@@ -946,7 +1025,7 @@
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_Unloaded_StopsCapsLockPollingTimerAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_StrengthMeter_ScoresAndOptsInAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_DefaultChrome_UsesWinUiReferenceValuesAsync
-  Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_FocusState_ShowsAccentLineUnderneathAsync
+  Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_FocusState_UsesRoundedFocusedBorderWithoutMovingSecureEditorAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_SecureStore_StaysAuthoritativeAsync
   Fluence.Wpf.Tests.Control.PasswordBoxTests.PasswordBox_SelectAll_DoesNotThrowWithoutTemplateAsync
   Fluence.Wpf.Tests.Control.PersonPictureTests.PersonPicture_DefaultStyle_AppliesAsync
@@ -989,6 +1068,16 @@
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_PausedMode_TracksCautionBrushAcrossThemeChangeAsync
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_ErrorMode_UsesCriticalBrushAsync
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_DefaultStyle_UsesWinUiThinTrackMetricsAsync
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 0, borderThickness: 0)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 0, borderThickness: 1)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 8, borderThickness: 0)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 8, borderThickness: 1)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 24, borderThickness: 0)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 24, borderThickness: 1)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 25, borderThickness: 0)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_TrackAndFill_RenderOnTheSameCenterlineAsync(height: 25, borderThickness: 1)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_AutoHeight_ReservesCustomTrackHeightAsync(borderThickness: 0)
+  Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_AutoHeight_ReservesCustomTrackHeightAsync(borderThickness: 1)
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_ReturningToStandardMode_RestoresAccentBrushAsync
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_IndicatorHost_IsClippedToRoundedGeometryAsync
   Fluence.Wpf.Tests.Control.ProgressBarTests.ProgressBar_IndeterminateBars_UseWinUiWidthRatiosAsync
@@ -1032,13 +1121,17 @@
   Fluence.Wpf.Tests.Control.ProgressRingTests.ProgressRing_RangeValueSetValue_ReportsThatItIsReadOnlyAsync
   Fluence.Wpf.Tests.Control.ProgressRingTests.ProgressRing_Determinate_UpdatesArcAsync
   Fluence.Wpf.Tests.Control.ProgressRingTests.ProgressRing_Indeterminate_CaterpillarArcBecomesVisibleAsync
-  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_StateSizeStoryboards_ReleaseRatherThanStampOnExitAsync
-  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_CheckedDot_KeepsItsCheckedSizeWhenAStateStoryboardIsReleasedAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_CheckSelection_SwitchesOpacityWithoutResizingDotAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_PressedAndDisabled_ReachWinUiGlyphSizesAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_HoverAndRapidReversal_UseCurrentCommonStateAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_HoverChangesDuringPress_DoNotRestartGlyphClockAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_RetemplateAndUnload_ClearOldGlyphClocksAsync
   Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_Description_SetsAutomationHelpTextAsync
   Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_DescriptionChanges_UpdatesAutomationHelpTextAsync
   Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_NullDescription_ClearsAutomationHelpTextAsync
   Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_Checked_HasAccentFillAsync
-  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_ContentAlignment_CentersTextWithIndicatorAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_CheckedOuterStroke_TracksLiveHighContrastRolesAsync
+  Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_GlyphRow_AlignsCircleAndContentWithWinUiSpacingAsync
   Fluence.Wpf.Tests.Control.RadioButtonTests.RadioButton_GroupExclusivity_UnchecksOthersAsync
   Fluence.Wpf.Tests.Control.RatingControlTests.RatingControl_DefaultStyle_AppliesAsync
   Fluence.Wpf.Tests.Control.RatingControlTests.RatingControl_DefaultMaxRating_GeneratesFiveStarsAsync
@@ -1182,11 +1275,16 @@
   Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_PlaceholderText_RoundtripsAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_ClearButtonEnabled_DefaultTrueAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_DefaultChrome_UsesWinUiReferenceValuesAsync
-  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusState_ShowsAccentLineUnderneathAsync
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusState_UsesRoundedFocusedBorderWithoutMovingEditorAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_TextViewAlignsWithPlaceholder_WhenIconIsShownAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.Stage3_TextBox_ValidationState_DefaultNoneAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.Stage3_TextBox_HelperText_RoundtripsAsync
   Fluence.Wpf.Tests.Control.TextBoxTests.Stage3_TextBox_CharacterCounter_ShowsWithMaxLengthAsync
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusedBorder_FollowsLiveThemeChangesAsync
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusedValidation_UsesStatusBorderWithoutAccentAsync(state: Error, brushKey: "SystemFillColorCriticalBrush")
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusedValidation_UsesStatusBorderWithoutAccentAsync(state: Success, brushKey: "SystemFillColorSuccessBrush")
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_FocusedValidation_UsesStatusBorderWithoutAccentAsync(state: Warning, brushKey: "SystemFillColorCautionBrush")
+  Fluence.Wpf.Tests.Control.TextBoxTests.TextBox_CharacterCounterDisplaySwitch_IsPerInstanceAndSurvivesRetemplateAsync
   Fluence.Wpf.Tests.Control.TimePickerTests.TimePicker_DefaultStyle_AppliesTemplatePartsAsync
   Fluence.Wpf.Tests.Control.TimePickerTests.TimePicker_SelectedTime_UpdatesFieldSegmentsAndPlaceholderAsync
   Fluence.Wpf.Tests.Control.TimePickerTests.TimePicker_FieldClick_OpensPopupAndPopulatesColumnsAsync
@@ -1206,6 +1304,7 @@
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_DefaultStyle_TemplateExposesRestFillAndBackdropAsync
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_Checked_UsesAccentFillBackdropAndOnAccentTextAsync
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_CheckedPressed_UsesAccentTertiaryFillAsync
+  Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_HighContrast_CheckedPressedUsesControlStatePairAsync
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_Indeterminate_RestKeepsDefaultFillAsync
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_IndeterminatePressed_UsesControlTertiaryFillAsync
   Fluence.Wpf.Tests.Control.ToggleButtonTests.ToggleButton_IndeterminateDisabled_UsesDisabledFillAndTextAsync
@@ -1305,8 +1404,8 @@
   Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.DemoSharedResources_DoNotShadowNativeFluenceSurfaceRolesAsync
   Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.DemoSharedResources_NativeBrushesResolveInLightAndHighContrastAsync
   Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.BackgroundParityBrushes_ResolveAcrossThemesAndDeterministicAccentAsync
-  Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.PowerShellDemoScripts_FollowCanonicalBootstrap
-  Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.PowerShellDemoXaml_UsesCurrentFluenceWindowProperties
+  Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.PowerShellModuleExamples_UseModule
+  Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.PowerShellModuleXaml_UsesCurrentFluenceWindowProperties
   Fluence.Wpf.Tests.Control.Rules.BackgroundParityTests.XamlBackgroundAndFillLiterals_AreAllowListed
   Fluence.Wpf.Tests.Control.Rules.CrispRenderingTests.ThemedButton_HasCrispLayoutRoundingSettersAsync
   Fluence.Wpf.Tests.Control.Rules.CrispRenderingTests.ThemedTextBox_HasCrispLayoutRoundingSettersAsync
@@ -1318,7 +1417,7 @@
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.RadioButton_OuterRing_UsesControlStrongStrokeBrushAsync
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.RadioButton_OuterRing_SwitchesToDisabledStrokeWhenDisabledAsync
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.CheckBox_CheckedGlyph_UsesIndeterminateDashStrokeWeightAsync
-  Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.CheckBox_CheckIn_GlyphAnimatesInAndUncheckRevertsInstantlyAsync
+  Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.CheckBox_CheckIn_DrawsPathAndUncheckErasesFromStartAsync
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.CheckBox_DefaultStyle_UsesWinUiLeftAlignmentAndMinWidthAsync
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.Card_Click_FiresOnMouseDownThenUp_WhenIsClickableAsync
   Fluence.Wpf.Tests.Control.Rules.FluentStrokeTests.Card_Click_DoesNotFire_WhenNotClickableAsync
@@ -1359,14 +1458,18 @@
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.CommandBarFlyoutPresenter_TemplateRoot_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.ComboBox_DropdownPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.AutoSuggestBox_SuggestionsPopup_ReservesTheShadowGutterAsync
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_FocusedField_KeepsEditorAndPopupAnchorStableThroughThemeChangesAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.DatePicker_DropdownPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.TimePicker_DropdownPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.DropDownButton_FlyoutPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.SplitButton_FlyoutPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.ToggleSplitButton_FlyoutPopup_ReservesTheShadowGutterAsync
   Fluence.Wpf.Tests.Control.Rules.PopupElevationTests.ContextMenu_TemplateRoot_ReservesTheShadowGutterAsync
+  Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_CheckBox_SnapsCheckAndDashWithoutClocksAsync
+  Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_RadioButton_SnapsGlyphSizesWithoutClocksAsync
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ProgressBar_Indeterminate_KeepsAnimatingAsync
-  Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ProgressRing_Indeterminate_RendersStaticFrameWithoutClocksAsync
+  Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ProgressRing_Indeterminate_KeepsAnimatingAsync(size: 16)
+  Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ProgressRing_Indeterminate_KeepsAnimatingAsync(size: 32)
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_FontIcon_IsSpinning_DoesNotAnimateRotationAsync
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ToggleSwitch_Toggle_SnapsKnobToFinalOffsetSynchronouslyAsync
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_Expander_Expand_OpensContentAtRestWithoutSlideClockAsync
@@ -1376,3 +1479,114 @@
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_ComboBox_DropdownOpen_PresentsDropdownAtRestWithoutClocksAsync
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_OverrideTrue_ToggleSwitch_StillAnimatesKnobAsync
   Fluence.Wpf.Tests.Control.Rules.ReducedMotionTests.ReducedMotion_Override_WinsOverEnvironmentInBothDirectionsAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.Clear_InvalidatesQueuedFadeAndPendingPreparationAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.InvalidCapture_LeavesNoSnapshotOrReadyFadeAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.OffThreadPreparation_PreservesOlderFadeButConsumesReadinessAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.PreparedSnapshot_PlaysOnceAndReleasesAfterFadeAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.RapidPreparation_ReplacesAttachedSnapshotAndFinalFadeReleasesItAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.SuppressedPreparation_ClearsAttachedSnapshotAndCannotPlayAsync
+  Fluence.Wpf.Tests.Windowing.ThemeTransitionOverlayTests.WindowRetemplateAndClose_RemoveAttachedTransitionVisualsAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.HitTestTitleBar_RestoreButton_UsesCurrentSnapLayoutPolicyAsync
+  Fluence.Wpf.Tests.Windowing.TitleBarTests.HitTestTitleBar_RestoreButtonHidden_DoesNotReturnHtMaxButtonAsync
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_AfterMergedDictionariesClear_ReseedsOwnedSlotsAsync
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_AfterResourcesReplacement_ReseedsOwnedSlotsAsync
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_AfterForeignInsertion_PreservesForeignAndRemovesStaleComputedAsync
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_UnchangedFingerprint_RepairsStaticSlotsAsync(slot: 1, replace: False)
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_UnchangedFingerprint_RepairsStaticSlotsAsync(slot: 1, replace: True)
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_UnchangedFingerprint_RepairsStaticSlotsAsync(slot: 2, replace: False)
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_UnchangedFingerprint_RepairsStaticSlotsAsync(slot: 2, replace: True)
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_DuplicateOwnedStatics_RemovesOnlyCanonicalDuplicatesAsync(absolute: False)
+  Fluence.Wpf.Tests.Theming.DictionaryStabilityTests.Apply_DuplicateOwnedStatics_RemovesOnlyCanonicalDuplicatesAsync(absolute: True)
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.RequestRefresh_BurstBeforeDrain_QueuesOneRefreshAsync
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.RequestRefresh_AfterDrain_QueuesAnotherRefreshAsync
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.RequestRefresh_AfterAbortedOperation_CanQueueAgainAsync
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.WndProc_RelevantMessagesReachRefreshQueue_UnrelatedSettingDoesNotAsync(message: 794, setting: null, expectedCount: 1)
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.WndProc_RelevantMessagesReachRefreshQueue_UnrelatedSettingDoesNotAsync(message: 21, setting: null, expectedCount: 1)
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.WndProc_RelevantMessagesReachRefreshQueue_UnrelatedSettingDoesNotAsync(message: 800, setting: null, expectedCount: 1)
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.WndProc_RelevantMessagesReachRefreshQueue_UnrelatedSettingDoesNotAsync(message: 26, setting: "iMmErSiVeCoLoRsEt", expectedCount: 1)
+  Fluence.Wpf.Tests.Theming.SystemThemeWatcherTests.WndProc_RelevantMessagesReachRefreshQueue_UnrelatedSettingDoesNotAsync(message: 26, setting: "UnrelatedSetting", expectedCount: 0)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "aero", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "basic", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "aerolite", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "themea", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "themeb", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "themec", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "themed", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "dark", appLight: True, expected: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "customdark", appLight: True, expected: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: null, appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: null, appLight: True, expected: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "", appLight: True, expected: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "custom", appLight: False, expected: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_UsesAppModeRegardlessOfOrdinaryThemeFilename(filename: "custom", appLight: True, expected: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: null, appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: null, appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: "aero", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: "aero", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: "dark", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: True, filename: "dark", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hc1", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hc1", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hc2", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hc2", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hcblack", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hcblack", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hcwhite", appLight: False)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.ResolveAuto_HighContrastAlwaysWins(highContrast: False, filename: "hcwhite", appLight: True)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.Resolve_ExplicitRequestIsPreserved(theme: Light)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.Resolve_ExplicitRequestIsPreserved(theme: Dark)
+  Fluence.Wpf.Tests.Theming.ThemeResolverTests.Resolve_ExplicitRequestIsPreserved(theme: HighContrast)
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EnterSettingsAndPreferencesSelectsFooterAsync(query: "settings")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EnterSettingsAndPreferencesSelectsFooterAsync(query: "preferences")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EnterSettingsAndPreferencesSelectsFooterAsync(query: "  SeTtInGs  ")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EmptyAndUnmatchedEnter_PreservesCurrentPageAsync(query: "")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EmptyAndUnmatchedEnter_PreservesCurrentPageAsync(query: "  ")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_EmptyAndUnmatchedEnter_PreservesCurrentPageAsync(query: "no such gallery route")
+  Fluence.Wpf.Tests.Gallery.DemoShellTests.MainWindow_Search_ChosenSettingsSuggestionSelectsFooterAsync
+  Fluence.Wpf.Tests.Gallery.MvvmTaskManagerTests.AddCommand_BlankInputDisabled_ValidInputTrimmedAndReset
+  Fluence.Wpf.Tests.Gallery.MvvmTaskManagerTests.FiltersAndCompletion_NotifyAfterDisplayedTasksRebuild
+  Fluence.Wpf.Tests.Gallery.MvvmTaskManagerTests.DeleteAndClearCompleted_DetachRemovedItems
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ObservableSourceClear_ClosesPropertyAndPopupAsync(reset: False)
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ObservableSourceClear_ClosesPropertyAndPopupAsync(reset: True)
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ObservableSourceFirstAdd_OpensWhenFocusedAsync
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_SynchronizedBackgroundCollectionChanges_UpdateSuggestionStateAsync
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_ReplacedObservableSource_NoLongerAffectsStateAsync
+  Fluence.Wpf.Tests.Control.AutoSuggestBoxTests.AutoSuggestBox_CollectionRefresh_PreservesOpenBindingAsync
+  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_FooterMenuItemsClear_ReleasesSelectionAsync
+  Fluence.Wpf.Tests.Control.NavigationViewTests.NavigationView_FooterMutations_ReconcileSurvivingItemsAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_ProgrammaticSelection_RevealsOffscreenHeaderAsync(flow: LeftToRight)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_ProgrammaticSelection_RevealsOffscreenHeaderAsync(flow: RightToLeft)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_KeyboardSelection_RevealsOffscreenHeaderAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_CollectionChanges_KeepSelectedHeaderVisibleAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_ResizeAndRetemplate_KeepSelectionVisibleAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_OversizedHeader_AlignsLeadingEdgeWithoutOscillationAsync(flow: LeftToRight)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_OversizedHeader_AlignsLeadingEdgeWithoutOscillationAsync(flow: RightToLeft)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_AddButton_ArrowFocusAndEnterInvokesRequestOnceAsync(flow: LeftToRight, forward: Right, back: Left)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_AddButton_ArrowFocusAndEnterInvokesRequestOnceAsync(flow: RightToLeft, forward: Left, back: Right)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_AddButton_HiddenOrDisabledIsSkippedAsync(hide: False)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_AddButton_HiddenOrDisabledIsSkippedAsync(hide: True)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_CtrlF4_RequestsSelectedClosableTabOnceAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_CtrlF4_GuardsUnclosableAndNoSelectionAsync
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_DefaultScrollMode_RemainsPhysicalAsync
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_OptIn_BoundsRealizedRootContainersAsync(mode: Single)
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_OptIn_BoundsRealizedRootContainersAsync(mode: None)
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_SingleRecycling_PreservesBoundSelectionAndExpansionAsync
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_MultipleOptIn_UsesPhysicalFallbackAndPreservesSelectionAsync
+  Fluence.Wpf.Tests.Control.TreeViewTests.TreeView_ModeSwitch_ReconcilesFallbackWithoutSelectionLossAsync
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_OverflowScrollButtons_VisibilityAndClickFollowOffsetAsync(flow: LeftToRight)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_OverflowScrollButtons_VisibilityAndClickFollowOffsetAsync(flow: RightToLeft)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: LeftToRight, state: "empty")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: RightToLeft, state: "empty")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: LeftToRight, state: "removed")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: RightToLeft, state: "removed")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: LeftToRight, state: "disabled")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: RightToLeft, state: "disabled")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: LeftToRight, state: "hidden")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: RightToLeft, state: "hidden")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: LeftToRight, state: "not-focusable")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_TabReachesAddAndEnterRequestsOnceAsync(flow: RightToLeft, state: "not-focusable")
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_HiddenOrDisabledAddIsSkippedAsync(flow: LeftToRight, hide: False)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_HiddenOrDisabledAddIsSkippedAsync(flow: RightToLeft, hide: False)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_HiddenOrDisabledAddIsSkippedAsync(flow: LeftToRight, hide: True)
+  Fluence.Wpf.Tests.Control.TabViewTests.TabView_NoAvailableHeader_HiddenOrDisabledAddIsSkippedAsync(flow: RightToLeft, hide: True)

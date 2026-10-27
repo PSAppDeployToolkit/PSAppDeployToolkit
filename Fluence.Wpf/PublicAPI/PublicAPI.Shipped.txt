@@ -22,12 +22,16 @@ Fluence.Wpf.Automation.DatePickerAutomationPeer
 Fluence.Wpf.Automation.DatePickerAutomationPeer.DatePickerAutomationPeer(Fluence.Wpf.Controls.DatePicker! owner) -> void
 Fluence.Wpf.Automation.DropDownButtonAutomationPeer
 Fluence.Wpf.Automation.DropDownButtonAutomationPeer.DropDownButtonAutomationPeer(Fluence.Wpf.Controls.DropDownButton! owner) -> void
+Fluence.Wpf.Automation.FlyoutPresenterAutomationPeer
+Fluence.Wpf.Automation.FlyoutPresenterAutomationPeer.FlyoutPresenterAutomationPeer(Fluence.Wpf.Controls.FlyoutPresenter! owner) -> void
 Fluence.Wpf.Automation.FontIconAutomationPeer
 Fluence.Wpf.Automation.FontIconAutomationPeer.FontIconAutomationPeer(Fluence.Wpf.Controls.FontIcon! owner) -> void
 Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer
 Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.HyperlinkButtonAutomationPeer(Fluence.Wpf.Controls.HyperlinkButton! owner) -> void
 Fluence.Wpf.Automation.ImageAutomationPeer
 Fluence.Wpf.Automation.ImageAutomationPeer.ImageAutomationPeer(Fluence.Wpf.Controls.Image! owner) -> void
+Fluence.Wpf.Automation.InfoBadgeAutomationPeer
+Fluence.Wpf.Automation.InfoBadgeAutomationPeer.InfoBadgeAutomationPeer(Fluence.Wpf.Controls.InfoBadge! owner) -> void
 Fluence.Wpf.Automation.InfoBarAutomationPeer
 Fluence.Wpf.Automation.InfoBarAutomationPeer.InfoBarAutomationPeer(Fluence.Wpf.Controls.InfoBar! owner) -> void
 Fluence.Wpf.Automation.NavigationViewAutomationPeer
@@ -50,6 +54,8 @@ Fluence.Wpf.Automation.ProgressRingAutomationPeer
 Fluence.Wpf.Automation.ProgressRingAutomationPeer.ProgressRingAutomationPeer(Fluence.Wpf.Controls.ProgressRing! owner) -> void
 Fluence.Wpf.Automation.RatingControlAutomationPeer
 Fluence.Wpf.Automation.RatingControlAutomationPeer.RatingControlAutomationPeer(Fluence.Wpf.Controls.RatingControl! owner) -> void
+Fluence.Wpf.Automation.SelectorBarItemAutomationPeer
+Fluence.Wpf.Automation.SelectorBarItemAutomationPeer.SelectorBarItemAutomationPeer(Fluence.Wpf.Controls.SelectorBarItem! owner) -> void
 Fluence.Wpf.Automation.SplitButtonAutomationPeer
 Fluence.Wpf.Automation.SplitButtonAutomationPeer.SplitButtonAutomationPeer(Fluence.Wpf.Controls.SplitButton! owner) -> void
 Fluence.Wpf.Automation.TeachingTipAutomationPeer
@@ -58,6 +64,8 @@ Fluence.Wpf.Automation.TextBlockAutomationPeer
 Fluence.Wpf.Automation.TextBlockAutomationPeer.TextBlockAutomationPeer(Fluence.Wpf.Controls.TextBlock! owner) -> void
 Fluence.Wpf.Automation.TimePickerAutomationPeer
 Fluence.Wpf.Automation.TimePickerAutomationPeer.TimePickerAutomationPeer(Fluence.Wpf.Controls.TimePicker! owner) -> void
+Fluence.Wpf.Automation.TitleBarAutomationPeer
+Fluence.Wpf.Automation.TitleBarAutomationPeer.TitleBarAutomationPeer(Fluence.Wpf.Controls.TitleBar! owner) -> void
 Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer
 Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.ToggleSplitButtonAutomationPeer(Fluence.Wpf.Controls.ToggleSplitButton! owner) -> void
 Fluence.Wpf.Automation.ToggleSwitchAutomationPeer
@@ -323,6 +331,8 @@ Fluence.Wpf.Controls.Expander
 Fluence.Wpf.Controls.Expander.CornerRadius.get -> System.Windows.CornerRadius
 Fluence.Wpf.Controls.Expander.CornerRadius.set -> void
 Fluence.Wpf.Controls.Expander.Expander() -> void
+Fluence.Wpf.Controls.Expander.HeaderBackground.get -> System.Windows.Media.Brush?
+Fluence.Wpf.Controls.Expander.HeaderBackground.set -> void
 Fluence.Wpf.Controls.FluenceWindow
 Fluence.Wpf.Controls.FluenceWindow.CornerStyle.get -> Fluence.Wpf.WindowCornerPreference
 Fluence.Wpf.Controls.FluenceWindow.CornerStyle.set -> void
@@ -416,6 +426,8 @@ Fluence.Wpf.Controls.Image.Stretch.set -> void
 Fluence.Wpf.Controls.InfoBadge
 Fluence.Wpf.Controls.InfoBadge.BadgeStyle.get -> Fluence.Wpf.InfoBadgeStyle
 Fluence.Wpf.Controls.InfoBadge.BadgeStyle.set -> void
+Fluence.Wpf.Controls.InfoBadge.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.InfoBadge.CornerRadius.set -> void
 Fluence.Wpf.Controls.InfoBadge.IconSource.get -> object!
 Fluence.Wpf.Controls.InfoBadge.IconSource.set -> void
 Fluence.Wpf.Controls.InfoBadge.InfoBadge() -> void
@@ -424,6 +436,13 @@ Fluence.Wpf.Controls.InfoBadge.Value.set -> void
 Fluence.Wpf.Controls.InfoBar
 Fluence.Wpf.Controls.InfoBar.ActionButton.get -> object!
 Fluence.Wpf.Controls.InfoBar.ActionButton.set -> void
+Fluence.Wpf.Controls.InfoBar.CloseButtonClick -> System.EventHandler?
+Fluence.Wpf.Controls.InfoBar.CloseButtonCommand.get -> System.Windows.Input.ICommand?
+Fluence.Wpf.Controls.InfoBar.CloseButtonCommand.set -> void
+Fluence.Wpf.Controls.InfoBar.CloseButtonCommandParameter.get -> object?
+Fluence.Wpf.Controls.InfoBar.CloseButtonCommandParameter.set -> void
+Fluence.Wpf.Controls.InfoBar.CloseButtonStyle.get -> System.Windows.Style?
+Fluence.Wpf.Controls.InfoBar.CloseButtonStyle.set -> void
 Fluence.Wpf.Controls.InfoBar.Closed -> System.EventHandler<Fluence.Wpf.InfoBarClosedEventArgs!>?
 Fluence.Wpf.Controls.InfoBar.Closing -> System.EventHandler<Fluence.Wpf.InfoBarClosingEventArgs!>?
 Fluence.Wpf.Controls.InfoBar.CornerRadius.get -> System.Windows.CornerRadius
@@ -439,6 +458,7 @@ Fluence.Wpf.Controls.InfoBar.IsOpen.get -> bool
 Fluence.Wpf.Controls.InfoBar.IsOpen.set -> void
 Fluence.Wpf.Controls.InfoBar.Message.get -> string!
 Fluence.Wpf.Controls.InfoBar.Message.set -> void
+Fluence.Wpf.Controls.InfoBar.Opened -> System.EventHandler<Fluence.Wpf.InfoBarOpenedEventArgs!>?
 Fluence.Wpf.Controls.InfoBar.Severity.get -> Fluence.Wpf.InfoBarSeverity
 Fluence.Wpf.Controls.InfoBar.Severity.set -> void
 Fluence.Wpf.Controls.InfoBar.Title.get -> string!
@@ -461,9 +481,9 @@ Fluence.Wpf.Controls.ListView.IsItemSelectable.get -> bool
 Fluence.Wpf.Controls.ListView.IsItemSelectable.set -> void
 Fluence.Wpf.Controls.ListView.ItemAnimationsEnabled.get -> bool
 Fluence.Wpf.Controls.ListView.ItemAnimationsEnabled.set -> void
+Fluence.Wpf.Controls.ListView.ItemsLayout.get -> Fluence.Wpf.ListViewItemsLayout
+Fluence.Wpf.Controls.ListView.ItemsLayout.set -> void
 Fluence.Wpf.Controls.ListView.ListView() -> void
-Fluence.Wpf.Controls.ListView.ViewState.get -> Fluence.Wpf.ListViewState
-Fluence.Wpf.Controls.ListView.ViewState.set -> void
 Fluence.Wpf.Controls.Menu
 Fluence.Wpf.Controls.Menu.Menu() -> void
 Fluence.Wpf.Controls.MenuItem
@@ -632,8 +652,20 @@ Fluence.Wpf.Controls.RepeatButton.CornerRadius.get -> System.Windows.CornerRadiu
 Fluence.Wpf.Controls.RepeatButton.CornerRadius.set -> void
 Fluence.Wpf.Controls.RepeatButton.RepeatButton() -> void
 Fluence.Wpf.Controls.ScrollBarExtensions
+Fluence.Wpf.Controls.SelectorBar
+Fluence.Wpf.Controls.SelectorBar.SelectorBar() -> void
+Fluence.Wpf.Controls.SelectorBarItem
+Fluence.Wpf.Controls.SelectorBarItem.Icon.get -> object?
+Fluence.Wpf.Controls.SelectorBarItem.Icon.set -> void
+Fluence.Wpf.Controls.SelectorBarItem.SelectorBarItem() -> void
+Fluence.Wpf.Controls.SelectorBarItem.Text.get -> string?
+Fluence.Wpf.Controls.SelectorBarItem.Text.set -> void
 Fluence.Wpf.Controls.Separator
 Fluence.Wpf.Controls.Separator.Separator() -> void
+Fluence.Wpf.Controls.SlideNavigationPresenter
+Fluence.Wpf.Controls.SlideNavigationPresenter.SlideNavigationPresenter() -> void
+Fluence.Wpf.Controls.SlideNavigationPresenter.TransitionEffect.get -> Fluence.Wpf.SlideNavigationTransitionEffect
+Fluence.Wpf.Controls.SlideNavigationPresenter.TransitionEffect.set -> void
 Fluence.Wpf.Controls.Slider
 Fluence.Wpf.Controls.Slider.Slider() -> void
 Fluence.Wpf.Controls.SmoothScrollViewer
@@ -859,14 +891,18 @@ Fluence.Wpf.InfoBarCloseReason.Programmatic = 1 -> Fluence.Wpf.InfoBarCloseReaso
 Fluence.Wpf.InfoBarClosingEventArgs
 Fluence.Wpf.InfoBarClosingEventArgs.Cancel.get -> bool
 Fluence.Wpf.InfoBarClosingEventArgs.Cancel.set -> void
+Fluence.Wpf.InfoBarClosingEventArgs.InfoBarClosingEventArgs(Fluence.Wpf.InfoBarCloseReason reason) -> void
+Fluence.Wpf.InfoBarClosingEventArgs.Reason.get -> Fluence.Wpf.InfoBarCloseReason
+Fluence.Wpf.InfoBarOpenedEventArgs
+Fluence.Wpf.InfoBarOpenedEventArgs.InfoBarOpenedEventArgs() -> void
 Fluence.Wpf.InfoBarSeverity
 Fluence.Wpf.InfoBarSeverity.Error = 3 -> Fluence.Wpf.InfoBarSeverity
 Fluence.Wpf.InfoBarSeverity.Informational = 0 -> Fluence.Wpf.InfoBarSeverity
 Fluence.Wpf.InfoBarSeverity.Success = 1 -> Fluence.Wpf.InfoBarSeverity
 Fluence.Wpf.InfoBarSeverity.Warning = 2 -> Fluence.Wpf.InfoBarSeverity
-Fluence.Wpf.ListViewState
-Fluence.Wpf.ListViewState.Default = 0 -> Fluence.Wpf.ListViewState
-Fluence.Wpf.ListViewState.GridView = 1 -> Fluence.Wpf.ListViewState
+Fluence.Wpf.ListViewItemsLayout
+Fluence.Wpf.ListViewItemsLayout.Grid = 1 -> Fluence.Wpf.ListViewItemsLayout
+Fluence.Wpf.ListViewItemsLayout.List = 0 -> Fluence.Wpf.ListViewItemsLayout
 Fluence.Wpf.Markup.ThemeDictionary
 Fluence.Wpf.Markup.ThemeDictionary.ThemeDictionaries.get -> Fluence.Wpf.Markup.ThemeResourceDictionaryCollection!
 Fluence.Wpf.Markup.ThemeDictionary.ThemeDictionary() -> void
@@ -919,6 +955,9 @@ Fluence.Wpf.ScrollingIndicatorMode
 Fluence.Wpf.ScrollingIndicatorMode.MouseIndicator = 2 -> Fluence.Wpf.ScrollingIndicatorMode
 Fluence.Wpf.ScrollingIndicatorMode.None = 0 -> Fluence.Wpf.ScrollingIndicatorMode
 Fluence.Wpf.ScrollingIndicatorMode.TouchIndicator = 1 -> Fluence.Wpf.ScrollingIndicatorMode
+Fluence.Wpf.SlideNavigationTransitionEffect
+Fluence.Wpf.SlideNavigationTransitionEffect.FromLeft = 1 -> Fluence.Wpf.SlideNavigationTransitionEffect
+Fluence.Wpf.SlideNavigationTransitionEffect.FromRight = 2 -> Fluence.Wpf.SlideNavigationTransitionEffect
 Fluence.Wpf.SystemThemeWatcher
 Fluence.Wpf.TabViewCloseButtonOverlayMode
 Fluence.Wpf.TabViewCloseButtonOverlayMode.Always = 2 -> Fluence.Wpf.TabViewCloseButtonOverlayMode
@@ -998,6 +1037,8 @@ override Fluence.Wpf.Automation.DatePickerAutomationPeer.GetNameCore() -> string
 override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.DropDownButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.FlyoutPresenterAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.FlyoutPresenterAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.FontIconAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.FontIconAutomationPeer.IsContentElementCore() -> bool
 override Fluence.Wpf.Automation.FontIconAutomationPeer.IsControlElementCore() -> bool
@@ -1007,6 +1048,9 @@ override Fluence.Wpf.Automation.ImageAutomationPeer.GetAutomationControlTypeCore
 override Fluence.Wpf.Automation.ImageAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.ImageAutomationPeer.IsContentElementCore() -> bool
 override Fluence.Wpf.Automation.ImageAutomationPeer.IsControlElementCore() -> bool
+override Fluence.Wpf.Automation.InfoBadgeAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.InfoBadgeAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.InfoBadgeAutomationPeer.GetNameCore() -> string!
 override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.InfoBarAutomationPeer.GetNameCore() -> string!
@@ -1029,6 +1073,9 @@ override Fluence.Wpf.Automation.ProgressRingAutomationPeer.GetPattern(System.Win
 override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.RatingControlAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
+override Fluence.Wpf.Automation.SelectorBarItemAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.SelectorBarItemAutomationPeer.GetLocalizedControlTypeCore() -> string!
+override Fluence.Wpf.Automation.SelectorBarItemAutomationPeer.GetNameCore() -> string!
 override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.SplitButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
@@ -1041,6 +1088,9 @@ override Fluence.Wpf.Automation.TextBlockAutomationPeer.IsControlElementCore() -
 override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.TimePickerAutomationPeer.GetNameCore() -> string!
+override Fluence.Wpf.Automation.TitleBarAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
+override Fluence.Wpf.Automation.TitleBarAutomationPeer.GetClassNameCore() -> string!
+override Fluence.Wpf.Automation.TitleBarAutomationPeer.GetNameCore() -> string!
 override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetAutomationControlTypeCore() -> System.Windows.Automation.Peers.AutomationControlType
 override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetClassNameCore() -> string!
 override Fluence.Wpf.Automation.ToggleSplitButtonAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface patternInterface) -> object!
@@ -1108,6 +1158,7 @@ override Fluence.Wpf.Controls.FluenceWindow.OnPropertyChanged(System.Windows.Dep
 override Fluence.Wpf.Controls.FluenceWindow.OnSourceInitialized(System.EventArgs! e) -> void
 override Fluence.Wpf.Controls.FluenceWindow.OnStateChanged(System.EventArgs! e) -> void
 override Fluence.Wpf.Controls.Flyout.CreatePresenter() -> System.Windows.FrameworkElement!
+override Fluence.Wpf.Controls.FlyoutPresenter.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.FontIcon.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.FontIcon.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.FontIcon.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
@@ -1116,7 +1167,10 @@ override Fluence.Wpf.Controls.HyperlinkButton.OnCreateAutomationPeer() -> System
 override Fluence.Wpf.Controls.Image.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.Image.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.Image.OnRenderSizeChanged(System.Windows.SizeChangedInfo! sizeInfo) -> void
+override Fluence.Wpf.Controls.InfoBadge.MeasureOverride(System.Windows.Size constraint) -> System.Windows.Size
 override Fluence.Wpf.Controls.InfoBadge.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.InfoBadge.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.InfoBadge.OnRenderSizeChanged(System.Windows.SizeChangedInfo! sizeInfo) -> void
 override Fluence.Wpf.Controls.InfoBar.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.InfoBar.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.ListBox.GetContainerForItemOverride() -> System.Windows.DependencyObject!
@@ -1162,6 +1216,19 @@ override Fluence.Wpf.Controls.ProgressRing.OnRenderSizeChanged(System.Windows.Si
 override Fluence.Wpf.Controls.RatingControl.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.RatingControl.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.RatingControl.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBar.GetContainerForItemOverride() -> System.Windows.DependencyObject!
+override Fluence.Wpf.Controls.SelectorBar.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.SelectorBar.OnGotKeyboardFocus(System.Windows.Input.KeyboardFocusChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBar.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBar.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
+override Fluence.Wpf.Controls.SelectorBarItem.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.SelectorBarItem.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
+override Fluence.Wpf.Controls.SelectorBarItem.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBarItem.OnPreviewMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBarItem.OnSelected(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.SelectorBarItem.OnUnselected(System.Windows.RoutedEventArgs! e) -> void
+override Fluence.Wpf.Controls.SlideNavigationPresenter.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.SlideNavigationPresenter.OnContentChanged(object! oldContent, object! newContent) -> void
 override Fluence.Wpf.Controls.SmoothScrollViewer.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.SmoothScrollViewer.OnMouseWheel(System.Windows.Input.MouseWheelEventArgs! e) -> void
 override Fluence.Wpf.Controls.SmoothScrollViewer.OnScrollChanged(System.Windows.Controls.ScrollChangedEventArgs! e) -> void
@@ -1172,6 +1239,9 @@ override Fluence.Wpf.Controls.StackPanel.MeasureOverride(System.Windows.Size con
 override Fluence.Wpf.Controls.TabView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
 override Fluence.Wpf.Controls.TabView.IsItemItsOwnContainerOverride(object! item) -> bool
 override Fluence.Wpf.Controls.TabView.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TabView.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.TabView.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.TabView.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
 override Fluence.Wpf.Controls.TabViewItem.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.TeachingTip.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.TeachingTip.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
@@ -1183,6 +1253,7 @@ override Fluence.Wpf.Controls.TextBox.OnPropertyChanged(System.Windows.Dependenc
 override Fluence.Wpf.Controls.TimePicker.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.TimePicker.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.TitleBar.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TitleBar.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.TitleBar.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
 override Fluence.Wpf.Controls.ToggleSplitButton.OnCreateAutomationPeer() -> System.Windows.Automation.Peers.AutomationPeer!
 override Fluence.Wpf.Controls.ToggleSplitButton.OnPrimaryButtonClick(object! sender, System.Windows.RoutedEventArgs! e) -> void
@@ -1193,11 +1264,14 @@ override Fluence.Wpf.Controls.ToggleSwitch.OnIndeterminate(System.Windows.Routed
 override Fluence.Wpf.Controls.ToggleSwitch.OnUnchecked(System.Windows.RoutedEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeView.GetContainerForItemOverride() -> System.Windows.DependencyObject!
 override Fluence.Wpf.Controls.TreeView.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.TreeView.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeView.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeView.OnSelectedItemChanged(System.Windows.RoutedPropertyChangedEventArgs<object!>! e) -> void
 override Fluence.Wpf.Controls.TreeView.PrepareContainerForItemOverride(System.Windows.DependencyObject! element, object! item) -> void
 override Fluence.Wpf.Controls.TreeViewItem.GetContainerForItemOverride() -> System.Windows.DependencyObject!
 override Fluence.Wpf.Controls.TreeViewItem.IsItemItsOwnContainerOverride(object! item) -> bool
+override Fluence.Wpf.Controls.TreeViewItem.OnApplyTemplate() -> void
+override Fluence.Wpf.Controls.TreeViewItem.OnItemsChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeViewItem.OnKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeViewItem.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs! e) -> void
 override Fluence.Wpf.Controls.TreeViewItem.OnSelected(System.Windows.RoutedEventArgs! e) -> void
@@ -1205,6 +1279,8 @@ override Fluence.Wpf.TabViewTabCloseRequestedEventArgs.InvokeEventHandler(System
 static Fluence.Wpf.ApplicationAccentColorManager.AccentColorChanged -> System.EventHandler<System.EventArgs!>?
 static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccent(System.Windows.Media.Color color) -> void
 static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccent(System.Windows.Media.Color lightThemeAccent, System.Windows.Media.Color darkThemeAccent) -> void
+static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccentExact(System.Windows.Media.Color lightThemeAccent) -> void
+static Fluence.Wpf.ApplicationAccentColorManager.ApplyCustomAccentExact(System.Windows.Media.Color lightThemeAccent, System.Windows.Media.Color darkThemeAccent) -> void
 static Fluence.Wpf.ApplicationAccentColorManager.ApplySystemAccent() -> void
 static Fluence.Wpf.ApplicationAccentColorManager.IsAccentColorOnTitleBarsEnabled.get -> bool
 static Fluence.Wpf.ApplicationAccentColorManager.SystemAccentColor.get -> System.Windows.Media.Color
@@ -1232,6 +1308,7 @@ static Fluence.Wpf.Controls.FluenceWindow.DefaultIcon.get -> System.Windows.Medi
 static Fluence.Wpf.Controls.FlyoutBase.GetAttachedFlyout(System.Windows.FrameworkElement! element) -> Fluence.Wpf.Controls.FlyoutBase?
 static Fluence.Wpf.Controls.FlyoutBase.SetAttachedFlyout(System.Windows.FrameworkElement! element, Fluence.Wpf.Controls.FlyoutBase? value) -> void
 static Fluence.Wpf.Controls.FlyoutBase.ShowAttachedFlyout(System.Windows.FrameworkElement! flyoutOwner) -> void
+static Fluence.Wpf.Controls.InfoBadge.GetStyleGlyph(Fluence.Wpf.InfoBadgeStyle badgeStyle) -> string!
 static Fluence.Wpf.Controls.InfoBar.GetSeverityBrushKey(Fluence.Wpf.InfoBarSeverity severity) -> string!
 static Fluence.Wpf.Controls.InfoBar.GetSeverityGlyph(Fluence.Wpf.InfoBarSeverity severity) -> string!
 static Fluence.Wpf.Controls.ListView.GetParentIsItemSelectable(System.Windows.DependencyObject! element) -> bool
@@ -1352,6 +1429,7 @@ static readonly Fluence.Wpf.Controls.DropDownButton.FlyoutProperty -> System.Win
 static readonly Fluence.Wpf.Controls.DropDownButton.FlyoutTemplateProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.Expander.BottomCornerRadiusFilter -> System.Windows.Data.IValueConverter!
 static readonly Fluence.Wpf.Controls.Expander.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.Expander.HeaderBackgroundProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.Expander.TopCornerRadiusFilter -> System.Windows.Data.IValueConverter!
 static readonly Fluence.Wpf.Controls.FluenceWindow.CornerStyleProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.FluenceWindow.ExtendsContentIntoTitleBarProperty -> System.Windows.DependencyProperty!
@@ -1390,9 +1468,13 @@ static readonly Fluence.Wpf.Controls.Image.CornerRadiusProperty -> System.Window
 static readonly Fluence.Wpf.Controls.Image.SourceProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.Image.StretchProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBadge.BadgeStyleProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBadge.CornerRadiusProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBadge.IconSourceProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBadge.ValueProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBar.ActionButtonProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.CloseButtonCommandParameterProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.CloseButtonCommandProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.InfoBar.CloseButtonStyleProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBar.CornerRadiusProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBar.IconProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.InfoBar.IsClosableProperty -> System.Windows.DependencyProperty!
@@ -1407,8 +1489,8 @@ static readonly Fluence.Wpf.Controls.ListView.EmptyContentProperty -> System.Win
 static readonly Fluence.Wpf.Controls.ListView.HoverHighlightEnabledProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.ListView.IsItemSelectableProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.ListView.ItemAnimationsEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.ListView.ItemsLayoutProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.ListView.ParentIsItemSelectableProperty -> System.Windows.DependencyProperty!
-static readonly Fluence.Wpf.Controls.ListView.ViewStateProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.NavigationView.ContentBackgroundProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.NavigationView.ContentProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.NavigationView.FooterMenuItemsProperty -> System.Windows.DependencyProperty!
@@ -1487,6 +1569,9 @@ static readonly Fluence.Wpf.Controls.RepeatButton.AppearanceProperty -> System.W
 static readonly Fluence.Wpf.Controls.RepeatButton.CornerRadiusProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.ScrollBarExtensions.IndicatorModeProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.ScrollBarExtensions.IsIndicatorEnabledProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SelectorBarItem.IconProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SelectorBarItem.TextProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.SlideNavigationPresenter.TransitionEffectProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.SmoothScrollViewer.ScrollDurationProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.SplitButton.AppearanceProperty -> System.Windows.DependencyProperty!
 static readonly Fluence.Wpf.Controls.SplitButton.ClickEvent -> System.Windows.RoutedEvent!

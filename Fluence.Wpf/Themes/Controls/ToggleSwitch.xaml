@@ -140,21 +140,21 @@
                                 <!--  On track: normal  -->
                                 <Border
                                     x:Name="TrackOn"
-                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    Background="{DynamicResource ToggleSwitchFillOnBrush}"
                                     CornerRadius="10"
                                     Opacity="0" />
 
                                 <!--  On track: hover  -->
                                 <Border
                                     x:Name="TrackOnHover"
-                                    Background="{DynamicResource AccentFillColorSecondaryBrush}"
+                                    Background="{DynamicResource ToggleSwitchFillOnPointerOverBrush}"
                                     CornerRadius="10"
                                     Opacity="0" />
 
                                 <!--  On track: pressed  -->
                                 <Border
                                     x:Name="TrackOnPressed"
-                                    Background="{DynamicResource AccentFillColorTertiaryBrush}"
+                                    Background="{DynamicResource ToggleSwitchFillOnPressedBrush}"
                                     CornerRadius="10"
                                     Opacity="0" />
 
@@ -326,7 +326,7 @@
 
                         <!--  Checked  -->
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnBrush}" />
                             <Setter TargetName="TrackOff" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOffHover" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOffPressed" Property="Opacity" Value="0" />
@@ -345,6 +345,7 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="TrackOn" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOnHover" Property="Opacity" Value="1" />
+                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnPointerOverBrush}" />
                         </MultiTrigger>
 
                         <!--  Checked + Pressed: squash thumb  -->
@@ -356,6 +357,7 @@
                             <Setter TargetName="TrackOn" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOnHover" Property="Opacity" Value="0" />
                             <Setter TargetName="TrackOnPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnPressedBrush}" />
                         </MultiTrigger>
 
                         <!--  Off + Disabled  -->
@@ -378,9 +380,9 @@
                                 <Condition Property="IsEnabled" Value="False" />
                                 <Condition Property="IsChecked" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="TrackOn" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="TrackOn" Property="Background" Value="{DynamicResource ToggleSwitchFillOnDisabledBrush}" />
                             <Setter TargetName="TrackBase" Property="Opacity" Value="0" />
-                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+                            <Setter TargetName="SwitchThumb" Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnDisabledBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                         </MultiTrigger>
 

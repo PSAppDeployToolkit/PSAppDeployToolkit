@@ -36,11 +36,19 @@ namespace Fluence.Wpf.Theming
     /// </summary>
     internal readonly struct AccentIntent
     {
-        private AccentIntent(bool isSystem, Color customLight, Color customDark)
+        private readonly AccentPalette? _capturedLightPalette;
+        private readonly AccentPalette? _capturedDarkPalette;
+
+        private AccentIntent(bool isSystem, Color customLight, Color customDark, bool isExact, bool hasExplicitDark,
+            AccentPalette? capturedLightPalette, AccentPalette? capturedDarkPalette)
         {
             IsSystem = isSystem;
             Custom = customLight;
             CustomDark = customDark;
+            IsExact = isExact;
+            HasExplicitDark = hasExplicitDark;
+            _capturedLightPalette = capturedLightPalette;
+            _capturedDarkPalette = capturedDarkPalette;
         }
 
         /// <summary>
@@ -62,9 +70,20 @@ namespace Fluence.Wpf.Theming
         public Color CustomDark { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the supplied color is the visible primary accent.
+        /// </summary>
+        public bool IsExact { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the caller supplied an exact dark-theme color.
+        /// </summary>
+        public bool HasExplicitDark { get; }
+
+        /// <summary>
         /// Gets an <see cref="AccentIntent"/> that requests the OS accent palette.
         /// </summary>
-        public static AccentIntent System { get; } = new(isSystem: true, default, default);
+        public static AccentIntent System { get; } = new(isSystem: true, default, default, isExact: false, hasExplicitDark: false,
+            capturedLightPalette: null, capturedDarkPalette: null);
 
         /// <summary>
         /// Returns the custom seed appropriate for the given resolved theme: the dark seed on
@@ -78,12 +97,35 @@ namespace Fluence.Wpf.Theming
         }
 
         /// <summary>
+        /// Returns the OS palette captured when the matching custom seed was applied, if any.
+        /// Unlike the system intent, a custom intent does not re-read this palette on theme changes.
+        /// </summary>
+        /// <param name="resolvedTheme">The concrete theme the engine resolved for this apply.</param>
+        public AccentPalette? CapturedPaletteFor(ApplicationTheme resolvedTheme)
+        {
+            return resolvedTheme is ApplicationTheme.Dark or ApplicationTheme.HighContrast
+                ? _capturedDarkPalette
+                : _capturedLightPalette;
+        }
+
+        /// <summary>
         /// Returns an <see cref="AccentIntent"/> that pins the ramp to the given color on every theme.
         /// </summary>
-        /// <param name="c">The color to use as the base accent color for the generated ramp.</param>
+        /// <param name="c">The base accent color for the selected palette.</param>
         public static AccentIntent FromCustom(Color c)
         {
-            return new(isSystem: false, c, c);
+            return FromCustom(c, AccentResolver.CaptureCurrentSystemPalette());
+        }
+
+        /// <summary>
+        /// Creates a custom intent against a supplied system-palette snapshot. A matching base
+        /// color keeps the captured shades; an unmatched color uses the generated ramp.
+        /// </summary>
+        /// <param name="c">The caller's custom ramp seed.</param>
+        /// <param name="systemPalette">The system palette visible when the intent is created.</param>
+        internal static AccentIntent FromCustom(Color c, AccentPalette? systemPalette)
+        {
+            return CreateCustom(c, c, isExact: false, hasExplicitDark: false, systemPalette);
         }
 
         /// <summary>
@@ -95,7 +137,50 @@ namespace Fluence.Wpf.Theming
         /// <param name="dark">The ramp seed for dark and high-contrast themes.</param>
         public static AccentIntent FromCustom(Color light, Color dark)
         {
-            return new(isSystem: false, light, dark);
+            return CreateCustom(light, dark, isExact: false, hasExplicitDark: true,
+                AccentResolver.CaptureCurrentSystemPalette());
+        }
+
+        /// <summary>
+        /// Creates a deterministic custom intent without reading the current OS palette.
+        /// Design-time resources and the pre-apply default use this path.
+        /// </summary>
+        /// <param name="c">The custom ramp seed.</param>
+        internal static AccentIntent FromCustomGenerated(Color c)
+        {
+            return CreateCustom(c, c, isExact: false, hasExplicitDark: false, systemPalette: null);
+        }
+
+        /// <summary>
+        /// Returns an intent whose light-theme primary is the supplied color. The dark-theme
+        /// primary is derived from the resolved accent ramp.
+        /// </summary>
+        /// <param name="light">The exact visible primary accent on the light theme.</param>
+        public static AccentIntent FromCustomExact(Color light)
+        {
+            return CreateCustom(light, light, isExact: true, hasExplicitDark: false,
+                AccentResolver.CaptureCurrentSystemPalette());
+        }
+
+        /// <summary>
+        /// Returns an intent with exact visible primary accents for light and dark themes.
+        /// </summary>
+        /// <param name="light">The exact visible primary accent on the light theme.</param>
+        /// <param name="dark">The exact visible primary accent on the dark theme.</param>
+        public static AccentIntent FromCustomExact(Color light, Color dark)
+        {
+            return CreateCustom(light, dark, isExact: true, hasExplicitDark: true,
+                AccentResolver.CaptureCurrentSystemPalette());
+        }
+
+        private static AccentIntent CreateCustom(Color light, Color dark, bool isExact, bool hasExplicitDark,
+            AccentPalette? systemPalette)
+        {
+            AccentPalette? lightPalette = systemPalette is { } palette && palette.Accent == light ? palette : null;
+            AccentPalette? darkPalette = systemPalette is { } darkCandidate && darkCandidate.Accent == dark
+                ? darkCandidate
+                : null;
+            return new(isSystem: false, light, dark, isExact, hasExplicitDark, lightPalette, darkPalette);
         }
     }
 }

@@ -458,9 +458,17 @@ namespace Fluence.Wpf.Tests.Control
 
                     Border mainBorder = Assert.IsType<Border>(box.Template.FindName("MainBorder", box));
                     Button revealButton = FindRevealButton(box);
+                    FrameworkElement contentHost = Assert.IsType<FrameworkElement>(box.Template.FindName("PART_ContentHost", box), exactMatch: false);
+                    Grid editorColumn = Assert.IsType<Grid>(VisualTreeHelper.GetParent(contentHost));
+                    Grid contentGrid = Assert.IsType<Grid>(VisualTreeHelper.GetParent(editorColumn));
+                    double dpi = VisualTreeHelper.GetDpi(box).DpiScaleY;
+                    double roundedTop = Math.Round(box.BorderThickness.Top * dpi, MidpointRounding.ToEven) / dpi;
+                    double roundedBottom = Math.Round(box.BorderThickness.Bottom * dpi, MidpointRounding.ToEven) / dpi;
+                    double expectedHeight = contentGrid.ActualHeight + roundedTop + roundedBottom;
 
                     Assert.Equal(new Thickness(10, 5, 6, 6), box.Padding);
                     Assert.Equal(32.0, box.MinHeight);
+                    Assert.Equal(expectedHeight, mainBorder.ActualHeight, 0.01);
                     Assert.Equal(new CornerRadius(4), mainBorder.CornerRadius);
                     _ = Assert.IsType<LinearGradientBrush>(mainBorder.BorderBrush, exactMatch: false);
                     Assert.Equal(30.0, revealButton.Width, 0.1);
@@ -473,7 +481,7 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
-        public Task PasswordBox_FocusState_ShowsAccentLineUnderneathAsync()
+        public Task PasswordBox_FocusState_UsesRoundedFocusedBorderWithoutMovingSecureEditorAsync()
         {
             return WpfTestSta.RunOnStaAsync(static () =>
             {
@@ -481,8 +489,25 @@ namespace Fluence.Wpf.Tests.Control
 
                 try
                 {
-                    PasswordBox box = ShowPasswordBox(window, "Focused", width: 260);
-                    Border accentLine = Assert.IsType<Border>(box.Template.FindName("FocusAccentLine", box));
+                    PasswordBox box = new() { Width = 260, Password = "Focused", BorderThickness = new Thickness(3) };
+                    Controls.PasswordBoxExtensions.SetCornerRadius(box, new CornerRadius(12));
+                    Button other = new() { Content = "Other" };
+                    window.Content = new StackPanel { Children = { other, box } };
+                    window.Width = 320;
+                    window.Height = 140;
+                    window.Show();
+                    _ = other.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = box.ApplyTemplate();
+                    window.UpdateLayout();
+                    Border mainBorder = Assert.IsType<Border>(box.Template.FindName("MainBorder", box));
+                    FrameworkElement contentHost = Assert.IsType<FrameworkElement>(box.Template.FindName("PART_ContentHost", box), exactMatch: false);
+                    Assert.False(box.IsKeyboardFocusWithin);
+                    Point borderPoint = mainBorder.TransformToAncestor(window).Transform(new Point(0.5, mainBorder.ActualHeight / 2));
+                    Assert.Same(mainBorder, window.InputHitTest(borderPoint));
+                    Point editorBefore = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Size editorSizeBefore = new(contentHost.ActualWidth, contentHost.ActualHeight);
+                    double heightBefore = box.ActualHeight;
 
                     _ = box.Focus();
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -490,8 +515,16 @@ namespace Fluence.Wpf.Tests.Control
 
                     Assert.True(box.IsKeyboardFocusWithin,
                         "Focus must land on the password box itself, not on an inner field.");
-                    Assert.Equal(1.0, accentLine.Opacity);
-                    Assert.Equal(2.0, accentLine.Height);
+                    Assert.Equal(new CornerRadius(12), mainBorder.CornerRadius);
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                    Assert.Null(box.Template.FindName("FocusAccentLine", box));
+                    Assert.Equal(heightBefore, box.ActualHeight, 0.01);
+                    Point editorAfter = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Assert.Equal(editorBefore.X, editorAfter.X, 0.01);
+                    Assert.Equal(editorBefore.Y, editorAfter.Y, 0.01);
+                    Assert.Equal(editorSizeBefore.Width, contentHost.ActualWidth, 0.01);
+                    Assert.Equal(editorSizeBefore.Height, contentHost.ActualHeight, 0.01);
                 }
                 finally
                 {

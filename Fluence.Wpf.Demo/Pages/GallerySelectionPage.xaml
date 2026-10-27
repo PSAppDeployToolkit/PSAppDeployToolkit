@@ -137,8 +137,18 @@
                                     x:Name="WorkToggleStateText"
                                     Margin="{DynamicResource DemoInlineControlGapMargin}"
                                     VerticalAlignment="Center"
-                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="On" />
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Off" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsChecked, ElementName=WorkToggleSwitch}" Value="True">
+                                                    <Setter Property="Text" Value="On" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                                 <fluence:ProgressRing
                                     x:Name="WorkToggleProgressRing"
                                     Width="36"
@@ -213,6 +223,39 @@
                             Text="Selected: none" />
                     </ContentControl>
                     <local:DemoSampleControl SampleDescription="Use a combo box when the choices are useful but do not need to stay visible." />
+
+                    <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                        <fluence:StackPanel Spacing="12">
+                            <fluence:ComboBox
+                                x:Name="ItemsSourceDemoCombo"
+                                Width="480"
+                                HorizontalAlignment="Left"
+                                PlaceholderText="Choose from a changing list"
+                                SelectionChanged="ItemsSourceDemoCombo_SelectionChanged" />
+                            <fluence:Button
+                                x:Name="AddComboBoxOptionButton"
+                                HorizontalAlignment="Left"
+                                Click="AddComboBoxOptionButton_Click"
+                                Content="Add option" />
+                            <fluence:ComboBox
+                                x:Name="EditableDemoCombo"
+                                Width="480"
+                                HorizontalAlignment="Left"
+                                DropDownClosed="EditableDemoCombo_DropDownClosed"
+                                IsEditable="True"
+                                KeyDown="EditableDemoCombo_KeyDown"
+                                LostKeyboardFocus="EditableDemoCombo_LostKeyboardFocus"
+                                PlaceholderText="Type or select a value"
+                                SelectionChanged="EditableDemoCombo_SelectionChanged" />
+                        </fluence:StackPanel>
+                    </ContentControl>
+                    <ContentControl x:Name="DemoSampleSlot06OutputContentHost" Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock x:Name="ItemsSourceComboStateLabel" Style="{StaticResource StateLabelStyle}" Text="SelectedItem: none" />
+                            <TextBlock x:Name="EditableComboStateLabel" Style="{StaticResource StateLabelStyle}" Text="Text: none; SelectedItem: none" />
+                        </StackPanel>
+                    </ContentControl>
+                    <local:DemoSampleControl SampleDescription="Bind to a changing list, or allow typing and commit the editable text." />
                 </StackPanel>
             </fluence:SmoothScrollViewer>
         </Grid>

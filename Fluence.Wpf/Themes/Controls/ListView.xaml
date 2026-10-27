@@ -150,7 +150,7 @@
                                 <Condition Property="IsSelected" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="SelectedOverlay" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter TargetName="SelectionIndicator" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="SelectionIndicator" Property="Background" Value="{DynamicResource SystemControlDisabledAccentBrush}" />
                             <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>

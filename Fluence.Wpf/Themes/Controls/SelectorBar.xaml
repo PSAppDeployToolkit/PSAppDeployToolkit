@@ -24,7 +24,7 @@
         item paints no plate at all and only the label colour and the pill move.
         The pill is NavigationViewSelectionIndicatorForeground, the library's shared selection
         accent (WinUI's SelectorBarItemPillFill is AccentFillColorDefaultBrush, the same colour in
-        Light and Dark), and AccentFillColorDisabledBrush while disabled
+        Light and Dark), and SystemControlDisabledAccentBrush while disabled
         (SelectorBarItemDisabledPillFill). The shared key is what carries a high contrast override
         to the live SystemColors.HighlightColor, matching WinUI's SystemColorHighlightColor
         mapping; AccentFillColorDefaultBrush has no such override.
@@ -139,7 +139,7 @@
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                            <Setter TargetName="PART_SelectionVisual" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="PART_SelectionVisual" Property="Fill" Value="{DynamicResource SystemControlDisabledAccentBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

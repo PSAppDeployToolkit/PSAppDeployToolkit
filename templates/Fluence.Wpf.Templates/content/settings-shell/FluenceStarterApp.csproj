@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Fluence.Wpf" Version="0.9.4-starters-dev.gb3879f16.r8" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets/SettingsIcons/*.png" />
+    <Content Include="Assets/SettingsIcons/ARTWORK-NOTICE.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/SettingsIcons/MICROSOFT-FLUENT-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

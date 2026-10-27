@@ -1,8 +1,38 @@
 ﻿<#
+Copyright (c) 2026, Dan Cunningham. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#>
+
+
+<#
 .SYNOPSIS
     Packages the Fluence.Wpf.PowerShell module as a ZIP and a PowerShell Gallery .nupkg.
 .DESCRIPTION
-    Invokes Build-Module.ps1 to ensure assemblies are staged, then produces two
+    Builds current library source and stages assemblies through Build-Module.ps1, then produces two
     distributable artifacts in the output directory:
 
       - Fluence.Wpf.PowerShell-<version>.zip   (drop-in for PSModulePath)
@@ -11,11 +41,18 @@
     The .nupkg is produced by Publish-Module targeting a temporary local file-based
     PSRepository. Nothing is published to PSGallery. A compatible NuGet provider must already be
     available; this script does not bootstrap one. Install the build prerequisites separately.
+
+    Both artifacts are staged before replacing final files. Handled promotion failures attempt
+    to restore their prior contents and presence. Failed restoration retains backup paths in
+    the error message. This recovery does not make the two-file update atomic across a crash.
 .PARAMETER Configuration
     MSBuild configuration passed to Build-Module.ps1. Defaults to 'Release'.
 .PARAMETER OutputPath
     Directory that receives the zip and nupkg. Defaults to
     <repo>\Fluence.Wpf.PowerShell.Module\artifacts.
+.PARAMETER UseExistingBuild
+    Reuses existing library outputs instead of compiling. The caller must ensure they came from
+    the intended source revision, for example verified artifacts from the same CI run.
 .NOTES
     Run from any location. Does not require a host application.
     Requires PowerShell 5.1 or 7+.
@@ -30,7 +67,10 @@ param
     [string]$Configuration = 'Release',
 
     [Parameter()]
-    [string]$OutputPath = ''
+    [string]$OutputPath = '',
+
+    [Parameter()]
+    [switch]$UseExistingBuild
 )
 
 $ErrorActionPreference = 'Stop'
@@ -59,14 +99,21 @@ $buildScript = Join-Path $PSScriptRoot 'Build-Module.ps1'
 Write-Output "Invoking Build-Module.ps1 -Configuration $Configuration ..."
 # Build-Module.ps1 throws on any failure (and $ErrorActionPreference is Stop), so a failed staging
 # never reaches the packaging below; $LASTEXITCODE is not meaningful after a script call.
-& $buildScript -Configuration $Configuration
+if ($UseExistingBuild)
+{
+    & $buildScript -Configuration $Configuration
+}
+else
+{
+    & $buildScript -Configuration $Configuration -Build
+}
 
 # 2. Read the module version from the manifest
 $manifest = Import-PowerShellDataFile -Path $psd1
 $version  = $manifest.ModuleVersion
 
 # A prerelease lives in PSData.Prerelease, not in ModuleVersion, so the manifest version alone
-# would name the artifacts 0.9.0 while Publish-Module stamps the package 0.9.0-pre. Fold it in
+# would omit the prerelease suffix while Publish-Module includes it. Fold it in
 # so the ZIP, the NUPKG and the package metadata all carry the same string.
 $prerelease = $manifest.PrivateData.PSData.Prerelease
 if (-not [string]::IsNullOrWhiteSpace($prerelease))
@@ -76,72 +123,167 @@ if (-not [string]::IsNullOrWhiteSpace($prerelease))
 
 Write-Output "Module version: $version"
 
-# 3. Ensure the output directory exists
-New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
-
-# 4. Produce ZIP
-# Compress-Archive with the module folder path includes the folder as the top-level
-# entry, giving the required Fluence.Wpf.PowerShell\ root in the archive.
-$zipName = "Fluence.Wpf.PowerShell-$version.zip"
-$zipPath = Join-Path $OutputPath $zipName
-Write-Output "Creating ZIP: $zipPath ..."
-if (Test-Path $zipPath)
+# Promote only after both artifacts and all prior-file backups exist.
+function Publish-FluenceArtifactPair
 {
-    [System.IO.File]::Delete($zipPath)
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Private packaging routine; writes only the explicitly selected output artifact pair.')]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [object[]]$Artifacts,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable]$State
+    )
+
+    foreach ($artifact in $Artifacts)
+    {
+        if ($artifact.Existed)
+        {
+            Copy-Item -LiteralPath $artifact.Final -Destination $artifact.Backup -ErrorAction Stop
+        }
+    }
+
+    try
+    {
+        foreach ($artifact in $Artifacts)
+        {
+            Move-Item -LiteralPath $artifact.Staged -Destination $artifact.Final -Force -ErrorAction Stop
+        }
+    }
+    catch
+    {
+        $promotionFailure = $_
+        $rollbackFailures = [System.Collections.Generic.List[string]]::new()
+        foreach ($artifact in $Artifacts)
+        {
+            try
+            {
+                if ($artifact.Existed)
+                {
+                    Copy-Item -LiteralPath $artifact.Backup -Destination $artifact.Final -Force -ErrorAction Stop
+                }
+                elseif (Test-Path -LiteralPath $artifact.Final)
+                {
+                    Remove-Item -LiteralPath $artifact.Final -Force -ErrorAction Stop
+                }
+            }
+            catch
+            {
+                $rollbackFailures.Add(('{0}: {1}; backup: {2}' -f $artifact.Final, $_.Exception.Message, $artifact.Backup))
+            }
+        }
+        if ($rollbackFailures.Count -gt 0)
+        {
+            $State.PreserveStaging = $true
+            throw ('Artifact promotion failed: {0}. Rollback failed; retain recoverable backups at: {1}' -f
+                $promotionFailure.Exception.Message, ($rollbackFailures -join '; '))
+        }
+        throw $promotionFailure
+    }
 }
-Compress-Archive -Path $modSrc -DestinationPath $zipPath
-Write-Output "ZIP produced: $zipPath"
 
-# 5. Produce NUPKG via Publish-Module targeting a temporary local PSRepository.
-#    A unique repository name avoids collisions in concurrent builds.
-$repoName    = "FluenceTempRepo_$([System.Guid]::NewGuid().ToString('N').Substring(0,8))"
-$repoDir     = Join-Path ([System.IO.Path]::GetTempPath()) $repoName
-$nupkgName   = "Fluence.Wpf.PowerShell.$version.nupkg"
-$nupkgPath   = Join-Path $OutputPath $nupkgName
-
-New-Item -ItemType Directory -Path $repoDir -Force | Out-Null
-
-Write-Output "Creating NUPKG via Publish-Module to temp repository: $repoDir ..."
-
-Register-PSRepository -Name $repoName -SourceLocation $repoDir -PublishLocation $repoDir -InstallationPolicy Trusted
-
+# All temporary data and backups live on the output volume in one run-owned directory.
+$OutputPath = [System.IO.Path]::GetFullPath($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath))
+$outputPrefix = $OutputPath.TrimEnd([char[]]'\/') + [System.IO.Path]::DirectorySeparatorChar
+$runId = [System.Guid]::NewGuid().ToString('N')
+$stageDir = Join-Path $OutputPath ('.fluence-package-' + $runId)
+$repoDir = Join-Path $stageDir 'repository'
+$repoName = 'FluenceTempRepo_' + $runId
+$zipName = "Fluence.Wpf.PowerShell-$version.zip"
+$nupkgName = "Fluence.Wpf.PowerShell.$version.nupkg"
+$zipPath = [System.IO.Path]::GetFullPath((Join-Path $OutputPath $zipName))
+$nupkgPath = [System.IO.Path]::GetFullPath((Join-Path $OutputPath $nupkgName))
+if (Test-Path -LiteralPath $stageDir)
+{
+    throw "Run-owned package staging path already exists: $stageDir"
+}
+foreach ($target in @($zipPath, $nupkgPath, $stageDir))
+{
+    $parent = [System.IO.Path]::GetDirectoryName($target).TrimEnd([char[]]'\/')
+    if (-not $target.StartsWith($outputPrefix, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not [string]::Equals($parent, $OutputPath.TrimEnd([char[]]'\/'), [System.StringComparison]::OrdinalIgnoreCase))
+    {
+        throw "Artifact path must stay directly inside '$OutputPath': $target"
+    }
+    if ((Test-Path -LiteralPath $target) -and
+        ((Get-Item -LiteralPath $target -Force).Attributes -band [System.IO.FileAttributes]::ReparsePoint))
+    {
+        throw "Refusing to replace or clean a reparse point: $target"
+    }
+    if ([System.IO.Directory]::Exists($target))
+    {
+        throw "Artifact file path is an existing directory: $target"
+    }
+}
+$registered = $false
+$promotionState = @{ PreserveStaging = $false }
 try
 {
+    $null = [System.IO.Directory]::CreateDirectory($repoDir)
+    $stagedZip = Join-Path $stageDir $zipName
+    $stagedNupkg = Join-Path $stageDir $nupkgName
+    Compress-Archive -LiteralPath $modSrc -DestinationPath $stagedZip
+
+    Register-PSRepository -Name $repoName -SourceLocation $repoDir -PublishLocation $repoDir -InstallationPolicy Trusted
+    $registered = $true
     Publish-Module -Path $modSrc -Repository $repoName -NuGetApiKey 'local' -Force
-
-    # Find the nupkg Publish-Module deposited in the temp repo dir
-    $produced = Get-ChildItem -Path $repoDir -Filter '*.nupkg' | Select-Object -First 1
-    if ($null -eq $produced)
+    $produced = @(Get-ChildItem -LiteralPath $repoDir -Filter '*.nupkg' -File)
+    if ($produced.Count -ne 1 -or $produced[0].Name -ine $nupkgName)
     {
-        throw "Publish-Module completed but no .nupkg was found in: $repoDir"
+        throw "Publish-Module must produce exactly '$nupkgName' in: $repoDir"
     }
-
-    if (Test-Path $nupkgPath)
+    Copy-Item -LiteralPath $produced[0].FullName -Destination $stagedNupkg -ErrorAction Stop
+    foreach ($artifact in @($stagedZip, $stagedNupkg))
     {
-        [System.IO.File]::Delete($nupkgPath)
+        if (-not [System.IO.File]::Exists($artifact) -or (Get-Item -LiteralPath $artifact).Length -le 0)
+        {
+            throw "Staged artifact is missing or empty: $artifact"
+        }
     }
-    Copy-Item -LiteralPath $produced.FullName -Destination $nupkgPath -Force
-    Write-Output "NUPKG produced: $nupkgPath"
+    $artifacts = @(
+        @{ Staged = $stagedZip; Final = $zipPath; Backup = (Join-Path $stageDir 'previous-zip'); Existed = [System.IO.File]::Exists($zipPath) }
+        @{ Staged = $stagedNupkg; Final = $nupkgPath; Backup = (Join-Path $stageDir 'previous-nupkg'); Existed = [System.IO.File]::Exists($nupkgPath) }
+    )
+    Publish-FluenceArtifactPair -Artifacts $artifacts -State $promotionState
 }
 finally
 {
-    Unregister-PSRepository -Name $repoName -ErrorAction SilentlyContinue
-    if (Test-Path $repoDir)
+    try
     {
-        $tempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
-        $cleanupPath = [System.IO.Path]::GetFullPath($repoDir)
-        if (-not $cleanupPath.StartsWith($tempRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
-            ((Get-Item -LiteralPath $cleanupPath).Attributes -band [System.IO.FileAttributes]::ReparsePoint))
+        if ($registered)
         {
-            throw "Refusing to delete a package directory outside '$tempRoot' or through a reparse point: $cleanupPath"
+            Unregister-PSRepository -Name $repoName -ErrorAction SilentlyContinue
         }
-        [System.IO.Directory]::Delete($cleanupPath, $true)
+    }
+    finally
+    {
+        if ((Test-Path -LiteralPath $stageDir) -and -not $promotionState.PreserveStaging)
+        {
+            $cleanupPath = [System.IO.Path]::GetFullPath($stageDir)
+            if (-not $cleanupPath.StartsWith($outputPrefix, [System.StringComparison]::OrdinalIgnoreCase) -or
+                -not [string]::Equals([System.IO.Path]::GetDirectoryName($cleanupPath).TrimEnd([char[]]'\/'),
+                    $OutputPath.TrimEnd([char[]]'\/'), [System.StringComparison]::OrdinalIgnoreCase))
+            {
+                throw "Refusing to clean a package directory outside '$OutputPath': $cleanupPath"
+            }
+            $cleanupEntries = @(Get-Item -LiteralPath $cleanupPath -Force)
+            $cleanupEntries += @(Get-ChildItem -LiteralPath $cleanupPath -Recurse -Force)
+            $reparsePoints = $cleanupEntries |
+                Where-Object { $_.Attributes -band [System.IO.FileAttributes]::ReparsePoint }
+            if (@($reparsePoints).Count -gt 0)
+            {
+                throw "Refusing to clean a package directory containing a reparse point: $cleanupPath"
+            }
+            [System.IO.Directory]::Delete($cleanupPath, $true)
+        }
     }
 }
 
-# 6. Report produced artifacts
-$zipInfo   = Get-Item $zipPath
-$nupkgInfo = Get-Item $nupkgPath
+$zipInfo = Get-Item -LiteralPath $zipPath
+$nupkgInfo = Get-Item -LiteralPath $nupkgPath
 Write-Output 'Artifacts:'
 Write-Output "  $($zipInfo.Name)  ($([int]($zipInfo.Length / 1KB)) KB)"
 Write-Output "  $($nupkgInfo.Name)  ($([int]($nupkgInfo.Length / 1KB)) KB)"

@@ -29,7 +29,6 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Shell;
 using Fluence.Wpf.Controls;
 using Fluence.Wpf.Helpers;
 using Windows.Win32;
@@ -42,7 +41,7 @@ namespace Fluence.Wpf.Tests.Windowing
     // [InternalsVisibleTo("Fluence.Wpf.Tests")]). WindowPolicy is pure logic: it maps
     // the requested WindowBackdropType + OS capabilities to an effective backdrop, a DWM plan,
     // and a template frame plan. These tests pin those mappings so a future OS-caps
-    // refactor cannot silently regress the downgrade behaviour PSADT relies on for
+    // refactor cannot silently regress the downgrade behaviour WPF hosts rely on for
     // Windows 10 1809+ baseline support.
     public class WindowPolicyTests
     {
@@ -810,53 +809,6 @@ namespace Fluence.Wpf.Tests.Windowing
 
         #endregion GetCornerPreference - enum → DWMWCP_* mapping
 
-        #region CreateWindowChrome - canonical FluenceWindow chrome contract
-
-        [Fact]
-        public void CreateWindowChrome_CaptionHeight_IsZero()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.Equal(0d, chrome.CaptionHeight);
-        }
-
-        [Fact]
-        public void CreateWindowChrome_GlassFrameThickness_IsMinusOneForShadow()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.Equal(new Thickness(-1), chrome.GlassFrameThickness);
-        }
-
-        [Fact]
-        public void CreateWindowChrome_ResizeBorderThickness_Is4()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.Equal(new Thickness(4), chrome.ResizeBorderThickness);
-        }
-
-        [Fact]
-        public void CreateWindowChrome_DisablesAeroCaptionButtons()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.False(chrome.UseAeroCaptionButtons,
-                "Fluence renders its own caption buttons; the native WPF Aero caption must stay off.");
-        }
-
-        [Fact]
-        public void CreateWindowChrome_NonClientFrameEdges_IsNone()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.Equal(NonClientFrameEdges.None, chrome.NonClientFrameEdges);
-        }
-
-        [Fact]
-        public void CreateWindowChrome_CornerRadius_IsZero()
-        {
-            WindowChrome chrome = WindowPolicy.CreateWindowChrome();
-            Assert.Equal(new CornerRadius(0), chrome.CornerRadius);
-        }
-
-        #endregion CreateWindowChrome - canonical FluenceWindow chrome contract
-
         #region GetResizeBorderThickness - maximised / non-resize matrix
 
         [Fact]
@@ -932,6 +884,20 @@ namespace Fluence.Wpf.Tests.Windowing
                 capabilities: Caps(),
                 accentColor: Colors.Red);
 
+            Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
+        }
+
+        [Fact]
+        public void BuildFramePlan_HighContrast_SuppressesAccentBorder()
+        {
+            FramePlan plan = WindowPolicy.BuildFramePlan(
+                isActive: true,
+                isAccentBorderEnabled: true,
+                capabilities: Caps(borderColor: true),
+                accentColor: Colors.Blue,
+                isHighContrast: true);
+
+            Assert.Equal("SurfaceStrokeColorDefaultBrush", plan.TemplateBorderBrushResourceKey, StringComparer.Ordinal);
             Assert.Equal(PInvoke.DWMWA_COLOR_DEFAULT, plan.DwmBorderColor);
         }
 
@@ -1188,7 +1154,7 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         [Fact]
-        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Tabbed_Light_CanonicalPresent_ReturnsCanonical()
+        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Tabbed_LightAndDark_CanonicalPresent_ReturnsCanonical()
         {
             Color? result = WindowPolicy.ResolveContentLayerPreBlend(
                 WindowBackdropType.Tabbed,
@@ -1199,10 +1165,20 @@ namespace Fluence.Wpf.Tests.Windowing
                 LightSolidBase);
 
             Assert.Equal(LightCanonical, result);
+
+            Color? darkResult = WindowPolicy.ResolveContentLayerPreBlend(
+                WindowBackdropType.Tabbed,
+                ApplicationTheme.Dark,
+                new DisplayColorDepth(10, advancedColorEnabled: false),
+                DarkCanonical,
+                DarkLayerFill,
+                DarkSolidBase);
+
+            Assert.Equal(DarkCanonical, darkResult);
         }
 
         [Fact]
-        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalPresent_ReturnsCanonical()
+        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalPresent_ReturnsNull()
         {
             Color? result = WindowPolicy.ResolveContentLayerPreBlend(
                 WindowBackdropType.Mica,
@@ -1212,17 +1188,12 @@ namespace Fluence.Wpf.Tests.Windowing
                 DarkLayerFill,
                 DarkSolidBase);
 
-            Assert.Equal(DarkCanonical, result);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalNull_ReturnsComputedFallback()
+        public void ResolveContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_Dark_CanonicalNull_ReturnsNull()
         {
-            // round(0.298039 * 0x3A + 0.701961 * 0x20) = round(39.749) = 40 = 0x28, per channel
-            // (R=G=B for both Dark tokens), MidpointRounding.AwayFromZero. This deliberately does
-            // not equal DarkCanonical (#FF2C2C2C): the fallback is a reasonable approximation, not a
-            // reproduction, of the canonical WinUI value, which is why the canonical key is
-            // authoritative whenever it resolves.
             Color? result = WindowPolicy.ResolveContentLayerPreBlend(
                 WindowBackdropType.Mica,
                 ApplicationTheme.Dark,
@@ -1231,15 +1202,19 @@ namespace Fluence.Wpf.Tests.Windowing
                 DarkLayerFill,
                 DarkSolidBase);
 
-            Assert.Equal(Color.FromArgb(0xFF, 0x28, 0x28, 0x28), result);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void ShouldApplyContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_ReturnsTrue()
+        public void ShouldApplyContentLayerPreBlend_Bpc10AdvancedColorOff_Mica_LightTrueDarkFalse()
         {
             Assert.True(WindowPolicy.ShouldApplyContentLayerPreBlend(
                 WindowBackdropType.Mica,
                 ApplicationTheme.Light,
+                new DisplayColorDepth(10, advancedColorEnabled: false)));
+            Assert.False(WindowPolicy.ShouldApplyContentLayerPreBlend(
+                WindowBackdropType.Mica,
+                ApplicationTheme.Dark,
                 new DisplayColorDepth(10, advancedColorEnabled: false)));
         }
 

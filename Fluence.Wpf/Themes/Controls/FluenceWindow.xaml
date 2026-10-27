@@ -155,7 +155,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid Margin="{TemplateBinding MarginMaximized}">
+                        <Grid x:Name="PART_ThemeTransitionRoot" Margin="{TemplateBinding MarginMaximized}">
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="TitleBarRow" Height="Auto" />
                                 <RowDefinition Height="*" />
@@ -216,15 +216,14 @@
                                 <Grid
                                     x:Name="CaptionButtonPanel"
                                     Grid.Column="3"
-                                    Width="138"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Stretch"
                                     Panel.ZIndex="2"
                                     WindowChrome.IsHitTestVisibleInChrome="True">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="46" />
-                                        <ColumnDefinition Width="46" />
-                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <Button
                                         x:Name="PART_MinimizeButton"
@@ -303,6 +302,13 @@
                                 Grid.Row="0"
                                 Grid.RowSpan="2"
                                 Panel.ZIndex="10" />
+                            <!--  A snapshot of the previous WPF surface fades out after a theme change.  -->
+                            <Grid
+                                x:Name="PART_ThemeTransitionOverlayHost"
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Panel.ZIndex="11"
+                                IsHitTestVisible="False" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -330,7 +336,7 @@
 
                         <DataTrigger Binding="{Binding TitleBar, RelativeSource={RelativeSource Self}, Converter={x:Static controls:FluenceWindow.IsNotNullConverter}}" Value="True">
                             <Setter TargetName="TitleBarContent" Property="Grid.Column" Value="0" />
-                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="4" />
+                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="3" />
                             <Setter TargetName="WindowIcon" Property="Visibility" Value="Collapsed" />
                             <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
@@ -350,7 +356,7 @@
                         -->
                         <Trigger Property="ExtendsContentIntoTitleBar" Value="True">
                             <Setter TargetName="TitleBarContent" Property="Grid.Column" Value="0" />
-                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="4" />
+                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="3" />
                             <Setter TargetName="ContentArea" Property="Grid.Row" Value="0" />
                             <Setter TargetName="ContentArea" Property="Grid.RowSpan" Value="2" />
                             <Setter TargetName="WindowIcon" Property="Visibility" Value="Collapsed" />

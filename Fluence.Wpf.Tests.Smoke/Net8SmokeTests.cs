@@ -64,7 +64,7 @@ namespace Fluence.Wpf.Tests.Smoke
         }
 
         [Fact]
-        public Task Accent_AppliesACustomRampAsync()
+        public Task Accent_AppliesCalculatedAndExactAccentsAsync()
         {
             return RunOnStaAsync(static () =>
             {
@@ -74,6 +74,17 @@ namespace Fluence.Wpf.Tests.Smoke
                 object? accent = Application.Current.TryFindResource("AccentFillColorDefaultBrush");
                 SolidColorBrush resolved = Assert.IsType<SolidColorBrush>(accent, exactMatch: false);
                 Assert.NotEqual(default, resolved.Color);
+
+                Color exactLight = Color.FromRgb(0x87, 0xAB, 0xC8);
+                ApplicationAccentColorManager.ApplyCustomAccent(exactLight, exact: true);
+                Assert.Equal(exactLight, Assert.IsType<Color>(Application.Current.TryFindResource("AccentFillColorDefault")));
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorLight2,
+                    Assert.IsType<Color>(Application.Current.TryFindResource("AccentFillColorDefault")));
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light);
+                Assert.Equal(exactLight, Assert.IsType<Color>(Application.Current.TryFindResource("AccentFillColorDefault")));
 
                 ApplicationAccentColorManager.ApplySystemAccent();
             });

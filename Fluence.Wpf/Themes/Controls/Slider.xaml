@@ -29,7 +29,7 @@
                             Height="12"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                            Fill="{DynamicResource SliderThumbBackgroundBrush}"
                             RenderTransformOrigin="0.5,0.5">
                             <Ellipse.RenderTransform>
                                 <ScaleTransform x:Name="ThumbScale" ScaleX="0.86" ScaleY="0.86" />
@@ -39,7 +39,7 @@
                     <ControlTemplate.Triggers>
                         <!--  WinUI canonical thumb inner-dot scale: rest 0.86, hover 1.167, pressed 0.71, disabled 1.167, all on ControlFastOutSlowIn (0,0,0,1). The duration is the one the target state calls for, as WinUI's own states do (Slider_themeresources.xaml:206-251): Normal and Disabled take ControlFastAnimationDuration (167 ms), PointerOver and Pressed take ControlNormalAnimationDuration (250 ms).  -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource SliderThumbBackgroundPointerOverBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -78,7 +78,7 @@
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource SliderThumbBackgroundPressedBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -117,7 +117,7 @@
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="ThumbInnerDot" Property="Fill" Value="{DynamicResource SliderThumbBackgroundDisabledBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -210,7 +210,7 @@
         <!--  SliderTrackFill (Slider_themeresources.xaml:20): the unfilled track background, fixed across rest/hover/pressed.  -->
         <Setter Property="Background" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
-        <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFillBrush}" />
         <Setter Property="MinHeight" Value="40" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Padding" Value="0" />
@@ -353,15 +353,15 @@
                             (DecreaseButton) reacts, per SliderTrackValueFillPointerOver/Pressed (:25-26).
                         -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOverBrush}" />
                         </Trigger>
                         <Trigger SourceName="Thumb" Property="IsDragging" Value="True">
-                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource SliderTrackValueFillPressedBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
-                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource SliderTrackValueFillDisabledBrush}" />
                             <Setter TargetName="TopTick" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
                             <Setter TargetName="BottomTick" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
                         </Trigger>

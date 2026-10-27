@@ -336,7 +336,7 @@ namespace Fluence.Wpf.Controls
                 }
                 else if (filled)
                 {
-                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "AccentFillColorDefaultBrush");
+                    star.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "SystemControlHighlightAccentBrush");
                 }
                 else
                 {

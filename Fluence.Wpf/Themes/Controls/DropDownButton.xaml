@@ -128,10 +128,10 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Appearance" Value="Accent">
-                            <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundBrush}" />
                             <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
-                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundBrush}" />
+                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource AccentButtonForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
@@ -144,22 +144,22 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Appearance" Value="Accent" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
-                            <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentButtonBackgroundPointerOverBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPointerOverBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
-                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundBrush}" />
+                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource AccentButtonForegroundBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsPressed" Value="True" />
                                 <Condition Property="Appearance" Value="Accent" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
-                            <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentButtonBackgroundPressedBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPressedBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
-                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundPressedBrush}" />
+                            <Setter TargetName="Chevron" Property="Foreground" Value="{DynamicResource AccentButtonForegroundPressedBrush}" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
@@ -173,10 +173,10 @@
                                 <Condition Property="IsEnabled" Value="False" />
                                 <Condition Property="Appearance" Value="Accent" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="RestFill" Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabledBrush}" />
                             <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
                             <Setter TargetName="AccentFillBackdrop" Property="Opacity" Value="0" />
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabledBrush}" />
                             <Setter TargetName="Chevron" Property="Opacity" Value="0.4" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
@@ -187,9 +187,9 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Style.Triggers>
             <Trigger Property="Appearance" Value="Accent">
-                <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
-                <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>

@@ -1,93 +1,63 @@
-﻿# Result objects
+﻿# PowerShell values and results
 
-The objects the cmdlets return. All are `PSCustomObject` instances tagged with a `PSTypeName`; none is a .NET class.
+The module uses `PSCustomObject` values with a `PSTypeName` for its specifications and structured results. Use their named properties in scripts. The [input type table](input-types.md) defines each prompt value type.
 
 ## Fluence.DialogResult
 
-Returned by `Show-FluenceDialog`. The default console view shows only `Cancelled` and `TimedOut`, so arbitrary prompt names and explicitly requested plaintext passwords cannot leak through that view. All button and prompt properties remain available through explicit property access. `Format-List *`, selecting properties, or serialization can expose plaintext values; formatting is not a security boundary.
-
-Password properties hold `System.Security.SecureString` by default, including empty or untouched fields and cancelled dialog results. Dispose each secure value once it is no longer needed. With `New-FluencePrompt -InputType Password -AsPlainText`, that property is a string. `Get-FluenceInput -AsPlainText` returns the string directly and does not receive this formatting protection.
+`Show-FluenceDialog` returns one property for each prompt and button, plus the outcome flags:
 
 | Property | Type | Meaning |
 | --- | --- | --- |
-| `<prompt Name>` | depends on the input type (see [input types](input-types.md)) | One property per prompt, named after the prompt's `Name`. Holds the value at the moment the dialog closed, or the prompt's default when untouched. |
-| `<button Name>` | `bool` | One property per button, named after the button's `Name` (its `Text` unless `-Name` was given). `$true` for the button that closed the dialog. |
-| `Cancelled` | `bool` | `$true` when the dialog closed without a successful button: the cancel button, Esc, or the title-bar X. `$false` on a timeout. |
-| `TimedOut` | `bool` | `$true` when `-Timeout` elapsed. No button property is `$true` in that case. |
+| Prompt `Name` | Depends on input type. | Value captured when the dialog closed; an untouched prompt keeps its default. |
+| Button `Name` | `bool` | True for the selected action. |
+| `Cancelled` | `bool` | True for a cancel action, Esc, or title bar dismissal. |
+| `TimedOut` | `bool` | True when `-Timeout` expires; no button flag is true. |
 
-Exactly one of these is true for a closed dialog: a button property, `Cancelled`, or `TimedOut`. When the UI returns nothing at all (a fault on the UI thread), the result is `Cancelled = $true`, `TimedOut = $false` with no other properties.
+Exactly one button flag, `Cancelled`, or `TimedOut` describes a normal close. A failure that leaves the UI without a result is represented by a minimal cancelled result. Prompt and button names must be unique without regard to case and cannot use the reserved result names.
 
-## String results
+The default console view shows only `Cancelled` and `TimedOut`. Explicit access, `Format-List *`, and serialization can expose prompt values. Password values are `SecureString` unless `-AsPlainText` was requested; dispose secure values from a dialog result even when the dialog was cancelled.
 
-| Cmdlet | Returns |
+## Simple command results
+
+| Command | Result |
 | --- | --- |
-| `Show-FluenceMessage` | The `Name` of the button that closed the dialog: `OK`, `Cancel`, `Yes` or `No`. A dismissal (Esc, X) returns the preset's cancel button, or its last button when it has none (`OK` for `OK`, `No` for `YesNo`). A timeout returns `-DefaultButton` when given, otherwise the same dismissal value. |
-| `Show-FluenceRestartPrompt` | `Restart`, `Later` or `TimedOut`. |
+| `Show-FluenceMessage` | Button name string: `OK`, `Cancel`, `Yes`, or `No`. A dismiss maps to the cancel button or final preset button; timeout uses `-DefaultButton` when supplied. |
+| `Get-FluenceInput` | Entered value, or `$null` on cancel or timeout. |
+| `Show-FluenceListSelection` | Selected value or array for `-MultiSelect`, or `$null` on cancel or timeout. |
+| `Show-FluenceRestartPrompt` | `Restart`, `Later`, or `TimedOut`. |
 
-## Fluence.Prompt
+## Fluence.Prompt and Fluence.Button
 
-Returned by `New-FluencePrompt`; consumed by `Show-FluenceDialog -Prompts`.
+`New-FluencePrompt` returns a `Fluence.Prompt` specification for `Show-FluenceDialog -Prompts`.
 
-| Property | Type | Meaning |
-| --- | --- | --- |
-| `Name` | `string` | Result key. Generated (`Input_xxxxxxxx`) when omitted. |
-| `Message` | `string` | Label text. |
-| `InputType` | `string` | One of the [input types](input-types.md). |
-| `DefaultValue` | `object` | Coerced to the input type's value type at build time. |
-| `ValidateSet` | `string[]` | Allowed values for `Choice` and `List`. |
-| `As` | `string` | `Combo` or `Radio` for `Choice`. |
-| `AsPlainText` | `bool` | Password only. Return a string instead of SecureString when true. |
-| `MultiSelect` | `bool` | `List` only. |
-| `ValidateNotEmpty` | `bool` | Require a value. |
-| `ValidatePattern` | `string` | Regular expression the value must match. |
-| `ValidateScript` | `scriptblock` | Receives the value; the last object it emits is the verdict. |
+| Prompt property | Meaning |
+| --- | --- |
+| `Name`, `Message`, `InputType` | Result key, visible label, and [input type](input-types.md). An omitted name is generated as `Input_` plus eight hex characters. |
+| `DefaultValue`, `ValidateSet` | Initial value and allowed choices for `Choice` or `List`. |
+| `As`, `MultiSelect`, `AsPlainText` | Radio or combo choice layout, multiple list values, or plain password result. |
+| `ValidateNotEmpty`, `ValidatePattern`, `ValidateScript` | Validation rules evaluated on a non-cancel action. |
 
-## Fluence.Button
-
-Returned by `New-FluenceButton`; consumed by `Show-FluenceDialog -Buttons`.
-
-| Property | Type | Meaning |
-| --- | --- | --- |
-| `Name` | `string` | Result key. Defaults to `Text`. |
-| `Text` | `string` | Caption. |
-| `IsDefault` | `bool` | Activated by Enter, drawn in the accent style, laid out first, carries the countdown caption. |
-| `IsCancel` | `bool` | Activated by Esc, skips validation, laid out last. |
-
-A bare string in `-Buttons` becomes a button with `Name = Text`; the string `Cancel` (any casing) additionally gets `IsCancel`.
+`New-FluenceButton` returns a `Fluence.Button` with `Text`, `Name`, `IsDefault`, and `IsCancel`. `Name` defaults to `Text`. The default button responds to Enter; the cancel button responds to Esc and bypasses validation. A bare `Cancel` string becomes a cancel button automatically.
 
 ## Fluence.ProgressHandle
 
-Returned by `Show-FluenceProgress`; passed to `Update-FluenceProgress` and `Close-FluenceProgress`.
+`Show-FluenceProgress` returns a handle used by `Update-FluenceProgress` and `Close-FluenceProgress`.
 
-| Property | Type | Meaning |
-| --- | --- | --- |
-| `Id` | `guid` | Identifies the window. |
-| `Mode` | `string` | `Inline` (window shares the calling STA thread), `Runspace` (window lives on the module UI runspace; MTA hosts). |
-| `IsOpen` | `bool` | `$false` after `Close-FluenceProgress`. |
-| `State` | synchronized `hashtable` | `Message`, `Detail`, `PercentComplete` (0 to 100), `Indeterminate`, `CloseRequested`. Readable from any thread. |
-| `Spec` | `hashtable` | Title, Topmost, Position, Width, Theme, Backdrop, AccentColor as passed. |
-| `Parts` | `hashtable` | `Window`, `MessageText`, `DetailText`, `Bar`: the live WPF objects. Dependency properties on them can be read only on the thread that owns the window (`Inline` mode). |
+| Property | Meaning |
+| --- | --- |
+| `Id` | Window GUID. |
+| `Mode` | `Inline` for a calling STA UI thread or `Runspace` for the module UI runspace. |
+| `IsOpen` | False after close. |
+| `State` | Synchronized hashtable with `Message`, `Detail`, `PercentComplete`, `Indeterminate`, and `CloseRequested`. |
+| `Spec` | Opening options including title, position, width, theme, backdrop, and accent. |
+| `Parts` | Live WPF window and control objects; read their dependency properties only from the owning thread. |
 
 Only one progress window can be open at a time.
 
 ## Fluence.WindowResult
 
-Returned by `Show-FluenceWindow -PassThru`.
-
-| Property | Type | Meaning |
-| --- | --- | --- |
-| `Result` | `object` | The value stashed with `Close-FluenceWindow -Result`, or `$null`. |
-| `Closed` | `bool` | Always `$true` once the call returns. |
-
-Without `-PassThru`, `Show-FluenceWindow` returns `Result` directly.
+`Show-FluenceWindow -PassThru` returns `Result`, the value passed to `Close-FluenceWindow -Result` or `$null`, and `Closed = $true`. Without `-PassThru`, `Show-FluenceWindow` returns the result value directly.
 
 ## Fluence.ThemeInfo
 
-Returned by `Get-FluenceTheme`.
-
-| Property | Type | Meaning |
-| --- | --- | --- |
-| `CurrentTheme` | `Fluence.Wpf.ApplicationTheme` | The requested theme: `Auto`, `Light`, `Dark`, `HighContrast`. |
-| `ResolvedTheme` | `Fluence.Wpf.ApplicationTheme` | What is showing: `Auto` resolved to `Light` or `Dark`. |
-| `CurrentBackdrop` | the library backdrop enum | `Mica`, `Acrylic`, `Tabbed`, `None`, `Auto`. The enum type is `WindowBackdropType` from Fluence.Wpf 0.9.0-pre and `BackdropType` on earlier builds; compare by name (`.ToString()`). |
-| `IsAppInDarkMode` | `bool` | `$true` when the resolved theme is dark. |
+`Get-FluenceTheme` returns `CurrentTheme` (the request), `ResolvedTheme` (the displayed theme), `CurrentBackdrop`, and `IsAppInDarkMode`. Compare the backdrop enum by `.ToString()`: newer library builds use `WindowBackdropType`, while earlier builds use `BackdropType`.

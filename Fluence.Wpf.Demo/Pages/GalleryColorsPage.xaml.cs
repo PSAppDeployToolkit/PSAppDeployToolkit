@@ -44,9 +44,10 @@ namespace Fluence.Wpf.Demo.Pages
     /// The six sections below are transcribed from
     /// <c language="text">WinUIGallery/Controls/DesignGuidance/ColorSections/*Section.xaml</c>: every group is one
     /// <see cref="ColorPageExample"/> card followed by rows of <see cref="ColorTile"/> swatches, in the
-    /// Gallery's order and with the Gallery's column counts. Each tile is painted in the brush it names and
-    /// takes its text brush from the Gallery's per-tile pairing. Every brush, size, margin and radius is a
-    /// resource reference, so the whole page follows theme, accent and high contrast changes.
+    /// Gallery's order and with the Gallery's column counts. Brush tiles use the brush they name;
+    /// Mica material-reference tiles use documented solid fallback brushes and copy window settings.
+    /// Each tile takes its text brush from the Gallery's per-tile pairing. Every brush, size, margin
+    /// and radius is a resource reference, so the whole page follows theme, accent and high contrast changes.
     /// </remarks>
     public partial class GalleryColorsPage : Page
     {
@@ -64,6 +65,7 @@ namespace Fluence.Wpf.Demo.Pages
         // ColorTile.AutoContrastForeground.
         private const string AlwaysWhiteText = "TextOnAccentFillColorSelectedTextBrush";
         private const string QuarternarySurface = "SolidBackgroundFillColorQuarternaryBrush";
+        private const string TransparentSurface = "SolidBackgroundFillColorTransparentBrush";
         private const string CardStroke = "CardStrokeColorDefaultBrush";
         private const string SingleStroke = "DemoSingleBorderThickness";
         private const string ControlRadius = "ControlCornerRadius";
@@ -417,7 +419,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new(
                         "Layer on Mica Base Alt",
                         "Used for fills on Tab control.",
-                        QuarternarySurface,
+                        TransparentSurface,
                         foregroundKey: null,
                         CreateTabExample,
                         [
@@ -427,7 +429,7 @@ namespace Fluence.Wpf.Demo.Pages
                                 new("Layer On Mica Base Alt / Tertiary", "Active Tab Drag", "LayerOnMicaBaseAltFillColorTertiaryBrush", PrimaryText),
                                 new("Layer On Mica Base Alt / Transparent", "Inactive Tab Rest", "LayerOnMicaBaseAltFillColorTransparentBrush", PrimaryText),
                                 new("Layer On Mica Base Alt / Secondary", "Inactive Tab Hover", "LayerOnMicaBaseAltFillColorSecondaryBrush", PrimaryText),
-                            ]),
+                            ], surfaceKey: TransparentSurface),
                         ]),
                     new(
                         "Solid Background",
@@ -448,6 +450,19 @@ namespace Fluence.Wpf.Demo.Pages
                                 new("Solid Background / Quarternary", "Alt content layer color", "SolidBackgroundFillColorQuarternaryBrush", PrimaryText),
                                 new("Solid Background / Quinary", "Used for solid default card colors", "SolidBackgroundFillColorQuinaryBrush", PrimaryText),
                                 new("Solid Background / Senary", "Used for solid default card colors", "SolidBackgroundFillColorSenaryBrush", PrimaryText),
+                            ]),
+                        ]),
+                    new(
+                        "Mica Background",
+                        "Mica background colors to place layers, cards, or controls on. Inline previews use solid fallback colors; native Mica and Mica Alt apply to the window.",
+                        QuarternarySurface,
+                        foregroundKey: null,
+                        static () => CreateSurface("SolidBackgroundFillColorBaseBrush", CardStroke, ControlRadius, SurfaceWidth, SurfaceHeight),
+                        [
+                            new(rows: 1,
+                            [
+                                new("Mica Background / Base", "Used for the bottom most layer of an experience", "SolidBackgroundFillColorBaseBrush", PrimaryText, backdropReference: true, copyPayload: "SystemBackdropType=\"Mica\""),
+                                new("Mica Background / Base Alt", "Default tab band background color", "SolidBackgroundFillColorBaseAltBrush", PrimaryText, backdropReference: true, copyPayload: "SystemBackdropType=\"Tabbed\""),
                             ]),
                         ]),
                     new(
@@ -716,8 +731,9 @@ namespace Fluence.Wpf.Demo.Pages
         }
 
         // WinUI Gallery GalleryTileGridStyle: tiles sit on the base solid background inside a 1px card stroke at
-        // OverlayCornerRadius. WPF's Border does not clip children to that radius, so the corner tiles round
-        // their own outer corners instead.
+        // OverlayCornerRadius. The Mica Alt preview alone uses a transparent backing to show the host window's
+        // Mica through its canonical tile brushes; WPF cannot give individual tiles a native Mica Alt backdrop.
+        // WPF's Border does not clip children to that radius, so the corner tiles round their own outer corners.
         /// <summary>
         /// Builds the eight tiles of one shipped high contrast palette, in the Gallery's order and
         /// with its colour pairings (HighContrastSection.xaml). The brush keys are the same in every
@@ -783,11 +799,13 @@ namespace Fluence.Wpf.Demo.Pages
                 {
                     ColorName = data.Name,
                     ColorExplanation = data.Explanation,
-                    ColorBrushName = data.BrushKey,
+                    ColorBrushName = data.BackdropReference ? string.Empty : data.BrushKey,
+                    CopyPayload = data.CopyPayload ?? data.BrushKey,
+                    IsBackdropReference = data.BackdropReference,
                     ShowSeparator = columnIndex < columns - 1,
                     // A live tile carries its key so the tests and the copy button can read it; a
-                    // high contrast palette tile paints a fixed colour and has no live brush.
-                    Tag = data.LiteralBackground is null ? data.BrushKey : null,
+                    // high contrast palette or material reference has no documented brush key.
+                    Tag = data.LiteralBackground is null && !data.BackdropReference ? data.BrushKey : null,
                 };
                 if (data.LiteralBackground is not null)
                 {
@@ -814,7 +832,7 @@ namespace Fluence.Wpf.Demo.Pages
             }
 
             Controls.Border surface = new() { Child = grid };
-            surface.SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+            surface.SetResourceReference(BackgroundProperty, row.SurfaceKey);
             surface.SetResourceReference(Border.BorderBrushProperty, CardStroke);
             surface.SetResourceReference(Border.BorderThicknessProperty, SingleStroke);
             surface.SetResourceReference(Border.CornerRadiusProperty, OverlayRadius);
@@ -984,7 +1002,8 @@ namespace Fluence.Wpf.Demo.Pages
             return surface;
         }
 
-        // The Gallery shows a TabViewItem over live Mica; here a tab-shaped surface is painted with the Mica Base Alt layer fallback.
+        // The Gallery shows a TabViewItem over per-element Mica Alt; this preview paints its canonical
+        // layer brush over the host window's Mica, which remains a standard-Mica approximation.
         private static Controls.Border CreateTabExample()
         {
             Controls.Border tab = CreateSurface("LayerOnMicaBaseAltFillColorDefaultBrush", "ControlStrokeColorSecondaryBrush", ControlRadius, "DemoColorExampleTabItemWidth", "DemoColorExampleTabItemHeight");
@@ -1051,14 +1070,16 @@ namespace Fluence.Wpf.Demo.Pages
             public ColorTileRowData[] Rows { get; } = rows;
         }
 
-        private sealed class ColorTileRowData(int rows, ColorTileData[] tiles)
+        private sealed class ColorTileRowData(int rows, ColorTileData[] tiles, string surfaceKey = "SolidBackgroundFillColorBaseBrush")
         {
             public int Rows { get; } = rows;
 
             public ColorTileData[] Tiles { get; } = tiles;
+
+            public string SurfaceKey { get; } = surfaceKey;
         }
 
-        private sealed class ColorTileData(string name, string explanation, string brushKey, string? foregroundKey, string? literalBackground = null, string? literalForeground = null)
+        private sealed class ColorTileData(string name, string explanation, string brushKey, string? foregroundKey, string? literalBackground = null, string? literalForeground = null, bool backdropReference = false, string? copyPayload = null)
         {
             public string Name { get; } = name;
 
@@ -1079,6 +1100,17 @@ namespace Fluence.Wpf.Demo.Pages
             /// The literal text colour that pairs with <see cref="LiteralBackground"/>.
             /// </summary>
             public string? LiteralForeground { get; } = literalForeground;
+
+            /// <summary>
+            /// True when this tile documents a window material. <see cref="BrushKey"/> is then only
+            /// the inline solid preview, never a claimed Mica material brush.
+            /// </summary>
+            public bool BackdropReference { get; } = backdropReference;
+
+            /// <summary>
+            /// The WPF window setting copied for a material tile; ordinary tiles copy <see cref="BrushKey"/>.
+            /// </summary>
+            public string? CopyPayload { get; } = copyPayload;
         }
     }
 }

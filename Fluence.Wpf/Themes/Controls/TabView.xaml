@@ -306,6 +306,9 @@
                                                 Text="&#xE76B;" />
                                         </Border>
                                         <ControlTemplate.Triggers>
+                                            <Trigger Property="FlowDirection" Value="RightToLeft">
+                                                <Setter TargetName="ScrollBackGlyph" Property="Text" Value="&#xE76C;" />
+                                            </Trigger>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="ScrollBackRoot" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                                             </Trigger>
@@ -375,6 +378,9 @@
                                                 Text="&#xE76C;" />
                                         </Border>
                                         <ControlTemplate.Triggers>
+                                            <Trigger Property="FlowDirection" Value="RightToLeft">
+                                                <Setter TargetName="ScrollForwardGlyph" Property="Text" Value="&#xE76B;" />
+                                            </Trigger>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="ScrollForwardRoot" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                                             </Trigger>
@@ -399,7 +405,10 @@
                                 VerticalAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
-                                Focusable="False"
+                                Focusable="True"
+                                IsTabStop="False"
+                                FocusVisualStyle="{DynamicResource DefaultControlFocusVisualStyle}"
+                                AutomationProperties.Name="Add new tab"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 ToolTip="Add new tab"
                                 Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TabViewBooleanToVisibilityConverter}}">

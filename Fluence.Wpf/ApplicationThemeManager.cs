@@ -78,7 +78,8 @@ namespace Fluence.Wpf
         public static bool IsAppInDarkMode => !RegistryHelper.GetAppsUseLightTheme();
 
         /// <summary>
-        /// Raised after a theme or accent change has been applied.
+        /// Raised when <see cref="Apply"/> publishes resources or changes the requested theme or backdrop.
+        /// Accent-only apply methods do not raise this event.
         /// </summary>
         public static event EventHandler<ThemeChangedEventArgs>? Changed;
 
@@ -91,6 +92,9 @@ namespace Fluence.Wpf
         /// <para>
         /// The first call seeds the three resource slots ([0] computed colors and brushes, [1] Typography,
         /// [2] Generic). Later calls replace the computed slot so <c language="xaml">DynamicResource</c> consumers re-resolve.
+        /// Visible <see cref="Controls.FluenceWindow"/> instances fade their previous WPF appearance
+        /// over the newly published resources when client-area motion is enabled; the resources
+        /// themselves still change immediately.
         /// </para>
         /// <para>
         /// A call whose computed output is identical to the last published one does not rebuild or

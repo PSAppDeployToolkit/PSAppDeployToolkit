@@ -83,9 +83,8 @@
         [7] PART_SubtitleText (Auto)
         [8] * (stretch, centering anchor for PART_ContentPresenter)
         [9] PART_RightHeaderPresenter (Auto)
-        [10] 48 px right padding column (reserved for caption buttons)
-        [11] RightPaddingColumn (0 px)
-        PART_ContentPresenter spans columns 0-10 at ZIndex=1 and is horizontally centred.
+        PART_ContentPresenter spans columns 0-9 at ZIndex=1 and is horizontally centred.
+        FluenceWindow reserves the width of its visible caption buttons outside this control.
         Triggers collapse icon/title/subtitle/left-right headers on null/empty and drive compact height.
     -->
     <Style TargetType="{x:Type controls:TitleBar}">
@@ -112,15 +111,13 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="48" />
-                            <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
                         </Grid.ColumnDefinitions>
 
                         <!--  PART_ContentPresenter: spans the full row, centred, ZIndex=1 so it floats above the column-placed parts  -->
                         <ContentPresenter
                             x:Name="PART_ContentPresenter"
                             Grid.Column="0"
-                            Grid.ColumnSpan="11"
+                            Grid.ColumnSpan="10"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Panel.ZIndex="1"
@@ -175,7 +172,7 @@
                             Grid.Column="5"
                             MaxWidth="20"
                             MaxHeight="20"
-                            Margin="8,0,12,0"
+                            Margin="8,0,16,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Content="{TemplateBinding Icon}" />

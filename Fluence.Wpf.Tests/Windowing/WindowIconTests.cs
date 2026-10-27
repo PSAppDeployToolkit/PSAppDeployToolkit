@@ -27,6 +27,7 @@
  */
 
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Fluence.Wpf.Controls;
@@ -35,12 +36,9 @@ using Xunit;
 
 namespace Fluence.Wpf.Tests.Windowing
 {
-    // FluenceWindow defaults Window.Icon to the Fluence brand icon embedded in Fluence.Wpf.dll.
-    // FluenceWindow.CreateDefaultIcon loads the square, no-background Fluence mark (an embedded
-    // 256x256 PNG) once as a frozen BitmapImage, because Window.Icon drives the Win32 taskbar HICON,
-    // which does not render a vector and would distort a non-square source. These tests pin both
-    // halves of the contract: the default resolves to a real square BitmapSource, and a
-    // consumer-assigned Icon overrides that default instead of being clobbered by it.
+    // FluenceWindow leaves Window.Icon unset for consumers and exposes an opt-in Fluence brand icon.
+    // The square, no-background mark is an embedded 256x256 PNG because Window.Icon drives the Win32
+    // taskbar HICON, which does not render a vector and would distort a non-square source.
     public sealed class WindowIconTests : IClassFixture<LightThemeFixture>
     {
         public WindowIconTests(LightThemeFixture fixture)
@@ -49,14 +47,15 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         [Fact]
-        public Task FluenceWindow_Icon_DefaultsToEmbeddedFluenceBrandIconAsync()
+        public Task FluenceWindow_Icon_IsUnsetByDefaultAsync()
         {
             return WpfTestSta.RunOnStaAsync(static delegate
             {
                 FluenceWindow window = new();
                 try
                 {
-                    _ = Assert.IsType<BitmapSource>(window.Icon, exactMatch: false);
+                    Assert.Null(window.Icon);
+                    Assert.Same(DependencyProperty.UnsetValue, window.ReadLocalValue(Window.IconProperty));
                 }
                 finally
                 {
@@ -66,7 +65,33 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         [Fact]
-        public Task FluenceWindow_Icon_ConsumerAssignedValueOverridesDefaultAsync()
+        public Task FluenceWindow_Icon_StyleSetterIsRespectedAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static delegate
+            {
+                FluenceWindow window = new();
+                try
+                {
+                    ImageSource styleIcon = BitmapSource.Create(
+                        1, 1, 96, 96, PixelFormats.Bgra32, palette: null, new byte[] { 0, 0, 0, 255 }, 4);
+                    styleIcon.Freeze();
+
+                    Style style = new(typeof(FluenceWindow));
+                    style.Setters.Add(new Setter(Window.IconProperty, styleIcon));
+                    window.Style = style;
+
+                    Assert.Same(styleIcon, window.Icon);
+                    Assert.Same(DependencyProperty.UnsetValue, window.ReadLocalValue(Window.IconProperty));
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task FluenceWindow_Icon_ConsumerAssignedValueIsPreservedAsync()
         {
             return WpfTestSta.RunOnStaAsync(static delegate
             {

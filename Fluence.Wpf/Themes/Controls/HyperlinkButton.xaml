@@ -11,7 +11,7 @@
         <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundBrush}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Padding" Value="11,5,11,6" />
@@ -94,17 +94,17 @@
                         <!--  WinUI parity: HyperlinkButton_themeresources.xaml Light dictionary. No pointer-over TextDecorations; WinUI carries no underline state.  -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPointerOverBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPressedBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="OuterBorder" Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundDisabledBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

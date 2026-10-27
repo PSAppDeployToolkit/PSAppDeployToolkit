@@ -69,6 +69,13 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Legacy generated documentation locations (authored reference Markdown stays tracked)
+/docs/api/
+/docs/powershell/reference/*-Fluence*.mdx
+/docs/screenshots/
+/docs/powershell/images/*.png
+/tools/ApiDocs/coverage.md
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
@@ -419,10 +426,12 @@ ehthumbs.db
 Thumbs.db
 
 # Unwanted AI generated files
+.superpowers/**
 .pi/**
 .omc/**
 .claude/settings.local.json
 .codex/**
+graphify-out/*
 
 # Regenerable theme-golden artifacts (authoritative copies live in Fluence.Wpf.Tests/Theming/golden/)
 data/theme-golden/
@@ -437,5 +446,6 @@ data/theme-golden/
 # Internal Docs
 /docs/_internal/
 
-graphify-out/*
-.omc/*
+# Website source lives in its own repository. This checkout may retain a local preview.
+/website/
+/.website/

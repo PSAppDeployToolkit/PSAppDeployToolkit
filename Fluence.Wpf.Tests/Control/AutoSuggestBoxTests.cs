@@ -28,12 +28,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using Fluence.Wpf.Tests.Infrastructure;
 using Xunit;
@@ -47,6 +49,137 @@ namespace Fluence.Wpf.Tests.Control
     /// </summary>
     public sealed class AutoSuggestBoxTests : IAsyncLifetime
     {
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public Task AutoSuggestBox_ObservableSourceClear_ClosesPropertyAndPopupAsync(bool reset)
+        {
+            return WithObservableSuggestionsAsync(async (window, box, source, popup) =>
+            {
+                if (reset)
+                {
+                    source.Clear();
+                }
+                else
+                {
+                    source.RemoveAt(0);
+                }
+                Assert.False(box.IsSuggestionListOpen);
+                Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true));
+            });
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_ObservableSourceFirstAdd_OpensWhenFocusedAsync()
+        {
+            return WithObservableSuggestionsAsync(static async (window, box, source, popup) =>
+            {
+                Assert.False(box.IsSuggestionListOpen);
+                source.Add("First");
+                Assert.True(box.IsSuggestionListOpen);
+                Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true));
+            }, initiallyEmpty: true);
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_SynchronizedBackgroundCollectionChanges_UpdateSuggestionStateAsync()
+        {
+            return WithObservableSuggestionsAsync(static async (window, box, source, popup) =>
+            {
+                object synchronizationLock = new();
+                BindingOperations.EnableCollectionSynchronization(source, synchronizationLock);
+                Selector suggestions = Assert.IsType<Selector>(box.Template.FindName("PART_SuggestionsList", box), exactMatch: false);
+
+                await Task.Run(() =>
+                {
+                    lock (synchronizationLock)
+                    {
+                        source.Add("Background");
+                    }
+                }, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+                Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => box.IsSuggestionListOpen && popup.IsOpen && suggestions.Items.Count is 1).ConfigureAwait(true));
+
+                await Task.Run(() =>
+                {
+                    lock (synchronizationLock)
+                    {
+                        source.Clear();
+                    }
+                }, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+                Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !box.IsSuggestionListOpen && !popup.IsOpen && suggestions.Items.Count is 0).ConfigureAwait(true));
+            }, initiallyEmpty: true);
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_ReplacedObservableSource_NoLongerAffectsStateAsync()
+        {
+            return WithObservableSuggestionsAsync(static (window, box, oldSource, popup) =>
+            {
+                ObservableCollection<string> current = ["Current"];
+                box.ItemsSource = current;
+                oldSource.Clear();
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
+                Assert.Same(current, box.ItemsSource);
+                Assert.True(box.IsSuggestionListOpen);
+                Assert.True(popup.IsOpen);
+
+                box.ItemsSource = (List<string>)["Plain"];
+                box.ItemsSource = Array.Empty<string>();
+                Assert.False(box.IsSuggestionListOpen);
+                return Task.CompletedTask;
+            });
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_CollectionRefresh_PreservesOpenBindingAsync()
+        {
+            return WithObservableSuggestionsAsync(static (window, box, source, popup) =>
+            {
+                ToggleButton model = new() { IsChecked = true };
+                _ = BindingOperations.SetBinding(box, Controls.AutoSuggestBox.IsSuggestionListOpenProperty,
+                    new Binding(nameof(ToggleButton.IsChecked)) { Source = model, Mode = BindingMode.TwoWay });
+                source.Clear();
+                WpfTestSta.DrainDispatcher(window.Dispatcher);
+                Assert.False(box.IsSuggestionListOpen);
+                Assert.False(popup.IsOpen);
+                Assert.True(BindingOperations.IsDataBound(box, Controls.AutoSuggestBox.IsSuggestionListOpenProperty));
+                return Task.CompletedTask;
+            });
+        }
+
+        private static Task WithObservableSuggestionsAsync(
+            Func<Window, Controls.AutoSuggestBox, ObservableCollection<string>, Popup, Task> scenario,
+            bool initiallyEmpty = false)
+        {
+            return WpfTestSta.RunOnStaAsync(async () =>
+            {
+                ObservableCollection<string> source = initiallyEmpty ? [] : ["First"];
+                Controls.AutoSuggestBox box = new() { ItemsSource = source };
+                Window window = new() { Content = box, Width = 400, Height = 180 };
+                try
+                {
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    TextBox editor = Assert.IsType<TextBox>(box.Template.FindName("PART_TextBox", box), exactMatch: false);
+                    _ = editor.Focus();
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => box.IsKeyboardFocusWithin).ConfigureAwait(true));
+                    Popup popup = Assert.IsType<Popup>(box.Template.FindName("PART_SuggestionsPopup", box));
+                    if (!initiallyEmpty)
+                    {
+                        box.IsSuggestionListOpen = true;
+                        Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true));
+                    }
+                    await scenario(window, box, source, popup).ConfigureAwait(true);
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
         public ValueTask InitializeAsync()
         {
             return new ValueTask(WpfTestSta.RunOnStaAsync(static () => _ = TestApp.EnsureLibraryTheme()));
@@ -91,6 +224,91 @@ namespace Fluence.Wpf.Tests.Control
                 finally
                 {
                     window.Close();
+                }
+            });
+        }
+
+        [Fact]
+        public Task AutoSuggestBox_FocusedField_KeepsEditorAndPopupAnchorStableThroughThemeChangesAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static () =>
+            {
+                Window window = new() { Width = 400, Height = 300 };
+                Button other = new() { Content = "Other" };
+                Controls.AutoSuggestBox box = new()
+                {
+                    Width = 260,
+                    MinHeight = 45,
+                    BorderThickness = new Thickness(3),
+                    QueryIcon = new Controls.FontIcon { Glyph = "\uE721" },
+                    PlaceholderText = "Search",
+                };
+
+                try
+                {
+                    window.Content = new StackPanel { Children = { other, box } };
+                    window.Show();
+                    _ = other.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
+                    Grid fieldRoot = Assert.IsType<Grid>(box.Template?.FindName("FieldRoot", box));
+                    Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
+                    ButtonBase queryButton = Assert.IsType<ButtonBase>(box.Template?.FindName("PART_QueryButton", box), exactMatch: false);
+                    Border mainBorder = Assert.IsType<Border>(textBox.Template?.FindName("MainBorder", textBox));
+                    FrameworkElement contentHost = Assert.IsType<FrameworkElement>(textBox.Template?.FindName("PART_ContentHost", textBox), exactMatch: false);
+                    Assert.Same(fieldRoot, popup.PlacementTarget);
+                    Assert.Same(queryButton, textBox.Icon);
+                    Assert.Equal(new Thickness(3), textBox.BorderThickness);
+                    Assert.Equal(45.0, textBox.MinHeight);
+
+                    Point edge = mainBorder.TransformToAncestor(window).Transform(new Point(0.5, mainBorder.ActualHeight / 2));
+                    Assert.Same(mainBorder, window.InputHitTest(edge));
+                    Point editorBefore = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Size editorSizeBefore = new(contentHost.ActualWidth, contentHost.ActualHeight);
+                    Point queryBefore = queryButton.TransformToAncestor(window).Transform(new Point(0, 0));
+                    double fieldHeightBefore = fieldRoot.ActualHeight;
+                    double boxHeightBefore = box.ActualHeight;
+
+                    _ = box.Focus();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Assert.True(textBox.IsKeyboardFocused);
+                    Assert.True(box.IsKeyboardFocusWithin);
+                    Assert.Null(box.Template?.FindName("FocusAccentLine", box));
+                    Assert.Null(textBox.Template?.FindName("FocusAccentLine", textBox));
+                    Assert.Equal(fieldHeightBefore, fieldRoot.ActualHeight, 0.01);
+                    Assert.Equal(boxHeightBefore, box.ActualHeight, 0.01);
+                    Point editorAfter = contentHost.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Assert.Equal(editorBefore.X, editorAfter.X, 0.01);
+                    Assert.Equal(editorBefore.Y, editorAfter.Y, 0.01);
+                    Assert.Equal(editorSizeBefore.Width, contentHost.ActualWidth, 0.01);
+                    Assert.Equal(editorSizeBefore.Height, contentHost.ActualHeight, 0.01);
+                    Point queryAfter = queryButton.TransformToAncestor(window).Transform(new Point(0, 0));
+                    Assert.Equal(queryBefore.X, queryAfter.X, 0.01);
+                    Assert.Equal(queryBefore.Y, queryAfter.Y, 0.01);
+
+                    foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
+                    {
+                        ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
+                        window.UpdateLayout();
+
+                        Thickness expected = theme is ApplicationTheme.HighContrast
+                            ? new Thickness(2)
+                            : new Thickness(1, 1, 1, 2);
+                        Assert.True(textBox.IsKeyboardFocused);
+                        Assert.Equal(expected, mainBorder.BorderThickness);
+                        Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
+                        Assert.Equal(fieldHeightBefore, fieldRoot.ActualHeight, 0.01);
+                        Assert.Equal(boxHeightBefore, box.ActualHeight, 0.01);
+                    }
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
                 }
             });
         }
@@ -200,6 +418,91 @@ namespace Fluence.Wpf.Tests.Control
         }
 
         [Fact]
+        public Task AutoSuggestBox_EditorClickOpensSuggestionsAfterMouseCaptureAsync()
+        {
+            return WpfTestSta.RunOnStaAsync(static async () =>
+            {
+                Window window = new() { Width = 480, Height = 300 };
+                Controls.AutoSuggestBox box = new()
+                {
+                    Width = 360,
+                    Text = "ap",
+                    ItemsSource = (List<string>)["Apple", "Banana"],
+                };
+                Button other = new() { Content = "Other" };
+                StackPanel panel = new();
+                _ = panel.Children.Add(other);
+                _ = panel.Children.Add(box);
+
+                try
+                {
+                    window.Content = panel;
+                    window.Show();
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    _ = other.Focus();
+                    Assert.True(other.IsKeyboardFocused);
+
+                    TextBox editor = Assert.IsType<TextBox>(box.Template.FindName("PART_TextBox", box), exactMatch: false);
+                    Popup popup = Assert.IsType<Popup>(box.Template.FindName("PART_SuggestionsPopup", box));
+                    editor.Select(0, 1);
+
+                    editor.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
+                    });
+                    _ = editor.Focus();
+                    Assert.True(editor.IsKeyboardFocused);
+                    Assert.True(popup.IsOpen, "Focus opens the popup during the mouse-down path.");
+
+                    Assert.True(Mouse.Capture(editor), "The editor takes mouse capture for its click/selection gesture.");
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.False(popup.IsOpen, "Transferring capture from the light-dismiss popup closes it.");
+                    Assert.False(box.IsSuggestionListOpen);
+
+                    _ = Mouse.Capture(element: null);
+                    editor.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.MouseLeftButtonUpEvent,
+                        Handled = true,
+                    });
+
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
+                        "The completed editor click must show the available suggestions.");
+                    Assert.True(box.IsSuggestionListOpen);
+                    Assert.True(editor.IsKeyboardFocused);
+                    Assert.Equal("ap", editor.Text, StringComparer.Ordinal);
+                    Assert.Equal(0, editor.SelectionStart);
+                    Assert.Equal(1, editor.SelectionLength);
+
+                    // A further click restores a list dismissed while the editor retained focus.
+                    box.IsSuggestionListOpen = false;
+                    editor.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.MouseLeftButtonUpEvent,
+                        Handled = true,
+                    });
+                    Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true));
+
+                    // A mouse release after focus has moved away cannot reopen the list.
+                    _ = other.Focus();
+                    Assert.False(box.IsKeyboardFocusWithin);
+                    editor.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.MouseLeftButtonUpEvent,
+                        Handled = true,
+                    });
+                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    Assert.False(box.IsSuggestionListOpen);
+                }
+                finally
+                {
+                    _ = Mouse.Capture(element: null);
+                    CloseWindowAndDrain(window);
+                }
+            });
+        }
+
+        [Fact]
         public Task AutoSuggestBox_ChooseSuggestionViaKeyboard_RaisesSuggestionChosenAndQuerySubmittedAsync()
         {
             return WpfTestSta.RunOnStaAsync(static async () =>
@@ -218,6 +521,8 @@ namespace Fluence.Wpf.Tests.Control
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
                     Selector list = Assert.IsType<Selector>(box.Template?.FindName("PART_SuggestionsList", box), exactMatch: false);
 
+                    _ = box.Focus();
+                    Assert.True(textBox.IsKeyboardFocused);
                     box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
@@ -246,6 +551,7 @@ namespace Fluence.Wpf.Tests.Control
                         "Choosing a suggestion must raise TextChanged with Reason=SuggestionChosen.");
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => !popup.IsOpen).ConfigureAwait(true),
                         "Submitting a query must close the suggestion popup.");
+                    Assert.True(textBox.IsKeyboardFocused, "Submitting a suggestion must retain editor focus.");
                 }
                 finally
                 {
@@ -343,7 +649,10 @@ namespace Fluence.Wpf.Tests.Control
                     Controls.TextBox textBox = Assert.IsType<Controls.TextBox>(box.Template?.FindName("PART_TextBox", box));
                     Popup popup = Assert.IsType<Popup>(box.Template?.FindName("PART_SuggestionsPopup", box));
                     Selector list = Assert.IsType<Selector>(box.Template?.FindName("PART_SuggestionsList", box), exactMatch: false);
+                    Border mainBorder = Assert.IsType<Border>(textBox.Template?.FindName("MainBorder", textBox));
 
+                    _ = box.Focus();
+                    Assert.True(textBox.IsKeyboardFocused);
                     // Type "ap" (UserInput baseline), then open the list.
                     textBox.Text = "ap";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -351,6 +660,8 @@ namespace Fluence.Wpf.Tests.Control
                     box.IsSuggestionListOpen = true;
                     Assert.True(await WaitUntilAsync(window.Dispatcher, 2000, () => popup.IsOpen).ConfigureAwait(true),
                         "The suggestion popup must open before the navigation scenario.");
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
 
                     List<AutoSuggestionBoxTextChangeReason> reasons = [];
                     box.TextChanged += (_, args) => reasons.Add(args.Reason);
@@ -386,6 +697,9 @@ namespace Fluence.Wpf.Tests.Control
 
                     Assert.False(querySubmitted, "Arrow-key navigation alone must not submit the query.");
                     Assert.True(popup.IsOpen, "Arrow-key navigation must keep the suggestion list open.");
+                    Assert.True(textBox.IsKeyboardFocused, "Suggestion navigation must retain editor focus.");
+                    Assert.Equal(new Thickness(1, 1, 1, 2), mainBorder.BorderThickness);
+                    Assert.Same(Application.Current.TryFindResource("TextControlElevationBorderFocusedBrush"), mainBorder.BorderBrush);
                 }
                 finally
                 {
@@ -404,6 +718,7 @@ namespace Fluence.Wpf.Tests.Control
                 {
                     QueryIcon = new Controls.FontIcon { Glyph = "\uE721" },
                     Text = "search term",
+                    ItemsSource = (List<string>)["search term"],
                 };
 
                 try
@@ -418,15 +733,25 @@ namespace Fluence.Wpf.Tests.Control
                     Assert.Same(queryButton, textBox.Icon);
                     Assert.Same(box.QueryIcon, queryButton.Content);
 
+                    _ = box.Focus();
+                    Assert.True(textBox.IsKeyboardFocused);
+                    box.IsSuggestionListOpen = true;
                     AutoSuggestBoxQuerySubmittedEventArgs? submitted = null;
                     box.QuerySubmitted += (_, args) => submitted = args;
 
                     queryButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    queryButton.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.MouseLeftButtonUpEvent,
+                        Handled = true,
+                    });
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                     Assert.NotNull(submitted);
                     Assert.Equal("search term", submitted.QueryText, StringComparer.Ordinal);
                     Assert.Null(submitted.ChosenSuggestion);
+                    Assert.True(textBox.IsKeyboardFocused, "The query button must retain editor focus.");
+                    Assert.False(box.IsSuggestionListOpen, "The query-button release must not reopen submitted suggestions.");
 
                     // Clearing QueryIcon removes the button from the icon slot entirely.
                     box.QueryIcon = null;

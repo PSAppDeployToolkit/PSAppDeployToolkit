@@ -301,7 +301,7 @@
       "fluence.wpf.demo": {
         "type": "Project",
         "dependencies": {
-          "Fluence.Wpf": "[0.9.0-pre, )"
+          "Fluence.Wpf": "[0.9.1, )"
         }
       },
       "Microsoft.Bcl.Memory": {
@@ -539,14 +539,14 @@
       "fluence.wpf.demo": {
         "type": "Project",
         "dependencies": {
-          "Fluence.Wpf": "[0.9.0-pre, )"
+          "Fluence.Wpf": "[0.9.1, )"
         }
       },
       "fluence.wpf.demo.mvvm": {
         "type": "Project",
         "dependencies": {
           "CommunityToolkit.Mvvm": "[8.4.2, )",
-          "Fluence.Wpf": "[0.9.0-pre, )"
+          "Fluence.Wpf": "[0.9.1, )"
         }
       },
       "CommunityToolkit.Mvvm": {

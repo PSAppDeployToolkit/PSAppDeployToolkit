@@ -27,6 +27,8 @@
  */
 
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -169,21 +171,60 @@ namespace Fluence.Wpf.Tests.Control
 
                     ContentPresenter current = Assert.IsType<ContentPresenter>(presenter.Template.FindName("PART_CurrentPresenter", presenter));
                     ContentPresenter previous = Assert.IsType<ContentPresenter>(presenter.Template.FindName("PART_PreviousPresenter", presenter));
+                    TranslateTransform currentTranslate = Assert.IsType<TranslateTransform>(presenter.Template.FindName("PART_CurrentTranslate", presenter));
+                    DependencyPropertyDescriptor opacityDescriptor = Assert.IsType<DependencyPropertyDescriptor>(
+                        DependencyPropertyDescriptor.FromProperty(UIElement.OpacityProperty, typeof(ContentPresenter)));
+                    DependencyPropertyDescriptor translateDescriptor = Assert.IsType<DependencyPropertyDescriptor>(
+                        DependencyPropertyDescriptor.FromProperty(TranslateTransform.XProperty, typeof(TranslateTransform)));
+                    TextBlock first = Assert.IsType<TextBlock>(presenter.Content);
+                    (object? OutgoingContent, double OutgoingOpacity, double IncomingOpacity, double IncomingX)? midPhase = null;
+                    int observations = 0;
 
-                    presenter.Content = new TextBlock { Text = "Second" };
-                    WpfTestSta.DrainDispatcher(window.Dispatcher);
+                    void CaptureMidPhase(object? sender, EventArgs e)
+                    {
+                        observations++;
+                        if (ReferenceEquals(previous.Content, first) && previous.Opacity < 0.01
+                            && current.Opacity > 0.99 && Math.Abs(currentTranslate.X) > 1.0)
+                        {
+                            midPhase = (previous.Content, previous.Opacity, current.Opacity, currentTranslate.X);
+                        }
+                    }
 
-                    // Sample inside the window the exit clock has already finished but the
-                    // entrance clock has not: 150 ms < t < 450 ms.
-                    Assert.True(
-                        await WaitUntilAsync(window.Dispatcher, 3000, () => current.Opacity > 0.99).ConfigureAwait(true),
-                        "The incoming content should be opaque once the outgoing content has left.");
-                    Assert.True(previous.Opacity < 0.01, "The outgoing content must stay hidden until the transition settles.");
-                    Assert.NotNull(previous.Content);
+                    opacityDescriptor.AddValueChanged(previous, CaptureMidPhase);
+                    opacityDescriptor.AddValueChanged(current, CaptureMidPhase);
+                    translateDescriptor.AddValueChanged(currentTranslate, CaptureMidPhase);
+                    CompositionTarget.Rendering += CaptureMidPhase;
+                    try
+                    {
+                        presenter.Content = new TextBlock { Text = "Second" };
+                        Assert.Same(first, previous.Content);
+                        WpfTestSta.DrainDispatcher(window.Dispatcher);
 
-                    Assert.True(
-                        await WaitUntilAsync(window.Dispatcher, 3000, () => previous.Content is null).ConfigureAwait(true),
-                        "The transition should still settle.");
+                        Assert.True(await WaitUntilAsync(window.Dispatcher, 3000,
+                            () => midPhase is not null || previous.Content is null).ConfigureAwait(true),
+                            "The transition should reach its opaque incoming phase or settle.");
+                        Assert.True(midPhase is not null,
+                            $"The active transition must expose hidden outgoing and opaque incoming content; observations={observations.ToString(CultureInfo.InvariantCulture)}.");
+                        Assert.Same(first, midPhase.Value.OutgoingContent);
+                        Assert.True(midPhase.Value.OutgoingOpacity < 0.01,
+                            "The outgoing content must stay hidden until the transition settles.");
+                        Assert.True(midPhase.Value.IncomingOpacity > 0.99,
+                            "The incoming content should be opaque once the outgoing content has left.");
+                        Assert.True(Math.Abs(midPhase.Value.IncomingX) > 1.0,
+                            "The incoming content must still be traveling at the observed hand-off.");
+
+                        Assert.True(
+                            await WaitUntilAsync(window.Dispatcher, 3000, () => previous.Content is null).ConfigureAwait(true),
+                            "The transition should still settle.");
+                        Assert.Equal(1.0, current.Opacity, 0.01);
+                    }
+                    finally
+                    {
+                        CompositionTarget.Rendering -= CaptureMidPhase;
+                        translateDescriptor.RemoveValueChanged(currentTranslate, CaptureMidPhase);
+                        opacityDescriptor.RemoveValueChanged(current, CaptureMidPhase);
+                        opacityDescriptor.RemoveValueChanged(previous, CaptureMidPhase);
+                    }
                 }
                 finally
                 {

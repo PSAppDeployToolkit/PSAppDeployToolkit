@@ -32,12 +32,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Windows.Win32;
 
 namespace Fluence.Wpf
 {
     /// <summary>
-    /// Subscribes a <see cref="Window"/> to high-priority settings change notifications (theme, accent) with debouncing.
+    /// Subscribes a <see cref="Window"/> to settings change notifications, coalescing pending theme and accent refreshes.
     /// </summary>
     /// <remarks>
     /// Used with <see cref="ApplicationThemeManager"/> to refresh resources when the user changes Windows light/dark or contrast while the app runs.
@@ -177,9 +178,8 @@ namespace Fluence.Wpf
             {
                 // WM_SETTINGCHANGE fires for every settings-class change (region, sound, policy,
                 // file types, etc.). Only the "ImmersiveColorSet" broadcast carries a
-                // theme/accent change. Without this filter the watcher debounces against any
-                // unrelated settings broadcast, swallowing a follow-up real theme change inside
-                // the 100 ms debounce window.
+                // theme/accent change. Ignore unrelated broadcasts rather than scheduling
+                // unnecessary refreshes; relevant messages share one pending dispatcher operation.
                 PInvoke.WM_SETTINGCHANGE => IsImmersiveColorSetBroadcast(lParam),
                 PInvoke.WM_DWMCOLORIZATIONCOLORCHANGED => true,
                 PInvoke.WM_THEMECHANGED => true,
@@ -192,13 +192,36 @@ namespace Fluence.Wpf
                 return IntPtr.Zero;
             }
 
-            long currentTick = DateTime.UtcNow.Ticks;
-            if (currentTick - _lastUpdateTick > DebounceIntervalTicks)
-            {
-                _lastUpdateTick = currentTick;
-                OnSystemThemeChanged();
-            }
+            RequestRefresh();
             return IntPtr.Zero;
+        }
+
+        internal static void ResetForTesting()
+        {
+            DispatcherOperation? pending;
+            lock (_lock)
+            {
+                pending = _pendingRefresh;
+                _pendingRefresh = null;
+            }
+            _ = pending?.Abort();
+        }
+
+        internal static void RequestRefresh()
+        {
+            Dispatcher? dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher is not { HasShutdownStarted: false, HasShutdownFinished: false })
+            {
+                return;
+            }
+            lock (_lock)
+            {
+                if (_pendingRefresh?.Status is DispatcherOperationStatus.Pending or DispatcherOperationStatus.Executing)
+                {
+                    return;
+                }
+                _pendingRefresh = dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(RefreshOnApplicationDispatcher));
+            }
         }
 
         /// <summary>
@@ -219,27 +242,17 @@ namespace Fluence.Wpf
                 && text.Equals("ImmersiveColorSet", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void OnSystemThemeChanged()
+        private static void RefreshOnApplicationDispatcher()
         {
-            if (Application.Current is null)
+            lock (_lock)
             {
-                return;
+                _pendingRefresh = null;
             }
-            _ = Application.Current.Dispatcher.BeginInvoke(new Action(static () =>
-            {
-                // Settings messages arrive on the HWND hook path. Re-enter through the
-                // Dispatcher so ResourceDictionary mutation stays on the WPF UI thread.
-                // Route through ApplicationThemeManager.Apply (not RefreshAccent) so a broadcast
-                // that publishes new output also raises Changed: the Settings "Transparency
-                // effects" toggle moves no computed color but is part of the publish fingerprint,
-                // and FluenceWindow re-reads it only from its Changed handler (ApplyBackdrop).
-                // RefreshAccent raises only AccentColorChanged, which drives ApplyFrame alone, so
-                // under a pinned (non-Auto) theme the toggle never reached the backdrop. The
-                // redundant-publish gate still swallows duplicate broadcasts entirely.
-                ApplicationThemeManager.Apply(
-                    ApplicationThemeManager.CurrentTheme,
-                    ApplicationThemeManager.CurrentBackdrop);
-            }));
+            // Clear pending state before Apply and release the lock before synchronous
+            // Changed handlers run. A newer notification can then queue a follow-up.
+            ApplicationThemeManager.Apply(
+                ApplicationThemeManager.CurrentTheme,
+                ApplicationThemeManager.CurrentBackdrop);
         }
 
         /// <summary>
@@ -269,15 +282,8 @@ namespace Fluence.Wpf
         private static readonly Lock _lock = new();
 
         /// <summary>
-        /// Stores the tick count representing the last time an update occurred.
+        /// The one refresh waiting on the application dispatcher, protected by <see cref="_lock"/>.
         /// </summary>
-        private static long _lastUpdateTick;
-
-        /// <summary>
-        /// Represents the debounce interval, in ticks, used to limit the frequency of certain operations.
-        /// </summary>
-        /// <remarks>A tick is equal to 100 nanoseconds. This constant can be used to implement debouncing
-        /// logic, ensuring that actions are not performed more frequently than the specified interval.</remarks>
-        private const long DebounceIntervalTicks = 1_000_000;
+        private static DispatcherOperation? _pendingRefresh;
     }
 }

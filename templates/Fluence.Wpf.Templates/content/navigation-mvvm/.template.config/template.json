@@ -1,0 +1,18 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Fluence.Wpf",
+  "classifications": [
+    "WPF",
+    "Fluent",
+    "MVVM"
+  ],
+  "identity": "Fluence.Wpf.Templates.NavigationMvvm.CSharp",
+  "name": "Fluence.Wpf NavigationView MVVM Starter",
+  "shortName": "fluence-nav-mvvm",
+  "sourceName": "FluenceStarterApp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

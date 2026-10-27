@@ -1,29 +1,13 @@
-﻿# Fluence.Wpf.Demo.Mvvm
+﻿# MVVM task manager demo
 
-A small MVVM Task Manager demo for anyone who wants to see Fluence.Wpf controls used without page-level code-behind. It targets `net10.0-windows10.0.26100.0` and uses CommunityToolkit.Mvvm.
+This .NET 10 WPF example uses Fluence.Wpf with CommunityToolkit.Mvvm. It shows a `FluenceWindow`, task filtering, commands, bindings, and progress state.
 
-## What lives here
-
-- `App.xaml.cs` - applies Fluence resources at startup before showing the main window.
-- `MainWindow.xaml` - a `FluenceWindow` with task filtering, list content, task input, and progress/status controls.
-- `ViewModels/` - `MainViewModel` and `TaskItemViewModel` using `[ObservableProperty]` and `[RelayCommand]`.
-- `Converters/EnumToBoolConverter.cs` - radio-button binding support for the `FilterMode` enum.
-
-## Run
-
-From the repository root:
+Run it from the repository root:
 
 ```powershell
 dotnet run --project Fluence.Wpf.Demo.Mvvm/Fluence.Wpf.Demo.Mvvm.csproj -c Debug
 ```
 
-## Maintenance notes
+`App.xaml.cs` applies the theme before the window opens. `MainWindow.xaml` declares the UI, and `ViewModels/` contains the task and screen state. `Properties/DesignTimeResources.xaml` supplies design time resources for the XAML designer.
 
-Keep `App.xaml` free of manual merged dictionaries; `ApplicationThemeManager.Apply(...)` owns the Fluence resource slots. `MainViewModel.Refresh()` intentionally rebuilds `DisplayedTasks` before notifying derived status/progress properties, so avoid adding notification attributes that fire before the collection has been refreshed.
-
-## Design-time preview
-
-`Properties/DesignTimeResources.xaml` merges the library's `DesignTime.Dark.xaml`, so the XAML
-designer renders this window in **Dark** (the running app uses `ApplicationTheme.Auto`).
-`MainWindow.xaml` uses `d:DataContext="{d:DesignInstance vm:MainViewModel, IsDesignTimeCreatable=True}"`,
-so the designer instantiates the real (seeded) `MainViewModel` and shows sample rows.
+Start with the [first WPF application tutorial](https://fluencewpf.com/docs/tutorials/first-wpf-app) for a smaller example. The [documentation index](https://fluencewpf.com/docs) links controls, themes, and API guidance.
