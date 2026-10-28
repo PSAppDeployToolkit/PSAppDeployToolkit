@@ -21,10 +21,12 @@ using Fluence.Wpf.Controls;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.Foundation;
+using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.HiDpi;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -103,6 +105,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _dialogMinimizeVisible = options.DialogAllowMinimize.Value;
             }
             IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
+            if (options.FluentDialogSize is not null)
+            {
+                _fluentDialogSize = options.FluentDialogSize.Value;
+            }
+            if (options.FluentDialogScale is not null)
+            {
+                _fluentDialogScale = options.FluentDialogScale.Value;
+            }
+            ApplyDialogScaling();
             WindowStartupLocation = WindowStartupLocation.Manual;
 
             // Park the window off every monitor before any layout or show. Everything that positions it
@@ -765,6 +776,49 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
+        /// Scales the dialog so that it covers a set proportion of the screen.
+        /// </summary>
+        /// <remarks>WPF lays out in device-independent pixels, and the work area reported in those same units
+        /// already has the display scaling divided out of it: a 3840 pixel screen at 200% and a 1920 pixel screen
+        /// at 100% both report 1920 units wide. Taking a fraction of that therefore lands on the same proportion of
+        /// the screen on every endpoint, whatever its resolution and whatever zoom its user has set, which is what
+        /// every <see cref="DialogSize"/> value other than <see cref="DialogSize.Auto"/> asks for.</remarks>
+        private void ApplyDialogScaling()
+        {
+            // Auto leaves the dialog at its designed size, following the display scaling. Historical behaviour.
+            Rect workArea = SystemParameters.WorkArea;
+            double scale = 1.0;
+            if (_fluentDialogSize is not DialogSize.Auto && DialogSizeRatios.TryGetValue(_fluentDialogSize, out double ratio) && workArea.Width > 0)
+            {
+                // Each bound is expressed in the unit its concern actually lives in. The floor guards legibility,
+                // which is physical: half the designed size on a 200% display still lands on more real pixels than
+                // the full size does at 100%, so dividing the floor by the display scaling keeps small screens
+                // readable without throwing away the ratio on dense ones. The ceiling guards proportion, which is a
+                // layout concern: past a point the extra width buys nothing no matter how many pixels back it.
+                _ = NativeMethods.GetDpiForDefaultMonitor(MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _);
+                double minimumScale = MinimumPhysicalScale / (dpiX / 96.0);
+                scale = Math.Max(minimumScale, Math.Min(MaximumComputedScale, workArea.Width * ratio / MaxWidth));
+            }
+
+            // The caller's multiplier rides on top, deliberately outside the bounds above: it is an explicit request.
+            scale *= _fluentDialogScale;
+
+            // Anything within half a percent of unity isn't worth the transform.
+            if (Math.Abs(scale - 1.0) < 0.005 || Content is not FrameworkElement root)
+            {
+                return;
+            }
+
+            // The transform scales the content, so the window's own constraints have to follow it. The width is
+            // pinned explicitly because the window would otherwise keep the default it derives from the old maximum,
+            // and the height is additionally held within the work area so a tall dialog can never overrun the screen.
+            root.LayoutTransform = new ScaleTransform(scale, scale);
+            MaxHeight = Math.Min(MaxHeight * scale, workArea.Height * MaximumHeightFraction);
+            MaxWidth *= scale;
+            Width = MaxWidth;
+        }
+
+        /// <summary>
         /// Positions the window on the screen based on the specified dialog position. Suppressed
         /// while <see cref="_firstShowPending"/> is <see langword="true"/> so the window stays at
         /// <see cref="OffscreenCoordinate"/> until the first-show reveal in
@@ -1055,6 +1109,43 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Whether the dialog's minimize control is visible.
         /// </summary>
         private protected readonly bool _dialogMinimizeVisible;
+
+        /// <summary>
+        /// The requested rendered size of the dialog.
+        /// </summary>
+        private readonly DialogSize _fluentDialogSize = DialogSize.Auto;
+
+        /// <summary>
+        /// An additional multiplier applied on top of the requested rendered size.
+        /// </summary>
+        private readonly double _fluentDialogScale = 1.0;
+
+        /// <summary>
+        /// The fraction of the screen's width covered by each size preset.
+        /// </summary>
+        private static readonly ReadOnlyDictionary<DialogSize, double> DialogSizeRatios = new(new Dictionary<DialogSize, double>
+        {
+            { DialogSize.Small, 0.22 },
+            { DialogSize.Medium, 0.30 },
+            { DialogSize.Large, 0.40 },
+            { DialogSize.ExtraLarge, 0.50 },
+        });
+
+        /// <summary>
+        /// The smallest scale the screen fraction is allowed to resolve to at 100% display scaling, below which the
+        /// dialog stops being legible. It is divided by the display scaling in effect before being applied.
+        /// </summary>
+        private const double MinimumPhysicalScale = 0.75;
+
+        /// <summary>
+        /// The largest scale the screen fraction is allowed to resolve to, above which the dialog dwarfs its content.
+        /// </summary>
+        private const double MaximumComputedScale = 2.0;
+
+        /// <summary>
+        /// The most of the screen's height the dialog is ever allowed to cover.
+        /// </summary>
+        private const double MaximumHeightFraction = 0.9;
 
         /// <summary>
         /// The timer that drives the countdown, if the dialog has one.
