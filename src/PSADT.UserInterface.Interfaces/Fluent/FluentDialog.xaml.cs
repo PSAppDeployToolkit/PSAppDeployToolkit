@@ -760,6 +760,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private void SetDialogAccent(ApplicationTheme theme)
         {
             (Color? color, bool exact) = _dialogAccentCache[theme];
+            if (exact && color is null)
+            {
+                color = _dialogAccentCache[ApplicationTheme.Dark].Color;
+            }
             if (color is Color accentColor)
             {
                 Color lightAccent = _dialogAccentCache[ApplicationTheme.Light].Color ?? accentColor;
