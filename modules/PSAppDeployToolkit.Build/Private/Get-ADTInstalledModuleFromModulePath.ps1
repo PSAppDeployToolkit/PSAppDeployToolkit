@@ -44,9 +44,10 @@ function Get-ADTInstalledModuleFromModulePath
 
         # The output here is to mimic Get-InstalledModule as much as possible, but it's not 1:1.
         # Start off by getting the module's manifest information, if the module has a .psd1 file.
-        $moduleInfo = if ([System.IO.File]::Exists("$($Directory.FullName)\$($Directory.Parent.BaseName).psd1"))
+        $moduleInfo = if ([System.IO.File]::Exists(($manifestPath = "$($Directory.FullName)\$($Directory.Parent.BaseName).psd1")))
         {
-            Import-LocalizedData -BaseDirectory $Directory.FullName -FileName "$($Directory.Parent.BaseName).psd1"
+            # Ignore errors as some built-in modules unfortuantely don't validate...
+            Test-ModuleManifest -Path $manifestPath -ErrorAction Ignore
         }
         return [pscustomobject]@{
             Name = $Directory.Parent.BaseName
