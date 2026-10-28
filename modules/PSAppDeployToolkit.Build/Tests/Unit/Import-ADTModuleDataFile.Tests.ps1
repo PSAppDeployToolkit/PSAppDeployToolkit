@@ -85,6 +85,31 @@ Describe 'Import-ADTModuleDataFile' {
         }
     }
 
+    Context 'Fluent accent values' {
+        It 'Retains nested colors with Exact=<Exact>' -ForEach @(
+            @{ Exact = $false; ExactLiteral = '$false' }
+            @{ Exact = $true; ExactLiteral = '$true' }
+        ) {
+            $directory = Join-Path $TestDrive 'AccentValues'
+            $null = New-Item -Path $directory -ItemType Directory -Force
+            Set-Content -LiteralPath "$directory\config.psd1" -Encoding UTF8 -Value "@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $ExactLiteral }; FluentAccentColorDark = @{ Color = 0xFF60CDFF; Exact = $ExactLiteral } } }"
+            $ui = (Import-Probe -Splat @{ BaseDirectory = $directory; FileName = 'config.psd1'; IgnorePolicy = $true }).UI
+            $ui.FluentAccentColor.Color | Should -Be 0xFF0078D7
+            $ui.FluentAccentColor.Exact | Should -Be $Exact
+            $ui.FluentAccentColorDark.Color | Should -Be 0xFF60CDFF
+            $ui.FluentAccentColorDark.Exact | Should -Be $Exact
+        }
+
+        It 'Preserves legacy scalar and null accents' {
+            $directory = Join-Path $TestDrive 'LegacyAccentValues'
+            $null = New-Item -Path $directory -ItemType Directory -Force
+            Set-Content -LiteralPath "$directory\config.psd1" -Encoding UTF8 -Value '@{ UI = @{ FluentAccentColor = 0xFF0078D7; FluentAccentColorDark = $null } }'
+            $ui = (Import-Probe -Splat @{ BaseDirectory = $directory; FileName = 'config.psd1'; IgnorePolicy = $true }).UI
+            $ui.FluentAccentColor | Should -Be 0xFF0078D7
+            ($null -eq $ui.FluentAccentColorDark) | Should -BeTrue
+        }
+    }
+
     Context 'Machine policy' {
         BeforeAll {
             # Read from a key under the current user's hive so nothing needs elevation. The versioned keys are

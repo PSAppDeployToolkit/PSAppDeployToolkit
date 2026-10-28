@@ -355,6 +355,33 @@ Describe 'New-ADTTemplate' {
         }
     }
 
+    Context 'Fluent accent values' {
+        It 'Exports both nested colors with Exact=<Exact>' -ForEach @(
+            @{ Exact = $false }
+            @{ Exact = $true }
+        ) {
+            $template = Get-ADTTemplateContent -Params @{
+                Config = @{
+                    UI = @{
+                        FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $Exact }
+                        FluentAccentColorDark = @{ Color = 0xFF60CDFF; Exact = $Exact }
+                    }
+                }
+            }
+            $template.ConfigData.UI.FluentAccentColor.Color | Should -Be 0xFF0078D7
+            $template.ConfigData.UI.FluentAccentColor.Exact | Should -Be $Exact
+            $template.ConfigData.UI.FluentAccentColorDark.Color | Should -Be 0xFF60CDFF
+            $template.ConfigData.UI.FluentAccentColorDark.Exact | Should -Be $Exact
+            $template.ConfigHasBom | Should -BeTrue
+        }
+
+        It 'Preserves scalar and null color overrides' {
+            $template = Get-ADTTemplateContent -Params @{ Config = @{ UI = @{ FluentAccentColor = 0xFF0078D7; FluentAccentColorDark = $null } } }
+            $template.ConfigData.UI.FluentAccentColor | Should -Be 0xFF0078D7
+            ($null -eq $template.ConfigData.UI.FluentAccentColorDark) | Should -BeTrue
+        }
+    }
+
     Context 'Config error handling' {
         It 'Throws ConfigKeyTypeMismatch when providing hashtable for scalar key' {
             { New-ADTTemplate -Destination $TestDrive -Force -Config @{ MSI = @{ InstallParams = @{ Nested = 'bad' } } } } | Should -Throw -ErrorId 'ConfigKeyTypeMismatch*'

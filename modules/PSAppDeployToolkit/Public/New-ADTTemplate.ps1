@@ -478,7 +478,8 @@ function New-ADTTemplate
                         continue
                     }
                     $astValue = $matchingKvp[0].Item2.PipelineElements[0].Expression
-                    if ($kvp.Value -is [System.Collections.IDictionary])
+                    $isFluentAccentColor = ($DataName -eq 'Config') -and ($currentPath -in 'UI.FluentAccentColor', 'UI.FluentAccentColorDark')
+                    if (($kvp.Value -is [System.Collections.IDictionary]) -and !$isFluentAccentColor)
                     {
                         if ($astValue -isnot [System.Management.Automation.Language.HashtableAst])
                         {

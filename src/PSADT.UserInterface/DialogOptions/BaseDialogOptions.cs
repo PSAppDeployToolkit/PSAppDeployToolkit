@@ -41,8 +41,9 @@ namespace PSADT.UserInterface.DialogOptions
             (string?)options["AppTaskbarIconImage"],
             (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
             (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
-            (int?)options["FluentAccentColor"],
-            (int?)options["FluentAccentColorDark"],
+            ReadFluentAccentColor(options["FluentAccentColor"]),
+            ReadFluentAccentColor(options["FluentAccentColorDark"]),
+            ReadFluentAccentColorExact(options["FluentAccentColor"]) || ReadFluentAccentColorExact(options["FluentAccentColorDark"]),
             (DialogPosition?)options["DialogPosition"],
             (bool?)options["DialogAllowMove"],
             (bool?)options["DialogAllowMinimize"],
@@ -67,6 +68,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="language">The culture information representing the language for the dialog. Cannot be null.</param>
         /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
         /// <param name="fluentAccentColorDark">The accent color for Fluent design elements in dark mode. If null, the default dark mode accent color is used.</param>
+        /// <param name="fluentAccentColorExact">Whether to use exact accent colors instead of calculated colors.</param>
         /// <param name="dialogPosition">The position of the dialog on the screen. If null, the default position is used.</param>
         /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If null, the default behavior is used.</param>
         /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If null or false, the minimize button remains hidden (default behavior). Only explicit <see langword="true"/> opts the dialog into minimize support.</param>
@@ -74,7 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, bool fluentAccentColorExact = false, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -104,6 +106,7 @@ namespace PSADT.UserInterface.DialogOptions
             LanguageName = language.Name;
             FluentAccentColor = fluentAccentColor;
             FluentAccentColorDark = fluentAccentColorDark;
+            FluentAccentColorExact = fluentAccentColorExact;
             DialogPosition = dialogPosition;
             DialogAllowMove = dialogAllowMove;
             DialogAllowMinimize = dialogAllowMinimize;
@@ -172,6 +175,12 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly int? FluentAccentColorDark;
 
         /// <summary>
+        /// Whether either custom accent configuration requests exact colors.
+        /// </summary>
+        [DataMember]
+        internal readonly bool FluentAccentColorExact;
+
+        /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
         [DataMember]
@@ -208,6 +217,26 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         private readonly string LanguageName;
+
+        /// <summary>
+        /// Reads a nested Color entry or a legacy scalar accent color.
+        /// </summary>
+        /// <param name="value">The optional accent configuration.</param>
+        /// <returns>The configured color, or null.</returns>
+        private protected static int? ReadFluentAccentColor(object? value)
+        {
+            return (int?)(value is IDictionary entries ? entries["Color"] : value);
+        }
+
+        /// <summary>
+        /// Reads an optional exact-color preference, defaulting to false.
+        /// </summary>
+        /// <param name="value">The optional accent configuration.</param>
+        /// <returns>True only when Exact is explicitly true.</returns>
+        private protected static bool ReadFluentAccentColorExact(object? value)
+        {
+            return value is IDictionary entries && (bool?)entries["Exact"] is true;
+        }
 
         /// <summary>
         /// Validates the specified image input and returns the image string if it represents a valid image file or

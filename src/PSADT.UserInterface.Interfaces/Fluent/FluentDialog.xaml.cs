@@ -65,14 +65,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             InitializeComponent();
 
             // Set up everything related to the dialog accent.
+            bool accentColorExact = options.FluentAccentColorExact;
             Color? accentColorDark = options.FluentAccentColorDark is not null ? IntToColor(options.FluentAccentColorDark.Value) : null;
             Color? accentColor = options.FluentAccentColor is not null ? IntToColor(options.FluentAccentColor.Value) : null;
-            _dialogAccentCache = new(new Dictionary<ApplicationTheme, Color?>
+            _dialogAccentCache = new(new Dictionary<ApplicationTheme, (Color? Color, bool Exact)>
             {
-                { ApplicationTheme.Light, accentColor },
-                { ApplicationTheme.Dark, accentColorDark ?? accentColor },
-                { ApplicationTheme.HighContrast, accentColorDark ?? accentColor },
-                { ApplicationTheme.Auto, accentColor },
+                { ApplicationTheme.Light, (accentColor, accentColorExact) },
+                { ApplicationTheme.Dark, (accentColorDark ?? accentColor, accentColorExact) },
+                { ApplicationTheme.HighContrast, (accentColorDark ?? accentColor, accentColorExact) },
+                { ApplicationTheme.Auto, (accentColor, accentColorExact) },
             });
 
             // Set the language and flow direction for the dialog.
@@ -758,9 +759,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="theme">The current application theme for which to apply the accent color. This parameter is used to look up the appropriate accent color from the cache.</param>
         private void SetDialogAccent(ApplicationTheme theme)
         {
-            if (_dialogAccentCache[theme] is Color accentColor)
+            (Color? color, bool exact) = _dialogAccentCache[theme];
+            if (color is Color accentColor)
             {
-                ApplicationAccentColorManager.ApplyCustomAccent(accentColor);
+                Color lightAccent = _dialogAccentCache[ApplicationTheme.Light].Color ?? accentColor;
+                Color darkAccent = _dialogAccentCache[ApplicationTheme.Dark].Color ?? accentColor;
+                ApplicationAccentColorManager.ApplyCustomAccent(lightAccent, darkAccent, exact: exact);
             }
         }
 
@@ -1139,9 +1143,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// A read-only dictionary that caches accent colors for different application themes.
+        /// A read-only dictionary that caches accent colors and exact preferences for different application themes.
         /// </summary>
-        private readonly ReadOnlyDictionary<ApplicationTheme, Color?> _dialogAccentCache;
+        private readonly ReadOnlyDictionary<ApplicationTheme, (Color? Color, bool Exact)> _dialogAccentCache;
 
         /// <summary>
         /// Releases the managed resources used by the dialog.

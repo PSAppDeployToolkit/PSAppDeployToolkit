@@ -128,11 +128,12 @@ try
                                                 DialogStyle = 'Fluent'
 
                                                 # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
-                                                # The value specified here should be literally typed (i.e. `FluentAccentColor = 0xFF0078D7`) and not wrapped in quotes.
+                                                # Use a numeric literal, or @{ Color = 0xFF0078D7; Exact = $true }; do not quote the color.
+                                                # Calculated colors are the default. Exact = $true on either accent enables exact colors for both.
                                                 FluentAccentColor = $null
 
                                                 # Specify the Accent Color in hex for dark mode (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
-                                                # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                # Use a numeric literal, or @{ Color = 0xFF0078D7; Exact = $true }. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorDark = $null
 
                                                 # Exit code used when a UI prompt times out.
