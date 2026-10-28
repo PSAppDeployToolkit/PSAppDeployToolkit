@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Tests.TestHelpers;
+using PSAppDeployToolkit.Foundation;
 using Xunit;
 
 namespace PSADT.UserInterface.Tests.DialogOptions
@@ -70,6 +71,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Equal("fr-FR", options.Language.Name);
             Assert.Equal(0x0078D4, options.FluentAccentColor);
             Assert.Equal(0x60CDFF, options.FluentAccentColorDark);
+            Assert.False(options.FluentAccentColorExact);
             Assert.Equal(DialogPosition.BottomRight, options.DialogPosition);
             Assert.True(options.DialogAllowMove);
             Assert.True(options.DialogAllowMinimize);
@@ -97,11 +99,65 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.AppTaskbarIconImage);
             Assert.Null(options.FluentAccentColor);
             Assert.Null(options.FluentAccentColorDark);
+            Assert.False(options.FluentAccentColorExact);
             Assert.Null(options.DialogPosition);
             Assert.Null(options.DialogAllowMove);
             Assert.Null(options.DialogAllowMinimize);
             Assert.Null(options.DialogExpiryDuration);
             Assert.Null(options.DialogPersistInterval);
+        }
+
+        /// <summary>
+        /// Verifies that either Exact flag enables the shared mode through every dialog constructor.
+        /// </summary>
+        /// <param name="lightExact">The Light preference.</param>
+        /// <param name="darkExact">The Dark preference.</param>
+        /// <param name="expected">The combined preference.</param>
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(true, true, true)]
+        public void Constructor_EitherExactPreferenceEnablesEveryDialog(bool lightExact, bool darkExact, bool expected)
+        {
+            BaseDialogOptions[] options =
+            [
+                new CloseAppsDialogOptions(DeploymentType.Install, WithAccent(SampleOptions.CloseAppsDialog(), lightExact, darkExact)),
+                new CustomDialogOptions(WithAccent(SampleOptions.CustomDialog(), lightExact, darkExact)),
+                new InputDialogOptions(WithAccent(SampleOptions.InputDialog(), lightExact, darkExact)),
+                new ListSelectionDialogOptions(WithAccent(SampleOptions.ListSelectionDialog(), lightExact, darkExact)),
+                new ProgressDialogOptions(WithAccent(SampleOptions.ProgressDialog(), lightExact, darkExact)),
+                new RestartDialogOptions(DeploymentType.Install, WithAccent(SampleOptions.RestartDialog(), lightExact, darkExact)),
+            ];
+
+            foreach (BaseDialogOptions option in options)
+            {
+                Assert.Equal(unchecked((int)0xFF0078D7), option.FluentAccentColor);
+                Assert.Equal(unchecked((int)0xFF60CDFF), option.FluentAccentColorDark);
+                Assert.Equal(expected, option.FluentAccentColorExact);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that nested colors can be omitted and Exact defaults to calculated mode.
+        /// </summary>
+        /// <param name="omitColors">Whether both Color entries are null.</param>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Constructor_NestedColorsWithoutExactKeepCalculatedMode(bool omitColors)
+        {
+            int? light = omitColors ? null : unchecked((int)0xFF0078D7);
+            int? dark = omitColors ? null : unchecked((int)0xFF60CDFF);
+            Hashtable table = SampleOptions.ProgressDialog();
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = light };
+            table["FluentAccentColorDark"] = new Hashtable { ["Color"] = dark };
+
+            ProgressDialogOptions options = new(table);
+
+            Assert.Equal(light, options.FluentAccentColor);
+            Assert.Equal(dark, options.FluentAccentColorDark);
+            Assert.False(options.FluentAccentColorExact);
         }
 
         /// <summary>
@@ -334,6 +390,20 @@ namespace PSADT.UserInterface.Tests.DialogOptions
 
             // Act & Assert
             _ = Assert.Throws<ArgumentException>(() => new ProgressDialogOptions(table));
+        }
+
+        /// <summary>
+        /// Adds nested accent values to a valid dialog fixture.
+        /// </summary>
+        /// <param name="table">The dialog-specific options.</param>
+        /// <param name="lightExact">The Light preference.</param>
+        /// <param name="darkExact">The Dark preference.</param>
+        /// <returns>The supplied table with accent entries.</returns>
+        private static Hashtable WithAccent(Hashtable table, bool lightExact, bool darkExact)
+        {
+            table["FluentAccentColor"] = new Hashtable { ["Color"] = unchecked((int)0xFF0078D7), ["Exact"] = lightExact };
+            table["FluentAccentColorDark"] = new Hashtable { ["Color"] = unchecked((int)0xFF60CDFF), ["Exact"] = darkExact };
+            return table;
         }
     }
 }

@@ -131,6 +131,32 @@ Describe 'Import-ADTConfig' {
         }
     }
 
+    Context 'Fluent accent values' {
+        It 'Retains both nested color options through config import' {
+            $directory = Join-Path $TestDrive 'AccentConfig'
+            $null = New-Item -Path $directory -ItemType Directory -Force
+            Set-Content -LiteralPath "$directory\config.psd1" -Encoding UTF8 -Value '@{ UI = @{ FluentAccentColor = @{ Color = 0xFF0078D7; Exact = $false }; FluentAccentColorDark = @{ Color = 0xFF60CDFF; Exact = $true } } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Directory = $directory } {
+                $ui = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Directory).UI
+                $ui.FluentAccentColor.Color | Should -Be 0xFF0078D7
+                $ui.FluentAccentColor.Exact | Should -BeFalse
+                $ui.FluentAccentColorDark.Color | Should -Be 0xFF60CDFF
+                $ui.FluentAccentColorDark.Exact | Should -BeTrue
+            }
+        }
+
+        It 'Keeps a legacy dark color and null light color unchanged' {
+            $directory = Join-Path $TestDrive 'LegacyAccentConfig'
+            $null = New-Item -Path $directory -ItemType Directory -Force
+            Set-Content -LiteralPath "$directory\config.psd1" -Encoding UTF8 -Value '@{ UI = @{ FluentAccentColor = $null; FluentAccentColorDark = 0xFF60CDFF } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Directory = $directory } {
+                $ui = (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Directory).UI
+                ($null -eq $ui.FluentAccentColor) | Should -BeTrue
+                $ui.FluentAccentColorDark | Should -Be 0xFF60CDFF
+            }
+        }
+    }
+
     Context 'Path redirection' {
         It 'Leaves the redirection on admin rights by default' {
             # The mode has to be opt-in, since turning it on moves an administrator's deferral history to HKCU.
