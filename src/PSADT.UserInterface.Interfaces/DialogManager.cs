@@ -51,7 +51,7 @@ namespace PSADT.UserInterface.Interfaces
             // Configure WinForms modernisations here the NotifyIcon can create a IWin32Window which will make this throw if called afterwards.
             System.Windows.Forms.Application.EnableVisualStyles(); System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(defaultValue: false);
 
-            // Force all WPF dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
+            // Force all WPF dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762).
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
             // Create and start the WPF application thread.
