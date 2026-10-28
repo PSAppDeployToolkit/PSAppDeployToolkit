@@ -61,6 +61,7 @@ GetPrivateProfileString
 GetProcAddress
 GetProcessId
 GetProcessImageFileName
+GetProcessTimes
 GetProductInfo
 GetQueuedCompletionStatus
 GetSystemFirmwareTable

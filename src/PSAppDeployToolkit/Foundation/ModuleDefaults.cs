@@ -46,7 +46,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 throw new ArgumentException("Strings element must contain a single element with an empty key.", nameof(defaults));
             }
-            Config = defaults["Config"];
+            ConfigAst = (HashtableAst)((CommandExpressionAst)((PipelineAst)((ScriptBlockAst)(Config = defaults["Config"])[string.Empty].Ast).EndBlock.Statements[0]).PipelineElements[0]).Expression;
             Strings = defaults["Strings"];
         }
 
@@ -56,7 +56,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>A hashtable containing the default configuration values for the module.</returns>
         public IDictionary GetDefaultConfig()
         {
-            return (Hashtable)((CommandExpressionAst)((PipelineAst)((ScriptBlockAst)Config[string.Empty].Ast).EndBlock.Statements[0]).PipelineElements[0]).Expression.SafeGetValue();
+            return (Hashtable)ConfigAst.SafeGetValue();
         }
 
         /// <summary>
@@ -78,5 +78,11 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the default string values for the module.
         /// </summary>
         public IReadOnlyDictionary<string, ScriptBlock> Strings { get; }
+
+        /// <summary>
+        /// Gets the abstract syntax tree (AST) representation of the default configuration values for the module.
+        /// </summary>
+        /// <remarks>This is stored off to improve performance by avoiding repeated AST parsing.</remarks>
+        private readonly HashtableAst ConfigAst;
     }
 }

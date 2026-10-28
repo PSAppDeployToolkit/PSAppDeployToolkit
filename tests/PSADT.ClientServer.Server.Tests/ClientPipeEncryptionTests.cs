@@ -123,6 +123,28 @@ namespace PSADT.ClientServer.Server.Tests
         }
 
         /// <summary>
+        /// Verifies that a server challenge of any size but the agreed one is refused before the client answers it.
+        /// </summary>
+        /// <param name="length">The length of the challenge to send.</param>
+        [Theory]
+        [InlineData(ChallengeSize - 1)]
+        [InlineData(ChallengeSize + 1)]
+        public void PerformKeyExchange_RefusesAChallengeOfTheWrongLength(int length)
+        {
+            // Arrange: a real server key gets the client as far as the challenge
+            using ClientPipeEncryption client = new();
+            using MemoryStream output = new();
+            using MemoryStream input = new([.. KeyExchangeFrames.ServerPublicKey(), .. BitConverter.GetBytes(length), .. new byte[length]]);
+
+            // Act
+            CryptographicException failure = Assert.Throws<CryptographicException>(() => client.PerformKeyExchangeBlocking(output, input));
+
+            // Assert: nothing but the client's own public key frame went out
+            Assert.Contains("invalid server challenge length", failure.Message, StringComparison.Ordinal);
+            Assert.Equal(4 + 8 + 32 + 32, output.Length);
+        }
+
+        /// <summary>
         /// Verifies that a correctly encrypted proof which is not the challenge the client sent is refused.
         /// </summary>
         /// <remarks>
@@ -212,5 +234,10 @@ namespace PSADT.ClientServer.Server.Tests
         /// How much of a frame is length prefix and blob header, and so is the same whoever sent it.
         /// </summary>
         private const int HeaderLength = 12;
+
+        /// <summary>
+        /// The size, in bytes, of the challenge the server sends.
+        /// </summary>
+        private const int ChallengeSize = 32;
     }
 }
