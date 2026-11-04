@@ -46,7 +46,19 @@ namespace PSADT.UserInterface.Interfaces
 
             // Shut WPF down on process exit, or shutdown stalls for ~2.5 seconds. InvokeShutdown() rather
             // than Application.Shutdown(), which invalidates HWNDs before ManagedWndProcTracker walks them.
-            AppDomain.CurrentDomain.ProcessExit += static (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeShutdown();
+            // InvokeShutdown() returns before the WPF thread destroys its HWNDs, so wait for that thread too: on .NET
+            // Framework, an HWND destroyed during ManagedWndProcTracker's walk throws an unhandled Win32Exception (1400).
+            AppDomain.CurrentDomain.ProcessExit += static (_, _) =>
+            {
+                if (System.Windows.Application.Current?.Dispatcher is System.Windows.Threading.Dispatcher dispatcher)
+                {
+                    dispatcher.InvokeShutdown();
+                    if (dispatcher.Thread != Thread.CurrentThread)
+                    {
+                        _ = dispatcher.Thread.Join(TimeSpan.FromSeconds(1));
+                    }
+                }
+            };
 
             // Configure WinForms modernisations here the NotifyIcon can create a IWin32Window which will make this throw if called afterwards.
             System.Windows.Forms.Application.EnableVisualStyles(); System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(defaultValue: false);

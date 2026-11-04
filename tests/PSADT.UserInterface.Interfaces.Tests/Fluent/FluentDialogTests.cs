@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,9 +31,8 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
     /// nothing else, so those tests build one and hand it over.
     /// </para>
     /// <para>
-    /// No window is ever shown. The dialog parks itself far off every monitor until its first paint and
-    /// only returns on screen once content has rendered, so showing one would put a real window in front
-    /// of whoever is running the suite for as long as the test took.
+    /// No window is ever shown. Each dialog is inspected on the shared UI apartment and disposed
+    /// without entering its modal display loop.
     /// </para>
     /// </remarks>
     public sealed class FluentDialogTests
