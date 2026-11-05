@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="tabs-1" Title="Tabs" />
+            <local:GalleryPageHeader DocsAnchor="navigation-and-tabs" Title="Tabs" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Tabs organize related panels while keeping one view active at a time." />
 
             <fluence:SmoothScrollViewer

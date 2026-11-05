@@ -11,7 +11,7 @@ Read this file when adding or changing a control, dependency property, routed ev
 - Use EventHandler<TArgs> for typed events. Use a routed event only when events need to bubble or tunnel through a template. Existing routed events are BreadcrumbBarItem.Click, Card.Click, SplitButton.Click, TabView.AddTabButtonClick, TabView.TabCloseRequested, and TabViewItem.CloseRequested.
 - Place every new public event-argument type in its own source file under Fluence.Wpf/.
 - When a framework control is sealed, style the native type rather than deriving from it. PasswordBox is the only implicit native framework-type style in the library; its Fluence-only properties live in PasswordBoxExtensions. Other native ScrollBar, ScrollViewer, RepeatButton, and Thumb styles remain keyed.
-- New controls need a demo sample, a focused xUnit test, and a CHANGELOG entry. Follow the new-control playbook in .claude/skills/new-control/SKILL.md.
+- New controls need a demo sample with its catalog registrations, a focused xUnit test with updated test baselines, a PowerShell controls tour example when scripts can use the control, and a CHANGELOG entry. Follow the new-control playbook in .claude/skills/new-control/SKILL.md.
 
 ## Window and native behavior
 

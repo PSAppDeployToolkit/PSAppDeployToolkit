@@ -89,10 +89,11 @@ Every window-opening command supports title-bar customization: `-Title` (also `-
 
 ## Build reference and packages
 
-After staging, regenerate all 16 command pages from the help in `src/Fluence.Wpf.PowerShell/Public/*.ps1`:
+After staging, generate one command page per exported function from the help in `src/Fluence.Wpf.PowerShell/Public/*.ps1`, then check the output. The generator needs `Alt3.Docusaurus.Powershell` 2.0.1 and writes to the ignored `artifacts/` folder; CI runs the same check. Generated pages are not committed here; the [documentation tooling guide](../tools/Docs/README.md) describes the website sync.
 
 ```powershell
-pwsh -NoProfile -File .\Fluence.Wpf.PowerShell.Module\build\Export-ModuleReference.ps1
+pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference
+pwsh -NoProfile -File tools/Docs/Generate-PowerShellReference.ps1 -OutputRoot artifacts/docs/powershell/reference -Check
 ```
 
 Build current library source, stage the module, and package a ZIP and a PowerShell Gallery format package:
@@ -126,7 +127,7 @@ Run `Test-Module.ps1 -IncludeUi` on an interactive desktop to include tests that
 | `src/Fluence.Wpf.PowerShell/Public/` | One exported function per file; comment-based help is the reference source. |
 | `src/Fluence.Wpf.PowerShell/Private/` | Loader, UI runspace, theming, and dialog implementation. |
 | `examples/` | Runnable scripts and XAML. |
-| `build/` | Stage, package, test, and reference generation scripts. |
+| `build/` | Stage, package, test, and capture scripts. The command reference generator is `tools/Docs/Generate-PowerShellReference.ps1`. |
 | `tests/` | Pester tests. |
 
 ## License

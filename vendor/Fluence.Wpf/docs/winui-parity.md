@@ -24,6 +24,9 @@ The [control catalog](controls.md) and [theme reference](theming.md) define the 
 | Date picker | The Fluence picker has its own selected-date API and is not a subclass of WPF `DatePicker`. |
 | Text and images | Fluence `TextBlock` and `Image` are templated controls rather than subclasses of the native WPF elements. |
 | Password entry | Native WPF `PasswordBox` is styled implicitly and extended with attached properties because it is sealed. |
+| Tables | The WinUI `TableView` is provided as `DataGrid`, a subclass of the WPF `DataGrid`, with WPF names. Use `DataGridTextColumn` and `DataGridTemplateColumn` columns, `FrozenColumnCount` for leading frozen columns, `ICollectionView` for filtering and grouping, `IsItemSelectable="False"` for `SelectionMode="None"`, and `EmptyContent` for `EmptyTemplate`. |
+| Table gaps | There is no `TableView` type. Trailing frozen columns and `Density` are not provided, and `DataGridComboBoxColumn` and `DataGridHyperlinkColumn` have no Fluent styles. Use a `DataGridTemplateColumn` with a Fluence `ComboBox` for Fluent drop-down cells. |
+| Table grouping | Grouping turns off row virtualization unless `VirtualizingPanel.IsVirtualizingWhenGrouping` is set, as in native WPF. |
 
 ## Visual and platform boundaries
 

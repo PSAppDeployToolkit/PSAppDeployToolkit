@@ -28,7 +28,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="data-binding" Title="Data Binding" />
+            <local:GalleryPageHeader DocsAnchor="data-collections-and-people" Title="Data Binding" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="These examples keep the demo in code-behind while showing common WPF binding patterns used by Fluence.Wpf controls." />
 
             <fluence:SmoothScrollViewer

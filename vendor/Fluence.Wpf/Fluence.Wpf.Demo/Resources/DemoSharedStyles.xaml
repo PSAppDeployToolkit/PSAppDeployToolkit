@@ -40,6 +40,7 @@
     <Thickness x:Key="DemoInlineControlTrailingGapMargin">0,0,16,0</Thickness>
     <Thickness x:Key="DemoSmallInlineControlGapMargin">6,0,8,8</Thickness>
     <Thickness x:Key="DemoWorkToggleProgressRingMargin">24,0,0,0</Thickness>
+    <Thickness x:Key="DemoDataGridCellContentMargin">12,0,12,0</Thickness>
     <Thickness x:Key="DemoControlBottomGapMargin">0,0,0,12</Thickness>
     <Thickness x:Key="DemoSmallBottomGapMargin">0,0,0,8</Thickness>
     <Thickness x:Key="DemoMediumTopGapMargin">0,12,0,0</Thickness>

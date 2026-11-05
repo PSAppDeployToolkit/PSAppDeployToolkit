@@ -1252,5 +1252,29 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         #endregion BuildBackdropPlan - Acrylic falls back to Mica when only the legacy Mica effect is available
+
+        #region IsStartupShowStateRequested - launcher show state
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(1, false)] // SW_SHOWNORMAL, which Explorer passes for a normal launch.
+        [InlineData(5, false)] // SW_SHOW
+        [InlineData(10, false)] // SW_SHOWDEFAULT
+        [InlineData(3, true)] // SW_SHOWMAXIMIZED
+        [InlineData(2, true)] // SW_SHOWMINIMIZED
+        [InlineData(7, true)] // SW_SHOWMINNOACTIVE
+        [InlineData(0, true)] // SW_HIDE
+        public void IsStartupShowStateRequested_OnlyNonNormalShowCommandsNeedAnActivatingShow(int? showCommand, bool expected)
+        {
+            // Windows replaces only SW_SHOW, SW_SHOWNORMAL, or SW_SHOWDEFAULT with the startup show
+            // command. Any other launcher request is lost unless the first window shows activated.
+            Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD? command = showCommand is int value
+                ? (Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD)value
+                : null;
+
+            Assert.Equal(expected, WindowPolicy.IsStartupShowStateRequested(command));
+        }
+
+        #endregion IsStartupShowStateRequested - launcher show state
     }
 }

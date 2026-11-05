@@ -19,6 +19,7 @@ GetDC
 GetDisplayConfigBufferSizes
 GetDpiForWindow
 GetMonitorInfo
+GetStartupInfo
 GetSystemMetrics
 GetSystemMetricsForDpi
 GetWindowLong

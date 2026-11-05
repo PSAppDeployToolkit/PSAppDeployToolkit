@@ -26,44 +26,90 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
+using System.Windows.Controls;
+
 namespace Fluence.Wpf.Demo
 {
     /// <summary>
-    /// Metadata for a single entry in the gallery's left navigation pane.
+    /// Metadata for a single gallery page: its navigation pane entry and the factory that creates
+    /// the page when the shell first shows it.
     /// </summary>
-    /// <param name="title">The display label shown in the navigation pane.</param>
-    /// <param name="route">The route key used to instantiate the correct gallery page.</param>
-    /// <param name="keywords">Additional search terms for the search box.</param>
-    /// <param name="glyph">The Segoe Fluent Icons Unicode code point string for this item's icon.</param>
-    /// <param name="isDefault">Indicates whether this item should be selected on first load.</param>
-    public sealed class DemoNavigationItem(string title, string route, string keywords, string glyph, bool isDefault)
+    public sealed class DemoNavigationItem
     {
+        private readonly Func<MainWindow?, Page> _createPage;
+
+        private DemoNavigationItem(string title, string route, string keywords, string glyph, bool isDefault, Type pageType, Func<MainWindow?, Page> createPage)
+        {
+            Title = title;
+            Route = route;
+            Keywords = keywords;
+            Glyph = glyph;
+            IsDefault = isDefault;
+            PageType = pageType;
+            _createPage = createPage;
+        }
+
         /// <summary>
         /// Gets the display label shown in the navigation pane.
         /// </summary>
-        public string Title { get; } = title;
+        public string Title { get; }
 
         /// <summary>
-        /// Gets the route key used by <c language="csharp">MainWindow.CreatePageForRoute</c> to instantiate the
-        /// correct gallery page. Must match a case in that switch exactly.
+        /// Gets the route key that <see cref="MainWindow.NavigateTo"/> matches to select this page.
+        /// Routes are lowercase and unique across the catalog and the Settings footer entry.
         /// </summary>
-        public string Route { get; } = route;
+        public string Route { get; }
 
         /// <summary>
         /// Gets additional search terms (space-separated) that allow the search box to surface
         /// this page even when the user types a synonym not present in <see cref="Title"/>.
         /// </summary>
-        public string Keywords { get; } = keywords;
+        public string Keywords { get; }
 
         /// <summary>
         /// Gets the Segoe Fluent Icons Unicode code point string for this item's icon.
         /// </summary>
-        public string Glyph { get; } = glyph;
+        public string Glyph { get; }
 
         /// <summary>
         /// Gets a value indicating whether this item should be selected on first load. Only one
         /// item in the catalog should have this set to <see langword="true"/>.
         /// </summary>
-        public bool IsDefault { get; } = isDefault;
+        public bool IsDefault { get; }
+
+        /// <summary>
+        /// Gets the type of the page that <see cref="CreatePage"/> returns.
+        /// </summary>
+        public Type PageType { get; }
+
+        /// <summary>
+        /// Creates a navigation entry whose page type is taken from the factory's return type, so
+        /// the type and the factory cannot disagree.
+        /// </summary>
+        /// <typeparam name="TPage">The gallery page type.</typeparam>
+        /// <param name="title">The display label shown in the navigation pane.</param>
+        /// <param name="route">The route key that selects this page.</param>
+        /// <param name="keywords">Additional search terms for the search box.</param>
+        /// <param name="glyph">The Segoe Fluent Icons Unicode code point string for this item's icon.</param>
+        /// <param name="isDefault">Indicates whether this item should be selected on first load.</param>
+        /// <param name="createPage">Creates the page. The argument is the shell window, or <see langword="null"/> when the page is created outside the shell.</param>
+        /// <returns>The navigation entry.</returns>
+        public static DemoNavigationItem Create<TPage>(string title, string route, string keywords, string glyph, bool isDefault, Func<MainWindow?, TPage> createPage)
+            where TPage : Page
+        {
+            ArgumentNullException.ThrowIfNull(createPage);
+            return new DemoNavigationItem(title, route, keywords, glyph, isDefault, typeof(TPage), owner => createPage(owner));
+        }
+
+        /// <summary>
+        /// Creates a new instance of this entry's page.
+        /// </summary>
+        /// <param name="owner">The shell window that hosts the page, or <see langword="null"/> when the page is created outside the shell.</param>
+        /// <returns>A new page of type <see cref="PageType"/>.</returns>
+        public Page CreatePage(MainWindow? owner)
+        {
+            return _createPage(owner);
+        }
     }
 }
