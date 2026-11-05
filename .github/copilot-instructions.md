@@ -1,16 +1,22 @@
 ﻿# Fluence.Wpf -- Copilot Instructions
 
-Condensed guidance for Copilot, Gemini, and similar assistants. Full detail is
-in AGENTS.md -- read it before making any non-trivial change.
+Condensed guidance for Copilot, Gemini, and similar assistants. The root
+AGENTS.md routes each work area to its own AGENTS.md -- read the root file and
+the nearest AGENTS.md for every path you change before any non-trivial change.
+Where this file and an AGENTS.md disagree, the AGENTS.md wins.
 
 ---
 
 ## Project at a glance
 
 WPF control library reproducing Windows 11 Fluent / WinUI 3 visuals on .NET
-Framework 4.7.2 and .NET 10. Four projects: `Fluence.Wpf` (library),
-`Fluence.Wpf.Demo` (gallery), `Fluence.Wpf.Demo.Mvvm` (MVVM demo),
-`Fluence.Wpf.Tests` (xunit.v3 3.2.2, multi-TFM).
+Framework 4.7.2, .NET 8, and .NET 10 for Windows. Solution projects:
+`Fluence.Wpf` (library), `Fluence.Wpf.Demo` (gallery), `Fluence.Wpf.Demo.Mvvm`
+(MVVM demo), `Fluence.Wpf.Tests` (xunit.v3 on net472 and net10), and
+`Fluence.Wpf.Tests.Smoke` (.NET 8 smoke lane). `Fluence.Wpf.PowerShell.Module`
+is a script module outside the solution, and `templates/` holds the
+`dotnet new` consumer starters. Package versions live in
+`Directory.Packages.props`.
 
 **XML namespace:** `http://schemas.fluencewpf.com` (prefix: `fluence`)
 
@@ -58,8 +64,10 @@ Framework 4.7.2 and .NET 10. Four projects: `Fluence.Wpf` (library),
 
 ## Theme architecture (3-slot layout -- do not break)
 
-`Application.Current.Resources.MergedDictionaries` always has exactly 3 entries
-after `ApplicationThemeManager.Apply(...)`:
+After `ApplicationThemeManager.Apply(...)`,
+`Application.Current.Resources.MergedDictionaries` starts with these 3
+Fluence-owned entries; foreign dictionaries may follow at slot 3 and beyond
+(see `Fluence.Wpf/Theming/AGENTS.md`):
 
 | Slot | File | Lifecycle |
 |------|------|-----------|
@@ -100,7 +108,7 @@ Fluence.Wpf.Tests\bin\Debug\net10.0-windows10.0.26100.0\Fluence.Wpf.Tests.exe --
 Both `net472` and `net10.0-windows10.0.26100.0` must pass. The suite runs on
 Microsoft Testing Platform, so run the built executable rather than
 `dotnet test`; a single-process whole-assembly run on `net472` aborts, so run
-that TFM as two complementary lanes (see AGENTS.md section 6 and
+that TFM as two complementary lanes (see `Fluence.Wpf.Tests/README.md` and
 `KNOWN_ISSUES.md`). Tests are non-parallel
 (`[assembly: Parallelization(Mode = ParallelMode.None)]` plus
 `xunit.runner.json`). All UI-touching work goes through
@@ -136,5 +144,6 @@ that TFM as two complementary lanes (see AGENTS.md section 6 and
 
 ---
 
-For full detail on control authoring, theme API, common pitfalls, naming
-conventions, and C# style rules: read **AGENTS.md**
+For full detail on control authoring, theme API, testing, the PowerShell
+module, and documentation ownership, follow the routing table in **AGENTS.md**
+to the nearest area guidance.

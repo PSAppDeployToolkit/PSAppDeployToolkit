@@ -18,7 +18,10 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="typography-1" Title="Typography" />
+            <local:GalleryPageHeader
+                DocsAnchor="typography-geometry-and-motion"
+                DocsDocument="theming.md"
+                Title="Typography" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Fluent type styles use Segoe UI Variable when available and fall back to Segoe UI." />
 
             <fluence:SmoothScrollViewer

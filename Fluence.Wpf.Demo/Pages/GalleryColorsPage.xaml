@@ -47,7 +47,7 @@
             <local:GalleryPageHeader
                 Title="Colors"
                 ControlSourcePath="Fluence.Wpf/Themes/Colors/Theme.Light.xaml"
-                DocsAnchor="canonical-token-families"
+                DocsAnchor="supported-key-families"
                 DocsDocument="theming.md" />
             <TextBlock
                 Grid.Row="1"

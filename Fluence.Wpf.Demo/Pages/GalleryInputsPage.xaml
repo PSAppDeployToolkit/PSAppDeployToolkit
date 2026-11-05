@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="inputs" Title="Inputs" />
+            <local:GalleryPageHeader DocsAnchor="text-forms-and-pickers" Title="Inputs" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Input controls collect freeform text, protected text, numbers, and ranged values." />
 
             <fluence:SmoothScrollViewer

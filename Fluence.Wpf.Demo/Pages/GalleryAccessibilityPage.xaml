@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <pages:GalleryPageHeader DocsAnchor="accessibility" Title="Accessibility" />
+            <pages:GalleryPageHeader DocsAnchor="accessibility-and-extensibility" Title="Accessibility" />
             <TextBlock
                 Grid.Row="1"
                 Margin="0,0,0,24"

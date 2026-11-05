@@ -28,7 +28,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="basic-actions" Title="Buttons" />
+            <local:GalleryPageHeader DocsAnchor="actions-and-selection" Title="Buttons" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Buttons initiate actions, open menus, navigate as links, or hold a checked state." />
 
             <fluence:SmoothScrollViewer

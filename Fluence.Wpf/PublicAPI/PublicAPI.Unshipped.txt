@@ -5,3 +5,19 @@ override Fluence.Wpf.Controls.RadioButton.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.RadioButton.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
 override Fluence.Wpf.Controls.CheckBox.OnApplyTemplate() -> void
 override Fluence.Wpf.Controls.CheckBox.OnPropertyChanged(System.Windows.DependencyPropertyChangedEventArgs e) -> void
+Fluence.Wpf.Controls.DataGrid
+Fluence.Wpf.Controls.DataGrid.CollapseAllGroups() -> void
+Fluence.Wpf.Controls.DataGrid.CornerRadius.get -> System.Windows.CornerRadius
+Fluence.Wpf.Controls.DataGrid.CornerRadius.set -> void
+Fluence.Wpf.Controls.DataGrid.DataGrid() -> void
+Fluence.Wpf.Controls.DataGrid.EmptyContent.get -> object?
+Fluence.Wpf.Controls.DataGrid.EmptyContent.set -> void
+Fluence.Wpf.Controls.DataGrid.ExpandAllGroups() -> void
+Fluence.Wpf.Controls.DataGrid.IsItemSelectable.get -> bool
+Fluence.Wpf.Controls.DataGrid.IsItemSelectable.set -> void
+override Fluence.Wpf.Controls.DataGrid.OnSelectedCellsChanged(System.Windows.Controls.SelectedCellsChangedEventArgs! e) -> void
+override Fluence.Wpf.Controls.DataGrid.OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs! e) -> void
+static readonly Fluence.Wpf.Controls.DataGrid.CornerRadiusProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DataGrid.EmptyContentProperty -> System.Windows.DependencyProperty!
+static readonly Fluence.Wpf.Controls.DataGrid.IsItemSelectableProperty -> System.Windows.DependencyProperty!
+override Fluence.Wpf.Controls.FluenceWindow.OnContentRendered(System.EventArgs! e) -> void

@@ -1,0 +1,227 @@
+﻿<Page
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryDataGridPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+    <Grid x:Name="PageRoot" Style="{StaticResource GalleryPageRootStyle}">
+        <Grid x:Name="PageContent" Style="{StaticResource GalleryPageContentGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <local:GalleryPageHeader DocsAnchor="data-collections-and-people" Title="DataGrid" />
+            <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="DataGrid shows rows and columns of data with sorting, resizing, grouping, filtering, editing, and validation. It is the Fluence counterpart of the WinUI TableView and keeps the WPF DataGrid API." />
+
+            <fluence:SmoothScrollViewer
+                Grid.Row="2"
+                Margin="{DynamicResource DemoPageScrollHostMargin}"
+                Style="{StaticResource GalleryPageScrollViewerStyle}">
+                <StackPanel Margin="{DynamicResource DemoPageScrollContentMargin}">
+
+
+                    <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                        <fluence:DataGrid
+                            x:Name="BasicDataGrid"
+                            Height="320"
+                            AutoGenerateColumns="False"
+                            FrozenColumnCount="1"
+                            GridLinesVisibility="{Binding SelectedItem, Source={x:Reference GridLinesComboBox}}"
+                            IsItemSelectable="{Binding IsChecked, Source={x:Reference SelectionCheckBox}}"
+                            IsReadOnly="{Binding IsChecked, Source={x:Reference ReadOnlyCheckBox}}">
+                            <fluence:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="160"
+                                    Binding="{Binding Name}"
+                                    Header="Product" />
+                                <DataGridTextColumn
+                                    Width="140"
+                                    Binding="{Binding Category}"
+                                    Header="Category" />
+                                <DataGridTextColumn
+                                    Width="140"
+                                    Binding="{Binding Supplier}"
+                                    Header="Supplier" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Quantity}"
+                                    Header="Quantity" />
+                                <DataGridCheckBoxColumn
+                                    Width="100"
+                                    Binding="{Binding InStock}"
+                                    Header="In stock" />
+                            </fluence:DataGrid.Columns>
+                        </fluence:DataGrid>
+                    </ContentControl>
+                    <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
+                        <StackPanel>
+                            <fluence:CheckBox
+                                x:Name="ReadOnlyCheckBox"
+                                Content="Read only"
+                                IsChecked="True" />
+                            <fluence:CheckBox
+                                x:Name="SelectionCheckBox"
+                                Margin="{DynamicResource DemoTextTopGapMargin}"
+                                Content="Allow selection"
+                                IsChecked="True" />
+                            <fluence:ComboBox
+                                x:Name="GridLinesComboBox"
+                                MinWidth="140"
+                                Margin="{DynamicResource DemoTextTopGapMargin}"
+                                AutomationProperties.Name="Grid lines"
+                                SelectedIndex="1">
+                                <x:Static Member="DataGridGridLinesVisibility.All" />
+                                <x:Static Member="DataGridGridLinesVisibility.Horizontal" />
+                                <x:Static Member="DataGridGridLinesVisibility.Vertical" />
+                                <x:Static Member="DataGridGridLinesVisibility.None" />
+                            </fluence:ComboBox>
+                        </StackPanel>
+                    </ContentControl>
+                    <local:DemoSampleControl SampleDescription="A DataGrid with 1,000 rows. Click a header to sort, drag a header edge to resize, and scroll sideways: the first column stays frozen." />
+
+
+                    <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                        <fluence:DataGrid
+                            x:Name="GroupedDataGrid"
+                            Height="320"
+                            AutoGenerateColumns="False"
+                            IsReadOnly="True">
+                            <fluence:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="180"
+                                    Binding="{Binding Name}"
+                                    Header="Product" />
+                                <DataGridTextColumn
+                                    Width="140"
+                                    Binding="{Binding Supplier}"
+                                    Header="Supplier" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Quantity}"
+                                    Header="Quantity" />
+                            </fluence:DataGrid.Columns>
+                        </fluence:DataGrid>
+                    </ContentControl>
+                    <ContentControl x:Name="DemoSampleSlot02RightRailContentHost" Visibility="Collapsed">
+                        <StackPanel>
+                            <fluence:TextBox
+                                x:Name="GroupFilterTextBox"
+                                MinWidth="160"
+                                AutomationProperties.Name="Filter products"
+                                PlaceholderText="Filter products"
+                                TextChanged="GroupFilterTextBox_TextChanged" />
+                            <fluence:Button
+                                MinWidth="140"
+                                Margin="{DynamicResource DemoTextTopGapMargin}"
+                                Click="ExpandAllGroups_Click"
+                                Content="Expand all" />
+                            <fluence:Button
+                                MinWidth="140"
+                                Margin="{DynamicResource DemoTextTopGapMargin}"
+                                Click="CollapseAllGroups_Click"
+                                Content="Collapse all" />
+                        </StackPanel>
+                    </ContentControl>
+                    <local:DemoSampleControl SampleDescription="Group rows through an ICollectionView and filter them as you type. Group headers collapse and expand." />
+
+
+                    <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                        <fluence:DataGrid
+                            x:Name="EditableDataGrid"
+                            Height="280"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CellEditEnding="EditableDataGrid_CellEditEnding"
+                            RowEditEnding="EditableDataGrid_RowEditEnding">
+                            <fluence:DataGrid.EmptyContent>
+                                <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="No products. Select Restore rows to add them back." />
+                            </fluence:DataGrid.EmptyContent>
+                            <!--
+                                Star widths share the grid's width between the columns, so the grid fits without horizontal
+                                scrolling at the gallery's minimum window width. Each MinWidth keeps its header readable, and
+                                the Rating column sizes to its stars.
+                            -->
+                            <fluence:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="2*"
+                                    MinWidth="88"
+                                    Binding="{Binding Name}"
+                                    Header="Product" />
+                                <DataGridTextColumn
+                                    Width="*"
+                                    MinWidth="90"
+                                    Binding="{Binding Quantity}"
+                                    Header="Quantity" />
+                                <DataGridCheckBoxColumn
+                                    Width="*"
+                                    MinWidth="84"
+                                    Binding="{Binding InStock}"
+                                    Header="In stock" />
+                                <DataGridTemplateColumn
+                                    Width="Auto"
+                                    Header="Rating"
+                                    SortMemberPath="Rating">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <fluence:RatingControl
+                                                Margin="{DynamicResource DemoDataGridCellContentMargin}"
+                                                VerticalAlignment="Center"
+                                                IsReadOnly="True"
+                                                Value="{Binding Rating}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    Width="*"
+                                    MinWidth="100"
+                                    Header="Fulfilment"
+                                    SortMemberPath="Progress">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <fluence:ProgressBar
+                                                Margin="{DynamicResource DemoDataGridCellContentMargin}"
+                                                VerticalAlignment="Center"
+                                                Maximum="100"
+                                                Value="{Binding Progress}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </fluence:DataGrid.Columns>
+                        </fluence:DataGrid>
+                    </ContentControl>
+                    <ContentControl x:Name="DemoSampleSlot03RightRailContentHost" Visibility="Collapsed">
+                        <StackPanel>
+                            <StackPanel x:Name="EditActionsPanel">
+                                <fluence:Button
+                                    MinWidth="140"
+                                    Click="ClearRows_Click"
+                                    Content="Clear rows" />
+                                <fluence:Button
+                                    MinWidth="140"
+                                    Margin="{DynamicResource DemoTextTopGapMargin}"
+                                    Click="RestoreRows_Click"
+                                    Content="Restore rows" />
+                            </StackPanel>
+                            <TextBlock Margin="{DynamicResource DemoLargeTopGapMargin}" Text="Output:" />
+                            <!--  The rail sizes to its content: the result takes the buttons' width, so longer messages wrap instead of widening the rail.  -->
+                            <TextBlock
+                                x:Name="EditResultText"
+                                Width="{Binding ActualWidth, Source={x:Reference EditActionsPanel}}"
+                                Text="No edits yet."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ContentControl>
+                    <local:DemoSampleControl SampleDescription="Edit text, check box, and validated cells: double-click a Product or Quantity cell, then clear the name or enter a negative quantity to see a validation error. Template columns host a RatingControl and a ProgressBar, and EmptyContent shows when the rows are cleared." />
+                </StackPanel>
+            </fluence:SmoothScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

@@ -37,6 +37,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.SystemInformation;
+using Windows.Win32.System.Threading;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -431,6 +432,22 @@ namespace Fluence.Wpf.Native
         public static bool RestoreWindowNative(IntPtr hwnd)
         {
             return hwnd != IntPtr.Zero && PInvoke.ShowWindow((HWND)hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
+        /// <summary>
+        /// Reads the show command that the launching process passed in this process's
+        /// <c language="csharp">STARTUPINFO</c>, such as the run state of a shortcut.
+        /// </summary>
+        /// <returns>
+        /// The <c language="csharp">wShowWindow</c> value when <c language="csharp">STARTF_USESHOWWINDOW</c>
+        /// is set; otherwise <see langword="null"/>.
+        /// </returns>
+        public static SHOW_WINDOW_CMD? GetStartupShowCommand()
+        {
+            PInvoke.GetStartupInfo(out STARTUPINFOW startupInfo);
+            return startupInfo.dwFlags.HasFlag(STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW)
+                ? (SHOW_WINDOW_CMD)startupInfo.wShowWindow
+                : null;
         }
 
         #endregion Window style and presentation helpers

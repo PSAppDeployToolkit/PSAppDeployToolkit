@@ -113,7 +113,7 @@ Describe 'Select-VisualCaptures' {
         $realMap = Import-PowerShellDataFile -LiteralPath (Join-Path $PSScriptRoot 'VisualCaptureMap.psd1') -SkipLimitCheck
         @($realMap.Captures | Where-Object { $_.Inputs -notcontains 'Fluence.Wpf/Themes/Generic.xaml' -or
             $_.Inputs -notcontains 'Fluence.Wpf/Themes/Typography/Typography.xaml' }).Count | Should -Be 0
-        $realMap.Captures.Count | Should -Be 419
+        $realMap.Captures.Count | Should -Be 421
         @($realMap.Captures | Where-Object { $_.Id -like 'controls/*' -and
             $_.Inputs -notcontains 'Fluence.Wpf.Tests/Tools/GalleryScreenshotHarness.cs' }).Count | Should -Be 0
         foreach ($family in @('auto-suggest-box', 'combo-box', 'date-picker', 'drop-down-button', 'menu', 'split-button', 'time-picker', 'toggle-split-button')) {

@@ -1210,15 +1210,15 @@ namespace Fluence.Wpf.Tests.Gallery
                 MainWindow window = DemoTestHost.CreateShownMainWindow();
                 try
                 {
-                    foreach (DemoPageExpectation expectation in PageExpectations)
+                    foreach (DemoNavigationItem item in GalleryPageCatalog.NavigationItems)
                     {
-                        window.NavigateTo(expectation.Tag);
+                        window.NavigateTo(item.Route);
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
                         window.UpdateLayout();
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
 
                         object content = Assert.IsType<object>(GetSelectedPageContent(window), exactMatch: false);
-                        Assert.Equal(expectation.PageType, content.GetType());
+                        Assert.Equal(item.PageType, content.GetType());
                         Assert.NotEqual("GalleryControlPage", content.GetType().Name, StringComparer.Ordinal);
                         Assert.NotEqual("GalleryCategoryPage", content.GetType().Name, StringComparer.Ordinal);
                     }
@@ -1398,30 +1398,9 @@ namespace Fluence.Wpf.Tests.Gallery
                 Style contentGridStyle = Assert.IsType<Style>(Application.Current?.TryFindResource("GalleryPageContentGridStyle"));
                 Assert.Same(fluentScrollStyle, scrollStyle.BasedOn);
 
-                FrameworkElement[] pages =
-                [
-                    new GalleryHomePage(),
-                    new GalleryIconsPage(),
-                    new GalleryTypographyPage(),
-                    new GalleryAccessibilityPage(),
-                    new GalleryButtonsPage(),
-                    new GallerySelectionPage(),
-                    new GalleryInputsPage(),
-                    new GalleryFormsPage(),
-                    new GalleryDataPage(),
-                    new GalleryDataBindingPage(),
-                    new GalleryTreesPage(),
-                    new GalleryMenusPage(),
-                    new GalleryNavigationPage(),
-                    new GalleryTabsPage(),
-                    new GalleryLayoutPage(),
-                    new GalleryStatusPage(),
-                    new GallerySettingsPage(),
-                    new GalleryColorsPage(),
-                ];
-
-                foreach (FrameworkElement page in pages)
+                foreach (DemoNavigationItem item in GalleryPageCatalog.AllItems)
                 {
+                    FrameworkElement page = GalleryPageCatalog.CreatePage(item);
                     Window window = DemoTestHost.CreateHostWindow(page);
                     try
                     {
@@ -2279,15 +2258,11 @@ namespace Fluence.Wpf.Tests.Gallery
                 MainWindow window = DemoTestHost.CreateShownMainWindow();
                 try
                 {
-                    foreach (DemoPageExpectation expectation in PageExpectations)
+                    // Home, Icons, and Colors render directly without DemoSampleControl source
+                    // samples, so the sample page list excludes them.
+                    foreach (DemoNavigationItem item in GalleryPageCatalog.SampleItems)
                     {
-                        // The Iconography catalog page renders directly without DemoSampleControl source samples.
-                        if (expectation.PageType == typeof(GalleryIconsPage))
-                        {
-                            continue;
-                        }
-
-                        window.NavigateTo(expectation.Tag);
+                        window.NavigateTo(item.Route);
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
                         window.UpdateLayout();
                         WpfTestSta.DrainDispatcher(window.Dispatcher);
@@ -2296,7 +2271,7 @@ namespace Fluence.Wpf.Tests.Gallery
                         DependencyObject root = Assert.IsType<DependencyObject>(content, exactMatch: false);
 
                         bool found = DemoTestHost.FindVisualChildren<DemoSampleControl>(root).Any(static sample => !string.IsNullOrWhiteSpace(sample.XamlSource));
-                        Assert.True(found, "Page must expose at least one inline XAML source sample: " + expectation.PageType.Name);
+                        Assert.True(found, "Page must expose at least one inline XAML source sample: " + item.PageType.Name);
                     }
                 }
                 finally
@@ -2357,31 +2332,6 @@ namespace Fluence.Wpf.Tests.Gallery
             Controls.NavigationView.FromItemContainer(settingsItem)?.SelectFooterMenuItem(settingsItem);
             WpfTestSta.DrainDispatcher(settingsItem.Dispatcher);
         }
-
-        private sealed class DemoPageExpectation(string tag, Type pageType)
-        {
-            public string Tag { get; } = tag;
-
-            public Type PageType { get; } = pageType;
-        }
-
-        private static readonly DemoPageExpectation[] PageExpectations =
-        [
-            new("icons", typeof(GalleryIconsPage)),
-            new("typography", typeof(GalleryTypographyPage)),
-            new("accessibility", typeof(GalleryAccessibilityPage)),
-            new("buttons", typeof(GalleryButtonsPage)),
-            new("selection", typeof(GallerySelectionPage)),
-            new("inputs", typeof(GalleryInputsPage)),
-            new("data binding", typeof(GalleryDataBindingPage)),
-            new("data", typeof(GalleryDataPage)),
-            new("trees", typeof(GalleryTreesPage)),
-            new("menus", typeof(GalleryMenusPage)),
-            new("navigation", typeof(GalleryNavigationPage)),
-            new("tabs", typeof(GalleryTabsPage)),
-            new("layout", typeof(GalleryLayoutPage)),
-            new("status", typeof(GalleryStatusPage)),
-        ];
 
         private static void AssertButtonShowsGlyph(Controls.Button button, string glyph)
         {

@@ -17,6 +17,6 @@ Run each script in a fresh process when comparing appearance, because theme and 
 | [03-Progress.ps1](03-Progress.ps1) | Watch five simulated steps update a progress window. | [Progress](https://fluencewpf.com/docs/powershell/how-to/progress) |
 | [04-ThemeAndAccent.ps1](04-ThemeAndAccent.ps1) | Switch Light, Dark, system theme, and accent while the window is open. | [Runtime appearance](https://fluencewpf.com/docs/powershell/how-to/theming-at-runtime) |
 | [05-LoadXamlFile.ps1](05-LoadXamlFile.ps1) and [MainWindow.xaml](MainWindow.xaml) | Load layout from a XAML file and wire named controls through `-Initialize` and `-Data`. | [Windows from XAML](https://fluencewpf.com/docs/powershell/how-to/windows-from-xaml) |
-| [06-ControlsTour.ps1](06-ControlsTour.ps1) | Browse and interact with common Fluence controls. | [Windows from XAML](https://fluencewpf.com/docs/powershell/how-to/windows-from-xaml) |
+| [06-ControlsTour.ps1](06-ControlsTour.ps1) | Browse and interact with common Fluence controls. Sort the data grid of PowerShell objects by a header, and select a row to show it in the status message. | [Windows from XAML](https://fluencewpf.com/docs/powershell/how-to/windows-from-xaml) |
 
 For a guided first script, follow [Your first dialog](https://fluencewpf.com/docs/powershell/usage). For parameter details, use the [command reference](https://fluencewpf.com/docs/powershell/reference/).

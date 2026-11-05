@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader Title="Navigation" DocsAnchor="navigation" />
+            <local:GalleryPageHeader Title="Navigation" DocsAnchor="navigation-and-tabs" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="NavigationView organizes top-level destinations and can place the pane on the left, across the top, or in compact left mode." />
 
             <fluence:SmoothScrollViewer

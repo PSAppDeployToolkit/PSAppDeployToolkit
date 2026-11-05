@@ -8,6 +8,29 @@ Version headings are the SemVer version. The git tag for a version is `v` plus t
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-11-05
+
+### Added
+
+- Added `DataGrid`, a Fluent table built on the WPF `DataGrid` and the Fluence counterpart of the WinUI TableView. It keeps native sorting, resizing, frozen columns, editing, validation, grouping, and row virtualization, and adds `IsItemSelectable`, `EmptyContent`, `CornerRadius`, `ExpandAllGroups`, and `CollapseAllGroups`. Text and check box columns get Fluent display and editing styles unless they set their own. Native `DataGrid` instances keep their existing look. `ExpandAllGroups` and `CollapseAllGroups` leave the groups of a grid nested in a cell or the row details unchanged. The gallery has a new DataGrid page, and the PowerShell `06-ControlsTour.ps1` example shows PowerShell objects in a `DataGrid`. The opt-in screenshot capture produces Light and Dark `DataGrid` control candidates, and [known issues](KNOWN_ISSUES.md) lists the native grid behavior that `DataGrid` keeps. These changes add 30 test cases on each full test target framework.
+
+### Changed
+
+- `FluenceWindow` now defaults `ShowActivated` to `false` and activates itself after its first frame renders, so a dialog no longer becomes active while its controls are still being set up. After that first render, `ShowActivated` is `true`, so later shows and restores activate normally. A maximized window is still shown activated because Windows cannot show it otherwise. When the app is launched with a startup show state, such as a shortcut set to run maximized or minimized, the first `FluenceWindow` shown is shown activated so Windows applies that state. An explicit `ShowActivated` value turns off the deferred activation, and a style applied after the first render still takes effect. `ContentRendered` handlers run after the window has activated itself. These changes add 19 test cases on each full test target framework, including one that fails if a window is moved off-screen before its first render.
+- The repository text-policy check, `.claude/hooks/post-tool-util.ps1`, now also checks agent guidance in `.claude/`, every `AGENTS.md`, `skills/`, `.github/copilot-instructions.md`, and the pull request template. Skill and agent files must start with frontmatter that has `name` and `description` entries, and guidance must name the owning file instead of a numbered handbook section. Any other Markdown file, except this changelog, that cites a numbered section of another Markdown file must match a numbered heading there. The check removed six such pointers from `KNOWN_ISSUES.md` to sections that `docs/winui-parity.md` no longer has, and a numbered section reference from the pull request template. It runs in the editor hook and in CI.
+- Updated the in-repository `new-control` skill to cover every place a new control touches: the PowerShell module (the controls tour example, a new `New-FluencePrompt` input type, or a new public function), gallery catalog registrations, test baselines and CI case-count floors, public API entries, regenerated design-time resources, and screenshot capture entries. The `demo-sample-page` skill now links to its `SPEC.md` for the page contract instead of repeating surface brushes that no longer matched, and `SPEC.md` lists the gallery page registrations.
+- Brought the review agents, the theme-slot hook reminder, and the Copilot instructions up to date with the per-area `AGENTS.md` files. They no longer cite handbook section numbers, a pinned xunit.v3 version, or an exact count of merged dictionaries.
+- The PowerShell module's private prompt control builder, `New-FluenceInputControl`, now renders a `TextBox` only for the `Text` input type. Any other input type without its own control now throws a clear error instead of silently rendering as a text box. A new Pester test, `InputTypeParity.Tests.ps1`, reads the `New-FluencePrompt -InputType` values and fails when a value has no control, no row in the input types reference, or is not counted in the PowerShell reference README. It adds five cases to the module's logic lane.
+- The gallery's navigation catalog, `DemoNavigationCatalog`, is now its only page list. Each catalog entry creates its own page, so the gallery window no longer maps routes to pages in a separate switch, and the gallery shell and sample-contract tests read their page lists from the catalog instead of three hand-kept lists. A page added to the catalog is now navigated, checked for the shared page layout, and checked for the `DemoSampleControl` source contract unless the tests list it as a page that renders directly. The shell navigation test now also covers the Home, Colors, and Forms pages, and the inline-source test now covers Forms; their old lists left those pages out. Routes, navigation order, and Back history are unchanged, and so is the test case count.
+
+### Removed
+
+- Removed `Fluence.Wpf.PowerShell.Module/build/Export-ModuleReference.ps1`. It wrote command pages into tracked `docs/` and was superseded by `tools/Docs/Generate-PowerShellReference.ps1`, which CI checks and the module README now documents.
+
+### Fixed
+
+- Fixed the gallery's Documentation links. All 17 pointed at headings that `docs/controls.md` and `docs/theming.md` no longer have, so they opened the top of the page. Each page now links to its current catalog section, and Typography links to the type ramp in the theme guide. A new test reads every gallery page header and fails when its anchor matches no GitHub heading slug in the linked document, which adds one test case on each full test target framework.
+
 ## [0.9.5] - 2026-10-27
 
 ### Added
@@ -784,7 +807,8 @@ This is the last preview before 1.0 and it carries the whole 1.0 readiness pass,
 
 - Initial release.
 
-[Unreleased]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.5...main
+[Unreleased]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.6...main
+[0.9.6]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/sintaxasn/Fluence.Wpf/compare/v0.9.2-pre...v0.9.3

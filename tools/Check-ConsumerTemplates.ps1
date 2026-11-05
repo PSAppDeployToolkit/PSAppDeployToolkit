@@ -615,7 +615,7 @@ try {
     if ($LASTEXITCODE -ne 0 -or $fix -ne 'b3879f16d9e560b106313e7263871e5f949b70a0') { throw 'Phase 1 fix commit is unavailable.' }
     [xml]$rootProps = Get-Content -Raw (Join-Path $repo 'Directory.Build.props')
     $rootVersion = @($rootProps.Project.PropertyGroup.VersionPrefix | Where-Object { $_ })
-    if ($rootVersion.Count -ne 1 -or $rootVersion[0] -ne '0.9.5') { throw 'Root VersionPrefix does not match the expected 0.9.5 version.' }
+    if ($rootVersion.Count -ne 1 -or $rootVersion[0] -ne '0.9.6') { throw 'Root VersionPrefix does not match the expected 0.9.6 version.' }
     if ($version -ne "0.9.4-starters-dev.g$($fix.Substring(0, 8)).r8") { throw 'Candidate version does not match the three-title-bar local stamp.' }
     if ($version -eq '0.9.4') { throw 'The pre-fix 0.9.4 package is ineligible.' }
     Assert-WorkflowContract

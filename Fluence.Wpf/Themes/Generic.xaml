@@ -19,6 +19,7 @@
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TextBox.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PasswordBox.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ListView.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/DataGrid.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ListBox.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/LoopingSelectorList.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Card.xaml" />

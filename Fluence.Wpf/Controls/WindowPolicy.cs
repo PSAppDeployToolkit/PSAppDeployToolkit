@@ -34,6 +34,7 @@ using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Native;
 using Windows.Win32;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Fluence.Wpf.Controls
 {
@@ -445,6 +446,29 @@ namespace Fluence.Wpf.Controls
                 isDark,
                 useLegacyAcrylic: false,
                 Colors.Transparent);
+        }
+
+        /// <summary>
+        /// Returns whether the launching process asked for a startup show state other than a normal
+        /// show, such as a shortcut set to run maximized or minimized.
+        /// </summary>
+        /// <remarks>
+        /// Windows replaces the command of the first <c language="csharp">ShowWindow</c> call with the
+        /// <c language="csharp">STARTUPINFO</c> command only when that call passes
+        /// <c language="csharp">SW_SHOW</c>, <c language="csharp">SW_SHOWNORMAL</c>, or
+        /// <c language="csharp">SW_SHOWDEFAULT</c>. A window shown with deferred activation passes
+        /// <c language="csharp">SW_SHOWNA</c>, which Windows does not replace, so it would ignore the
+        /// request. A normal-show request needs no special handling.
+        /// </remarks>
+        /// <param name="startupShowCommand">
+        /// The startup show command from <see cref="NativeMethods.GetStartupShowCommand"/>, or
+        /// <see langword="null"/> when the launching process supplied none.
+        /// </param>
+        /// <returns><see langword="true"/> when the first window must be shown with an activating show command.</returns>
+        internal static bool IsStartupShowStateRequested(SHOW_WINDOW_CMD? startupShowCommand)
+        {
+            return startupShowCommand is { } command
+                && command is not (SHOW_WINDOW_CMD.SW_SHOWNORMAL or SHOW_WINDOW_CMD.SW_SHOW or SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
         }
 
         /// <summary>

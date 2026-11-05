@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests.Tools
 #endif
         private const double BaseDpi = 96.0;
         private const double ReferenceScale = 1.0;
-        private const double ControlCaptureScale = 160.0 / BaseDpi;
+        private const double ControlCaptureScale = 1.0;
         private const int ControlHorizontalPadding = 32;
         private const int ControlVerticalPadding = 32;
 
@@ -114,6 +114,7 @@ namespace Fluence.Wpf.Tests.Tools
             new("check-box", "selection", 1, "CheckBox"),
             new("color-picker", "forms", 3, "ColorPicker"),
             new("combo-box", "selection", 5, "ComboBox"),
+            new("data-grid", "data-grid", 1, "DataGrid"),
             new("date-picker", "forms", 2, "DatePicker"),
             new("dock-panel", "layout", 2, "DockPanel"),
             new("drop-down-button", "buttons", 6, "DropDownButton"),
@@ -464,7 +465,7 @@ namespace Fluence.Wpf.Tests.Tools
             DrawingVisual visual = new();
             using (DrawingContext context = visual.RenderOpen())
             {
-                // Pixel dimensions round up at 160 DPI. Extend the background beyond the logical
+                // Pixel dimensions round up. Extend the background beyond the logical
                 // bounds so the final fractional device-pixel row and column stay opaque.
                 context.DrawRectangle(background, pen: null, new Rect(0, 0, canvasWidth + 1, canvasHeight + 1));
                 if (!allowEmpty)
@@ -606,8 +607,13 @@ namespace Fluence.Wpf.Tests.Tools
                 }
             }
 
-            throw new InvalidOperationException(
-                Invariant("No rendered {0} visual in {1} sample {2}.", spec.TypeName, spec.Route, spec.Ordinal));
+            // A sample whose live content is itself the control, as in the DataGrid samples, has no
+            // matching descendant.
+            return string.Equals(content.GetType().Name, spec.TypeName, StringComparison.Ordinal)
+                && (allowEmpty || (content.IsVisible && content.ActualWidth > 0 && content.ActualHeight > 0))
+                ? content
+                : throw new InvalidOperationException(
+                    Invariant("No rendered {0} visual in {1} sample {2}.", spec.TypeName, spec.Route, spec.Ordinal));
         }
 
         private static async Task CaptureControlAsync(
@@ -1391,7 +1397,8 @@ namespace Fluence.Wpf.Tests.Tools
                         continue;
                     }
 
-                    window.NavigateTo(string.Equals(route, "data-binding", StringComparison.Ordinal) ? "data binding" : route);
+                    // Capture IDs hyphenate the catalog route; two-word routes such as "data grid" navigate by the original.
+                    window.NavigateTo(route.Replace('-', ' '));
                     await SettleGalleryAsync(window).ConfigureAwait(true);
                     if (window.PageFrame.Content is not DependencyObject page)
                     {
@@ -1549,6 +1556,9 @@ namespace Fluence.Wpf.Tests.Tools
                 flyoutControl.FocusVisualStyle = null;
             }
 
+            System.Windows.Input.Keyboard.ClearFocus();
+            await SettleGalleryAsync(window).ConfigureAwait(true);
+
             foreach (string slug in new[] { "flyout", "flyout-base", "flyout-presenter" })
             {
                 await SaveNamedPopupAsync(flyoutButton, flyoutPresenter, slug, theme, directory).ConfigureAwait(true);
@@ -1587,6 +1597,9 @@ namespace Fluence.Wpf.Tests.Tools
             {
                 commandControl.FocusVisualStyle = null;
             }
+
+            System.Windows.Input.Keyboard.ClearFocus();
+            await SettleGalleryAsync(window).ConfigureAwait(true);
 
             await SaveNamedPopupAsync(commandButton, commandPresenter, "command-bar-flyout", theme, directory, "open").ConfigureAwait(true);
             await SaveNamedControlAsync(commandPresenter, "command-bar-flyout-presenter", theme, directory, "open").ConfigureAwait(true);
@@ -1706,7 +1719,7 @@ namespace Fluence.Wpf.Tests.Tools
                     routes.Add((item.Route.Replace(' ', '-'), item.Title));
                 }
 
-                routes.Add(("settings", "Settings"));
+                routes.Add((Demo.DemoNavigationCatalog.SettingsItem.Route, Demo.DemoNavigationCatalog.SettingsItem.Title));
                 foreach ((string route, string title) in routes)
                 {
                     if (!HasSelectedRouteTheme("gallery/" + route + "-", themeSlug))
@@ -1714,7 +1727,8 @@ namespace Fluence.Wpf.Tests.Tools
                         continue;
                     }
 
-                    window.NavigateTo(string.Equals(route, "data-binding", StringComparison.Ordinal) ? "data binding" : route);
+                    // Capture IDs hyphenate the catalog route; two-word routes such as "data grid" navigate by the original.
+                    window.NavigateTo(route.Replace('-', ' '));
                     await SettleGalleryAsync(window).ConfigureAwait(true);
                     string routeFile = Invariant("{0}-{1}.png", route, themeSlug);
                     if (ShouldCapture("gallery/" + routeFile))

@@ -32,7 +32,7 @@ $ErrorActionPreference = "Stop"
 
 # PreToolUse advisory for edits to theme-slot-critical files.
 # Emits a non-blocking reminder (additionalContext) when an edit targets a file
-# that governs the three-slot MergedDictionaries invariant. See AGENTS.md sections 3 and 9.
+# that governs the three-slot MergedDictionaries invariant. See Fluence.Wpf/Theming/AGENTS.md.
 
 function Add-FilePath {
     param(
@@ -106,7 +106,7 @@ if (-not $slotCritical) {
     exit 0
 }
 
-$reminder = "Theme-slot-critical file. Keep the three-slot MergedDictionaries order intact: [0] computed colors + brushes (rebuilt and replaced every Apply by FluenceThemeEngine.BuildComputedDictionary), [1] Typography.xaml, [2] Generic.xaml. Any new color must be added to all three Theme.{Light|Dark|HighContrast}.xaml; BrushFactory auto-twins every color into a frozen SolidColorBrush (key + 'Brush'), so SpecialBrushes.cs is only for exceptions (non-standard twin names, gradients, high-contrast overrides). Route theme- and accent-bound values through DynamicResource, never StaticResource. Run DictionaryStabilityTests after the change. See AGENTS.md sections 3 and 9."
+$reminder = "Theme-slot-critical file. Keep the three-slot MergedDictionaries order intact: [0] computed colors + brushes (rebuilt and replaced every Apply by FluenceThemeEngine.BuildComputedDictionary), [1] Typography.xaml, [2] Generic.xaml. Any new color must be added to all three Theme.{Light|Dark|HighContrast}.xaml; BrushFactory auto-twins every color into a frozen SolidColorBrush (key + 'Brush'), so SpecialBrushes.cs is only for exceptions (non-standard twin names, gradients, high-contrast overrides). Route theme- and accent-bound values through DynamicResource, never StaticResource. Run DictionaryStabilityTests after the change. See Fluence.Wpf/Theming/AGENTS.md and Fluence.Wpf/Themes/AGENTS.md."
 
 $output = @{
     hookSpecificOutput = @{

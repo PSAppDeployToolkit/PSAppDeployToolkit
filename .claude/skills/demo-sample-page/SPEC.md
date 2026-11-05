@@ -1,6 +1,6 @@
 ﻿# Demo Sample Pages
 
-Referenced from `AGENTS.md` Section 14. Lifted out of the handbook to keep the always-loaded file lean. This is the standard the `demo-sample-page` skill and the demo-page tests enforce.
+This is the gallery page standard that [Fluence.Wpf.Demo/AGENTS.md](../../../Fluence.Wpf.Demo/AGENTS.md) points to. The `demo-sample-page` skill and the gallery tests enforce it. Keep the values here; the skill links to this file instead of copying them.
 
 Control samples in `Fluence.Wpf.Demo` render through `DemoSampleControl`. Design reference pages that mirror WinUI Gallery catalog surfaces, such as Icons, may render directly when a trailing source expander would diverge from the reference. Typography is a `DemoSampleControl` sample because the Gallery's own type ramp is a `ControlExample` with source.
 
@@ -78,6 +78,20 @@ Named live controls must not be declared directly inside `DemoSampleControl` pro
 Icons and Accessibility are part of this standard for discrete demonstrations. Icons renders its catalog directly without a trailing source expander. Typography hosts its type ramp table in a `DemoSampleControl` with the ramp XAML as source, as the WinUI Gallery does.
 
 Colors renders directly without `DemoSampleControl`, like Icons, because the WinUI Gallery Color page has no source expander. Its one-line brush snippet is a `DemoCodePresenter` (the Gallery `SampleCodePresenter` inline state: highlighted code, no card, optional copy button) and its section switcher is a `SelectorBar` whose sections are swapped through a `SlideNavigationPresenter`, as the Gallery switches its own Color sections, and the page is a Grid whose header, intro, snippet and switcher rows stay locked while only the section row scrolls. Its sections are `ColorPageExample` cards (`SolidBackgroundFillColorQuarternaryBrush` inside a 1 px `CardStrokeColorDefaultBrush` outline at `OverlayCornerRadius`, with the accent group on `AccentFillColorDefaultBrush` and the smoke group on `SmokeFillColorDefaultBrush`) followed by `ColorTile` rows on the Gallery `GalleryTileGridStyle` surface: `SolidBackgroundFillColorBaseBrush` with the same outline, each tile painted in the brush it names. Both controls live in `Fluence.Wpf.Demo/Pages` and are driven from the page code-behind data table; their sizes come from the `DemoColor*` tokens in `DemoSharedStyles.xaml`.
+
+## Catalog integration
+
+`Fluence.Wpf.Demo/DemoNavigationCatalog.cs` is the only gallery page list. Register a new page there, in the same change as the page:
+
+| File | Entry |
+| --- | --- |
+| `Fluence.Wpf.Demo/DemoNavigationCatalog.cs` | A `DemoNavigationItem.Create(...)` entry in `CatalogItems` with the title, route, search keywords, Segoe Fluent Icons glyph, and a factory such as `static _ => new GalleryDataGridPage()`. The page type comes from the factory, and the catalog order is the navigation order. |
+| `Fluence.Wpf.Tests/Gallery/GalleryPageCatalog.cs` | Only for a page that renders directly instead of through `DemoSampleControl`: its type in `DirectRenderPageTypes`, with the reason in the comment. |
+| `Fluence.Wpf.Tests/Gallery/Pages/Gallery<Name>PageTests.cs` | A focused page test, such as `GalleryDataGridPageTests`. |
+
+`MainWindow` creates each page through its catalog entry's factory, so it has no route switch to update. The gallery tests read their page lists from the catalog through `GalleryPageCatalog`. `DemoShellTests` navigates to every catalog route and checks the page type, and checks the shared page layout on every catalog page and Settings. `DemoShellTests` and `DemoSampleContractTests` check the `DemoSampleControl` source contract on every catalog page except the direct-render pages: Home, Icons, and Colors. An exclusion that names a page no longer in the catalog fails those tests.
+
+`GalleryPageHeaderTests` finds every page by reflection and fails when a `DocsAnchor` matches no heading slug in the linked document, so the header needs no list entry. The Settings page is a footer item, so its entry is `DemoNavigationCatalog.SettingsItem` rather than a `CatalogItems` entry.
 
 ## Definition of done
 

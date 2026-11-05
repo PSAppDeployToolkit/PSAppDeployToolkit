@@ -111,6 +111,110 @@ function Add-FilePath {
     }
 }
 
+function Test-IsAgentGuidance {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath
+    )
+
+    # Files that instruct agents and contributors: in-repo skills, agents and hooks, every AGENTS.md,
+    # the root skills folder, the Copilot instructions, and the pull request template.
+    return $RelativePath -match '^\.claude/' -or
+        $RelativePath -match '(^|/)AGENTS\.md$' -or
+        $RelativePath -match '^skills/' -or
+        $RelativePath -eq '.github/copilot-instructions.md' -or
+        $RelativePath -eq '.github/PULL_REQUEST_TEMPLATE.md'
+}
+
+function Get-NumberedSectionReferenceProblem {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Text,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectRoot
+    )
+
+    # A pointer to a numbered section of another Markdown file survives a rewrite of that file that
+    # drops its numbered headings, and then leads nowhere. Require each referenced number to match a
+    # heading that starts with the same number and a period.
+    $problems = New-Object "System.Collections.Generic.List[string]"
+    $references = [System.Text.RegularExpressions.Regex]::Matches($Text, '`?(?<file>[A-Za-z0-9_./-]+[.]md)`?\s+sections?\s+(?<numbers>\d+(\s*(,|and)\s*\d+)*)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    foreach ($reference in $references) {
+        $file = $reference.Groups['file'].Value
+        $candidates = @(
+            (Join-Path $ProjectRoot $file),
+            (Join-Path (Join-Path $ProjectRoot (Split-Path -Parent $RelativePath)) $file)
+        )
+        $target = $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
+        if ($null -eq $target) {
+            $problems.Add("$RelativePath refers to $file section(s) $($reference.Groups['numbers'].Value), but $file does not exist.")
+            continue
+        }
+
+        $headings = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::Ordinal)
+        foreach ($heading in [System.Text.RegularExpressions.Regex]::Matches([System.IO.File]::ReadAllText($target), '(?m)^#{1,6}\s+(?<number>\d+)[.]')) {
+            [void]$headings.Add($heading.Groups['number'].Value)
+        }
+
+        $missing = @([System.Text.RegularExpressions.Regex]::Matches($reference.Groups['numbers'].Value, '\d+') | ForEach-Object { $_.Value } | Where-Object { -not $headings.Contains($_) })
+        if ($missing.Count -gt 0) {
+            $problems.Add("$RelativePath refers to $file section(s) $($missing -join ', '), but $file has no heading with that number. Name the heading instead.")
+        }
+    }
+
+    return $problems
+}
+
+function Get-FrontmatterProblem {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    # Skill entrypoints and agent definitions are discovered through their YAML frontmatter. A bulk
+    # edit once truncated the new-control description line, which hid the skill's description until
+    # someone read the raw file.
+    $problems = New-Object "System.Collections.Generic.List[string]"
+    $body = $Text.TrimStart([char]0xFEFF).Replace("`r`n", "`n")
+    $match = [System.Text.RegularExpressions.Regex]::Match($body, '\A---\n(?<yaml>.*?)\n---(\n|\z)', [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    if (-not $match.Success) {
+        $problems.Add("$RelativePath must start with a YAML frontmatter block delimited by '---' lines.")
+        return $problems
+    }
+
+    $keys = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::Ordinal)
+    foreach ($line in $match.Groups['yaml'].Value.Split("`n")) {
+        if ([string]::IsNullOrWhiteSpace($line) -or $line -match '^\s' -or $line -match '^#') {
+            continue
+        }
+
+        $keyMatch = [System.Text.RegularExpressions.Regex]::Match($line, '^(?<key>[A-Za-z][A-Za-z0-9_-]*):(\s|$)')
+        if (-not $keyMatch.Success) {
+            $problems.Add("$RelativePath frontmatter line '$line' is not a 'key: value' entry; a value was probably split or truncated.")
+            continue
+        }
+
+        [void]$keys.Add($keyMatch.Groups['key'].Value)
+    }
+
+    foreach ($required in @('name', 'description')) {
+        if (-not $keys.Contains($required)) {
+            $problems.Add("$RelativePath frontmatter has no '$($required):' entry.")
+        }
+    }
+
+    return $problems
+}
+
 $projectRoot = Get-ProjectRoot
 
 # Extensions whose content this check inspects (line endings, banned APIs, dashes, hex).
@@ -264,6 +368,36 @@ for ($i = 0; $i -lt $fullPaths.Count; $i++) {
     if ($isCSharp -or $isMarkdown) {
         if ($text.Contains([char]0x2014) -or $text.Contains([char]0x2013)) {
             $violations.Add("$relativePath contains an em dash or en dash. Use hyphens in comments and documentation.")
+        }
+    }
+
+    # CHANGELOG entries describe earlier states of the documents they mention, so they are exempt.
+    if ($isMarkdown -and $relativePath -ne 'CHANGELOG.md') {
+        foreach ($problem in @(Get-NumberedSectionReferenceProblem -RelativePath $relativePath -Text $text -ProjectRoot $projectRoot)) {
+            $violations.Add($problem)
+        }
+    }
+
+    if (Test-IsAgentGuidance -RelativePath $relativePath) {
+        # The handbook was split into per-area AGENTS.md files without numbered sections. A numbered
+        # section reference sends an agent to a heading that no longer exists, so name the file instead.
+        $sectionReference = [System.Text.RegularExpressions.Regex]::Match($text, '(?im)^.*\bsections?\s+\d+(\.\d+)?\b.*$')
+        if ($sectionReference.Success) {
+            $quoted = $sectionReference.Value.Trim()
+            $start = [System.Text.RegularExpressions.Regex]::Match($quoted, '(?i)\bsections?\s+\d').Index
+            $quoted = $quoted.Substring([System.Math]::Max(0, $start - 40))
+            if ($quoted.Length -gt 80) {
+                $quoted = $quoted.Substring(0, 80)
+            }
+
+            $violations.Add("$relativePath cites a numbered handbook section ('...$quoted...'). Link the owning AGENTS.md, SPEC.md, or README file instead; see the routing table in AGENTS.md.")
+        }
+
+        $isFrontmatterEntrypoint = $relativePath -cmatch '^(\.claude/)?skills/[^/]+/SKILL[.]md$' -or $relativePath -cmatch '^\.claude/agents/[^/]+[.]md$'
+        if ($isFrontmatterEntrypoint) {
+            foreach ($problem in @(Get-FrontmatterProblem -RelativePath $relativePath -Text $text)) {
+                $violations.Add($problem)
+            }
         }
     }
 }
