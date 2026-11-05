@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -103,10 +103,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
 
             Topmost = options.DialogTopMost;
-
-            // Show without activating. Activation inside ShowWindow lets accessibility clients query the
-            // window before WPF has rendered, so the frame appears empty; OnContentRendered activates it.
-            ShowActivated = false;
 
             // Set supplemental options also
             _customMessageText = customMessageText;
@@ -299,16 +295,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UpdateCountdownDisplay();
         }
 
-        /// <inheritdoc />
-        protected override void OnContentRendered(EventArgs e)
-        {
-            base.OnContentRendered(e);
-
-            // Activate now that the first frame has rendered. Later shows and restores activate normally.
-            ShowActivated = true;
-            _ = Activate();
-        }
-
         /// <summary>
         /// Starts loaded-time timers and signals the client that the dialog is ready.
         /// </summary>
@@ -316,10 +302,23 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e">A RoutedEventArgs object that contains the event data.</param>
         private protected virtual void FluentDialog_Loaded(object? sender, RoutedEventArgs e)
         {
+            // Post-show concerns only: start the countdown and persist/expiry timers, signal the
+            // client-server success flag the caller may be awaiting, and bring the realised window
+            // to the front.
             InitializeCountdown();
             _persistTimer?.Start();
             _expiryTimer?.Start();
             ClientServerUtilities.SetOperationSuccessFlag();
+            try
+            {
+                WindowTools.BringWindowToFront((HWND)new WindowInteropHelper(this).Handle);
+            }
+            catch
+            {
+                // Best-effort: failing to raise the window must never abort dialog display.
+                return;
+                throw;
+            }
         }
 
         /// <summary>
