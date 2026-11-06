@@ -70,7 +70,9 @@ namespace Fluence.Wpf.Controls
     /// Setting <see cref="Window.ShowActivated"/> explicitly turns off this deferred activation. When
     /// the launching process asks for a startup show state, such as a shortcut set to run maximized
     /// or minimized, the first <see cref="FluenceWindow"/> shown in the process is shown activated so
-    /// Windows can apply that state.
+    /// Windows can apply that state. When Windows refuses the deferred activation because another
+    /// process holds the foreground, the window retries once through the foreground thread's input
+    /// queue so a dialog launched from a background process still gets focus.
     /// </para>
     /// </remarks>
     [TemplatePart(Name = PART_MinimizeButton, Type = typeof(System.Windows.Controls.Button))]
@@ -827,9 +829,14 @@ namespace Fluence.Wpf.Controls
             // SetCurrentValue keeps the default value source, so a style or trigger applied later
             // still takes effect.
             SetCurrentValue(ShowActivatedProperty, BoxedTrue);
-            if (IsVisible && !IsActive)
+            if (IsVisible && !IsActive && !Activate())
             {
-                _ = Activate();
+                // Window.Activate is SetForegroundWindow, which Windows refuses for a process that
+                // does not hold the foreground, such as a dialog launched by a background process.
+                // The window would then stay inactive with a flashing taskbar button; a window shown
+                // with ShowActivated true would not have taken the foreground either, so retry once
+                // through the foreground thread's input queue.
+                _ = NativeMethods.TryTakeForeground(_handle);
             }
         }
 

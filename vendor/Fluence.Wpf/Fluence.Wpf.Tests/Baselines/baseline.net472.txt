@@ -58,6 +58,15 @@
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.WindowStateChange_KeepsShowActivatedSetAfterFirstRenderAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.Restore_FromMaximized_ReadsExplicitShowActivatedFalseAsync
   Fluence.Wpf.Tests.Windowing.FluenceWindowTests.Show_KeepsRequestedPositionThroughLoadedAndContentRenderedAsync
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.ZeroHandle_ReturnsFalseWithoutCalls
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.AlreadyForeground_ReturnsTrueWithoutAttaching
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.AnotherThreadHoldsForeground_AttachesActivatesThenDetaches
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.ActivationRefused_ReturnsFalseAndStillDetaches
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.AttachRefused_RetriesWithoutDetaching
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.OwnThreadHoldsForeground_SkipsAttach
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.HungForeground_SkipsAttach
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.Retry_RunsOffTheCallingThread
+  Fluence.Wpf.Tests.Windowing.ForegroundRetryTests.UnresponsiveForeground_GivesUpAtTheTimeoutWithoutBlockingTheCaller
   Fluence.Wpf.Tests.Windowing.NativeMethodsTests.GetImmersiveDarkModeAttribute_Returns20_For18985AndLater
   Fluence.Wpf.Tests.Windowing.NativeMethodsTests.GetImmersiveDarkModeAttribute_Returns19_ForPre18985Builds
   Fluence.Wpf.Tests.Windowing.NativeMethodsTests.ApplyAutoHideTaskbarShift_Left_MovesRightAndShrinksWidth
@@ -245,6 +254,10 @@
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.IsStartupShowStateRequested_OnlyNonNormalShowCommandsNeedAnActivatingShow(showCommand: 2, expected: True)
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.IsStartupShowStateRequested_OnlyNonNormalShowCommandsNeedAnActivatingShow(showCommand: 7, expected: True)
   Fluence.Wpf.Tests.Windowing.WindowPolicyTests.IsStartupShowStateRequested_OnlyNonNormalShowCommandsNeedAnActivatingShow(showCommand: 0, expected: True)
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldAttachForegroundThread_OnlyForAnotherResponsiveThread(currentThreadId: 5, foregroundThreadId: 0, foregroundIsHung: False, expected: False)
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldAttachForegroundThread_OnlyForAnotherResponsiveThread(currentThreadId: 5, foregroundThreadId: 5, foregroundIsHung: False, expected: False)
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldAttachForegroundThread_OnlyForAnotherResponsiveThread(currentThreadId: 5, foregroundThreadId: 7, foregroundIsHung: False, expected: True)
+  Fluence.Wpf.Tests.Windowing.WindowPolicyTests.ShouldAttachForegroundThread_OnlyForAnotherResponsiveThread(currentThreadId: 5, foregroundThreadId: 7, foregroundIsHung: True, expected: False)
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CaptureGalleryShellNavigationModesAsync
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CaptureGalleryCatalogAndCardsAsync
   Fluence.Wpf.Tests.Tools.GalleryScreenshotHarness.CapturePowerShellControlsTourAsync
