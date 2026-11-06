@@ -472,6 +472,26 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// Decides whether <see cref="NativeMethods.TryTakeForeground(IntPtr)"/> attaches a worker thread's input
+        /// queue to the foreground thread's queue before retrying <c language="csharp">SetForegroundWindow</c>.
+        /// </summary>
+        /// <remarks>
+        /// Windows refuses <c language="csharp">SetForegroundWindow</c> from a process that is not the
+        /// foreground process, was not started by it, and has not received input. Sharing the
+        /// foreground thread's input queue grants that permission. Attaching is pointless when no
+        /// window has the foreground, impossible for the calling thread itself, and unsafe when the
+        /// foreground thread is not responding, because an attached thread shares that hang.
+        /// </remarks>
+        /// <param name="currentThreadId">The calling thread.</param>
+        /// <param name="foregroundThreadId">The thread that owns the foreground window, or 0 when there is none.</param>
+        /// <param name="foregroundIsHung"><see langword="true"/> when the foreground window is not responding.</param>
+        /// <returns><see langword="true"/> when the input queues should be attached for the retry.</returns>
+        internal static bool ShouldAttachForegroundThread(uint currentThreadId, uint foregroundThreadId, bool foregroundIsHung)
+        {
+            return foregroundThreadId != 0 && foregroundThreadId != currentThreadId && !foregroundIsHung;
+        }
+
+        /// <summary>
         /// Maps a <see cref="WindowCornerPreference"/> value to the corresponding
         /// <c language="csharp">DWMWCP_*</c> constant for <c language="csharp">DWMWA_WINDOW_CORNER_PREFERENCE</c>.
         /// </summary>

@@ -1276,5 +1276,19 @@ namespace Fluence.Wpf.Tests.Windowing
         }
 
         #endregion IsStartupShowStateRequested - launcher show state
+
+        #region ShouldAttachForegroundThread - deferred activation fallback
+
+        [Theory]
+        [InlineData(5u, 0u, false, false)] // No foreground window: SetForegroundWindow is already allowed.
+        [InlineData(5u, 5u, false, false)] // Own thread: AttachThreadInput fails with ERROR_INVALID_PARAMETER.
+        [InlineData(5u, 7u, false, true)]
+        [InlineData(5u, 7u, true, false)] // A hung foreground thread would hang the caller while attached.
+        public void ShouldAttachForegroundThread_OnlyForAnotherResponsiveThread(uint currentThreadId, uint foregroundThreadId, bool foregroundIsHung, bool expected)
+        {
+            Assert.Equal(expected, WindowPolicy.ShouldAttachForegroundThread(currentThreadId, foregroundThreadId, foregroundIsHung));
+        }
+
+        #endregion ShouldAttachForegroundThread - deferred activation fallback
     }
 }
