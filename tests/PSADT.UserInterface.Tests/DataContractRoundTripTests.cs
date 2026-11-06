@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,6 +105,21 @@ namespace PSADT.UserInterface.Tests
                 Assert.IsType(original.GetType(), restored);
                 Assert.Equal(original, restored);
             }
+        }
+
+        /// <summary>
+        /// Verifies that exact accent selection survives the client/server data contract.
+        /// </summary>
+        [Fact]
+        public void Options_ExactAccentFlagSurvivesBaseTypeRoundTrip()
+        {
+            Hashtable table = SampleOptions.CustomDialog();
+            table["FluentAccentColorExact"] = true;
+            BaseDialogOptions original = new CustomDialogOptions(table);
+
+            BaseDialogOptions restored = Assert.IsType<CustomDialogOptions>(RoundTrip(original, typeof(BaseDialogOptions)));
+
+            Assert.True(restored.FluentAccentColorExact);
         }
 
         /// <summary>

@@ -135,6 +135,10 @@ try
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorDark = $null
 
+                                                # Keep theme-selected accent shades by default; set to $true to use literal visible Light/Dark colors.
+                                                # Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                FluentAccentColorExact = $false
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 

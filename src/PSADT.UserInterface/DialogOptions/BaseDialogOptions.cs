@@ -43,6 +43,7 @@ namespace PSADT.UserInterface.DialogOptions
             (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
             (int?)options["FluentAccentColor"],
             (int?)options["FluentAccentColorDark"],
+            (bool?)options["FluentAccentColorExact"] ?? false,
             (DialogPosition?)options["DialogPosition"],
             (bool?)options["DialogAllowMove"],
             (bool?)options["DialogAllowMinimize"],
@@ -67,6 +68,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="language">The culture information representing the language for the dialog. Cannot be null.</param>
         /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
         /// <param name="fluentAccentColorDark">The accent color for Fluent design elements in dark mode. If null, the default dark mode accent color is used.</param>
+        /// <param name="fluentAccentColorExact">Whether supplied accent colors are used as exact visible primary fills.</param>
         /// <param name="dialogPosition">The position of the dialog on the screen. If null, the default position is used.</param>
         /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If null, the default behavior is used.</param>
         /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If null or false, the minimize button remains hidden (default behavior). Only explicit <see langword="true"/> opts the dialog into minimize support.</param>
@@ -74,7 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, bool fluentAccentColorExact = false, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -104,6 +106,7 @@ namespace PSADT.UserInterface.DialogOptions
             LanguageName = language.Name;
             FluentAccentColor = fluentAccentColor;
             FluentAccentColorDark = fluentAccentColorDark;
+            FluentAccentColorExact = fluentAccentColorExact;
             DialogPosition = dialogPosition;
             DialogAllowMove = dialogAllowMove;
             DialogAllowMinimize = dialogAllowMinimize;
@@ -170,6 +173,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly int? FluentAccentColorDark;
+
+        /// <summary>
+        /// Whether configured accent colors are used as exact visible primary fills.
+        /// </summary>
+        [DataMember]
+        public readonly bool FluentAccentColorExact;
 
         /// <summary>
         /// The position of the dialog on the screen.

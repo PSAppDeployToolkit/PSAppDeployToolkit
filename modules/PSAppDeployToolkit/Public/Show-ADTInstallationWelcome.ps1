@@ -1196,6 +1196,10 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
                     }
+                    if ($null -ne $adtConfig.UI.FluentAccentColorExact)
+                    {
+                        $dialogOptions.Add('FluentAccentColorExact', [System.Boolean]$adtConfig.UI.FluentAccentColorExact)
+                    }
                     if ($ContinueOnProcessClosure -and !$dialogOptions.ContainsKey('ContinueOnProcessClosure'))
                     {
                         $dialogOptions.Add('ContinueOnProcessClosure', $true)

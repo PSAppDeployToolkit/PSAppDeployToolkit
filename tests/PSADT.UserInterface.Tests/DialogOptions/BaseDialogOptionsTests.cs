@@ -9,7 +9,7 @@ using Xunit;
 namespace PSADT.UserInterface.Tests.DialogOptions
 {
     /// <summary>
-    /// Tests the fifteen options every dialog shares.
+    /// Tests the sixteen options every dialog shares.
     /// </summary>
     /// <remarks>
     /// <c language="csharp">BaseDialogOptions</c> is abstract and both its constructors are <c language="csharp">private protected</c>, so it
@@ -47,6 +47,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
                 ["Language"] = new CultureInfo("fr-FR"),
                 ["FluentAccentColor"] = 0x0078D4,
                 ["FluentAccentColorDark"] = 0x60CDFF,
+                ["FluentAccentColorExact"] = true,
                 ["DialogPosition"] = DialogPosition.BottomRight,
                 ["DialogAllowMove"] = true,
                 ["DialogAllowMinimize"] = true,
@@ -70,6 +71,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Equal("fr-FR", options.Language.Name);
             Assert.Equal(0x0078D4, options.FluentAccentColor);
             Assert.Equal(0x60CDFF, options.FluentAccentColorDark);
+            Assert.True(options.FluentAccentColorExact);
             Assert.Equal(DialogPosition.BottomRight, options.DialogPosition);
             Assert.True(options.DialogAllowMove);
             Assert.True(options.DialogAllowMinimize);
@@ -97,6 +99,7 @@ namespace PSADT.UserInterface.Tests.DialogOptions
             Assert.Null(options.AppTaskbarIconImage);
             Assert.Null(options.FluentAccentColor);
             Assert.Null(options.FluentAccentColorDark);
+            Assert.False(options.FluentAccentColorExact);
             Assert.Null(options.DialogPosition);
             Assert.Null(options.DialogAllowMove);
             Assert.Null(options.DialogAllowMinimize);

@@ -72,6 +72,10 @@ Describe 'Import-ADTConfig' {
             $script:Config.Assets.LogoDark | Should -BeNullOrEmpty
             $script:Config.Assets.TaskbarIcon | Should -BeNullOrEmpty
         }
+
+        It 'Keeps exact Fluent accent colors off by default' {
+            $script:Config.UI.FluentAccentColorExact | Should -BeFalse
+        }
     }
 
     Context 'Supplemental configuration' {
@@ -81,6 +85,15 @@ Describe 'Import-ADTConfig' {
             Set-Content -LiteralPath "$dir\config.psd1" -Value "@{ UI = @{ DefaultTimeout = 4242 } }"
             InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
                 (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.DefaultTimeout | Should -Be 4242
+            }
+        }
+
+        It 'Accepts an exact Fluent accent color override' {
+            $dir = "$TestDrive\ExactAccent"
+            $null = New-Item -Path $dir -ItemType Directory -Force
+            Set-Content -LiteralPath "$dir\config.psd1" -Value '@{ UI = @{ FluentAccentColorExact = $true } }'
+            InModuleScope -ModuleName PSAppDeployToolkit -Parameters @{ Dir = $dir } {
+                (Import-ADTConfig -Environment (Get-ADTEnvironmentTable) -BaseDirectory $Dir).UI.FluentAccentColorExact | Should -BeTrue
             }
         }
 
