@@ -84,11 +84,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            const string customMessageText = "Basic URL: [url]https://example.com[/url]\r\n" +
-                                             "URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].\r\n" +
-                                             "This is [bold]bold text[/bold] and [italic]italic text[/italic].\r\n" +
-                                             "Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].\r\n" +
-                                             "Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
+            const string customMessageText = "For information on the IT security policy. Visit [url]https://security.contoso.com[/url]";
 
             const uint deferralsRemaining = 99;
             DateTime deferralDeadline = DateTime.Parse("2026-06-04T13:00:00", CultureInfo.InvariantCulture);
@@ -228,7 +224,7 @@ namespace PSADT.UserInterface.Interfaces.TestHarness
                     { "ButtonLeftText", listDialogButtonLeftText },
                     { "ButtonRightText", listDialogButtonRightText },
                     { "ListItems", listDialogItems },
-                    { "InitialSelectedItem", listDialogItems[0] },
+                    { "SelectedIndex", 0 },
                     { "Strings", (Hashtable)stringTable["ListSelectionPrompt"]! },
                     { "MinimizeWindows", false },
                     { "Language", CultureInfo.CurrentCulture },
