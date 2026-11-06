@@ -11,7 +11,6 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -23,8 +22,6 @@ using PSADT.DeviceManagement;
 using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
-using PSADT.WindowManagement;
-using Windows.Win32.Foundation;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -296,32 +293,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Show the real remaining time on the first frame rather than the XAML default. The stopwatch
             // has not started, so remaining is the full duration; this sets the text only, not the timer.
             UpdateCountdownDisplay();
-        }
-
-        /// <inheritdoc />
-        protected override void OnContentRendered(EventArgs e)
-        {
-            // FluenceWindow activates the window once its first frame has rendered.
-            base.OnContentRendered(e);
-
-            // Bring the dialog to the front only after its first frame has rendered, so accessibility
-            // clients never query an empty window. ContentRendered is raised again after a Content
-            // change, so this runs once.
-            if (_broughtToFront)
-            {
-                return;
-            }
-            _broughtToFront = true;
-            try
-            {
-                WindowTools.BringWindowToFront((HWND)new WindowInteropHelper(this).Handle);
-            }
-            catch
-            {
-                // Best-effort: failing to raise the window must never abort dialog display.
-                return;
-                throw;
-            }
         }
 
         /// <summary>
@@ -1020,11 +991,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Whether this window is able to be closed.
         /// </summary>
         private bool _canClose;
-
-        /// <summary>
-        /// Whether the dialog has been brought to the front after its first frame rendered.
-        /// </summary>
-        private bool _broughtToFront;
 
         /// <summary>
         /// The specified position of the dialog.

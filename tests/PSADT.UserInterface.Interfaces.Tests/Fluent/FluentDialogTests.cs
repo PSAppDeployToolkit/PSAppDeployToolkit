@@ -636,13 +636,20 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         /// </summary>
         /// <remarks>
         /// Activation inside ShowWindow lets accessibility clients query the window before WPF has
-        /// rendered, so the frame appears empty. OnContentRendered activates the dialog instead.
+        /// rendered, so the frame appears empty. FluenceWindow defaults ShowActivated to false and
+        /// activates the window itself once its first frame has rendered, but only while the value
+        /// still comes from that default: a local value in FluentDialog would switch the base-class
+        /// deferral off, so the value source is asserted as well as the value.
         /// </remarks>
         [Fact]
         public void Constructor_DefersActivationUntilContentRendered()
         {
             // Act & Assert
-            WithDialog(SampleOptions.CustomDialog(), static dialog => Assert.False(dialog.ShowActivated));
+            WithDialog(SampleOptions.CustomDialog(), static dialog =>
+            {
+                Assert.False(dialog.ShowActivated);
+                Assert.Equal(BaseValueSource.Default, DependencyPropertyHelper.GetValueSource(dialog, Window.ShowActivatedProperty).BaseValueSource);
+            });
         }
 
         /// <summary>
