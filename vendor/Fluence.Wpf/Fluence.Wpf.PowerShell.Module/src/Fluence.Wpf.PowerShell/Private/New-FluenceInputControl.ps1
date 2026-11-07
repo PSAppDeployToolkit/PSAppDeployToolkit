@@ -38,7 +38,9 @@ function New-FluenceInputControl
         rendered with Fluence controls and the seeded theme. Pre-seeds $State.Result[$Prompt.Name]
         with the prompt's DefaultValue and wires the control's change event to write the live value
         back into $State.Result so an untouched field still returns its default. Every handler uses
-        GetNewClosure so it captures the current $State and the control instance.
+        GetNewClosure so it captures the current $State and the control instance. Throws when the
+        prompt's InputType has no branch, so a type added to New-FluencePrompt without a control
+        fails instead of silently rendering as a TextBox.
     .PARAMETER Prompt
         A Fluence.Prompt object (see New-FluencePrompt).
     .PARAMETER State
@@ -361,9 +363,8 @@ function New-FluenceInputControl
             return $panel
         }
 
-        default
+        'Text'
         {
-            # Text (and any unmapped type) renders as a single-line TextBox.
             $ctl = [Fluence.Wpf.Controls.TextBox]::new()
             if ($null -ne $Prompt.DefaultValue)
             {
@@ -373,6 +374,13 @@ function New-FluenceInputControl
                 $State.Result[$name] = $ctl.Text
             }.GetNewClosure())
             return $ctl
+        }
+
+        default
+        {
+            # An input type New-FluencePrompt accepts but this switch does not map is a module defect.
+            # Fail loudly instead of rendering a TextBox that returns the wrong value type.
+            throw "New-FluenceInputControl has no control for InputType '$($Prompt.InputType)'. Add a branch for it."
         }
     }
 }

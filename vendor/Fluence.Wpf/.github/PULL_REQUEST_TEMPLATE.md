@@ -17,7 +17,7 @@
 
 - [ ] Public API changes have XML docs and tests; the test count does not drop below the baseline.
 - [ ] Template or visual changes use canonical WinUI-style theme keys and `DynamicResource` where theme-bound (no inline hex colors).
-- [ ] Visual or behavioral choices are grounded in a Section 4 reference authority (in-tree precedent, WinUI 3 CommonStyles, or .NET 10 WPF Themes).
+- [ ] Visual or behavioral choices follow the reference order in `Fluence.Wpf/AGENTS.md` (in-tree precedent, then the domain authority such as WinUI 3 CommonStyles or the .NET WPF themes, then Microsoft guidance).
 - [ ] `CHANGELOG.md` is updated under `Unreleased`.
 - [ ] Public docs are updated when consumer behavior changes.
 - [ ] No unrelated files or local tool state are included.

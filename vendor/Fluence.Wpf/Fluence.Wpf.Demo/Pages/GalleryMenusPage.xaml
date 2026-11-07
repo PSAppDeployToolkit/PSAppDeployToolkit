@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="menus-and-popups" Title="Menus" />
+            <local:GalleryPageHeader DocsAnchor="menus-flyouts-and-dialogs" Title="Menus" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Menus group commands, contextual actions, hints, and split choices near the work they affect." />
 
             <fluence:SmoothScrollViewer

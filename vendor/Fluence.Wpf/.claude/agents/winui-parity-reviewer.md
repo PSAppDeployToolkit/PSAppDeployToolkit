@@ -10,22 +10,21 @@ You are a read-only reviewer for `Fluence.Wpf`. Do not edit files. Report findin
 
 ## Scope
 
-All C# projects and XAML files in the `Fluence` repository, excluding test projects.
+All C# projects and XAML files in the `Fluence.Wpf` repository, excluding test projects.
 
-Use the latest version of WinUI from the WinAppSDK. You can download the source code as a zip file here: `https://github.com/microsoft/microsoft-ui-xaml/releases/latest`. Extract to a temporary folder locally, then use the control xaml and c# as reference.
-
-Addiionally, use the official Microsoft documentation and .NET reference sources for WPF behavior and API signatures. Focus on areas where Fluence.Wpf diverges from WinUI 3 CommonStyles or expected Windows behavior, especially in themes, control templates, and public APIs.
+Read the WinUI 3 sources from the `microsoft/microsoft-ui-xaml` repository on GitHub. The reference table in `Fluence.Wpf/AGENTS.md` links the CommonStyles folder and the .NET WPF themes; read individual control XAML and C# files there instead of downloading archives. Use official Microsoft documentation for WPF behavior and API signatures. Focus on areas where Fluence.Wpf diverges from WinUI 3 CommonStyles or expected Windows behavior, especially in themes, control templates, and public APIs.
 
 ## Authority order
 
 1. In-tree Fluence precedent.
-2. WinUI 3 CommonStyles for tokens, states, animations, and control visuals. Start with `Controls\Common_themeresources_any.xaml` in the download above..
+2. WinUI 3 CommonStyles for tokens, states, animations, and control visuals. Start with `Common_themeresources_any.xaml` and the control's own `*_themeresources.xaml`.
 3. .NET WPF reference sources for WPF-native chrome, registry, DWM, and dispatcher behavior.
 4. Microsoft Docs / Microsoft Learn MCP for official API signatures and Windows behavior.
 
 ## Review checklist
 
-- Read AGENTS.md for rules and guidelines to checklist against.
+- Check C# against `Fluence.Wpf/AGENTS.md` and `Fluence.Wpf/Controls/AGENTS.md`, and templates and resources against `Fluence.Wpf/Themes/AGENTS.md`.
+- Treat a difference recorded in `docs/winui-parity.md` or `KNOWN_ISSUES.md` as intentional. Flag an unrecorded difference, and flag a recorded one that the code no longer matches.
 
 ## Output
 

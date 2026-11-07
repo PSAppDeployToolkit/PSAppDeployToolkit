@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                 Assert.Equal("Colors", header.Title, StringComparer.Ordinal);
                 // Colors documents the theme tokens, so its Documentation link targets docs/theming.md rather than docs/controls.md.
                 Assert.Equal("theming.md", header.DocsDocument, StringComparer.Ordinal);
-                Assert.Equal("canonical-token-families", header.DocsAnchor, StringComparer.Ordinal);
+                Assert.Equal("supported-key-families", header.DocsAnchor, StringComparer.Ordinal);
                 Assert.Equal("Fluence.Wpf/Themes/Colors/Theme.Light.xaml", header.ControlSourcePath, StringComparer.Ordinal);
 
                 // WinUI Gallery ColorPage.xaml: an inline SampleCodePresenter without a copy button, then the SelectorBar.

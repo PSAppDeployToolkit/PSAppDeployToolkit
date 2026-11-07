@@ -34,6 +34,7 @@ using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Native;
 using Windows.Win32;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Fluence.Wpf.Controls
 {
@@ -445,6 +446,49 @@ namespace Fluence.Wpf.Controls
                 isDark,
                 useLegacyAcrylic: false,
                 Colors.Transparent);
+        }
+
+        /// <summary>
+        /// Returns whether the launching process asked for a startup show state other than a normal
+        /// show, such as a shortcut set to run maximized or minimized.
+        /// </summary>
+        /// <remarks>
+        /// Windows replaces the command of the first <c language="csharp">ShowWindow</c> call with the
+        /// <c language="csharp">STARTUPINFO</c> command only when that call passes
+        /// <c language="csharp">SW_SHOW</c>, <c language="csharp">SW_SHOWNORMAL</c>, or
+        /// <c language="csharp">SW_SHOWDEFAULT</c>. A window shown with deferred activation passes
+        /// <c language="csharp">SW_SHOWNA</c>, which Windows does not replace, so it would ignore the
+        /// request. A normal-show request needs no special handling.
+        /// </remarks>
+        /// <param name="startupShowCommand">
+        /// The startup show command from <see cref="NativeMethods.GetStartupShowCommand"/>, or
+        /// <see langword="null"/> when the launching process supplied none.
+        /// </param>
+        /// <returns><see langword="true"/> when the first window must be shown with an activating show command.</returns>
+        internal static bool IsStartupShowStateRequested(SHOW_WINDOW_CMD? startupShowCommand)
+        {
+            return startupShowCommand is { } command
+                && command is not (SHOW_WINDOW_CMD.SW_SHOWNORMAL or SHOW_WINDOW_CMD.SW_SHOW or SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
+        }
+
+        /// <summary>
+        /// Decides whether <see cref="NativeMethods.TryTakeForeground(IntPtr)"/> attaches a worker thread's input
+        /// queue to the foreground thread's queue before retrying <c language="csharp">SetForegroundWindow</c>.
+        /// </summary>
+        /// <remarks>
+        /// Windows refuses <c language="csharp">SetForegroundWindow</c> from a process that is not the
+        /// foreground process, was not started by it, and has not received input. Sharing the
+        /// foreground thread's input queue grants that permission. Attaching is pointless when no
+        /// window has the foreground, impossible for the calling thread itself, and unsafe when the
+        /// foreground thread is not responding, because an attached thread shares that hang.
+        /// </remarks>
+        /// <param name="currentThreadId">The calling thread.</param>
+        /// <param name="foregroundThreadId">The thread that owns the foreground window, or 0 when there is none.</param>
+        /// <param name="foregroundIsHung"><see langword="true"/> when the foreground window is not responding.</param>
+        /// <returns><see langword="true"/> when the input queues should be attached for the retry.</returns>
+        internal static bool ShouldAttachForegroundThread(uint currentThreadId, uint foregroundThreadId, bool foregroundIsHung)
+        {
+            return foregroundThreadId != 0 && foregroundThreadId != currentThreadId && !foregroundIsHung;
         }
 
         /// <summary>

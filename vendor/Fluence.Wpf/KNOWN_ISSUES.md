@@ -111,6 +111,22 @@ See Microsoft's documentation for [TextBox selection opacity](https://learn.micr
   do not treat one failure of this test as a regression by itself, but do
   not dismiss a second occurrence either.
 
+- **`NavigationView_Automation_FooterSupportsSelectionAndInvocationAsync`
+  can time out connecting UI Automation in CI Lane A on `net472`** -
+  `Fluence.Wpf.Tests/Control/NavigationViewTests.cs` failed in the GitHub
+  Actions `net472` Lane A run for pull request #89 with "UI Automation did not
+  connect the window root. Client task status: Running." The test calls
+  `AutomationElement.FromHandle` on a dedicated MTA thread and allows the
+  handshake 5 seconds; on the hosted runner the call was still running when
+  that wait expired. The same commit passed an earlier CI run, the failed job
+  passed on re-run, and locally the test passed alone three times, with its
+  class (72 cases), and with the whole of Lane A (262 cases). This is UI
+  Automation client timing on a loaded runner, not a `NavigationView` defect:
+  re-run the job before treating a failure of this test alone as a
+  regression. Do not hide it by raising the timeout without evidence that the
+  handshake needs longer; a repeat failure is a reason to make the wait
+  condition-based or move the root connection out of the timed section.
+
 - **Windows 10 legacy acrylic is unverified on real hardware** - the
   `SetWindowCompositionAttribute` acrylic path (`WindowBackdropType.Acrylic` on
   Windows 10 build 17063+) is covered by pure policy tests only. The resolution
@@ -248,8 +264,7 @@ See Microsoft's documentation for [TextBox selection opacity](https://learn.micr
   `TextFillColorTertiaryBrush` (`TitleBar.xaml:25-133`,
   `TitleBar_themeresources.xaml:86` under WinUI CommonStyles). `FluenceWindow`
   dims only its own title text; the icon, subtitle, and title-bar content
-  slots stay at full opacity on deactivation. See `docs/winui-parity.md`
-  section 8.
+  slots stay at full opacity on deactivation.
 - **High contrast interaction states collapse into one** - Fluence's high
   contrast table resolves both `SubtleFillColorSecondary` and
   `SubtleFillColorTertiary` to `SystemColors.Control`, so hover, pressed, and
@@ -257,29 +272,37 @@ See Microsoft's documentation for [TextBox selection opacity](https://learn.micr
   indistinguishable from each other and from the resting surface. WinUI keeps
   these states visually distinct in high contrast by mapping pointer-over and
   pressed to two different System accent-derived brushes
-  (`NavigationView_themeresources.xaml:142-143`). See `docs/winui-parity.md`
-  section 7.
+  (`NavigationView_themeresources.xaml:142-143`).
 - **Pressed states are absent on stock WPF item containers** -
   `ListViewItem`, `ListBoxItem`, `TreeViewItem`, and `TabViewItem` derive from
   WPF base classes with no `IsPressed` concept the way `ButtonBase` has, so
   none of them draw a pressed visual state, unlike their WinUI counterparts.
-  See `docs/winui-parity.md` section 8.
 - **`NumberBox` `Compact` mode is a hover-reveal panel, not a popup** - WinUI's
   `Compact` spin-button mode opens an acrylic popup with 36px increment and
-  decrement buttons; Fluence instead reveals an inline panel on hover. See
-  `docs/winui-parity.md` sections 4 and 5.
+  decrement buttons; Fluence instead reveals an inline panel on hover.
 - **Text controls have no `Header` or `Description` template parts** -
   `TextBox` and `PasswordBox` carry neither slot, so a consumer wanting a
   label or helper text above or below the field must add its own
   `TextBlock`; `NumberBox`'s header also does not dim when the control is
-  disabled, unlike WinUI's. See `docs/winui-parity.md` section 5.
+  disabled, unlike WinUI's.
 - **`TreeView`, `TabView`, and `PipsPager` geometry gaps** - `TreeView` and
   `TabView` selection and separator metrics, and `PipsPager` pip pitch and
   hover sizing, were not part of the current colour and role fix pass and
   still differ from their WinUI CommonStyles sources (`TabView` draws no
   inter-tab separator or corner fillets; `PipsPager` does not scale pips or
-  use a pressed scale on its nav buttons). See `docs/winui-parity.md`
-  section 6 for the full geometry table.
+  use a pressed scale on its nav buttons).
+- **`DataGrid` behavior kept from the native WPF grid** - with
+  `IsItemSelectable` set to `False`, a mouse click does not begin editing a
+  cell, because the native cell starts a click edit only when it is selected;
+  F2 and typing still begin editing. The click also selects the row or cell
+  briefly and then clears it, so `SelectedCellsChanged`, and `SelectionChanged`
+  when whole rows are selected, report a selection and then its removal. The
+  Fluent group header is added as the first `GroupStyle` when the grid loads
+  with no group style, so set an application group style before the grid
+  loads, usually in XAML; one added later applies only to the second grouping
+  level and below. Grouping turns off row virtualization unless
+  `VirtualizingPanel.IsVirtualizingWhenGrouping` is set, so a large grouped
+  source realizes every row.
 
 ## net472 accessibility API gaps
 

@@ -35,14 +35,14 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Fluence.Wpf.Controls;
-using Fluence.Wpf.Demo.Pages;
 
 namespace Fluence.Wpf.Demo
 {
     /// <summary>
     /// The main gallery window: a <c language="csharp">FluenceWindow</c> with a <c language="csharp">NavigationView</c> shell that
-    /// drives all seventeen gallery pages. It owns the title-bar layout, the search box filtering,
-    /// the back-navigation stack, and the page-creation switch.
+    /// drives the gallery pages listed in <see cref="DemoNavigationCatalog"/>. It owns the title-bar
+    /// layout, the search box filtering, the back-navigation stack, and the page cache; each page is
+    /// created by its catalog entry's factory the first time it is shown.
     /// </summary>
     public partial class MainWindow : FluenceWindow
     {
@@ -173,12 +173,11 @@ namespace Fluence.Wpf.Demo
                 }
             }
 
-            // Settings is a FooterMenuItems entry (authored in XAML). Register its metadata so it
-            // routes through the same EnsurePageContent / CreatePageForRoute path as catalog items.
+            // Settings is a FooterMenuItems entry (authored in XAML). Register its catalog entry so
+            // it creates its page through the same EnsurePageContent path as the pane items.
             if (SettingsNavigationItem is NavigationViewItem settingsNavigationItem)
             {
-                _navigationItemByContainer[settingsNavigationItem] =
-                    new DemoNavigationItem("Settings", "settings", "settings options preferences", "", isDefault: false);
+                _navigationItemByContainer[settingsNavigationItem] = DemoNavigationCatalog.SettingsItem;
             }
 
             if (defaultItem is null && DemoNav.Items.Count > 0)
@@ -248,7 +247,7 @@ namespace Fluence.Wpf.Demo
                 ApplyNavSearchFilter();
             }
 
-            if (string.Equals(tag.Trim(), "settings", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(tag.Trim(), DemoNavigationCatalog.SettingsItem.Route, StringComparison.OrdinalIgnoreCase))
             {
                 if (SettingsNavigationItem is NavigationViewItem settingsItem)
                 {
@@ -342,35 +341,9 @@ namespace Fluence.Wpf.Demo
                 return null;
             }
 
-            page = CreatePageForRoute(metadata.Route);
+            page = metadata.CreatePage(this);
             _pageByContainer[item] = page;
             return page;
-        }
-
-        private object CreatePageForRoute(string route)
-        {
-            return (route ?? string.Empty).ToLowerInvariant() switch
-            {
-                "home" => new GalleryHomePage(),
-                "colors" => new GalleryColorsPage(),
-                "icons" => new GalleryIconsPage(),
-                "typography" => new GalleryTypographyPage(),
-                "accessibility" => new GalleryAccessibilityPage(),
-                "buttons" => new GalleryButtonsPage(),
-                "selection" => new GallerySelectionPage(),
-                "inputs" => new GalleryInputsPage(),
-                "forms" => new GalleryFormsPage(),
-                "data" => new GalleryDataPage(),
-                "data binding" => new GalleryDataBindingPage(),
-                "trees" => new GalleryTreesPage(),
-                "menus" => new GalleryMenusPage(),
-                "navigation" => new GalleryNavigationPage(),
-                "tabs" => new GalleryTabsPage(),
-                "layout" => new GalleryLayoutPage(),
-                "status" => new GalleryStatusPage(),
-                "settings" => new GallerySettingsPage(this),
-                _ => new GalleryHomePage(),
-            };
         }
 
         private void NavSearchBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)

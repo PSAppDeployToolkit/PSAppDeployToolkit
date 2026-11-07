@@ -47,6 +47,7 @@ This catalog lists the public controls in `Fluence.Wpf.Controls`. Add `xmlns:flu
 | --- | --- | --- |
 | [ListBox](controls/list-box.md), [ListBoxItem](controls/list-box.md#list-box-item), [ListView](controls/list-view.md) | Data-bound item lists | Familiar WPF items, templates, and selection; `ListView.ItemsLayout` chooses layout |
 | [TreeView](controls/tree-view.md), [TreeViewItem](controls/tree-view.md#tree-view-item) | Hierarchical collections | Expansion and selection; `TreeView.SelectedItems` for multiple selection |
+| [DataGrid](controls/data-grid.md) | Tables with sorting, grouping, editing, and validation | WPF columns, sorting, and editing; `ICollectionView` for grouping and filtering |
 | [PersonPicture](controls/person-picture.md) | Initials or avatar imagery | Person representation |
 
 ## Menus, flyouts, and dialogs

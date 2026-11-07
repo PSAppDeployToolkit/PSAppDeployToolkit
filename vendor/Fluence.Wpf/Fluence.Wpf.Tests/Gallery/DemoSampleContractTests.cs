@@ -36,6 +36,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Xml;
 using System.Xml.Linq;
+using Fluence.Wpf.Demo;
 using Fluence.Wpf.Demo.Pages;
 using Fluence.Wpf.Tests.Infrastructure;
 using Xunit;
@@ -53,26 +54,6 @@ namespace Fluence.Wpf.Tests.Gallery
     {
         private const string IntentionalPartialSnippetMarker = "Intentionally partial layout snippet";
         private static readonly XNamespace XamlNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
-
-        // GalleryIconsPage is a design reference page (WinUI Gallery Iconography catalog)
-        // and renders directly instead of through DemoSampleControl.
-        private static readonly Func<UIElement>[] SamplePageFactories =
-        [
-            static () => new GalleryAccessibilityPage(),
-            static () => new GalleryButtonsPage(),
-            static () => new GalleryTypographyPage(),
-            static () => new GallerySelectionPage(),
-            static () => new GalleryInputsPage(),
-            static () => new GalleryFormsPage(),
-            static () => new GalleryDataPage(),
-            static () => new GalleryDataBindingPage(),
-            static () => new GalleryTreesPage(),
-            static () => new GalleryMenusPage(),
-            static () => new GalleryNavigationPage(),
-            static () => new GalleryTabsPage(),
-            static () => new GalleryLayoutPage(),
-            static () => new GalleryStatusPage(),
-        ];
 
         [Fact]
         public Task DemoSamplePageWiring_MovesSlotContentAndAppliesTypedSourcesAsync()
@@ -222,10 +203,12 @@ namespace Fluence.Wpf.Tests.Gallery
         {
             return WpfTestSta.RunOnStaAsync(static delegate
             {
-                foreach (Func<UIElement> factory in SamplePageFactories)
+                // GalleryPageCatalog.SampleItems leaves out the pages that render directly instead
+                // of through DemoSampleControl, such as the Icons and Colors reference pages.
+                foreach (DemoNavigationItem item in GalleryPageCatalog.SampleItems)
                 {
                     _ = DemoTestHost.EnsureDemoTheme();
-                    UIElement page = factory();
+                    UIElement page = GalleryPageCatalog.CreatePage(item);
                     Window window = DemoTestHost.CreateHostWindow(page);
                     try
                     {
@@ -532,10 +515,10 @@ namespace Fluence.Wpf.Tests.Gallery
         private static List<DemoSampleControl> CreateVisibleSamples()
         {
             List<DemoSampleControl> samples = [];
-            foreach (Func<UIElement> factory in SamplePageFactories)
+            foreach (DemoNavigationItem item in GalleryPageCatalog.SampleItems)
             {
                 _ = DemoTestHost.EnsureDemoTheme();
-                UIElement page = factory();
+                UIElement page = GalleryPageCatalog.CreatePage(item);
                 Window window = DemoTestHost.CreateHostWindow(page);
                 try
                 {

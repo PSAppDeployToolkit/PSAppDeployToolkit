@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @{
     RootModule           = 'Fluence.Wpf.PowerShell.psm1'
-    ModuleVersion        = '0.9.5'
+    ModuleVersion        = '0.9.6'
     GUID                 = 'ad4e53a0-2f63-4f2a-b613-0816b85d3164'
     Author               = 'Dan Cunningham'
     CompanyName          = 'Dan Cunningham'

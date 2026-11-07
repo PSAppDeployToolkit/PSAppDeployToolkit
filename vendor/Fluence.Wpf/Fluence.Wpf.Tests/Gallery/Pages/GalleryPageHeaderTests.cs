@@ -27,7 +27,10 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
@@ -56,15 +59,15 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     Assert.Equal(Visibility.Collapsed, docsButton.Visibility);
                     Assert.Null(header.DocumentationUri);
 
-                    header.DocsAnchor = "basic-actions";
+                    header.DocsAnchor = "actions-and-selection";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
                     Assert.Equal(Visibility.Visible, docsButton.Visibility);
-                    Assert.Equal("https://github.com/sintaxasn/Fluence.Wpf/blob/main/docs/controls.md#basic-actions", header.DocumentationUri?.AbsoluteUri, StringComparer.Ordinal);
+                    Assert.Equal("https://github.com/sintaxasn/Fluence.Wpf/blob/main/docs/controls.md#actions-and-selection", header.DocumentationUri?.AbsoluteUri, StringComparer.Ordinal);
 
                     header.DocsDocument = "theming.md";
-                    header.DocsAnchor = "canonical-token-families";
+                    header.DocsAnchor = "supported-key-families";
                     WpfTestSta.DrainDispatcher(window.Dispatcher);
-                    Assert.Equal("https://github.com/sintaxasn/Fluence.Wpf/blob/main/docs/theming.md#canonical-token-families", header.DocumentationUri?.AbsoluteUri, StringComparer.Ordinal);
+                    Assert.Equal("https://github.com/sintaxasn/Fluence.Wpf/blob/main/docs/theming.md#supported-key-families", header.DocumentationUri?.AbsoluteUri, StringComparer.Ordinal);
                     Controls.HyperlinkButton docsLink = Assert.IsType<Controls.HyperlinkButton>(header.FindName("DocsLink"), exactMatch: false);
                     Assert.Equal("Theming guide", docsLink.Content as string, StringComparer.Ordinal);
                     Assert.Equal(header.DocumentationUri, docsLink.NavigateUri);
@@ -78,6 +81,56 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     DemoTestHost.CloseWindow(window);
                 }
             });
+        }
+
+        // The Documentation link opens docs/<DocsDocument>#<DocsAnchor> on GitHub, which derives each
+        // heading's anchor from the heading text. Renaming a heading silently breaks every link to it,
+        // so each gallery page's anchor must match a heading slug in the document it names.
+        [Fact]
+        public async Task GalleryPageHeader_DocsAnchor_MatchesHeadingSlugOnEveryGalleryPageAsync()
+        {
+            List<(string Page, string Document, string Anchor)> links = [];
+            await WpfTestSta.RunOnStaAsync(delegate
+            {
+                _ = DemoTestHost.EnsureDemoTheme();
+                IEnumerable<Type> pageTypes = typeof(GalleryPageHeader).Assembly.GetTypes()
+                    .Where(static type => typeof(Page).IsAssignableFrom(type)
+                        && !type.IsAbstract
+                        && string.Equals(type.Namespace, typeof(GalleryPageHeader).Namespace, StringComparison.Ordinal)
+                        && type.GetConstructor(Type.EmptyTypes) is not null)
+                    .OrderBy(static type => type.Name, StringComparer.Ordinal);
+                foreach (Type pageType in pageTypes)
+                {
+                    Page page = Assert.IsType<Page>(Activator.CreateInstance(pageType), exactMatch: false);
+                    foreach (GalleryPageHeader header in DemoTestHost.FindVisualChildren<GalleryPageHeader>(page))
+                    {
+                        if (!string.IsNullOrWhiteSpace(header.DocsAnchor))
+                        {
+                            links.Add((pageType.Name, header.DocsDocument, header.DocsAnchor));
+                        }
+                    }
+                }
+            }).ConfigureAwait(true);
+
+            Assert.NotEmpty(links);
+            Dictionary<string, HashSet<string>> slugsByDocument = new(StringComparer.Ordinal);
+            List<string> broken = [];
+            foreach ((string page, string document, string anchor) in links)
+            {
+                if (!slugsByDocument.TryGetValue(document, out HashSet<string>? slugs))
+                {
+                    string markdown = await DemoTestHost.ReadRepositoryFileAsync("docs", document).ConfigureAwait(true);
+                    slugs = GitHubHeadingSlugs(markdown);
+                    slugsByDocument.Add(document, slugs);
+                }
+
+                if (!slugs.Contains(anchor))
+                {
+                    broken.Add(page + ": docs/" + document + "#" + anchor);
+                }
+            }
+
+            Assert.True(broken.Count is 0, "These gallery Documentation links match no heading:" + Environment.NewLine + string.Join(Environment.NewLine, broken));
         }
 
         [Fact]
@@ -241,7 +294,7 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
             return WpfTestSta.RunOnStaAsync(static delegate
             {
                 Application application = DemoTestHost.EnsureDemoTheme();
-                GalleryPageHeader header = new() { Title = "Buttons", DocsAnchor = "basic-actions" };
+                GalleryPageHeader header = new() { Title = "Buttons", DocsAnchor = "actions-and-selection" };
                 Window window = DemoTestHost.CreateHostWindow(header);
                 try
                 {
@@ -319,6 +372,124 @@ namespace Fluence.Wpf.Tests.Gallery.Pages
                     DemoTestHost.CloseWindow(window);
                 }
             });
+        }
+
+        // Collects the anchors GitHub gives the ATX headings of a Markdown document, skipping fenced
+        // code. A repeated slug gets -1, -2 and so on in document order, as github-slugger assigns them.
+        private static HashSet<string> GitHubHeadingSlugs(string markdown)
+        {
+            HashSet<string> slugs = new(StringComparer.Ordinal);
+            Dictionary<string, int> occurrences = new(StringComparer.Ordinal);
+            bool inFence = false;
+            foreach (string rawLine in markdown.Split('\n'))
+            {
+                string line = rawLine.TrimEnd('\r');
+                string trimmed = line.TrimStart(' ');
+                if (line.Length - trimmed.Length > 3)
+                {
+                    continue;
+                }
+
+                if (trimmed.StartsWith("```", StringComparison.Ordinal) || trimmed.StartsWith("~~~", StringComparison.Ordinal))
+                {
+                    inFence = !inFence;
+                    continue;
+                }
+
+                int level = 0;
+                while (level < trimmed.Length && trimmed[level] == '#')
+                {
+                    level++;
+                }
+
+                if (inFence || level is 0 or > 6 || (level < trimmed.Length && trimmed[level] is not (' ' or '\t')))
+                {
+                    continue;
+                }
+
+                string slug = GitHubSlug(HeadingText(trimmed[level..]));
+                string unique = slug;
+                while (occurrences.ContainsKey(unique))
+                {
+                    occurrences[slug]++;
+                    unique = slug + "-" + occurrences[slug].ToString(CultureInfo.InvariantCulture);
+                }
+
+                occurrences[unique] = 0;
+                _ = slugs.Add(unique);
+            }
+
+            return slugs;
+        }
+
+        // Reduces the Markdown after the heading marker to the text GitHub renders: the optional
+        // closing # run, inline link targets and HTML tags are removed.
+        private static string HeadingText(string content)
+        {
+            string text = content.Trim(' ', '\t');
+            int closing = text.Length;
+            while (closing > 0 && text[closing - 1] == '#')
+            {
+                closing--;
+            }
+
+            if (closing is 0 || text[closing - 1] is ' ' or '\t')
+            {
+                text = text[..closing].TrimEnd(' ', '\t');
+            }
+
+            StringBuilder rendered = new(text.Length);
+            int index = 0;
+            while (index < text.Length)
+            {
+                int skipTo = text[index] switch
+                {
+                    '<' => text.IndexOf('>', index),
+                    ']' when index + 1 < text.Length && text[index + 1] == '(' => text.IndexOf(')', index),
+                    _ => -1,
+                };
+                if (skipTo > index)
+                {
+                    index = skipTo + 1;
+                    continue;
+                }
+
+                _ = rendered.Append(text[index]);
+                index++;
+            }
+
+            return rendered.ToString();
+        }
+
+        // github-slugger: lowercase, keep letters, marks, numbers, connector punctuation and hyphens,
+        // turn each space into a hyphen, and drop everything else.
+        private static string GitHubSlug(string text)
+        {
+            StringBuilder slug = new(text.Length);
+            foreach (char character in text)
+            {
+                if (character == ' ')
+                {
+                    _ = slug.Append('-');
+                }
+                else if (character == '-' || CharUnicodeInfo.GetUnicodeCategory(character) is UnicodeCategory.UppercaseLetter
+                    or UnicodeCategory.LowercaseLetter
+                    or UnicodeCategory.TitlecaseLetter
+                    or UnicodeCategory.ModifierLetter
+                    or UnicodeCategory.OtherLetter
+                    or UnicodeCategory.NonSpacingMark
+                    or UnicodeCategory.SpacingCombiningMark
+                    or UnicodeCategory.EnclosingMark
+                    or UnicodeCategory.DecimalDigitNumber
+                    or UnicodeCategory.LetterNumber
+                    or UnicodeCategory.OtherNumber
+                    or UnicodeCategory.ConnectorPunctuation)
+                {
+                    _ = slug.Append(char.ToLowerInvariant(character));
+                }
+            }
+
+            return slug.ToString();
         }
     }
 }

@@ -29,9 +29,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 # 06-ControlsTour.ps1 - Common Fluence controls (buttons, toggle, checkbox, radios, text box, number
-# box, split buttons, a slider, rating, an expander, a list, and icons) inside scrolling cards;
-# the toggle drives an InfoBar message from PowerShell. The module handles STA, assembly loading,
-# the Application, theming, and the message loop.
+# box, split buttons, a slider, rating, an expander, a list, a data grid, and icons) inside scrolling
+# cards; the toggle and the grid selection drive an InfoBar message from PowerShell. The grid shows
+# PowerShell objects set from -Initialize. The module handles STA, assembly loading, the Application,
+# theming, and the message loop.
 # Run: powershell.exe -File 06-ControlsTour.ps1   OR   pwsh -File 06-ControlsTour.ps1
 
 # The -Initialize block keeps the canonical ($Window, $Data) signature shared by every window example;
@@ -150,6 +151,22 @@ $xaml = @'
                 </fluence:Card>
                 <fluence:Card Margin="0,0,0,16">
                     <StackPanel>
+                        <TextBlock Text="Data grid" fluence:TextBlockExtensions.Typography="BodyStrong" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,12" />
+                        <fluence:DataGrid x:Name="TaskGrid" Height="200" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Tasks">
+                            <fluence:DataGrid.EmptyContent>
+                                <TextBlock Text="Rows load from PowerShell when the window opens." Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </fluence:DataGrid.EmptyContent>
+                            <fluence:DataGrid.Columns>
+                                <DataGridTextColumn Header="Task" Binding="{Binding Name}" Width="2*" MinWidth="120" />
+                                <DataGridTextColumn Header="Owner" Binding="{Binding Owner}" Width="*" MinWidth="90" />
+                                <DataGridTextColumn Header="Progress" Binding="{Binding Progress, StringFormat='{}{0}%'}" Width="*" MinWidth="90" />
+                                <DataGridCheckBoxColumn Header="Done" Binding="{Binding Done}" Width="Auto" />
+                            </fluence:DataGrid.Columns>
+                        </fluence:DataGrid>
+                    </StackPanel>
+                </fluence:Card>
+                <fluence:Card Margin="0,0,0,16">
+                    <StackPanel>
                         <TextBlock Text="Icons" fluence:TextBlockExtensions.Typography="BodyStrong" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,12" />
                         <StackPanel Orientation="Horizontal">
                             <fluence:FontIcon Glyph="&#xE734;" Margin="0,0,16,0" />
@@ -177,4 +194,21 @@ Show-FluenceWindow -Xaml $xaml -WatchSystemTheme -Initialize {
 
     $toggle.add_Checked({ $bar.Message = 'The switch is ON (handled in PowerShell).' }.GetNewClosure())
     $toggle.add_Unchecked({ $bar.Message = 'The switch is OFF (handled in PowerShell).' }.GetNewClosure())
+
+    # The grid binds ordinary PowerShell objects: each column names a property, and a header click sorts by it.
+    $grid = $Window.FindName('TaskGrid')
+    $grid.ItemsSource = @(
+        [pscustomobject]@{ Name = 'Collect inventory'; Owner = 'Avery'; Progress = 100; Done = $true }
+        [pscustomobject]@{ Name = 'Patch servers'; Owner = 'Jordan'; Progress = 60; Done = $false }
+        [pscustomobject]@{ Name = 'Rotate certificates'; Owner = 'Riley'; Progress = 25; Done = $false }
+        [pscustomobject]@{ Name = 'Archive logs'; Owner = 'Avery'; Progress = 100; Done = $true }
+        [pscustomobject]@{ Name = 'Review access'; Owner = 'Sam'; Progress = 0; Done = $false }
+    )
+    $grid.add_SelectionChanged({
+            $task = $grid.SelectedItem
+            if ($null -ne $task)
+            {
+                $bar.Message = "Selected '$($task.Name)', owned by $($task.Owner) (read in PowerShell)."
+            }
+        }.GetNewClosure())
 }

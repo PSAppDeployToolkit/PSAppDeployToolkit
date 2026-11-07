@@ -30,6 +30,7 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Fluence.Wpf.Helpers;
 using Windows.Win32;
 using Windows.Win32.Devices.Display;
@@ -37,6 +38,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.SystemInformation;
+using Windows.Win32.System.Threading;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -431,6 +433,113 @@ namespace Fluence.Wpf.Native
         public static bool RestoreWindowNative(IntPtr hwnd)
         {
             return hwnd != IntPtr.Zero && PInvoke.ShowWindow((HWND)hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
+        /// <summary>
+        /// Brings a window to the foreground when a plain <c language="csharp">SetForegroundWindow</c> call was
+        /// refused.
+        /// </summary>
+        /// <remarks>
+        /// Windows refuses <c language="csharp">SetForegroundWindow</c> from a process that does not hold the
+        /// foreground, was not started by the foreground process, and has not received input; the
+        /// window's taskbar button flashes instead. This retries once with a worker thread's input
+        /// queue attached to the foreground thread's queue, which Windows treats as permission. The
+        /// attachment lasts only for the retry, and is skipped when
+        /// <see cref="Controls.WindowPolicy.ShouldAttachForegroundThread"/> says it is pointless or
+        /// unsafe, in which case the plain call is retried. The retry runs on a background thread, never
+        /// on the caller's dispatcher thread, because a thread attached to a foreground thread that
+        /// stops pumping messages shares that stall. The caller waits at most
+        /// <see cref="ForegroundRetryTimeout"/> and then gives up; the worker finishes or stays
+        /// stalled on its own.
+        /// </remarks>
+        /// <param name="hwnd">The window to bring to the foreground.</param>
+        /// <returns><see langword="true"/> when the window holds the foreground afterwards.</returns>
+        public static bool TryTakeForeground(IntPtr hwnd)
+        {
+            return TryTakeForeground(hwnd, ForegroundInputCalls.Default, ForegroundRetryTimeout);
+        }
+
+        /// <summary>
+        /// The longest <see cref="TryTakeForeground(IntPtr)"/> waits for its worker before giving up.
+        /// </summary>
+        internal static readonly TimeSpan ForegroundRetryTimeout = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
+        /// <see cref="TryTakeForeground(IntPtr)"/> with replaceable native calls and timeout, for tests.
+        /// </summary>
+        /// <param name="hwnd">The window to bring to the foreground.</param>
+        /// <param name="calls">The native calls to use.</param>
+        /// <param name="timeout">How long to wait for the worker thread.</param>
+        /// <returns><see langword="true"/> when the window holds the foreground afterwards.</returns>
+        internal static bool TryTakeForeground(IntPtr hwnd, ForegroundInputCalls calls, TimeSpan timeout)
+        {
+            if (hwnd == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            if (calls.GetForegroundWindow() == hwnd)
+            {
+                return true;
+            }
+
+            bool result = false;
+            Thread worker = new(() => result = TakeForegroundAttached(hwnd, calls))
+            {
+                IsBackground = true,
+                Name = "Fluence.Wpf foreground retry",
+            };
+            worker.Start();
+            return worker.Join(timeout) && result;
+        }
+
+        /// <summary>
+        /// The worker-thread body of <see cref="TryTakeForeground(IntPtr)"/>: attach to the foreground
+        /// thread when the policy allows, raise and activate the window, then detach.
+        /// </summary>
+        /// <param name="hwnd">The window to bring to the foreground.</param>
+        /// <param name="calls">The native calls to use.</param>
+        /// <returns><see langword="true"/> when the window holds the foreground afterwards.</returns>
+        private static bool TakeForegroundAttached(IntPtr hwnd, ForegroundInputCalls calls)
+        {
+            IntPtr foreground = calls.GetForegroundWindow();
+            uint currentThread = calls.CurrentThreadId;
+            uint foregroundThread = foreground == IntPtr.Zero ? 0 : calls.GetWindowThreadId(foreground);
+            bool attached = false;
+            if (Controls.WindowPolicy.ShouldAttachForegroundThread(currentThread, foregroundThread, foreground != IntPtr.Zero && calls.IsHungAppWindow(foreground)))
+            {
+                calls.EnsureMessageQueue();
+                attached = calls.AttachThreadInput(currentThread, foregroundThread, attach: true);
+            }
+
+            try
+            {
+                _ = calls.BringWindowToTop(hwnd);
+                return calls.SetForegroundWindow(hwnd) && calls.GetForegroundWindow() == hwnd;
+            }
+            finally
+            {
+                if (attached)
+                {
+                    _ = calls.AttachThreadInput(currentThread, foregroundThread, attach: false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the show command that the launching process passed in this process's
+        /// <c language="csharp">STARTUPINFO</c>, such as the run state of a shortcut.
+        /// </summary>
+        /// <returns>
+        /// The <c language="csharp">wShowWindow</c> value when <c language="csharp">STARTF_USESHOWWINDOW</c>
+        /// is set; otherwise <see langword="null"/>.
+        /// </returns>
+        public static SHOW_WINDOW_CMD? GetStartupShowCommand()
+        {
+            PInvoke.GetStartupInfo(out STARTUPINFOW startupInfo);
+            return startupInfo.dwFlags.HasFlag(STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW)
+                ? (SHOW_WINDOW_CMD)startupInfo.wShowWindow
+                : null;
         }
 
         #endregion Window style and presentation helpers

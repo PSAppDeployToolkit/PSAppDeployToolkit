@@ -18,7 +18,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:GalleryPageHeader DocsAnchor="data-and-collections" Title="Data" />
+            <local:GalleryPageHeader DocsAnchor="data-collections-and-people" Title="Data" />
             <TextBlock Grid.Row="1" Style="{StaticResource SectionDescriptionStyle}" Text="Data controls present lists, empty states, and related content groups for scanning and selection." />
 
             <fluence:SmoothScrollViewer

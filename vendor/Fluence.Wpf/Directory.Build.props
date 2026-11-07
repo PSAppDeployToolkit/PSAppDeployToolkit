@@ -59,7 +59,7 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.9.5</VersionPrefix>
+    <VersionPrefix>0.9.6</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
