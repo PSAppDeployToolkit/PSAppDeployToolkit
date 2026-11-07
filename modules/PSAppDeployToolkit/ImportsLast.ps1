@@ -129,13 +129,16 @@ try
 
                                                 # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColor = 0xFF0078D7`) and not wrapped in quotes.
+                                                # Note that the color will be adjusted to conform with the accent color contrast and luminosity as defined by Windows.
                                                 FluentAccentColor = $null
 
                                                 # Specify the Accent Color in hex for dark mode (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColorDark = 0xFF0078D7`) and not wrapped in quotes. Requires PSAppDeployToolkit 4.2.0 or higher.
+                                                # Note that the color will be adjusted to conform with the accent color contrast and luminosity as defined by Windows.
                                                 FluentAccentColorDark = $null
 
-                                                # Keep theme-selected accent shades by default; set to $true to use literal visible Light/Dark colors.
+                                                # Attempts to force the accent color to the exact values indicated above. This is useful when an exact shade is required for branding purposes.
+                                                # Note that if a Dark mode color is not specified, it will be calculated from the Light variant.
                                                 # Requires PSAppDeployToolkit 4.2.0 or higher.
                                                 FluentAccentColorExact = $false
 
