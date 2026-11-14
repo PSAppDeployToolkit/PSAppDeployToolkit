@@ -190,16 +190,27 @@ function Get-ADTApplication
             {
                 # Open lookup table dictionary for returning at the end.
                 $dict = [System.Collections.Generic.Dictionary[System.Guid, System.Guid]]::new()
+                $parentGuid = [System.Guid]::Empty
+                $propertyGuid = [System.Guid]::Empty
             }
 
             process
             {
+                if (![System.Guid]::TryParse($_.PSChildName, [ref]$parentGuid))
+                {
+                    return
+                }
+
                 # Loop through the provided ItemProperty and convert out the packed GUIDs.
                 foreach ($property in $_.PSObject.Properties)
                 {
-                    if (!$property.Name.StartsWith('PS'))
+                    if ($property.Name.StartsWith('PS'))
                     {
-                        $dict.Add([PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($property.Name), [PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($_.PSChildName))
+                        continue
+                    }
+                    if ([System.Guid]::TryParse($property.Name, [ref]$propertyGuid))
+                    {
+                        $dict.Add([PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($propertyGuid.ToString('N')), [PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($parentGuid.ToString('N')))
                     }
                 }
             }
