@@ -38,7 +38,7 @@ Describe 'New-ADTValidateScriptErrorRecord' {
             (New-ADTValidateScriptErrorRecord -ParameterName 'Thing' -ProvidedValue 'bad' -ExceptionMessage 'x' -InnerException $inner).Exception.InnerException | Should -Be $inner
         }
 
-        It 'Accepts a <Case> as the rejected value' -ForEach @(
+        It 'Accepts <Case> as the rejected value' -ForEach @(
             @{ Case = 'null'; Value = $null }
             @{ Case = 'an empty string'; Value = '' }
             @{ Case = 'a white space string'; Value = '   ' }
