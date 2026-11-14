@@ -100,6 +100,10 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
                 }
+                if ([System.IO.DriveInfo]::new([System.IO.Path]::GetPathRoot($_.FullName)).DriveType.Equals([System.IO.DriveType]::Network))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
+                }
                 return !!$_
             })]
         [System.IO.FileInfo]$ImagePath,
