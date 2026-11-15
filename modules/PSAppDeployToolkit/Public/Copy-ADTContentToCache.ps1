@@ -62,7 +62,7 @@ function Copy-ADTContentToCache
 
         Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
-        This can be done using `Remove-ADTFile -LiteralPath "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
+        This can be done using `Remove-ADTFile -LiteralPath "$((Get-ADTConfig).Toolkit.CachePath)\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
         For security, the destination cache folder is erased and recreated on each run so that stale or maliciously planted content cannot be picked up. Additionally, when running with admin rights, the machine-wide cache folder defined by `(Get-ADTConfig).Toolkit.CachePath` has its ownership reclaimed and its permissions reset to inherit from its parent, mitigating the risk of a standard user pre-creating the folder to gain write access.
 
