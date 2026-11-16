@@ -391,49 +391,49 @@ function Set-ADTActiveSetup
             # HKLM entry not present. Nothing to run.
             if (!$HKLMProps)
             {
-                Write-ADTLogEntry 'HKLM active setup entry is not present.'
+                Write-ADTLogEntry -Message 'HKLM active setup entry is not present.'
                 return $false
             }
 
             # HKLM entry present, but disabled. Nothing to run.
             if ($HKLMInst -eq 0)
             {
-                Write-ADTLogEntry 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).'
+                Write-ADTLogEntry -Message 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).'
                 return $false
             }
 
             # HKLM entry present and HKCU entry is not. Run the StubPath.
             if (!$HKCUProps)
             {
-                Write-ADTLogEntry 'HKLM active setup entry is present. HKCU active setup entry is not present.'
+                Write-ADTLogEntry -Message 'HKLM active setup entry is present. HKCU active setup entry is not present.'
                 return $true
             }
 
             # Both entries present. HKLM entry does not have Version property. Nothing to run.
             if (!$HKLMVer)
             {
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.'
+                Write-ADTLogEntry -Message 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.'
                 return $false
             }
 
             # Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath.
             if (!$HKCUVer)
             {
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.'
+                Write-ADTLogEntry -Message 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.'
                 return $true
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
             if (!($HKLMValidVer = Get-ADTActiveSetupVersion -InputObject $HKLMVer))
             {
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
+                Write-ADTLogEntry -Message 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
             if (!($HKCUValidVer = Get-ADTActiveSetupVersion -InputObject $HKCUVer))
             {
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
+                Write-ADTLogEntry -Message 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
             }
 
@@ -441,13 +441,13 @@ function Set-ADTActiveSetup
             if ($HKLMValidVer -gt $HKCUValidVer)
             {
                 # HKLM is greater, run the StubPath.
-                Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
+                Write-ADTLogEntry -Message "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
                 return $true
             }
             else
             {
                 # The HKCU version is equal or higher than HKLM version, Nothing to run.
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
+                Write-ADTLogEntry -Message 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
                 return $false
             }
         }
