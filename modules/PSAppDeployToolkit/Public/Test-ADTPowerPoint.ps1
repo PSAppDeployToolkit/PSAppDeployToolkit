@@ -107,12 +107,12 @@ function Test-ADTPowerPoint
                 {
                     ([PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_PRESENTATION_MODE)
                     {
-                        Write-ADTLogEntry -Message 'Detected the user's notification state is presentation mode.'
+                        Write-ADTLogEntry -Message "Detected the user's notification state is presentation mode."
                         return $true
                     }
                     ([PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_BUSY)
                     {
-                        Write-ADTLogEntry -Message 'Detected the user's notification state is busy.'
+                        Write-ADTLogEntry -Message "Detected the user's notification state is busy."
                         return $true
                     }
                 }
