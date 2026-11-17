@@ -61,7 +61,9 @@ function Show-ADTInstallationWelcome
         The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER DeferRunInterval
-        Specifies the time span that must elapse before prompting the user again if a process specified via `-CloseProcesses` is still running after a deferral. Accepts TimeSpan objects, but also interprets numerical values as seconds.
+        Specifies the time span that must elapse after a deferral before the user is prompted again. If the deployment runs again within this interval and the user would be prompted, the deployment exits gracefully with the configured deferral exit code. This is honoured even once all deferrals have been exhausted or the deferral deadline has passed. Accepts TimeSpan objects, but also interprets numerical values as seconds.
+
+        With `-AllowDefer`, the user is always considered to be prompted unless `-ContinueOnProcessClosure` is also specified, in which case they are only considered to be prompted if a process specified via `-CloseProcesses` is running. With `-AllowDeferCloseProcesses`, the user is only considered to be prompted if a process specified via `-CloseProcesses` is running.
 
         This addresses the issue where Intune retries deployments shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
@@ -1028,6 +1030,23 @@ function Show-ADTInstallationWelcome
                         $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
                         $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
 
+                        # Exit gracefully if the user would be prompted but the DeferRunInterval hasn't elapsed. This is checked before evaluating
+                        # the remaining deferrals so the interval is still honoured once deferrals have been exhausted or the deadline has passed.
+                        if ($adtSession -and $DeferRunInterval)
+                        {
+                            Write-ADTLogEntry -Message "A DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
+                            if ($deferHistoryRunIntervalLastTime -and (($deferRunIntervalNextTime = $deferHistoryRunIntervalLastTime.Add($DeferRunInterval)) -gt $currentDateTimeLocal))
+                            {
+                                # -AllowDefer always prompts unless -ContinueOnProcessClosure is specified, whereas -AllowDeferCloseProcesses only prompts when processes are running.
+                                if (!($AllowDeferCloseProcesses -or $ContinueOnProcessClosure) -or (Get-ADTRunningProcessesUserCanClose))
+                                {
+                                    Write-ADTLogEntry -Message "Next run interval not due until [$($deferRunIntervalNextTime.ToString('O'))], exiting gracefully."
+                                    Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                                    break
+                                }
+                            }
+                        }
+
                         # Process deferrals.
                         if ($AllowDefer -and $PSBoundParameters.ContainsKey('DeferTimes'))
                         {
@@ -1214,20 +1233,6 @@ function Show-ADTInstallationWelcome
                             }
                             elseif (($promptResult -ne 'Close') -or ($runningApps -and ($promptResult -ne 'Continue')))
                             {
-                                # Exit gracefully if DeferRunInterval is set, a last deferral time exists, and the interval has not yet elapsed.
-                                if ($adtSession -and $DeferRunInterval)
-                                {
-                                    Write-ADTLogEntry -Message "A DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
-                                    if ($deferHistoryRunIntervalLastTime)
-                                    {
-                                        $deferRunIntervalNextTime = $deferHistoryRunIntervalLastTime.Add($DeferRunInterval) - $currentDateTimeLocal
-                                        if ($deferRunIntervalNextTime -gt [System.TimeSpan]::Zero)
-                                        {
-                                            Write-ADTLogEntry -Message "Next run interval not due until [$(($currentDateTimeLocal + $deferRunIntervalNextTime).ToString('O'))], exiting gracefully."
-                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
-                                        }
-                                    }
-                                }
                                 $promptResult = Show-ADTWelcomePrompt
                             }
                         }
