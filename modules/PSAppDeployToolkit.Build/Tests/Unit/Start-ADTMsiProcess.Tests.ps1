@@ -172,6 +172,15 @@ Describe 'Start-ADTMsiProcess' {
             }
         }
 
+        It 'Hands the package to msiexec when not waiting' {
+            # -NoWait selects its own parameter sets, which must still resolve the package rather than
+            # handing msiexec an empty path.
+            Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { }
+            $package = (Get-Item -LiteralPath (Copy-TestPackage -Destination "$TestDrive\NoWait.msi" -NewProductCode)).FullName
+            Start-ADTMsiProcess -Action Install -FilePath $package -NoWait -NoDesktopRefresh
+            Should -Invoke -ModuleName PSAppDeployToolkit Start-ADTProcess -Times 1 -Exactly -ParameterFilter { $NoWait -and ($ArgumentList -contains $package) }
+        }
+
         It 'Takes a relative transform alongside the package' {
             # A deployment keeps its transform next to its package, and refers to it by name.
             $null = New-ADTMsiTransform -MsiPath $script:Package -NewTransformPath "$TestDrive\Relative.mst" -TransformProperties @{ ADTTESTONLY = 'a value' }
