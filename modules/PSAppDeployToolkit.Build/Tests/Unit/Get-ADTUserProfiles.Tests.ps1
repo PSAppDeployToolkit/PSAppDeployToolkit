@@ -46,8 +46,10 @@ Describe 'Get-ADTUserProfiles' {
         It 'Includes the default user unless asked not to' {
             # The default profile is what a first logon is seeded from, so callers copying files into every
             # profile want it, and callers acting on real people do not.
-            ($script:Profiles.NTAccount -join ',') | Should -BeLike '*Default*'
-            ((Get-ADTUserProfiles -ExcludeDefaultUser).NTAccount -join ',') | Should -Not -BeLike '*Default*'
+            # Matched on the null SID it is given rather than its name, as real accounts such as defaultuser0 also contain "Default".
+            $isDefault = { process { if ($_.SID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid) -and $_.NTAccount.Value.Equals('Default', [System.StringComparison]::Ordinal)) { return $_ } } }
+            @($script:Profiles | & $isDefault).Count | Should -Be 1
+            @(Get-ADTUserProfiles -ExcludeDefaultUser | & $isDefault).Count | Should -Be 0
         }
 
         It 'Leaves the system profiles out unless asked for them' {

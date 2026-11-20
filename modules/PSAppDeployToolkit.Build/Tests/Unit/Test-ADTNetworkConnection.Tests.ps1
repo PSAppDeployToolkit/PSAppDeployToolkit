@@ -13,9 +13,11 @@
             [System.Net.NetworkInformation.NetworkInterfaceType[]]$InterfaceType
         )
 
+        # The function only considers physical adapters, so virtual switches and VPN adapters must not count here.
+        $physicalIds = (Get-NetAdapter -Physical).InterfaceGuid
         foreach ($nic in [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces())
         {
-            if (($nic.NetworkInterfaceType -in $InterfaceType) -and ($nic.OperationalStatus -eq [System.Net.NetworkInformation.OperationalStatus]::Up))
+            if (($nic.Id -in $physicalIds) -and ($nic.NetworkInterfaceType -in $InterfaceType) -and ($nic.OperationalStatus -eq [System.Net.NetworkInformation.OperationalStatus]::Up))
             {
                 return $true
             }
@@ -31,7 +33,7 @@ Describe 'Test-ADTNetworkConnection' {
         }
 
         It 'Agrees with the interfaces Windows reports' {
-            # The default is wired or wireless, so the oracle is the same pair read straight off .NET.
+            # The default is wired or wireless, so the oracle is the same pair read off .NET for the physical adapters.
             Test-ADTNetworkConnection | Should -Be (Test-InterfaceIsUp -InterfaceType Ethernet, Wireless80211)
         }
 

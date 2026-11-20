@@ -14,8 +14,8 @@
     ) | & {
         begin
         {
-            $keys = Get-ChildItem -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services'
-            $known = Get-Service | & { process { $_.ServiceName } }
+            # Some keys (VMware's, for one) deny read access to a non-elevated caller, which is not worth a message.
+            $keys = Get-ChildItem -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services' -ErrorAction Ignore
         }
         process
         {
@@ -23,7 +23,19 @@
             $match = $keys | & {
                 process
                 {
-                    if (($known -notcontains $_.PSChildName) -or ($_.GetValue('Start') -ne $case.Start) -or (!!$_.GetValue('DelayedAutoStart') -ne $case.Delayed))
+                    if (($_.GetValue('Start') -ne $case.Start) -or (!!$_.GetValue('DelayedAutoStart') -ne $case.Delayed))
+                    {
+                        return
+                    }
+
+                    # The Service Control Manager applies a StartOverride subkey over Start, e.g. reporting Boot storage drivers as Manual.
+                    if (Test-Path -LiteralPath "$($_.PSPath)\StartOverride")
+                    {
+                        return
+                    }
+
+                    # Asked of Get-Service by name, as a listing leaves out the kernel and file system drivers that Boot and System are for.
+                    if (!(Get-Service -Name ([System.Management.Automation.WildcardPattern]::Escape($_.PSChildName)) -ErrorAction Ignore))
                     {
                         return
                     }

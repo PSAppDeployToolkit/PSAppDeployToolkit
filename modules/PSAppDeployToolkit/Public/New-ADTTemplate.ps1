@@ -668,9 +668,13 @@ if ($adtSession.UseDefaultMsi)
         # Resolve the path to handle setups like ".\", etc.
         # We can't use things like a DirectoryInfo cast as .NET doesn't
         # track when the current location in PowerShell has been changed.
-        if (($resolvedDest = Resolve-Path -LiteralPath $Destination -ErrorAction Ignore))
+        try
         {
-            $Destination = $resolvedDest.Path
+            $Destination = Resolve-ADTFileSystemPath -LiteralPath $Destination -Directory -ResolveOnly
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
         }
 
         # Set up remaining variables.
