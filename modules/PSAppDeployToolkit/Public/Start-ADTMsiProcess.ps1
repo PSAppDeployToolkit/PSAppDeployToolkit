@@ -445,7 +445,7 @@ function Start-ADTMsiProcess
                 # If the MSI is in the Files directory, set the full path to the MSI.
                 $msiProduct = switch ($PSCmdlet.ParameterSetName)
                 {
-                    { $_ -match 'FilePath' }
+                    { $_.Contains('FilePath') }
                     {
                         if (Test-Path -LiteralPath $FilePath -PathType Leaf)
                         {
@@ -469,13 +469,13 @@ function Start-ADTMsiProcess
                         break
                     }
 
-                    { $_ -match 'ProductCode' }
+                    { $_.Contains('ProductCode') }
                     {
                         $ProductCode.ToString('B')
                         break
                     }
 
-                    { $_ -match 'InstalledApplication' }
+                    { $_.Contains('InstalledApplication') }
                     {
                         $InstalledApplication.ProductCode.ToString('B')
                         break
@@ -799,7 +799,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Set the working directory of the MSI.
-                if (($PSCmdlet.ParameterSetName -match 'FilePath') -and !$workingDirectory)
+                if ($PSCmdlet.ParameterSetName.Contains('FilePath') -and !$workingDirectory)
                 {
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiProduct)
                 }
