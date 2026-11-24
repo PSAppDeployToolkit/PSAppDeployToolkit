@@ -8,13 +8,13 @@ function Invoke-ADTRegSvr32
 {
     <#
     .SYNOPSIS
-        Register or unregister a DLL file.
+        Register or unregister a DLL or OCX file.
 
     .DESCRIPTION
-        The `Invoke-ADTRegSvr32` function registers or unregisters a DLL file using regsvr32.exe. This function determines the bitness of the DLL file and uses the appropriate version of regsvr32.exe to perform the action. It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
+        The `Invoke-ADTRegSvr32` function registers or unregisters a DLL or OCX file using regsvr32.exe. This function determines the bitness of the file and uses the appropriate version of regsvr32.exe to perform the action. It supports both 32-bit and 64-bit files on corresponding operating systems.
 
     .PARAMETER FilePath
-        Path to the DLL file.
+        Path to the DLL or OCX file.
 
     .PARAMETER Action
         Specify whether to register or unregister the DLL.
@@ -68,7 +68,7 @@ function Invoke-ADTRegSvr32
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Attributes.ValidateExtension('.dll')]
+        [PSAppDeployToolkit.Attributes.ValidateExtension('.dll', '.ocx')]
         [ValidateScript({
                 if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {

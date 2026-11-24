@@ -8,13 +8,13 @@ function Unregister-ADTDll
 {
     <#
     .SYNOPSIS
-        Unregister a DLL file.
+        Unregister a DLL or OCX file.
 
     .DESCRIPTION
-        The `Unregister-ADTDll` function unregisters a DLL file using regsvr32.exe. This function takes the path to the DLL file and attempts to unregister it using the regsvr32.exe utility.
+        The `Unregister-ADTDll` function unregisters a DLL or OCX file using regsvr32.exe. This function takes the path to the file and attempts to unregister it using the regsvr32.exe utility.
 
     .PARAMETER FilePath
-        Path to the DLL file.
+        Path to the DLL or OCX file.
 
     .PARAMETER AsUser
         Specifies that the DLL should be unregistered for the current user only by calling its DllInstall entry point with the 'user' argument (regsvr32.exe /u /n /i:user). If this function is running under the SYSTEM account, regsvr32.exe is executed in the context of the currently logged on user. Note that the DLL must support per-user registration via a DllInstall export for this to work.
